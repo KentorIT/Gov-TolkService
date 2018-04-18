@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Tolk.Web.Data;
-using Tolk.Web.Models;
 using Tolk.Web.Services;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web
 {

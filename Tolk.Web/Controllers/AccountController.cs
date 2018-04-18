@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Tolk.Web.Models;
+using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
 

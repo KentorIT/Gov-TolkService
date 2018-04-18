@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Tolk.Web.Models;
+using Tolk.BusinessLogic.Entities;
 
-namespace Tolk.Web.Data
+namespace Tolk.BusinessLogic.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
