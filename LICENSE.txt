@@ -1,25 +1,7 @@
-﻿
-@{
-    ViewData["Title"] = "Om Applikationen";
-}
-
-<div class="row">
-    <div class="col-md-12">
-        <h2>Om Applikationen</h2>
-        Applikationen är utvecklad på uppdrag av Kammarkollegiet under AGPLv3-licens.
-    </div>
-    <div class="col-md-4">
-        <h2>Källkod</h2>
-        Applikationens källkod finns för nedladdning på <a href="https://github.com/KentorIT/Gov-TolkService">
-        GitHub/KentorIT/Gov-TolkService</a>
-    </div>
-    <div class="col-md-8">
-        <h2>Licens</h2>
-        <pre>
 GNU AFFERO GENERAL PUBLIC LICENSE
 Version 3, 19 November 2007
 
-Copyright (C) 2007 Free Software Foundation, Inc. &lt;https://fsf.org/&rt;
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
 
@@ -633,6 +615,3 @@ reviewing courts shall apply local law that most closely approximates
 an absolute waiver of all civil liability in connection with the
 Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
-        </pre>
-    </div>
-</div>
