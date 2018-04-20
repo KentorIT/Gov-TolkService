@@ -1,4 +1,28 @@
-﻿@{
+﻿@model Tolk.Web.Models.RequestViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
+<div class="row">
+    <div class="col-md-8">
+        <h2>Avropa tolk</h2>
+        <form asp-action="Index">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form-entry asp-for="LocationName" />
+            <form-entry asp-for="LocationAddress" />
+            <form-entry asp-for="LocationCity" />
+            <button class="btn btn-default">Skicka</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <h2>Nyheter</h2>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3>2018-04-19 Utveckling</h3>
+            </div>
+            <p class="panel-body">
+                Applikationen är under utveckling och detta är aktuell utvecklingsversion, som inte innehåller komplett funktionalitet.
+            </p>
+        </div>
+    </div>
+</div>

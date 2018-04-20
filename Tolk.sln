@@ -5,7 +5,12 @@ VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Web", "Tolk.Web\Tolk.Web.csproj", "{C8ACF9FE-C549-4C71-9F6D-A3B4E2F66DE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tolk.BusinessLogic", "Tolk.BusinessLogic\Tolk.BusinessLogic.csproj", "{766BB69F-A285-44B5-882B-5033DC11061F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.BusinessLogic", "Tolk.BusinessLogic\Tolk.BusinessLogic.csproj", "{766BB69F-A285-44B5-882B-5033DC11061F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47F89FBF-8EFB-4A35-A869-6C7139AF51AF}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
