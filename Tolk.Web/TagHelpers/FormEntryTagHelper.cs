@@ -42,6 +42,7 @@ namespace Tolk.Web.TagHelpers
             {
                 WriteLabel(writer);
                 WriteInput(writer);
+                WriteValidation(writer);
                 output.Content.AppendHtml(writer.ToString());
             }
         }
@@ -67,6 +68,19 @@ namespace Tolk.Web.TagHelpers
                 value: null,
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
+
+            tagBuilder.WriteTo(writer, htmlEncoder);
+        }
+
+        private void WriteValidation(TextWriter writer)
+        {
+            var tagBuilder = htmlGenerator.GenerateValidationMessage(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                message: null,
+                tag: null,
+                htmlAttributes: new { @class = "text-danger" });
 
             tagBuilder.WriteTo(writer, htmlEncoder);
         }
