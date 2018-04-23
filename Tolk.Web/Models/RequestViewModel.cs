@@ -9,12 +9,15 @@ namespace Tolk.Web.Models
     public class RequestViewModel
     {
         [Display(Name = "Plats")]
+        [Required]
         public string LocationName { get; set; }
 
         [Display(Name = "Adress")]
+        [Required]
         public string LocationAddress { get; set; }
 
         [Display(Name = "Ort")]
+        [Required]
         public string LocationCity { get; set; }
     }
 }
