@@ -4,9 +4,9 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class TolkDbContext : IdentityDbContext<AspNetUser>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public TolkDbContext(DbContextOptions<TolkDbContext> options)
             : base(options)
         {
         }

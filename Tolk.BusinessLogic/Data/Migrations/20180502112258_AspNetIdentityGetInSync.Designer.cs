@@ -10,7 +10,7 @@ using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(TolkDbContext))]
     [Migration("20180502112258_AspNetIdentityGetInSync")]
     partial class AspNetIdentityGetInSync
     {

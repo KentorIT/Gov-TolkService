@@ -10,7 +10,7 @@ using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(TolkDbContext))]
     [Migration("20180502122341_Region")]
     partial class Region
     {
