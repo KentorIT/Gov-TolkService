@@ -65,7 +65,7 @@ namespace Tolk.Web.TagHelpers
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
-                value: null,
+                value: For.ModelExplorer.Model,
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
 
