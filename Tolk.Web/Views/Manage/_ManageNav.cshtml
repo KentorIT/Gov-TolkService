@@ -1,5 +1,6 @@
 ﻿@using Tolk.Web.Views.Manage
-@inject SignInManager<ApplicationUser> SignInManager
+@using Tolk.BusinessLogic.Entities
+@inject SignInManager<AspNetUser> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }

@@ -2,8 +2,9 @@
 @using System.Linq
 @using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Http.Authentication
+@using Tolk.BusinessLogic.Entities
 @model LoginViewModel
-@inject SignInManager<ApplicationUser> SignInManager
+@inject SignInManager<AspNetUser> SignInManager
 
 @{
     ViewData["Title"] = "Log in";
