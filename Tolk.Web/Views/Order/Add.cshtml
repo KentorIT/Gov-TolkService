@@ -1,0 +1,61 @@
+﻿@model Tolk.Web.Models.OrderModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+@section Scripts
+    {
+    <environment include="Development">
+        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+    </environment>
+}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Avropa tolk</h2>
+        <form asp-action="Add" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="County"></label>
+                <select asp-for="County" class="form-control" asp-items="OrderModel.Counties"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Language"></label>
+                <select asp-for="Language"  class="form-control" asp-items="OrderModel.Languages"></select>
+            </div>
+            <form-entry asp-for="Language" />
+            <form-entry asp-for="TypeOfJob" />
+            <label asp-for="StartDate"></label><br />
+            <input asp-for="StartDate" /> - <input asp-for="StartTime" /><br />
+            <label asp-for="EndDate"></label><br />
+            <input asp-for="EndDate" /> - <input asp-for="EndTime" /><br />
+            <form-entry asp-for="LocationName" />
+            <form-entry asp-for="LocationAddress" />
+            <form-entry asp-for="LocationCity" />
+            <input asp-for="AllowMoreThanTwoHoursTravelTime" /> <label asp-for="AllowMoreThanTwoHoursTravelTime"></label> <br />
+            <input asp-for="SpecialRequirements" /> <label asp-for="SpecialRequirements"></label> <br />
+            <div style="display:none;" class="form-group" id="SpecialRequirementsText-wrapper">
+                <label asp-for="SpecialRequirementsText"></label><br />
+                <textarea asp-for="SpecialRequirementsText" class="form-control"></textarea><br />
+            </div>
+            <input asp-for="SpecialNeeds" /> <label asp-for="SpecialNeeds"></label> <br />
+            <div style="display:none;" class="form-group" id="SpecialNeeds-wrapper">
+                <label asp-for="SpecialNeedsText"></label><br />
+                <textarea asp-for="SpecialNeedsText" class="form-control"></textarea><br />
+            </div>
+            <button class="btn btn-default">Skicka</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <h2>Nyheter</h2>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3>2018-04-19 Utveckling</h3>
+            </div>
+            <p class="panel-body">
+                Applikationen är under utveckling och detta är aktuell utvecklingsversion, som inte innehåller komplett funktionalitet.
+            </p>
+        </div>
+    </div>
+</div>

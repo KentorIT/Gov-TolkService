@@ -1,18 +1,12 @@
-﻿@model Tolk.Web.Models.RequestViewModel
+﻿@model Tolk.Web.Models.StartViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="row">
     <div class="col-md-8">
-        <h2>Avropa tolk</h2>
-        <form asp-action="Index">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <form-entry asp-for="LocationName" />
-            <form-entry asp-for="LocationAddress" />
-            <form-entry asp-for="LocationCity" />
-            <button class="btn btn-default">Skicka</button>
-        </form>
+        <h2>Startsida</h2>
+        @Model.Message
     </div>
     <div class="col-md-4">
         <h2>Nyheter</h2>
