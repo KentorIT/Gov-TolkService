@@ -32,6 +32,9 @@ namespace Tolk.Web
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
+            services.AddMemoryCache();
+            services.AddScoped<SelectListService>();
+
             services.AddMvc();
         }
 

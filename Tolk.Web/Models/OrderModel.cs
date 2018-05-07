@@ -65,12 +65,5 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Information")]
         public string SpecialNeedsText { get; set; }
-
-        public static List<SelectListItem> Languages { get; } = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "1", Text = "Franska" },
-            new SelectListItem { Value = "2", Text = "Tyska" },
-            new SelectListItem { Value = "3", Text = "Engelska"  },
-        };
     }
 }

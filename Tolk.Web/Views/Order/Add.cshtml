@@ -1,4 +1,5 @@
 ﻿@model Tolk.Web.Models.OrderModel
+@inject SelectListService SelectListService
 @using Tolk.Web.Services
 @{
     ViewData["Title"] = "Home Page";
@@ -18,11 +19,7 @@
         <form asp-action="Add" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <form-entry asp-for="County" type="select" asp-items="SelectListService.Regions"/>
-            <div class="form-group">
-                <label asp-for="Language"></label>
-                <select asp-for="Language"  class="form-control" asp-items="OrderModel.Languages"></select>
-            </div>
-            <form-entry asp-for="Language" />
+            <form-entry asp-for="Language" type="select" asp-items="SelectListService.Languages"/>
             <form-entry asp-for="TypeOfJob" />
             <label asp-for="StartDate"></label><br />
             <input asp-for="StartDate" /> - <input asp-for="StartTime" /><br />
