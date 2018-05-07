@@ -135,6 +135,11 @@ namespace Tolk.Web.TagHelpers
                 allowMultiple: allowMultiple,
                 htmlAttributes: new { @class = "form-control" });
 
+            if (currentValues == null)
+            {
+                tagBuilder.InnerHtml.AppendHtml("<option disabled selected value style=\"display:none\"> --- Välj --- </option>");
+            }
+
             tagBuilder.WriteTo(writer, htmlEncoder);
         }
 
