@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Data
             // Add your customizations after calling base.OnModelCreating(builder);
 
             builder.Entity<Region>()
-                .HasData(Region.SeedData);
+                .HasData(Region.Regions);
         }
 
         public DbSet<Region> Regions { get; set; }

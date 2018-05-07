@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public string Name { get; set; }
 
-        public static Region[] SeedData { get; } = new[]
+        public static Region[] Regions { get; } = new[]
         {
                 new Region { Id = 1, Name = "Stockholm" },
                 new Region { Id = 2, Name = "Uppsala" },

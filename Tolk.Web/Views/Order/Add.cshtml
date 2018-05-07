@@ -1,4 +1,5 @@
 ﻿@model Tolk.Web.Models.OrderModel
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -18,7 +19,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="County"></label>
-                <select asp-for="County" class="form-control" asp-items="OrderModel.Counties"></select>
+                <select asp-for="County" class="form-control" asp-items="SelectListService.Regions"></select>
             </div>
             <div class="form-group">
                 <label asp-for="Language"></label>

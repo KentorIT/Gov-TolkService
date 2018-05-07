@@ -66,13 +66,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Information")]
         public string SpecialNeedsText { get; set; }
 
-        public static List<SelectListItem> Counties { get; } = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "1", Text = "Stockholm" },
-            new SelectListItem { Value = "2", Text = "Västra Götaland" },
-            new SelectListItem { Value = "3", Text = "Uppsala"  },
-        };
-
         public static List<SelectListItem> Languages { get; } = new List<SelectListItem>
         {
             new SelectListItem { Value = "1", Text = "Franska" },
