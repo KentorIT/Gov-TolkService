@@ -13,22 +13,23 @@ using System.Threading.Tasks;
 
 namespace Tolk.Web.TagHelpers
 {
-    public class FormEntryTagHelper: TagHelper
+    public class FormEntryTagHelper : TagHelper
     {
-        private readonly IHtmlGenerator htmlGenerator;
-        private readonly HtmlEncoder htmlEncoder;
+        private readonly IHtmlGenerator _htmlGenerator;
+        private readonly HtmlEncoder _htmlEncoder;
 
         public FormEntryTagHelper(IHtmlGenerator htmlGenerator, HtmlEncoder htmlEncoder)
         {
-            this.htmlGenerator = htmlGenerator;
-            this.htmlEncoder = htmlEncoder;
+            this._htmlGenerator = htmlGenerator;
+            this._htmlEncoder = htmlEncoder;
         }
 
         private const string ForAttributeName = "asp-for";
         private const string ItemsAttributeName = "asp-items";
         private const string InputTypeName = "type";
         private const string InputTypeSelect = "select";
-        private const string InputTypeDateTime = "datetime";
+        private const string InputTypeDateTimeOffset = "datetime";
+        private const string InputTypeText = "text";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -47,22 +48,38 @@ namespace Tolk.Web.TagHelpers
         {
             base.Init(context);
 
-            switch(InputType)
+            InitInputType();
+
+            switch (InputType)
             {
                 case InputTypeSelect:
-                    if(Items == null)
+                    if (Items == null)
                     {
                         throw new ArgumentNullException("Items", "Items must be set if type is select");
                     }
                     break;
                 case null:
+                case InputTypeText:
+                case InputTypeDateTimeOffset:
                     if (Items != null)
                     {
-                        throw new ArgumentException("Items are only relevant if type is select.");
+                        throw new ArgumentException("Items is only relevant if type is select.");
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select. Omit type to get a normal string input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text. Omit type to get a default input.");
+            }
+        }
+
+        private void InitInputType()
+        {
+            if (InputType == null)
+            {
+                if (For.ModelExplorer.ModelType == typeof(DateTimeOffset)
+                    || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))
+                {
+                    InputType = InputTypeDateTimeOffset;
+                }
             }
         }
 
@@ -74,39 +91,41 @@ namespace Tolk.Web.TagHelpers
 
             using (var writer = new StringWriter())
             {
-                WriteLabel(writer);
-                switch(InputType)
+                switch (InputType)
                 {
                     case InputTypeSelect:
+                        WriteLabel(writer);
                         WriteSelect(writer);
+                        WriteValidation(writer);
                         break;
-                    case InputTypeDateTime:
-                        WriteDateTime(writer);
+                    case InputTypeDateTimeOffset:
+                        WriteDateTimeOffset(writer);
                         break;
                     default:
+                        WriteLabel(writer);
                         WriteInput(writer);
+                        WriteValidation(writer);
                         break;
                 }
-                WriteValidation(writer);
                 output.Content.AppendHtml(writer.ToString());
             }
         }
 
         private void WriteLabel(TextWriter writer)
         {
-            var tagBuilder = htmlGenerator.GenerateLabel(
+            var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 labelText: null,
                 htmlAttributes: new { @class = "control-label" });
 
-            tagBuilder.WriteTo(writer, htmlEncoder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WriteInput(TextWriter writer)
         {
-            var tagBuilder = htmlGenerator.GenerateTextBox(
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
@@ -114,18 +133,71 @@ namespace Tolk.Web.TagHelpers
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
 
-            tagBuilder.WriteTo(writer, htmlEncoder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private void WriteDateTime(TextWriter writer)
+        private void WriteDateTimeOffset(TextWriter writer)
         {
-            var tagBuilder = htmlGenerator.GenerateTextBox(
+            // First write a label
+            writer.WriteLine($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}</label>");
+
+            // Then open the inline form
+            writer.WriteLine("<div class=\"form-inline\">");
+            writer.WriteLine("<div class=\"input-group date\">");
+
+            var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
+            var dateFieldName = $"{For.Name}.Date";
+
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
-                For.ModelExplorer,
-                For.Name,
-                value: For.ModelExplorer.Model,
+                dateModelExplorer,
+                dateFieldName,
+                value: dateModelExplorer.Model,
                 format: null,
-                htmlAttributes: new { @class = "form-control" });
+                htmlAttributes: new { @class = "form-control datepicker", placeholder = "ÅÅÅÅ-MM-DD", type = "text" });
+
+            RemoveRequiredIfNullable(tagBuilder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
+
+            writer.WriteLine("<div class=\"input-group time\">");
+
+            var timeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "TimeOfDay");
+            var timeFieldName = $"{For.Name}.TimeOfDay";
+
+            tagBuilder = _htmlGenerator.GenerateTextBox(
+                ViewContext,
+                timeModelExplorer,
+                timeFieldName,
+                value: timeModelExplorer.Model,
+                format: null,
+                htmlAttributes: new
+                {
+                    @class = "form-control",
+                    placeholder = "HH:MM",
+                    data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]$",
+                    data_val_regex = "Ange tid som HH:MM"
+                });
+
+            RemoveRequiredIfNullable(tagBuilder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
+
+            writer.WriteLine("</div>"); // form-inline
+
+            WriteValidation(writer, dateModelExplorer, dateFieldName);
+            writer.WriteLine();
+            WriteValidation(writer, timeModelExplorer, timeFieldName);
+        }
+
+        private void RemoveRequiredIfNullable(TagBuilder tagBuilder)
+        {
+            if (!For.Metadata.IsRequired)
+            {
+                tagBuilder.Attributes.Remove("data-val-required");
+            }
         }
 
         private void WriteSelect(TextWriter writer)
@@ -134,13 +206,13 @@ namespace Tolk.Web.TagHelpers
             var allowMultiple = typeof(string) != realModelType &&
                 typeof(IEnumerable).IsAssignableFrom(realModelType);
 
-            var currentValues = htmlGenerator.GetCurrentValues(
+            var currentValues = _htmlGenerator.GetCurrentValues(
                 ViewContext,
                 For.ModelExplorer,
                 expression: For.Name,
                 allowMultiple: allowMultiple);
 
-            var tagBuilder = htmlGenerator.GenerateSelect(
+            var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
                 For.ModelExplorer,
                 optionLabel: null,
@@ -150,20 +222,26 @@ namespace Tolk.Web.TagHelpers
                 allowMultiple: allowMultiple,
                 htmlAttributes: new { @class = "form-control" });
 
-            tagBuilder.WriteTo(writer, htmlEncoder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WriteValidation(TextWriter writer)
         {
-            var tagBuilder = htmlGenerator.GenerateValidationMessage(
+            WriteValidation(writer, For.ModelExplorer, For.Name);
+        }
+
+        private void WriteValidation(TextWriter writer, ModelExplorer modelExplorer, string Name)
+        {
+            var tagBuilder = _htmlGenerator.GenerateValidationMessage(
                 ViewContext,
-                For.ModelExplorer,
-                For.Name,
+                modelExplorer,
+                Name,
                 message: null,
                 tag: null,
                 htmlAttributes: new { @class = "text-danger" });
 
-            tagBuilder.WriteTo(writer, htmlEncoder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
         }
     }
 }

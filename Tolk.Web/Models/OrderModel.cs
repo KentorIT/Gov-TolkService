@@ -38,13 +38,10 @@ namespace Tolk.Web.Models
         public string LocationCity { get; set; }
 
         [Display(Name = "Startdatum och tid")]
-        [Required]
         public DateTimeOffset StartDateTime { get; set; }
 
         [Display(Name = "Slutdatum och tid")]
-        [Required]
-        [DataType(DataType.Date)]
-        public DateTime EndDate { get; set; }
+        public DateTimeOffset EndDateTime { get; set; }
 
         [Required]
         [DataType(DataType.Time)]

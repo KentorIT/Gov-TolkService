@@ -44,7 +44,7 @@ namespace Tolk.Web.Controllers
                     RegionId = model.RegionId,
                     CustomerReferenceNumber = model.CustomerReferenceNumber,
                     StartDateTime = model.StartDateTime,
-                    EndDateTime = model.EndDate.AddTicks(model.EndTime.Ticks),
+                    EndDateTime = model.EndDateTime,
                     Description = model.Description,
                     UnitName = model.UnitName,
                     Street = model.LocationStreet,
