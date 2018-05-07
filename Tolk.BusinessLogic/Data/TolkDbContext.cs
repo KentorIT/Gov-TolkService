@@ -23,5 +23,7 @@ namespace Tolk.BusinessLogic.Data
         }
 
         public DbSet<Region> Regions { get; set; }
+
+        public DbSet<Language> Languages { get; set; }
     }
 }

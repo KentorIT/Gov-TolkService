@@ -11,6 +11,7 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
+        [Required]
         [MaxLength(20)]
         public string Name { get; set; }
 
