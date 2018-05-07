@@ -18,39 +18,25 @@
         <h2>Avropa tolk</h2>
         <form asp-action="Add" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <form-entry asp-for="County" type="select" asp-items="SelectListService.Regions"/>
-            <form-entry asp-for="Language" type="select" asp-items="SelectListService.Languages"/>
-            <form-entry asp-for="TypeOfJob" />
+            <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
+            <form-entry asp-for="Language" type="select" asp-items="SelectListService.Languages" />
+            <form-entry asp-for="CustomerReferenceNumber" />
+            <form-entry asp-for="AssignentType" type="select" asp-items="SelectListService.AssignentTypes" />
+            <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
             <label asp-for="StartDate"></label><br />
             <input asp-for="StartDate" /> - <input asp-for="StartTime" /><br />
             <label asp-for="EndDate"></label><br />
             <input asp-for="EndDate" /> - <input asp-for="EndTime" /><br />
-            <form-entry asp-for="LocationName" />
-            <form-entry asp-for="LocationAddress" />
+            <form-entry asp-for="Description" />
+            <form-entry asp-for="UnitName" />
+            <form-entry asp-for="LocationStreet" />
+            <form-entry asp-for="LocationZipCode" />
             <form-entry asp-for="LocationCity" />
             <input asp-for="AllowMoreThanTwoHoursTravelTime" /> <label asp-for="AllowMoreThanTwoHoursTravelTime"></label> <br />
-            <input asp-for="SpecialRequirements" /> <label asp-for="SpecialRequirements"></label> <br />
-            <div style="display:none;" class="form-group" id="SpecialRequirementsText-wrapper">
-                <label asp-for="SpecialRequirementsText"></label><br />
-                <textarea asp-for="SpecialRequirementsText" class="form-control"></textarea><br />
-            </div>
-            <input asp-for="SpecialNeeds" /> <label asp-for="SpecialNeeds"></label> <br />
-            <div style="display:none;" class="form-group" id="SpecialNeeds-wrapper">
-                <label asp-for="SpecialNeedsText"></label><br />
-                <textarea asp-for="SpecialNeedsText" class="form-control"></textarea><br />
+            <div class="form-group" id="SpecialRequirementsText-wrapper">
+                Här skall det tillkomma lite möjlighet att lägga till extra krav/önskemål
             </div>
             <button class="btn btn-default">Skicka</button>
         </form>
-    </div>
-    <div class="col-md-4">
-        <h2>Nyheter</h2>
-        <div class="panel panel-info">
-            <div class="panel-heading">
-                <h3>2018-04-19 Utveckling</h3>
-            </div>
-            <p class="panel-body">
-                Applikationen är under utveckling och detta är aktuell utvecklingsversion, som inte innehåller komplett funktionalitet.
-            </p>
-        </div>
     </div>
 </div>

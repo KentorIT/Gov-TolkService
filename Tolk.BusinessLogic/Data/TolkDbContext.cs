@@ -20,6 +20,10 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<Region>()
                 .HasData(Region.Regions);
+            builder.Entity<Order>()
+            .Property(p => p.OrderNumber)
+            .HasComputedColumnSql("[OrderId] + 1000000");
+
         }
 
         public DbSet<Region> Regions { get; set; }

@@ -11,19 +11,27 @@ namespace Tolk.Web.Models
     {
         [Display(Name = "Län")]
         [Required]
-        public int County { get; set; }
+        public int RegionId { get; set; }
 
         [Display(Name = "Språk")]
         [Required]
         public int Language { get; set; }
 
-        [Display(Name = "Plats")]
+        [Display(Name = "Beskrivning")]
         [Required]
-        public string LocationName { get; set; }
+        public string Description { get; set; }
+
+        [Display(Name = "Enhet/avdelning")]
+        [Required]
+        public string UnitName { get; set; }
 
         [Display(Name = "Adress")]
         [Required]
-        public string LocationAddress { get; set; }
+        public string LocationStreet { get; set; }
+
+        [Display(Name = "Postnummer")]
+        [Required]
+        public string LocationZipCode { get; set; }
 
         [Display(Name = "Ort")]
         [Required]
@@ -49,21 +57,16 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
-        public int TypeOfJob { get; set; }
+        public int AssignentType { get; set; }
+
+        [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
+        public string CustomerReferenceNumber { get; set; }
+
+        [Display(Name = "Utbildningsnivå")]
+        [Required]
+        public int RequiredCompetenceLevel { get; set; }
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
-
-        [Display(Name = "Speciella krav")]
-        public bool SpecialRequirements { get; set; }
-
-        [Display(Name = "Information")]
-        public string SpecialRequirementsText { get; set; }
-
-        [Display(Name = "Speciella önskemål")]
-        public bool SpecialNeeds { get; set; }
-
-        [Display(Name = "Information")]
-        public string SpecialNeedsText { get; set; }
     }
 }

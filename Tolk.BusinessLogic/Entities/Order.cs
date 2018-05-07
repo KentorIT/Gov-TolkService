@@ -14,8 +14,7 @@ namespace Tolk.BusinessLogic.Entities
         public int OrderId { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string OrderNumber { get; set; }
+        public int OrderNumber { get; set; }
 
         public DateTime CreatedDate { get; set; }
 
@@ -71,7 +70,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int LanguageId{ get; set; }
 
-        [ForeignKey(nameof(RegionId))]
+        [ForeignKey(nameof(LanguageId))]
         public Language Language {get;set;}
 
         //TODO: Make Enum and fk
