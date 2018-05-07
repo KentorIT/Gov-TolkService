@@ -23,7 +23,7 @@ namespace Tolk.Web.Services
         public static IEnumerable<SelectListItem> Regions { get; } =
             Region.Regions.Select(r => new SelectListItem
             {
-                Value = r.Id.ToString(),
+                Value = r.RegionId.ToString(),
                 Text = r.Name
             })
             .ToList().AsReadOnly();

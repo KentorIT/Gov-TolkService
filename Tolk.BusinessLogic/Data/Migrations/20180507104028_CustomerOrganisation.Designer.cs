@@ -10,9 +10,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180507104028_CustomerOrganisation")]
+    partial class CustomerOrganisation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,101 +207,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Languages");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
-                {
-                    b.Property<int>("OrderId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<bool>("AllowMoreThanTwoHoursTravelTime");
-
-                    b.Property<int>("AssignentType");
-
-                    b.Property<string>("City")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("CreatedBy");
-
-                    b.Property<DateTime>("CreatedDate");
-
-                    b.Property<int>("CustomerOrganisationId");
-
-                    b.Property<string>("CustomerReferenceNumber")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000);
-
-                    b.Property<DateTimeOffset>("EndDateTime");
-
-                    b.Property<int>("LanguageId");
-
-                    b.Property<string>("OrderNumber")
-                        .IsRequired()
-                        .HasMaxLength(50);
-
-                    b.Property<string>("OtherAddressInformation")
-                        .HasMaxLength(255);
-
-                    b.Property<string>("OtherContactEmail")
-                        .HasMaxLength(255);
-
-                    b.Property<string>("OtherContactPerson")
-                        .HasMaxLength(255);
-
-                    b.Property<string>("OtherContactPhone")
-                        .HasMaxLength(50);
-
-                    b.Property<int>("RegionId");
-
-                    b.Property<int?>("RequestedCompetenceLevel");
-
-                    b.Property<int?>("RequestedInterpreterLocation");
-
-                    b.Property<int>("RequiredCompetenceLevel");
-
-                    b.Property<int>("RequiredInterpreterLocation");
-
-                    b.Property<DateTimeOffset>("StartDateTime");
-
-                    b.Property<int>("Status");
-
-                    b.Property<string>("Street")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("UnitName")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("ZipCode")
-                        .HasMaxLength(100);
-
-                    b.HasKey("OrderId");
-
-                    b.HasIndex("CustomerOrganisationId");
-
-                    b.HasIndex("RegionId");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirement", b =>
-                {
-                    b.Property<int>("OrderRequirementId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(100);
-
-                    b.Property<int>("OrderId");
-
-                    b.Property<int>("RequirementType");
-
-                    b.HasKey("OrderRequirementId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderRequirements");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Region", b =>
                 {
                     b.Property<int>("RegionId");
@@ -380,32 +286,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
-                        .WithMany()
-                        .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
-                        .WithMany()
-                        .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirement", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("Requirements")
-                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
