@@ -58,7 +58,7 @@ namespace Tolk.Web.Controllers
             }
             else
             {
-                return Redirect("~/Home/Index?message=Avropet%20har%20INTE%20skickats");
+                return View(model);
             }
         }
     }
