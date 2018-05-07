@@ -28,6 +28,7 @@ namespace Tolk.Web.TagHelpers
         private const string ItemsAttributeName = "asp-items";
         private const string InputTypeName = "type";
         private const string InputTypeSelect = "select";
+        private const string InputTypeDateTime = "datetime";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -51,7 +52,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeSelect:
                     if(Items == null)
                     {
-
+                        throw new ArgumentNullException("Items", "Items must be set if type is select");
                     }
                     break;
                 case null:
@@ -78,6 +79,9 @@ namespace Tolk.Web.TagHelpers
                 {
                     case InputTypeSelect:
                         WriteSelect(writer);
+                        break;
+                    case InputTypeDateTime:
+                        WriteDateTime(writer);
                         break;
                     default:
                         WriteInput(writer);
@@ -111,6 +115,17 @@ namespace Tolk.Web.TagHelpers
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.WriteTo(writer, htmlEncoder);
+        }
+
+        private void WriteDateTime(TextWriter writer)
+        {
+            var tagBuilder = htmlGenerator.GenerateTextBox(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                value: For.ModelExplorer.Model,
+                format: null,
+                htmlAttributes: new { @class = "form-control" });
         }
 
         private void WriteSelect(TextWriter writer)

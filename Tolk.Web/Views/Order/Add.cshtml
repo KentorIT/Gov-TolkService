@@ -23,8 +23,29 @@
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="AssignentType" type="select" asp-items="SelectListService.AssignentTypes" />
             <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
-            <label asp-for="StartDate"></label><br />
-            <input asp-for="StartDate" /> - <input asp-for="StartTime" /><br />
+            @*<form-entry asp-for="StartDateTime" />*@
+            <div class="form-group">
+                <label for="StartDateTime">Startdatum och tid</label>
+                <div class="form-inline">
+                    <div class="input-group date">
+                        <input asp-for="StartDateTime.Date" class="form-control datepicker" placeholder="ÅÅÅÅ-MM-DD" type="text" />
+                        <div class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </div>
+                    </div>
+                    <div class="input-group time">
+                        <input asp-for="StartDateTime.TimeOfDay" class="form-control"
+                               placeholder="HH:MM"
+                               data-val-regex-pattern="^(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]$"
+                               data-val-regex="Skriv in tid som HH:MM"/>
+                        <div class="input-group-addon">
+                            <span class="glyphicon glyphicon-time"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="StartDateTime.Date" class="text-danger"></span>
+                <span asp-validation-for="StartDateTime.TimeOfDay" class="text-danger"></span>
+            </div>
             <label asp-for="EndDate"></label><br />
             <input asp-for="EndDate" /> - <input asp-for="EndTime" /><br />
             <form-entry asp-for="Description" />

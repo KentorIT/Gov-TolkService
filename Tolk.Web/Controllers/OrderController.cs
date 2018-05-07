@@ -43,7 +43,7 @@ namespace Tolk.Web.Controllers
                     AssignentType = model.AssignentType,
                     RegionId = model.RegionId,
                     CustomerReferenceNumber = model.CustomerReferenceNumber,
-                    StartDateTime = model.StartDate.AddTicks(model.StartTime.Ticks),
+                    StartDateTime = model.StartDateTime,
                     EndDateTime = model.EndDate.AddTicks(model.EndTime.Ticks),
                     Description = model.Description,
                     UnitName = model.UnitName,

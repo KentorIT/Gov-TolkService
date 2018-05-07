@@ -39,12 +39,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Startdatum och tid")]
         [Required]
-        [DataType(DataType.Date)]
-        public DateTime StartDate { get; set; }
-
-        [Required]
-        [DataType(DataType.Time)]
-        public TimeSpan StartTime { get; set; }
+        public DateTimeOffset StartDateTime { get; set; }
 
         [Display(Name = "Slutdatum och tid")]
         [Required]
