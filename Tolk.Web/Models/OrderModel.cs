@@ -43,10 +43,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Slutdatum och tid")]
         public DateTimeOffset EndDateTime { get; set; }
 
-        [Required]
-        [DataType(DataType.Time)]
-        public TimeSpan EndTime { get; set; }
-
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
         public int AssignentType { get; set; }

@@ -35,7 +35,10 @@ namespace Tolk.Web
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
 
-            services.AddMvc();
+            services.AddMvc(opt =>
+            {
+                opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
