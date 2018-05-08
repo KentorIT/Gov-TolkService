@@ -99,7 +99,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public static bool Save(TolkDbContext dbContext, Order order)
+        public static Order Save(TolkDbContext dbContext, Order order)
         {
             try
             {
@@ -110,9 +110,9 @@ namespace Tolk.BusinessLogic.Entities
             catch (DbUpdateException e)
             {
                 //ADD LOG
-                return false;
+                return null;
             }
-            return true;
+            return order;
         }
 
         /* remaining fields
