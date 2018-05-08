@@ -23,10 +23,8 @@
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="AssignentType" type="select" asp-items="SelectListService.AssignentTypes" />
             <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
-            <label asp-for="StartDate"></label><br />
-            <input asp-for="StartDate" /> - <input asp-for="StartTime" /><br />
-            <label asp-for="EndDate"></label><br />
-            <input asp-for="EndDate" /> - <input asp-for="EndTime" /><br />
+            <form-entry asp-for="StartDateTime" />
+            <form-entry asp-for="EndDateTime" />
             <form-entry asp-for="Description" />
             <form-entry asp-for="UnitName" />
             <form-entry asp-for="LocationStreet" />

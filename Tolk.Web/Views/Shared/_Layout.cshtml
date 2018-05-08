@@ -15,6 +15,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
+    <link rel="stylesheet" href="~/lib/bootstrap-datepicker/bootstrap-datepicker3.min.css"/>
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -47,8 +48,8 @@
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+        <script src="~/lib/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+        <script src="~/lib/bootstrap-datepicker/bootstrap-datepicker.sv.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
@@ -64,6 +65,9 @@
                 crossorigin="anonymous"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
         </script>
+        <script src="~/lib/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+        <script src="~/lib/bootstrap-datepicker/bootstrap-datepicker.sv.min.js"></script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
     @Html.Partial("_ValidationScriptsPartial")
 
