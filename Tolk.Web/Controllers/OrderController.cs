@@ -29,37 +29,13 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                Order order = new Order
+                var order = model.Save(_dbContext, "x", 1);
+                if (order != null)
                 {
-                    //Hardcodes
-                    CreatedBy = "x",
-                    CustomerOrganisationId = 1,
-                    RequiredInterpreterLocation = 1,
-                    Status = 1,
-                    //end hardcodes
-                    CreatedDate = DateTime.Now,
-                    LanguageId = model.Language,
-                    AllowMoreThanTwoHoursTravelTime = model.AllowMoreThanTwoHoursTravelTime,
-                    AssignentType = model.AssignentType,
-                    RegionId = model.RegionId,
-                    CustomerReferenceNumber = model.CustomerReferenceNumber,
-                    StartDateTime = model.StartDateTime,
-                    EndDateTime = model.EndDateTime,
-                    Description = model.Description,
-                    UnitName = model.UnitName,
-                    Street = model.LocationStreet,
-                    ZipCode = model.LocationZipCode,
-                    City = model.LocationCity,
-                    RequiredCompetenceLevel = model.RequiredCompetenceLevel,
-                };
-                _dbContext.Orders.Add(order);
-                _dbContext.SaveChanges();
-                return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
+                    return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
+                }
             }
-            else
-            {
-                return View(model);
-            }
+            return View(model);
         }
     }
 }

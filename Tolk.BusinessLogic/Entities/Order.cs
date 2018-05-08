@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -97,7 +99,23 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        /*
+        public static bool Save(TolkDbContext dbContext, Order order)
+        {
+            try
+            {
+                dbContext.Orders.Add(order);
+                //TODO: Add Request?
+                dbContext.SaveChanges();
+            }
+            catch (DbUpdateException e)
+            {
+                //ADD LOG
+                return false;
+            }
+            return true;
+        }
+
+        /* remaining fields
 (Antal tolkar (eventuellt, avvakta))
 Särskilda kontaktuppgifter (om uppdraget avser Distanstolkning i anvisad lokal eller Distanstolkning (video el. telefon)
         */

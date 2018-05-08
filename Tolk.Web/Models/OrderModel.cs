@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentDataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
@@ -56,5 +58,36 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+
+        #region methods
+
+        public Order Save(TolkDbContext dbContext, string createdBy, int customerOrganisationId)
+        {
+            Order order = new Order
+            {
+                //Hardcodes
+                RequiredInterpreterLocation = 1,
+                Status = 1,
+                //end hardcodes
+                CustomerOrganisationId = customerOrganisationId,
+                CreatedBy = createdBy,
+                CreatedDate = DateTime.Now,
+                LanguageId = Language,
+                AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime,
+                AssignentType = AssignentType,
+                RegionId = RegionId,
+                CustomerReferenceNumber = CustomerReferenceNumber,
+                StartDateTime = StartDateTime,
+                EndDateTime = EndDateTime,
+                Description = Description,
+                UnitName = UnitName,
+                Street = LocationStreet,
+                ZipCode = LocationZipCode,
+                City = LocationCity,
+                RequiredCompetenceLevel = RequiredCompetenceLevel,
+            };
+            return Order.Save(dbContext, order);
+        }
+        #endregion
     }
 }
