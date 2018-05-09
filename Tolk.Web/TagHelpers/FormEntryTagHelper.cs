@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -82,7 +83,7 @@ namespace Tolk.Web.TagHelpers
                 {
                     InputType = InputTypeDateTimeOffset;
                 }
-                if(For.ModelExplorer.Metadata.DataTypeName == "Password")
+                if (For.ModelExplorer.Metadata.DataTypeName == "Password")
                 {
                     InputType = InputTypePassword;
                 }
@@ -170,13 +171,28 @@ namespace Tolk.Web.TagHelpers
 
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
             var dateFieldName = $"{For.Name}.Date";
+            var timeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "TimeOfDay");
+            var timeFieldName = $"{For.Name}.TimeOfDay";
+            object dateValue;
+            object timeValue;
+
+            if (Equals(For.Model, default(DateTimeOffset)))
+            {
+                dateValue = null;
+                timeValue = null;
+            }
+            else
+            {
+                dateValue = dateModelExplorer.Model;
+                timeValue = timeModelExplorer.Model;
+            }
 
             var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 dateModelExplorer,
                 dateFieldName,
-                value: dateModelExplorer.Model,
-                format: null,
+                value: dateValue,
+                format: "{0:yyyy-MM-dd}",
                 htmlAttributes: new { @class = "form-control datepicker", placeholder = "ÅÅÅÅ-MM-DD", type = "text" });
 
             RemoveRequiredIfNullable(tagBuilder);
@@ -186,15 +202,13 @@ namespace Tolk.Web.TagHelpers
 
             writer.WriteLine("<div class=\"input-group time\">");
 
-            var timeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "TimeOfDay");
-            var timeFieldName = $"{For.Name}.TimeOfDay";
 
             tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 timeModelExplorer,
                 timeFieldName,
-                value: timeModelExplorer.Model,
-                format: null,
+                value: timeValue,
+                format: "{0:hh\\:mm}",
                 htmlAttributes: new
                 {
                     @class = "form-control",
@@ -247,11 +261,15 @@ namespace Tolk.Web.TagHelpers
 
             if (currentValues == null)
             {
+                var existingOptionsBuilder = new HtmlContentBuilder();
+                tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
+
+                tagBuilder.InnerHtml.Clear();
                 tagBuilder.InnerHtml.AppendHtml("<option disabled selected value style=\"display:none\"> --- Välj --- </option>");
+                tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
             }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
-
         }
 
         private void WriteValidation(TextWriter writer)
@@ -270,7 +288,6 @@ namespace Tolk.Web.TagHelpers
                 htmlAttributes: new { @class = "text-danger" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
-
         }
     }
 }

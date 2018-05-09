@@ -30,8 +30,9 @@ namespace Tolk.Web.Controllers
             return View("Edit");
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Save(OrderModel model)
+        public IActionResult Add(OrderModel model)
         {
             if (ModelState.IsValid)
             {
@@ -42,6 +43,13 @@ namespace Tolk.Web.Controllers
                 }
             }
             return View("Edit", model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public IActionResult Edit(OrderModel model)
+        {
+            return Add(model);
         }
     }
 }

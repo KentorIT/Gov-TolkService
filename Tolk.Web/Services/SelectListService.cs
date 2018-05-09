@@ -34,7 +34,6 @@ namespace Tolk.Web.Services
         public static IEnumerable<SelectListItem> AssignentTypes { get; } =
             new List<SelectListItem>
             {
-                new SelectListItem { Value = "", Text = "Välj..." },
                 new SelectListItem { Value = "1", Text = "På plats" },
                 new SelectListItem { Value = "2", Text = "Distans" },
                 new SelectListItem { Value = "3", Text = "Distans i anvisad lokal" },
@@ -49,7 +48,6 @@ namespace Tolk.Web.Services
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             new List<SelectListItem>
             {
-                new SelectListItem { Value = "", Text = "Välj..." },
                 new SelectListItem { Value = "1", Text = "RT" },
                 new SelectListItem { Value = "2", Text = "ST" },
                 new SelectListItem { Value = "3", Text = "AT" },

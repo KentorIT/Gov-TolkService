@@ -15,7 +15,10 @@ namespace Tolk.Web.Services
             var dateValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Date");
             var timeValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.TimeOfDay");
 
-            if(dateValue == ValueProviderResult.None || timeValue == ValueProviderResult.None)
+            if(dateValue == ValueProviderResult.None
+                || string.IsNullOrWhiteSpace(dateValue.FirstValue)
+                || timeValue == ValueProviderResult.None
+                || string.IsNullOrWhiteSpace(timeValue.FirstValue))
             {
                 return Task.CompletedTask;
             }
