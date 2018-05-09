@@ -19,13 +19,19 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
         }
 
+        public IActionResult Edit(int id)
+        {
+            //Get order model from db
+            return View(OrderModel.Load(_dbContext, id, "x", 1));
+        }
+
         public IActionResult Add()
         {
-            return View();
+            return View("Edit");
         }
 
         [HttpPost]
-        public IActionResult Add(OrderModel model)
+        public IActionResult Save(OrderModel model)
         {
             if (ModelState.IsValid)
             {
@@ -35,7 +41,7 @@ namespace Tolk.Web.Controllers
                     return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
                 }
             }
-            return View(model);
+            return View("Edit", model);
         }
     }
 }

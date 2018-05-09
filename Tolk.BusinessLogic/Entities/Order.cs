@@ -99,11 +99,15 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public static Order Save(TolkDbContext dbContext, Order order)
+        public static Order Save(TolkDbContext dbContext, Order order, bool isNew )
         {
             try
             {
-                dbContext.Orders.Add(order);
+                if (isNew)
+                {
+                    dbContext.Orders.Add(order);
+                }
+                
                 //TODO: Add Request?
                 dbContext.SaveChanges();
             }

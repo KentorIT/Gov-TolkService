@@ -11,13 +11,15 @@ namespace Tolk.Web.Models
 {
     public class OrderModel
     {
+        public int? OrderId { get; set; }
+
         [Display(Name = "Län")]
         [Required]
         public int RegionId { get; set; }
 
         [Display(Name = "Språk")]
         [Required]
-        public int Language { get; set; }
+        public int LanguageId { get; set; }
 
         [Display(Name = "Beskrivning")]
         [Required]
@@ -63,31 +65,70 @@ namespace Tolk.Web.Models
 
         public Order Save(TolkDbContext dbContext, string createdBy, int customerOrganisationId)
         {
-            Order order = new Order
+            Order order;
+            if (OrderId.HasValue)
+            {
+                order = dbContext.Orders.Single(o => o.OrderId == OrderId);
+                //Modified by, Modified date
+            }
+            else
+            {
+                order = new Order
+                {
+                    //Hardcodes
+                    RequiredInterpreterLocation = 1,
+                    Status = 1,
+                    CreatedBy = createdBy,
+                    CreatedDate = DateTime.Now,
+                    CustomerOrganisationId = customerOrganisationId
+                };
+            }
+            order.LanguageId = LanguageId;
+            order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
+            order.AssignentType = AssignentType;
+            order.RegionId = RegionId;
+            order.CustomerReferenceNumber = CustomerReferenceNumber;
+            order.StartDateTime = StartDateTime;
+            order.EndDateTime = EndDateTime;
+            order.Description = Description;
+            order.UnitName = UnitName;
+            order.Street = LocationStreet;
+            order.ZipCode = LocationZipCode;
+            order.City = LocationCity;
+            order.RequiredCompetenceLevel = RequiredCompetenceLevel;
+            return Order.Save(dbContext, order, !OrderId.HasValue);
+        }
+
+
+        public static OrderModel Load(TolkDbContext dbContext, int id, string createdBy, int customerOrganisationId)
+        {
+            var order = dbContext.Orders.Single(o => o.OrderId == id);
+            return new OrderModel
             {
                 //Hardcodes
-                RequiredInterpreterLocation = 1,
-                Status = 1,
+                //RequiredInterpreterLocation = 1,
+                //Status = 1,
                 //end hardcodes
-                CustomerOrganisationId = customerOrganisationId,
-                CreatedBy = createdBy,
-                CreatedDate = DateTime.Now,
-                LanguageId = Language,
-                AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime,
-                AssignentType = AssignentType,
-                RegionId = RegionId,
-                CustomerReferenceNumber = CustomerReferenceNumber,
-                StartDateTime = StartDateTime,
-                EndDateTime = EndDateTime,
-                Description = Description,
-                UnitName = UnitName,
-                Street = LocationStreet,
-                ZipCode = LocationZipCode,
-                City = LocationCity,
-                RequiredCompetenceLevel = RequiredCompetenceLevel,
+                //CustomerOrganisationId = customerOrganisationId,
+                //CreatedBy = createdBy,
+                //CreatedDate = DateTime.Now,
+                OrderId = order.OrderId,
+                LanguageId = order.LanguageId,
+                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AssignentType = order.AssignentType,
+                RegionId = order.RegionId,
+                CustomerReferenceNumber = order.CustomerReferenceNumber,
+                StartDateTime = order.StartDateTime,
+                EndDateTime = order.EndDateTime,
+                Description = order.Description,
+                UnitName = order.UnitName,
+                LocationStreet = order.Street,
+                LocationZipCode = order.ZipCode,
+                LocationCity = order.City,
+                RequiredCompetenceLevel = order.RequiredCompetenceLevel,
             };
-            return Order.Save(dbContext, order);
         }
+
         #endregion
     }
 }
