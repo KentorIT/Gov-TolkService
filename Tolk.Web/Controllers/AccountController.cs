@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
@@ -22,19 +23,25 @@ namespace Tolk.Web.Controllers
     {
         private readonly UserManager<AspNetUser> _userManager;
         private readonly SignInManager<AspNetUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
+        private readonly TolkDbContext _dbContext;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
             SignInManager<AspNetUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            TolkDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
             _logger = logger;
+            _dbContext = dbContext;
         }
 
         [TempData]
@@ -435,6 +442,76 @@ namespace Tolk.Web.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult CreateInitialUser()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateInitialUser(CreateInitialUserModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Explicit transaction to ensure both check and all updates
+                // are done atomically. The user and role managers call SaveChanges
+                // multiple times internally.
+                using (var transaction = _dbContext.Database.BeginTransaction())
+                {
+                    if (_dbContext.IsUserStoreInitialized)
+                    {
+                        _logger.LogWarning("Tried to CreateInitialUser even though users/roles exist in the database.");
+                        ModelState.AddModelError("", "Det finns redan anävndare/roller i databasen, den här operationen är inte tillgänglig.");
+                    }
+                    else
+                    {
+                        var user = new AspNetUser { UserName = model.Email, Email = model.Email };
+                        var result = await _userManager.CreateAsync(user, model.Password);
+                        if (result.Succeeded)
+                        {
+                            _logger.LogInformation("Created initial user account {0}", user.UserName);
+
+                            // Gör array av roller, loopa över, kolla result för varje.
+
+                            var roles = new IdentityRole[]
+                            {
+                                new IdentityRole(Roles.Admin){Id = "TolkAdminRole"},
+                                new IdentityRole(Roles.Impersonator){Id = "TolkImpersonatorRole"},
+                                new IdentityRole(Roles.Customer){ Id = "TolkCustomerRole"},
+                                new IdentityRole(Roles.Broker){ Id = "TolkBrokerRole"},
+                                new IdentityRole(Roles.Interpreter){Id ="TolkInterpreterRole"}
+                            };
+
+                            foreach(var role in roles)
+                            {
+                                result = await _roleManager.CreateAsync(role);
+                                if (!result.Succeeded)
+                                {
+                                    break;
+                                }
+                                _logger.LogInformation("Created role {0}.", role.Name);
+                            }
+
+                            if(result.Succeeded)
+                            {
+                                result = await _userManager.AddToRolesAsync(user, new[] { Roles.Admin, Roles.Impersonator });
+                                if(result.Succeeded)
+                                {
+                                    _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
+                                    transaction.Commit();
+                                    return RedirectToAction("Index", "Home");
+                                }
+                            }
+                        }
+                        AddErrors(result);
+                    }
+                }
+            }
+            return View(model);
         }
 
         #region Helpers

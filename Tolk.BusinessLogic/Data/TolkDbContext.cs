@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Data
@@ -35,5 +36,20 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<OrderRequirement> OrderRequirements { get; set; }
 
         public DbSet<Order> Orders { get; set; }
+
+        public static bool isUserStoreInitialized = false;
+
+        public bool IsUserStoreInitialized
+        {
+            get
+            {
+                if(!isUserStoreInitialized)
+                {
+                    // If it is false, we want to check it for every single request.
+                    isUserStoreInitialized = Users.Count() != 0 || Roles.Count() != 0;
+                }
+                return isUserStoreInitialized;
+            }
+        }
     }
 }

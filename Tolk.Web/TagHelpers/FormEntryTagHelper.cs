@@ -30,6 +30,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeSelect = "select";
         private const string InputTypeDateTimeOffset = "datetime";
         private const string InputTypeText = "text";
+        private const string InputTypePassword = "password";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -59,6 +60,7 @@ namespace Tolk.Web.TagHelpers
                     }
                     break;
                 case null:
+                case InputTypePassword:
                 case InputTypeText:
                 case InputTypeDateTimeOffset:
                     if (Items != null)
@@ -67,7 +69,7 @@ namespace Tolk.Web.TagHelpers
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text. Omit type to get a default input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password. Omit type to get a default input.");
             }
         }
 
@@ -79,6 +81,10 @@ namespace Tolk.Web.TagHelpers
                     || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))
                 {
                     InputType = InputTypeDateTimeOffset;
+                }
+                if(For.ModelExplorer.Metadata.DataTypeName == "Password")
+                {
+                    InputType = InputTypePassword;
                 }
             }
         }
@@ -99,7 +105,12 @@ namespace Tolk.Web.TagHelpers
                         WriteValidation(writer);
                         break;
                     case InputTypeDateTimeOffset:
-                        WriteDateTimeOffset(writer);
+                        WriteDateTimeOffsetBlock(writer);
+                        break;
+                    case InputTypePassword:
+                        WriteLabel(writer);
+                        WritePassword(writer);
+                        WriteValidation(writer);
                         break;
                     default:
                         WriteLabel(writer);
@@ -136,7 +147,19 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private void WriteDateTimeOffset(TextWriter writer)
+        private void WritePassword(TextWriter writer)
+        {
+            var tagBuilder = _htmlGenerator.GeneratePassword(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                value: For.ModelExplorer.Model,
+                htmlAttributes: new { @class = "form-control" });
+
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteDateTimeOffsetBlock(TextWriter writer)
         {
             // First write a label
             writer.WriteLine($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}</label>");

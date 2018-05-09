@@ -1,0 +1,25 @@
+﻿@model CreateInitialUserModel
+@{
+    ViewData["Title"] = "Skapa användare";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Skapa användare</h2>
+        <p>
+            Databasen saknar användare, registrera en första administratörsanvändare nedan.
+        </p>
+
+        <form asp-action="CreateInitialUser" asp-controller="Account">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <form-entry asp-for="Email" />
+            <form-entry asp-for="Password" />
+            <form-entry asp-for="ConfirmPassword" />
+            <button type="submit" class="btn btn-default">Skapa användare</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
