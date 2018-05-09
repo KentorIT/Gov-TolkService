@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Data
                 .HasData(Region.Regions);
             builder.Entity<Order>()
             .Property(p => p.OrderNumber)
-            .HasComputedColumnSql("[OrderId] + 1000000");
+            .HasComputedColumnSql("[OrderId] + 10000000");
 
         }
 

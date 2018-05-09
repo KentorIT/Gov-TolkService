@@ -23,6 +23,9 @@ namespace Tolk.BusinessLogic.Entities
         //FK to AspNetUser
         public string CreatedBy { get; set; }
 
+        [ForeignKey(nameof(CreatedBy))]
+        public AspNetUser CreatedByUser { get; set; }
+
         //TODO: Make Enum and fk
         public int Status { get; set; }
 
