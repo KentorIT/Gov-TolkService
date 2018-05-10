@@ -27,6 +27,7 @@ namespace Tolk.Web.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
+        private readonly IUserClaimsPrincipalFactory<AspNetUser> _claimsFactory;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -34,7 +35,8 @@ namespace Tolk.Web.Controllers
             RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            TolkDbContext dbContext)
+            TolkDbContext dbContext,
+            IUserClaimsPrincipalFactory<AspNetUser> claimsFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -42,6 +44,7 @@ namespace Tolk.Web.Controllers
             _emailSender = emailSender;
             _logger = logger;
             _dbContext = dbContext;
+            _claimsFactory = claimsFactory;
         }
 
         [TempData]
@@ -479,11 +482,11 @@ namespace Tolk.Web.Controllers
 
                             var roles = new IdentityRole[]
                             {
-                                new IdentityRole(Roles.Admin){Id = "TolkAdminRole"},
-                                new IdentityRole(Roles.Impersonator){Id = "TolkImpersonatorRole"},
-                                new IdentityRole(Roles.Customer){ Id = "TolkCustomerRole"},
-                                new IdentityRole(Roles.Broker){ Id = "TolkBrokerRole"},
-                                new IdentityRole(Roles.Interpreter){Id ="TolkInterpreterRole"}
+                                new IdentityRole(Roles.Admin){Id = Roles.AdminRoleKey},
+                                new IdentityRole(Roles.Impersonator){Id = Roles.ImpersonatorKey},
+                                new IdentityRole(Roles.Customer){ Id = Roles.CustomerKey},
+                                new IdentityRole(Roles.Broker){ Id = Roles.BrokerKey},
+                                new IdentityRole(Roles.Interpreter){Id = Roles.InterpreterKey}
                             };
 
                             foreach(var role in roles)
@@ -512,6 +515,38 @@ namespace Tolk.Web.Controllers
                 }
             }
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.Impersonator)]
+        public async Task<IActionResult> Impersonate(ImpersonationViewModel model)
+        {
+            var user = _dbContext.Users.Single(u => u.Id == model.UserId);
+
+            var newPrincipal = await _claimsFactory.CreateAsync(user);
+
+            if(newPrincipal.IsInRole(Roles.Admin) && model.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                throw new InvalidOperationException("Cannot impersonate an admin user");
+            }
+
+            var newIdentity = newPrincipal.Identities.Single();
+
+            newIdentity.AddClaim(new Claim(TolkClaimTypes.ImpersonatedUserId, user.Id));
+            var nameId = newIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            newIdentity.RemoveClaim(nameId);
+
+            var name = newIdentity.FindFirst(ClaimTypes.Name);
+            newIdentity.RemoveClaim(name);
+            newIdentity.AddClaim(new Claim(ClaimTypes.Name, User.FindFirstValue(ClaimTypes.Name)));
+
+            newIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            newIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
+
+            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
+
+            return Redirect(model.ReturnUrl);
         }
 
         #region Helpers
