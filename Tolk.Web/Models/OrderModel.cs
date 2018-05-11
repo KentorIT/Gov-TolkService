@@ -63,26 +63,8 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public Order Save(TolkDbContext dbContext, string createdBy, int customerOrganisationId)
+        public Order UpdateOrder(Order order)
         {
-            Order order;
-            if (OrderId.HasValue)
-            {
-                order = dbContext.Orders.Single(o => o.OrderId == OrderId);
-                //Modified by, Modified date
-            }
-            else
-            {
-                order = new Order
-                {
-                    //Hardcodes
-                    RequiredInterpreterLocation = 1,
-                    Status = 1,
-                    CreatedBy = createdBy,
-                    CreatedDate = DateTime.Now,
-                    CustomerOrganisationId = customerOrganisationId
-                };
-            }
             order.LanguageId = LanguageId;
             order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
             order.AssignentType = AssignentType;
@@ -96,22 +78,13 @@ namespace Tolk.Web.Models
             order.ZipCode = LocationZipCode;
             order.City = LocationCity;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
-            return Order.Save(dbContext, order, !OrderId.HasValue);
+            return order;
         }
 
-
-        public static OrderModel Load(TolkDbContext dbContext, int id, string createdBy, int customerOrganisationId)
+        public static OrderModel GetModelFromOrder(Order order)
         {
-            var order = dbContext.Orders.Single(o => o.OrderId == id);
             return new OrderModel
             {
-                //Hardcodes
-                //RequiredInterpreterLocation = 1,
-                //Status = 1,
-                //end hardcodes
-                //CustomerOrganisationId = customerOrganisationId,
-                //CreatedBy = createdBy,
-                //CreatedDate = DateTime.Now,
                 OrderId = order.OrderId,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
@@ -127,6 +100,7 @@ namespace Tolk.Web.Models
                 LocationCity = order.City,
                 RequiredCompetenceLevel = order.RequiredCompetenceLevel,
             };
+
         }
 
         #endregion

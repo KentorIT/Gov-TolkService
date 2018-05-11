@@ -15,6 +15,8 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(20)]
         public string Name { get; set; }
 
+        public List<BrokerRegion> BrokerRegions { get; set; }
+
         public static Region[] Regions { get; } = new[]
         {
                 new Region { RegionId = 1, Name = "Stockholm" },

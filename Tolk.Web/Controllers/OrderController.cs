@@ -4,6 +4,9 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
+using System;
+using System.Security.Claims;
 
 namespace Tolk.Web.Controllers
 {
@@ -21,8 +24,9 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Edit(int id)
         {
+            var order = _dbContext.Orders.Single(o => o.OrderId == id);
             //Get order model from db
-            return View(OrderModel.Load(_dbContext, id, "x", 1));
+            return View(OrderModel.GetModelFromOrder(order));
         }
 
         public IActionResult Add()
@@ -36,11 +40,34 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var order = model.Save(_dbContext, _userManager.GetUserId(User), 1);
-                if (order != null)
+                Order order;
+                if (model.OrderId.HasValue)
                 {
-                    return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
+                    order = _dbContext.Orders.Single(o => o.OrderId == model.OrderId);
+                    //Modified by, Modified date, impersonator modifier
                 }
+                else
+                {
+                    order = new Order
+                    {
+                        //Hardcodes
+                        RequiredInterpreterLocation = 1,
+                        Status = 1,
+                        CreatedBy = _userManager.GetUserId(User),
+                        CreatedDate = DateTime.Now,
+                        //Add as claim!!
+                        CustomerOrganisationId = 1,
+                        ImpersonatingCreator = User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)
+                    };
+                }
+
+                order = model.UpdateOrder(order);
+                if (!model.OrderId.HasValue)
+                {
+                    Order.CreateRequest(_dbContext, order);
+                }
+                //TODO: If this is a edit, something else should happen to the requests in some way...
+                return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
             }
             return View("Edit", model);
         }

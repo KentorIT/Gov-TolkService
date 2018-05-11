@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -98,22 +99,34 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string Description { get; set; }
 
+        public string ImpersonatingCreator { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingCreator))]
+        public AspNetUser CreatedByImpersonator { get; set; }
+
         #endregion
 
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public static Order Save(TolkDbContext dbContext, Order order, bool isNew)
+        public static Request CreateRequest(TolkDbContext dbContext, Order order, int rank = 1)
         {
-            if (isNew)
+            //Get Ranking from Region
+            var now = DateTime.Now;
+            var ranking = dbContext.Regions
+                .Include(r => r.BrokerRegions)
+                .ThenInclude(br => br.Ranking)
+                .Single(r => r.RegionId == order.RegionId)
+                .BrokerRegions
+                .Single(br => br.Ranking.Rank == rank && br.Ranking.StartDate <= now && br.Ranking.EndDate >= now).Ranking;
+            var request = new Request
             {
-                dbContext.Orders.Add(order);
-            }
-
-            //TODO: Add Request?
-            dbContext.SaveChanges();
-            return order;
+                RankingId = ranking.RankingId,
+                Order = order,
+            };
+            dbContext.Requests.Add(request);
+            return request;
         }
 
         /* remaining fields
