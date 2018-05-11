@@ -73,10 +73,10 @@ namespace Tolk.BusinessLogic.Entities
 
         #region order information
 
-        public int LanguageId{ get; set; }
+        public int LanguageId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
-        public Language Language {get;set;}
+        public Language Language { get; set; }
 
         //TODO: Make Enum and fk
         public int AssignentType { get; set; }
@@ -100,25 +100,19 @@ namespace Tolk.BusinessLogic.Entities
 
         #endregion
 
+        public List<Request> Requests { get; set; }
+
         public List<OrderRequirement> Requirements { get; set; }
 
-        public static Order Save(TolkDbContext dbContext, Order order, bool isNew )
+        public static Order Save(TolkDbContext dbContext, Order order, bool isNew)
         {
-            try
+            if (isNew)
             {
-                if (isNew)
-                {
-                    dbContext.Orders.Add(order);
-                }
-                
-                //TODO: Add Request?
-                dbContext.SaveChanges();
+                dbContext.Orders.Add(order);
             }
-            catch (DbUpdateException e)
-            {
-                //ADD LOG
-                return null;
-            }
+
+            //TODO: Add Request?
+            dbContext.SaveChanges();
             return order;
         }
 

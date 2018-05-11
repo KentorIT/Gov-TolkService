@@ -37,6 +37,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<Order> Orders { get; set; }
 
+        public DbSet<Request> Requests { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
