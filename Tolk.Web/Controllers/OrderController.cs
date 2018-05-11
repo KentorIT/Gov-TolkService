@@ -3,9 +3,11 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize(Roles = Roles.Customer)]
     public class OrderController : Controller
     {
         private readonly TolkDbContext _dbContext;

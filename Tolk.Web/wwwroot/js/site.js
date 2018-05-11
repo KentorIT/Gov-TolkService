@@ -10,3 +10,8 @@ $('.datepicker').datepicker(({
 $('.date .input-group-addon').click(function () {
     $(this).prev().datepicker('show');
 })
+
+$('#impersonation-select').change(function () {
+    $('#impersonation-returnurl').val(window.location);
+    $("#impersonation-form").submit();
+})

@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -13,11 +16,16 @@ namespace Tolk.Web.Services
     {
         private readonly IMemoryCache _cache;
         private readonly TolkDbContext _dbContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SelectListService(IMemoryCache cache, TolkDbContext dbContext)
+        public SelectListService(
+            IMemoryCache cache,
+            TolkDbContext dbContext,
+            IHttpContextAccessor httpContextAccessor)
         {
             _cache = cache;
             _dbContext = dbContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public static IEnumerable<SelectListItem> Regions { get; } =
@@ -75,6 +83,39 @@ namespace Tolk.Web.Services
                 }
 
                 return items;
+            }
+        }
+
+        private const string impersonationTargets = nameof(impersonationTargets);
+
+        public IEnumerable<SelectListItem> ImpersonationList
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                var impersonatedUserId = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatedUserId);
+                yield return new SelectListItem()
+                {
+                    Text = currentUser.Identity.Name,
+                    Value = currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
+                    Selected = impersonatedUserId == null
+                };
+                IEnumerable<SelectListItem> items;
+                if(!_cache.TryGetValue(impersonationTargets, out items))
+                {
+                    items = _dbContext.Users
+                        .Where(u => !u.Roles.Select(r => r.RoleId).Contains(Roles.AdminRoleKey))
+                        .Select(u => new SelectListItem
+                    {
+                        Text = u.UserName,
+                        Value = u.Id,
+                        Selected = impersonatedUserId == u.Id,
+                    }).ToList();
+                }
+                foreach(var item in items)
+                {
+                    yield return item;
+                }
             }
         }
     }

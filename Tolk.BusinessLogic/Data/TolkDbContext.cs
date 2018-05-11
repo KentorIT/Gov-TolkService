@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
@@ -21,10 +22,16 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<Region>()
                 .HasData(Region.Regions);
+
             builder.Entity<Order>()
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("[OrderId] + 10000000");
 
+            builder.Entity<IdentityUserRole<string>>()
+                .HasOne<AspNetUser>()
+                .WithMany(u => u.Roles)
+                .HasForeignKey(iur => iur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Region> Regions { get; set; }
