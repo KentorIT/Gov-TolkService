@@ -11,5 +11,8 @@ namespace Tolk.BusinessLogic.Entities
     public class AspNetUser : IdentityUser
     {
         public List<IdentityUserRole<string>> Roles { get; set; }
+
+        public UserBroker Broker { get; set; }
+        public UserCustomerOrganisation CustomerOrganisation { get; set; }
     }
 }

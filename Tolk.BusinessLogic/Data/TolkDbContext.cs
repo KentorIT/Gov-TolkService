@@ -41,6 +41,12 @@ namespace Tolk.BusinessLogic.Data
 
             ////Build many to many connection Interpreters <-> BrokerRegions
             builder.Entity<InterpreterBrokerRegion>().HasKey(t => new { t.BrokerRegionId, t.InterpreterId});
+
+            //////Build many to many connection Users <-> CustomerOrganisations
+            //builder.Entity<UserCustomerOrganisation>().HasKey(t => new { t.UserId, t.CustomerOrganisationId});
+
+            //////Build many to many connection Users <-> Brokers
+            //builder.Entity<UserBroker>().HasKey(t => new { t.UserId, t.BrokerId });
         }
 
         public DbSet<Region> Regions { get; set; }
