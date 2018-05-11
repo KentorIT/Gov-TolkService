@@ -533,15 +533,13 @@ namespace Tolk.Web.Controllers
 
             var newIdentity = newPrincipal.Identities.Single();
 
-            newIdentity.AddClaim(new Claim(TolkClaimTypes.ImpersonatedUserId, user.Id));
-            var nameId = newIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            newIdentity.RemoveClaim(nameId);
+            newIdentity.AddClaim(new Claim(TolkClaimTypes.ImpersonatingUserId, User.FindFirstValue(ClaimTypes.NameIdentifier)));
 
             var name = newIdentity.FindFirst(ClaimTypes.Name);
             newIdentity.RemoveClaim(name);
+            //TODO: Add text here stating that this is an impersonation!
             newIdentity.AddClaim(new Claim(ClaimTypes.Name, User.FindFirstValue(ClaimTypes.Name)));
 
-            newIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, User.FindFirstValue(ClaimTypes.NameIdentifier)));
             newIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
 
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);

@@ -93,11 +93,11 @@ namespace Tolk.Web.Services
             get
             {
                 var currentUser = _httpContextAccessor.HttpContext.User;
-                var impersonatedUserId = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatedUserId);
+                var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier): null;
                 yield return new SelectListItem()
                 {
                     Text = currentUser.Identity.Name,
-                    Value = currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
+                    Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId),
                     Selected = impersonatedUserId == null
                 };
                 IEnumerable<SelectListItem> items;

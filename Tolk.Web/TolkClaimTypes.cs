@@ -7,6 +7,6 @@ namespace Tolk.Web
 {
     public static class TolkClaimTypes
     {
-        public const string ImpersonatedUserId = nameof(ImpersonatedUserId);
+        public const string ImpersonatingUserId = nameof(ImpersonatingUserId);
     }
 }
