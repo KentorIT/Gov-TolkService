@@ -24,6 +24,26 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 
+        [MaxLength(1000)]
+        public string BrokerMessage { get; set; }
+
+        public string InterpreterId { get; set; }
+
+        [ForeignKey(nameof(InterpreterId))]
+        public AspNetUser Interpreter { get; set; }
+
+        public DateTimeOffset? ModifiedDate { get; set; }
+
+        public string ModifiedBy { get; set; }
+
+        [ForeignKey(nameof(ModifiedBy))]
+        public AspNetUser ModifyUser { get; set; }
+
+        public string ImpersonatingModifier { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingModifier))]
+        public AspNetUser ModifiedByImpersonator { get; set; }
+
         #endregion
     }
 }

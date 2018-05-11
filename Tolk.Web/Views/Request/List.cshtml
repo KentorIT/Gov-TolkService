@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Tolk.Web.Models.RequestListItemModel>
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "List requests";
+}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Inkomna förfrågningar</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>AvropsID</th>
+                    <th>Region</th>
+                    <th>Kund</th>
+                    <th>Språk</th>
+                    <th>Start</th>
+                    <th>Slut</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                <tr data-row-id="@item.RequestId">
+                    <td>@item.OrderNumber</td>
+                    <td>@item.RegionName</td>
+                    <td>@item.CustomerName</td>
+                    <td>@item.Language</td>
+                    <td>@item.Start.ToString("yyyy-MM-dd hh:mm")</td>
+                    <td>@item.End.ToString("yyyy-MM-dd hh:mm")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Request/List.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/List.min.js" asp-append-version="true"></script>
+    </environment>
+}

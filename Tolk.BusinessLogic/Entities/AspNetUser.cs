@@ -14,5 +14,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public UserBroker Broker { get; set; }
         public UserCustomerOrganisation CustomerOrganisation { get; set; }
+
+        public List<InterpreterBrokerRegion> BrokerRegions { get; set; }
     }
 }

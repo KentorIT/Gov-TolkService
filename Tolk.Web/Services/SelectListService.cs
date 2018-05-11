@@ -93,7 +93,7 @@ namespace Tolk.Web.Services
             get
             {
                 var currentUser = _httpContextAccessor.HttpContext.User;
-                var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier): null;
+                var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier) : null;
                 yield return new SelectListItem()
                 {
                     Text = currentUser.Identity.Name,
@@ -101,22 +101,32 @@ namespace Tolk.Web.Services
                     Selected = impersonatedUserId == null
                 };
                 IEnumerable<SelectListItem> items;
-                if(!_cache.TryGetValue(impersonationTargets, out items))
+                if (!_cache.TryGetValue(impersonationTargets, out items))
                 {
                     items = _dbContext.Users
                         .Where(u => !u.Roles.Select(r => r.RoleId).Contains(Roles.AdminRoleKey))
                         .Select(u => new SelectListItem
-                    {
-                        Text = u.UserName,
-                        Value = u.Id,
-                        Selected = impersonatedUserId == u.Id,
-                    }).ToList();
+                        {
+                            Text = u.UserName,
+                            Value = u.Id,
+                            Selected = impersonatedUserId == u.Id,
+                        }).ToList();
                 }
-                foreach(var item in items)
+                foreach (var item in items)
                 {
                     yield return item;
                 }
             }
+        }
+
+        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
+        {
+           return _dbContext.Users.Where(u => u.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
+           .Select(u => new SelectListItem
+            {
+                Value = u.Id,
+                Text = u.UserName
+           });
         }
     }
 }

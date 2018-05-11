@@ -27,9 +27,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @if(User.IsInRole(Roles.Customer))
+                @if (User.IsInRole(Roles.Customer))
                 {
                     <a asp-area="" asp-controller="Order" asp-action="Add" class="navbar-brand">Avropa tolk</a>
+                }
+                @if (User.IsInRole(Roles.Broker))
+                {
+                    <a asp-area="" asp-controller="Request" asp-action="List" class="navbar-brand">Inkomna förfrågningar</a>
                 }
             </div>
             <div class="navbar-collapse collapse">
