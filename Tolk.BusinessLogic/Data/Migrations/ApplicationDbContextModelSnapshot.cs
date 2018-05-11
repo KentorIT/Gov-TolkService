@@ -276,6 +276,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTimeOffset>("EndDateTime");
 
+                    b.Property<string>("ImpersonatingCreator");
+
                     b.Property<int>("LanguageId");
 
                     b.Property<int>("OrderNumber")
@@ -322,6 +324,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("CustomerOrganisationId");
+
+                    b.HasIndex("ImpersonatingCreator");
 
                     b.HasIndex("LanguageId");
 
@@ -414,9 +418,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestId")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(100);
 
                     b.Property<int>("OrderId");
 
@@ -514,7 +515,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
-                        .WithMany()
+                        .WithMany("BrokerRegions")
                         .HasForeignKey("RegionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -542,6 +543,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreator");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Language", "Language")
                         .WithMany()
