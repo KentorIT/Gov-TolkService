@@ -11,12 +11,11 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
 
-        //[MaxLength(100)]
-        //public string Description { get; set; }
-
         #region foreign keys
 
         public int RankingId { get; set; }
+
+        public RequestStatus Status { get; set; }
 
         public Ranking Ranking { get; set; }
 
