@@ -10,9 +10,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180511055628_InterpreterBrokerRegion")]
+    partial class InterpreterBrokerRegion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,7 +198,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("BrokerId");
 
+                    b.Property<DateTime>("EndDate");
+
                     b.Property<int>("RegionId");
+
+                    b.Property<DateTime>("StartDate");
 
                     b.HasKey("BrokerRegionId");
 
@@ -358,11 +363,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("BrokerRegionId");
 
-                    b.Property<DateTimeOffset>("EndDate");
-
                     b.Property<int>("Rank");
-
-                    b.Property<DateTimeOffset>("StartDate");
 
                     b.HasKey("RankingId");
 

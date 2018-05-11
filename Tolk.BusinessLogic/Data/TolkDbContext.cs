@@ -38,6 +38,9 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany(r => r.Requests)
                 .HasForeignKey(r => r.RankingId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            ////Build many to many connection Interpreters <-> BrokerRegions
+            builder.Entity<InterpreterBrokerRegion>().HasKey(t => new { t.BrokerRegionId, t.InterpreterId});
         }
 
         public DbSet<Region> Regions { get; set; }

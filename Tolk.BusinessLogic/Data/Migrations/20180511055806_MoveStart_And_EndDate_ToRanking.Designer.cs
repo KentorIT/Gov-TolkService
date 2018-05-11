@@ -10,9 +10,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180511055806_MoveStart_And_EndDate_ToRanking")]
+    partial class MoveStart_And_EndDate_ToRanking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
