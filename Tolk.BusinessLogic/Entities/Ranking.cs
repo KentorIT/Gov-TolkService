@@ -13,11 +13,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public int Rank { get; set; }
 
+        [Column(TypeName = "decimal(5, 2)")]
         public decimal BrokerFee { get; set; }
-
-        public DateTime StartDate { get; set; }
-
-        public DateTime EndDate { get; set; }
 
         #region foreign keys
 
@@ -25,6 +22,12 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(BrokerRegionId))]
         public BrokerRegion BrokerRegion { get; set; }
+
+        #endregion
+
+        #region Navigation properties
+
+        public List<Request> Requests { get; set; }
 
         #endregion
     }

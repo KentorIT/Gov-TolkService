@@ -18,7 +18,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int RankingId { get; set; }
 
-        [ForeignKey(nameof(RankingId))]
+        //[ForeignKey(nameof(RankingId))]
         public Ranking Ranking { get; set; }
 
         public int OrderId { get; set; }

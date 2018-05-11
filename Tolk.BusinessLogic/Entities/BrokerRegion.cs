@@ -11,6 +11,10 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int BrokerRegionId { get; set; }
 
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
         #region foreign keys
 
         public int RegionId { get; set; }
@@ -22,6 +26,8 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
+
+        public Ranking Ranking { get; set; }
 
         #endregion
     }

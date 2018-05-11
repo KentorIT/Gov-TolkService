@@ -32,6 +32,12 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany(u => u.Roles)
                 .HasForeignKey(iur => iur.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Request>()
+                .HasOne<Ranking>()
+                .WithMany(r => r.Requests)
+                .HasForeignKey(r => r.RankingId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -45,6 +51,12 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Order> Orders { get; set; }
 
         public DbSet<Request> Requests { get; set; }
+
+        public DbSet<Broker> Brokers { get; set; }
+
+        public DbSet<BrokerRegion> BrokerRegions { get; set; }
+
+        public DbSet<Ranking> Rankings { get; set; }
 
         public static bool isUserStoreInitialized = false;
 

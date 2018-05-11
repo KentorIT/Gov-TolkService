@@ -14,5 +14,11 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         [MaxLength(255)]
         public string Name { get; set; }
+
+        #region navigation properites
+
+        public List<BrokerRegion> BrokerRegions { get; set; }
+
+        #endregion
     }
 }
