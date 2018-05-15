@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Request>()
-                .HasOne<Ranking>()
+                .HasOne(r => r.Ranking)
                 .WithMany(r => r.Requests)
                 .HasForeignKey(r => r.RankingId)
                 .OnDelete(DeleteBehavior.Restrict);
