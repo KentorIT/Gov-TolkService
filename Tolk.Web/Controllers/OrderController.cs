@@ -66,6 +66,7 @@ namespace Tolk.Web.Controllers
                 {
                     Order.CreateRequest(_dbContext, order);
                 }
+                _dbContext.SaveChanges();
                 //TODO: If this is a edit, something else should happen to the requests in some way...
                 return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
             }
