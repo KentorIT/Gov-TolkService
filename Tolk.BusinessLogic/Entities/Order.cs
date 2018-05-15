@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -27,8 +28,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
 
-        //TODO: Make Enum and fk
-        public int Status { get; set; }
+        public OrderStatus Status { get; set; }
 
         //FK to CustomerOrganisation
         public int CustomerOrganisationId { get; set; }
@@ -124,6 +124,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 RankingId = ranking.RankingId,
                 Order = order,
+                Status = RequestStatus.Created
             };
             dbContext.Requests.Add(request);
             return request;

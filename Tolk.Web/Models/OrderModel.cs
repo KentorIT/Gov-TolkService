@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
@@ -61,6 +62,34 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
+        #region details
+
+        [Display(Name = "Status")]
+        public OrderStatus Status { get; set; }
+
+        [Display(Name = "AvropsID")]
+        public string OrderNumber { get; set; }
+
+        [Display(Name = "Region")]
+        public string RegionName { get; set; }
+
+        [Display(Name = "Språk")]
+        public string LanguageName { get; set; }
+
+        [Display(Name = "Skapad")]
+        public DateTime CreatedDate { get; set; }
+
+        [Display(Name = "Skapad av")]
+        public string CreatedBy { get; set; }
+
+        [Display(Name = "Kund")]
+        public string CustomerName { get; set; }
+        //Current Broker
+        //Calculated price
+        //Request information
+
+        #endregion
+
         #region methods
 
         public Order UpdateOrder(Order order)
@@ -86,6 +115,12 @@ namespace Tolk.Web.Models
             return new OrderModel
             {
                 OrderId = order.OrderId,
+                OrderNumber = order.OrderNumber.ToString(),
+                CreatedBy = order.CreatedByUser?.NormalizedEmail,
+                CreatedDate = order.CreatedDate,
+                CustomerName = order.CustomerOrganisation?.Name,
+                LanguageName = order.Language?.Name,
+                RegionName = order.Region?.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
                 AssignentType = order.AssignentType,
@@ -99,6 +134,7 @@ namespace Tolk.Web.Models
                 LocationZipCode = order.ZipCode,
                 LocationCity = order.City,
                 RequiredCompetenceLevel = order.RequiredCompetenceLevel,
+                Status = order.Status
             };
 
         }

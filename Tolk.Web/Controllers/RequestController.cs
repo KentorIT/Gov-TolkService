@@ -8,6 +8,7 @@ using System.Linq;
 using System;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Controllers
 {
@@ -71,6 +72,8 @@ namespace Tolk.Web.Controllers
                 request.ModifiedBy = _userManager.GetUserId(User);
                 request.ImpersonatingModifier = User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId);
                 request.InterpreterId = model.InterpreterId;
+                //TODO: This should differ depending on the incoming status.
+                request.Order.Status = OrderStatus.RequestResponded;
                 _dbContext.SaveChanges();
 
                 return Redirect($"~/Home/Index?message=Svar har skickats");

@@ -8,9 +8,12 @@ namespace Tolk.BusinessLogic.Entities
     {
         Created = 1,
         Received = 2,
-        Accepted = 3,
-        DeniedByBroker = 4,
-        DeniedByCreator = 5,
-        DeniedByTimeLimit = 6
+        SentToInterpreter = 3,
+        Accepted = 4,
+        Approved = 5,
+        DeniedByInterpreter = 6,
+        DeniedByBroker = 7,
+        DeniedByCreator = 8,
+        DeniedByTimeLimit = 9
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System;
 using System.Security.Claims;
+using Tolk.BusinessLogic.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Tolk.Web.Controllers
 {
@@ -20,6 +22,17 @@ namespace Tolk.Web.Controllers
         {
             _dbContext = dbContext;
             _userManager = userManager;
+        }
+
+        public IActionResult Details(int id)
+        {
+            //Get order model from db
+            return View(OrderModel.GetModelFromOrder(_dbContext.Orders
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.Region)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.Language)
+                .Single(o => o.OrderId == id)));
         }
 
         public IActionResult Edit(int id)
@@ -52,7 +65,7 @@ namespace Tolk.Web.Controllers
                     {
                         //Hardcodes
                         RequiredInterpreterLocation = 1,
-                        Status = 1,
+                        Status = OrderStatus.Requested,
                         CreatedBy = _userManager.GetUserId(User),
                         CreatedDate = DateTime.Now,
                         //Add as claim!!
@@ -68,7 +81,7 @@ namespace Tolk.Web.Controllers
                 }
                 _dbContext.SaveChanges();
                 //TODO: If this is a edit, something else should happen to the requests in some way...
-                return Redirect($"~/Home/Index?message=Avropet%20har%20skickats. Sparades med Ordernummer: {order.OrderNumber}");
+                return View("Details", OrderModel.GetModelFromOrder(order));
             }
             return View("Edit", model);
         }
