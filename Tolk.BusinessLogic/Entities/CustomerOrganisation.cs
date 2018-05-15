@@ -12,5 +12,7 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         [MaxLength(20)]
         public string Name { get; set; }
+
+        public List<AspNetUser> Users { get; set; }
     }
 }

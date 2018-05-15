@@ -34,16 +34,6 @@ Insert Rankings(BrokerRegionId, BrokerFee, Rank, StartDate, EndDate)
 Select BrokerRegionId, 14, 3, '19990101', '29990101' from BrokerRegions
 Where BrokerId = 3
 
-Insert UserBroker(UserId, BrokerId) 
-Select 'e5d21235-232a-43bd-9a64-8ab6cf6e15e3', 1
-
-Insert UserCustomerOrganisation(UserId, CustomerOrganisationId)
-Select '3202981c-166d-46b2-9d3d-894d24e07320', 1
-
-Insert UserCustomerOrganisation(UserId, CustomerOrganisationId)
-Select '7e1a3d87-ca74-43b5-9739-b5530fd18732', 2
-
-
 -- Connect users (frida to Förmedling) 
 -- frida 
 -- Add users for all customers

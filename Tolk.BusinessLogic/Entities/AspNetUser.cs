@@ -12,8 +12,15 @@ namespace Tolk.BusinessLogic.Entities
     {
         public List<IdentityUserRole<string>> Roles { get; set; }
 
-        public UserBroker Broker { get; set; }
-        public UserCustomerOrganisation CustomerOrganisation { get; set; }
+        [ForeignKey(nameof(BrokerId))]
+        public Broker Broker { get; set; }
+    
+        public int? BrokerId { get; set; }
+
+        [ForeignKey(nameof(CustomerOrganisationId))]
+        public CustomerOrganisation CustomerOrganisation { get; set; }
+
+        public int? CustomerOrganisationId { get; set; }
 
         public List<InterpreterBrokerRegion> BrokerRegions { get; set; }
     }
