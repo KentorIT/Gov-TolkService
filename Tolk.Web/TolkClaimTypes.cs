@@ -9,8 +9,11 @@ namespace Tolk.Web
     {
         public const string ImpersonatingUserId = nameof(ImpersonatingUserId);
 
+        public const string ImpersonatingUserName = nameof(ImpersonatingUserName);
+
         public const string CustomerOrganisationId = nameof(CustomerOrganisationId);
 
         public const string BrokerId = nameof(BrokerId);
+
     }
 }

@@ -522,22 +522,27 @@ namespace Tolk.Web.Controllers
             var user = _dbContext.Users.Single(u => u.Id == model.UserId);
 
             var newPrincipal = await _claimsFactory.CreateAsync(user);
-
-            if(newPrincipal.IsInRole(Roles.Admin) && model.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            
+            if(model.UserId != User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
             {
-                throw new InvalidOperationException("Cannot impersonate an admin user");
+                if (newPrincipal.IsInRole(Roles.Admin))
+                {
+                    throw new InvalidOperationException("Cannot impersonate an admin user");
+                }
+
+                var newIdentity = newPrincipal.Identities.Single();
+
+                newIdentity.AddClaim(new Claim(
+                    TolkClaimTypes.ImpersonatingUserId, 
+                    User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? User.FindFirstValue(ClaimTypes.NameIdentifier)));
+
+                newIdentity.AddClaim(new Claim(
+                    TolkClaimTypes.ImpersonatingUserName,
+                    User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? User.FindFirstValue(ClaimTypes.Name)));
+
+                newIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
             }
 
-            var newIdentity = newPrincipal.Identities.Single();
-
-            newIdentity.AddClaim(new Claim(TolkClaimTypes.ImpersonatingUserId, User.FindFirstValue(ClaimTypes.NameIdentifier)));
-
-            var name = newIdentity.FindFirst(ClaimTypes.Name);
-            newIdentity.RemoveClaim(name);
-            //TODO: Add text here stating that this is an impersonation!
-            newIdentity.AddClaim(new Claim(ClaimTypes.Name, User.FindFirstValue(ClaimTypes.Name)));
-
-            newIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
 
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
 

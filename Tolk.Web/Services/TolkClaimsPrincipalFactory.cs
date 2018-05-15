@@ -11,15 +11,16 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Services
 {
-    public class TolkClaimsPrincipalFactory : UserClaimsPrincipalFactory<AspNetUser>
+    public class TolkClaimsPrincipalFactory : UserClaimsPrincipalFactory<AspNetUser, IdentityRole>
     {
         private TolkDbContext _dbContext;
 
         public TolkClaimsPrincipalFactory(
             UserManager<AspNetUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IOptions<IdentityOptions> optionsAccessor,
             TolkDbContext dbContext) 
-            : base(userManager, optionsAccessor)
+            : base(userManager, roleManager, optionsAccessor)
         {
             _dbContext = dbContext;
         }
@@ -44,9 +45,10 @@ namespace Tolk.Web.Services
 
     public static class TolkClaimsPrincipalFactoryExtension
     {
-       public static void AddTolkClaimsPrincipalFactory(this IServiceCollection services)
+       public static void SetTolkClaimsPrincipalFactory(this IServiceCollection services)
        {
-
+            services.Remove(services.Single(sd => sd.ServiceType == typeof(IUserClaimsPrincipalFactory<AspNetUser>)));
+            services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
        }
     }
 }

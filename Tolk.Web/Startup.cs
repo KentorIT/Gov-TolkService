@@ -33,10 +33,13 @@ namespace Tolk.Web
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
-            services.AddTolkClaimsPrincipalFactory();
+            services.SetTolkClaimsPrincipalFactory();
 
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
+
+            services.RegisterTolkAuthorization();
+            services.SetTolkClaimsPrincipalFactory();
 
             services.AddMvc(opt =>
             {
