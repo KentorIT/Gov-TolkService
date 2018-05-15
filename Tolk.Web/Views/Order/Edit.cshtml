@@ -2,12 +2,12 @@
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Avropa tolk";
 }
 
 <div class="row">
     <div class="col-md-8">
-        <h2>Avropa tolk</h2>
+        <h2>@ViewData["Title"]</h2>
         <form method="post">
             <input asp-for="OrderId" type="hidden" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
