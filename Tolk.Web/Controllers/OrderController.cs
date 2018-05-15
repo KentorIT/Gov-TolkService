@@ -8,11 +8,12 @@ using System.Linq;
 using System;
 using System.Security.Claims;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.Customer)]
+    [Authorize(Policy = Policies.Customer)]
     public class OrderController : Controller
     {
         private readonly TolkDbContext _dbContext;

@@ -484,9 +484,6 @@ namespace Tolk.Web.Controllers
                             {
                                 new IdentityRole(Roles.Admin){Id = Roles.AdminRoleKey},
                                 new IdentityRole(Roles.Impersonator){Id = Roles.ImpersonatorKey},
-                                new IdentityRole(Roles.Customer){ Id = Roles.CustomerKey},
-                                new IdentityRole(Roles.Broker){ Id = Roles.BrokerKey},
-                                new IdentityRole(Roles.Interpreter){Id = Roles.InterpreterKey}
                             };
 
                             foreach(var role in roles)

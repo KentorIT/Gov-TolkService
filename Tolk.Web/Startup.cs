@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Tolk.Web.Services;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using System.Linq;
 
 namespace Tolk.Web
 {
