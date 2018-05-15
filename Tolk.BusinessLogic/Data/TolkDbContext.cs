@@ -61,6 +61,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<Ranking> Rankings { get; set; }
 
+        public DbSet<PriceListRow> PriceListRows { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
