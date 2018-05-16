@@ -15,13 +15,14 @@ namespace Tolk.BusinessLogic.Utilities
 
             return value == null ? string.Empty : enumType.GetMember(value.ToString()).GetEnumDescription();
         }
-            /// <summary>
-            /// Gets the descriptive text of a nullable enum value.
-            /// </summary>
-            /// <typeparam name="TEnum">Type of the enum.</typeparam>
-            /// <param name="value">Enum value.</param>
-            /// <returns>Description string.</returns>
-            public static string GetDescription<TEnum>(TEnum? value) where TEnum : struct
+
+        /// <summary>
+        /// Gets the descriptive text of a nullable enum value.
+        /// </summary>
+        /// <typeparam name="TEnum">Type of the enum.</typeparam>
+        /// <param name="value">Enum value.</param>
+        /// <returns>Description string.</returns>
+        public static string GetDescription<TEnum>(TEnum? value) where TEnum : struct
         {
             if (value.HasValue)
             {
@@ -44,6 +45,26 @@ namespace Tolk.BusinessLogic.Utilities
                 description = value.ToString();
             }
             return description;
+        }
+        /// <summary>
+        /// Returns the set parent of type TEnumParent
+        /// </summary>
+        public static TEnumParent Parent<TEnum, TEnumParent>(TEnum value)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            var attributes = type.GetMember(value.ToString()).Single().GetCustomAttributes(false);
+
+            var property = attributes.OfType<ParentAttribute>().SingleOrDefault();
+            if (property != null)
+            {
+                return (TEnumParent)property.Parent;
+            }
+            else
+            {
+                return default(TEnumParent);
+            }
         }
 
         private static string GetEnumDescription(this IEnumerable<MemberInfo> member)

@@ -84,8 +84,13 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Kund")]
         public string CustomerName { get; set; }
+
+        [Display(Name = "Förmedling")]
+        public string BrokerName { get; set; }
+
+        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB")]
+        public decimal CalculatedPrice { get; set; }
         //Current Broker
-        //Calculated price
         //Request information
 
         #endregion
