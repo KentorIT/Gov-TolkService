@@ -8,14 +8,16 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class InterpreterBrokerRegion
     {
-        public int BrokerRegionId { get; set; }
+        public int BrokerId { get; set; }
 
+        public int RegionId { get; set; }
+
+        [ForeignKey(nameof(BrokerId) + ", " + nameof(RegionId))]
         public BrokerRegion BrokerRegion { get; set; }
 
-        [Required]
-        public string InterpreterId { get; set; }
+        public int InterpreterId { get; set; }
 
-        public AspNetUser Interpreter { get; set; }
-
+        [ForeignKey(nameof(InterpreterId))]
+        public Interpreter Interpreter { get; set; }
     }
 }

@@ -22,6 +22,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? CustomerOrganisationId { get; set; }
 
-        public List<InterpreterBrokerRegion> BrokerRegions { get; set; }
+        public int? InterpreterId { get; set; }
+
+        [ForeignKey(nameof(InterpreterId))]
+        public Interpreter Interpreter { get; set; }
     }
 }

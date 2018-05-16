@@ -8,11 +8,6 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class BrokerRegion
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int BrokerRegionId { get; set; }
-
-        #region foreign keys
-
         public int RegionId { get; set; }
 
         [ForeignKey(nameof(RegionId))]
@@ -24,7 +19,5 @@ namespace Tolk.BusinessLogic.Entities
         public Broker Broker { get; set; }
 
         public Ranking Ranking { get; set; }
-
-        #endregion
     }
 }

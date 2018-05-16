@@ -121,11 +121,11 @@ namespace Tolk.Web.Services
 
         public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
         {
-           return _dbContext.Users.Where(u => u.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
-           .Select(u => new SelectListItem
+           return _dbContext.Interpreters.Where(i => i.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
+           .Select(i => new SelectListItem
             {
-                Value = u.Id,
-                Text = u.UserName
+                Value = i.InterpreterId.ToString(),
+                Text = i.User.UserName
            });
         }
     }

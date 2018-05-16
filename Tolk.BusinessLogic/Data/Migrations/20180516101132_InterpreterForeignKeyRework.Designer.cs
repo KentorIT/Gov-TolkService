@@ -10,9 +10,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180516101132_InterpreterForeignKeyRework")]
+    partial class InterpreterForeignKeyRework
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -472,7 +473,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ImpersonatingModifier");
 
-                    b.Property<int?>("InterpreterId");
+                    b.Property<string>("InterpreterId");
 
                     b.Property<string>("ModifiedBy");
 
@@ -633,7 +634,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ImpersonatingModifier");
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "Interpreter")
                         .WithMany()
                         .HasForeignKey("InterpreterId");
 

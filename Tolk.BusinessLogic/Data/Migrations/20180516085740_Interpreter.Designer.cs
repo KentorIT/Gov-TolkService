@@ -10,9 +10,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180516085740_Interpreter")]
+    partial class Interpreter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,9 +178,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerOrganisationId");
 
-                    b.HasIndex("InterpreterId")
-                        .IsUnique()
-                        .HasFilter("[InterpreterId] IS NOT NULL");
+                    b.HasIndex("InterpreterId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasName("EmailIndex");
@@ -207,11 +206,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerRegion", b =>
                 {
+                    b.Property<int>("BrokerRegionId")
+                        .ValueGeneratedOnAdd();
+
                     b.Property<int>("BrokerId");
 
                     b.Property<int>("RegionId");
 
-                    b.HasKey("BrokerId", "RegionId");
+                    b.HasKey("BrokerRegionId");
+
+                    b.HasIndex("BrokerId");
 
                     b.HasIndex("RegionId");
 
@@ -239,18 +243,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("InterpreterId");
 
-                    b.ToTable("Interpreters");
+                    b.ToTable("Interpreter");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBrokerRegion", b =>
                 {
-                    b.Property<int>("BrokerId");
+                    b.Property<int>("BrokerRegionId");
 
-                    b.Property<int>("RegionId");
+                    b.Property<string>("InterpreterId");
 
-                    b.Property<int>("InterpreterId");
-
-                    b.HasKey("BrokerId", "RegionId", "InterpreterId");
+                    b.HasKey("BrokerRegionId", "InterpreterId");
 
                     b.HasIndex("InterpreterId");
 
@@ -407,19 +409,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<decimal>("BrokerFee")
                         .HasColumnType("decimal(5, 2)");
 
-                    b.Property<int>("BrokerId");
+                    b.Property<int>("BrokerRegionId");
 
                     b.Property<DateTimeOffset>("EndDate");
 
                     b.Property<int>("Rank");
 
-                    b.Property<int>("RegionId");
-
                     b.Property<DateTimeOffset>("StartDate");
 
                     b.HasKey("RankingId");
 
-                    b.HasIndex("BrokerId", "RegionId")
+                    b.HasIndex("BrokerRegionId")
                         .IsUnique();
 
                     b.ToTable("Rankings");
@@ -472,7 +472,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ImpersonatingModifier");
 
-                    b.Property<int?>("InterpreterId");
+                    b.Property<string>("InterpreterId");
 
                     b.Property<string>("ModifiedBy");
 
@@ -555,8 +555,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("CustomerOrganisationId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
-                        .WithOne("User")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.AspNetUser", "InterpreterId");
+                        .WithMany()
+                        .HasForeignKey("InterpreterId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerRegion", b =>
@@ -574,14 +574,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBrokerRegion", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
-                        .WithMany("BrokerRegions")
-                        .HasForeignKey("InterpreterId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Tolk.BusinessLogic.Entities.BrokerRegion", "BrokerRegion")
                         .WithMany()
-                        .HasForeignKey("BrokerId", "RegionId")
+                        .HasForeignKey("BrokerRegionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "Interpreter")
+                        .WithMany("BrokerRegions")
+                        .HasForeignKey("InterpreterId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -623,7 +623,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.BrokerRegion", "BrokerRegion")
                         .WithOne("Ranking")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.Ranking", "BrokerId", "RegionId")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.Ranking", "BrokerRegionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -633,7 +633,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ImpersonatingModifier");
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "Interpreter")
                         .WithMany()
                         .HasForeignKey("InterpreterId");
 
