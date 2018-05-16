@@ -10,6 +10,7 @@ namespace Tolk.Web.Services
     {
         public const string Customer = nameof(Customer);
         public const string Broker = nameof(Broker);
+        public const string Interpreter = nameof(Interpreter);
 
         public static void RegisterTolkAuthorization(this IServiceCollection services)
         {
@@ -17,6 +18,7 @@ namespace Tolk.Web.Services
             {
                 opt.AddPolicy(Customer, conf => conf.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, conf => conf.RequireClaim(TolkClaimTypes.BrokerId));
+                opt.AddPolicy(Interpreter, conf => conf.RequireClaim(TolkClaimTypes.InterpreterId));
             });
         }
     }

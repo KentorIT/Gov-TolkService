@@ -39,6 +39,11 @@ namespace Tolk.Web.Services
                 identity.AddClaim(new Claim(TolkClaimTypes.BrokerId, user.BrokerId.ToString()));
             }
 
+            if(user.InterpreterId.HasValue)
+            {
+                identity.AddClaim(new Claim(TolkClaimTypes.InterpreterId, user.InterpreterId.ToString()));
+            }
+
             return identity;
         }
     }

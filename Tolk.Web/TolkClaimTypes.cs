@@ -15,5 +15,6 @@ namespace Tolk.Web
 
         public const string BrokerId = nameof(BrokerId);
 
+        public const string InterpreterId = nameof(InterpreterId);
     }
 }

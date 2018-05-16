@@ -40,6 +40,10 @@
                 {
                     <a asp-area="" asp-controller="Request" asp-action="List" class="navbar-brand">Inkomna förfrågningar</a>
                 }
+                @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
+                {
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Tolkens meny</a>
+                }
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
