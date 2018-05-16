@@ -25,12 +25,19 @@ namespace Tolk.Web.Controllers
             _userManager = userManager;
         }
 
+        protected int CurrentBrokerId
+        {
+            get
+            {
+                return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.BrokerId).Value);
+            }
+        }
+
         public IActionResult List()
         {
-            //TODO:GET BROKER ID FROM CLAIMS
             return View(_dbContext.Requests.Include(r => r.Order)
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
-                    r.Ranking.BrokerRegion.Broker.BrokerId == 1).Select(r => new RequestListItemModel
+                    r.Ranking.BrokerRegion.Broker.BrokerId == CurrentBrokerId).Select(r => new RequestListItemModel
                         {
                             RequestId = r.RequestId,
                             Language = r.Order.Language.Name,
@@ -56,8 +63,7 @@ namespace Tolk.Web.Controllers
             }
             //Get request model from db
             var model = RequestModel.GetModelFromRequest(request);
-            //TODO: Get from user!!!
-            model.BrokerId = 1;
+            model.BrokerId = CurrentBrokerId;
             return View(model);
         }
 

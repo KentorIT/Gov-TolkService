@@ -35,13 +35,20 @@ namespace Tolk.Web.Controllers
             }
         }
 
+        protected int CurrentCustomerOrgansationId
+        {
+            get
+            {
+                return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.CustomerOrganisationId).Value);
+            }
+        }
+
         #endregion
 
         public IActionResult List()
         {
-            //TODO:GET customer ID FROM CLAIMS
             return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
-                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == 1).Select(r => new OrderListItemModel
+                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == CurrentCustomerOrgansationId).Select(r => new OrderListItemModel
                 {
                     OrderId = r.OrderId,
                     Language = r.Language.Name,
@@ -97,8 +104,7 @@ namespace Tolk.Web.Controllers
                         Status = OrderStatus.Requested,
                         CreatedBy = _userManager.GetUserId(User),
                         CreatedDate = DateTime.Now,
-                        //Add as claim!!
-                        CustomerOrganisationId = 1,
+                        CustomerOrganisationId = CurrentCustomerOrgansationId,
                         ImpersonatingCreator = User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)
                     };
                 }
