@@ -88,7 +88,8 @@ namespace Tolk.BusinessLogic.Entities
         //TODO: Make Enum and fk
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
         //Same as above
-        public CompetenceAndSpecialistLevel? RequestedCompetenceLevel { get; set; }
+        //TODO: Fix this, temporarily reverted to an int due to EF Core issue with nullable enum.
+        public int? RequestedCompetenceLevel { get; set; }
 
         public DateTimeOffset StartDateTime { get; set; }
         public DateTimeOffset EndDateTime { get; set; }
