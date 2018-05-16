@@ -96,8 +96,8 @@ namespace Tolk.Web.Services
                 var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier) : null;
                 yield return new SelectListItem()
                 {
-                    Text = currentUser.Identity.Name,
-                    Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId),
+                    Text = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? currentUser.FindFirstValue(ClaimTypes.Name),
+                    Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
                     Selected = impersonatedUserId == null
                 };
                 IEnumerable<SelectListItem> items;

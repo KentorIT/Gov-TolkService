@@ -5,3 +5,4 @@ Values('Polisen'),
 ('Migrationsverket'),
 ('Domstolsverket')
 
+select * from CustomerOrganisations

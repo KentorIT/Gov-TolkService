@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Tolk.Web.Services;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using System.Linq;
 
 namespace Tolk.Web
 {
@@ -32,8 +33,13 @@ namespace Tolk.Web
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
+            services.SetTolkClaimsPrincipalFactory();
+
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
+
+            services.RegisterTolkAuthorization();
+            services.SetTolkClaimsPrincipalFactory();
 
             services.AddMvc(opt =>
             {

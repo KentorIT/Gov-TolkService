@@ -9,10 +9,11 @@ using System;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.Broker)]
+    [Authorize(Policy = Policies.Broker)]
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
