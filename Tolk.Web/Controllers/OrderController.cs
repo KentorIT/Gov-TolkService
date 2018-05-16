@@ -24,6 +24,34 @@ namespace Tolk.Web.Controllers
             _userManager = userManager;
         }
 
+        #region possible moves to base controller
+
+        protected string CurrentUserId
+        {
+            get
+            {
+                return _userManager.GetUserId(User);
+            }
+        }
+
+        #endregion
+
+        public IActionResult List()
+        {
+            //TODO:GET customer ID FROM CLAIMS
+            return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
+                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == 1).Select(r => new OrderListItemModel
+                {
+                    OrderId = r.OrderId,
+                    Language = r.Language.Name,
+                    OrderNumber = r.OrderNumber.ToString(),
+                    RegionName = r.Region.Name,
+                    Start = r.StartDateTime,
+                    End = r.EndDateTime,
+                }));
+        }
+
+
         public IActionResult Details(int id)
         {
             //Get order model from db

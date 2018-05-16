@@ -23,8 +23,10 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _userManager = userManager;
         }
+
         public IActionResult List()
         {
+            //TODO:GET BROKER ID FROM CLAIMS
             return View(_dbContext.Requests.Include(r => r.Order)
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
                     r.Ranking.BrokerRegion.Broker.BrokerId == 1).Select(r => new RequestListItemModel

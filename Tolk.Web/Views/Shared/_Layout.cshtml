@@ -30,6 +30,7 @@
                 @if (User.IsInRole(Roles.Customer))
                 {
                     <a asp-area="" asp-controller="Order" asp-action="Add" class="navbar-brand">Avropa tolk</a>
+                    <a asp-area="" asp-controller="Order" asp-action="List" class="navbar-brand">Sök avrop</a>
                 }
                 @if (User.IsInRole(Roles.Broker))
                 {
@@ -51,6 +52,8 @@
             <p>&copy; 2018 - Kammarkollegiet</p>
         </footer>
     </div>
+    @*<script type="text/javascript">tolkBaseUrl = "@Url.Content("~")"</script>*@
+    <script type="text/javascript">tolkBaseUrl = "/"</script>
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>

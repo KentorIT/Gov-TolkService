@@ -10,7 +10,6 @@
     padding-right: 15px;
 }
 
-
 /* QR code generator */
 #qrCode {
     margin: 15px;
@@ -20,6 +19,10 @@
     width: 120px;
 }
 
-.input-group.time > .form-control{
+.input-group.time > .form-control {
     width: 80px;
+}
+
+table.clickable-rows > tbody > tr > td {
+    cursor: pointer;
 }
