@@ -79,17 +79,16 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(LanguageId))]
         public Language Language { get; set; }
 
-        //TODO: Make Enum and fk
-        public int AssignentType { get; set; }
+        public AssignmentType AssignentType { get; set; }
 
         //TODO: Make Enum and fk
         public int RequiredInterpreterLocation { get; set; }
         public int? RequestedInterpreterLocation { get; set; }
 
         //TODO: Make Enum and fk
-        public int RequiredCompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
         //Same as above
-        public int? RequestedCompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevel { get; set; }
 
         public DateTimeOffset StartDateTime { get; set; }
         public DateTimeOffset EndDateTime { get; set; }

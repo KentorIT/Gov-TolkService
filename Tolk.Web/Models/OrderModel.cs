@@ -50,14 +50,14 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
-        public int AssignentType { get; set; }
+        public AssignmentType AssignmentType { get; set; }
 
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Utbildningsnivå")]
         [Required]
-        public int RequiredCompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -96,7 +96,7 @@ namespace Tolk.Web.Models
         {
             order.LanguageId = LanguageId;
             order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
-            order.AssignentType = AssignentType;
+            order.AssignentType = AssignmentType;
             order.RegionId = RegionId;
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartDateTime = StartDateTime;
@@ -123,7 +123,7 @@ namespace Tolk.Web.Models
                 RegionName = order.Region?.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                AssignentType = order.AssignentType,
+                AssignmentType = order.AssignentType,
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 StartDateTime = order.StartDateTime,
