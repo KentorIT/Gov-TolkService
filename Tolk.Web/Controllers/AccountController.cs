@@ -546,7 +546,7 @@ namespace Tolk.Web.Controllers
 
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
 
-            return Redirect(model.ReturnUrl);
+            return RedirectToAction("Index", "Home");
         }
 
         #region Helpers
