@@ -32,6 +32,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeDateTimeOffset = "datetime";
         private const string InputTypeText = "text";
         private const string InputTypePassword = "password";
+        private const string InputTypeCheckbox = "checkbox";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -63,6 +64,7 @@ namespace Tolk.Web.TagHelpers
                 case null:
                 case InputTypePassword:
                 case InputTypeText:
+                case InputTypeCheckbox:
                 case InputTypeDateTimeOffset:
                     if (Items != null)
                     {
@@ -70,7 +72,7 @@ namespace Tolk.Web.TagHelpers
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password. Omit type to get a default input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox. Omit type to get a default input.");
             }
         }
 
@@ -87,6 +89,10 @@ namespace Tolk.Web.TagHelpers
                 {
                     InputType = InputTypePassword;
                 }
+                if(For.ModelExplorer.ModelType == typeof(bool))
+                {
+                    InputType = InputTypeCheckbox;
+                }
             }
         }
 
@@ -94,23 +100,30 @@ namespace Tolk.Web.TagHelpers
         {
             output.TagName = "div";
             output.TagMode = TagMode.StartTagAndEndTag;
-            output.Attributes.Add("class", "form-group");
 
             using (var writer = new StringWriter())
             {
                 switch (InputType)
                 {
                     case InputTypeSelect:
+                        output.Attributes.Add("class", "form-group");
                         WriteLabel(writer);
                         WriteSelect(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeDateTimeOffset:
+                        output.Attributes.Add("class", "form-group");
                         WriteDateTimeOffsetBlock(writer);
                         break;
                     case InputTypePassword:
+                        output.Attributes.Add("class", "form-group");
                         WriteLabel(writer);
                         WritePassword(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeCheckbox:
+                        output.Attributes.Add("class", "checkbox");
+                        WriteCheckBoxInLabel(writer);
                         WriteValidation(writer);
                         break;
                     default:
@@ -125,14 +138,19 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteLabel(TextWriter writer)
         {
-            var tagBuilder = _htmlGenerator.GenerateLabel(
+            TagBuilder tagBuilder = GenerateLabel();
+
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private TagBuilder GenerateLabel()
+        {
+            return _htmlGenerator.GenerateLabel(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 labelText: null,
                 htmlAttributes: new { @class = "control-label" });
-
-            tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WriteInput(TextWriter writer)
@@ -141,11 +159,31 @@ namespace Tolk.Web.TagHelpers
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
-                value: For.ModelExplorer.Model,
+                value: For.Model,
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteCheckBoxInLabel(TextWriter writer)
+        {
+            var labelBuilder = GenerateLabel();
+
+            var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                isChecked: Equals(For.Model, true),
+                htmlAttributes: null);
+
+            var htmlBuilder = new HtmlContentBuilder();
+            htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
+            htmlBuilder.AppendHtml(checkboxBuilder.RenderStartTag());
+            htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
+            htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
+
+            htmlBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WritePassword(TextWriter writer)
@@ -154,7 +192,7 @@ namespace Tolk.Web.TagHelpers
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
-                value: For.ModelExplorer.Model,
+                value: For.Model,
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -201,7 +239,6 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
 
             writer.WriteLine("<div class=\"input-group time\">");
-
 
             tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
