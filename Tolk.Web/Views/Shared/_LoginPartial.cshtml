@@ -10,7 +10,9 @@
     <div class="navbar-right">
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">@User.FindFirstValue(ClaimTypes.Name)</a>
+                <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">
+                @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) 
+                    ??User.FindFirstValue(ClaimTypes.Name))</a>
             </li>
             <li>
                 @if (User.IsInRole(Roles.Impersonator))
