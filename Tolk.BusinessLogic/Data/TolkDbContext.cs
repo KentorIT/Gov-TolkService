@@ -33,14 +33,21 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(iur => iur.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<AspNetUser>()
+                .HasOne(u => u.Interpreter)
+                .WithOne(i => i.User);
+
             builder.Entity<Request>()
                 .HasOne(r => r.Ranking)
                 .WithMany(r => r.Requests)
                 .HasForeignKey(r => r.RankingId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            ////Build many to many connection Interpreters <-> BrokerRegions
-            builder.Entity<InterpreterBrokerRegion>().HasKey(t => new { t.BrokerRegionId, t.InterpreterId});
+            builder.Entity<BrokerRegion>()
+                .HasKey(br => new { br.BrokerId, br.RegionId });
+
+            builder.Entity<InterpreterBrokerRegion>()
+                .HasKey(ibr => new { ibr.BrokerId, ibr.RegionId, ibr.InterpreterId });
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -58,6 +65,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Broker> Brokers { get; set; }
 
         public DbSet<BrokerRegion> BrokerRegions { get; set; }
+
+        public DbSet<Interpreter> Interpreters { get; set; }
 
         public DbSet<Ranking> Rankings { get; set; }
 
