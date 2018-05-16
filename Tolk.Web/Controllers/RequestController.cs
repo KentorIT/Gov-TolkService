@@ -13,7 +13,7 @@ using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Policies.Broker)]
+    [Authorize(Policy = Policies.Broker)]
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
