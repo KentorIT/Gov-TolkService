@@ -21,7 +21,7 @@ namespace Tolk.Web.Models
 
         [Required]
         [Display(Name = "Tolk")]
-        public string InterpreterId { get; set; }
+        public int InterpreterId { get; set; }
 
         #region methods
 

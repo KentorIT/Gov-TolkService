@@ -27,10 +27,10 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string BrokerMessage { get; set; }
 
-        public string InterpreterId { get; set; }
+        public int? InterpreterId { get; set; }
 
         [ForeignKey(nameof(InterpreterId))]
-        public AspNetUser Interpreter { get; set; }
+        public Interpreter Interpreter { get; set; }
 
         public DateTimeOffset? ModifiedDate { get; set; }
 

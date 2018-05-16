@@ -74,7 +74,8 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 //TODO: VERIFY THAT THE REQUEST IS CONNECTED TO THE USER'S BROKER!!
-                var request = _dbContext.Requests.Single(o => o.RequestId == model.RequestId);
+                var request = _dbContext.Requests.Include(r => r.Order)
+                    .Single(o => o.RequestId == model.RequestId);
                 request.Status = model.SetStatus;
                 //TODO:Fix better offset-check!!
                 request.ModifiedDate = DateTimeOffset.Now;
