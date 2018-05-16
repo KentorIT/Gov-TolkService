@@ -22,6 +22,7 @@ namespace Tolk.Web.Models
         [Required]
         public int LanguageId { get; set; }
 
+        [DataType(DataType.MultilineText)]
         [Display(Name = "Beskrivning")]
         [Required]
         public string Description { get; set; }

@@ -33,6 +33,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeText = "text";
         private const string InputTypePassword = "password";
         private const string InputTypeCheckbox = "checkbox";
+        private const string InputTypeTextArea = "textarea";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -66,13 +67,14 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeText:
                 case InputTypeCheckbox:
                 case InputTypeDateTimeOffset:
+                case InputTypeTextArea:
                     if (Items != null)
                     {
                         throw new ArgumentException("Items is only relevant if type is select.");
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox. Omit type to get a default input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox, textarea. Omit type to get a default input.");
             }
         }
 
@@ -89,9 +91,13 @@ namespace Tolk.Web.TagHelpers
                 {
                     InputType = InputTypePassword;
                 }
-                if(For.ModelExplorer.ModelType == typeof(bool))
+                if (For.ModelExplorer.ModelType == typeof(bool))
                 {
                     InputType = InputTypeCheckbox;
+                }
+                if(For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
+                {
+                    InputType = InputTypeTextArea;
                 }
             }
         }
@@ -124,6 +130,12 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeCheckbox:
                         output.Attributes.Add("class", "checkbox");
                         WriteCheckBoxInLabel(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeTextArea:
+                        output.Attributes.Add("class", "form-group");
+                        WriteLabel(writer);
+                        WriteTextArea(writer);
                         WriteValidation(writer);
                         break;
                     default:
@@ -161,6 +173,19 @@ namespace Tolk.Web.TagHelpers
                 For.Name,
                 value: For.Model,
                 format: null,
+                htmlAttributes: new { @class = "form-control" });
+
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteTextArea(TextWriter writer)
+        {
+            var tagBuilder = _htmlGenerator.GenerateTextArea(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                rows: 5,
+                columns: 80,
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
