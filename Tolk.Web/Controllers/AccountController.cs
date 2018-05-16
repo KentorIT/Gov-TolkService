@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.Web.Helpers;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
 
@@ -532,17 +533,8 @@ namespace Tolk.Web.Controllers
 
                 var newIdentity = newPrincipal.Identities.Single();
 
-                newIdentity.AddClaim(new Claim(
-                    TolkClaimTypes.ImpersonatingUserId, 
-                    User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? User.FindFirstValue(ClaimTypes.NameIdentifier)));
-
-                newIdentity.AddClaim(new Claim(
-                    TolkClaimTypes.ImpersonatingUserName,
-                    User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? User.FindFirstValue(ClaimTypes.Name)));
-
-                newIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
+                ImpersonationHelper.SetupImpersonationClaims(User, newIdentity);
             }
-
 
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
 

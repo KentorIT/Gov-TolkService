@@ -11,6 +11,10 @@ namespace Tolk.Web
 
         public const string ImpersonatingUserName = nameof(ImpersonatingUserName);
 
+        public const string ImpersonatingUserSecurityStamp = nameof(ImpersonatingUserSecurityStamp);
+
+        public const string AspNetSecurityStamp = "AspNet.Identity.SecurityStamp";
+
         public const string CustomerOrganisationId = nameof(CustomerOrganisationId);
 
         public const string BrokerId = nameof(BrokerId);

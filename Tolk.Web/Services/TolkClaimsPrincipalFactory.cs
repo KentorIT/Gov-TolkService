@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -46,14 +47,5 @@ namespace Tolk.Web.Services
 
             return identity;
         }
-    }
-
-    public static class TolkClaimsPrincipalFactoryExtension
-    {
-       public static void SetTolkClaimsPrincipalFactory(this IServiceCollection services)
-       {
-            services.Remove(services.Single(sd => sd.ServiceType == typeof(IUserClaimsPrincipalFactory<AspNetUser>)));
-            services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
-       }
     }
 }
