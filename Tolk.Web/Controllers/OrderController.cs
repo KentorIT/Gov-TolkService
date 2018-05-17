@@ -77,8 +77,7 @@ namespace Tolk.Web.Controllers
                 .ThenInclude(r => r.Broker)
                 .Single(o => o.OrderId == id);
             var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
-            //TODO: Replace hardcoded pricelist type, replace with the type connected to the customer.
-            var listType = PriceListType.Other;
+            var listType = order.CustomerOrganisation.PriceListType;
             //TODO: Handle if there are no rows due to start/end date restrictions. Should take the one with the latest end date in that case.
             decimal extraTimePrice = 0;
             var extraCosts = GetMinutesPerPriceType(order.StartDateTime, order.EndDateTime);

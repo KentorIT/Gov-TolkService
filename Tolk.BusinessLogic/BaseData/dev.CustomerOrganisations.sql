@@ -1,8 +1,6 @@
 use TolkDev
 
-insert CustomerOrganisations
-Values('Polisen'),
-('Migrationsverket'),
-('Domstolsverket')
-
-select * from CustomerOrganisations
+insert CustomerOrganisations(Name, PriceListType)
+Values('Polisen', 2),
+('Migrationsverket', 2),
+('Domstolsverket', 1)

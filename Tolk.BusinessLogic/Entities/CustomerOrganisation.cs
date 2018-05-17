@@ -14,5 +14,7 @@ namespace Tolk.BusinessLogic.Entities
         public string Name { get; set; }
 
         public List<AspNetUser> Users { get; set; }
+
+        public PriceListType PriceListType { get; set; }
     }
 }
