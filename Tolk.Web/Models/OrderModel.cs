@@ -90,6 +90,7 @@ namespace Tolk.Web.Models
         public string BrokerName { get; set; }
 
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB")]
+        [DataType(DataType.Currency)]
         public decimal CalculatedPrice { get; set; }
         //Request information
 

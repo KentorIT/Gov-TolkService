@@ -65,18 +65,53 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
+        private enum OutputType {Text, DateTimeOffset, Bool, Enum, Currency  }
+
         private void WriteDetails(TextWriter writer)
         {
             string text = string.Empty;
-            if (For.ModelExplorer.Model is Enum)
+            var type = GetOutputType();
+            switch(GetOutputType())
             {
+                case OutputType.Enum:
                 text = EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
-            }
-            else
-            {
-                text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    break;
+                case OutputType.Bool:
+                    text = ((bool)For.ModelExplorer.Model) ? "Ja" : "Nej";
+                    break;
+                 case OutputType.DateTimeOffset:
+                    text = ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
+                    break;
+                case OutputType.Currency:
+                    text = ((decimal)For.ModelExplorer.Model).ToString("#,#.00 SEK");
+                    break;
+                default:
+                    text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    break;
             }
             writer.WriteLine($"<div class=\"detail-text\">{text}</div>");
+        }
+
+        private OutputType GetOutputType()
+        {
+            if (For.ModelExplorer.Model is Enum)
+            {
+                return OutputType.Enum;
+            }
+            if (For.ModelExplorer.ModelType == typeof(DateTimeOffset)
+                || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))
+            {
+                return OutputType.DateTimeOffset;
+            }
+            if (For.ModelExplorer.ModelType == typeof(bool))
+            {
+                return OutputType.Bool;
+            }
+            if (For.ModelExplorer.Metadata.DataTypeName == "Currency")
+            {
+                return OutputType.Currency;
+            }
+            return OutputType.Text;
         }
     }
 }
