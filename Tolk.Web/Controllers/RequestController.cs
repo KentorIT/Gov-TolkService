@@ -46,6 +46,7 @@ namespace Tolk.Web.Controllers
                             RegionName = r.Order.Region.Name,
                             Start = r.Order.StartDateTime,
                             End = r.Order.EndDateTime,
+                            Status = r.Status
                         }));
         }
 

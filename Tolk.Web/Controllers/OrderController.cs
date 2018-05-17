@@ -50,14 +50,16 @@ namespace Tolk.Web.Controllers
         public IActionResult List()
         {
             return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
-                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == CurrentCustomerOrgansationId).Select(r => new OrderListItemModel
+                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == CurrentCustomerOrgansationId)
+                .Select(o => new OrderListItemModel
                 {
-                    OrderId = r.OrderId,
-                    Language = r.Language.Name,
-                    OrderNumber = r.OrderNumber.ToString(),
-                    RegionName = r.Region.Name,
-                    Start = r.StartDateTime,
-                    End = r.EndDateTime,
+                    OrderId = o.OrderId,
+                    Language = o.Language.Name,
+                    OrderNumber = o.OrderNumber.ToString(),
+                    RegionName = o.Region.Name,
+                    Start = o.StartDateTime,
+                    End = o.EndDateTime,
+                    Status = o.Status
                 }));
         }
 
