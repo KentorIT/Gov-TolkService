@@ -1,6 +1,8 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
+@using Tolk.BusinessLogic.Entities
 @{
     ViewData["Title"] = "Avropsdetaljer";
 }
@@ -8,7 +10,6 @@
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
-        <input asp-for="OrderId" type="hidden" />
         <display-entry asp-for="OrderNumber" />
         <display-entry asp-for="CreatedDate" />
         <display-entry asp-for="CreatedBy" />
@@ -28,5 +29,23 @@
         <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
         <display-entry asp-for="BrokerName" />
         <display-entry asp-for="CalculatedPrice" />
+        @* Need check if this is pertinent here... *@
+        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved)
+        {
+            <display-entry asp-for="InterpreterName" />
+            <display-entry asp-for="ExpectedTravelCosts" />
+            @if (Model.RequestStatus == RequestStatus.Accepted)
+            {
+                <form method="post" asp-action="Approve">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-default">Godkänn tillsättning</button>
+                </form>
+            }
+        }
     </div>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

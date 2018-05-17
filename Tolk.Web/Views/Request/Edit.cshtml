@@ -29,6 +29,7 @@
             <input asp-for="RequestId" type="hidden" />
             <input asp-for="SetStatus" type="hidden" />
             <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, Model.OrderModel.RegionId)" />
+            <form-entry asp-for="ExpectedTravelCosts" />
             @*TODO: This is not completed yet!!!*@
             <button class="btn btn-default" data-set-status="Accepted">Acceptera</button>
         </form>

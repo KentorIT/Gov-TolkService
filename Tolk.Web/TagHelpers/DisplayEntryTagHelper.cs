@@ -83,7 +83,7 @@ namespace Tolk.Web.TagHelpers
                     text = ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.Currency:
-                    text = ((decimal)For.ModelExplorer.Model).ToString("#,#.00 SEK");
+                    text = ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
                     break;
                 default:
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);

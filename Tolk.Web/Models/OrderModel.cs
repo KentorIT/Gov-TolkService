@@ -92,7 +92,17 @@ namespace Tolk.Web.Models
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB")]
         [DataType(DataType.Currency)]
         public decimal CalculatedPrice { get; set; }
-        //Request information
+
+        [Display(Name = "Beräknat resekostnad")]
+        [DataType(DataType.Currency)]
+        public decimal ExpectedTravelCosts { get; set; }
+
+        [Display(Name = "Tillsatt tolk")]
+        public string InterpreterName  { get; set; }
+
+        [Display(Name = "Status på aktiv förfrågan")]
+        public RequestStatus? RequestStatus { get; set; }
+        public int? RequestId { get; set; }
 
         #endregion
 

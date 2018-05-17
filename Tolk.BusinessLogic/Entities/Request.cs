@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
 
-        #region foreign keys
+        public decimal? ExpectedTravelCosts { get; set; }
 
         public int RankingId { get; set; }
 
@@ -43,7 +43,5 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ImpersonatingModifier))]
         public AspNetUser ModifiedByImpersonator { get; set; }
-
-        #endregion
     }
 }

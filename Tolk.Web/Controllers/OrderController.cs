@@ -81,37 +81,46 @@ namespace Tolk.Web.Controllers
             //TODO: Handle if there are no rows due to start/end date restrictions. Should take the one with the latest end date in that case.
             decimal extraTimePrice = 0;
             var extraCosts = GetMinutesPerPriceType(order.StartDateTime, order.EndDateTime);
-            //TODO: get the rows for the list type, startdate and competence first, to get one call to db...
-            var price = _dbContext.PriceListRows
-                .OrderBy(r => r.MaxMinutes)
-                .First(r =>
+            //Get the rows for the list type, startdate and competence first, to get one call to db...
+            var prices = _dbContext.PriceListRows
+                .Where(r =>
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
+                    r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime).ToList();
+            var price = prices
+                .OrderBy(r => r.MaxMinutes)
+                .First(r =>
                     r.PriceRowType == PriceRowType.BasePrice &&
-                    r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime &&
                     r.MaxMinutes >= extraCosts.Single(c => c.PriceRowType == PriceRowType.BasePrice).Minutes).Price;
             foreach (var priceTime in extraCosts.Where(c => c.Minutes > 0 && c.PriceRowType != PriceRowType.BasePrice))
             {
-                var extraPriceInfo = _dbContext.PriceListRows
-                    .Single(r =>
-                        r.CompetenceLevel == competenceLevel &&
-                        r.PriceListType == listType &&
-                        r.PriceRowType == priceTime.PriceRowType &&
-                        r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime);
+                var extraPriceInfo = prices.Single(r => r.PriceRowType == priceTime.PriceRowType);
                 int n = extraCosts.Single(c => c.PriceRowType == priceTime.PriceRowType).Minutes / extraPriceInfo.MaxMinutes;
                 extraTimePrice += n * extraPriceInfo.Price;
             }
             var model = OrderModel.GetModelFromOrder(order);
             //TODO: Handle this better. Preferably with a list that you can use contains on
-            var rank = order.Requests.Single(r =>
+            var request = order.Requests.SingleOrDefault(r =>
                 r.Status == RequestStatus.Created ||
                 r.Status == RequestStatus.Received ||
                 r.Status == RequestStatus.Accepted ||
                 r.Status == RequestStatus.SentToInterpreter ||
                 r.Status == RequestStatus.Approved
-                ).Ranking;
-            model.CalculatedPrice = (price + extraTimePrice) * rank.BrokerFee;
-            model.BrokerName = rank.BrokerRegion.Broker.Name;
+                );
+            //The broker fee should be calculated from baseBrice maxMinutes 60!
+            var brokerFee = (request?.Ranking.BrokerFee ?? 1) * prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60).Price;
+            model.RequestStatus = request?.Status;
+            if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
+            {
+                model.CalculatedPrice = price + extraTimePrice + brokerFee;
+                model.RequestId = request.RequestId;
+                model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
+                model.InterpreterName = _dbContext.Requests
+                    .Include(r => r.Interpreter)
+                    .ThenInclude(i => i.User)
+                    .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
+                model.BrokerName = request.Ranking.BrokerRegion.Broker.Name;
+            }
             return View("Details", model);
         }
 
@@ -171,6 +180,21 @@ namespace Tolk.Web.Controllers
         public IActionResult Edit(OrderModel model)
         {
             return Add(model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public IActionResult Approve(ApproveModel model)
+        {
+            //Get the order, and set Change the status on order and request, and also modified?
+            //TODO: Validate that the has the correct state, is conneted to the user
+            //Validate that the request is in correct state.
+            var order = _dbContext.Orders.Include(o => o.Requests).Single(o => o.OrderId == model.OrderId);
+            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+            order.Status = OrderStatus.ResponseAccepted;
+            request.Status = RequestStatus.Approved;
+            _dbContext.SaveChanges();
+            return Details(order.OrderId);
         }
 
         private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startDateTime, DateTimeOffset endDateTime)

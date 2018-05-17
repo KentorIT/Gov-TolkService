@@ -83,6 +83,7 @@ namespace Tolk.Web.Controllers
                 request.ModifiedBy = _userManager.GetUserId(User);
                 request.ImpersonatingModifier = User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId);
                 request.InterpreterId = model.InterpreterId;
+                request.ExpectedTravelCosts = model.ExpectedTravelCosts;
                 //TODO: This should differ depending on the incoming status.
                 request.Order.Status = OrderStatus.RequestResponded;
                 _dbContext.SaveChanges();

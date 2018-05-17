@@ -23,12 +23,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolk")]
         public int? InterpreterId { get; set; }
 
-        #region methods
+        [Display(Name = "Förväntad resekostnad")]
+        public decimal? ExpectedTravelCosts { get; set; }
 
-        public Request UpdateRequest(Request request)
-        {
-            return request;
-        }
+        #region methods
 
         public static RequestModel GetModelFromRequest(Request request)
         {

@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Enums
         Requested = 2,
         [Description("Tolktillsättning finns")]
         RequestResponded = 3,
-        [Description("Uppdraget tolktillsättning har accepterats")]
+        [Description("Tolktillsättning har accepterats")]
         ResponseAccepted = 4,
         [Description("Uppdraget har genomförts")]
         Delivered = 5,
