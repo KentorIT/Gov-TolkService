@@ -11,6 +11,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Utilities;
+using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
@@ -74,42 +75,33 @@ namespace Tolk.Web.Controllers
                 .ThenInclude(r => r.Broker)
                 .Single(o => o.OrderId == id);
             var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
-            //TODO: Replace hardcoded pricelist type
-            //TODO: Handle if there are no rows due to star/end date restrictions. Should take the one with the latest end date in that case.
-            //TODO: Does not handle if the number of minutes is larger than 330!
-            int maxMinutes = 330;
-            //TODO: Has no calculation for övertid
-            TimeSpan span = order.EndDateTime - order.StartDateTime;
-            int totalMinutes = (int)span.TotalMinutes;
-            int extraMinutes = 0;
+            //TODO: Replace hardcoded pricelist type, replace with the type connected to the customer.
+            var listType = PriceListType.Other;
+            //TODO: Handle if there are no rows due to start/end date restrictions. Should take the one with the latest end date in that case.
             decimal extraTimePrice = 0;
-            if (totalMinutes > maxMinutes)
-            {
-                extraMinutes = totalMinutes - maxMinutes;
-                totalMinutes = maxMinutes;
-            }
+            var extraCosts = GetMinutesPerPriceType(order.StartDateTime, order.EndDateTime);
+            //TODO: get the rows for the list type, startdate and competence first, to get one call to db...
             var price = _dbContext.PriceListRows
                 .OrderBy(r => r.MaxMinutes)
                 .First(r =>
                     r.CompetenceLevel == competenceLevel &&
-                    r.PriceListType == PriceListType.Other &&
+                    r.PriceListType == listType &&
                     r.PriceRowType == PriceRowType.BasePrice &&
                     r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime &&
-                    r.MaxMinutes >= totalMinutes).Price;
-            if (extraMinutes > 0)
+                    r.MaxMinutes >= extraCosts.Single(c => c.PriceRowType == PriceRowType.BasePrice).Minutes).Price;
+            foreach (var priceTime in extraCosts.Where(c => c.Minutes > 0 && c.PriceRowType != PriceRowType.BasePrice))
             {
                 var extraPriceInfo = _dbContext.PriceListRows
-                    .OrderBy(r => r.MaxMinutes)
                     .Single(r =>
                         r.CompetenceLevel == competenceLevel &&
-                        r.PriceListType == PriceListType.Other &&
-                        r.PriceRowType == PriceRowType.PriceOverMaxTime &&
+                        r.PriceListType == listType &&
+                        r.PriceRowType == priceTime.PriceRowType &&
                         r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime);
-                int n = extraMinutes / extraPriceInfo.MaxMinutes;
-                extraTimePrice = n * extraPriceInfo.Price;
+                int n = extraCosts.Single(c => c.PriceRowType == priceTime.PriceRowType).Minutes / extraPriceInfo.MaxMinutes;
+                extraTimePrice += n * extraPriceInfo.Price;
             }
             var model = OrderModel.GetModelFromOrder(order);
-            //TODO: Handle this better.
+            //TODO: Handle this better. Preferably with a list that you can use contains on
             var rank = order.Requests.Single(r =>
                 r.Status == RequestStatus.Created ||
                 r.Status == RequestStatus.Received ||
@@ -179,5 +171,33 @@ namespace Tolk.Web.Controllers
         {
             return Add(model);
         }
+
+        private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
+        {
+            int maxMinutes = 330;
+            //TODO: Has no calculation for övertid
+            TimeSpan span = endDateTime - startDateTime;
+            int totalMinutes = (int)span.TotalMinutes;
+            int extraMinutes = 0;
+            if (totalMinutes > maxMinutes)
+            {
+                extraMinutes = totalMinutes - maxMinutes;
+                totalMinutes = maxMinutes;
+            }
+            yield return new PriceTime { Minutes = totalMinutes, PriceRowType = PriceRowType.BasePrice };
+            yield return new PriceTime { Minutes = extraMinutes, PriceRowType = PriceRowType.PriceOverMaxTime };
+            //TODO: Add Check for Big holidays
+            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.BigHolidayWeekendIWH };
+            //TODO: Get number of minutes during weekend, that is not in BigHolidayWeekendIWH.
+            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.WeekendIWH };
+            //TODO: Get number of minutes before 07:00 and after 18:00, that is not in BigHolidayWeekendIWH.
+            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.InconvenientWorkingHours };
+        }
+    }
+
+    public class PriceTime
+    {
+        public int Minutes { get; set; }
+        public PriceRowType PriceRowType { get; set; }
     }
 }
