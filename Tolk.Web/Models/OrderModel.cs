@@ -91,7 +91,6 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB")]
         public decimal CalculatedPrice { get; set; }
-        //Current Broker
         //Request information
 
         #endregion
