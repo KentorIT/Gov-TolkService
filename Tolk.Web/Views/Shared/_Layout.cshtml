@@ -19,7 +19,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    <link rel="stylesheet" href="~/lib/bootstrap-datepicker/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="~/lib/bootstrap-datepicker/bootstrap-datepicker3.min.css" />
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,9 +46,6 @@
                 }
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a></li>
-                </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>
@@ -57,7 +54,14 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2018 - Kammarkollegiet</p>
+            <p>
+                <div class="col-lg-10">
+                    &copy; 2018 - Kammarkollegiet
+                </div>
+                <div class="col-lg-2">
+                    <a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a>
+                </div>
+            </p>
         </footer>
     </div>
     @*<script type="text/javascript">tolkBaseUrl = "@Url.Content("~")"</script>*@
