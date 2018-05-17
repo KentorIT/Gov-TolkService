@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
     {
         public int? OrderId { get; set; }
 
-        [Display(Name = "Län")]
+        [Display(Name = "Region")]
         [Required]
         public int RegionId { get; set; }
 
