@@ -8,6 +8,23 @@
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderModel.OrderNumber" />
+        <display-entry asp-for="OrderModel.CreatedDate" />
+        <display-entry asp-for="OrderModel.CreatedBy" />
+        <display-entry asp-for="OrderModel.Status" />
+        <display-entry asp-for="OrderModel.RegionName" />
+        <display-entry asp-for="OrderModel.LanguageName" />
+        <display-entry asp-for="OrderModel.CustomerReferenceNumber" />
+        <display-entry asp-for="OrderModel.AssignmentType" />
+        <display-entry asp-for="OrderModel.RequiredCompetenceLevel" />
+        <display-entry asp-for="OrderModel.StartDateTime" />
+        <display-entry asp-for="OrderModel.EndDateTime" />
+        <display-entry asp-for="OrderModel.Description" />
+        <display-entry asp-for="OrderModel.UnitName" />
+        <display-entry asp-for="OrderModel.LocationStreet" />
+        <display-entry asp-for="OrderModel.LocationZipCode" />
+        <display-entry asp-for="OrderModel.LocationCity" />
+        <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
         <form method="post">
             <input asp-for="RequestId" type="hidden" />
             <input asp-for="SetStatus" type="hidden" />
