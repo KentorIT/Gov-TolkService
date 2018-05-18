@@ -48,6 +48,26 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<InterpreterBrokerRegion>()
                 .HasKey(ibr => new { ibr.BrokerId, ibr.RegionId, ibr.InterpreterId });
+
+            builder.Entity<Order>()
+                .HasOne(o => o.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Order>()
+                .HasOne(o => o.CreatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(r => r.ModifyUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(r => r.ModifiedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
