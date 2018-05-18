@@ -147,17 +147,27 @@ namespace Tolk.Web.TagHelpers
         }
 
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
+        private const string InformationSpan = "<span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
 
         private void WriteLabel(TextWriter writer)
         {
             TagBuilder tagBuilder = GenerateLabel();
 
-            if(For.ModelExplorer.Metadata.IsRequired)
+            if (For.ModelExplorer.Metadata.IsRequired)
             {
                 tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
             }
-
             tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            WriteInfoIfDescription(writer);
+        }
+
+        private void WriteInfoIfDescription(TextWriter writer)
+        {
+            if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
+            {
+                writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+            }
         }
 
         private TagBuilder GenerateLabel()
@@ -179,6 +189,11 @@ namespace Tolk.Web.TagHelpers
                 value: For.Model,
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
+
+            if(!string.IsNullOrEmpty(For.Metadata.Description))
+            {
+                tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
+            }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
@@ -237,6 +252,7 @@ namespace Tolk.Web.TagHelpers
                 writer.Write(RequiredStarSpan);
             }
             writer.WriteLine("</label>");
+            WriteInfoIfDescription(writer);
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");

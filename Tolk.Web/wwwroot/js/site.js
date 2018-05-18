@@ -23,3 +23,8 @@ $(function () {
         window.location.href = tolkBaseUrl + $table.data("click-controller") + "/" + $table.data("click-action") + "?" + $parameterName + "=" + $parameter;
     });
 });
+
+$('.form-entry-information').click(functio())
+{
+
+}

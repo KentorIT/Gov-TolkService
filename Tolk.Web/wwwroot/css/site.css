@@ -41,3 +41,10 @@ h1.shortcut-box {
     line-height: 10px; /* To prevent star from pushing form fields apart.*/
     margin-left: 1px;
 }
+
+.form-entry-information{
+    color: blue;
+    display: inline-block;
+    float: right;
+    cursor: help;
+}
