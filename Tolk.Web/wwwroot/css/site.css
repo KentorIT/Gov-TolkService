@@ -31,3 +31,12 @@ table.clickable-rows > tbody > tr > td {
 h1.shortcut-box {
     text-align: center;
 }
+
+.required-star{
+    color: red;
+    font-weight: bolder;
+    font-size: 20px;
+    position: relative;
+    top: 1px;
+    line-height: 10px; /* To prevent star from pushing form fields apart.*/
+}

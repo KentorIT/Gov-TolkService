@@ -21,8 +21,8 @@ namespace Tolk.Web.TagHelpers
 
         public FormEntryTagHelper(IHtmlGenerator htmlGenerator, HtmlEncoder htmlEncoder)
         {
-            this._htmlGenerator = htmlGenerator;
-            this._htmlEncoder = htmlEncoder;
+            _htmlGenerator = htmlGenerator;
+            _htmlEncoder = htmlEncoder;
         }
 
         private const string ForAttributeName = "asp-for";
@@ -151,6 +151,11 @@ namespace Tolk.Web.TagHelpers
         private void WriteLabel(TextWriter writer)
         {
             TagBuilder tagBuilder = GenerateLabel();
+
+            if(For.ModelExplorer.Metadata.IsRequired)
+            {
+                tagBuilder.InnerHtml.AppendHtml("<span class=\"required-star\">*</span>");
+            }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
