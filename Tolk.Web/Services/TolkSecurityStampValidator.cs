@@ -51,7 +51,8 @@ namespace Tolk.Web.Services
 
                 var impersonatingUser = await _signInManager.ValidateSecurityStampAsync(impersonatingPrincipal);
 
-                if(impersonatingUser != null)
+                if(impersonatingUser != null
+                    && await _userManager.IsInRoleAsync(impersonatingUser, Roles.Impersonator))
                 {
                     var newIdentity = context.Principal.Identities.Single();
                     ImpersonationHelper.SetupImpersonationClaims(oldPrincipal, newIdentity);

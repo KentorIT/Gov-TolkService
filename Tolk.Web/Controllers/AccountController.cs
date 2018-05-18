@@ -520,7 +520,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.Impersonator)]
         public async Task<IActionResult> Impersonate(ImpersonationViewModel model)
         {
-            var user = _dbContext.Users.Single(u => u.Id == model.UserId);
+            var user = await _userManager.FindByIdAsync(model.UserId);
 
             var newPrincipal = await _claimsFactory.CreateAsync(user);
             
