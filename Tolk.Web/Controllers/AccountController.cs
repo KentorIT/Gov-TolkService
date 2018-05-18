@@ -24,7 +24,7 @@ namespace Tolk.Web.Controllers
     {
         private readonly UserManager<AspNetUser> _userManager;
         private readonly SignInManager<AspNetUser> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
@@ -33,7 +33,7 @@ namespace Tolk.Web.Controllers
         public AccountController(
             UserManager<AspNetUser> userManager,
             SignInManager<AspNetUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<IdentityRole<int>> roleManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
             TolkDbContext dbContext,
@@ -481,10 +481,10 @@ namespace Tolk.Web.Controllers
 
                             // Gör array av roller, loopa över, kolla result för varje.
 
-                            var roles = new IdentityRole[]
+                            var roles = new IdentityRole<int>[]
                             {
-                                new IdentityRole(Roles.Admin),
-                                new IdentityRole(Roles.Impersonator),
+                                new IdentityRole<int>(Roles.Admin),
+                                new IdentityRole<int>(Roles.Impersonator),
                             };
 
                             foreach(var role in roles)
