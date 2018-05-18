@@ -4,25 +4,40 @@
 }
 
 <div class="row">
-    <div class="col-md-8">
-        @Model.Message
-        <h2>Att göra</h2>
-        @foreach (var box in Model.Boxes)
+    <div class="col-md-12">
+        <br />
+        @if (!string.IsNullOrEmpty(@Model.Message))
         {
-            <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="@box.RouteData">
-                <div class="col-md-4">
-                    <div class="panel panel-info center-block">
-                        <div class="panel-heading">
-                            <h4>@box.Header</h4>
-                        </div>
-                        <h1 class="shortcut-box">@box.Count.ToString()</h1>
-                    </div>
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    @Model.Message
                 </div>
-            </a>
+            </div>
         }
     </div>
-    <div class="col-md-4">
-        <h2>Nyheter</h2>
+</div>
+<div class="row">
+    @foreach (var box in Model.Boxes)
+    {
+        <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="@box.RouteData">
+            <div class="col-md-2">
+                <div class="panel panel-info center-block">
+                    <div class="panel-heading">
+                        <h4>@box.Header</h4>
+                    </div>
+                    <h1 class="shortcut-box">@box.Count.ToString()</h1>
+                </div>
+            </div>
+        </a>
+    }
+    @{ 
+        var newsClass = "col-md-4";
+        if(Model.Boxes.Count() < 4)
+        {
+            newsClass += $" col-md-offset-{(4 - Model.Boxes.Count()) * 2}";
+        }
+    }
+    <div class="@newsClass">
         <div class="panel panel-info">
             <div class="panel-heading">
                 <h3>2018-04-19 Utveckling</h3>
