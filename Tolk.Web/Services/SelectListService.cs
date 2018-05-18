@@ -103,13 +103,15 @@ namespace Tolk.Web.Services
                 IEnumerable<SelectListItem> items;
                 if (!_cache.TryGetValue(impersonationTargets, out items))
                 {
+                    var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.Admin).Id;
+
                     items = _dbContext.Users
-                        .Where(u => !u.Roles.Select(r => r.RoleId).Contains(Roles.AdminRoleKey))
+                        .Where(u => !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
                         .Select(u => new SelectListItem
                         {
                             Text = u.UserName,
-                            Value = u.Id,
-                            Selected = impersonatedUserId == u.Id,
+                            Value = u.Id.ToString(),
+                            Selected = impersonatedUserId == u.Id.ToString(),
                         }).ToList();
                 }
                 foreach (var item in items)

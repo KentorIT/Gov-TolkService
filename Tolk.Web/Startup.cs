@@ -36,7 +36,7 @@ namespace Tolk.Web
             services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
             
-            services.AddIdentity<AspNetUser, IdentityRole>()
+            services.AddIdentity<AspNetUser, IdentityRole<int>>()
                 .AddEntityFrameworkStores<TolkDbContext>()
                 .AddDefaultTokenProviders();
 

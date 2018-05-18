@@ -10,8 +10,8 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    [Migration("20180511055628_InterpreterBrokerRegion")]
-    partial class InterpreterBrokerRegion
+    [Migration("20180518123903_ConsolidatedSprint1")]
+    partial class ConsolidatedSprint1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,9 +20,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 .HasAnnotation("ProductVersion", "2.1.0-preview2-30571")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("ConcurrencyStamp")
@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("AspNetRoles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -53,8 +53,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ClaimValue");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired();
+                    b.Property<int>("RoleId");
 
                     b.HasKey("Id");
 
@@ -63,7 +62,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("AspNetRoleClaims");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -72,8 +71,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ClaimValue");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<int>("UserId");
 
                     b.HasKey("Id");
 
@@ -82,7 +80,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("AspNetUserClaims");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider");
 
@@ -90,8 +88,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ProviderDisplayName");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<int>("UserId");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -100,11 +97,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("AspNetUserLogins");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<int>("UserId");
 
-                    b.Property<string>("RoleId");
+                    b.Property<int>("RoleId");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -113,9 +110,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("AspNetUserRoles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<int>("UserId");
 
                     b.Property<string>("LoginProvider");
 
@@ -130,18 +127,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUser", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("AccessFailedCount");
 
+                    b.Property<int?>("BrokerId");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
+
+                    b.Property<int?>("CustomerOrganisationId");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
 
                     b.Property<bool>("EmailConfirmed");
+
+                    b.Property<int?>("InterpreterId");
 
                     b.Property<bool>("LockoutEnabled");
 
@@ -167,6 +170,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrokerId");
+
+                    b.HasIndex("CustomerOrganisationId");
+
+                    b.HasIndex("InterpreterId")
+                        .IsUnique()
+                        .HasFilter("[InterpreterId] IS NOT NULL");
 
                     b.HasIndex("NormalizedEmail")
                         .HasName("EmailIndex");
@@ -194,19 +205,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerRegion", b =>
                 {
-                    b.Property<int>("BrokerRegionId");
-
                     b.Property<int>("BrokerId");
-
-                    b.Property<DateTime>("EndDate");
 
                     b.Property<int>("RegionId");
 
-                    b.Property<DateTime>("StartDate");
-
-                    b.HasKey("BrokerRegionId");
-
-                    b.HasIndex("BrokerId");
+                    b.HasKey("BrokerId", "RegionId");
 
                     b.HasIndex("RegionId");
 
@@ -222,18 +225,32 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(20);
 
+                    b.Property<int>("PriceListType");
+
                     b.HasKey("CustomerOrganisationId");
 
                     b.ToTable("CustomerOrganisations");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.Interpreter", b =>
+                {
+                    b.Property<int>("InterpreterId")
+                        .ValueGeneratedOnAdd();
+
+                    b.HasKey("InterpreterId");
+
+                    b.ToTable("Interpreters");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBrokerRegion", b =>
                 {
-                    b.Property<int>("BrokerRegionId");
+                    b.Property<int>("BrokerId");
 
-                    b.Property<string>("InterpreterId");
+                    b.Property<int>("RegionId");
 
-                    b.HasKey("BrokerRegionId", "InterpreterId");
+                    b.Property<int>("InterpreterId");
+
+                    b.HasKey("BrokerId", "RegionId", "InterpreterId");
 
                     b.HasIndex("InterpreterId");
 
@@ -266,7 +283,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("City")
                         .HasMaxLength(100);
 
-                    b.Property<string>("CreatedBy");
+                    b.Property<int>("CreatedBy");
 
                     b.Property<DateTime>("CreatedDate");
 
@@ -279,6 +296,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasMaxLength(1000);
 
                     b.Property<DateTimeOffset>("EndDateTime");
+
+                    b.Property<int>("ImpersonatingCreator");
 
                     b.Property<int>("LanguageId");
 
@@ -327,6 +346,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerOrganisationId");
 
+                    b.HasIndex("ImpersonatingCreator");
+
                     b.HasIndex("LanguageId");
 
                     b.HasIndex("RegionId");
@@ -353,6 +374,31 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OrderRequirements");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceListRow", b =>
+                {
+                    b.Property<int>("PriceListRowId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("CompetenceLevel");
+
+                    b.Property<DateTime>("EndDate");
+
+                    b.Property<int>("MaxMinutes");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("PriceListType");
+
+                    b.Property<int>("PriceRowType");
+
+                    b.Property<DateTime>("StartDate");
+
+                    b.HasKey("PriceListRowId");
+
+                    b.ToTable("PriceListRows");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Ranking", b =>
                 {
                     b.Property<int>("RankingId")
@@ -361,13 +407,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<decimal>("BrokerFee")
                         .HasColumnType("decimal(5, 2)");
 
-                    b.Property<int>("BrokerRegionId");
+                    b.Property<int>("BrokerId");
+
+                    b.Property<DateTimeOffset>("EndDate");
 
                     b.Property<int>("Rank");
 
+                    b.Property<int>("RegionId");
+
+                    b.Property<DateTimeOffset>("StartDate");
+
                     b.HasKey("RankingId");
 
-                    b.HasIndex("BrokerRegionId")
+                    b.HasIndex("BrokerId", "RegionId")
                         .IsUnique();
 
                     b.ToTable("Rankings");
@@ -415,35 +467,49 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("RequestId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(100);
+                    b.Property<string>("BrokerMessage")
+                        .HasMaxLength(1000);
+
+                    b.Property<decimal?>("ExpectedTravelCosts");
+
+                    b.Property<int>("ImpersonatingModifier");
+
+                    b.Property<int?>("InterpreterId");
+
+                    b.Property<int>("ModifiedBy");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate");
 
                     b.Property<int>("OrderId");
 
                     b.Property<int>("RankingId");
 
-                    b.Property<int?>("RankingId1");
+                    b.Property<int>("Status");
 
                     b.HasKey("RequestId");
+
+                    b.HasIndex("ImpersonatingModifier");
+
+                    b.HasIndex("InterpreterId");
+
+                    b.HasIndex("ModifiedBy");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("RankingId");
 
-                    b.HasIndex("RankingId1");
-
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
                         .WithMany()
@@ -451,7 +517,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
                         .WithMany()
@@ -459,9 +525,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -472,12 +538,27 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUser", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
+                        .WithMany("Users")
+                        .HasForeignKey("BrokerId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany("Users")
+                        .HasForeignKey("CustomerOrganisationId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
+                        .WithOne("User")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.AspNetUser", "InterpreterId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerRegion", b =>
@@ -488,21 +569,21 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
-                        .WithMany()
+                        .WithMany("BrokerRegions")
                         .HasForeignKey("RegionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBrokerRegion", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.BrokerRegion", "BrokerRegion")
-                        .WithMany()
-                        .HasForeignKey("BrokerRegionId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
+                        .WithMany("BrokerRegions")
+                        .HasForeignKey("InterpreterId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "Interpreter")
+                    b.HasOne("Tolk.BusinessLogic.Entities.BrokerRegion", "BrokerRegion")
                         .WithMany()
-                        .HasForeignKey("InterpreterId")
+                        .HasForeignKey("BrokerId", "RegionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -510,12 +591,18 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreator")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Language", "Language")
                         .WithMany()
@@ -540,25 +627,35 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.BrokerRegion", "BrokerRegion")
                         .WithOne("Ranking")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.Ranking", "BrokerRegionId")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.Ranking", "BrokerId", "RegionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Request", b =>
                 {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ModifiedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingModifier")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
+                        .WithMany()
+                        .HasForeignKey("InterpreterId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ModifyUser")
+                        .WithMany()
+                        .HasForeignKey("ModifiedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("Requests")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.Ranking")
+                    b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
                         .WithMany("Requests")
                         .HasForeignKey("RankingId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
-                        .WithMany()
-                        .HasForeignKey("RankingId1");
                 });
 #pragma warning restore 612, 618
         }

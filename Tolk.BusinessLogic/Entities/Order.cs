@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTime CreatedDate { get; set; }
 
         //FK to AspNetUser
-        public string CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
 
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
@@ -99,7 +99,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string Description { get; set; }
 
-        public string ImpersonatingCreator { get; set; }
+        public int ImpersonatingCreator { get; set; }
 
         [ForeignKey(nameof(ImpersonatingCreator))]
         public AspNetUser CreatedByImpersonator { get; set; }

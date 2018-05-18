@@ -29,11 +29,11 @@ namespace Tolk.Web.Controllers
 
         #region possible moves to base controller
 
-        protected string CurrentUserId
+        protected int CurrentUserId
         {
             get
             {
-                return _userManager.GetUserId(User);
+                return int.Parse(_userManager.GetUserId(User));
             }
         }
 
@@ -155,10 +155,10 @@ namespace Tolk.Web.Controllers
                         //Hardcodes
                         RequiredInterpreterLocation = 1,
                         Status = OrderStatus.Requested,
-                        CreatedBy = _userManager.GetUserId(User),
+                        CreatedBy = int.Parse(_userManager.GetUserId(User)),
                         CreatedDate = DateTime.Now,
                         CustomerOrganisationId = CurrentCustomerOrgansationId,
-                        ImpersonatingCreator = User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)
+                        ImpersonatingCreator = int.Parse(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
                     };
                 }
 
