@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Data
 {
-    public class TolkDbContext : IdentityDbContext<AspNetUser>
+    public class TolkDbContext : IdentityDbContext<AspNetUser,IdentityRole<int>, int>
     {
         public TolkDbContext(DbContextOptions<TolkDbContext> options)
             : base(options)
@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Data
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("[OrderId] + 10000000");
 
-            builder.Entity<IdentityUserRole<string>>()
+            builder.Entity<IdentityUserRole<int>>()
                 .HasOne<AspNetUser>()
                 .WithMany(u => u.Roles)
                 .HasForeignKey(iur => iur.UserId)

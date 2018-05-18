@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Identity;
 namespace Tolk.BusinessLogic.Entities
 {
     // Add profile data for application users by adding properties to the ApplicationUser class
-    public class AspNetUser : IdentityUser
+    public class AspNetUser : IdentityUser<int>
     {
-        public List<IdentityUserRole<string>> Roles { get; set; }
+        public List<IdentityUserRole<int>> Roles { get; set; }
 
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
