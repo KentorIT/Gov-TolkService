@@ -39,4 +39,5 @@ h1.shortcut-box {
     position: relative;
     top: 1px;
     line-height: 10px; /* To prevent star from pushing form fields apart.*/
+    margin-left: 1px;
 }

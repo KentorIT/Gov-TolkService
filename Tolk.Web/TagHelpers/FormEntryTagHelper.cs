@@ -106,34 +106,31 @@ namespace Tolk.Web.TagHelpers
         {
             output.TagName = "div";
             output.TagMode = TagMode.StartTagAndEndTag;
+            string className = "form-group";
 
             using (var writer = new StringWriter())
             {
                 switch (InputType)
                 {
                     case InputTypeSelect:
-                        output.Attributes.Add("class", "form-group");
                         WriteLabel(writer);
                         WriteSelect(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeDateTimeOffset:
-                        output.Attributes.Add("class", "form-group");
                         WriteDateTimeOffsetBlock(writer);
                         break;
                     case InputTypePassword:
-                        output.Attributes.Add("class", "form-group");
                         WriteLabel(writer);
                         WritePassword(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeCheckbox:
-                        output.Attributes.Add("class", "checkbox");
+                        className = "checkbox";
                         WriteCheckBoxInLabel(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeTextArea:
-                        output.Attributes.Add("class", "form-group");
                         WriteLabel(writer);
                         WriteTextArea(writer);
                         WriteValidation(writer);
@@ -144,9 +141,12 @@ namespace Tolk.Web.TagHelpers
                         WriteValidation(writer);
                         break;
                 }
+                output.Attributes.Add("class", className);
                 output.Content.AppendHtml(writer.ToString());
             }
         }
+
+        private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
 
         private void WriteLabel(TextWriter writer)
         {
@@ -154,7 +154,7 @@ namespace Tolk.Web.TagHelpers
 
             if(For.ModelExplorer.Metadata.IsRequired)
             {
-                tagBuilder.InnerHtml.AppendHtml("<span class=\"required-star\">*</span>");
+                tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
             }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -231,7 +231,12 @@ namespace Tolk.Web.TagHelpers
         private void WriteDateTimeOffsetBlock(TextWriter writer)
         {
             // First write a label
-            writer.WriteLine($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}</label>");
+            writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
+            if(For.ModelExplorer.Metadata.IsRequired)
+            {
+                writer.Write(RequiredStarSpan);
+            }
+            writer.WriteLine("</label>");
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
