@@ -1,7 +1,7 @@
 declare @increment bit
 declare @reseed int
 
---TODO: Clear the users to...
+--TODO: Clear the users too...
 truncate table InterpreterBrokerRegion
 truncate table OrderRequirements
 
@@ -12,6 +12,3 @@ set @reseed = 1 - @increment
 delete Orders --
 DBCC CHECKIDENT (Orders, reseed, @reseed)--
 
--- Remove roles that are no longer directly assigned (instead policies are used
--- that relies on present of CustomerId etc.
-delete AspNetRoles where Id in ('TolkBrokerRole', 'TolkCustomerRole', 'TolkInterpreterRole')
