@@ -30,4 +30,19 @@
     <ProjectReference Include="..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Resources\DataAnnotationValidationMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DataAnnotationValidationMessages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\DataAnnotationValidationMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>DataAnnotationValidationMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

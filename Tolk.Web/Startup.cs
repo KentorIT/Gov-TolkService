@@ -9,6 +9,10 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Tolk.Web.Resources;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 
 namespace Tolk.Web
 {
@@ -48,6 +52,16 @@ namespace Tolk.Web
             {
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
             });
+
+            services.Configure<RequestLocalizationOptions>(opt =>
+            {
+                var supportedCultures = new[] { new CultureInfo("sv-SE") };
+                opt.DefaultRequestCulture = new RequestCulture("sv-SE", "sv-SE");
+                opt.SupportedCultures = supportedCultures;
+                opt.SupportedUICultures = supportedCultures;
+            });
+
+            services.AddSingleton<IValidationAttributeAdapterProvider, SwedishValidationAttributeAdapterProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,6 +81,16 @@ namespace Tolk.Web
             app.UseStaticFiles();
 
             app.UseAuthentication();
+
+            var swedishCulture = new CultureInfo("sv-SE");
+            var cultureArray = new[] { swedishCulture };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions()
+            {
+                DefaultRequestCulture = new RequestCulture(swedishCulture),
+                SupportedCultures = cultureArray,
+                SupportedUICultures = cultureArray
+            });
 
             app.UseMvc(routes =>
             {
