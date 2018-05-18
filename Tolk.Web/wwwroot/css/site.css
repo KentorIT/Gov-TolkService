@@ -26,3 +26,8 @@
 table.clickable-rows > tbody > tr > td {
     cursor: pointer;
 }
+/*Should be in less or other*/
+
+h1.shortcut-box {
+    text-align: center;
+}

@@ -5,8 +5,21 @@
 
 <div class="row">
     <div class="col-md-8">
-        <h2>Startsida</h2>
         @Model.Message
+        <h2>Att göra</h2>
+        @foreach (var box in Model.Boxes)
+        {
+            <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="@box.RouteData">
+                <div class="col-md-4">
+                    <div class="panel panel-info center-block">
+                        <div class="panel-heading">
+                            <h4>@box.Header</h4>
+                        </div>
+                        <h1 class="shortcut-box">@box.Count.ToString()</h1>
+                    </div>
+                </div>
+            </a>
+        }
     </div>
     <div class="col-md-4">
         <h2>Nyheter</h2>
