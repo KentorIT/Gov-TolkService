@@ -266,7 +266,13 @@ namespace Tolk.Web.TagHelpers
                 dateFieldName,
                 value: dateValue,
                 format: "{0:yyyy-MM-dd}",
-                htmlAttributes: new { @class = "form-control datepicker", placeholder = "ÅÅÅÅ-MM-DD", type = "text" });
+                htmlAttributes: new
+                {
+                    @class = "form-control datepicker",
+                    placeholder = "ÅÅÅÅ-MM-DD",
+                    type = "text",
+                    data_val_required = "Datum måste anges."
+                });
 
             RemoveRequiredIfNullable(tagBuilder);
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -286,7 +292,8 @@ namespace Tolk.Web.TagHelpers
                     @class = "form-control",
                     placeholder = "HH:MM",
                     data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]$",
-                    data_val_regex = "Ange tid som HH:MM"
+                    data_val_regex = "Ange tid som HH:MM",
+                    data_val_required = "Tid måste anges."
                 });
 
             RemoveRequiredIfNullable(tagBuilder);
