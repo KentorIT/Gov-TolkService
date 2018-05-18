@@ -2,6 +2,7 @@
 
 DELETE AspNetUsers WHERE Email in ('pia@polisen.se', 'david@domstol.se', 'frida@formedling.se', 'tomas@tolk.se')
 
+if not exists (select 1 from Interpreters)
 INSERT Interpreters DEFAULT VALUES
 
 INSERT AspNetUsers
