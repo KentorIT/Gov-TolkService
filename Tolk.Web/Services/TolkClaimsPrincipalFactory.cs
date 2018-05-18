@@ -12,13 +12,13 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Services
 {
-    public class TolkClaimsPrincipalFactory : UserClaimsPrincipalFactory<AspNetUser, IdentityRole>
+    public class TolkClaimsPrincipalFactory : UserClaimsPrincipalFactory<AspNetUser, IdentityRole<int>>
     {
         private TolkDbContext _dbContext;
 
         public TolkClaimsPrincipalFactory(
             UserManager<AspNetUser> userManager,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<IdentityRole<int>> roleManager,
             IOptions<IdentityOptions> optionsAccessor,
             TolkDbContext dbContext) 
             : base(userManager, roleManager, optionsAccessor)
