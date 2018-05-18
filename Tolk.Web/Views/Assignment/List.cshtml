@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Tolk.Web.Models.RequestListItemModel>
+@using Tolk.BusinessLogic.Utilities
+@{
+    ViewData["Title"] = "Tilldelade uppdrag";
+}
+<div class="row">
+    <div class="col-md-12">
+        <h2>@ViewData["Title"]</h2>
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover clickable-rows" data-click-controller="Assignment" data-click-action="Edit" data-click-parameter="id">
+                    <thead>
+                        <tr>
+                            <th>AvropsID</th>
+                            <th>Region</th>
+                            <th>Kund</th>
+                            <th>Språk</th>
+                            <th>Start</th>
+                            <th>Slut</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr data-id="@item.RequestId">
+                                <td>@item.OrderNumber</td>
+                                <td>@item.RegionName</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.Language</td>
+                                <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@EnumHelper.GetDescription(item.Status)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>
+                Det fanns inga rader att visa.
+            </p>
+        }
+    </div>
+</div>
