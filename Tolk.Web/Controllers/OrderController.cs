@@ -110,16 +110,16 @@ namespace Tolk.Web.Controllers
             //The broker fee should be calculated from baseBrice maxMinutes 60!
             var brokerFee = (request?.Ranking.BrokerFee ?? 1) * prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60).Price;
             model.RequestStatus = request?.Status;
+            model.CalculatedPrice = price + extraTimePrice + brokerFee;
+            model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
             if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
             {
-                model.CalculatedPrice = price + extraTimePrice + brokerFee;
                 model.RequestId = request.RequestId;
                 model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                 model.InterpreterName = _dbContext.Requests
                     .Include(r => r.Interpreter)
                     .ThenInclude(i => i.User)
                     .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
-                model.BrokerName = request.Ranking.BrokerRegion.Broker.Name;
             }
             return View("Details", model);
         }
