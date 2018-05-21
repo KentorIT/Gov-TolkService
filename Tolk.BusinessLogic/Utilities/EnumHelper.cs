@@ -67,6 +67,43 @@ namespace Tolk.BusinessLogic.Utilities
             }
         }
 
+        /// <summary>
+        /// Used to determine if a enum value is marked as obsolete.
+        /// </summary>
+        public static bool IsObsolete<TEnum>(TEnum value)
+        {
+            return (value == null ? true : GetAttributeProperty<ObsoleteAttribute, TEnum>(value) != null);
+        }
+
+        /// <summary>
+        /// Get all description values for an enum.
+        /// </summary>
+        /// <typeparam name="TEnum">Type of the enum.</typeparam>
+        /// <returns>IEnumerable of enum descriptions.</returns>
+        public static IEnumerable<EnumValue<TEnum>> GetAllDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return Enum.GetValues(type).OfType<TEnum>()
+                .Where(t => !IsObsolete(t) && (filterValues == null || filterValues.Contains(t)))
+                .Select(v => new EnumValue<TEnum>(v, type.GetMember(v.ToString()).GetEnumDescription()));
+        }
+
+        /// <summary>
+        /// returns the attribute of the TAttribute typ, if the incoming field has it set.
+        /// </summary>
+        public static TAttribute GetAttributeProperty<TAttribute, TEnum>(TEnum value)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+            var property = type.GetMember(value.ToString())
+                .Single()
+                .GetCustomAttributes(false)
+                .OfType<TAttribute>().SingleOrDefault();
+            return property;
+        }
+
         private static string GetEnumDescription(this IEnumerable<MemberInfo> member)
         {
             var attributes = member.Single().GetCustomAttributes(false);

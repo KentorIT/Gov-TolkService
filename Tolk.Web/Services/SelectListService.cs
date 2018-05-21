@@ -9,6 +9,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -17,6 +19,9 @@ namespace Tolk.Web.Services
         private readonly IMemoryCache _cache;
         private readonly TolkDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
+        private const string languagesSelectListKey = nameof(languagesSelectListKey);
+        private const string impersonationTargets = nameof(impersonationTargets);
 
         public SelectListService(
             IMemoryCache cache,
@@ -36,43 +41,24 @@ namespace Tolk.Web.Services
             })
             .ToList().AsReadOnly();
 
-        /// <summary>
-        /// TODO: Should be extracted from an enum
-        /// </summary>
         public static IEnumerable<SelectListItem> AssignentTypes { get; } =
-            new List<SelectListItem>
-            {
-                new SelectListItem { Value = "1", Text = "På plats" },
-                new SelectListItem { Value = "2", Text = "Distans" },
-                new SelectListItem { Value = "3", Text = "Distans i anvisad lokal" },
-                new SelectListItem { Value = "4", Text = "Tolkanvändarutbildning" },
-                new SelectListItem { Value = "5", Text = "Avista" }
-            }.ToList().AsReadOnly();
+            EnumHelper.GetAllDescriptions<AssignmentType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
 
-        /// <summary>
-        /// TODO: Should be extracted from an enum
-        /// RT, ST, ÖT, UT, AT
-        /// </summary>
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
-            new List<SelectListItem>
-            {
-                new SelectListItem { Value = "1", Text = "RT" },
-                new SelectListItem { Value = "2", Text = "ST" },
-                new SelectListItem { Value = "3", Text = "AT" },
-                new SelectListItem { Value = "4", Text = "UT" },
-                new SelectListItem { Value = "5", Text = "ÖT" }
-            }.ToList().AsReadOnly();
-
-        private const string languagesSelectListKey = nameof(languagesSelectListKey);
+            EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
 
         public IEnumerable<SelectListItem> Languages
         {
             get
             {
-                IEnumerable<SelectListItem> items;
-                if (!_cache.TryGetValue(languagesSelectListKey, out items))
+                if (!_cache.TryGetValue(languagesSelectListKey, out IEnumerable<SelectListItem> items))
                 {
-                    items = _dbContext.Languages.Select(l => new SelectListItem
+                    items = _dbContext.Languages
+                        .OrderBy(l => l.Name).Select(l => new SelectListItem
                     {
                         Value = l.LanguageId.ToString(),
                         Text = l.Name
@@ -85,8 +71,6 @@ namespace Tolk.Web.Services
                 return items;
             }
         }
-
-        private const string impersonationTargets = nameof(impersonationTargets);
 
         public IEnumerable<SelectListItem> ImpersonationList
         {

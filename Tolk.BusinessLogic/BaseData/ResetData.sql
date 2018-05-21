@@ -19,3 +19,8 @@ DBCC CHECKIDENT (Orders, reseed, @reseed)--
 -- that relies on present of CustomerId etc.
 delete AspNetRoles where Id in ('TolkBrokerRole', 'TolkCustomerRole', 'TolkInterpreterRole')
 
+-- Should reset data from dev data too:
+-- 1. CustomerOrganisations
+-- 2. Brokers
+-- 3. Users
+-- 4. PriceListRows
