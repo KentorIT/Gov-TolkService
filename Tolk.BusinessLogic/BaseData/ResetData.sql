@@ -19,5 +19,3 @@ DBCC CHECKIDENT (Orders, reseed, @reseed)--
 -- that relies on present of CustomerId etc.
 delete AspNetRoles where Id in ('TolkBrokerRole', 'TolkCustomerRole', 'TolkInterpreterRole')
 
-
--- Remove roles that are no longer directly assigned (instead policies are used
