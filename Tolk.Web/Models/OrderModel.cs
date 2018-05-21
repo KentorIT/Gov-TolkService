@@ -56,7 +56,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
-        [Display(Name = "Utbildningsnivå")]
+        [Display(Name = "Kompetensnivå")]
         [Required]
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
 
