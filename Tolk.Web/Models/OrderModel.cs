@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
     {
         public int? OrderId { get; set; }
 
-        [Display(Name = "Region")]
+        [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
         public int RegionId { get; set; }
 
@@ -43,7 +43,7 @@ namespace Tolk.Web.Models
         [Required]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Startdatum och tid")]
+        [Display(Name = "Startdatum och tid", Description = "Datum och tid när tolkuppdraget startar.")]
         public DateTimeOffset StartDateTime { get; set; }
 
         [Display(Name = "Slutdatum och tid")]

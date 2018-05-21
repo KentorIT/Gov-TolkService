@@ -24,7 +24,7 @@ namespace Tolk.Web.Controllers
     {
         private readonly UserManager<AspNetUser> _userManager;
         private readonly SignInManager<AspNetUser> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
@@ -33,7 +33,7 @@ namespace Tolk.Web.Controllers
         public AccountController(
             UserManager<AspNetUser> userManager,
             SignInManager<AspNetUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<IdentityRole<int>> roleManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
             TolkDbContext dbContext,
@@ -238,7 +238,7 @@ namespace Tolk.Web.Controllers
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    var callbackUrl = Url.EmailConfirmationLink(user.Id.ToString(), code, Request.Scheme);
                     await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -381,7 +381,7 @@ namespace Tolk.Web.Controllers
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id.ToString(), code, Request.Scheme);
                 await _emailSender.SendEmailAsync(model.Email, "Reset Password",
                    $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
@@ -481,10 +481,10 @@ namespace Tolk.Web.Controllers
 
                             // Gör array av roller, loopa över, kolla result för varje.
 
-                            var roles = new IdentityRole[]
+                            var roles = new IdentityRole<int>[]
                             {
-                                new IdentityRole(Roles.Admin){Id = Roles.AdminRoleKey},
-                                new IdentityRole(Roles.Impersonator){Id = Roles.ImpersonatorKey},
+                                new IdentityRole<int>(Roles.Admin),
+                                new IdentityRole<int>(Roles.Impersonator),
                             };
 
                             foreach(var role in roles)

@@ -147,17 +147,27 @@ namespace Tolk.Web.TagHelpers
         }
 
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
+        private const string InformationSpan = "<span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
 
         private void WriteLabel(TextWriter writer)
         {
             TagBuilder tagBuilder = GenerateLabel();
 
-            if(For.ModelExplorer.Metadata.IsRequired)
+            if (For.ModelExplorer.Metadata.IsRequired)
             {
                 tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
             }
-
             tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            WriteInfoIfDescription(writer);
+        }
+
+        private void WriteInfoIfDescription(TextWriter writer)
+        {
+            if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
+            {
+                writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+            }
         }
 
         private TagBuilder GenerateLabel()
@@ -179,6 +189,11 @@ namespace Tolk.Web.TagHelpers
                 value: For.Model,
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
+
+            if(!string.IsNullOrEmpty(For.Metadata.Description))
+            {
+                tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
+            }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
@@ -237,6 +252,7 @@ namespace Tolk.Web.TagHelpers
                 writer.Write(RequiredStarSpan);
             }
             writer.WriteLine("</label>");
+            WriteInfoIfDescription(writer);
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
@@ -266,7 +282,13 @@ namespace Tolk.Web.TagHelpers
                 dateFieldName,
                 value: dateValue,
                 format: "{0:yyyy-MM-dd}",
-                htmlAttributes: new { @class = "form-control datepicker", placeholder = "ÅÅÅÅ-MM-DD", type = "text" });
+                htmlAttributes: new
+                {
+                    @class = "form-control datepicker",
+                    placeholder = "ÅÅÅÅ-MM-DD",
+                    type = "text",
+                    data_val_required = "Datum måste anges."
+                });
 
             RemoveRequiredIfNullable(tagBuilder);
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -286,7 +308,8 @@ namespace Tolk.Web.TagHelpers
                     @class = "form-control",
                     placeholder = "HH:MM",
                     data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]$",
-                    data_val_regex = "Ange tid som HH:MM"
+                    data_val_regex = "Ange tid som HH:MM",
+                    data_val_required = "Tid måste anges."
                 });
 
             RemoveRequiredIfNullable(tagBuilder);

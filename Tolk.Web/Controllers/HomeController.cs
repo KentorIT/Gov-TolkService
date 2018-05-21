@@ -40,14 +40,14 @@ namespace Tolk.Web.Controllers
             {
                 yield return new StartPageBox
                 {
-                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == _userManager.GetUserId(User)).Count(),
+                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == int.Parse(_userManager.GetUserId(User))).Count(),
                     Header = "Tillsatt tolk",
                     Controller = "Order",
                     Action = "List"
                 };
                 yield return new StartPageBox
                 {
-                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.Delivered && o.CreatedBy == _userManager.GetUserId(User)).Count(),
+                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.Delivered && o.CreatedBy == int.Parse(_userManager.GetUserId(User))).Count(),
                     Header = "Rekvirerade",
                     Controller = "Order",
                     Action = "List"

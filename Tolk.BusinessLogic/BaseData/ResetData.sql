@@ -2,6 +2,7 @@ Use TolkDev
 declare @increment bit
 declare @reseed int
 
+truncate table InterpreterBrokerRegion
 truncate table OrderRequirements
 truncate table Requests
 
@@ -13,6 +14,10 @@ Select @reseed
 
 delete Orders --
 DBCC CHECKIDENT (Orders, reseed, @reseed)--
-/**/
 
-Select * from Orders
+-- Remove roles that are no longer directly assigned (instead policies are used
+-- that relies on present of CustomerId etc.
+delete AspNetRoles where Id in ('TolkBrokerRole', 'TolkCustomerRole', 'TolkInterpreterRole')
+
+
+-- Remove roles that are no longer directly assigned (instead policies are used
