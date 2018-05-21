@@ -99,7 +99,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string Description { get; set; }
 
-        public int ImpersonatingCreator { get; set; }
+        public int? ImpersonatingCreator { get; set; }
 
         [ForeignKey(nameof(ImpersonatingCreator))]
         public AspNetUser CreatedByImpersonator { get; set; }

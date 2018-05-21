@@ -34,12 +34,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset? ModifiedDate { get; set; }
 
-        public int ModifiedBy { get; set; }
+        public int? ModifiedBy { get; set; }
 
         [ForeignKey(nameof(ModifiedBy))]
         public AspNetUser ModifyUser { get; set; }
 
-        public int ImpersonatingModifier { get; set; }
+        public int? ImpersonatingModifier { get; set; }
 
         [ForeignKey(nameof(ImpersonatingModifier))]
         public AspNetUser ModifiedByImpersonator { get; set; }
