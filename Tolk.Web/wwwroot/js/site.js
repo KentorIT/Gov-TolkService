@@ -24,7 +24,6 @@ $(function () {
     });
 });
 
-$('.form-entry-information').click(functio())
-{
+$('.form-entry-information').click(function () {
 
-}
+});
