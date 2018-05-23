@@ -58,9 +58,9 @@ namespace Tolk.Web.Controllers
             {
                 request.Status = RequestStatus.Received;
                 //Set modified user, date and possible impersonator
-                request.ModifiedDate = DateTimeOffset.Now;
-                request.ModifiedBy = CurrentUserId;
-                request.ImpersonatingModifier = CurrentImpersonatorId;
+                request.RecieveDate = DateTimeOffset.Now;
+                request.ReceivedBy = CurrentUserId;
+                request.ImpersonatingReceivedBy = CurrentImpersonatorId;
                 _dbContext.SaveChanges();
             }
             //Get request model from db
@@ -80,9 +80,9 @@ namespace Tolk.Web.Controllers
                     .Single(o => o.RequestId == model.RequestId);
                 request.Status = model.SetStatus;
                 //TODO:Fix better offset-check!!
-                request.ModifiedDate = DateTimeOffset.Now;
-                request.ModifiedBy = CurrentUserId;
-                request.ImpersonatingModifier = CurrentImpersonatorId;
+                request.AnswerDate = DateTimeOffset.Now;
+                request.AnsweredBy = CurrentUserId;
+                request.ImpersonatingAnsweredBy = CurrentImpersonatorId;
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
                 //TODO: This should differ depending on the incoming status.

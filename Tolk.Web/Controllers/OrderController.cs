@@ -162,6 +162,9 @@ namespace Tolk.Web.Controllers
             var request = order.Requests.Single(r => r.RequestId == model.RequestId);
             order.Status = OrderStatus.ResponseAccepted;
             request.Status = RequestStatus.Approved;
+            request.AcceptanceDate = DateTimeOffset.Now;
+            request.AcceptanceBy = CurrentUserId;
+            request.ImpersonatingAcceptanceBy = CurrentImpersonatorId;
             _dbContext.SaveChanges();
             return Details(order.OrderId);
         }

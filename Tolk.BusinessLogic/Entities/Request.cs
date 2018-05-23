@@ -32,16 +32,40 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
 
-        public DateTimeOffset? ModifiedDate { get; set; }
+        public DateTimeOffset? RecieveDate { get; set; }
 
-        public int? ModifiedBy { get; set; }
+        public int? ReceivedBy { get; set; }
 
-        [ForeignKey(nameof(ModifiedBy))]
-        public AspNetUser ModifyUser { get; set; }
+        [ForeignKey(nameof(ReceivedBy))]
+        public AspNetUser ReceivedByUser { get; set; }
 
-        public int? ImpersonatingModifier { get; set; }
+        public int? ImpersonatingReceivedBy { get; set; }
 
-        [ForeignKey(nameof(ImpersonatingModifier))]
-        public AspNetUser ModifiedByImpersonator { get; set; }
+        [ForeignKey(nameof(ImpersonatingReceivedBy))]
+        public AspNetUser ReceivedByImpersonator { get; set; }
+
+        public DateTimeOffset? AnswerDate { get; set; }
+
+        public int? AnsweredBy { get; set; }
+
+        [ForeignKey(nameof(AnsweredBy))]
+        public AspNetUser AnsweringUser { get; set; }
+
+        public int? ImpersonatingAnsweredBy { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingAnsweredBy))]
+        public AspNetUser AnsweredByImpersonator { get; set; }
+
+        public DateTimeOffset? AcceptanceDate { get; set; }
+
+        public int? AcceptanceBy { get; set; }
+
+        [ForeignKey(nameof(AcceptanceBy))]
+        public AspNetUser AcceptingUser { get; set; }
+
+        public int? ImpersonatingAcceptanceBy { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingAcceptanceBy))]
+        public AspNetUser AcceptanceByImpersonator { get; set; }
     }
 }

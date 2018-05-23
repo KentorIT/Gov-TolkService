@@ -60,12 +60,33 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Request>()
-                .HasOne(r => r.ModifyUser)
+                .HasOne(r => r.ReceivedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.Entity<Request>()
+                .HasOne(r => r.AnsweringUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Request>()
-                .HasOne(r => r.ModifiedByImpersonator)
+                .HasOne(r => r.AcceptingUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(r => r.ReceivedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(r => r.AnsweredByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(r => r.AcceptanceByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }
