@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -11,11 +12,12 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderRequirementId { get; set; }
 
-        //TODO: Make Enum and fk
-        public int RequirementType { get; set; }
+        public RequirementType RequirementType { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(1000)]
         public string Description { get; set; }
+
+        public bool IsRequired { get; set; }
 
         #region foreign keys
 
