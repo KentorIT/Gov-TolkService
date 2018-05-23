@@ -16,36 +16,27 @@ using System.Collections.Generic;
 namespace Tolk.Web.Controllers
 {
     [Authorize(Policy = Policies.Customer)]
-    public class OrderController : Controller
+    public class OrderController : BaseController
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly PriceCalculationService _priceCalculationService;
 
-        public OrderController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
+        public OrderController(TolkDbContext dbContext, UserManager<AspNetUser> userManager, PriceCalculationService priceCalculationService)
+           : base(userManager)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _priceCalculationService = priceCalculationService;
         }
 
-        #region possible moves to base controller
-
-        protected int CurrentUserId
-        {
-            get
-            {
-                return int.Parse(_userManager.GetUserId(User));
-            }
-        }
-
-        protected int CurrentCustomerOrgansationId
+        private int CurrentCustomerOrgansationId
         {
             get
             {
                 return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.CustomerOrganisationId).Value);
             }
         }
-
-        #endregion
 
         public IActionResult List()
         {
@@ -78,26 +69,6 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.OrderId == id);
             var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
             var listType = order.CustomerOrganisation.PriceListType;
-            //TODO: Handle if there are no rows due to start/end date restrictions. Should take the one with the latest end date in that case.
-            decimal extraTimePrice = 0;
-            var extraCosts = GetMinutesPerPriceType(order.StartDateTime, order.EndDateTime);
-            //Get the rows for the list type, startdate and competence first, to get one call to db...
-            var prices = _dbContext.PriceListRows
-                .Where(r =>
-                    r.CompetenceLevel == competenceLevel &&
-                    r.PriceListType == listType &&
-                    r.StartDate <= order.StartDateTime.DateTime && r.EndDate >= order.StartDateTime.DateTime).ToList();
-            var price = prices
-                .OrderBy(r => r.MaxMinutes)
-                .First(r =>
-                    r.PriceRowType == PriceRowType.BasePrice &&
-                    r.MaxMinutes >= extraCosts.Single(c => c.PriceRowType == PriceRowType.BasePrice).Minutes).Price;
-            foreach (var priceTime in extraCosts.Where(c => c.Minutes > 0 && c.PriceRowType != PriceRowType.BasePrice))
-            {
-                var extraPriceInfo = prices.Single(r => r.PriceRowType == priceTime.PriceRowType);
-                int n = extraCosts.Single(c => c.PriceRowType == priceTime.PriceRowType).Minutes / extraPriceInfo.MaxMinutes;
-                extraTimePrice += n * extraPriceInfo.Price;
-            }
             var model = OrderModel.GetModelFromOrder(order);
             //TODO: Handle this better. Preferably with a list that you can use contains on
             var request = order.Requests.SingleOrDefault(r =>
@@ -107,10 +78,8 @@ namespace Tolk.Web.Controllers
                 r.Status == RequestStatus.SentToInterpreter ||
                 r.Status == RequestStatus.Approved
                 );
-            //The broker fee should be calculated from baseBrice maxMinutes 60!
-            var brokerFee = (request?.Ranking.BrokerFee ?? 1) * prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60).Price;
+            model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
             model.RequestStatus = request?.Status;
-            model.CalculatedPrice = price + extraTimePrice + brokerFee;
             model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
             if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
             {
@@ -158,7 +127,7 @@ namespace Tolk.Web.Controllers
                         CreatedBy = int.Parse(_userManager.GetUserId(User)),
                         CreatedDate = DateTime.Now,
                         CustomerOrganisationId = CurrentCustomerOrgansationId,
-                        ImpersonatingCreator = int.Parse(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
+                        ImpersonatingCreator = CurrentImpersonatorId
                     };
                 }
 
@@ -196,33 +165,5 @@ namespace Tolk.Web.Controllers
             _dbContext.SaveChanges();
             return Details(order.OrderId);
         }
-
-        private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
-        {
-            int maxMinutes = 330;
-            //TODO: Has no calculation for övertid
-            TimeSpan span = endDateTime - startDateTime;
-            int totalMinutes = (int)span.TotalMinutes;
-            int extraMinutes = 0;
-            if (totalMinutes > maxMinutes)
-            {
-                extraMinutes = totalMinutes - maxMinutes;
-                totalMinutes = maxMinutes;
-            }
-            yield return new PriceTime { Minutes = totalMinutes, PriceRowType = PriceRowType.BasePrice };
-            yield return new PriceTime { Minutes = extraMinutes, PriceRowType = PriceRowType.PriceOverMaxTime };
-            //TODO: Add Check for Big holidays
-            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.BigHolidayWeekendIWH };
-            //TODO: Get number of minutes during weekend, that is not in BigHolidayWeekendIWH.
-            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.WeekendIWH };
-            //TODO: Get number of minutes before 07:00 and after 18:00, that is not in BigHolidayWeekendIWH.
-            yield return new PriceTime { Minutes = 0, PriceRowType = PriceRowType.InconvenientWorkingHours };
-        }
-    }
-
-    public class PriceTime
-    {
-        public int Minutes { get; set; }
-        public PriceRowType PriceRowType { get; set; }
     }
 }

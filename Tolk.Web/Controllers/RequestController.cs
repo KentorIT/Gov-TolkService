@@ -14,12 +14,13 @@ using Tolk.Web.Services;
 namespace Tolk.Web.Controllers
 {
     [Authorize(Policy = Policies.Broker)]
-    public class RequestController : Controller
+    public class RequestController : BaseController
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
 
         public RequestController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
+            : base(userManager)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -58,8 +59,8 @@ namespace Tolk.Web.Controllers
                 request.Status = RequestStatus.Received;
                 //Set modified user, date and possible impersonator
                 request.ModifiedDate = DateTimeOffset.Now;
-                request.ModifiedBy = int.Parse(_userManager.GetUserId(User));
-                request.ImpersonatingModifier = int.Parse(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId));
+                request.ModifiedBy = CurrentUserId;
+                request.ImpersonatingModifier = CurrentImpersonatorId;
                 _dbContext.SaveChanges();
             }
             //Get request model from db
@@ -80,8 +81,8 @@ namespace Tolk.Web.Controllers
                 request.Status = model.SetStatus;
                 //TODO:Fix better offset-check!!
                 request.ModifiedDate = DateTimeOffset.Now;
-                request.ModifiedBy = int.Parse(_userManager.GetUserId(User));
-                request.ImpersonatingModifier = int.Parse(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId));
+                request.ModifiedBy = CurrentUserId;
+                request.ImpersonatingModifier = CurrentImpersonatorId;
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
                 //TODO: This should differ depending on the incoming status.
