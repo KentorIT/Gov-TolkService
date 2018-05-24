@@ -35,7 +35,7 @@ namespace Tolk.Web
             // within AddIdentity won't do anything.
             services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
-            
+
             services.AddIdentity<AspNetUser, IdentityRole<int>>()
                 .AddEntityFrameworkStores<TolkDbContext>()
                 .AddDefaultTokenProviders();
@@ -63,6 +63,8 @@ namespace Tolk.Web
             });
 
             services.AddSingleton<IValidationAttributeAdapterProvider, SwedishValidationAttributeAdapterProvider>();
+
+            services.AddSingleton<EntityScheduler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
