@@ -12,36 +12,26 @@ using Tolk.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Utilities;
 using System.Collections.Generic;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
     [Authorize(Policy = Policies.Customer)]
-    public class OrderController : BaseController
+    public class OrderController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly UserManager<AspNetUser> _userManager;
         private readonly PriceCalculationService _priceCalculationService;
 
-        public OrderController(TolkDbContext dbContext, UserManager<AspNetUser> userManager, PriceCalculationService priceCalculationService)
-           : base(userManager)
+        public OrderController(TolkDbContext dbContext, PriceCalculationService priceCalculationService)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
             _priceCalculationService = priceCalculationService;
-        }
-
-        private int CurrentCustomerOrgansationId
-        {
-            get
-            {
-                return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.CustomerOrganisationId).Value);
-            }
         }
 
         public IActionResult List()
         {
             return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
-                .Where(r => r.CreatedBy == CurrentUserId && r.CustomerOrganisationId == CurrentCustomerOrgansationId)
+                .Where(r => r.CreatedBy == User.GetCurrentUserId())
                 .Select(o => new OrderListItemModel
                 {
                     OrderId = o.OrderId,
@@ -90,7 +80,7 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(i => i.User)
                     .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
             }
-            return View("Details", model);
+            return View(model);
         }
 
         public IActionResult Edit(int id)
@@ -124,10 +114,10 @@ namespace Tolk.Web.Controllers
                         //Hardcodes
                         RequiredInterpreterLocation = 1,
                         Status = OrderStatus.Requested,
-                        CreatedBy = int.Parse(_userManager.GetUserId(User)),
+                        CreatedBy = User.GetCurrentUserId(),
                         CreatedDate = DateTime.Now,
-                        CustomerOrganisationId = CurrentCustomerOrgansationId,
-                        ImpersonatingCreator = CurrentImpersonatorId
+                        CustomerOrganisationId = User.GetCustomerOrganisationId(),
+                        ImpersonatingCreator = User.GetCurrentImpersonatorId()
                     };
                 }
 
@@ -163,8 +153,8 @@ namespace Tolk.Web.Controllers
             order.Status = OrderStatus.ResponseAccepted;
             request.Status = RequestStatus.Approved;
             request.AcceptanceDate = DateTimeOffset.Now;
-            request.AcceptanceBy = CurrentUserId;
-            request.ImpersonatingAcceptanceBy = CurrentImpersonatorId;
+            request.AcceptanceBy = User.GetCurrentUserId();
+            request.ImpersonatingAcceptanceBy = User.GetCurrentImpersonatorId();
             _dbContext.SaveChanges();
             return Details(order.OrderId);
         }
