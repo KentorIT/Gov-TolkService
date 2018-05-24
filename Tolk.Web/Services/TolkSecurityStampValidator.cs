@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
+using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Services

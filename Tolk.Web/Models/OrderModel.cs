@@ -108,7 +108,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public Order UpdateOrder(Order order)
+        public void UpdateOrder(Order order)
         {
             order.LanguageId = LanguageId;
             order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
@@ -123,7 +123,6 @@ namespace Tolk.Web.Models
             order.ZipCode = LocationZipCode;
             order.City = LocationCity;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
-            return order;
         }
 
         public static OrderModel GetModelFromOrder(Order order)

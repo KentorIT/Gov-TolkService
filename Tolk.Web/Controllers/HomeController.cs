@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers

@@ -13,6 +13,7 @@ using Tolk.Web.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Tolk.Web.Authorization;
 
 namespace Tolk.Web
 {
@@ -47,7 +48,7 @@ namespace Tolk.Web
             services.AddScoped<SelectListService>();
             services.AddScoped<PriceCalculationService>();
 
-            services.RegisterTolkAuthorization();
+            services.RegisterTolkAuthorizationPolicies();
 
             services.AddMvc(opt =>
             {

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Tolk.Web.Helpers;
+using Tolk.Web.Authorization;
 
 namespace Tolk.Web.Controllers
 {
@@ -57,8 +58,8 @@ namespace Tolk.Web.Controllers
                 request.Status = RequestStatus.Received;
                 //Set modified user, date and possible impersonator
                 request.RecieveDate = DateTimeOffset.Now;
-                request.ReceivedBy = User.GetCurrentUserId();
-                request.ImpersonatingReceivedBy = User.GetCurrentImpersonatorId();
+                request.ReceivedBy = User.GetUserId();
+                request.ImpersonatingReceivedBy = User.GetImpersonatorId();
                 _dbContext.SaveChanges();
             }
             //Get request model from db
@@ -79,8 +80,8 @@ namespace Tolk.Web.Controllers
                 request.Status = model.SetStatus;
                 //TODO:Fix better offset-check!!
                 request.AnswerDate = DateTimeOffset.Now;
-                request.AnsweredBy = User.GetCurrentUserId();
-                request.ImpersonatingAnsweredBy = User.GetCurrentImpersonatorId();
+                request.AnsweredBy = User.GetUserId();
+                request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
                 //TODO: This should differ depending on the incoming status.

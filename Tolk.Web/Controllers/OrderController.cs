@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Utilities;
 using System.Collections.Generic;
 using Tolk.Web.Helpers;
+using System.Threading.Tasks;
+using Tolk.Web.Authorization;
 
 namespace Tolk.Web.Controllers
 {
@@ -21,17 +23,22 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public OrderController(TolkDbContext dbContext, PriceCalculationService priceCalculationService)
+        public OrderController(
+            TolkDbContext dbContext,
+            PriceCalculationService priceCalculationService,
+            IAuthorizationService authorizationService)
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
+            _authorizationService = authorizationService;
         }
 
         public IActionResult List()
         {
             return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
-                .Where(r => r.CreatedBy == User.GetCurrentUserId())
+                .Where(r => r.CreatedBy == User.GetUserId())
                 .Select(o => new OrderListItemModel
                 {
                     OrderId = o.OrderId,
@@ -44,7 +51,7 @@ namespace Tolk.Web.Controllers
                 }));
         }
 
-        public IActionResult Details(int id)
+        public IActionResult View(int id)
         {
             //Get order model from db
             var order = _dbContext.Orders
@@ -83,11 +90,15 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             var order = _dbContext.Orders.Single(o => o.OrderId == id);
-            //Get order model from db
-            return View(OrderModel.GetModelFromOrder(order));
+
+            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            {
+                return View(OrderModel.GetModelFromOrder(order));
+            }
+            return Forbid();
         }
 
         public IActionResult Add()
@@ -102,43 +113,49 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order;
-                if (model.OrderId.HasValue)
-                {
-                    order = _dbContext.Orders.Single(o => o.OrderId == model.OrderId);
-                    //Modified by, Modified date, impersonator modifier
-                }
-                else
-                {
-                    order = new Order
-                    {
-                        //Hardcodes
-                        RequiredInterpreterLocation = 1,
-                        Status = OrderStatus.Requested,
-                        CreatedBy = User.GetCurrentUserId(),
-                        CreatedDate = DateTime.Now,
-                        CustomerOrganisationId = User.GetCustomerOrganisationId(),
-                        ImpersonatingCreator = User.GetCurrentImpersonatorId()
-                    };
-                }
 
-                order = model.UpdateOrder(order);
-                if (!model.OrderId.HasValue)
+                order = new Order
                 {
-                    Order.CreateRequest(_dbContext, order);
-                }
+                    //Hardcodes
+                    RequiredInterpreterLocation = 1,
+                    Status = OrderStatus.Requested,
+                    CreatedBy = User.GetUserId(),
+                    CreatedDate = DateTime.Now,
+                    CustomerOrganisationId = User.GetCustomerOrganisationId(),
+                    ImpersonatingCreator = User.GetImpersonatorId()
+                };
+
+                model.UpdateOrder(order);
+
+                Order.CreateRequest(_dbContext, order);
                 _dbContext.SaveChanges();
 
-                //TODO: If this is a edit, something else should happen to the requests in some way...
-                return Details(order.OrderId);
+                return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
             return View("Edit", model);
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Edit(OrderModel model)
+        public async Task<IActionResult> Edit(OrderModel model)
         {
-            return Add(model);
+            if(ModelState.IsValid)
+            {
+                var order = _dbContext.Orders.Single(o => o.OrderId == model.OrderId);
+
+                if(!(await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                {
+                    return Forbid();
+                }
+
+                model.UpdateOrder(order);
+
+                _dbContext.SaveChanges();
+
+                return RedirectToAction(nameof(View), new { id = order.OrderId });
+            }
+
+            return View(model);
         }
 
         [ValidateAntiForgeryToken]
@@ -153,10 +170,10 @@ namespace Tolk.Web.Controllers
             order.Status = OrderStatus.ResponseAccepted;
             request.Status = RequestStatus.Approved;
             request.AcceptanceDate = DateTimeOffset.Now;
-            request.AcceptanceBy = User.GetCurrentUserId();
-            request.ImpersonatingAcceptanceBy = User.GetCurrentImpersonatorId();
+            request.AcceptanceBy = User.GetUserId();
+            request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
             _dbContext.SaveChanges();
-            return Details(order.OrderId);
+            return View(order.OrderId);
         }
     }
 }

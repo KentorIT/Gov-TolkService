@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
