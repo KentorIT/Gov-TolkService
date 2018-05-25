@@ -13,9 +13,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public int Rank { get; set; }
 
-        public DateTimeOffset StartDate { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime FirstValidDate { get; set; }
 
-        public DateTimeOffset EndDate { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime LastValidDate { get; set; }
 
         [Column(TypeName = "decimal(5, 2)")]
         public decimal BrokerFee { get; set; }

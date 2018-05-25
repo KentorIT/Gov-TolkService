@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.Web.Authorization;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -24,15 +25,18 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly RankingService _rankingService;
 
         public OrderController(
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            RankingService rankingService)
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
+            _rankingService = rankingService;
         }
 
         public IActionResult List()
@@ -125,9 +129,12 @@ namespace Tolk.Web.Controllers
                     ImpersonatingCreator = User.GetImpersonatorId()
                 };
 
-                model.UpdateOrder(order);
+                _dbContext.Add(order);
 
-                Order.CreateRequest(_dbContext, order);
+                model.UpdateOrder(order);
+                
+                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId).Single(r => r.Rank == 1));
+
                 _dbContext.SaveChanges();
 
                 return RedirectToAction(nameof(View), new { id = order.OrderId });

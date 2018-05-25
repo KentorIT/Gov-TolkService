@@ -110,24 +110,20 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public static Request CreateRequest(TolkDbContext dbContext, Order order, int rank = 1)
+        public void CreateRequest(Ranking ranking)
         {
-            //Get Ranking from Region
-            var now = DateTime.Now;
-            var ranking = dbContext.Regions
-                .Include(r => r.BrokerRegions)
-                .ThenInclude(br => br.Ranking)
-                .Single(r => r.RegionId == order.RegionId)
-                .BrokerRegions
-                .Single(br => br.Ranking.Rank == rank && br.Ranking.StartDate <= now && br.Ranking.EndDate >= now).Ranking;
             var request = new Request
             {
                 RankingId = ranking.RankingId,
-                Order = order,
+                Order = this,
                 Status = RequestStatus.Created
             };
-            dbContext.Requests.Add(request);
-            return request;
+            if(Requests == null)
+            {
+                Requests = new List<Request>();
+            }
+
+            Requests.Add(request);
         }
 
         /* remaining fields

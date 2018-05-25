@@ -14,6 +14,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Tolk.Web.Authorization;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web
 {
@@ -66,6 +67,8 @@ namespace Tolk.Web
             services.AddSingleton<IValidationAttributeAdapterProvider, SwedishValidationAttributeAdapterProvider>();
 
             services.AddSingleton<EntityScheduler>();
+
+            services.AddTolkBusinessLogicServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
