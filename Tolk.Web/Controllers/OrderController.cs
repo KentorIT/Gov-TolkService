@@ -2,11 +2,9 @@
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System;
-using System.Security.Claims;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Microsoft.EntityFrameworkCore;
@@ -63,6 +61,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
+                .Include(o => o.Requirements)
                 .Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking)
                 .ThenInclude(r => r.BrokerRegion)
@@ -98,7 +97,7 @@ namespace Tolk.Web.Controllers
         {
             var order = _dbContext.Orders.Single(o => o.OrderId == id);
 
-            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
                 return View(OrderModel.GetModelFromOrder(order));
             }
@@ -126,7 +125,8 @@ namespace Tolk.Web.Controllers
                     CreatedBy = User.GetUserId(),
                     CreatedDate = DateTime.Now,
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
-                    ImpersonatingCreator = User.GetImpersonatorId()
+                    ImpersonatingCreator = User.GetImpersonatorId(),
+                    Requirements = new List<OrderRequirement>()
                 };
 
                 _dbContext.Add(order);
@@ -146,11 +146,11 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(OrderModel model)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var order = _dbContext.Orders.Single(o => o.OrderId == model.OrderId);
 
-                if(!(await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                if (!(await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
                 {
                     return Forbid();
                 }

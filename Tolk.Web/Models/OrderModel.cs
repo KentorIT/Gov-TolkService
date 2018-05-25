@@ -106,6 +106,13 @@ namespace Tolk.Web.Models
 
         #endregion
 
+        #region extra requirements
+
+        [Display(Name = "Extra behov")]
+        public List<OrderRequirementModel> OrderRequirements { get; set; }
+
+        #endregion
+
         #region methods
 
         public void UpdateOrder(Order order)
@@ -123,6 +130,25 @@ namespace Tolk.Web.Models
             order.ZipCode = LocationZipCode;
             order.City = LocationCity;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
+
+            // add all extra requirements
+            foreach (var req in OrderRequirements)
+            {
+                //TODO: Handle deletes too!
+                OrderRequirement requirement = null;
+                if (req.OrderRequirementId.HasValue)
+                {
+                    requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                }
+                else
+                {
+                    requirement = new OrderRequirement();
+                    order.Requirements.Add(requirement);
+                }
+                requirement.RequirementType = req.RequirementType.Value;
+                requirement.IsRequired = req.RequirementIsRequired;
+                requirement.Description = req.RequirementDescription;
+            }
         }
 
         public static OrderModel GetModelFromOrder(Order order)
@@ -149,7 +175,14 @@ namespace Tolk.Web.Models
                 LocationZipCode = order.ZipCode,
                 LocationCity = order.City,
                 RequiredCompetenceLevel = order.RequiredCompetenceLevel,
-                Status = order.Status
+                Status = order.Status,
+                OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
+                {
+                    OrderRequirementId = r.OrderRequirementId,
+                    RequirementDescription = r.Description,
+                    RequirementIsRequired = r.IsRequired,
+                    RequirementType = r.RequirementType
+                }).ToList()
             };
 
         }
