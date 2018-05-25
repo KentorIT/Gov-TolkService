@@ -1,34 +1,63 @@
-﻿// Write your JavaScript code.
-$(function () {
-    $("body").on("change", "#SpecialRequirements", function () {
-        $(this).toggleOccasionalField($("#SpecialRequirementsText-wrapper"), true);
-    });
-    $("body").on("change", "#SpecialNeeds", function () {
-        $(this).toggleOccasionalField($("#SpecialNeeds-wrapper"), true);
-    });
-});
-$.fn.extend({
-    toggleOccasionalField: function (occasionalField, visibleOnValue) {
-        var isSelected = false;
-        if (Array.isArray(visibleOnValue)) {
-            for (var i = 0; i < visibleOnValue.length; ++i) {
-                if ($(this).hasValue(visibleOnValue[i])) {
-                    isSelected = true;
-                    break;
-                }
-            }
+﻿$(function () {
+    var currentId = 0;
+    $("body").on("click", ".remove-requirement-row", function () {
+        var $tbody = $(this).closest("tbody");
+        $(this).closest("tr").remove();
+        //Reindex 0 to n
+        var $rows = $tbody.find("tr");
+        currentId = 0;
+        if ($rows.length === 0) {
+            $('.order-requirement-list').addClass("d-none");
         } else {
-            isSelected = $(this).hasValue(visibleOnValue);
+            $rows.each(function () {
+                $(this).find("input").each(function () {
+                    var $id = $(this).prop("id").match(/\d+/);
+                    $(this).prop("id", $(this).prop("id").replace($id, currentId));
+                    $(this).prop("name", $(this).prop("name").replace($id, currentId));
+                });
+                currentId++;
+            });
         }
-
-        if (isSelected) {
-            occasionalField.show(200);
-        } else {
-            occasionalField.hide(200);
+    });
+    $("body").on("click", ".add-requirement-button", function () {
+        $($(this).data("target")).find("input:not(:checkbox),select, textarea").val("");
+        $($(this).data("target")).find("input:checkbox").prop("checked", false);
+        var $form = $($(this).data("target")).find('form:first');
+        $($(this).data("target")).bindEnterKey('form:first input', '.btn-default');
+        $form.find(".field-validation-error")
+            .addClass("field-validation-valid")
+            .removeClass("field-validation-error").html("");
+    });
+    $("body").on("click", ".save-requirement", function (event) {
+        event.preventDefault();
+        //Before we start, validate the form!
+        if ($(this).parents(".modal-content").find("form").valid()) {
+            var $hidden = $("#baseRequirement").clone();
+            //Change the ids for the cloned inputs
+            $hidden.find("input").each(function () {
+                $(this).prop("id", $(this).prop("id").replace("0", currentId));
+                $(this).prop("name", $(this).prop("name").replace("0", currentId));
+            });
+            currentId++;
+            $(this).parents(".modal-content").find("input:not(:checkbox), select, textarea").each(function () {
+                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).val());
+            });
+            $(this).parents(".modal-content").find("input:checkbox").each(function () {
+                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).is(":checked") ? "true": "false");
+            });
+            //Add the info to the cloned hidden fields.
+            //add a row to the table
+            var isRequired = $("#RequirementIsRequired").is(":checked") ? "Ja" : "Nej";
+            $('.order-requirement-table > tbody:last-child').append('<tr>' +
+                '<td class="table-type-column">' + $hidden.html() + $("#RequirementType option:selected").text() + '</td>' +
+                '<td class="table-description-column">' + $("#RequirementDescription").val() + '</td>' +
+                '<td class="table-is-required-column">' + isRequired + '</td>' +
+                '<td class="table-button-column fixed"><span class="glyphicon glyphicon-trash remove-requirement-row"></span></td>' +
+                '</tr>');
+            //Make the table visible, if this is the first visible row.
+            $('.order-requirement-list').removeClass("d-none");
+            //Close dialog
+            $("#addRequirement").modal("hide");
         }
-    },
-    hasValue: function (value) {
-        //Intentional use of == iso === since "1" and 1 needs to be seen as equal..
-        return ($(this).is(":checkbox")) ? $(this).is(":checked") === value : ($(this).val() == value);
-    }
+    });
 });

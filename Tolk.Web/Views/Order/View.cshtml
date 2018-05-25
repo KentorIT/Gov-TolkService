@@ -1,7 +1,7 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-@using Tolk.BusinessLogic.Enums
+@using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Entities
 @{
     ViewData["Title"] = "Avropsdetaljer";
@@ -29,7 +29,26 @@
         <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
         <display-entry asp-for="BrokerName" />
         <display-entry asp-for="CalculatedPrice" />
-        @* Need check if this is pertinent here... *@
+        @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+        {
+            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
+            <ul>
+                @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
+                {
+                    <li>@req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))</li>
+                }
+            </ul>
+        }
+        @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+        {
+            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (önskemål)</label>
+            <ul>
+                @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
+                {
+                    <li>@req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))</li>
+                }
+            </ul>
+        }
         @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved)
         {
             <display-entry asp-for="InterpreterName" />
