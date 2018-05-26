@@ -125,10 +125,5 @@ namespace Tolk.BusinessLogic.Entities
 
             Requests.Add(request);
         }
-
-        /* remaining fields
-(Antal tolkar (eventuellt, avvakta))
-Särskilda kontaktuppgifter (om uppdraget avser Distanstolkning i anvisad lokal eller Distanstolkning (video el. telefon)
-        */
     }
 }

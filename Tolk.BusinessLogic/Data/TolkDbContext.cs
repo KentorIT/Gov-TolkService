@@ -49,6 +49,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<InterpreterBrokerRegion>()
                 .HasKey(ibr => new { ibr.BrokerId, ibr.RegionId, ibr.InterpreterId });
 
+            builder.Entity<OrderRequirementRequestAnswer>()
+                .HasKey(ra => new { ra.RequestId, ra.OrderRequirementId });
+
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()
@@ -87,6 +90,11 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<Request>()
                 .HasOne(r => r.AcceptanceByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrderRequirementRequestAnswer>()
+                .HasOne(r => r.Request)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }

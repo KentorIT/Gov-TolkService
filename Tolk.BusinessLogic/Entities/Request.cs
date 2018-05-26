@@ -11,6 +11,7 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
 
+        [Column(TypeName = "decimal(10, 2)")]
         public decimal? ExpectedTravelCosts { get; set; }
 
         public int RankingId { get; set; }
@@ -28,6 +29,8 @@ namespace Tolk.BusinessLogic.Entities
         public string BrokerMessage { get; set; }
 
         public int? InterpreterId { get; set; }
+
+        public int? CompetenceLevel { get; set; }
 
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
@@ -67,5 +70,11 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ImpersonatingAcceptanceBy))]
         public AspNetUser AcceptanceByImpersonator { get; set; }
+
+        #region navigation
+
+        public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
+
+        #endregion
     }
 }
