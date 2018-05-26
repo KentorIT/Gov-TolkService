@@ -25,6 +25,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 
+        /// <summary>
+        /// The time (inclusive) when the request is expired.
+        /// </summary>
+        public DateTimeOffset ExpiresAt { get; set; }
+
         [MaxLength(1000)]
         public string BrokerMessage { get; set; }
 

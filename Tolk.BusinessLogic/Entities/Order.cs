@@ -7,6 +7,8 @@ using Tolk.BusinessLogic.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Microsoft.Extensions.Internal;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -114,9 +116,10 @@ namespace Tolk.BusinessLogic.Entities
         {
             var request = new Request
             {
-                RankingId = ranking.RankingId,
+                Ranking = ranking,
                 Order = this,
-                Status = RequestStatus.Created
+                Status = RequestStatus.Created,
+                ExpiresAt = CalculateExpiryForNewRequest()
             };
             if(Requests == null)
             {
@@ -124,6 +127,18 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Requests.Add(request);
+        }
+
+        DateTimeOffset CalculateExpiryForNewRequest() => CalculateExpiryForNewRequest(new SystemClock());
+
+        // Actual implementation, internal and with injected clock for unit tests.
+        internal DateTimeOffset CalculateExpiryForNewRequest(ISystemClock clock)
+        {
+            if(StartDateTime.Date.Subtract(clock.UtcNow.Date).Days >= 2)
+            {
+                return clock.UtcNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
+            }
+            throw new NotImplementedException();
         }
     }
 }
