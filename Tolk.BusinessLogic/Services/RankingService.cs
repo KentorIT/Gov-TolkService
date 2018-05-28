@@ -17,11 +17,15 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
         }
 
-        public IQueryable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime utcNow)
+        public IQueryable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime date)
         {
-            //TODO: Does not handle if the order is far in the future. If it is it should take the one with the latest last valid date
+            if(date.TimeOfDay.Ticks != 0)
+            {
+                throw new ArgumentException("Date must be a pure date, without time component", nameof(date));
+            }
+
             return _tolkDbContext.Rankings
-                .Where(r => r.RegionId == regionId && r.FirstValidDate <= utcNow && r.LastValidDate > utcNow);
+                .Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
         }
     }
 }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
+using Microsoft.Extensions.Internal;
 
 namespace Tolk.Web
 {
@@ -69,6 +70,8 @@ namespace Tolk.Web
             services.AddSingleton<EntityScheduler>();
 
             services.AddTolkBusinessLogicServices();
+
+            services.AddSingleton<ISystemClock, TimeTravelClock>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
