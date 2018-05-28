@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Helpers
 {
@@ -42,7 +44,14 @@ namespace Tolk.BusinessLogic.Helpers
 
             if(secondDate.DayOfWeek < firstDate.DayOfWeek) // Wraps over a weekend.
             {
-                rest = rest == 1 ? 0 : rest - 2; // Special case if start is Saturday and end is Sunday.
+                if(secondDate.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    rest -= 1;
+                }
+                else
+                {
+                    rest -= 2;
+                }
             }
             else
             {
@@ -50,12 +59,16 @@ namespace Tolk.BusinessLogic.Helpers
                 {
                     rest -= 1;
                 }
-
-                if (secondDate.DayOfWeek == DayOfWeek.Saturday)
-                {
-                    rest -= 1;
-                }
             }
+
+            var nonWorkingHolidays = new[] { DateType.BigHolidayFullDay, DateType.Holiday };
+
+            rest -= _tolkDbContext.Holidays.Where(h =>
+            nonWorkingHolidays.Contains(h.DateType)
+            && h.Date >= firstDate && h.Date < secondDate)
+            .AsEnumerable()
+            .Where(h => h.Date.DayOfWeek >= DayOfWeek.Monday && h.Date.DayOfWeek <= DayOfWeek.Friday)
+            .Count();
 
             return fullWeeks * 5 + rest;
         }

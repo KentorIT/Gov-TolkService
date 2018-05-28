@@ -10,6 +10,7 @@ namespace Tolk.BusinessLogic.Entities
     public class Holiday
     {
         [Key]
+        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
         [Required]

@@ -233,7 +233,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Holiday", b =>
                 {
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
 
                     b.Property<int>("DateType");
 
@@ -691,7 +692,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirementRequestAnswer", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderRequirement", "OrderRequirement")
-                        .WithMany()
+                        .WithMany("RequirementAnswers")
                         .HasForeignKey("OrderRequirementId")
                         .OnDelete(DeleteBehavior.Cascade);
 
