@@ -181,7 +181,7 @@ namespace Tolk.Web.Controllers
             request.AcceptanceBy = User.GetUserId();
             request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
             _dbContext.SaveChanges();
-            return View(order.OrderId);
+            return RedirectToAction(nameof(View), new { id = order.OrderId });
         }
     }
 }

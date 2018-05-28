@@ -88,18 +88,20 @@ namespace Tolk.Web.Controllers
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
                 //Save competence level
                 request.CompetenceLevel = (int?)model.CompetenceLevel;
-
-                // answer all extra requirements
-                foreach (var answer in model.RequirementAnswers)
+                if (model.RequirementAnswers != null)
                 {
-                    request.RequirementAnswers.Add(
-                        new OrderRequirementRequestAnswer
-                        {
-                            RequestId = request.RequestId,
-                            OrderRequirementId = answer.OrderRequirementId,
-                            Answer = answer.Answer,
-                            CanSatisfyRequirement = answer.CanMeetRequirement,
-                        });
+                    // answer all extra requirements
+                    foreach (var answer in model.RequirementAnswers)
+                    {
+                        request.RequirementAnswers.Add(
+                            new OrderRequirementRequestAnswer
+                            {
+                                RequestId = request.RequestId,
+                                OrderRequirementId = answer.OrderRequirementId,
+                                Answer = answer.Answer,
+                                CanSatisfyRequirement = answer.CanMeetRequirement,
+                            });
+                    }
                 }
 
                 //TODO: This should differ depending on the incoming status.

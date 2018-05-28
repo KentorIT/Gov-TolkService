@@ -131,23 +131,26 @@ namespace Tolk.Web.Models
             order.City = LocationCity;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
 
-            // add all extra requirements
-            foreach (var req in OrderRequirements)
+            if (OrderRequirements != null)
             {
-                //TODO: Handle deletes too!
-                OrderRequirement requirement = null;
-                if (req.OrderRequirementId.HasValue)
+                // add all extra requirements
+                foreach (var req in OrderRequirements)
                 {
-                    requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                    //TODO: Handle deletes too!
+                    OrderRequirement requirement = null;
+                    if (req.OrderRequirementId.HasValue)
+                    {
+                        requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                    }
+                    else
+                    {
+                        requirement = new OrderRequirement();
+                        order.Requirements.Add(requirement);
+                    }
+                    requirement.RequirementType = req.RequirementType.Value;
+                    requirement.IsRequired = req.RequirementIsRequired;
+                    requirement.Description = req.RequirementDescription;
                 }
-                else
-                {
-                    requirement = new OrderRequirement();
-                    order.Requirements.Add(requirement);
-                }
-                requirement.RequirementType = req.RequirementType.Value;
-                requirement.IsRequired = req.RequirementIsRequired;
-                requirement.Description = req.RequirementDescription;
             }
         }
 
