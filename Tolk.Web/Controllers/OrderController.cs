@@ -134,7 +134,7 @@ namespace Tolk.Web.Controllers
 
                 model.UpdateOrder(order);
                 
-                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId).Single(r => r.Rank == 1));
+                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId));
 
                 _dbContext.SaveChanges();
 
