@@ -110,5 +110,12 @@ namespace Tolk.BusinessLogic.Utilities
             var property = attributes.OfType<DescriptionAttribute>().SingleOrDefault();
             return property?.Description;
         }
+
+        public static IEnumerable<TEnum> GetBiggerOrEqual<TEnum>(TEnum minimumLevel)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+            return Enum.GetValues(type).OfType<TEnum>().Where(t => Comparer<TEnum>.Default.Compare(t, minimumLevel) >= 0);
+        }
     }
 }

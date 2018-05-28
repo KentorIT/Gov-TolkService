@@ -62,6 +62,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
                 .Include(o => o.Requirements)
+                .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking)
                 .ThenInclude(r => r.BrokerRegion)
@@ -69,7 +70,6 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.OrderId == id);
             var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
             var listType = order.CustomerOrganisation.PriceListType;
-            var model = OrderModel.GetModelFromOrder(order);
             //TODO: Handle this better. Preferably with a list that you can use contains on
             var request = order.Requests.SingleOrDefault(r =>
                 r.Status == RequestStatus.Created ||
@@ -78,6 +78,7 @@ namespace Tolk.Web.Controllers
                 r.Status == RequestStatus.SentToInterpreter ||
                 r.Status == RequestStatus.Approved
                 );
+            var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
             model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
             model.RequestStatus = request?.Status;
             model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;

@@ -27,5 +27,12 @@ namespace Tolk.BusinessLogic.Entities
         public Order Order { get; set; }
 
         #endregion
+
+        #region navigation
+
+        public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
+
+        #endregion
+
     }
 }

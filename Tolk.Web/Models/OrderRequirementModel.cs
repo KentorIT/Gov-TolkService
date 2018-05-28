@@ -26,6 +26,10 @@ namespace Tolk.Web.Models
         [StringLength(1000)]
         public string RequirementDescription { get; set; }
 
+        public string Answer { get; set; }
+
+        public bool? CanSatisfyRequirement { get; set; }
+
         #region methods
 
         public OrderRequirement UpdateOrderRequirement(OrderRequirement orderRequirement)

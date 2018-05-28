@@ -38,21 +38,21 @@ namespace Tolk.Web.Controllers
             return View(_dbContext.Requests.Include(r => r.Order)
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
                     r.Ranking.BrokerRegion.Broker.BrokerId == CurrentBrokerId).Select(r => new RequestListItemModel
-                        {
-                            RequestId = r.RequestId,
-                            Language = r.Order.Language.Name,
-                            OrderNumber = r.Order.OrderNumber.ToString(),
-                            CustomerName = r.Order.CustomerOrganisation.Name,
-                            RegionName = r.Order.Region.Name,
-                            Start = r.Order.StartDateTime,
-                            End = r.Order.EndDateTime,
-                            Status = r.Status
-                        }));
+                    {
+                        RequestId = r.RequestId,
+                        Language = r.Order.Language.Name,
+                        OrderNumber = r.Order.OrderNumber.ToString(),
+                        CustomerName = r.Order.CustomerOrganisation.Name,
+                        RegionName = r.Order.Region.Name,
+                        Start = r.Order.StartDateTime,
+                        End = r.Order.EndDateTime,
+                        Status = r.Status
+                    }));
         }
 
         public IActionResult Edit(int id)
         {
-            var request = _dbContext.Requests.Include(r => r.Order).Single(o => o.RequestId == id);
+            var request = _dbContext.Requests.Include(r => r.Order).ThenInclude(r => r.Requirements).Single(o => o.RequestId == id);
             if (request.Status == RequestStatus.Created)
             {
                 request.Status = RequestStatus.Received;
@@ -75,17 +75,36 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 //TODO: VERIFY THAT THE REQUEST IS CONNECTED TO THE USER'S BROKER!!
-                var request = _dbContext.Requests.Include(r => r.Order)
+                var request = _dbContext.Requests
+                    .Include(r => r.Order)
+                    .Include(r => r.RequirementAnswers)
                     .Single(o => o.RequestId == model.RequestId);
                 request.Status = model.SetStatus;
-                //TODO:Fix better offset-check!!
-                request.AnswerDate = DateTimeOffset.Now;
+                request.AnswerDate = DateTime.UtcNow;
                 request.AnsweredBy = User.GetUserId();
                 request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
+
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
+                //Save competence level
+                request.CompetenceLevel = (int?)model.CompetenceLevel;
+
+                // answer all extra requirements
+                foreach (var answer in model.RequirementAnswers)
+                {
+                    request.RequirementAnswers.Add(
+                        new OrderRequirementRequestAnswer
+                        {
+                            RequestId = request.RequestId,
+                            OrderRequirementId = answer.OrderRequirementId,
+                            Answer = answer.Answer,
+                            CanSatisfyRequirement = answer.CanMeetRequirement,
+                        });
+                }
+
                 //TODO: This should differ depending on the incoming status.
                 request.Order.Status = OrderStatus.RequestResponded;
+
                 _dbContext.SaveChanges();
 
                 return Redirect($"~/Home/Index?message=Svar har skickats");

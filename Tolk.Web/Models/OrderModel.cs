@@ -151,7 +151,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        public static OrderModel GetModelFromOrder(Order order)
+        public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
             return new OrderModel
             {
@@ -181,7 +181,9 @@ namespace Tolk.Web.Models
                     OrderRequirementId = r.OrderRequirementId,
                     RequirementDescription = r.Description,
                     RequirementIsRequired = r.IsRequired,
-                    RequirementType = r.RequirementType
+                    RequirementType = r.RequirementType,
+                    CanSatisfyRequirement = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.CanSatisfyRequirement,
+                    Answer = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.Answer
                 }).ToList()
             };
 

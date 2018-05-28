@@ -35,7 +35,14 @@
             <ul>
                 @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
                 {
-                    <li>@req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))</li>
+                    <li>
+                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                        @if (req.CanSatisfyRequirement.HasValue)
+                        {
+                            <br />
+                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                        }
+                    </li>
                 }
             </ul>
         }
@@ -45,7 +52,14 @@
             <ul>
                 @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
                 {
-                    <li>@req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))</li>
+                    <li>
+                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                        @if (req.CanSatisfyRequirement.HasValue)
+                        {
+                            <br />
+                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                        }
+                    </li>
                 }
             </ul>
         }

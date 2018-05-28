@@ -120,5 +120,12 @@ namespace Tolk.Web.Services
                 Text = i.User.UserName
            });
         }
+        public IEnumerable<SelectListItem> GetCompetenceLevels(CompetenceAndSpecialistLevel minimumLevel)
+        {
+            var filter = EnumHelper.GetBiggerOrEqual<CompetenceAndSpecialistLevel>(minimumLevel);
+            return EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>(filter)
+                            .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                            .ToList().AsReadOnly();
+        }
     }
 }
