@@ -133,8 +133,8 @@ namespace Tolk.Web.Controllers
                 _dbContext.Add(order);
 
                 model.UpdateOrder(order);
-                
-                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId));
+
+                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.UtcDateTime));
 
                 _dbContext.SaveChanges();
 

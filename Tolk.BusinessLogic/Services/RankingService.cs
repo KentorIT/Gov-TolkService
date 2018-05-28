@@ -17,10 +17,9 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
         }
 
-        public IQueryable<Ranking> GetActiveRankingsForRegion(int regionId)
+        public IQueryable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime utcNow)
         {
-            var utcNow = DateTime.UtcNow;
-
+            //TODO: Does not handle if the order is far in the future. If it is it should take the one with the latest last valid date
             return _tolkDbContext.Rankings
                 .Where(r => r.RegionId == regionId && r.FirstValidDate <= utcNow && r.LastValidDate > utcNow);
         }
