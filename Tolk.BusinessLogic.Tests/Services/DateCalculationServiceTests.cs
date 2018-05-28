@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
 using Xunit;
 using FluentAssertions;
 using Tolk.BusinessLogic.Data;
@@ -11,10 +11,35 @@ using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
-namespace Tolk.BusinessLogic.Tests.Helpers
+namespace Tolk.BusinessLogic.Tests.Services
 {
     public class DateCalculationServiceTests
     {
+        private const string DbNameWithHolidays = "DateCalculationService_WithHolidays";
+
+        public DateCalculationServiceTests()
+        {
+            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
+            {
+                var holidays = new[] {
+                    new Holiday() { Date = new DateTime(2018,03,29), DateType=DateType.DayBeforeBigHoliday},
+                    new Holiday() { Date = new DateTime(2018,03,30), DateType=DateType.BigHolidayFullDay},
+                    new Holiday() { Date = new DateTime(2018,04,01), DateType=DateType.BigHolidayFullDay},
+                    new Holiday() { Date = new DateTime(2018,04,02), DateType=DateType.BigHolidayFullDay},
+                    new Holiday() { Date = new DateTime(2018,04,03), DateType=DateType.DayAfterBigHoliday},
+                    new Holiday() { Date = new DateTime(2018,05,01), DateType=DateType.Holiday},
+                    new Holiday() { Date = new DateTime(2018,05,10), DateType=DateType.Holiday},
+                    new Holiday() { Date = new DateTime(2018,05,18), DateType=DateType.DayBeforeBigHoliday},
+                    new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
+                };
+
+                tolkDbContext.AddRange(holidays.Where(newHoliday =>
+                !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
+
+                tolkDbContext.SaveChanges();
+            }
+        }
+
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
         {
             var options = new DbContextOptionsBuilder<TolkDbContext>()
@@ -97,32 +122,28 @@ namespace Tolk.BusinessLogic.Tests.Helpers
         [InlineData("2018-05-10", "2018-05-12", 1)] // Thursday-Saturday over Ascension day
         public void GetWorkDaysBefore(string firstDate, string secondDate, int actual)
         {
-            using (var tolkDbContext = CreateTolkDbContext("DateCalculationService_GetWorkDaysBetween"))
-            {
-                var holidays = new[] {
-                    new Holiday() { Date = new DateTime(2018,03,29), DateType=DateType.DayBeforeBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,03,30), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,01), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,02), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,03), DateType=DateType.DayAfterBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,05,01), DateType=DateType.Holiday},
-                    new Holiday() { Date = new DateTime(2018,05,10), DateType=DateType.Holiday},
-                    new Holiday() { Date = new DateTime(2018,05,18), DateType=DateType.DayBeforeBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
-                };
-
-                tolkDbContext.AddRange(holidays.Where(newHoliday =>
-                !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
-
-                tolkDbContext.SaveChanges();
-            }
-
-            using (var tolkDbContext = CreateTolkDbContext("DateCalculationService_GetWorkDaysBetween"))
+            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
             {
                 var subject = new DateCalculationService(tolkDbContext);
 
                 subject.GetWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
                 .Should().Be(actual, "there are {0} workdays between {1} and {2}", actual, firstDate, secondDate);
+            }
+        }
+
+        [Theory]
+        [InlineData("2016-08-01", "2016-08-01")]
+        [InlineData("2016-08-06", "2016-08-08")]
+        [InlineData("2016-08-07", "2016-08-08")]
+        [InlineData("2018-03-30", "2018-04-03")]
+        public void GetFirstWorkDay(string date, string expected)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithHolidays))
+            {
+                var subject = new DateCalculationService(tolkdbContext);
+
+                subject.GetFirstWorkDay(DateTime.Parse(date))
+                    .Should().Be(DateTime.Parse(expected), "that is the first workday after {0}", date);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Tolk.BusinessLogic.Services
         {
             services.AddTransient<RankingService>();
             services.AddTransient<OrderService>();
+            services.AddTransient<DateCalculationService>();
+            services.AddSingleton<ISystemClock, TimeTravelClock>();
         }
     }
 }

@@ -24,17 +24,20 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
         private readonly RankingService _rankingService;
+        private readonly OrderService _orderService;
 
         public OrderController(
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
-            RankingService rankingService)
+            RankingService rankingService,
+            OrderService orderService)
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _rankingService = rankingService;
+            _orderService = orderService;
         }
 
         public IActionResult List()
@@ -130,12 +133,10 @@ namespace Tolk.Web.Controllers
                     Requirements = new List<OrderRequirement>()
                 };
 
-                _dbContext.Add(order);
-
                 model.UpdateOrder(order);
+                _orderService.CreateRequest(order);
 
-                order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.UtcDateTime));
-
+                _dbContext.Add(order);
                 _dbContext.SaveChanges();
 
                 return RedirectToAction(nameof(View), new { id = order.OrderId });

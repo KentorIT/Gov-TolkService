@@ -40,14 +40,7 @@ namespace Tolk.Web.Services
             {
                 using (var serviceScope = _services.CreateScope())
                 {
-                    var tolkDbContext = serviceScope.ServiceProvider.GetRequiredService<TolkDbContext>();
-
-                    using (tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                    {
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests();
-
-                        tolkDbContext.Database.CommitTransaction();
-                    }
+                    serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests();
                 }
             }
             catch(Exception ex)

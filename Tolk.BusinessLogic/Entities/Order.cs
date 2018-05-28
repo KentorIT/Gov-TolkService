@@ -112,7 +112,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public void CreateRequest(IQueryable<Ranking> rankings)
+        public void CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {
             if (Requests == null)
             {
@@ -135,22 +135,10 @@ namespace Tolk.BusinessLogic.Entities
                 Ranking = ranking,
                 Order = this,
                 Status = RequestStatus.Created,
-                ExpiresAt = CalculateExpiryForNewRequest()
+                ExpiresAt = newRequestExpiry
             };
 
             Requests.Add(request);
-        }
-
-        DateTimeOffset CalculateExpiryForNewRequest() => CalculateExpiryForNewRequest(new SystemClock());
-
-        // Actual implementation, internal and with injected clock for unit tests.
-        internal DateTimeOffset CalculateExpiryForNewRequest(ISystemClock clock)
-        {
-            if(StartDateTime.Date.Subtract(clock.UtcNow.Date).Days >= 2)
-            {
-                return clock.UtcNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
-            }
-            throw new NotImplementedException();
         }
     }
 }

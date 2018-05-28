@@ -22,5 +22,12 @@ namespace Tolk.BusinessLogic.Helpers
 
             return new DateTimeOffset(rawDateTime, timeZoneOffset);
         }
+
+        public static DateTimeOffset ToDateTimeOffsetSweden(this DateTimeOffset dateTimeOffset)
+        {
+            var timezoneOffset = timeZoneInfo.GetUtcOffset(dateTimeOffset);
+
+            return dateTimeOffset.ToOffset(timezoneOffset);
+        }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
 
-namespace Tolk.BusinessLogic.Helpers
+namespace Tolk.BusinessLogic.Services
 {
     public class DateCalculationService
     {
@@ -61,16 +61,45 @@ namespace Tolk.BusinessLogic.Helpers
                 }
             }
 
-            var nonWorkingHolidays = new[] { DateType.BigHolidayFullDay, DateType.Holiday };
-
             rest -= _tolkDbContext.Holidays.Where(h =>
-            nonWorkingHolidays.Contains(h.DateType)
+            NonWorkingHolidays.Contains(h.DateType)
             && h.Date >= firstDate && h.Date < secondDate)
             .AsEnumerable()
             .Where(h => h.Date.DayOfWeek >= DayOfWeek.Monday && h.Date.DayOfWeek <= DayOfWeek.Friday)
             .Count();
 
             return fullWeeks * 5 + rest;
+        }
+
+        private readonly DateType[] NonWorkingHolidays = new[] { DateType.BigHolidayFullDay, DateType.Holiday };
+
+
+        public DateTime GetFirstWorkDay(DateTime date)
+        {
+            while (true)
+            {
+                switch(date.DayOfWeek)
+                {
+                    case DayOfWeek.Saturday:
+                        date = date.AddDays(2);
+                        break;
+                    case DayOfWeek.Sunday:
+                        date = date.AddDays(1);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (_tolkDbContext.Holidays
+                    .Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date))
+                {
+                    date = date.AddDays(1);
+                    continue;
+                }
+                break;
+            }
+
+            return date;
         }
     }
 }
