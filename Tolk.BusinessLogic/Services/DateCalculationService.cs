@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public static class DateTimeHelpers
+    public class DateCalculationService
     {
-        public static int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        private TolkDbContext _tolkDbContext;
+
+        public DateCalculationService(TolkDbContext tolkDbContext)
         {
-            // https://stackoverflow.com/questions/2510383/how-can-i-calculate-what-date-good-friday-falls-on-given-a-year
+            _tolkDbContext = tolkDbContext;
+        }
+
+        public int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        {
             if (secondDate < firstDate)
             {
                 throw new ArgumentException("First Date must be before secondDate");
