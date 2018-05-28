@@ -10,6 +10,7 @@ namespace Tolk.BusinessLogic.Services
         public static void AddTolkBusinessLogicServices(this IServiceCollection services)
         {
             services.AddTransient<RankingService>();
+            services.AddTransient<OrderService>();
         }
     }
 }
