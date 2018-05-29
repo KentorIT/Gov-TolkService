@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<RankingService>();
             services.AddTransient<OrderService>();
             services.AddTransient<DateCalculationService>();
-            services.AddSingleton<ISystemClock, TimeTravelClock>();
+            services.AddSingleton<TimeTravelClock, TimeTravelClock>();
         }
     }
 }

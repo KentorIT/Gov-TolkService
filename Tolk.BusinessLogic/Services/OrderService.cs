@@ -15,14 +15,14 @@ namespace Tolk.BusinessLogic.Services
     public class OrderService
     {
         private TolkDbContext _tolkDbContext;
-        private ISystemClock _clock;
+        private TimeTravelClock _clock;
         private RankingService _rankingService;
         private DateCalculationService _dateCalculationService;
         private ILogger<OrderService> _logger;
 
         public OrderService(
             TolkDbContext tolkDbContext,
-            ISystemClock clock,
+            TimeTravelClock clock,
             RankingService rankingService,
             DateCalculationService dateCalculationService,
             ILoggerFactory loggerFactory)
@@ -45,7 +45,7 @@ namespace Tolk.BusinessLogic.Services
                     expiredRequest = _tolkDbContext.Requests
                         .Include(r => r.Ranking)
                         .Include(r => r.Order)
-                        .Where(r => r.ExpiresAt <= _clock.UtcNow && r.Status == RequestStatus.Created)
+                        .Where(r => r.ExpiresAt <= _clock.SwedenNow && r.Status == RequestStatus.Created)
                         .FirstOrDefault();
 
                     if (expiredRequest != null)
@@ -87,22 +87,22 @@ namespace Tolk.BusinessLogic.Services
         public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDate)
         {
             // Grab utcNow to not risk it flipping over during execution of the method.
-            var utcNow = _clock.UtcNow;
+            var swedenNow = _clock.SwedenNow;
 
-            var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(utcNow.Date, startDate.Date);
+            var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDate.Date);
 
             if (daysInAdvance >= 2)
             {
-                return utcNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
+                return swedenNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
             }
-            if(daysInAdvance == 1 && utcNow.ToDateTimeOffsetSweden().Hour < 14)
+            if(daysInAdvance == 1 && swedenNow.Hour < 14)
             {
-                return _dateCalculationService.GetFirstWorkDay(utcNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                return _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
             }
 
             // TODO Need to get/understand rules for late day before or same day requests. For now a dummy
             // 1 hour response time.
-            return utcNow.AddHours(1).ToDateTimeOffsetSweden();
+            return swedenNow.AddHours(1).ToDateTimeOffsetSweden();
         }
 
     }

@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 
@@ -15,13 +18,18 @@ namespace Tolk.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private TolkDbContext _dbContext;
+        private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly TimeTravelClock _clock;
 
-        public HomeController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
+        public HomeController(
+            TolkDbContext dbContext,
+            UserManager<AspNetUser> userManager,
+            TimeTravelClock clock)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _clock = clock;
         }
 
         public IActionResult Index(string message)
@@ -102,6 +110,26 @@ namespace Tolk.Web.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Policies.TimeTravel)]
+        public IActionResult TimeTravel(DateTime date, TimeSpan time, string action)
+        {
+            switch(action)
+            {
+                case "Jump":
+                    var targetDateTime = date.Add(time).ToDateTimeOffsetSweden();
+                    _clock.TimeTravelTicks = targetDateTime.ToUniversalTime().Ticks - DateTimeOffset.UtcNow.Ticks;
+                    break;
+                case "Reset":
+                    _clock.TimeTravelTicks = 0;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -8,30 +8,28 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <div class="navbar-right">
-        <ul class="nav navbar-nav navbar-right">
-            <li>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">
-                @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) 
-                    ??User.FindFirstValue(ClaimTypes.Name))</a>
-            </li>
-            <li>
-                @if (User.IsInRole(Roles.Impersonator))
-                {
-                    <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post" class="navbar-form navbar-right">
-                        <div class="form-group">
-                            <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control"></select>
-                        </div>
-                    </form>
-                }
-            </li>
-            <li>
-                <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
-                    <button type="submit" class="btn btn-link navbar-btn navbar-link">Logga ut</button>
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">
+            @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) 
+                ??User.FindFirstValue(ClaimTypes.Name))</a>
+        </li>
+        <li>
+            @if (User.IsInRole(Roles.Impersonator))
+            {
+                <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post" class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control"></select>
+                    </div>
                 </form>
-            </li>
-        </ul>
-    </div>
+            }
+        </li>
+        <li>
+            <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
+                <button type="submit" class="btn btn-link navbar-btn navbar-link">Logga ut</button>
+            </form>
+        </li>
+    </ul>
 }
 else
 {

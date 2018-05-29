@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
-    public class TimeTravelClock : ISystemClock
+    public class TimeTravelClock
     {
         public long TimeTravelTicks { get; set; }
 
-        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow.AddTicks(TimeTravelTicks);
+        public DateTimeOffset SwedenNow =>
+            DateTimeOffset.UtcNow.AddTicks(TimeTravelTicks).ToDateTimeOffsetSweden();
     }
 }

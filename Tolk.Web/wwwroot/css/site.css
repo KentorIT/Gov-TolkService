@@ -10,6 +10,10 @@
     padding-right: 15px;
 }
 
+div.navbar-right{
+    padding-right: 15px;
+}
+
 /* QR code generator */
 #qrCode {
     margin: 15px;
@@ -21,6 +25,10 @@
 
 .input-group.time > .form-control {
     width: 80px;
+}
+
+.input-group.time > .input-group-addon{
+    width: auto;
 }
 
 table.clickable-rows > tbody > tr > td {
@@ -44,7 +52,7 @@ h1.shortcut-box {
 
 .form-entry-information {
     color: blue;
-    display: inline-block;
+    display: block;
     float: right;
     cursor: help;
 }
@@ -73,4 +81,8 @@ h1.shortcut-box {
 
 .edit-link {
     float:right;
+}
+
+.dropdown-menu{
+    padding: 15px;
 }

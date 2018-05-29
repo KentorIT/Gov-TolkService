@@ -15,6 +15,7 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string TimeTravel = nameof(TimeTravel);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
         {
@@ -23,9 +24,11 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
-
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
+                opt.AddPolicy(TimeTravel, builder => builder.AddRequirements(new EnvironmentRequirement("Development")));
             });
+
+            services.AddSingleton<IAuthorizationHandler, EnvironmentRequirement.EnvironmentHandler>();
         }
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>

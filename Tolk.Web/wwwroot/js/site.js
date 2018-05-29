@@ -15,6 +15,22 @@ $('#impersonation-select').change(function () {
     $("#impersonation-form").submit();
 });
 
+$('#timeTravelDatePicker').on('changeDate', function () {
+    $('#timeTravelDate').val(
+        $('#timeTravelDatePicker').datepicker('getFormattedDate')
+    );
+})
+
+function updateTime() {
+    var date = new Date((new Date().getTime()) + Number($('#now').attr('data-timetravel-milliseconds')));
+    $('#now').text(date.toLocaleString("sv-SE"));
+};
+
+if ($('#now').length === 1) {
+    updateTime();
+    setInterval(updateTime, 1000);
+}
+
 $(function () {
     $("body").on("click", "table.clickable-rows > tbody > tr > td", function () {
         var $table = $(this).parents("table.clickable-rows");
