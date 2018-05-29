@@ -14,15 +14,15 @@ namespace Tolk.BusinessLogic.Services
 {
     public class OrderService
     {
-        private TolkDbContext _tolkDbContext;
-        private TimeTravelClock _clock;
-        private RankingService _rankingService;
-        private DateCalculationService _dateCalculationService;
-        private ILogger<OrderService> _logger;
+        private readonly TolkDbContext _tolkDbContext;
+        private readonly ISwedishClock _clock;
+        private readonly RankingService _rankingService;
+        private readonly DateCalculationService _dateCalculationService;
+        private readonly ILogger<OrderService> _logger;
 
         public OrderService(
             TolkDbContext tolkDbContext,
-            TimeTravelClock clock,
+            ISwedishClock clock,
             RankingService rankingService,
             DateCalculationService dateCalculationService,
             ILoggerFactory loggerFactory)

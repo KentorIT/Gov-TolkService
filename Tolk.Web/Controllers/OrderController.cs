@@ -25,19 +25,22 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
+        private readonly ISwedishClock _clock;
 
         public OrderController(
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
             RankingService rankingService,
-            OrderService orderService)
+            OrderService orderService,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _rankingService = rankingService;
             _orderService = orderService;
+            _clock = clock;
         }
 
         public IActionResult List()
@@ -127,7 +130,7 @@ namespace Tolk.Web.Controllers
                     RequiredInterpreterLocation = 1,
                     Status = OrderStatus.Requested,
                     CreatedBy = User.GetUserId(),
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = _clock.SwedenNow.DateTime,
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
                     ImpersonatingCreator = User.GetImpersonatorId(),
                     Requirements = new List<OrderRequirement>()
@@ -179,7 +182,7 @@ namespace Tolk.Web.Controllers
             var request = order.Requests.Single(r => r.RequestId == model.RequestId);
             order.Status = OrderStatus.ResponseAccepted;
             request.Status = RequestStatus.Approved;
-            request.AnswerProcessedDate = DateTimeOffset.Now;
+            request.AnswerProcessedDate = _clock.SwedenNow;
             request.AnswerProcessedBy = User.GetUserId();
             request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
             _dbContext.SaveChanges();

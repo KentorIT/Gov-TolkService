@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Tolk.Web.Helpers;
 using Tolk.Web.Authorization;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -19,10 +20,14 @@ namespace Tolk.Web.Controllers
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
+        private readonly ISwedishClock _clock;
 
-        public RequestController(TolkDbContext dbContext)
+        public RequestController(
+            TolkDbContext dbContext,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
+            _clock = clock;
         }
 
         protected int CurrentBrokerId
@@ -57,7 +62,7 @@ namespace Tolk.Web.Controllers
             {
                 request.Status = RequestStatus.Received;
                 //Set modified user, date and possible impersonator
-                request.RecieveDate = DateTimeOffset.Now;
+                request.RecieveDate = _clock.SwedenNow;
                 request.ReceivedBy = User.GetUserId();
                 request.ImpersonatingReceivedBy = User.GetImpersonatorId();
                 _dbContext.SaveChanges();
@@ -80,7 +85,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.RequirementAnswers)
                     .Single(o => o.RequestId == model.RequestId);
                 request.Status = model.SetStatus;
-                request.AnswerDate = DateTime.UtcNow;
+                request.AnswerDate = _clock.SwedenNow;
                 request.AnsweredBy = User.GetUserId();
                 request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
 

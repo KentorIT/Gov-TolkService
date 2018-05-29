@@ -20,12 +20,12 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
-        private readonly TimeTravelClock _clock;
+        private readonly ISwedishClock _clock;
 
         public HomeController(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
-            TimeTravelClock clock)
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -117,14 +117,16 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.TimeTravel)]
         public IActionResult TimeTravel(DateTime date, TimeSpan time, string action)
         {
+            var clock = (TimeTravelClock)_clock;
+
             switch(action)
             {
                 case "Jump":
                     var targetDateTime = date.Add(time).ToDateTimeOffsetSweden();
-                    _clock.TimeTravelTicks = targetDateTime.ToUniversalTime().Ticks - DateTimeOffset.UtcNow.Ticks;
+                    clock.TimeTravelTicks = targetDateTime.ToUniversalTime().Ticks - DateTimeOffset.UtcNow.Ticks;
                     break;
                 case "Reset":
-                    _clock.TimeTravelTicks = 0;
+                    clock.TimeTravelTicks = 0;
                     break;
                 default:
                     throw new NotImplementedException();
