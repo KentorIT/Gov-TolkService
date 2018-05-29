@@ -104,6 +104,14 @@ namespace Tolk.Web.Models
         public RequestStatus? RequestStatus { get; set; }
         public int? RequestId { get; set; }
 
+        public bool AllowDenial
+        {
+            get
+            {
+                return OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false;
+            }
+        }
+
         #endregion
 
         #region extra requirements

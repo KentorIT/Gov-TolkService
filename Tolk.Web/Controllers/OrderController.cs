@@ -170,10 +170,10 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Approve(ApproveModel model)
+        public IActionResult Approve(ProcessRequestModel model)
         {
-            //Get the order, and set Change the status on order and request, and also modified?
-            //TODO: Validate that the has the correct state, is conneted to the user
+            //Get the order, and set Change the status on order and request?
+            //TODO: Validate that the has the correct state, is connected to the user
             //Validate that the request is in correct state.
             var order = _dbContext.Orders.Include(o => o.Requests).Single(o => o.OrderId == model.OrderId);
             var request = order.Requests.Single(r => r.RequestId == model.RequestId);
@@ -182,6 +182,34 @@ namespace Tolk.Web.Controllers
             request.AcceptanceDate = DateTimeOffset.Now;
             request.AcceptanceBy = User.GetUserId();
             request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
+            _dbContext.SaveChanges();
+            return RedirectToAction(nameof(View), new { id = order.OrderId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public IActionResult Deny(ProcessRequestModel model)
+        {
+            //Get the order, and set Change the status on order and request?
+            //TODO: Validate that the has the correct state, is connected to the user
+            //Validate that the request is in correct state.
+            var order = _dbContext.Orders.Include(o => o.Requests)
+                .ThenInclude(r => r.Ranking)
+                .Single(o => o.OrderId == model.OrderId);
+            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+            order.Status = OrderStatus.Requested;
+            request.Status = RequestStatus.DeniedByCreator;
+
+            //request.AcceptanceDate = DateTimeOffset.Now;
+            //request.AcceptanceBy = User.GetUserId();
+            //request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
+
+            request.AnswerProcessedDate = DateTimeOffset.Now;
+            request.AnswerProcessedBy = User.GetUserId();
+            request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
+            request.DenialMessage = model.DenyMessage;
+            order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.UtcDateTime));
+
             _dbContext.SaveChanges();
             return RedirectToAction(nameof(View), new { id = order.OrderId });
         }
