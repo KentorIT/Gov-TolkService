@@ -18,9 +18,9 @@ namespace Tolk.BusinessLogic.Entities
         [Description("Tillsättning godkänd")]
         Approved = 5,
         [Description("Nekad av tolk")]
-        DeniedByInterpreter = 6,
+        DeclinedByInterpreter = 6,
         [Description("Nekad av förmedling")]
-        DeniedByBroker = 7,
+        DeclinedByBroker = 7,
         [Description("Nekad av avropare")]
         DeniedByCreator = 8,
         [Description("Inget svar, tiden gick ut")]

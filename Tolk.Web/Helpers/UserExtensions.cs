@@ -13,6 +13,10 @@ namespace Tolk.Web.Helpers
         {
             return int.Parse(user.FindFirstValue(TolkClaimTypes.CustomerOrganisationId));
         }
+        public static int GetBrokerId(this ClaimsPrincipal user)
+        {
+            return int.Parse(user.FindFirstValue(TolkClaimTypes.BrokerId));
+        }
 
         public static int GetUserId(this ClaimsPrincipal user)
         {
