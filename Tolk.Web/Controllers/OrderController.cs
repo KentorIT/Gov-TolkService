@@ -130,7 +130,7 @@ namespace Tolk.Web.Controllers
                     RequiredInterpreterLocation = 1,
                     Status = OrderStatus.Requested,
                     CreatedBy = User.GetUserId(),
-                    CreatedDate = _clock.SwedenNow.DateTime,
+                    CreatedAt = _clock.SwedenNow.DateTime,
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
                     ImpersonatingCreator = User.GetImpersonatorId(),
                     Requirements = new List<OrderRequirement>()

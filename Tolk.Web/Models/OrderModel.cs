@@ -78,7 +78,7 @@ namespace Tolk.Web.Models
         public string LanguageName { get; set; }
 
         [Display(Name = "Skapad")]
-        public DateTime CreatedDate { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         [Display(Name = "Skapad av")]
         public string CreatedBy { get; set; }
@@ -173,7 +173,7 @@ namespace Tolk.Web.Models
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber.ToString(),
                 CreatedBy = order.CreatedByUser?.NormalizedEmail,
-                CreatedDate = order.CreatedDate,
+                CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation?.Name,
                 LanguageName = order.Language?.Name,
                 RegionName = order.Region?.Name,

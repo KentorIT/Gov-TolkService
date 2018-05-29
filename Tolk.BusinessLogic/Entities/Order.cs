@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         public int OrderNumber { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         //FK to AspNetUser
         public int CreatedBy { get; set; }
