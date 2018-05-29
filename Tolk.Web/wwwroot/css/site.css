@@ -10,7 +10,7 @@
     padding-right: 15px;
 }
 
-div.navbar-right{
+.navbar-right{
     padding-right: 15px;
 }
 
@@ -31,12 +31,12 @@ div.navbar-right{
     width: auto;
 }
 
-table.clickable-rows > tbody > tr > td {
+.clickable-rows > tbody > tr > td {
     cursor: pointer;
 }
 /*Should be in less or other*/
 
-h1.shortcut-box {
+.shortcut-box {
     text-align: center;
 }
 

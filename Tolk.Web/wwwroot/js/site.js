@@ -19,12 +19,12 @@ $('#timeTravelDatePicker').on('changeDate', function () {
     $('#timeTravelDate').val(
         $('#timeTravelDatePicker').datepicker('getFormattedDate')
     );
-})
+});
 
 function updateTime() {
-    var date = new Date((new Date().getTime()) + Number($('#now').attr('data-timetravel-milliseconds')));
+    var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
     $('#now').text(date.toLocaleString("sv-SE"));
-};
+}
 
 if ($('#now').length === 1) {
     updateTime();
@@ -72,6 +72,8 @@ $.fn.extend({
     },
     hasValue: function (value) {
         //Intentional use of == iso === since "1" and 1 needs to be seen as equal..
-        return ($(this).is(":checkbox")) ? $(this).is(":checked") === value : ($(this).val() == value);
+        return $(this).is(":checkbox")
+            ? $(this).is(":checked") === value
+            : $(this).val() == value; //eslint-disable-line eqeqeq
     }
 });
