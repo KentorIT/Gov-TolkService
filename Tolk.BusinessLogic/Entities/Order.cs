@@ -114,6 +114,13 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {
+            // TODO Need to get/understand rules for how close to assignment a request can be allowed.
+            if(newRequestExpiry.AddHours(1) > StartDateTime)
+            {
+                // For now, require response time to end at least one hour before start of assignment.
+                return null;
+            }
+
             if (Requests == null)
             {
                 Requests = new List<Request>();

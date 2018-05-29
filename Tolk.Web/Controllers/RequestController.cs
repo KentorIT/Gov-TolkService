@@ -20,14 +20,8 @@ namespace Tolk.Web.Controllers
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
-
-namespace Tolk.Web.Controllers
-{
-    [Authorize(Policy = Policies.Broker)]
-    public class RequestController : Controller
-    {
-        private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
+        private readonly OrderService _orderService;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -37,7 +31,6 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _clock = clock;
             _orderService = orderService;
-
         }
 
         public IActionResult List()

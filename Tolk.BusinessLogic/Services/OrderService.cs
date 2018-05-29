@@ -36,31 +36,51 @@ namespace Tolk.BusinessLogic.Services
         
         public void HandleExpiredRequests()
         {
-            Request expiredRequest;
-            do
+            var expiredRequestIds = _tolkDbContext.Requests
+                .Where(r => r.ExpiresAt <= _clock.SwedenNow && r.Status == RequestStatus.Created)
+                .Select(r => r.RequestId)
+                .ToList(); ;
+
+            _logger.LogDebug("Found {count} expired requests to process: {requestIds}",
+                expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
+
+            foreach (var requestId in expiredRequestIds)
             {
-                // Pick one item at a time, and make each of them an own transaction.
                 using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
                 {
-                    expiredRequest = _tolkDbContext.Requests
-                        .Include(r => r.Ranking)
-                        .Include(r => r.Order)
-                        .Where(r => r.ExpiresAt <= _clock.SwedenNow && r.Status == RequestStatus.Created)
-                        .FirstOrDefault();
-
-                    if (expiredRequest != null)
+                    try
                     {
-                        _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
-                            expiredRequest.RequestId, expiredRequest.OrderId);
+                        var expiredRequest = _tolkDbContext.Requests
+                            .Include(r => r.Ranking)
+                            .Include(r => r.Order)
+                            .SingleOrDefault(
+                            r => r.ExpiresAt <= _clock.SwedenNow
+                            && r.Status == RequestStatus.Created
+                            && r.RequestId == requestId);
 
-                        expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
+                        if (expiredRequest == null)
+                        {
+                            _logger.LogDebug("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
+                                expiredRequest.RequestId, expiredRequest.OrderId);
 
-                        CreateRequest(expiredRequest.Order);
+                            expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
-                        trn.Commit();
+                            CreateRequest(expiredRequest.Order);
+
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
                     }
                 }
-            } while (expiredRequest != null);
+            }
         }
 
         public void CreateRequest(Order order)
@@ -80,30 +100,31 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
-                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers.");
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.");
             }
         }
 
-        public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDate)
+        public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDateTime)
         {
-            // Grab utcNow to not risk it flipping over during execution of the method.
+            // Grab current time to not risk it flipping over during execution of the method.
             var swedenNow = _clock.SwedenNow;
 
-            var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDate.Date);
-
-            if (daysInAdvance >= 2)
+            if(startDateTime.Date < swedenNow.Date)
             {
-                return swedenNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
-            }
-            if(daysInAdvance == 1 && swedenNow.Hour < 14)
-            {
-                return _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
+
+                if (daysInAdvance >= 2)
+                {
+                    return swedenNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
+                }
+                if(daysInAdvance == 1 && swedenNow.Hour < 14)
+                {
+                    return _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                }
             }
 
-            // TODO Need to get/understand rules for late day before or same day requests. For now a dummy
-            // 1 hour response time.
+            // TODO Need to get/understand rules for late day before or same day requests.
             return swedenNow.AddHours(1).ToDateTimeOffsetSweden();
         }
-
     }
 }
