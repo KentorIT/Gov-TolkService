@@ -134,9 +134,10 @@ namespace Tolk.Web.Controllers
                 };
 
                 model.UpdateOrder(order);
+                _dbContext.Add(order);
+
                 _orderService.CreateRequest(order);
 
-                _dbContext.Add(order);
                 _dbContext.SaveChanges();
 
                 return RedirectToAction(nameof(View), new { id = order.OrderId });

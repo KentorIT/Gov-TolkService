@@ -112,7 +112,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirement> Requirements { get; set; }
 
-        public void CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
+        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {
             if (Requests == null)
             {
@@ -127,7 +127,7 @@ namespace Tolk.BusinessLogic.Entities
             if(ranking == null)
             {
                 // TODO: Rejected by all brokers, what to do now?
-                return;
+                return null;
             }
 
             var request = new Request
@@ -139,6 +139,8 @@ namespace Tolk.BusinessLogic.Entities
             };
 
             Requests.Add(request);
+
+            return request;
         }
     }
 }

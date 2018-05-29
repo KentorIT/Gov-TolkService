@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Entities;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Helpers;
 using System.Data;
+using Microsoft.Extensions.Logging;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -17,17 +18,20 @@ namespace Tolk.BusinessLogic.Services
         private ISystemClock _clock;
         private RankingService _rankingService;
         private DateCalculationService _dateCalculationService;
+        private ILogger<OrderService> _logger;
 
         public OrderService(
             TolkDbContext tolkDbContext,
             ISystemClock clock,
             RankingService rankingService,
-            DateCalculationService dateCalculationService)
+            DateCalculationService dateCalculationService,
+            ILoggerFactory loggerFactory)
         {
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _rankingService = rankingService;
             _dateCalculationService = dateCalculationService;
+            _logger = loggerFactory.CreateLogger<OrderService>();
         }
         
         public void HandleExpiredRequests()
@@ -46,11 +50,13 @@ namespace Tolk.BusinessLogic.Services
 
                     if (expiredRequest != null)
                     {
+                        _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
+                            expiredRequest.RequestId, expiredRequest.OrderId);
+
                         expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
                         CreateRequest(expiredRequest.Order);
 
-                        _tolkDbContext.SaveChanges();
                         trn.Commit();
                     }
                 }
@@ -62,7 +68,20 @@ namespace Tolk.BusinessLogic.Services
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.Date);
             var newExpiry = CalculateExpiryForNewRequest(order.StartDateTime);
 
-            order.CreateRequest(rankings, newExpiry);
+            var request = order.CreateRequest(rankings, newExpiry);
+
+            if(request != null)
+            {
+                // Save to get ids for the log message.
+                _tolkDbContext.SaveChanges();
+
+                _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
+                    request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
+            }
+            else
+            {
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers.");
+            }
         }
 
         public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDate)
