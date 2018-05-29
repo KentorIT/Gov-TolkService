@@ -179,9 +179,9 @@ namespace Tolk.Web.Controllers
             var request = order.Requests.Single(r => r.RequestId == model.RequestId);
             order.Status = OrderStatus.ResponseAccepted;
             request.Status = RequestStatus.Approved;
-            request.AcceptanceDate = DateTimeOffset.Now;
-            request.AcceptanceBy = User.GetUserId();
-            request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
+            request.AnswerProcessedDate = DateTimeOffset.Now;
+            request.AnswerProcessedBy = User.GetUserId();
+            request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
             _dbContext.SaveChanges();
             return RedirectToAction(nameof(View), new { id = order.OrderId });
         }
@@ -198,17 +198,13 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.OrderId == model.OrderId);
             var request = order.Requests.Single(r => r.RequestId == model.RequestId);
             order.Status = OrderStatus.Requested;
+
             request.Status = RequestStatus.DeniedByCreator;
-
-            //request.AcceptanceDate = DateTimeOffset.Now;
-            //request.AcceptanceBy = User.GetUserId();
-            //request.ImpersonatingAcceptanceBy = User.GetImpersonatorId();
-
             request.AnswerProcessedDate = DateTimeOffset.Now;
             request.AnswerProcessedBy = User.GetUserId();
             request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
-            request.DenialMessage = model.DenyMessage;
-            order.CreateRequest(_rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.UtcDateTime));
+            request.DenyMessage = model.DenyMessage;
+            _orderService.CreateRequest(order);
 
             _dbContext.SaveChanges();
             return RedirectToAction(nameof(View), new { id = order.OrderId });

@@ -71,10 +71,12 @@
             {
                 if (Model.AllowDenial)
                 {
-                    <form method="post" asp-action="Deny">
+                    <form method="post" class="deny-form" asp-action="Deny">
                         <input asp-for="OrderId" type="hidden" />
                         <input asp-for="RequestId" type="hidden" />
-                        <button class="btn btn-default">Neka tillsättning</button>
+                        <input asp-for="DenyMessage" type="hidden" />
+
+                        <button class="btn deny-button">Neka tillsättning</button>
                     </form>
                 }
                 <form method="post" asp-action="Approve">
@@ -86,7 +88,34 @@
         }
     </div>
 </div>
+<div id="denyMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Meddelande vid nekande</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <form-entry asp-for="DenyMessage" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default send-message">Skicka</button>
+            </div>
+        </div>
+
+    </div>
+</div>
 
 @section Scripts {
+    <environment include="Development">
+        <script src="~/js/Order/Process.js" asp-append-version="true"></script>
+    </environment>
+    @*<environment exclude="Development">
+            <script src="~/js/Order/process.min.js" asp-append-version="true"></script>
+        </environment>*@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

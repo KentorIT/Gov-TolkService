@@ -63,7 +63,7 @@
                 <h4 class="modal-title">Lägg till behov</h4>
             </div>
             <div class="modal-body">
-                @Html.Partial("_Requirement", new OrderRequirementModel())
+                    @Html.Partial("_Requirement", new OrderRequirementModel())
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
@@ -73,12 +73,12 @@
 
     </div>
 </div>
-@section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-    </environment>
+    @section Scripts {
+        <environment include="Development">
+            <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+        </environment>
+        <environment exclude="Development">
+            <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+        </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

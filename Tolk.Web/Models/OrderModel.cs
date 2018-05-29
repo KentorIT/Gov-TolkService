@@ -112,6 +112,10 @@ namespace Tolk.Web.Models
             }
         }
 
+        [Display(Name = "Anledning till att svaret inte godtas")]
+        [DataType(DataType.MultilineText)]
+        public string DenyMessage { get; set; }
+
         #endregion
 
         #region extra requirements

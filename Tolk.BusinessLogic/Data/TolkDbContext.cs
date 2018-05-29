@@ -67,14 +67,13 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-
             builder.Entity<Request>()
                 .HasOne(r => r.AnsweringUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Request>()
-                .HasOne(r => r.AcceptingUser)
+                .HasOne(r => r.ProcessingUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -89,7 +88,7 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Request>()
-                .HasOne(r => r.AcceptanceByImpersonator)
+                .HasOne(r => r.AnswerProcessedByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 

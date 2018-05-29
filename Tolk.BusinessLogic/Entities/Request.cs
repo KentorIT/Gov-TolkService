@@ -40,6 +40,9 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
 
+        [MaxLength(1000)]
+        public string DenyMessage { get; set; }
+
         public DateTimeOffset? RecieveDate { get; set; }
 
         public int? ReceivedBy { get; set; }
@@ -64,17 +67,17 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingAnsweredBy))]
         public AspNetUser AnsweredByImpersonator { get; set; }
 
-        public DateTimeOffset? AcceptanceDate { get; set; }
+        public DateTimeOffset? AnswerProcessedDate { get; set; }
 
-        public int? AcceptanceBy { get; set; }
+        public int? AnswerProcessedBy { get; set; }
 
-        [ForeignKey(nameof(AcceptanceBy))]
-        public AspNetUser AcceptingUser { get; set; }
+        [ForeignKey(nameof(AnswerProcessedBy))]
+        public AspNetUser ProcessingUser { get; set; }
 
-        public int? ImpersonatingAcceptanceBy { get; set; }
+        public int? ImpersonatingAnswerProcessedBy { get; set; }
 
-        [ForeignKey(nameof(ImpersonatingAcceptanceBy))]
-        public AspNetUser AcceptanceByImpersonator { get; set; }
+        [ForeignKey(nameof(ImpersonatingAnswerProcessedBy))]
+        public AspNetUser AnswerProcessedByImpersonator { get; set; }
 
         #region navigation
 
