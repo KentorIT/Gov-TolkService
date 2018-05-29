@@ -90,17 +90,18 @@ namespace Tolk.BusinessLogic.Services
 
             var request = order.CreateRequest(rankings, newExpiry);
 
-            if(request != null)
-            {
-                // Save to get ids for the log message.
-                _tolkDbContext.SaveChanges();
+            // Save to get ids for the log message.
+            _tolkDbContext.SaveChanges();
 
+            if (request != null)
+            {
                 _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                     request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
             }
             else
             {
-                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.");
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
+                    order.OrderId);
             }
         }
 
