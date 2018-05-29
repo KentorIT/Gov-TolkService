@@ -109,7 +109,7 @@ namespace Tolk.BusinessLogic.Services
             // Grab current time to not risk it flipping over during execution of the method.
             var swedenNow = _clock.SwedenNow;
 
-            if(startDateTime.Date < swedenNow.Date)
+            if(swedenNow.Date < startDateTime.Date)
             {
                 var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
 
