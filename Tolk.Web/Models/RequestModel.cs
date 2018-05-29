@@ -21,6 +21,18 @@ namespace Tolk.Web.Models
 
         public OrderModel OrderModel { get; set; }
 
+        public int OrderId
+        {
+            get
+            {
+                return OrderModel.OrderId.Value;
+            }
+        }
+
+        [Display(Name = "Meddelande")]
+        [DataType(DataType.MultilineText)]
+        public string DenyMessage { get; set; }
+
         [Required]
         [Display(Name = "Kompetensnivå")]
         public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }

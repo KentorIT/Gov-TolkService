@@ -20,29 +20,31 @@ namespace Tolk.Web.Controllers
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
+
+namespace Tolk.Web.Controllers
+{
+    [Authorize(Policy = Policies.Broker)]
+    public class RequestController : Controller
+    {
+        private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
 
         public RequestController(
             TolkDbContext dbContext,
-            ISwedishClock clock)
+            ISwedishClock clock, 
+            OrderService orderService)
         {
             _dbContext = dbContext;
             _clock = clock;
-        }
+            _orderService = orderService;
 
-        protected int CurrentBrokerId
-        {
-            get
-            {
-                return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.BrokerId).Value);
-            }
         }
 
         public IActionResult List()
         {
             return View(_dbContext.Requests.Include(r => r.Order)
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
-                    r.Ranking.BrokerRegion.Broker.BrokerId == CurrentBrokerId).Select(r => new RequestListItemModel
+                    r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId()).Select(r => new RequestListItemModel
                     {
                         RequestId = r.RequestId,
                         Language = r.Order.Language.Name,
@@ -69,7 +71,7 @@ namespace Tolk.Web.Controllers
             }
             //Get request model from db
             var model = RequestModel.GetModelFromRequest(request);
-            model.BrokerId = CurrentBrokerId;
+            model.BrokerId = User.GetBrokerId();
             return View(model);
         }
 
@@ -117,6 +119,30 @@ namespace Tolk.Web.Controllers
                 return Redirect($"~/Home/Index?message=Svar har skickats");
             }
             return View("Edit", model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public IActionResult Decline(ProcessRequestModel model)
+        {
+            //Get the order, and set Change the status on order and request?
+            //TODO: Validate that the has the correct state, is connected to the user
+            //Validate that the request is in correct state.
+            var order = _dbContext.Orders.Include(o => o.Requests)
+                .ThenInclude(r => r.Ranking)
+                .Single(o => o.OrderId == model.OrderId);
+            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+            order.Status = OrderStatus.Requested;
+
+            request.Status = RequestStatus.DeclinedByBroker;
+            request.AnswerDate = DateTimeOffset.Now;
+            request.AnsweredBy = User.GetUserId();
+            request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
+            request.DenyMessage = model.DenyMessage;
+            _orderService.CreateRequest(order);
+
+            _dbContext.SaveChanges();
+            return RedirectToAction(nameof(List));
         }
     }
 }
