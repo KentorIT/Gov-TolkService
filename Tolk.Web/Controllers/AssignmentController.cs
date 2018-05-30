@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
@@ -19,6 +20,7 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly IAuthorizationService _authorizationService;
 
         public AssignmentController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
         {
@@ -26,19 +28,12 @@ namespace Tolk.Web.Controllers
             _userManager = userManager;
         }
 
-        protected int CurrentInterpreterId
-        {
-            get
-            {
-                return int.Parse(User.Claims.Single(c => c.Type == TolkClaimTypes.InterpreterId).Value);
-            }
-        }
-
         public IActionResult List()
         {
             return View(_dbContext.Requests.Include(r => r.Order)
                 .Where(r => (r.Status == RequestStatus.Approved) &&
-                    r.InterpreterId == CurrentInterpreterId).Select(r => new RequestListItemModel
+                    r.InterpreterId == User.GetInterpreterId())
+                    .Select(r => new RequestListItemModel
                     {
                         RequestId = r.RequestId,
                         Language = r.Order.Language.Name,
@@ -53,6 +48,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Edit(int id)
         {
+            // Remember to add authorization once this method loads data.
             return View();
         }
 
@@ -60,6 +56,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public IActionResult Edit(RequestModel model)
         {
+            // Remember to add authorization once this method saves data.
             return View("Edit", model);
         }
     }

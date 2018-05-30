@@ -34,5 +34,10 @@ namespace Tolk.Web.Helpers
             }
             return null;
         }
+
+        public static int GetInterpreterId(this ClaimsPrincipal user)
+        {
+            return int.Parse(user.FindFirstValue(TolkClaimTypes.InterpreterId));
+        }
     }
 }

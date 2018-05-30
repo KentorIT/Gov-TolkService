@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Services
             var expiredRequestIds = _tolkDbContext.Requests
                 .Where(r => r.ExpiresAt <= _clock.SwedenNow && r.Status == RequestStatus.Created)
                 .Select(r => r.RequestId)
-                .ToList(); ;
+                .ToList();
 
             _logger.LogDebug("Found {count} expired requests to process: {requestIds}",
                 expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
