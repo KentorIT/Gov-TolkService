@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace Tolk.BusinessLogic.Entities
+namespace Tolk.BusinessLogic.Enums
 {
     public enum RequestStatus
     {

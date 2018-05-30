@@ -30,7 +30,27 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
 
-        public OrderStatus Status { get; set; }
+
+        private OrderStatus _status;
+
+        public OrderStatus Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                if(value == OrderStatus.ResponseAccepted &&
+                    (Status != OrderStatus.RequestResponded
+                    || Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
+                {
+                    throw new InvalidOperationException($"Order {OrderId} is in the wrong state to be set as accepted.");
+                }
+
+                _status = value;
+            }
+        }
 
         //FK to CustomerOrganisation
         public int CustomerOrganisationId { get; set; }
@@ -135,13 +155,7 @@ namespace Tolk.BusinessLogic.Entities
                 return null;
             }
 
-            var request = new Request
-            {
-                Ranking = ranking,
-                Order = this,
-                Status = RequestStatus.Created,
-                ExpiresAt = newRequestExpiry
-            };
+            var request = new Request(ranking, newRequestExpiry);
 
             Requests.Add(request);
 

@@ -59,7 +59,7 @@ namespace Tolk.Web.Controllers
                 }));
         }
 
-        public IActionResult View(int id)
+        public async Task<IActionResult> View(int id)
         {
             //Get order model from db
             var order = _dbContext.Orders
@@ -75,31 +75,37 @@ namespace Tolk.Web.Controllers
                 .ThenInclude(r => r.BrokerRegion)
                 .ThenInclude(r => r.Broker)
                 .Single(o => o.OrderId == id);
-            var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
-            var listType = order.CustomerOrganisation.PriceListType;
-            //TODO: Handle this better. Preferably with a list that you can use contains on
-            var request = order.Requests.SingleOrDefault(r =>
-                r.Status == RequestStatus.Created ||
-                r.Status == RequestStatus.Received ||
-                r.Status == RequestStatus.Accepted ||
-                r.Status == RequestStatus.SentToInterpreter ||
-                r.Status == RequestStatus.Approved
-                );
-            var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-            model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
-            model.RequestStatus = request?.Status;
-            model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
-            if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                model.RequestId = request.RequestId;
-                model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
-                model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
-                model.InterpreterName = _dbContext.Requests
-                    .Include(r => r.Interpreter)
-                    .ThenInclude(i => i.User)
-                    .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
+                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
+                var listType = order.CustomerOrganisation.PriceListType;
+                //TODO: Handle this better. Preferably with a list that you can use contains on
+                var request = order.Requests.SingleOrDefault(r =>
+                    r.Status == RequestStatus.Created ||
+                    r.Status == RequestStatus.Received ||
+                    r.Status == RequestStatus.Accepted ||
+                    r.Status == RequestStatus.SentToInterpreter ||
+                    r.Status == RequestStatus.Approved
+                    );
+                var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
+                model.RequestStatus = request?.Status;
+                model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
+                if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
+                {
+                    model.RequestId = request.RequestId;
+                    model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
+                    model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
+                    model.InterpreterName = _dbContext.Requests
+                        .Include(r => r.Interpreter)
+                        .ThenInclude(i => i.User)
+                        .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
+                }
+                return View(model);
             }
-            return View(model);
+
+            return Forbid();
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -175,20 +181,20 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Approve(ProcessRequestModel model)
+        public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
-            //Get the order, and set Change the status on order and request?
-            //TODO: Validate that the has the correct state, is connected to the user
-            //Validate that the request is in correct state.
             var order = _dbContext.Orders.Include(o => o.Requests).Single(o => o.OrderId == model.OrderId);
-            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-            order.Status = OrderStatus.ResponseAccepted;
-            request.Status = RequestStatus.Approved;
-            request.AnswerProcessedDate = _clock.SwedenNow;
-            request.AnswerProcessedBy = User.GetUserId();
-            request.ImpersonatingAnswerProcessedBy = User.TryGetImpersonatorId();
-            _dbContext.SaveChanges();
-            return RedirectToAction(nameof(View), new { id = order.OrderId });
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Approve)).Succeeded)
+            {
+                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+
+                request.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(View), new { id = order.OrderId });
+            }
+            return Forbid();
         }
 
         [ValidateAntiForgeryToken]
@@ -205,7 +211,7 @@ namespace Tolk.Web.Controllers
             order.Status = OrderStatus.Requested;
 
             request.Status = RequestStatus.DeniedByCreator;
-            request.AnswerProcessedDate = DateTimeOffset.Now;
+            request.AnswerProcessedAt = DateTimeOffset.Now;
             request.AnswerProcessedBy = User.GetUserId();
             request.ImpersonatingAnswerProcessedBy = User.TryGetImpersonatorId();
             request.DenyMessage = model.DenyMessage;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {

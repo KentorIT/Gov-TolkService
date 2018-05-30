@@ -15,6 +15,8 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string View = nameof(View);
+        public const string Approve = nameof(Approve);
         public const string TimeTravel = nameof(TimeTravel);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
@@ -24,7 +26,9 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
-                opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
+                opt.AddPolicy(Edit, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(View, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(Approve, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(TimeTravel, builder => 
                     builder.AddRequirements(new EnvironmentRequirement("Development"))
                     .RequireAuthenticatedUser());
@@ -33,7 +37,7 @@ namespace Tolk.Web.Authorization
             services.AddSingleton<IAuthorizationHandler, EnvironmentRequirement.EnvironmentHandler>();
         }
 
-        private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
+        private readonly static Func<AuthorizationHandlerContext, bool> CreatorHandler = (context) =>
         {
             int userId = context.User.GetUserId();
 

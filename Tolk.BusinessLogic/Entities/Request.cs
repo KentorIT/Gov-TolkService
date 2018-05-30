@@ -4,11 +4,21 @@ using System.Text;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Data.Migrations;
+using System.Linq;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
     public class Request
     {
+        private Request() { }
+
+        public Request(Ranking ranking, DateTimeOffset expiry)
+        {
+            Ranking = ranking;
+            Status = RequestStatus.Created;
+        }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
 
@@ -70,22 +80,43 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingAnsweredBy))]
         public AspNetUser AnsweredByImpersonator { get; set; }
 
-        public DateTimeOffset? AnswerProcessedDate { get; set; }
+        public DateTimeOffset? AnswerProcessedAt { get; set; }
 
         public int? AnswerProcessedBy { get; set; }
 
         [ForeignKey(nameof(AnswerProcessedBy))]
-        public AspNetUser ProcessingUser { get; set; }
+        public AspNetUser ProcessingUser { get; private set; }
 
         public int? ImpersonatingAnswerProcessedBy { get; set; }
 
         [ForeignKey(nameof(ImpersonatingAnswerProcessedBy))]
-        public AspNetUser AnswerProcessedByImpersonator { get; set; }
+        public AspNetUser AnswerProcessedByImpersonator { get; private set; }
 
         #region navigation
 
         public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
 
         #endregion
+
+        public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        {
+            if(Status != RequestStatus.Accepted)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
+            }
+
+            var approvedRequest = Order.Requests.FirstOrDefault(r => r.Status == RequestStatus.Approved);
+            if(approvedRequest != null)
+            {
+                throw new InvalidOperationException($"Can only approve one request for an order. Order {OrderId} already has an approved request {approvedRequest.RequestId}.");
+            }
+
+            Status = RequestStatus.Approved;
+            Order.Status = OrderStatus.ResponseAccepted;
+            AnswerProcessedAt = approveTime;
+            AnswerProcessedBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+        }
+
     }
 }

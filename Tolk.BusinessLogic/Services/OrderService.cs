@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Helpers;
 using System.Data;
 using Microsoft.Extensions.Logging;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Services
 {
