@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Avropa tolk";
 }
@@ -13,7 +14,29 @@
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
             <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" />
             <form-entry asp-for="CustomerReferenceNumber" />
-            <form-entry asp-for="AssignmentType" type="select" asp-items="SelectListService.AssignentTypes" />
+            <form-entry asp-for="AssignmentType" type="select" asp-items="SelectListService.AssignmentTypes" />
+            <form-entry asp-for="UseRankedInterpreterLocation" />
+            <div class="required-InterpreterLocation">
+                <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
+            </div>
+            <div class="ranked-InterpreterLocation" style="display:none">
+                <label>@Html.DisplayNameFor(m => m.InterpreterLocations)</label>
+                <ol class="drag-panel">
+                    @for (var i = 0; i < SelectListService.RankedInterpreterLocations.Count(); ++i)
+                    {
+                        <li class="draggable">
+                            @EnumHelper.GetDescription(SelectListService.RankedInterpreterLocations[i].InterpreterLocation)
+                            <input name="InterpreterLocations[@i.ToString()].InterpreterLocation"
+                                   id="InterpreterLocations_@i.ToString()__InterpreterLocation"
+                                   value="@SelectListService.RankedInterpreterLocations[i].InterpreterLocation" type="hidden" />
+                            <input class="order-descriptor"
+                                   name="InterpreterLocations[@i.ToString()].Rank"
+                                   id="InterpreterLocations_@i.ToString()__Rank"
+                                   value="@SelectListService.RankedInterpreterLocations[i].Rank" type="hidden" />
+                        </li>
+                    }
+                </ol>
+            </div>
             <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
             <fieldset>
                 <legend>Extra behov</legend>
@@ -63,7 +86,7 @@
                 <h4 class="modal-title">Lägg till behov</h4>
             </div>
             <div class="modal-body">
-                    @Html.Partial("_Requirement", new OrderRequirementModel())
+                @Html.Partial("_Requirement", new OrderRequirementModel())
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
@@ -73,12 +96,12 @@
 
     </div>
 </div>
-    @section Scripts {
-        <environment include="Development">
-            <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-        </environment>
-        <environment exclude="Development">
-            <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-        </environment>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

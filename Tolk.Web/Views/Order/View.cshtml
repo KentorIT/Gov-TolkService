@@ -18,6 +18,22 @@
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="AssignmentType" />
+        @if (!Model.UseRankedInterpreterLocation)
+        {
+            <display-entry asp-for="InterpreterLocation" />
+        }
+        else
+        {
+            <label>Önskat inställelsesätt, helst överst</label>
+            <ul>
+                @foreach (var location in Model.InterpreterLocations.OrderBy(l => l.Rank))
+                {
+                    <li>
+                        @EnumHelper.GetDescription(location.InterpreterLocation)
+                    </li>
+                }
+            </ul>
+        }
         <display-entry asp-for="RequiredCompetenceLevel" />
         <display-entry asp-for="StartDateTime" />
         <display-entry asp-for="EndDateTime" />

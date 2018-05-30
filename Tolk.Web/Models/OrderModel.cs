@@ -53,6 +53,15 @@ namespace Tolk.Web.Models
         [Required]
         public AssignmentType AssignmentType { get; set; }
 
+        [Display(Name = "Erbjud flera alternativ till inställelsesätt")]
+        public bool UseRankedInterpreterLocation { get; set; } = false;
+
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocation { get; set; }
+
+        [Display(Name = "Önskat inställelsesätt (den som är helst överst)")]
+        public List<InterpreterLocationModel> InterpreterLocations { get; set; }
+
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
@@ -143,6 +152,21 @@ namespace Tolk.Web.Models
             order.City = LocationCity;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
 
+            if (UseRankedInterpreterLocation)
+            {
+                //Add one(3) rows to OrderInterpreterLocation
+                foreach (var location in InterpreterLocations.OrderBy(l => l.Rank))
+                {
+                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank});
+                }
+            }
+            else
+            {
+                //Add one(1) row to OrderInterpreterLocation
+                // with rank 0
+                order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0});
+            }
+
             if (OrderRequirements != null)
             {
                 // add all extra requirements
@@ -168,6 +192,7 @@ namespace Tolk.Web.Models
 
         public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
+            bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
             return new OrderModel
             {
                 OrderId = order.OrderId,
@@ -191,6 +216,13 @@ namespace Tolk.Web.Models
                 LocationCity = order.City,
                 RequiredCompetenceLevel = order.RequiredCompetenceLevel,
                 Status = order.Status,
+                UseRankedInterpreterLocation = useRankedInterpreterLocation,
+                InterpreterLocation = !useRankedInterpreterLocation ? (InterpreterLocation?)order.InterpreterLocations.Single().InterpreterLocation : null,
+                InterpreterLocations = order.InterpreterLocations.OrderBy(l => l.Rank).Select(l => new InterpreterLocationModel
+                {
+                    InterpreterLocation = l.InterpreterLocation,
+                    Rank = l.Rank
+                }).ToList(),
                 OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
                 {
                     OrderRequirementId = r.OrderRequirementId,

@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Services
 {
@@ -42,10 +43,20 @@ namespace Tolk.Web.Services
             })
             .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> AssignentTypes { get; } =
+        public static IEnumerable<SelectListItem> AssignmentTypes { get; } =
             EnumHelper.GetAllDescriptions<AssignmentType>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+
+        public static IEnumerable<SelectListItem> InterpreterLocations { get; } =
+            EnumHelper.GetAllDescriptions<InterpreterLocation>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
+        public static List<InterpreterLocationModel> RankedInterpreterLocations { get; } =
+            Enum.GetValues(typeof(InterpreterLocation)).OfType<InterpreterLocation>()
+                .Select(e => new InterpreterLocationModel { InterpreterLocation = e, Rank = (int)e })
+                .ToList();
 
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
@@ -65,10 +76,10 @@ namespace Tolk.Web.Services
                 {
                     items = _dbContext.Languages
                         .OrderBy(l => l.Name).Select(l => new SelectListItem
-                    {
-                        Value = l.LanguageId.ToString(),
-                        Text = l.Name
-                    })
+                        {
+                            Value = l.LanguageId.ToString(),
+                            Text = l.Name
+                        })
                     .ToList().AsReadOnly();
 
                     _cache.Set(languagesSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
@@ -113,12 +124,12 @@ namespace Tolk.Web.Services
 
         public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
         {
-           return _dbContext.Interpreters.Where(i => i.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
-           .Select(i => new SelectListItem
+            return _dbContext.Interpreters.Where(i => i.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
+            .Select(i => new SelectListItem
             {
                 Value = i.InterpreterId.ToString(),
                 Text = i.User.UserName
-           });
+            });
         }
         public IEnumerable<SelectListItem> GetCompetenceLevels(CompetenceAndSpecialistLevel minimumLevel)
         {

@@ -84,10 +84,6 @@ namespace Tolk.BusinessLogic.Entities
         public AssignmentType AssignentType { get; set; }
 
         //TODO: Make Enum and fk
-        public int RequiredInterpreterLocation { get; set; }
-        public int? RequestedInterpreterLocation { get; set; }
-
-        //TODO: Make Enum and fk
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
         //Same as above
         //TODO: Fix this, temporarily reverted to an int due to EF Core issue with nullable enum.
@@ -111,6 +107,8 @@ namespace Tolk.BusinessLogic.Entities
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }
+
+        public List<OrderInterpreterLocation> InterpreterLocations { get; set; }
 
         public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {

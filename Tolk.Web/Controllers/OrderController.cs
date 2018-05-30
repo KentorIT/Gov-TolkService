@@ -67,6 +67,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
+                .Include(o => o.InterpreterLocations)
                 .Include(o => o.Requirements)
                 .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)
@@ -127,13 +128,13 @@ namespace Tolk.Web.Controllers
                 order = new Order
                 {
                     //Hardcodes
-                    RequiredInterpreterLocation = 1,
                     Status = OrderStatus.Requested,
                     CreatedBy = User.GetUserId(),
                     CreatedAt = _clock.SwedenNow.DateTime,
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
                     ImpersonatingCreator = User.GetImpersonatorId(),
-                    Requirements = new List<OrderRequirement>()
+                    Requirements = new List<OrderRequirement>(),
+                    InterpreterLocations = new List<OrderInterpreterLocation>()
                 };
 
                 model.UpdateOrder(order);

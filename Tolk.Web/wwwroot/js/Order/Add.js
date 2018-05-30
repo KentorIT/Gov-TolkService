@@ -60,4 +60,56 @@
             $("#addRequirement").modal("hide");
         }
     });
+    $("body").on("change", "#UseRankedInterpreterLocation", function (event) {
+        if ($(this).is(":checked")) {
+            $(".required-InterpreterLocation").hide();
+            $(".ranked-InterpreterLocation").show();
+        } else {
+            $(".required-InterpreterLocation").show();
+            $(".ranked-InterpreterLocation").hide();
+        }
+    });
+    $("ol.drag-panel").sortable({
+        vertical: true,
+        pullPlaceholder: true,
+        group: 'draggable',
+        distance: 20,
+
+        // animation on drop
+        onDrop: function ($item, container, _super) {
+            var $clonedItem = $('<li/>').css({ width: 0, height: 0 });
+            $item.before($clonedItem);
+            $clonedItem.animate({ 'height': $item.height() });
+
+            $item.animate($clonedItem.position(), function () {
+                $clonedItem.detach();
+                _super($item, container);
+                //Rerank!
+                var i = 1;
+                $item.closest("ol").find(".order-descriptor").each(function () {
+                    $(this).val(i++);
+                }); 
+            });
+        },
+
+        // set $item relative to cursor position
+        onDragStart: function ($item, container, _super) {
+            var offset = $item.offset(),
+                pointer = container.rootGroup.pointer;
+
+            adjustment = {
+                left: pointer.left - offset.left,
+                top: pointer.top - offset.top
+            };
+
+            _super($item, container);
+        },
+        onDrag: function ($item, position) {
+            $item.css({
+                left: position.left - adjustment.left,
+                top: position.top - adjustment.top
+            });
+        }
+    });
+
 });

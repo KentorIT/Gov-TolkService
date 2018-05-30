@@ -52,6 +52,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<OrderRequirementRequestAnswer>()
                 .HasKey(ra => new { ra.RequestId, ra.OrderRequirementId });
 
+            builder.Entity<OrderInterpreterLocation>()
+                .HasKey(oil => new { oil.OrderId, oil.InterpreterLocation });
+
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()

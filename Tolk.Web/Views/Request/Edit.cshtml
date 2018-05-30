@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.RequestModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Svara på avrop";
 }
@@ -16,6 +17,22 @@
         <display-entry asp-for="OrderModel.LanguageName" />
         <display-entry asp-for="OrderModel.CustomerReferenceNumber" />
         <display-entry asp-for="OrderModel.AssignmentType" />
+        @if (!Model.OrderModel.UseRankedInterpreterLocation)
+        {
+            <display-entry asp-for="OrderModel.InterpreterLocation" />
+        }
+        else
+        {
+            <label>Önskat inställelsesätt, helst överst</label>
+            <ul>
+                @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
+                {
+                    <li>
+                        @EnumHelper.GetDescription(location.InterpreterLocation)
+                    </li>
+                }
+            </ul>
+        }
         <display-entry asp-for="OrderModel.RequiredCompetenceLevel" />
         <display-entry asp-for="OrderModel.StartDateTime" />
         <display-entry asp-for="OrderModel.EndDateTime" />

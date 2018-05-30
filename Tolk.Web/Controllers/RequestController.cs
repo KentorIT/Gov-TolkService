@@ -52,7 +52,10 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Edit(int id)
         {
-            var request = _dbContext.Requests.Include(r => r.Order).ThenInclude(r => r.Requirements).Single(o => o.RequestId == id);
+            var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.Requirements)
+                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Single(o => o.RequestId == id);
             if (request.Status == RequestStatus.Created)
             {
                 request.Status = RequestStatus.Received;
