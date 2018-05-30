@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Data.Migrations;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -44,6 +45,8 @@ namespace Tolk.BusinessLogic.Entities
         public string DenyMessage { get; set; }
 
         public DateTimeOffset? RecieveDate { get; set; }
+
+        public int? InterpreterLocation { get; set; }
 
         public int? ReceivedBy { get; set; }
 

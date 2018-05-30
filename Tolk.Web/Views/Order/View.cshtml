@@ -83,6 +83,7 @@
         {
             <display-entry asp-for="InterpreterName" />
             <display-entry asp-for="ExpectedTravelCosts" />
+            <display-entry asp-for="InterpreterLocationAnswer" />
             @if (Model.RequestStatus == RequestStatus.Accepted)
             {
                 if (Model.AllowDenial)

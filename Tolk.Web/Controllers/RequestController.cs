@@ -89,7 +89,7 @@ namespace Tolk.Web.Controllers
 
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
-                //Save competence level
+                request.InterpreterLocation = (int?)model.InterpreterLocation;
                 request.CompetenceLevel = (int?)model.CompetenceLevel;
                 if (model.RequirementAnswers != null)
                 {

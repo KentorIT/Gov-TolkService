@@ -93,6 +93,7 @@ namespace Tolk.Web.Controllers
             {
                 model.RequestId = request.RequestId;
                 model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
+                model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
                 model.InterpreterName = _dbContext.Requests
                     .Include(r => r.Interpreter)
                     .ThenInclude(i => i.User)

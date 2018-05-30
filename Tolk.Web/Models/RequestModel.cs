@@ -21,11 +21,11 @@ namespace Tolk.Web.Models
 
         public OrderModel OrderModel { get; set; }
 
-        public int OrderId
+        public int? OrderId
         {
             get
             {
-                return OrderModel.OrderId.Value;
+                return OrderModel?.OrderId;
             }
         }
 
@@ -45,6 +45,10 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Förväntad resekostnad")]
         public decimal? ExpectedTravelCosts { get; set; }
+
+        [Required]
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocation { get; set; }
 
         #region methods
 

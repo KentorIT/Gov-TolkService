@@ -107,7 +107,10 @@ namespace Tolk.Web.Models
         public decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Tillsatt tolk")]
-        public string InterpreterName  { get; set; }
+        public string InterpreterName { get; set; }
+
+        [Display(Name = "Inställelsesätt enl. svar")]
+        public InterpreterLocation InterpreterLocationAnswer { get; set; }
 
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
@@ -157,14 +160,14 @@ namespace Tolk.Web.Models
                 //Add one(3) rows to OrderInterpreterLocation
                 foreach (var location in InterpreterLocations.OrderBy(l => l.Rank))
                 {
-                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank});
+                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank });
                 }
             }
             else
             {
                 //Add one(1) row to OrderInterpreterLocation
                 // with rank 0
-                order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0});
+                order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0 });
             }
 
             if (OrderRequirements != null)

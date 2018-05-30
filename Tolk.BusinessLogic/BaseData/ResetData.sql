@@ -2,7 +2,7 @@ Use TolkDev
 declare @increment bit
 declare @reseed int
 
-truncate table InterpreterBrokerRegion
+truncate table OrderInterpreterLocation
 truncate table OrderRequirementRequestAnswer 
 
 select @increment = IsNull(Max(RequestId), 1)

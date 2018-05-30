@@ -46,6 +46,7 @@
             <input asp-for="RequestId" type="hidden" />
             <input asp-for="SetStatus" type="hidden" />
             <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, Model.OrderModel.RegionId)" />
+            <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
             <form-entry asp-for="ExpectedTravelCosts" />
             <form-entry asp-for="CompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(Model.OrderModel.RequiredCompetenceLevel)" />
             @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
