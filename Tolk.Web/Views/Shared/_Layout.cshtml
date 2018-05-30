@@ -52,7 +52,7 @@
                         <li><a asp-area="" asp-controller="Assignment" asp-action="List">Sök tilldelningar</a></li>
                     }
                 </ul>
-                @if((await AuthorizationService.AuthorizeAsync(null, Policies.TimeTravel)).Succeeded)
+                @if((await AuthorizationService.AuthorizeAsync(User, Policies.TimeTravel)).Succeeded)
                 {
                     <ul class="navbar-nav nav navbar-right">
                         <li class="dropdown">
