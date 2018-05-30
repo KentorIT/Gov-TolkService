@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
@@ -44,31 +45,31 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<StartPageBox> GetStartPageBoxes()
         {
-            var customerId = User.Claims.SingleOrDefault(c => c.Type == TolkClaimTypes.CustomerOrganisationId)?.Value;
-            if (customerId != null)
+            var customerId = User.TryGetCustomerOrganisationId();
+            if (customerId.HasValue)
             {
                 yield return new StartPageBox
                 {
-                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == int.Parse(_userManager.GetUserId(User))).Count(),
+                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == User.GetUserId()).Count(),
                     Header = "Tillsatt tolk",
                     Controller = "Order",
                     Action = "List"
                 };
                 yield return new StartPageBox
                 {
-                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.Delivered && o.CreatedBy == int.Parse(_userManager.GetUserId(User))).Count(),
+                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.Delivered && o.CreatedBy == User.GetUserId()).Count(),
                     Header = "Rekvirerade",
                     Controller = "Order",
                     Action = "List"
                 };
             }
-            var brokerId = User.Claims.SingleOrDefault(c => c.Type == TolkClaimTypes.BrokerId)?.Value;
-            if (brokerId != null)
+            var brokerId = User.TryGetBrokerId();
+            if (brokerId.HasValue)
             {
                 yield return new StartPageBox
                 {
                     Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) && 
-                        r.Ranking.BrokerId == int.Parse(brokerId)).Count(),
+                        r.Ranking.BrokerId == brokerId.Value).Count(),
                     Header = "Inkomna förfrågningar",
                     Controller = "Request",
                     Action = "List"
@@ -81,13 +82,13 @@ namespace Tolk.Web.Controllers
                     Action = "List"
                 };
             }
-            var interpreterId = User.Claims.SingleOrDefault(c => c.Type == TolkClaimTypes.InterpreterId)?.Value;
-            if (interpreterId != null)
+            var interpreterId = User.TryGetInterpreterId();
+            if (interpreterId.HasValue)
             {
                 yield return new StartPageBox
                 {
                     //TODO: Here we need to check the order too!
-                    Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) && r.InterpreterId == int.Parse(interpreterId)).Count(),
+                    Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) && r.InterpreterId == interpreterId.Value).Count(),
                     Header = "Tillsatta uppdrag",
                     Controller = "Assignment",
                     Action = "List"

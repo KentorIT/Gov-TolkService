@@ -62,7 +62,7 @@ namespace Tolk.Web.Controllers
                 //Set modified user, date and possible impersonator
                 request.RecieveDate = _clock.SwedenNow;
                 request.ReceivedBy = User.GetUserId();
-                request.ImpersonatingReceivedBy = User.GetImpersonatorId();
+                request.ImpersonatingReceivedBy = User.TryGetImpersonatorId();
                 _dbContext.SaveChanges();
             }
             //Get request model from db
@@ -85,7 +85,7 @@ namespace Tolk.Web.Controllers
                 request.Status = model.SetStatus;
                 request.AnswerDate = _clock.SwedenNow;
                 request.AnsweredBy = User.GetUserId();
-                request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
+                request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
 
                 request.InterpreterId = model.InterpreterId;
                 request.ExpectedTravelCosts = model.ExpectedTravelCosts;
@@ -133,7 +133,7 @@ namespace Tolk.Web.Controllers
             request.Status = RequestStatus.DeclinedByBroker;
             request.AnswerDate = DateTimeOffset.Now;
             request.AnsweredBy = User.GetUserId();
-            request.ImpersonatingAnsweredBy = User.GetImpersonatorId();
+            request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
             request.DenyMessage = model.DenyMessage;
             _orderService.CreateRequest(order);
 

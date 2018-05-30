@@ -11,11 +11,30 @@ namespace Tolk.Web.Helpers
     {
         public static int GetCustomerOrganisationId(this ClaimsPrincipal user)
         {
-            return int.Parse(user.FindFirstValue(TolkClaimTypes.CustomerOrganisationId));
+            return user.TryGetCustomerOrganisationId().Value;
         }
+
+        public static int? TryGetCustomerOrganisationId(this ClaimsPrincipal user)
+        {
+            if (int.TryParse(user.FindFirstValue(TolkClaimTypes.CustomerOrganisationId), out int id))
+            {
+                return id;
+            }
+            return null;
+        }
+
         public static int GetBrokerId(this ClaimsPrincipal user)
         {
-            return int.Parse(user.FindFirstValue(TolkClaimTypes.BrokerId));
+            return user.TryGetBrokerId().Value;
+        }
+
+        public static int? TryGetBrokerId(this ClaimsPrincipal user)
+        {
+            if(int.TryParse(user.FindFirstValue(TolkClaimTypes.BrokerId), out int id))
+            {
+                return id;
+            }
+            return null;
         }
 
         public static int GetUserId(this ClaimsPrincipal user)
@@ -26,7 +45,7 @@ namespace Tolk.Web.Helpers
             return int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier));
         }
 
-        public static int? GetImpersonatorId(this ClaimsPrincipal user)
+        public static int? TryGetImpersonatorId(this ClaimsPrincipal user)
         {
             if(int.TryParse(user.FindFirstValue(TolkClaimTypes.ImpersonatingUserId), out int result))
             {
@@ -37,7 +56,16 @@ namespace Tolk.Web.Helpers
 
         public static int GetInterpreterId(this ClaimsPrincipal user)
         {
-            return int.Parse(user.FindFirstValue(TolkClaimTypes.InterpreterId));
+            return user.TryGetInterpreterId().Value;
+        }
+
+        public static int? TryGetInterpreterId(this ClaimsPrincipal user)
+        { 
+            if(int.TryParse(user.FindFirstValue(TolkClaimTypes.InterpreterId), out int id))
+            {
+                return id;
+            }
+            return null;
         }
     }
 }

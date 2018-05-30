@@ -25,7 +25,9 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
-                opt.AddPolicy(TimeTravel, builder => builder.AddRequirements(new EnvironmentRequirement("Development")));
+                opt.AddPolicy(TimeTravel, builder => 
+                    builder.AddRequirements(new EnvironmentRequirement("Development"))
+                    .RequireAuthenticatedUser());
             });
 
             services.AddSingleton<IAuthorizationHandler, EnvironmentRequirement.EnvironmentHandler>();

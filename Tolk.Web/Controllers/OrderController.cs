@@ -133,7 +133,7 @@ namespace Tolk.Web.Controllers
                     CreatedBy = User.GetUserId(),
                     CreatedAt = _clock.SwedenNow.DateTime,
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
-                    ImpersonatingCreator = User.GetImpersonatorId(),
+                    ImpersonatingCreator = User.TryGetImpersonatorId(),
                     Requirements = new List<OrderRequirement>(),
                     InterpreterLocations = new List<OrderInterpreterLocation>()
                 };
@@ -186,7 +186,7 @@ namespace Tolk.Web.Controllers
             request.Status = RequestStatus.Approved;
             request.AnswerProcessedDate = _clock.SwedenNow;
             request.AnswerProcessedBy = User.GetUserId();
-            request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
+            request.ImpersonatingAnswerProcessedBy = User.TryGetImpersonatorId();
             _dbContext.SaveChanges();
             return RedirectToAction(nameof(View), new { id = order.OrderId });
         }
@@ -207,7 +207,7 @@ namespace Tolk.Web.Controllers
             request.Status = RequestStatus.DeniedByCreator;
             request.AnswerProcessedDate = DateTimeOffset.Now;
             request.AnswerProcessedBy = User.GetUserId();
-            request.ImpersonatingAnswerProcessedBy = User.GetImpersonatorId();
+            request.ImpersonatingAnswerProcessedBy = User.TryGetImpersonatorId();
             request.DenyMessage = model.DenyMessage;
             _orderService.CreateRequest(order);
 
