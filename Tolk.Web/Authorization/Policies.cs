@@ -26,7 +26,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
-                opt.AddPolicy(Edit, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(Approve, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(TimeTravel, builder => 
@@ -36,6 +36,19 @@ namespace Tolk.Web.Authorization
 
             services.AddSingleton<IAuthorizationHandler, EnvironmentRequirement.EnvironmentHandler>();
         }
+
+        private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
+        {
+            switch (context.Resource)
+            {
+                case Order order:
+                    return order.CreatedBy == context.User.GetUserId();
+                case Request request:
+                    return request.Ranking.BrokerId == context.User.GetBrokerId();
+                default:
+                    throw new NotImplementedException();
+            }
+        };
 
         private readonly static Func<AuthorizationHandlerContext, bool> CreatorHandler = (context) =>
         {

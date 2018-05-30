@@ -54,7 +54,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string DenyMessage { get; set; }
 
-        public DateTimeOffset? RecieveDate { get; set; }
+        public DateTimeOffset? RecievedAt { get; set; }
 
         public int? InterpreterLocation { get; set; }
 
@@ -88,6 +88,19 @@ namespace Tolk.BusinessLogic.Entities
         public AspNetUser ProcessingUser { get; private set; }
 
         public int? ImpersonatingAnswerProcessedBy { get; set; }
+
+        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId)
+        {
+            if(Status != RequestStatus.Created)
+            {
+                throw new InvalidOperationException($"Tried to mark request {RequestId} as received by {userId}({impersonatorId}) but it is already {Status}");
+            }
+
+            Status = RequestStatus.Received;
+            RecievedAt = receiveTime;
+            ReceivedBy = userId;
+            ImpersonatingReceivedBy = impersonatorId;
+        }
 
         [ForeignKey(nameof(ImpersonatingAnswerProcessedBy))]
         public AspNetUser AnswerProcessedByImpersonator { get; private set; }

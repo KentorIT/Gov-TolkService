@@ -13,6 +13,7 @@ using Tolk.Web.Services;
 using Tolk.Web.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
+using System.Threading.Tasks;
 
 namespace Tolk.Web.Controllers
 {
@@ -22,53 +23,60 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
         private readonly OrderService _orderService;
+        private readonly IAuthorizationService _authorizationService;
 
         public RequestController(
             TolkDbContext dbContext,
             ISwedishClock clock, 
-            OrderService orderService)
+            OrderService orderService,
+            IAuthorizationService authorizationService)
         {
             _dbContext = dbContext;
             _clock = clock;
             _orderService = orderService;
+            _authorizationService = authorizationService;
         }
 
         public IActionResult List()
         {
             return View(_dbContext.Requests.Include(r => r.Order)
-                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
-                    r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId()).Select(r => new RequestListItemModel
-                    {
-                        RequestId = r.RequestId,
-                        Language = r.Order.Language.Name,
-                        OrderNumber = r.Order.OrderNumber.ToString(),
-                        CustomerName = r.Order.CustomerOrganisation.Name,
-                        RegionName = r.Order.Region.Name,
-                        Start = r.Order.StartDateTime,
-                        End = r.Order.EndDateTime,
-                        Status = r.Status
-                    }));
+                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) 
+                && r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
+                .Select(r => new RequestListItemModel
+                {
+                    RequestId = r.RequestId,
+                    Language = r.Order.Language.Name,
+                    OrderNumber = r.Order.OrderNumber.ToString(),
+                    CustomerName = r.Order.CustomerOrganisation.Name,
+                    RegionName = r.Order.Region.Name,
+                    Start = r.Order.StartDateTime,
+                    End = r.Order.EndDateTime,
+                    Status = r.Status
+                }));
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
                 .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
-            if (request.Status == RequestStatus.Created)
+
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Edit)).Succeeded)
             {
-                request.Status = RequestStatus.Received;
-                //Set modified user, date and possible impersonator
-                request.RecieveDate = _clock.SwedenNow;
-                request.ReceivedBy = User.GetUserId();
-                request.ImpersonatingReceivedBy = User.TryGetImpersonatorId();
-                _dbContext.SaveChanges();
+                if (request.Status == RequestStatus.Created)
+                {
+                    request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    _dbContext.SaveChanges();
+                }
+
+                //Get request model from db
+                var model = RequestModel.GetModelFromRequest(request);
+                model.BrokerId = request.Ranking.BrokerId;
+                return View(model);
             }
-            //Get request model from db
-            var model = RequestModel.GetModelFromRequest(request);
-            model.BrokerId = User.GetBrokerId();
-            return View(model);
+            return Forbid();
         }
 
         [ValidateAntiForgeryToken]
