@@ -199,26 +199,25 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Deny(ProcessRequestModel model)
+        public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
-            //Get the order, and set Change the status on order and request?
-            //TODO: Validate that the has the correct state, is connected to the user
-            //Validate that the request is in correct state.
             var order = _dbContext.Orders.Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking)
                 .Single(o => o.OrderId == model.OrderId);
-            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-            order.Status = OrderStatus.Requested;
 
-            request.Status = RequestStatus.DeniedByCreator;
-            request.AnswerProcessedAt = DateTimeOffset.Now;
-            request.AnswerProcessedBy = User.GetUserId();
-            request.ImpersonatingAnswerProcessedBy = User.TryGetImpersonatorId();
-            request.DenyMessage = model.DenyMessage;
-            _orderService.CreateRequest(order);
+            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Approve)).Succeeded)
+            {
+                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 
-            _dbContext.SaveChanges();
-            return RedirectToAction(nameof(View), new { id = order.OrderId });
+                request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+
+                _orderService.CreateRequest(order);
+
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(View), new { id = order.OrderId });
+            }
+
+            return Forbid();
         }
     }
 }

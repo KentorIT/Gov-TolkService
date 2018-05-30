@@ -118,5 +118,17 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
         }
 
+        public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        {
+            if(Status != RequestStatus.Accepted)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be denied.");
+            }
+
+            Status = RequestStatus.DeniedByCreator;
+            AnswerProcessedAt = denyTime;
+            AnswerProcessedBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+        }
     }
 }
