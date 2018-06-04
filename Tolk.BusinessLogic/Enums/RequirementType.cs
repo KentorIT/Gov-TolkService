@@ -10,16 +10,26 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolkens kön")]
         Gender = 1,
 
-        [Description("Önskad tolk")]
-        SpecifiedInterpreter = 2,
+        [Description("Dialekt")]
+        Dialect = 2,
 
-        [Description("Önskar ej tolk")]
-        DeniedInterpreter = 3,
+        [Description("Specifik tolk")]
+        SpecifiedInterpreter = 3,
 
-        [Description("Tolken har genomgått säkerhetsprövning")]
-        HasSecurityClearence = 4,
+        [Description("Ej specifik tolk")]
+        DeniedInterpreter = 4,
+
+        [Description("Säkerhetsprövad tolk")]
+        HasSecurityClearence = 5,
+
+        [Description("Registerkontrollerad tolk")]
+        HasRegisterCheck = 6,
+
+        [Description("Särskilda egenskaper eller kunskaper")]
+        SpecialQualities = 7,
 
         [Description("Övrigt")]
-        Other = 5,
+        Other = 8,
     }
 }
+
