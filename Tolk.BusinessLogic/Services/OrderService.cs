@@ -54,6 +54,8 @@ namespace Tolk.BusinessLogic.Services
                         var expiredRequest = _tolkDbContext.Requests
                             .Include(r => r.Ranking)
                             .Include(r => r.Order)
+                            .ThenInclude(o => o.Requests)
+                            .ThenInclude(r => r.Ranking)
                             .SingleOrDefault(
                             r => r.ExpiresAt <= _clock.SwedenNow
                             && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter)
