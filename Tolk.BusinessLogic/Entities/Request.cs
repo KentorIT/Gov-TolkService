@@ -17,6 +17,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             Ranking = ranking;
             Status = RequestStatus.Created;
+            ExpiresAt = expiry;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

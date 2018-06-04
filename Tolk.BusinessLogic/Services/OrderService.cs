@@ -38,7 +38,7 @@ namespace Tolk.BusinessLogic.Services
         public void HandleExpiredRequests()
         {
             var expiredRequestIds = _tolkDbContext.Requests
-                .Where(r => r.ExpiresAt <= _clock.SwedenNow && r.Status == RequestStatus.Created)
+                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter ))
                 .Select(r => r.RequestId)
                 .ToList();
 
@@ -56,7 +56,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order)
                             .SingleOrDefault(
                             r => r.ExpiresAt <= _clock.SwedenNow
-                            && r.Status == RequestStatus.Created
+                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter)
                             && r.RequestId == requestId);
 
                         if (expiredRequest == null)
