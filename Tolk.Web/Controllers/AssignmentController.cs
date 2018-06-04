@@ -20,7 +20,6 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
-        private readonly IAuthorizationService _authorizationService;
 
         public AssignmentController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
         {
