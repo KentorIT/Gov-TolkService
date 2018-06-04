@@ -43,7 +43,7 @@ namespace Tolk.Web.Models
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
-        [Display(Name = "Förväntad resekostnad")]
+        [Display(Name = "Förväntad resekostnad (exkl. moms)")]
         public decimal? ExpectedTravelCosts { get; set; }
 
         [Required]

@@ -98,11 +98,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 
-        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB")]
+        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal CalculatedPrice { get; set; }
 
-        [Display(Name = "Beräknat resekostnad")]
+        [Display(Name = "Beräknat resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
