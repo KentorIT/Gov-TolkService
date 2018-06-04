@@ -51,6 +51,7 @@ namespace Tolk.Web.Controllers
                     RegionName = r.Order.Region.Name,
                     Start = r.Order.StartDateTime,
                     End = r.Order.EndDateTime,
+                    ExpiresAt = r.ExpiresAt,
                     Status = r.Status
                 }));
         }

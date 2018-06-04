@@ -27,5 +27,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset Start { get; set; }
 
         public DateTimeOffset End { get; set; }
+
+        public DateTimeOffset? ExpiresAt { get; set; }
     }
 }

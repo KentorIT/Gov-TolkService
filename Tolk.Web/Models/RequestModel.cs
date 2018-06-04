@@ -50,6 +50,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
+        [Display(Name = "Svar senast")]
+        public DateTimeOffset? ExpiresAt { get; set; }
         #region methods
 
         public static RequestModel GetModelFromRequest(Request request)
@@ -57,6 +59,7 @@ namespace Tolk.Web.Models
             return new RequestModel
             {
                 RequestId = request.RequestId,
+                ExpiresAt = request.ExpiresAt,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
