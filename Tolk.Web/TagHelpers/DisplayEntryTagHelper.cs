@@ -65,31 +65,36 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType {Text, DateTimeOffset, Bool, Enum, Currency  }
+        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText }
 
         private void WriteDetails(TextWriter writer)
         {
             string text = string.Empty;
+            string className = "detail-text";
             var type = GetOutputType();
-            switch(GetOutputType())
+            switch (GetOutputType())
             {
                 case OutputType.Enum:
-                text = EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
+                    text = EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
                     break;
                 case OutputType.Bool:
                     text = ((bool)For.ModelExplorer.Model) ? "Ja" : "Nej";
                     break;
-                 case OutputType.DateTimeOffset:
+                case OutputType.DateTimeOffset:
                     text = ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.Currency:
                     text = ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
                     break;
+                case OutputType.MultilineText:
+                    className += " line-break";
+                    text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    break;
                 default:
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);
                     break;
             }
-            writer.WriteLine($"<div class=\"detail-text\">{text}</div>");
+            writer.WriteLine($"<div class=\"{className}\">{text}</div>");
         }
 
         private OutputType GetOutputType()
@@ -110,6 +115,10 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.Metadata.DataTypeName == "Currency")
             {
                 return OutputType.Currency;
+            }
+            if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
+            {
+                return OutputType.MultilineText;
             }
             return OutputType.Text;
         }

@@ -124,6 +124,17 @@ namespace Tolk.BusinessLogic.Entities
 
         #endregion
 
+
+        public string CompactAddress
+        {
+            get
+            {
+                return $"{UnitName}\n{Street}\n{ZipCode} {City}";
+            }
+        }
+
+
+
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }

@@ -1,0 +1,19 @@
+﻿@model Tolk.Web.Models.AssignmentModel
+@{
+    ViewData["Title"] = "Tilldelat uppdrag";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="LanguageName" />
+        <display-entry asp-for="ExpectedTravelCosts" />
+        <display-entry asp-for="InterpreterLocation" />
+            <display-entry asp-for="Address" />
+        <display-entry asp-for="CustomerName" />
+        <display-entry asp-for="StartDateTime" />
+        <display-entry asp-for="EndDateTime" />
+        <display-entry asp-for="BrokerName" />
+    </div>
+</div>

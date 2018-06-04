@@ -45,10 +45,14 @@ namespace Tolk.Web.Controllers
                     }));
         }
 
-        public IActionResult Edit(int id)
+        public IActionResult View(int id)
         {
-            // Remember to add authorization once this method loads data.
-            return View();
+            return View(AssignmentModel.GetModelFromRequest(
+                _dbContext.Requests
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(br => br.Broker)
+                    .Where(r => r.RequestId == id).Single()));
         }
 
         [ValidateAntiForgeryToken]
