@@ -88,7 +88,7 @@ namespace Tolk.Web.Services
                 }
 
                 //Find any minutes before 07:00
-                if (dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) && start.TimeOfDay < new TimeSpan(7, 0, 0))
+                if (!dateTypes.Contains(DateType.Holiday) && dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) && start.TimeOfDay < new TimeSpan(7, 0, 0))
                 {
                     DateTimeOffset endOfPeriod = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop);
                     TimeSpan iwhSpan = endOfPeriod - start;
@@ -105,7 +105,7 @@ namespace Tolk.Web.Services
                 if (dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) && (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
                     DateTimeOffset endOfPeriod = (start.Date == stop.Date ? stop : start.Date.AddDays(1));
-                    TimeSpan iwhSpan = endOfPeriod - start.Date.AddHours(18);
+                    TimeSpan iwhSpan = endOfPeriod - (start.Hour < 18 ? start.Date.AddHours(18) : start);
                     if (dateTypes.Contains(DateType.DayBeforeBigHoliday))
                     {
                         bigHolidayWeekendIWH.Minutes += (int)iwhSpan.TotalMinutes;
@@ -116,7 +116,7 @@ namespace Tolk.Web.Services
                     }
                 }
                 //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayBeforeBigHoliday) 00:00 => 18:00
-                if (dateTypes.Contains(DateType.Weekend) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
+                if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
                    start.TimeOfDay < new TimeSpan(18, 0, 0))
                 {
                     DateTimeOffset endOfPeriod = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18) : stop);
@@ -124,7 +124,7 @@ namespace Tolk.Web.Services
                     weekendIWH.Minutes += (int)iwhSpan.TotalMinutes;
                 }
                 //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayAfterBigHoliday) 07:00 => 24:00
-                if (dateTypes.Contains(DateType.Weekend) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
+                if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
                     (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0)))
                 {
                     DateTimeOffset endOfPeriod = (start.Date == stop.Date ? stop : start.Date.AddDays(1));
