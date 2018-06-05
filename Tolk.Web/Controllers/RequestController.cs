@@ -56,7 +56,7 @@ namespace Tolk.Web.Controllers
                 }));
         }
 
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Process(int id)
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
@@ -82,46 +82,50 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Edit(RequestModel model)
+        public async Task<IActionResult> Process(RequestModel model)
         {
             if (ModelState.IsValid)
             {
-                //TODO: VERIFY THAT THE REQUEST IS CONNECTED TO THE USER'S BROKER!!
                 var request = _dbContext.Requests
                     .Include(r => r.Order)
                     .Include(r => r.RequirementAnswers)
                     .Single(o => o.RequestId == model.RequestId);
-                request.Status = model.SetStatus;
-                request.AnswerDate = _clock.SwedenNow;
-                request.AnsweredBy = User.GetUserId();
-                request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
 
-                request.InterpreterId = model.InterpreterId;
-                request.ExpectedTravelCosts = model.ExpectedTravelCosts;
-                request.InterpreterLocation = (int?)model.InterpreterLocation;
-                request.CompetenceLevel = (int?)model.CompetenceLevel;
-                if (model.RequirementAnswers != null)
+                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Edit)).Succeeded)
                 {
-                    // answer all extra requirements
-                    foreach (var answer in model.RequirementAnswers)
+                    request.Status = model.SetStatus;
+                    request.AnswerDate = _clock.SwedenNow;
+                    request.AnsweredBy = User.GetUserId();
+                    request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
+
+                    request.InterpreterId = model.InterpreterId;
+                    request.ExpectedTravelCosts = model.ExpectedTravelCosts;
+                    request.InterpreterLocation = (int?)model.InterpreterLocation;
+                    request.CompetenceLevel = (int?)model.CompetenceLevel;
+                    if (model.RequirementAnswers != null)
                     {
-                        request.RequirementAnswers.Add(
-                            new OrderRequirementRequestAnswer
-                            {
-                                RequestId = request.RequestId,
-                                OrderRequirementId = answer.OrderRequirementId,
-                                Answer = answer.Answer,
-                                CanSatisfyRequirement = answer.CanMeetRequirement,
-                            });
+                        // answer all extra requirements
+                        foreach (var answer in model.RequirementAnswers)
+                        {
+                            request.RequirementAnswers.Add(
+                                new OrderRequirementRequestAnswer
+                                {
+                                    RequestId = request.RequestId,
+                                    OrderRequirementId = answer.OrderRequirementId,
+                                    Answer = answer.Answer,
+                                    CanSatisfyRequirement = answer.CanMeetRequirement,
+                                });
+                        }
                     }
+
+                    //TODO: This should differ depending on the incoming status.
+                    request.Order.Status = OrderStatus.RequestResponded;
+
+                    _dbContext.SaveChanges();
+
+                    return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
                 }
-
-                //TODO: This should differ depending on the incoming status.
-                request.Order.Status = OrderStatus.RequestResponded;
-
-                _dbContext.SaveChanges();
-
-                return Redirect($"~/Home/Index?message=Svar har skickats");
+                return Forbid();
             }
             return View("Edit", model);
         }
