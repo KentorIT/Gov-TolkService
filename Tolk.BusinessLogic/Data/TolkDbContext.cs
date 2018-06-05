@@ -99,6 +99,26 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.Request)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Requisition>()
+                .HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Requisition>()
+                .HasOne(r => r.CreatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Requisition>()
+                .HasOne(r => r.ProcessedUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Requisition>()
+                .HasOne(r => r.ProcessedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
