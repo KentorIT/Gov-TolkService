@@ -42,9 +42,8 @@
         <display-entry asp-for="OrderModel.LocationZipCode" />
         <display-entry asp-for="OrderModel.LocationCity" />
         <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
-        <form method="post">
+        <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
-            <input asp-for="SetStatus" type="hidden" />
             <display-entry asp-for="ExpiresAt" />
             <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, Model.OrderModel.RegionId)" />
             <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
@@ -57,14 +56,8 @@
                 <form-entry asp-for="RequirementAnswers[i].Answer" />
                 <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
             }
-            <button class="btn btn-default" data-set-status="Accepted">Acceptera</button>
-        </form>
-        <form method="post" class="deny-form" asp-action="Decline">
-            <input asp-for="OrderId" type="hidden" />
-            <input asp-for="RequestId" type="hidden" />
-            <input asp-for="DenyMessage" type="hidden" />
-
-            <button class="btn deny-button">Tacka nej</button>
+            <button class="btn btn-primary" data-set-status="Accepted">Acceptera</button>
+            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-warning pull-right">Tacka nej</button>
         </form>
     </div>
 </div>
@@ -77,13 +70,14 @@
                 <h4 class="modal-title">Tacka nej till uppdrag</h4>
             </div>
             <div class="modal-body">
-                <form>
+                <form method="post" asp-action="Decline">
+                    <input asp-for="RequestId" type="hidden" />
                     <form-entry asp-for="DenyMessage" />
+                    <button type="submit" class="btn btn-warning">Skicka</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
-                <button type="button" class="btn btn-default send-message">Skicka</button>
             </div>
         </div>
 

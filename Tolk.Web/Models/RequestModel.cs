@@ -17,8 +17,6 @@ namespace Tolk.Web.Models
 
         public int BrokerId { get; set; }
 
-        public RequestStatus SetStatus { get; set; }
-
         public OrderModel OrderModel { get; set; }
 
         public int? OrderId
@@ -31,6 +29,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Meddelande")]
         [DataType(DataType.MultilineText)]
+        [Required]
         public string DenyMessage { get; set; }
 
         [Required]

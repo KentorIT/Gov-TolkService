@@ -82,18 +82,19 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Process(RequestModel model)
+        public async Task<IActionResult> Accept(RequestAcceptModel model)
         {
             if (ModelState.IsValid)
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order)
                     .Include(r => r.RequirementAnswers)
+                    .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
                 if((await _authorizationService.AuthorizeAsync(User, request, Policies.Edit)).Succeeded)
                 {
-                    request.Status = model.SetStatus;
+                    request.Status = RequestStatus.Accepted;
                     request.AnswerDate = _clock.SwedenNow;
                     request.AnsweredBy = User.GetUserId();
                     request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
@@ -127,28 +128,34 @@ namespace Tolk.Web.Controllers
                 }
                 return Forbid();
             }
-            return View("Edit", model);
+            return View("Process", model);
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Decline(ProcessRequestModel model)
+        public IActionResult Decline(RequestDeclineModel model)
         {
+            var request = _dbContext.Requests
+                .Include(r => r.Order)
+                .Include(r => r.Ranking)
+                .Single(r => r.RequestId == model.RequestId);
+
             //Get the order, and set Change the status on order and request?
             //TODO: Validate that the has the correct state, is connected to the user
             //Validate that the request is in correct state.
-            var order = _dbContext.Orders.Include(o => o.Requests)
-                .ThenInclude(r => r.Ranking)
-                .Single(o => o.OrderId == model.OrderId);
-            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-            order.Status = OrderStatus.Requested;
+            //var order = _dbContext.Orders.Include(o => o.Requests)
+            //    .ThenInclude(r => r.Ranking)
+            //    .Single(o => o.OrderId == model.OrderId);
+            //var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+
+            request.Order.Status = OrderStatus.Requested;
 
             request.Status = RequestStatus.DeclinedByBroker;
             request.AnswerDate = DateTimeOffset.Now;
             request.AnsweredBy = User.GetUserId();
             request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
             request.DenyMessage = model.DenyMessage;
-            _orderService.CreateRequest(order);
+            _orderService.CreateRequest(request.Order);
 
             _dbContext.SaveChanges();
             return RedirectToAction(nameof(List));
