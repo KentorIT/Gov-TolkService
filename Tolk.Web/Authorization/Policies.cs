@@ -15,6 +15,7 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string CreateRequisition = nameof(CreateRequisition);
         public const string View = nameof(View);
         public const string Approve = nameof(Approve);
         public const string TimeTravel = nameof(TimeTravel);
@@ -27,6 +28,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
+                opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(Approve, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(TimeTravel, builder => 
@@ -45,6 +47,25 @@ namespace Tolk.Web.Authorization
                     return order.CreatedBy == context.User.GetUserId();
                 case Request request:
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> CreateRequisitionHandler = (context) =>
+        {
+            switch (context.Resource)
+            {
+                case Request request:
+                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return request.Ranking.BrokerId == context.User.GetBrokerId();
+                    }
+                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
+                    {
+                        return request.InterpreterId == context.User.GetInterpreterId();
+                    }
+                    return false;
                 default:
                     throw new NotImplementedException();
             }

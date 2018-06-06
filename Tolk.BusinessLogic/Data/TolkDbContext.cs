@@ -143,6 +143,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<Holiday> Holidays { get; set; }
 
+        public DbSet<Requisition> Requisitions { get; set; }
+
         public DbSet<PriceListRow> PriceListRows { get; set; }
 
         public static bool isUserStoreInitialized = false;

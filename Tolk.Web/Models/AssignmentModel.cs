@@ -13,6 +13,8 @@ namespace Tolk.Web.Models
 {
     public class AssignmentModel
     {
+        public int RequestId { get; set; }
+
         public int OrderId { get; set; }
 
         public int BrokerId { get; set; }
@@ -60,8 +62,8 @@ namespace Tolk.Web.Models
                 StartDateTime = request.Order.StartDateTime,
                 EndDateTime = request.Order.EndDateTime,
                 BrokerName = request.Ranking.BrokerRegion.Broker.Name,
-                LanguageName = request.Order.Language.Name
-
+                LanguageName = request.Order.Language.Name,
+                RequestId = request.RequestId
             };
         }
 

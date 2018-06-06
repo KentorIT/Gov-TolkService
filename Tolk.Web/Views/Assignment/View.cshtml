@@ -15,5 +15,7 @@
         <display-entry asp-for="StartDateTime" />
         <display-entry asp-for="EndDateTime" />
         <display-entry asp-for="BrokerName" />
+
+        <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
     </div>
 </div>

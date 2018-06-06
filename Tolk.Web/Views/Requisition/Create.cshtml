@@ -1,0 +1,34 @@
+﻿@model Tolk.Web.Models.RequisitionModel
+@{
+    ViewData["Title"] = "Skapa rekvisition";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="BrokerName" />
+        <display-entry asp-for="CustomerName" />
+        <display-entry asp-for="RegionName" />
+        <display-entry asp-for="CustomerReferenceNumber" />
+        <display-entry asp-for="LanguageName" />
+        <display-entry asp-for="InterpreterName" />
+        <form method="post">
+            <input asp-for="RequestId" type="hidden" />
+            <form-entry asp-for="WasteBefore" />
+            <display-entry asp-for="ExpectedStartedAt" />
+            <form-entry asp-for="SessionStartedAt" />
+            <display-entry asp-for="ExpectedEndedAt" />
+            <form-entry asp-for="SessionEndedAt" />
+            <form-entry asp-for="WasteAfter" />
+            <display-entry asp-for="ExpectedTravelCosts" />
+            <form-entry asp-for="TravelCosts" />
+            <form-entry asp-for="Message" />
+            <button class="btn btn-default">Skapa</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

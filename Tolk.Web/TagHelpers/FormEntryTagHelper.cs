@@ -34,6 +34,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypePassword = "password";
         private const string InputTypeCheckbox = "checkbox";
         private const string InputTypeTextArea = "textarea";
+        private const string InputTypeTime = "time";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -67,6 +68,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeText:
                 case InputTypeCheckbox:
                 case InputTypeDateTimeOffset:
+                case InputTypeTime:
                 case InputTypeTextArea:
                     if (Items != null)
                     {
@@ -98,6 +100,11 @@ namespace Tolk.Web.TagHelpers
                 if(For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
                 {
                     InputType = InputTypeTextArea;
+                }
+                if (For.ModelExplorer.ModelType == typeof(TimeSpan)
+                    || For.ModelExplorer.ModelType == typeof(TimeSpan?))
+                {
+                    InputType = InputTypeTime;
                 }
             }
         }
@@ -133,6 +140,11 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeTextArea:
                         WriteLabel(writer);
                         WriteTextArea(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeTime:
+                        WriteLabel(writer);
+                        WriteTimeBox(writer);
                         WriteValidation(writer);
                         break;
                     default:
@@ -240,6 +252,27 @@ namespace Tolk.Web.TagHelpers
                 value: For.Model,
                 htmlAttributes: new { @class = "form-control" });
 
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteTimeBox(TextWriter writer)
+        {
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                value: For.Model,
+                format: "{0:hh\\:mm}",
+                htmlAttributes: new
+                {
+                    @class = "form-control",
+                    placeholder = "HH:MM",
+                    data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]$",
+                    data_val_regex = "Ange tid som HH:MM",
+                    data_val_required = "Tid måste anges.",
+                    data_val = true
+                });
+            RemoveRequiredIfNullable(tagBuilder);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 

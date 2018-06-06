@@ -134,7 +134,6 @@ namespace Tolk.Web.Controllers
 
                 order = new Order
                 {
-                    //Hardcodes
                     Status = OrderStatus.Requested,
                     CreatedBy = User.GetUserId(),
                     CreatedAt = _clock.SwedenNow.DateTime,

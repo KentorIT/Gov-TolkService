@@ -92,7 +92,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId)
         {
-            if(Status != RequestStatus.Created)
+            if (Status != RequestStatus.Created)
             {
                 throw new InvalidOperationException($"Tried to mark request {RequestId} as received by {userId}({impersonatorId}) but it is already {Status}");
             }
@@ -110,17 +110,19 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
 
+        public List<Requisition> Requisitions { get; set; }
+
         #endregion
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if(Status != RequestStatus.Accepted)
+            if (Status != RequestStatus.Accepted)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
             }
 
             var approvedRequest = Order.Requests.FirstOrDefault(r => r.Status == RequestStatus.Approved);
-            if(approvedRequest != null)
+            if (approvedRequest != null)
             {
                 throw new InvalidOperationException($"Can only approve one request for an order. Order {OrderId} already has an approved request {approvedRequest.RequestId}.");
             }
@@ -134,7 +136,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
-            if(Status != RequestStatus.Accepted)
+            if (Status != RequestStatus.Accepted)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be denied.");
             }
@@ -143,6 +145,17 @@ namespace Tolk.BusinessLogic.Entities
             AnswerProcessedAt = denyTime;
             AnswerProcessedBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
+        }
+
+        public void CreateRequisition(Requisition requisition)
+        {
+            if (Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created))
+            {
+                throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
+            }
+            Requisitions.Add(requisition);
+            //Change status on order accordingly.
+            Order.DeliverRequisition();
         }
     }
 }

@@ -134,7 +134,6 @@ namespace Tolk.BusinessLogic.Entities
         }
 
 
-
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }
@@ -171,6 +170,16 @@ namespace Tolk.BusinessLogic.Entities
             Requests.Add(request);
 
             return request;
+        }
+
+        public void DeliverRequisition()
+        {
+            if (Status != OrderStatus.ResponseAccepted && Status != OrderStatus.Delivered)
+            {
+                throw new InvalidOperationException($"Order {OrderId} is {Status}. Only Orders with Accepted request can be delivered");
+            }
+
+            Status = OrderStatus.Delivered;
         }
     }
 }
