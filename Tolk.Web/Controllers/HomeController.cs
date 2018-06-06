@@ -95,7 +95,10 @@ namespace Tolk.Web.Controllers
                 };
                 yield return new StartPageBox
                 {
-                    Count = 0,
+                    Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved && 
+                        r.Order.StartDateTime < _clock.SwedenNow &&    
+                        !r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) && 
+                        r.InterpreterId == interpreterId.Value).Count(),
                     Header = "Att avrapportera",
                     Controller = "Assignment",
                     Action = "List"
