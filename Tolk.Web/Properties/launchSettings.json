@@ -1,4 +1,5 @@
 {
+  "profiles": {
     "Tolk.Web": {
       "commandName": "Project",
       "launchBrowser": true,
