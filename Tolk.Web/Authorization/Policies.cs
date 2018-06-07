@@ -45,8 +45,6 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.CreatedBy == context.User.GetUserId();
-                case Request request:
-                    return request.Ranking.BrokerId == context.User.GetBrokerId();
                 default:
                     throw new NotImplementedException();
             }
@@ -79,6 +77,8 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.CreatedBy == userId;
+                case Request request:
+                    return request.Ranking.BrokerId == context.User.GetBrokerId();
                 default:
                     throw new NotImplementedException();
             }

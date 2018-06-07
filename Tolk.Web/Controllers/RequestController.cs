@@ -64,7 +64,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Edit)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
             {
                 if (request.Status == RequestStatus.Created)
                 {
@@ -92,7 +92,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Edit)).Succeeded)
+                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
                 {
                     request.Status = RequestStatus.Accepted;
                     request.AnswerDate = _clock.SwedenNow;
@@ -133,32 +133,37 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Decline(RequestDeclineModel model)
+        public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order)
                 .Include(r => r.Ranking)
                 .Single(r => r.RequestId == model.RequestId);
 
-            //Get the order, and set Change the status on order and request?
-            //TODO: Validate that the has the correct state, is connected to the user
-            //Validate that the request is in correct state.
-            //var order = _dbContext.Orders.Include(o => o.Requests)
-            //    .ThenInclude(r => r.Ranking)
-            //    .Single(o => o.OrderId == model.OrderId);
-            //var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+            {
+                //Get the order, and set Change the status on order and request?
+                //TODO: Validate that the has the correct state, is connected to the user
+                //Validate that the request is in correct state.
+                //var order = _dbContext.Orders.Include(o => o.Requests)
+                //    .ThenInclude(r => r.Ranking)
+                //    .Single(o => o.OrderId == model.OrderId);
+                //var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 
-            request.Order.Status = OrderStatus.Requested;
+                request.Order.Status = OrderStatus.Requested;
 
-            request.Status = RequestStatus.DeclinedByBroker;
-            request.AnswerDate = DateTimeOffset.Now;
-            request.AnsweredBy = User.GetUserId();
-            request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
-            request.DenyMessage = model.DenyMessage;
-            _orderService.CreateRequest(request.Order);
+                request.Status = RequestStatus.DeclinedByBroker;
+                request.AnswerDate = DateTimeOffset.Now;
+                request.AnsweredBy = User.GetUserId();
+                request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
+                request.DenyMessage = model.DenyMessage;
+                _orderService.CreateRequest(request.Order);
 
-            _dbContext.SaveChanges();
-            return RedirectToAction(nameof(List));
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(List));
+            }
+
+            return Forbid();
         }
     }
 }
