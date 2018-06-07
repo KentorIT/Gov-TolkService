@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policy = Policies.Interpreter)]
     public class AssignmentController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -35,20 +34,29 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
-            return View(_dbContext.Requests.Include(r => r.Order)
-                .Where(r => (r.Status == RequestStatus.Approved) &&
-                    r.InterpreterId == User.GetInterpreterId())
-                    .Select(r => new RequestListItemModel
-                    {
-                        RequestId = r.RequestId,
-                        Language = r.Order.Language.Name,
-                        OrderNumber = r.Order.OrderNumber.ToString(),
-                        CustomerName = r.Order.CustomerOrganisation.Name,
-                        RegionName = r.Order.Region.Name,
-                        Start = r.Order.StartDateTime,
-                        End = r.Order.EndDateTime,
-                        Status = r.Status
-                    }));
+            var requests = _dbContext.Requests.Include(r => r.Order).Where(r => r.Status == RequestStatus.Approved);
+            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
+            var interpreterId = User.TryGetInterpreterId();
+            var brokerId = User.TryGetBrokerId();
+            if (interpreterId.HasValue)
+            {
+                requests = requests.Where(r => r.InterpreterId == interpreterId);
+            }
+            if (brokerId.HasValue)
+            {
+                requests = requests.Where(r => r.Ranking.BrokerId == brokerId);
+            }
+            return View(requests.Select(r => new RequestListItemModel
+            {
+                RequestId = r.RequestId,
+                Language = r.Order.Language.Name,
+                OrderNumber = r.Order.OrderNumber.ToString(),
+                CustomerName = r.Order.CustomerOrganisation.Name,
+                RegionName = r.Order.Region.Name,
+                Start = r.Order.StartDateTime,
+                End = r.Order.EndDateTime,
+                Status = r.Status
+            }));
         }
 
         public async Task<IActionResult> View(int id)

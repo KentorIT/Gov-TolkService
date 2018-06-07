@@ -76,9 +76,12 @@ namespace Tolk.Web.Controllers
                 };
                 yield return new StartPageBox
                 {
-                    Count = 0,
-                    Header = "Ändrade förfrågningar",
-                    Controller = "Request",
+                    Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
+                        r.Order.StartDateTime < _clock.SwedenNow &&
+                        !r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
+                        r.Ranking.BrokerId == brokerId).Count(),
+                    Header = "Tolktillfällen att avrapportera",
+                    Controller = "Assignment",
                     Action = "List"
                 };
             }

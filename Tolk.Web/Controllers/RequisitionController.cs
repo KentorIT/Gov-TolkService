@@ -18,7 +18,6 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policy = Policies.Interpreter)]
     public class RequisitionController : Controller
     {
         private readonly TolkDbContext _dbContext;
