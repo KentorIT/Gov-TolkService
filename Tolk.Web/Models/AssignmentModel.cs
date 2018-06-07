@@ -47,6 +47,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedlat av")]
         public string BrokerName { get; set; }
 
+        public int? RequisitionId { get; set; }
+
         #region methods
 
         public static AssignmentModel GetModelFromRequest(Request request)
@@ -63,7 +65,8 @@ namespace Tolk.Web.Models
                 EndDateTime = request.Order.EndDateTime,
                 BrokerName = request.Ranking.BrokerRegion.Broker.Name,
                 LanguageName = request.Order.Language.Name,
-                RequestId = request.RequestId
+                RequestId = request.RequestId,
+                RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId
             };
         }
 

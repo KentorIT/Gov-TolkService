@@ -37,9 +37,11 @@ namespace Tolk.Web.Models
         public string CustomerName { get; set; }
 
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]
+        [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Faktisk resekostnad (exkl. moms)")]
+        [DataType(DataType.Currency)]
         public decimal TravelCosts { get; set; }
 
         [Display(Name = "Förväntad startid")]
@@ -85,7 +87,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static RequisitionModel GetModelFromRequest(Request request)
+        public  static RequisitionModel GetModelFromRequest(Request request)
         {
             return new RequisitionModel
             {

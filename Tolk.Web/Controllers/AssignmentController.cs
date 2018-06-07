@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
+using System.Threading.Tasks;
 
 namespace Tolk.Web.Controllers
 {
@@ -20,11 +21,16 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly IAuthorizationService _authorizationService;
 
-        public AssignmentController(TolkDbContext dbContext, UserManager<AspNetUser> userManager)
+        public AssignmentController(TolkDbContext dbContext,
+            UserManager<AspNetUser> userManager,
+            IAuthorizationService authorizationService)
+
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _authorizationService = authorizationService;
         }
 
         public IActionResult List()
@@ -45,22 +51,19 @@ namespace Tolk.Web.Controllers
                     }));
         }
 
-        public IActionResult View(int id)
+        public async Task<IActionResult> View(int id)
         {
-            return View(AssignmentModel.GetModelFromRequest(
-                _dbContext.Requests
+            var request = _dbContext.Requests
+                    .Include(r => r.Requisitions)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(br => br.Broker)
-                    .Where(r => r.RequestId == id).Single()));
-        }
-
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public IActionResult Edit(RequestModel model)
-        {
-            // Remember to add authorization once this method saves data.
-            return View("Edit", model);
+                    .Where(r => r.RequestId == id).Single();
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                return View(AssignmentModel.GetModelFromRequest(request));
+            }
+            return Forbid();
         }
     }
 }

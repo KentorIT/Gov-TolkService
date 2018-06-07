@@ -18,17 +18,17 @@ namespace Tolk.Web.Services
             _dbContext = dbContext;
         }
 
-        public decimal GetPrices(DateTimeOffset startDateTime, DateTimeOffset endDateTime, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent)
+        public decimal GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent, DateTimeOffset? wasteStartAt = null, DateTimeOffset? wasteEndAt = null)
         {
             //TODO: Handle if there are no rows due to start/end date restrictions. Should take the one with the latest end date in that case.
             decimal extraTimePrice = 0;
-            var minutesPerPriceType = GetMinutesPerPriceType(startDateTime, endDateTime).ToList();
+            var minutesPerPriceType = GetMinutesPerPriceType(startAt, endAt, wasteStartAt, wasteEndAt).ToList();
             //Get the rows for the list type, startdate and competence first, to get one call to db...
             var prices = _dbContext.PriceListRows
                 .Where(r =>
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
-                    r.StartDate <= startDateTime.DateTime && r.EndDate >= endDateTime.DateTime).ToList();
+                    r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
             decimal price = prices
                 .OrderBy(r => r.MaxMinutes)
                 .First(r =>
@@ -49,10 +49,10 @@ namespace Tolk.Web.Services
             return price + extraTimePrice + brokerFee;
         }
 
-        private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
+        private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset? wasteStartAt, DateTimeOffset? wasteEndAt)
         {
             int maxMinutes = 330;
-            TimeSpan span = endDateTime - startDateTime;
+            TimeSpan span = endAt - startAt;
             int totalMinutes = (int)span.TotalMinutes;
             int extraMinutes = 0;
             if (totalMinutes > maxMinutes)
@@ -63,8 +63,8 @@ namespace Tolk.Web.Services
             yield return new PriceTime { Minutes = totalMinutes, PriceRowType = PriceRowType.BasePrice };
             yield return new PriceTime { Minutes = extraMinutes, PriceRowType = PriceRowType.PriceOverMaxTime };
 
-            var start = startDateTime.LocalDateTime;
-            var stop = endDateTime.LocalDateTime;
+            var start = startAt.LocalDateTime;
+            var stop = endAt.LocalDateTime;
             var bigHolidayWeekendIWH = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.BigHolidayWeekendIWH };
             var weekendIWH = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.WeekendIWH };
             var weekdayIWH = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.InconvenientWorkingHours };
@@ -88,7 +88,9 @@ namespace Tolk.Web.Services
                 }
 
                 //Find any minutes before 07:00
-                if (!dateTypes.Contains(DateType.Holiday) && dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) && start.TimeOfDay < new TimeSpan(7, 0, 0))
+                if (!dateTypes.Contains(DateType.Holiday) && 
+                    dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) && 
+                    start.TimeOfDay < new TimeSpan(7, 0, 0))
                 {
                     DateTimeOffset endOfPeriod = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop);
                     TimeSpan iwhSpan = endOfPeriod - start;
@@ -102,7 +104,9 @@ namespace Tolk.Web.Services
                     }
                 }
 
-                if (dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) && (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
+                if (!dateTypes.Contains(DateType.Holiday) && 
+                    dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) && 
+                    (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
                     DateTimeOffset endOfPeriod = (start.Date == stop.Date ? stop : start.Date.AddDays(1));
                     TimeSpan iwhSpan = endOfPeriod - (start.Hour < 18 ? start.Date.AddHours(18) : start);
@@ -138,6 +142,71 @@ namespace Tolk.Web.Services
             yield return weekendIWH;
             yield return weekdayIWH;
             yield return bigHolidayWeekendIWH;
+
+            //Get lost times, if any
+            var lostTime = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.LostTime };
+            var lostTimeIWH = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.LostTimeIWH };
+
+            if (wasteStartAt.HasValue)
+            {
+                var wasteMinutesBefore = GetWasteMinutes(wasteStartAt.Value, startAt);
+                lostTime.Minutes = wasteMinutesBefore.Single(w => w.PriceRowType == PriceRowType.LostTime).Minutes;
+                lostTimeIWH.Minutes = wasteMinutesBefore.Single(w => w.PriceRowType == PriceRowType.LostTimeIWH).Minutes;
+            }
+            if (wasteEndAt.HasValue)
+            {
+                var wasteMinutesBefore = GetWasteMinutes(endAt, wasteEndAt.Value);
+                lostTime.Minutes += wasteMinutesBefore.Single(w => w.PriceRowType == PriceRowType.LostTime).Minutes;
+                lostTimeIWH.Minutes += wasteMinutesBefore.Single(w => w.PriceRowType == PriceRowType.LostTimeIWH).Minutes;
+            }
+            if (wasteStartAt.HasValue || wasteEndAt.HasValue)
+            {
+                yield return lostTime;
+                yield return lostTimeIWH;
+            }
+        }
+
+        private IEnumerable<PriceTime> GetWasteMinutes(DateTimeOffset startedAt, DateTimeOffset endedAt)
+        {
+            TimeSpan span = endedAt - startedAt;
+            int totalMinutes = (int)span.TotalMinutes;
+
+            var start = startedAt.LocalDateTime;
+            var stop = endedAt.LocalDateTime;
+            yield return new PriceTime { Minutes = totalMinutes, PriceRowType = PriceRowType.LostTime };
+            var lostTimeIWH = new PriceTime { Minutes = 0, PriceRowType = PriceRowType.LostTimeIWH};
+            while (start <= stop)
+            {
+                var dateTypes = GetDateTypes(start);
+                if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
+                    dateTypes.Contains(DateType.Holiday) ||
+                    dateTypes.Contains(DateType.Weekend))
+                {
+                    DateTimeOffset endOfDay = (start.Date == stop.Date ? stop : start.Date.AddDays(1));
+                    TimeSpan iwhSpan = endOfDay - start;
+                    lostTimeIWH.Minutes += (int)iwhSpan.TotalMinutes;
+                }
+                else
+                {
+                    //Find any minutes before 07:00, only on a weekday.
+                    if (start.TimeOfDay < new TimeSpan(7, 0, 0))
+                    {
+                        DateTimeOffset endOfPeriod = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop);
+                        TimeSpan iwhSpan = endOfPeriod - start;
+                        lostTimeIWH.Minutes += (int)iwhSpan.TotalMinutes;
+                    }
+
+                    if ((start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
+                    {
+                        DateTimeOffset endOfPeriod = (start.Date == stop.Date ? stop : start.Date.AddDays(1));
+                        TimeSpan iwhSpan = endOfPeriod - (start.Hour < 18 ? start.Date.AddHours(18) : start);
+                        lostTimeIWH.Minutes += (int)iwhSpan.TotalMinutes;
+                    }
+                }
+                //Start counting from the first minute on next day
+                start = start.AddDays(1).Date;
+            }
+            yield return lostTimeIWH;
         }
 
         private IEnumerable<DateType> GetDateTypes(DateTime date)

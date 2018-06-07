@@ -1,0 +1,24 @@
+﻿@model Tolk.Web.Models.RequisitionViewModel
+@{
+    ViewData["Title"] = "Rekvisition";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="CreatedBy" />
+        <display-entry asp-for="CreatedAt" />
+        <display-entry asp-for="Status" />
+        <display-entry asp-for="ExpectedStartedAt" />
+        <display-entry asp-for="SessionStartedAt" />
+        <display-entry asp-for="ExpectedEndedAt" />
+        <display-entry asp-for="SessionEndedAt" />
+        <display-entry asp-for="TotalRegisteredWasteTime" />
+        <display-entry asp-for="ExpectedTravelCosts" />
+        <display-entry asp-for="TravelCosts" />
+        <display-entry asp-for="Message" />
+        <display-entry asp-for="CalculatedPrice" />
+        <display-entry asp-for="ResultingPrice" />
+    </div>
+</div>

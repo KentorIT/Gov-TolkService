@@ -14,6 +14,7 @@ using Tolk.Web.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -24,22 +25,45 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public RequisitionController(
             TolkDbContext dbContext,
-            ISwedishClock clock, 
+            PriceCalculationService priceCalculationService,
+            ISwedishClock clock,
             OrderService orderService,
             IAuthorizationService authorizationService)
         {
             _dbContext = dbContext;
+            _priceCalculationService = priceCalculationService;
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
         }
 
-        public IActionResult List()
+        public async Task<IActionResult> View(int id)
         {
-            return View();
+            var requisition = _dbContext.Requisitions
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
+              .Single(o => o.RequisitionId == id);
+            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
+            {
+                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
+                var request = requisition.Request;
+                var order = request.Order;
+                var listType = order.CustomerOrganisation.PriceListType;
+                var model = RequisitionViewModel.GetViewModelFromrequisition(requisition);
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, request.Ranking.BrokerFee);
+                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee), 
+                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt);
+                return View(model);
+            }
+            return Forbid();
         }
 
         /// <summary>
@@ -60,7 +84,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
                 //Get request model from db
-                return View(RequisitionModel.GetModelFromRequest(request));
+                return View(RequisitionViewModel.GetModelFromRequest(request));
             }
             return Forbid();
         }
@@ -78,7 +102,7 @@ namespace Tolk.Web.Controllers
                     .Single(o => o.RequestId == model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                 {
-                    request.CreateRequisition(new Requisition
+                    var requisition = new Requisition
                     {
                         Status = RequisitionStatus.Created,
                         CreatedBy = User.GetUserId(),
@@ -90,9 +114,10 @@ namespace Tolk.Web.Controllers
                         SessionEndedAt = model.SessionEndedAt,
                         TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
                         TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
-                    });
+                    };
+                    request.CreateRequisition(requisition);
                     _dbContext.SaveChanges();
-                    return Redirect($"~/Home/Index?message=Rekvision har skapats");
+                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
             }

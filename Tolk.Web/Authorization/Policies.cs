@@ -29,7 +29,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
-                opt.AddPolicy(View, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Approve, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(TimeTravel, builder => 
                     builder.AddRequirements(new EnvironmentRequirement("Development"))
@@ -45,6 +45,8 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.CreatedBy == context.User.GetUserId();
+                case Request request:
+                    return request.Ranking.BrokerId == context.User.GetBrokerId();
                 default:
                     throw new NotImplementedException();
             }
@@ -79,6 +81,47 @@ namespace Tolk.Web.Authorization
                     return order.CreatedBy == userId;
                 case Request request:
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> ViewHandler = (context) =>
+        {
+            var user = context.User;
+
+            switch (context.Resource)
+            {
+                case Order order:
+                    return order.CreatedBy == user.GetUserId();
+                case Requisition requisition:
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return requisition.Request.Ranking.BrokerId == user.GetBrokerId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
+                    {
+                        return requisition.Request.InterpreterId == user.GetInterpreterId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                    }
+                    return false;
+                case Request request:
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return request.Ranking.BrokerId == user.GetBrokerId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
+                    {
+                        return request.InterpreterId == user.GetInterpreterId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                    }
+                    return false;
                 default:
                     throw new NotImplementedException();
             }

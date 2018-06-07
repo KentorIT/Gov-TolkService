@@ -15,7 +15,13 @@
         <display-entry asp-for="StartDateTime" />
         <display-entry asp-for="EndDateTime" />
         <display-entry asp-for="BrokerName" />
-
-        <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+        @if (Model.RequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+        }
     </div>
 </div>
