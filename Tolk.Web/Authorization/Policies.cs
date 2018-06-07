@@ -105,7 +105,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return requisition.Request.Order.CreatedBy == context.User.GetUserId();
                     }
                     return false;
                 case Request request:
@@ -119,7 +119,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return request.Order.CreatedBy == context.User.GetUserId();
                     }
                     return false;
                 default:
