@@ -17,7 +17,7 @@ namespace Tolk.Web.Authorization
         public const string Edit = nameof(Edit);
         public const string CreateRequisition = nameof(CreateRequisition);
         public const string View = nameof(View);
-        public const string Approve = nameof(Approve);
+        public const string Accept = nameof(Accept);
         public const string TimeTravel = nameof(TimeTravel);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
@@ -30,7 +30,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
-                opt.AddPolicy(Approve, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(Accept, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(TimeTravel, builder => 
                     builder.AddRequirements(new EnvironmentRequirement("Development"))
                     .RequireAuthenticatedUser());

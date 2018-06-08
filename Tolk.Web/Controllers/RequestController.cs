@@ -68,7 +68,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 if (request.Status == RequestStatus.Created)
                 {
@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
                     request.Accept(
                         _clock.SwedenNow,
@@ -132,7 +132,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Single(r => r.RequestId == model.RequestId);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 //Get the order, and set Change the status on order and request?
                 //TODO: Validate that the has the correct state, is connected to the user
