@@ -55,6 +55,7 @@
                             </li>
                         }
                     </ul>
+            <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter"/>
                     <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
                 }
                 <form-entry asp-for="ExpectedTravelCosts" />
@@ -95,12 +96,6 @@
 </div>
 
 @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Process.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/process.min.js" asp-append-version="true"></script>
-    </environment>
     <environment include="Development">
         <script src="~/js/Request/Process.js" asp-append-version="true"></script>
     </environment>

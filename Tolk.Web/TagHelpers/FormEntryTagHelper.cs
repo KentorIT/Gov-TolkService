@@ -153,7 +153,8 @@ namespace Tolk.Web.TagHelpers
                         WriteValidation(writer);
                         break;
                 }
-                output.Attributes.Add("class", className);
+
+                output.AddClass(className, _htmlEncoder);
                 output.Content.AppendHtml(writer.ToString());
             }
         }

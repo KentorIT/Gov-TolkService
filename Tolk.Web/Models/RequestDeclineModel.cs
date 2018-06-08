@@ -15,7 +15,6 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
-        [Display(Name = "Meddelande")]
         [DataType(DataType.MultilineText)]
         [Required]
         public string DenyMessage { get; set; }
