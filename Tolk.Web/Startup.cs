@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using Microsoft.Extensions.Internal;
+using Tolk.Web.Helpers;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Tolk.Web
 {
@@ -55,6 +57,7 @@ namespace Tolk.Web
             services.AddMvc(opt =>
             {
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
+                opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
 
             services.Configure<RequestLocalizationOptions>(opt =>

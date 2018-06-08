@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -32,15 +33,15 @@ namespace Tolk.Web.Models
         public string UnitName { get; set; }
 
         [Display(Name = "Adress")]
-        [Required]
+        [ClientRequired]
         public string LocationStreet { get; set; }
 
         [Display(Name = "Postnummer")]
-        [Required]
+        [ClientRequired]
         public string LocationZipCode { get; set; }
 
         [Display(Name = "Ort")]
-        [Required]
+        [ClientRequired]
         public string LocationCity { get; set; }
 
         [Display(Name = "Startdatum och tid", Description = "Datum och tid när tolkuppdraget startar.")]
