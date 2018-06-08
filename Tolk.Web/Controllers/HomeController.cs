@@ -57,9 +57,11 @@ namespace Tolk.Web.Controllers
                 };
                 yield return new StartPageBox
                 {
-                    Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.Delivered && o.CreatedBy == User.GetUserId()).Count(),
-                    Header = "Rekvirerade",
-                    Controller = "Order",
+                    Count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
+                        r.Request.Order.Status == OrderStatus.Delivered && 
+                        r.Request.Order.CreatedBy == User.GetUserId()).Count(),
+                    Header = "Rekvisitioner att kontrollera",
+                    Controller = "Requisition",
                     Action = "List"
                 };
             }
@@ -78,12 +80,25 @@ namespace Tolk.Web.Controllers
                 {
                     Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
                         r.Order.StartDateTime < _clock.SwedenNow &&
-                        !r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
+                        !r.Requisitions.Any() &&
                         r.Ranking.BrokerId == brokerId).Count(),
                     Header = "Tolktillfällen att avrapportera",
                     Controller = "Assignment",
                     Action = "List"
                 };
+                int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                       !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
+                       r.Request.Ranking.BrokerId == brokerId).Count();
+                if (count > 0)
+                {
+                    yield return new StartPageBox
+                    {
+                        Count = count,
+                        Header = "Nekade rekvisitioner",
+                        Controller = "Requisition",
+                        Action = "List"
+                    };
+                }
             }
             var interpreterId = User.TryGetInterpreterId();
             if (interpreterId.HasValue)
@@ -100,12 +115,25 @@ namespace Tolk.Web.Controllers
                 {
                     Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved && 
                         r.Order.StartDateTime < _clock.SwedenNow &&    
-                        !r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) && 
+                        !!r.Requisitions.Any() && 
                         r.InterpreterId == interpreterId.Value).Count(),
                     Header = "Att avrapportera",
                     Controller = "Assignment",
                     Action = "List"
                 };
+                int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                       !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
+                      r.Request.InterpreterId == interpreterId.Value).Count();
+                if (count > 0)
+                {
+                    yield return new StartPageBox
+                    {
+                        Count = count,
+                        Header = "Nekade rekvisitioner",
+                        Controller = "Requisition",
+                        Action = "List"
+                    };
+                }
             }
         }
 

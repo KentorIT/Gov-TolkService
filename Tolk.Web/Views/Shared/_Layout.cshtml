@@ -42,6 +42,7 @@
                     {
                         <li><a asp-area="" asp-controller="Order" asp-action="Add">Avropa tolk</a></li>
                         <li><a asp-area="" asp-controller="Order" asp-action="List">Sök avrop</a></li>
+                        <li><a asp-area="" asp-controller="Requisition" asp-action="List">Sök rekvisitioner</a></li>
                     }
                     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
                     {

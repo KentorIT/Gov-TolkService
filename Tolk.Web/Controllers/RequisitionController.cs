@@ -56,9 +56,36 @@ namespace Tolk.Web.Controllers
                 var request = requisition.Request;
                 var order = request.Order;
                 var listType = order.CustomerOrganisation.PriceListType;
-                var model = RequisitionViewModel.GetViewModelFromrequisition(requisition);
+                var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
+                var customerId = User.TryGetCustomerOrganisationId();
+                model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, request.Ranking.BrokerFee);
-                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee), 
+                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
+                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt);
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        public async Task<IActionResult> Process(int id)
+        {
+            var requisition = _dbContext.Requisitions
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
+              .Single(o => o.RequisitionId == id);
+            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+            {
+                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
+                var request = requisition.Request;
+                var order = request.Order;
+                var listType = order.CustomerOrganisation.PriceListType;
+                var model = RequisitionProcessModel.GetProcessViewModelFromRequisition(requisition);
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, request.Ranking.BrokerFee);
+                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
                     requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt);
                 return View(model);
             }
@@ -86,6 +113,45 @@ namespace Tolk.Web.Controllers
                 return View(RequisitionViewModel.GetModelFromRequest(request));
             }
             return Forbid();
+        }
+
+        public IActionResult List()
+        {
+            var requisitions = _dbContext.Requisitions
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                .AsQueryable();
+            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
+            var customerId = User.TryGetCustomerOrganisationId();
+            var interpreterId = User.TryGetInterpreterId();
+            var brokerId = User.TryGetBrokerId();
+            bool isCustomer = false;
+            if (customerId.HasValue)
+            {
+                requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId());
+                isCustomer = true;
+            }
+            else if (brokerId.HasValue)
+            {
+                requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == brokerId);
+            }
+            else if (interpreterId.HasValue)
+            {
+                requisitions = requisitions.Where(r => r.Request.InterpreterId == interpreterId);
+            }
+            else
+            {
+                return Forbid();
+            }
+            return View(requisitions.Select(r => new RequisitionListItemModel
+            {
+                RequisitionId = r.RequisitionId,
+                Language = r.Request.Order.Language.Name,
+                OrderNumber = r.Request.Order.OrderNumber.ToString(),
+                Start = r.Request.Order.StartDateTime,
+                End = r.Request.Order.EndDateTime,
+                Status = r.Status,
+                Action = isCustomer ? nameof(Process) : nameof(View)
+            }));
         }
 
         [ValidateAntiForgeryToken]
@@ -121,6 +187,46 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             return View("Create", model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                var requisition = _dbContext.Requisitions
+                    .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Single(r => r.RequisitionId == id);
+                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+                {
+                    requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    _dbContext.SaveChanges();
+                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(View), new { id });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Deny(DenyMessageDialogModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var requisition = _dbContext.Requisitions
+                    .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Single(r => r.RequisitionId == model.ParentId);
+                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+                {
+                    requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
+                    _dbContext.SaveChanges();
+                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(Process), new { id = model.ParentId });
         }
     }
 }

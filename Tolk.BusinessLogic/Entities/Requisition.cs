@@ -65,10 +65,30 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
+            if (Status != RequisitionStatus.Created)
+            {
+                throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be approved");
+            }
+
+            Status = RequisitionStatus.Approved;
+            Request.Order.Status = OrderStatus.DeliveryAccepted;
+            ProcessedAt = approveTime;
+            ProcessedBy = userId;
+            ImpersonatingProcessedBy = impersonatorId;
         }
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
+            if (Status != RequisitionStatus.Created)
+            {
+                throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be denied");
+            }
+
+            Status = RequisitionStatus.DeniedByCustomer;
+            ProcessedAt = denyTime;
+            ProcessedBy = userId;
+            ImpersonatingProcessedBy = impersonatorId;
+            DenyMessage = message;
         }
     }
 }

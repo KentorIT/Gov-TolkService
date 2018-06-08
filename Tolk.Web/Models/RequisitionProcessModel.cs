@@ -11,48 +11,17 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
-    public class RequisitionViewModel : RequisitionModel
+    public class RequisitionProcessModel : RequisitionViewModel
     {
-        [Display(Name = "Registrerad av")]
-        public string CreatedBy { get; set; }
+        public int RequisitionId { get; set; }
 
-        [Display(Name = "Registrerad")]
-        public DateTimeOffset CreatedAt { get; set; }
-
-        [Display(Name = "Status")]
-        public RequisitionStatus Status { get; set; }
-
-        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal CalculatedPrice { get; set; }
-
-        [Display(Name = "Slutgiltigt pris inklusive tidsspillan, förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal ResultingPrice { get; set; }
-
-        public DateTimeOffset StoredTimeWasteBeforeStartedAt { get; set; }
-
-        public DateTimeOffset StoredTimeWasteAfterEndedAt { get; set; }
-
-        [Display(Name = "Total registrerad tidsspillan")]
-        public string TotalRegisteredWasteTime
+        [Display(Name = "Meddelande")]
+        public string DenyMessage { get; set; }
+        public static RequisitionProcessModel GetProcessViewModelFromRequisition(Requisition requisition)
         {
-            get
+            return new RequisitionProcessModel
             {
-                var waste = (StoredTimeWasteAfterEndedAt - SessionEndedAt) + (SessionStartedAt - StoredTimeWasteBeforeStartedAt);
-                return waste.Hours > 0 ? $"{waste.Hours} timmar {waste.Minutes} minuter" : $"{waste.Minutes} minuter";
-            }
-        }
-
-        public bool AllowCreation {get;set;}
-
-        #region methods
-
-        public static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)
-        {
-            return new RequisitionViewModel
-            {
-                RequestId = requisition.RequestId,
+                RequisitionId = requisition.RequisitionId,
                 BrokerName = requisition.Request.Ranking.BrokerRegion.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,
@@ -73,10 +42,9 @@ namespace Tolk.Web.Models
                 CreatedBy = requisition.CreatedByUser.Email,
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
-                Status = requisition.Status,
+                Status = requisition.Status
             };
         }
 
-        #endregion
     }
 }

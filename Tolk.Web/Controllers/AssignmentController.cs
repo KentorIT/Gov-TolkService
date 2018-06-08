@@ -25,7 +25,6 @@ namespace Tolk.Web.Controllers
         public AssignmentController(TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             IAuthorizationService authorizationService)
-
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -38,6 +37,7 @@ namespace Tolk.Web.Controllers
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var interpreterId = User.TryGetInterpreterId();
             var brokerId = User.TryGetBrokerId();
+            var customerId = User.TryGetCustomerOrganisationId();
             if (interpreterId.HasValue)
             {
                 requests = requests.Where(r => r.InterpreterId == interpreterId);
@@ -45,6 +45,10 @@ namespace Tolk.Web.Controllers
             if (brokerId.HasValue)
             {
                 requests = requests.Where(r => r.Ranking.BrokerId == brokerId);
+            }
+            if (customerId.HasValue)
+            {
+                requests = requests.Where(r => r.Order.CreatedBy == User.GetUserId());
             }
             return View(requests.Select(r => new RequestListItemModel
             {

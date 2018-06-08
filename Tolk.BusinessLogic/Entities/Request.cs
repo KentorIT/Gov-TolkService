@@ -131,7 +131,7 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.ResponseAccepted;
             AnswerProcessedAt = approveTime;
             AnswerProcessedBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
+            ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
@@ -144,7 +144,7 @@ namespace Tolk.BusinessLogic.Entities
             Status = RequestStatus.DeniedByCreator;
             AnswerProcessedAt = denyTime;
             AnswerProcessedBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
+            ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
         public void CreateRequisition(Requisition requisition)
