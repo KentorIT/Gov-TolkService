@@ -24,17 +24,20 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly InterpreterService _interpreterService;
 
         public RequestController(
             TolkDbContext dbContext,
             ISwedishClock clock, 
             OrderService orderService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            InterpreterService interpreterService)
         {
             _dbContext = dbContext;
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
+            _interpreterService = interpreterService;
         }
 
         public IActionResult List()
@@ -98,11 +101,19 @@ namespace Tolk.Web.Controllers
 
                 if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
+                    int interpreterd = model.InterpreterId;
+                    if(InterpreterId == SelectListService.NewInterpreterId)
+                    {
+                        int interpreterId = _interpreterService.GetInterpreterId(
+                            request.Ranking.BrokerId,
+                            model.NewInterpreterEmail);
+                    }
+
                     request.Accept(
                         _clock.SwedenNow,
                         User.GetUserId(),
                         User.TryGetImpersonatorId(),
-                        model.InterpreterId,
+                        interpreterId,
                         model.ExpectedTravelCosts,
                         model.InterpreterLocation,
                         model.CompetenceLevel,

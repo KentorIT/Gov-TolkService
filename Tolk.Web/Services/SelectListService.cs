@@ -144,11 +144,13 @@ namespace Tolk.Web.Services
             }
         }
 
+        public const int NewInterpreterId = -1;
+
         public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
         {
             yield return new SelectListItem
             {
-                Value = "-1",
+                Value = NewInterpreterId.ToString(),
                 Text = "Ny tolk"
             };
 
