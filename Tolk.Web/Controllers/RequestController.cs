@@ -98,33 +98,21 @@ namespace Tolk.Web.Controllers
 
                 if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
                 {
-                    request.Status = RequestStatus.Accepted;
-                    request.AnswerDate = _clock.SwedenNow;
-                    request.AnsweredBy = User.GetUserId();
-                    request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
-
-                    request.InterpreterId = model.InterpreterId;
-                    request.ExpectedTravelCosts = model.ExpectedTravelCosts;
-                    request.InterpreterLocation = (int?)model.InterpreterLocation;
-                    request.CompetenceLevel = (int?)model.CompetenceLevel;
-                    if (model.RequirementAnswers != null)
-                    {
-                        // answer all extra requirements
-                        foreach (var answer in model.RequirementAnswers)
+                    request.Accept(
+                        _clock.SwedenNow,
+                        User.GetUserId(),
+                        User.TryGetImpersonatorId(),
+                        model.InterpreterId,
+                        model.ExpectedTravelCosts,
+                        model.InterpreterLocation,
+                        model.CompetenceLevel,
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                         {
-                            request.RequirementAnswers.Add(
-                                new OrderRequirementRequestAnswer
-                                {
-                                    RequestId = request.RequestId,
-                                    OrderRequirementId = answer.OrderRequirementId,
-                                    Answer = answer.Answer,
-                                    CanSatisfyRequirement = answer.CanMeetRequirement,
-                                });
-                        }
-                    }
-
-                    //TODO: This should differ depending on the incoming status.
-                    request.Order.Status = OrderStatus.RequestResponded;
+                            RequestId = request.RequestId,
+                            OrderRequirementId = ra.OrderRequirementId,
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement
+                        }));
 
                     _dbContext.SaveChanges();
 

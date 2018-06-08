@@ -134,6 +134,36 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
+        public void Accept(
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            int interperterId,
+            decimal? expectedTravelCosts,
+            Enums.InterpreterLocation? interpreterLocation,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)
+        {
+            if(Status != RequestStatus.Received)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Receved requests can be accepted.");
+            }
+
+            Status = RequestStatus.Accepted;
+            AnswerDate = acceptTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            InterpreterId = interperterId;
+            ExpectedTravelCosts = expectedTravelCosts;
+            InterpreterLocation = (int?)interpreterLocation;
+            CompetenceLevel = (int?)competenceLevel;
+
+            RequirementAnswers.AddRange(requirementAnswers);
+
+            Order.Status = OrderStatus.RequestResponded;
+        }
+
+
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (Status != RequestStatus.Accepted)
