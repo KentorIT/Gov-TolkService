@@ -46,6 +46,11 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string DenyMessage { get; set; }
 
+        public int? ReplacedByRequisitionId { get; set; }
+
+        [ForeignKey(nameof(ReplacedByRequisitionId))]
+        public Requisition ReplacedByRequisition { get; set; }
+
         public int RequestId { get; set; }
 
         [ForeignKey(nameof(RequestId))]
