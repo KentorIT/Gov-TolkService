@@ -119,7 +119,7 @@ namespace Tolk.Web.Controllers
         {
             var requisitions = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                .AsQueryable();
+                .Where(r => !r.ReplacedByRequisitionId.HasValue);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var customerId = User.TryGetCustomerOrganisationId();
             var interpreterId = User.TryGetInterpreterId();
@@ -160,29 +160,40 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var request = _dbContext.Requests
+                using (var transaction = _dbContext.Database.BeginTransaction())
+                {
+                    var request = _dbContext.Requests
                     .Include(r => r.Order)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion)
                     .Single(o => o.RequestId == model.RequestId);
-                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
-                {
-                    var requisition = new Requisition
+                    if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
-                        Status = RequisitionStatus.Created,
-                        CreatedBy = User.GetUserId(),
-                        CreatedAt = _clock.SwedenNow.DateTime,
-                        ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
-                        TravelCosts = model.TravelCosts,
-                        Message = model.Message,
-                        SessionStartedAt = model.SessionStartedAt,
-                        SessionEndedAt = model.SessionEndedAt,
-                        TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
-                        TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
-                    };
-                    request.CreateRequisition(requisition);
-                    _dbContext.SaveChanges();
-                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                        var requisition = new Requisition
+                        {
+                            Status = RequisitionStatus.Created,
+                            CreatedBy = User.GetUserId(),
+                            CreatedAt = _clock.SwedenNow.DateTime,
+                            ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
+                            TravelCosts = model.TravelCosts,
+                            Message = model.Message,
+                            SessionStartedAt = model.SessionStartedAt,
+                            SessionEndedAt = model.SessionEndedAt,
+                            TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
+                            TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
+                        };
+                        request.CreateRequisition(requisition);
+                        _dbContext.SaveChanges();
+                        var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                            !r.ReplacedByRequisitionId.HasValue);
+                        if (replacingRequisition != null)
+                        {
+                            replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
+                            _dbContext.SaveChanges();
+                        }
+                        transaction.Commit();
+                        return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                    }
                 }
                 return Forbid();
             }

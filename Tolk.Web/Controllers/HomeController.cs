@@ -86,7 +86,8 @@ namespace Tolk.Web.Controllers
                     Controller = "Assignment",
                     Action = "List"
                 };
-                int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue && 
+                        r.Status == RequisitionStatus.DeniedByCustomer &&
                        !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
                        r.Request.Ranking.BrokerId == brokerId).Count();
                 if (count > 0)
@@ -106,8 +107,10 @@ namespace Tolk.Web.Controllers
                 yield return new StartPageBox
                 {
                     //TODO: Here we need to check the order too!
-                    Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) && r.InterpreterId == interpreterId.Value).Count(),
-                    Header = "Tillsatta uppdrag",
+                    Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
+                        r.Order.StartDateTime > _clock.SwedenNow && 
+                        r.InterpreterId == interpreterId.Value).Count(),
+                    Header = "Kommande uppdrag",
                     Controller = "Assignment",
                     Action = "List"
                 };
@@ -121,7 +124,8 @@ namespace Tolk.Web.Controllers
                     Controller = "Assignment",
                     Action = "List"
                 };
-                int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue &&
+                    r.Status == RequisitionStatus.DeniedByCustomer &&
                        !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
                       r.Request.InterpreterId == interpreterId.Value).Count();
                 if (count > 0)

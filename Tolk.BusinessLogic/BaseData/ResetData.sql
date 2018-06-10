@@ -2,6 +2,7 @@ Use TolkDev
 declare @increment bit
 declare @reseed int
 
+truncate table Requisitions
 truncate table OrderInterpreterLocation
 truncate table OrderRequirementRequestAnswer 
 
@@ -29,7 +30,7 @@ DBCC CHECKIDENT (Orders, reseed, @reseed)--
 -- Remove roles that are no longer directly assigned (instead policies are used
 -- that relies on present of CustomerId etc.
 
--- Should reset data from dev data too:
+-- Should probably reset data from dev data too:
 -- 1. CustomerOrganisations
 -- 2. Brokers
 -- 3. Users

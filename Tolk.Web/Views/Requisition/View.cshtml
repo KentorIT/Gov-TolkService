@@ -10,6 +10,10 @@
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="Status" />
+        @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
+        {
+            <display-entry asp-for="DenyMesage" />
+        }
         <display-entry asp-for="ExpectedStartedAt" />
         <display-entry asp-for="SessionStartedAt" />
         <display-entry asp-for="ExpectedEndedAt" />

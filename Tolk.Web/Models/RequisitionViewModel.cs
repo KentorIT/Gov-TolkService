@@ -30,6 +30,9 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal ResultingPrice { get; set; }
 
+        [Display(Name = "Meddelande vid nekande")]
+        public string DenyMesage { get; set; }
+
         public DateTimeOffset StoredTimeWasteBeforeStartedAt { get; set; }
 
         public DateTimeOffset StoredTimeWasteAfterEndedAt { get; set; }
@@ -74,6 +77,7 @@ namespace Tolk.Web.Models
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,
+                DenyMesage = requisition.DenyMessage,
             };
         }
 

@@ -153,6 +153,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
             }
+
             Requisitions.Add(requisition);
             //Change status on order accordingly.
             Order.DeliverRequisition();
