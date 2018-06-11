@@ -69,6 +69,25 @@
             $(".ranked-InterpreterLocation").hide();
         }
     });
+    $("body").on("change", "#AssignmentType", function (event) {
+        if ($(this).val() === "OnSite" || $(this).val() === "OffSite" || $(this).val() === "OffSiteDesignatedLocation") {
+            //Uncheck (with event) the UseRankedInterpreterLocation
+            if ($("#UseRankedInterpreterLocation").is(":checked")) {
+                $("#UseRankedInterpreterLocation").trigger("click");
+            }
+            //Disable UseRankedInterpreterLocation
+            $("#UseRankedInterpreterLocation").prop("disabled", true);
+            // Set InterpreterLocation, and make it disabled
+            $("#InterpreterLocation").val($(this).val());
+            $("#InterpreterLocation").prop("disabled", true);
+        } else {
+            //Enable UseRankedInterpreterLocation
+            $("#UseRankedInterpreterLocation").prop("disabled", false);
+            //Enable InterpreterLocation
+            $("#InterpreterLocation").val("");
+           $("#InterpreterLocation").prop("disabled", false);
+        }
+    });
     $("ol.drag-panel").sortable({
         vertical: true,
         pullPlaceholder: true,
@@ -111,5 +130,4 @@
             });
         }
     });
-
 });
