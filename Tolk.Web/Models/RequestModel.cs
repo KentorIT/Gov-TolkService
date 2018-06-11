@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -45,12 +46,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]
         public decimal? ExpectedTravelCosts { get; set; }
 
-        [Required]
+        [ClientRequired]
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
+
         #region methods
 
         public static RequestModel GetModelFromRequest(Request request)
@@ -63,8 +65,9 @@ namespace Tolk.Web.Models
                 {
                     OrderRequirementId = r.OrderRequirementId,
                     IsRequired = r.IsRequired,
-                    Requirement = $"{r.Description}({EnumHelper.GetDescription(r.RequirementType)}){(r.IsRequired ? " krav": string.Empty)}"
+                    Requirement = $"{r.Description}({EnumHelper.GetDescription(r.RequirementType)}){(r.IsRequired ? " krav" : string.Empty)}"
                 }).ToList(),
+                InterpreterLocation = request.Order.InterpreterLocations.Count() == 1 ? request.Order.InterpreterLocations.Single()?.InterpreterLocation : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
             };
         }

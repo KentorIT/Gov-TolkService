@@ -60,7 +60,12 @@ namespace Tolk.Web.Controllers
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
+                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
                 .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(r => r.Language)
+                .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
 
