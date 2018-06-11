@@ -70,6 +70,8 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocationSelector { get; set; }
+
+        [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
         [Display(Name = "Önskat inställelsesätt (den som är helst överst)")]
@@ -131,6 +133,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
         public int? RequestId { get; set; }
+
+        public List<BrokerListModel> PreviousRequests { get; set; }
 
         public bool AllowDenial
         {
@@ -258,9 +262,18 @@ namespace Tolk.Web.Models
                     RequirementType = r.RequirementType,
                     CanSatisfyRequirement = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.CanSatisfyRequirement,
                     Answer = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.Answer
+                }).ToList(),
+                PreviousRequests = order.Requests.Where( r=> 
+                    r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
+                    r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByInterpreter ||
+                    r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
+                    r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
+                ).Select(r => new BrokerListModel
+                {
+                    Status = r.Status,
+                    BrokerName = r.Ranking.BrokerRegion.Broker.Name
                 }).ToList()
             };
-
         }
 
         #endregion
