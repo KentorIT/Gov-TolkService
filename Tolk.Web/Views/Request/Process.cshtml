@@ -12,6 +12,7 @@
         <display-entry asp-for="OrderModel.OrderNumber" />
         <display-entry asp-for="OrderModel.CreatedAt" />
         <display-entry asp-for="OrderModel.CreatedBy" />
+        <display-entry asp-for="OrderModel.ContactPerson" />
         <display-entry asp-for="OrderModel.Status" />
         <display-entry asp-for="OrderModel.RegionName" />
         <display-entry asp-for="OrderModel.LanguageName" />
@@ -34,14 +35,22 @@
             </ul>
         }
         <display-entry asp-for="OrderModel.RequiredCompetenceLevel" />
-        <display-entry asp-for="OrderModel.StartDateTime" />
-        <display-entry asp-for="OrderModel.EndDateTime" />
+        <display-entry asp-for="OrderModel.StartAt" />
+        <display-entry asp-for="OrderModel.EndAt" />
         <display-entry asp-for="OrderModel.Description" />
-        <display-entry asp-for="OrderModel.UnitName" />
-        <display-entry asp-for="OrderModel.LocationStreet" />
-        <display-entry asp-for="OrderModel.LocationZipCode" />
-        <display-entry asp-for="OrderModel.LocationCity" />
-        <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
+        @if (Model.OrderModel.UseAddress)
+        {
+            <display-entry asp-for="OrderModel.UnitName" />
+            <display-entry asp-for="OrderModel.LocationStreet" />
+            <display-entry asp-for="OrderModel.LocationZipCode" />
+            <display-entry asp-for="OrderModel.LocationCity" />
+            <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
+        }
+        @if (Model.OrderModel.UseOffSiteInformation)
+        {
+            <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
+            <display-entry asp-for="OrderModel.OffSiteContactInformation" />
+        }
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
             <display-entry asp-for="ExpiresAt" />

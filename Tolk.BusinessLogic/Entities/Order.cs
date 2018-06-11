@@ -14,6 +14,8 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class Order
     {
+        private OrderStatus _status;
+
         #region base information
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -24,14 +26,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset CreatedAt { get; set; }
 
-        //FK to AspNetUser
         public int CreatedBy { get; set; }
 
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
-
-
-        private OrderStatus _status;
 
         public OrderStatus Status
         {
@@ -52,7 +50,6 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        //FK to CustomerOrganisation
         public int CustomerOrganisationId { get; set; }
 
         [ForeignKey(nameof(CustomerOrganisationId))]
@@ -70,12 +67,10 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string CustomerReferenceNumber { get; set; }
 
-        [MaxLength(255)]
-        public string OtherContactPerson { get; set; }
-        [MaxLength(50)]
-        public string OtherContactPhone { get; set; }
-        [MaxLength(255)]
-        public string OtherContactEmail { get; set; }
+        public int? ContactPersonId { get; set; }
+
+        [ForeignKey(nameof(ContactPersonId))]
+        public AspNetUser ContactPersonUser { get; set; }
 
         [MaxLength(100)]
         public string UnitName { get; set; }
@@ -89,9 +84,6 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string City { get; set; }
 
-        [MaxLength(255)]
-        public string OtherAddressInformation { get; set; }
-
         #endregion
 
         #region order information
@@ -103,14 +95,19 @@ namespace Tolk.BusinessLogic.Entities
 
         public AssignmentType AssignentType { get; set; }
 
-        //TODO: Make Enum and fk
+        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
+
+        [MaxLength(255)]
+        public string OffSiteContactInformation { get; set; }
+
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
-        //Same as above
+
         //TODO: Fix this, temporarily reverted to an int due to EF Core issue with nullable enum.
         public int? RequestedCompetenceLevel { get; set; }
 
-        public DateTimeOffset StartDateTime { get; set; }
-        public DateTimeOffset EndDateTime { get; set; }
+        public DateTimeOffset StartAt { get; set; }
+         
+        public DateTimeOffset EndAt { get; set; }
 
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
@@ -124,6 +121,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #endregion
 
+        #region navigation properties
 
         public string CompactAddress
         {
@@ -133,17 +131,20 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }
 
         public List<OrderInterpreterLocation> InterpreterLocations { get; set; }
 
+        #endregion
+
+        #region methods
+
         public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {
             // TODO Need to get/understand rules for how close to assignment a request can be allowed.
-            if(newRequestExpiry.AddHours(1) > StartDateTime)
+            if(newRequestExpiry.AddHours(1) > StartAt)
             {
                 // For now, require response time to end at least one hour before start of assignment.
                 return null;
@@ -181,5 +182,7 @@ namespace Tolk.BusinessLogic.Entities
 
             Status = OrderStatus.Delivered;
         }
+
+        #endregion
     }
 }

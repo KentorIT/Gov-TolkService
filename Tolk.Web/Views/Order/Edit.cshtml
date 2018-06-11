@@ -13,11 +13,14 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
             <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" />
+            <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
             <form-entry asp-for="CustomerReferenceNumber" />
+            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
             <form-entry asp-for="AssignmentType" type="select" asp-items="SelectListService.AssignmentTypes" />
             <form-entry asp-for="UseRankedInterpreterLocation" />
             <div class="required-InterpreterLocation">
-                <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
+                <form-entry asp-for="InterpreterLocationSelector" type="select" asp-items="SelectListService.InterpreterLocations" />
+                <input asp-for="InterpreterLocation" type="hidden" />
             </div>
             <div class="ranked-InterpreterLocation" style="display:none">
                 <label>@Html.DisplayNameFor(m => m.InterpreterLocations)</label>
@@ -37,7 +40,17 @@
                     }
                 </ol>
             </div>
-            <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
+            <div class="address-InterpreterLocation">
+                <form-entry asp-for="UnitName" />
+                <form-entry asp-for="LocationStreet" />
+                <form-entry asp-for="LocationZipCode" />
+                <form-entry asp-for="LocationCity" />
+                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+            </div>
+            <div class="off-site-information" style="display:none">
+                <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
+                <form-entry asp-for="OffSiteContactInformation" />
+            </div>
             <fieldset>
                 <legend>Extra behov</legend>
                 <div class="d-none order-requirement-list">
@@ -57,14 +70,9 @@
                 </div>
                 <a href="#" class="edit-link add-requirement-button" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till</a>
             </fieldset>
-            <form-entry asp-for="StartDateTime" />
-            <form-entry asp-for="EndDateTime" />
+            <form-entry asp-for="StartAt" />
+            <form-entry asp-for="EndAt" />
             <form-entry asp-for="Description" />
-            <form-entry asp-for="UnitName" />
-            <form-entry asp-for="LocationStreet" />
-            <form-entry asp-for="LocationZipCode" />
-            <form-entry asp-for="LocationCity" />
-            <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
 
             <button class="btn btn-default">Skicka</button>
         </form>
@@ -73,7 +81,6 @@
             <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
             <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
             <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
-
         </span>
     </div>
 </div>

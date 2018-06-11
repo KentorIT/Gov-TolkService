@@ -79,7 +79,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartPageBox
                 {
                     Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
-                        r.Order.StartDateTime < _clock.SwedenNow &&
+                        r.Order.StartAt < _clock.SwedenNow &&
                         !r.Requisitions.Any() &&
                         r.Ranking.BrokerId == brokerId).Count(),
                     Header = "Tolktillfällen att avrapportera",
@@ -108,7 +108,7 @@ namespace Tolk.Web.Controllers
                 {
                     //TODO: Here we need to check the order too!
                     Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
-                        r.Order.StartDateTime > _clock.SwedenNow && 
+                        r.Order.StartAt > _clock.SwedenNow && 
                         r.InterpreterId == interpreterId.Value).Count(),
                     Header = "Kommande uppdrag",
                     Controller = "Assignment",
@@ -117,7 +117,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartPageBox
                 {
                     Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved && 
-                        r.Order.StartDateTime < _clock.SwedenNow &&    
+                        r.Order.StartAt < _clock.SwedenNow &&    
                         !!r.Requisitions.Any() && 
                         r.InterpreterId == interpreterId.Value).Count(),
                     Header = "Att avrapportera",

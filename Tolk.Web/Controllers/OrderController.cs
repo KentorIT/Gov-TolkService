@@ -53,8 +53,8 @@ namespace Tolk.Web.Controllers
                     Language = o.Language.Name,
                     OrderNumber = o.OrderNumber.ToString(),
                     RegionName = o.Region.Name,
-                    Start = o.StartDateTime,
-                    End = o.EndDateTime,
+                    Start = o.StartAt,
+                    End = o.EndAt,
                     Status = o.Status
                 }));
         }
@@ -64,6 +64,7 @@ namespace Tolk.Web.Controllers
             //Get order model from db
             var order = _dbContext.Orders
                 .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
@@ -89,7 +90,7 @@ namespace Tolk.Web.Controllers
                     r.Status == RequestStatus.Approved
                     );
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartDateTime, order.EndDateTime, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))

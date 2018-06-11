@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
 namespace Tolk.Web.Services
@@ -68,6 +69,11 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
+        public static IEnumerable<SelectListItem> OffSiteAssignmentTypes { get; } =
+            EnumHelper.GetAllDescriptions<OffSiteAssignmentType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
         public IEnumerable<SelectListItem> Languages
         {
             get
@@ -119,6 +125,22 @@ namespace Tolk.Web.Services
                 {
                     yield return item;
                 }
+            }
+        }
+
+        public IEnumerable<SelectListItem> OtherContactPersons
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                return _dbContext.Users
+                    .Where(u => u.Id != currentUser.GetUserId() &&
+                        u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId())
+                    .Select(u => new SelectListItem
+                    {
+                        Text = u.UserName,
+                        Value = u.Id.ToString(),
+                    }).ToList();
             }
         }
 

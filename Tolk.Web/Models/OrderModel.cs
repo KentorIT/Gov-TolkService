@@ -23,13 +23,15 @@ namespace Tolk.Web.Models
         [Required]
         public int LanguageId { get; set; }
 
+        [Display(Name = "Annan kontaktperson")]
+        public int? ContactPersonId { get; set; }
+
         [DataType(DataType.MultilineText)]
         [Display(Name = "Beskrivning")]
-        [Required]
         public string Description { get; set; }
 
         [Display(Name = "Enhet/avdelning")]
-        [Required]
+        [ClientRequired]
         public string UnitName { get; set; }
 
         [Display(Name = "Adress")]
@@ -45,19 +47,29 @@ namespace Tolk.Web.Models
         public string LocationCity { get; set; }
 
         [Display(Name = "Startdatum och tid", Description = "Datum och tid när tolkuppdraget startar.")]
-        public DateTimeOffset StartDateTime { get; set; }
+        public DateTimeOffset StartAt { get; set; }
 
         [Display(Name = "Slutdatum och tid")]
-        public DateTimeOffset EndDateTime { get; set; }
+        public DateTimeOffset EndAt { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
         public AssignmentType AssignmentType { get; set; }
 
+        [Display(Name = "Typ av distanstolkning")]
+        [ClientRequired]
+        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
+
+        [Display(Name = "Kontaktinformation för distanstolkning")]
+        [ClientRequired]
+        [MaxLength(255)]
+        public string OffSiteContactInformation { get; set; }
+
         [Display(Name = "Erbjud flera alternativ till inställelsesätt")]
         public bool UseRankedInterpreterLocation { get; set; } = false;
 
         [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocationSelector { get; set; }
         public InterpreterLocation? InterpreterLocation { get; set; }
 
         [Display(Name = "Önskat inställelsesätt (den som är helst överst)")]
@@ -92,6 +104,9 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Skapad av")]
         public string CreatedBy { get; set; }
+
+        [Display(Name = "Annan kontaktperson")]
+        public string ContactPerson { get; set; }
 
         [Display(Name = "Kund")]
         public string CustomerName { get; set; }
@@ -138,24 +153,29 @@ namespace Tolk.Web.Models
 
         #endregion
 
+        public bool UseAddress => UseRankedInterpreterLocation || AssignmentType != AssignmentType.OffSite;
+        public bool UseOffSiteInformation => UseRankedInterpreterLocation || AssignmentType == AssignmentType.OffSite;
+
         #region methods
 
         public void UpdateOrder(Order order)
         {
             order.LanguageId = LanguageId;
-            order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
-            order.AssignentType = AssignmentType;
             order.RegionId = RegionId;
+            order.ContactPersonId = ContactPersonId;
+            order.AssignentType = AssignmentType;
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartDateTime = StartDateTime;
-            order.EndDateTime = EndDateTime;
+            order.StartAt = StartAt;
+            order.EndAt = EndAt;
             order.Description = Description;
-            order.UnitName = UnitName;
-            order.Street = LocationStreet;
-            order.ZipCode = LocationZipCode;
-            order.City = LocationCity;
+            order.UnitName = UseAddress ? UnitName : null;
+            order.Street = UseAddress ? LocationStreet : null;
+            order.ZipCode = UseAddress ? LocationZipCode : null;
+            order.City = UseAddress ? LocationCity : null;
+            order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
+            order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
+            order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
             order.RequiredCompetenceLevel = RequiredCompetenceLevel;
-
             if (UseRankedInterpreterLocation)
             {
                 //Add one(3) rows to OrderInterpreterLocation
@@ -201,7 +221,8 @@ namespace Tolk.Web.Models
             {
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber.ToString(),
-                CreatedBy = order.CreatedByUser?.NormalizedEmail,
+                CreatedBy = order.CreatedByUser.NormalizedEmail,
+                ContactPerson = order.ContactPersonUser?.NormalizedEmail,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation?.Name,
                 LanguageName = order.Language?.Name,
@@ -211,8 +232,8 @@ namespace Tolk.Web.Models
                 AssignmentType = order.AssignentType,
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
-                StartDateTime = order.StartDateTime,
-                EndDateTime = order.EndDateTime,
+                StartAt = order.StartAt,
+                EndAt = order.EndAt,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 LocationStreet = order.Street,

@@ -88,8 +88,8 @@ namespace Tolk.BusinessLogic.Services
 
         public void CreateRequest(Order order)
         {
-            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartDateTime.Date);
-            var newExpiry = CalculateExpiryForNewRequest(order.StartDateTime);
+            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
+            var newExpiry = CalculateExpiryForNewRequest(order.StartAt);
 
             var request = order.CreateRequest(rankings, newExpiry);
 

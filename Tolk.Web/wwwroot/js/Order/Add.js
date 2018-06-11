@@ -43,7 +43,7 @@
                 $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).val());
             });
             $(this).parents(".modal-content").find("input:checkbox").each(function () {
-                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).is(":checked") ? "true": "false");
+                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).is(":checked") ? "true" : "false");
             });
             //Add the info to the cloned hidden fields.
             //add a row to the table
@@ -64,9 +64,12 @@
         if ($(this).is(":checked")) {
             $(".required-InterpreterLocation").hide();
             $(".ranked-InterpreterLocation").show();
+            $(".address-InterpreterLocation").show();
+            $(".off-site-information").show();
         } else {
             $(".required-InterpreterLocation").show();
             $(".ranked-InterpreterLocation").hide();
+            $("#InterpreterLocationSelector").trigger("change");
         }
     });
     $("body").on("change", "#AssignmentType", function (event) {
@@ -78,15 +81,37 @@
             //Disable UseRankedInterpreterLocation
             $("#UseRankedInterpreterLocation").prop("disabled", true);
             // Set InterpreterLocation, and make it disabled
-            $("#InterpreterLocation").val($(this).val());
-            $("#InterpreterLocation").prop("disabled", true);
+            $("#InterpreterLocationSelector").val($(this).val());
+            $("#InterpreterLocationSelector").prop("disabled", true);
         } else {
             //Enable UseRankedInterpreterLocation
             $("#UseRankedInterpreterLocation").prop("disabled", false);
             //Enable InterpreterLocation
-            $("#InterpreterLocation").val("");
-           $("#InterpreterLocation").prop("disabled", false);
+            $("#InterpreterLocationSelector").val("");
+            $("#InterpreterLocationSelector").prop("disabled", false);
         }
+        $("#InterpreterLocationSelector").trigger("change");
+    });
+    $("body").on("change", "#InterpreterLocationSelector", function (event) {
+        if ($(this).val() === null) {
+            $(".address-InterpreterLocation").hide();
+            // show offsite info
+            $(".off-site-information").hide();
+        }
+        else if ($(this).val() === "OffSite") {
+            //hide address
+            // show offsite info
+            $(".address-InterpreterLocation").hide();
+            // show offsite info
+            $(".off-site-information").show();
+        } else {
+            //show address
+            $(".address-InterpreterLocation").show();
+            $(".off-site-information").hide();
+            // hide offsite info
+        }
+        //hidden field to propagate the value even if the select is disabled.
+        $("#InterpreterLocation").val($(this).val());
     });
     $("ol.drag-panel").sortable({
         vertical: true,
@@ -107,7 +132,7 @@
                 var i = 1;
                 $item.closest("ol").find(".order-descriptor").each(function () {
                     $(this).val(i++);
-                }); 
+                });
             });
         },
 

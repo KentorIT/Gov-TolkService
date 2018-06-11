@@ -49,8 +49,8 @@ namespace Tolk.Web.Controllers
                     OrderNumber = r.Order.OrderNumber.ToString(),
                     CustomerName = r.Order.CustomerOrganisation.Name,
                     RegionName = r.Order.Region.Name,
-                    Start = r.Order.StartDateTime,
-                    End = r.Order.EndDateTime,
+                    Start = r.Order.StartAt,
+                    End = r.Order.EndAt,
                     ExpiresAt = r.ExpiresAt,
                     Status = r.Status
                 }));
