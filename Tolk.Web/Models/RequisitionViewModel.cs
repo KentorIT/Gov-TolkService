@@ -56,6 +56,8 @@ namespace Tolk.Web.Models
             return new RequisitionViewModel
             {
                 RequestId = requisition.RequestId,
+                PreviousRequisitionId = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)?.RequisitionId,
+                ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
                 BrokerName = requisition.Request.Ranking.BrokerRegion.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,

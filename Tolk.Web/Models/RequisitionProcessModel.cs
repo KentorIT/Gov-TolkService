@@ -15,12 +15,11 @@ namespace Tolk.Web.Models
     {
         public int RequisitionId { get; set; }
 
-        [Display(Name = "Meddelande")]
-        public string DenyMessage { get; set; }
         public static RequisitionProcessModel GetProcessViewModelFromRequisition(Requisition requisition)
         {
             return new RequisitionProcessModel
             {
+                PreviousRequisitionId = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)?.RequisitionId,
                 RequisitionId = requisition.RequisitionId,
                 BrokerName = requisition.Request.Ranking.BrokerRegion.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,

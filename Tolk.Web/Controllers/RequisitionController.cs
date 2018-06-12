@@ -44,6 +44,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
@@ -71,6 +72,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
@@ -100,6 +102,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Create(int id)
         {
             var request = _dbContext.Requests
+                .Include(r => r.Requisitions)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)

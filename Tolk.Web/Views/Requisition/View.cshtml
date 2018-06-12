@@ -10,6 +10,15 @@
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="Status" />
+        @if (Model.PreviousRequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisitionId })">Se tidigare rekvisition</a>
+        }
+        @if (Model.ReplacingRequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.ReplacingRequisitionId })">Se ersättande rekvisition</a>
+        }
+
         @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
         {
             <display-entry asp-for="DenyMessage" />

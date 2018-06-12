@@ -8,6 +8,10 @@
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
         <display-entry asp-for="CreatedBy" />
+        @if (Model.PreviousRequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisitionId })">Se tidigare rekvisition</a>
+        }
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="Status" />
         <display-entry asp-for="ExpectedStartedAt" />

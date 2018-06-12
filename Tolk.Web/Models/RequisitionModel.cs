@@ -85,9 +85,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Specifikation", Description = "Var tydlig med var alla tider och kostnader kommer ifrån.")]
         public string Message { get; set; }
 
+        public int? PreviousRequisitionId { get; set; }
+
+        public int? ReplacingRequisitionId { get; set; }
+
         #region methods
 
-        public  static RequisitionModel GetModelFromRequest(Request request)
+        public static RequisitionModel GetModelFromRequest(Request request)
         {
             return new RequisitionModel
             {
@@ -105,6 +109,7 @@ namespace Tolk.Web.Models
                 LanguageName = request.Order.Language.Name,
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.BrokerRegion.Region.Name,
+                PreviousRequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue)?.RequisitionId
             };
         }
 

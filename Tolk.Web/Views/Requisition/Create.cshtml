@@ -13,6 +13,11 @@
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterName" />
+        @if (Model.PreviousRequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisitionId })">Se tidigare rekvisition</a>
+        }
+
         <form method="post">
             <input asp-for="RequestId" type="hidden" />
             <form-entry asp-for="WasteBefore" />
