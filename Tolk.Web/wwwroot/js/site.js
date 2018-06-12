@@ -32,6 +32,7 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
+    $("select").select2({ minimumResultsForSearch: 10 });
     $("body").on("click", "table.clickable-rows > tbody > tr > td", function () {
         var $table = $(this).parents("table.clickable-rows");
         var $parameterName = $table.data("click-parameter");
