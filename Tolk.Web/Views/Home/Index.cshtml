@@ -17,27 +17,42 @@
     </div>
 </div>
 <div class="row">
-    @foreach (var box in Model.Boxes)
-    {
-        <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="@box.RouteData">
-            <div class="col-md-2">
-                <div class="panel panel-info center-block">
-                    <div class="panel-heading">
-                        <h4>@box.Header</h4>
+    <div class="col-md-8">
+        <div class="row">
+            @foreach (var box in Model.Boxes)
+            {
+                <a asp-action="@box.Action" asp-controller="@box.Controller">
+                    <div class="col-md-3">
+                        <div class="panel panel-info center-block">
+                            <div class="panel-heading">
+                                <h4>@box.Header</h4>
+                            </div>
+                            <h1 class="shortcut-box">@box.Count.ToString()</h1>
+                        </div>
                     </div>
-                    <h1 class="shortcut-box">@box.Count.ToString()</h1>
+                </a>
+            }
+        </div>
+        @foreach(var message in Model.ConfirmationMessages)
+        {
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4>@message.Header</h4>
+                </div>
+                <div class="panel-body">
+                    <p>@message.Message</p>
+                </div>
+                <div class="panel-footer">
+                    <form method="post" asp-action="@message.Action" asp-controller="@message.Controller">
+                        <input type="hidden" name="Id" value="@message.Id" />
+                        <button type="submit" class="btn btn-primary">Ok</button>
+                    </form>
                 </div>
             </div>
-        </a>
-    }
-    @{ 
-        var newsClass = "col-md-4";
-        if(Model.Boxes.Count() < 4)
-        {
-            newsClass += $" col-md-offset-{(4 - Model.Boxes.Count()) * 2}";
+
         }
-    }
-    <div class="@newsClass">
+    </div>
+    <div class="col-md-4">
         <div class="panel panel-info">
             <div class="panel-heading">
                 <h3>2018-04-19 Utveckling</h3>

@@ -149,6 +149,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OutboundEmail> OutboundEmails { get; set; }
 
+        public DbSet<InterpreterBroker> InterpreterBrokers { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
