@@ -40,8 +40,7 @@ namespace Tolk.Web.Controllers
         public IActionResult List()
         {
             return View(_dbContext.Requests.Include(r => r.Order)
-                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) 
-                && r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
+                .Where(r => r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
                 .Select(r => new RequestListItemModel
                 {
                     RequestId = r.RequestId,
