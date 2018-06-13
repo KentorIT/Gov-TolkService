@@ -82,7 +82,8 @@ namespace Tolk.Web.Authorization
                 case Request request:
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
                 case Requisition requisition:
-                    return requisition.Request.Order.CreatedBy == userId;
+                    return requisition.Request.Order.CreatedBy == userId || 
+                        requisition.Request.Order.ContactPersonId == userId;
                 default:
                     throw new NotImplementedException();
             }
@@ -107,7 +108,8 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return requisition.Request.Order.CreatedBy == context.User.GetUserId();
+                        return requisition.Request.Order.CreatedBy == user.GetUserId() ||
+                            requisition.Request.Order.ContactPersonId == user.GetUserId();
                     }
                     return false;
                 case Request request:
@@ -121,7 +123,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return request.Order.CreatedBy == context.User.GetUserId();
+                        return request.Order.CreatedBy == user.GetUserId();
                     }
                     return false;
                 default:

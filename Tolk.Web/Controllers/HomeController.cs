@@ -64,6 +64,18 @@ namespace Tolk.Web.Controllers
                     Controller = "Requisition",
                     Action = "List"
                 };
+
+                int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
+                       r.Request.Order.Status == OrderStatus.Delivered &&
+                       r.Request.Order.ContactPersonId == User.GetUserId()).Count();
+                if (count > 0)
+                yield return new StartPageBox
+                {
+                    Count = count,
+                    Header = "Rekvisitioner att kontrollera som kontakt",
+                    Controller = "Requisition",
+                    Action = "List"
+                };
             }
             var brokerId = User.TryGetBrokerId();
             if (brokerId.HasValue)

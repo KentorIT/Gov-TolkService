@@ -130,7 +130,8 @@ namespace Tolk.Web.Controllers
             bool isCustomer = false;
             if (customerId.HasValue)
             {
-                requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId());
+                requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId() ||
+                    r.Request.Order.ContactPersonId == User.GetUserId());
                 isCustomer = true;
             }
             else if (brokerId.HasValue)
@@ -205,13 +206,13 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Approve(int id)
+        public async Task<IActionResult> Approve(int requisitionId)
         {
             if (ModelState.IsValid)
             {
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
-                    .Single(r => r.RequisitionId == id);
+                    .Single(r => r.RequisitionId == requisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
@@ -220,7 +221,7 @@ namespace Tolk.Web.Controllers
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id });
+            return RedirectToAction(nameof(View), new { id = requisitionId });
         }
 
         [ValidateAntiForgeryToken]
