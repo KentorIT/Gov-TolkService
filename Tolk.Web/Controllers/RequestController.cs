@@ -106,7 +106,6 @@ namespace Tolk.Web.Controllers
                     {
                         interpreterId = await _interpreterService.GetInterpreterId(
                             request.Ranking.BrokerId,
-                            request.Order.RegionId,
                             model.NewInterpreterEmail);
                     }
 

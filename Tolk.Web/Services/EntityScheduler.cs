@@ -15,12 +15,12 @@ namespace Tolk.Web.Services
     public class EntityScheduler
     {
         private IServiceProvider _services;
-        private ILogger _logger;
+        private ILogger<EntityScheduler> _logger;
 
-        public EntityScheduler(IServiceProvider services, ILoggerFactory loggerFactory)
+        public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger)
         {
             _services = services;
-            _logger = loggerFactory.CreateLogger<EntityScheduler>();
+            _logger = logger;
 
             _logger.LogDebug("Created EntityScheduler instance");
         }

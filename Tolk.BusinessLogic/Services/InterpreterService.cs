@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,8 @@ namespace Tolk.BusinessLogic.Services
 
         public InterpreterService(
             TolkDbContext dbContext,
-            UserManager<AspNetUser> userManager)
+            UserManager<AspNetUser> userManager,
+            ILogger<InterpreterService> logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -25,16 +27,25 @@ namespace Tolk.BusinessLogic.Services
 
         // GetInterpreterId might be a bit missleading - this method kicks of the entire
         // interpreter registration if needed.
-        public async Task<int> GetInterpreterId(int brokerId, int regionId, string newInterpreterEmail)
+        public async Task<int> GetInterpreterId(int brokerId, string newInterpreterEmail)
         {
             var user = await GetOrCreateUser(newInterpreterEmail);
             await LoadOrCreateInterpreter(user);
 
-            // Guard for if user assigned as new interpreter, despite it being an existing.
-
-            // TODO: Ensur interpreter is connected to broker.
+            ConnectInterpereterToBroker(user.Interpreter, brokerId);
 
             return user.InterpreterId.Value;
+        }
+
+        private void ConnectInterpereterToBroker(Interpreter interpreter, int brokerId)
+        {
+            if(!interpreter.Brokers.Any(ib => ib.BrokerId == brokerId))
+            {
+                interpreter.Brokers.Add(new InterpreterBroker
+                {
+                    BrokerId = brokerId
+                });
+            }
         }
 
         private async Task LoadOrCreateInterpreter(AspNetUser user)

@@ -17,5 +17,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
+
+        public bool AcceptedByInterpreter { get; set; } = false;
     }
 }

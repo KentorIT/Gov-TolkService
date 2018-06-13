@@ -26,13 +26,13 @@ namespace Tolk.BusinessLogic.Services
             ISwedishClock clock,
             RankingService rankingService,
             DateCalculationService dateCalculationService,
-            ILoggerFactory loggerFactory)
+            ILogger<OrderService> logger)
         {
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _rankingService = rankingService;
             _dateCalculationService = dateCalculationService;
-            _logger = loggerFactory.CreateLogger<OrderService>();
+            _logger = logger;
         }
         
         public void HandleExpiredRequests()
