@@ -12,8 +12,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
 
@@ -25,27 +27,27 @@ namespace Tolk.Web.Controllers
         private readonly UserManager<AspNetUser> _userManager;
         private readonly SignInManager<AspNetUser> _signInManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
         private readonly IUserClaimsPrincipalFactory<AspNetUser> _claimsFactory;
+        private readonly UserService _userService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
             SignInManager<AspNetUser> signInManager,
             RoleManager<IdentityRole<int>> roleManager,
-            IEmailSender emailSender,
             ILogger<AccountController> logger,
             TolkDbContext dbContext,
-            IUserClaimsPrincipalFactory<AspNetUser> claimsFactory)
+            IUserClaimsPrincipalFactory<AspNetUser> claimsFactory,
+            UserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
-            _emailSender = emailSender;
             _logger = logger;
             _dbContext = dbContext;
             _claimsFactory = claimsFactory;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -67,9 +69,7 @@ namespace Tolk.Web.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
@@ -132,8 +132,8 @@ namespace Tolk.Web.Controllers
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id.ToString(), code, Request.Scheme);
-                await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
+                //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
@@ -223,7 +223,7 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        var user = new AspNetUser { UserName = model.Email, Email = model.Email };
+                        var user = new AspNetUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
                         var result = await _userManager.CreateAsync(user, model.Password);
                         if (result.Succeeded)
                         {
@@ -237,7 +237,7 @@ namespace Tolk.Web.Controllers
                                 new IdentityRole<int>(Roles.Impersonator),
                             };
 
-                            foreach(var role in roles)
+                            foreach (var role in roles)
                             {
                                 result = await _roleManager.CreateAsync(role);
                                 if (!result.Succeeded)
@@ -247,10 +247,10 @@ namespace Tolk.Web.Controllers
                                 _logger.LogInformation("Created role {0}.", role.Name);
                             }
 
-                            if(result.Succeeded)
+                            if (result.Succeeded)
                             {
                                 result = await _userManager.AddToRolesAsync(user, new[] { Roles.Admin, Roles.Impersonator });
-                                if(result.Succeeded)
+                                if (result.Succeeded)
                                 {
                                     _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
                                     transaction.Commit();
@@ -273,8 +273,8 @@ namespace Tolk.Web.Controllers
             var user = await _userManager.FindByIdAsync(model.UserId);
 
             var newPrincipal = await _claimsFactory.CreateAsync(user);
-            
-            if(model.UserId != User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
+
+            if (model.UserId != User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
             {
                 if (newPrincipal.IsInRole(Roles.Admin))
                 {
@@ -289,6 +289,61 @@ namespace Tolk.Web.Controllers
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmAccount(string userId, string code)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
+                return View("Error", new ErrorViewModel { ErrorMessage = "Användar-ID eller kod saknas." });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ApplicationException($"Can't find user {userId}");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Confirmed e-mail for user {userId} ({email})", userId, user.Email);
+                // Resetting the security stamp invalidates the code so operation cannot be redone.
+                await _userManager.UpdateSecurityStampAsync(user);
+                await _signInManager.SignInAsync(user, true);
+                return View();
+            }
+
+            var model = new ConfirmAccountModel { UserId = userId };
+
+            return View("ConfirmAccountFailed", model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmAccount(ConfirmAccountModel model)
+        {
+            if (!string.IsNullOrEmpty(model.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(model.UserId);
+
+                if (user != null)
+                {
+                    _logger.LogInformation("Sent account confirmation link to {userId} ({email})", model.UserId, user.Email);
+                    await _userService.SendInvite(user);
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    _logger.LogWarning("An account confirmation link was requested for non-existing user id {userId}", model.UserId);
+                }
+            }
+            return View("ConfirmAccountLinkSent");
         }
 
         #region Helpers

@@ -1,0 +1,23 @@
+﻿@model ConfirmAccountModel
+@{
+    ViewData["Title"] = "Kontoverifiering misslyckades";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>@ViewData["Title"]</h2>
+
+        <p>Verifieringen av ditt konto misslyckades. Det kan bero på att
+        din verifieringskod gått ut. Du kan i så fall skicka en ny, som
+        är giltig i 24 timmar.</p>
+
+        <form asp-action="ConfirmAccount" method="post">
+            <input type="hidden" asp-for="UserId" />
+            <button class="btn btn-success" type="submit">Begär verifieringskod</button>
+        </form>
+    </div>
+</div>
+
+
+
+

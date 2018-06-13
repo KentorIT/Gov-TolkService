@@ -45,12 +45,12 @@ namespace Tolk.Web
             services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
 
-            services.AddIdentity<AspNetUser, IdentityRole<int>>()
+            services.AddIdentity<AspNetUser, IdentityRole<int>>(opt =>
+            {
+                opt.SignIn.RequireConfirmedEmail = true;
+            })
                 .AddEntityFrameworkStores<TolkDbContext>()
                 .AddDefaultTokenProviders();
-
-            // Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();

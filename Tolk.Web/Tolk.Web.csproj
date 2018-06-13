@@ -44,6 +44,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Account\ConfirmAccount.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Account\ConfirmAccountLinkSent.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Requisition\List.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

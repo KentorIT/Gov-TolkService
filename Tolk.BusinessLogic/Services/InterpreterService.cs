@@ -20,19 +20,22 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<InterpreterService> _logger;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
+        private readonly UserService _userService;
 
         public InterpreterService(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             ILogger<InterpreterService> logger,
             IOptions<TolkOptions> options,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            UserService userService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _logger = logger;
             _options = options.Value;
             _clock = clock;
+            _userService = userService;
         }
 
         // GetInterpreterId might be a bit missleading - this method kicks of the entire
@@ -100,35 +103,11 @@ namespace Tolk.BusinessLogic.Services
                     throw new InvalidOperationException($"User creation for {newInterpreterEmail} failed.");
                 }
 
-                await SendInvite(user);
+                await _userService.SendInviteToInterpreter(user);
             }
 
             return user;
         }
 
-        public async Task SendInvite(AspNetUser user)
-        {
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-            var activationLink = $"{_options.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={Uri.EscapeDataString(token)}";
-
-            var body =
-$@"Hej!
-
-Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedling.
-
-För att aktivera ditt konto och se uppdrag från förmedlingen, vänligen klicka på
-nedanstående länk eller klistra in den i din webbläsare.
-
-{activationLink}
-
-Vid frågor, vänligen kontakta {_options.SupportEmail}";
-
-            _dbContext.Add(new OutboundEmail(
-                user.Email,
-                $"Du har blivit inbjuden som tolk till {Constants.SystemName}",
-                body,
-                _clock.SwedenNow));
-        }
     }
 }
