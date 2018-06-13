@@ -79,7 +79,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
               .Single(o => o.RequisitionId == id);
-            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
             {
                 var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
                 var request = requisition.Request;
@@ -213,7 +213,7 @@ namespace Tolk.Web.Controllers
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Single(r => r.RequisitionId == requisitionId);
-                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
@@ -233,7 +233,7 @@ namespace Tolk.Web.Controllers
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Single(r => r.RequisitionId == model.ParentId);
-                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Approve)).Succeeded)
+                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
                     _dbContext.SaveChanges();
