@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -298,7 +299,11 @@ namespace Tolk.Web.Controllers
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
                 _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
-                return View("Error", new ErrorViewModel { ErrorMessage = "Användar-ID eller kod saknas." });
+                return View("Error", new ErrorViewModel
+                {   
+                    ErrorMessage = "Användar-ID eller kod saknas.",
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+                });
             }
 
             var user = await _userManager.FindByIdAsync(userId);
