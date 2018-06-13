@@ -16,6 +16,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddSingleton<ISwedishClock, TimeTravelClock>();
             services.AddTransient<InterpreterService>();
             services.AddTransient<UserService>();
+            services.AddTransient<EmailService>();
         }
     }
 }

@@ -127,7 +127,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Add(OrderModel model)
+        public async Task<IActionResult> Add(OrderModel model)
         {
             if (ModelState.IsValid)
             {
@@ -147,7 +147,7 @@ namespace Tolk.Web.Controllers
                 model.UpdateOrder(order);
                 _dbContext.Add(order);
 
-                _orderService.CreateRequest(order);
+                await _orderService.CreateRequest(order);
 
                 _dbContext.SaveChanges();
 
@@ -201,9 +201,9 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
-            var order = _dbContext.Orders.Include(o => o.Requests)
+            var order = await _dbContext.Orders.Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking)
-                .Single(o => o.OrderId == model.OrderId);
+                .SingleAsync(o => o.OrderId == model.OrderId);
 
             if((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
@@ -211,9 +211,9 @@ namespace Tolk.Web.Controllers
 
                 request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
 
-                _orderService.CreateRequest(order);
+                await _orderService.CreateRequest(order);
 
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
 

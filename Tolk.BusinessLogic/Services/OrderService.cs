@@ -10,6 +10,7 @@ using Tolk.BusinessLogic.Helpers;
 using System.Data;
 using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Enums;
+using System.Threading.Tasks;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -35,12 +36,12 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
         }
         
-        public void HandleExpiredRequests()
+        public async Task HandleExpiredRequests()
         {
-            var expiredRequestIds = _tolkDbContext.Requests
+            var expiredRequestIds = await _tolkDbContext.Requests
                 .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter ))
                 .Select(r => r.RequestId)
-                .ToList();
+                .ToListAsync();
 
             _logger.LogDebug("Found {count} expired requests to process: {requestIds}",
                 expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
@@ -51,12 +52,12 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
-                        var expiredRequest = _tolkDbContext.Requests
+                        var expiredRequest = await _tolkDbContext.Requests
                             .Include(r => r.Ranking)
                             .Include(r => r.Order)
                             .ThenInclude(o => o.Requests)
                             .ThenInclude(r => r.Ranking)
-                            .SingleOrDefault(
+                            .SingleOrDefaultAsync(
                             r => r.ExpiresAt <= _clock.SwedenNow
                             && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter)
                             && r.RequestId == requestId);
@@ -73,7 +74,7 @@ namespace Tolk.BusinessLogic.Services
 
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
-                            CreateRequest(expiredRequest.Order);
+                            await CreateRequest(expiredRequest.Order);
 
                             trn.Commit();
                         }
@@ -86,7 +87,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void CreateRequest(Order order)
+        public async Task CreateRequest(Order order)
         {
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
             var newExpiry = CalculateExpiryForNewRequest(order.StartAt);
@@ -94,7 +95,7 @@ namespace Tolk.BusinessLogic.Services
             var request = order.CreateRequest(rankings, newExpiry);
 
             // Save to get ids for the log message.
-            _tolkDbContext.SaveChanges();
+            await _tolkDbContext.SaveChangesAsync();
 
             if (request != null)
             {

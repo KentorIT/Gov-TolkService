@@ -160,7 +160,7 @@ namespace Tolk.Web.Controllers
                 request.AnsweredBy = User.GetUserId();
                 request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
                 request.DenyMessage = model.DenyMessage;
-                _orderService.CreateRequest(request.Order);
+                await _orderService.CreateRequest(request.Order);
 
                 _dbContext.SaveChanges();
                 return RedirectToAction(nameof(List));
