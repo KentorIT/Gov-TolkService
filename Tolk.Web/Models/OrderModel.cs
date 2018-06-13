@@ -27,7 +27,7 @@ namespace Tolk.Web.Models
         public int? ContactPersonId { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Beskrivning")]
+        [Display(Name = "Beskrivning", Description = "Extra information om uppdraget i det fall det behövs")]
         public string Description { get; set; }
 
         [Display(Name = "Enhet/avdelning")]

@@ -219,6 +219,10 @@ namespace Tolk.Web.TagHelpers
                 rows: 5,
                 columns: 80,
                 htmlAttributes: new { @class = "form-control" });
+            if (!string.IsNullOrEmpty(For.Metadata.Description))
+            {
+                tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
+            }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
