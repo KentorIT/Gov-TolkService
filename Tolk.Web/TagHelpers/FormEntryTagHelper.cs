@@ -392,13 +392,14 @@ namespace Tolk.Web.TagHelpers
                 allowMultiple: allowMultiple,
                 htmlAttributes: new { @class = "form-control" });
 
+            tagBuilder.Attributes.Add("data-placeholder", "--- Välj ---");
             if (currentValues == null)
             {
                 var existingOptionsBuilder = new HtmlContentBuilder();
                 tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
 
                 tagBuilder.InnerHtml.Clear();
-                tagBuilder.InnerHtml.AppendHtml("<option disabled selected value style=\"display:none\"> --- Välj --- </option>");
+                tagBuilder.InnerHtml.AppendHtml("<option value></option>");
                 tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
             }
 
