@@ -22,7 +22,7 @@ namespace Tolk.Web.Models
 
         public string NewInterpreterEmail { get; set; }
 
-        public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
+        public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
 
         public decimal? ExpectedTravelCosts { get; set; }
 

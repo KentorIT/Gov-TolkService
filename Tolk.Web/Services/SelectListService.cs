@@ -146,7 +146,7 @@ namespace Tolk.Web.Services
 
         public const int NewInterpreterId = -1;
 
-        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
+        public IEnumerable<SelectListItem> GetInterpreters(int brokerId)
         {
             yield return new SelectListItem
             {
@@ -154,9 +154,8 @@ namespace Tolk.Web.Services
                 Text = "Ny tolk"
             };
 
-            var interpretersInDb = _dbContext.Interpreters.Where(i => 
-                i.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId 
-                && br.BrokerRegion.RegionId == regionId))
+            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId)) 
+
             .Select(i => new SelectListItem
             {
                 Value = i.InterpreterId.ToString(),

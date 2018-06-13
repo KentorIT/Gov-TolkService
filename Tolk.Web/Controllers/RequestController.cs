@@ -68,7 +68,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Ranking)
+                .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion)
                 .Single(o => o.RequestId == id);
 
             if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -101,11 +101,12 @@ namespace Tolk.Web.Controllers
 
                 if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    int interpreterd = model.InterpreterId;
-                    if(InterpreterId == SelectListService.NewInterpreterId)
+                    int interpreterId = model.InterpreterId;
+                    if(interpreterId == SelectListService.NewInterpreterId)
                     {
-                        int interpreterId = _interpreterService.GetInterpreterId(
+                        interpreterId = await _interpreterService.GetInterpreterId(
                             request.Ranking.BrokerId,
+                            request.Order.RegionId,
                             model.NewInterpreterEmail);
                     }
 

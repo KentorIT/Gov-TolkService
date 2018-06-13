@@ -49,7 +49,7 @@ namespace Tolk.BusinessLogic.Services
             else
             {
                 await _dbContext.Interpreters
-                    .Include(i => i.BrokerRegions)
+                    .Include(i => i.Brokers)
                     .SingleOrDefaultAsync(i => i.InterpreterId == user.InterpreterId);
             }
         }

@@ -38,7 +38,8 @@
             <form method="post" asp-action="Accept">
                 <input asp-for="RequestId" type="hidden" />
                 <display-entry asp-for="ExpiresAt" />
-                <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, Model.OrderModel.RegionId)" />
+                <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
+                <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter"/>
                 @if (Model.InterpreterLocation.HasValue)
                 {
                     <input asp-for="InterpreterLocation" type="hidden" />
@@ -55,7 +56,6 @@
                             </li>
                         }
                     </ul>
-            <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter"/>
                     <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
                 }
                 <form-entry asp-for="ExpectedTravelCosts" />

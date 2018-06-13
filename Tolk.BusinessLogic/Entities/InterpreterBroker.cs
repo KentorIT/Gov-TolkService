@@ -6,14 +6,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class InterpreterBrokerRegion
+    public class InterpreterBroker
     {
         public int BrokerId { get; set; }
 
-        public int RegionId { get; set; }
-
-        [ForeignKey(nameof(BrokerId) + ", " + nameof(RegionId))]
-        public BrokerRegion BrokerRegion { get; set; }
+        [ForeignKey(nameof(BrokerId))]
+        public Broker Broker { get; set; }
 
         public int InterpreterId { get; set; }
 

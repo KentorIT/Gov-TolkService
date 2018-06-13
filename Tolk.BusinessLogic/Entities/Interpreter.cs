@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Entities
     {
         public int InterpreterId { get; set; }
 
-        public List<InterpreterBrokerRegion> BrokerRegions { get; set; }
+        public List<InterpreterBroker> Brokers { get; set; }
 
         public AspNetUser User { get; set; }
     }
