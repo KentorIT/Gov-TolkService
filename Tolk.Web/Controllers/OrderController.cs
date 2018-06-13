@@ -185,7 +185,7 @@ namespace Tolk.Web.Controllers
         {
             var order = _dbContext.Orders.Include(o => o.Requests).Single(o => o.OrderId == model.OrderId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Approve)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 
@@ -205,7 +205,7 @@ namespace Tolk.Web.Controllers
                 .ThenInclude(r => r.Ranking)
                 .Single(o => o.OrderId == model.OrderId);
 
-            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Approve)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 

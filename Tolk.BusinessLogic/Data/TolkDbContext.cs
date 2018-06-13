@@ -46,8 +46,8 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<BrokerRegion>()
                 .HasKey(br => new { br.BrokerId, br.RegionId });
 
-            builder.Entity<InterpreterBrokerRegion>()
-                .HasKey(ibr => new { ibr.BrokerId, ibr.RegionId, ibr.InterpreterId });
+            builder.Entity<InterpreterBroker>()
+                .HasKey(ib => new { ib.BrokerId, ib.InterpreterId });
 
             builder.Entity<OrderRequirementRequestAnswer>()
                 .HasKey(ra => new { ra.RequestId, ra.OrderRequirementId });

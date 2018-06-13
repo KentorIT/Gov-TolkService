@@ -24,17 +24,20 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly InterpreterService _interpreterService;
 
         public RequestController(
             TolkDbContext dbContext,
             ISwedishClock clock, 
             OrderService orderService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            InterpreterService interpreterService)
         {
             _dbContext = dbContext;
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
+            _interpreterService = interpreterService;
         }
 
         public IActionResult List()
@@ -65,10 +68,10 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Ranking)
+                .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion)
                 .Single(o => o.RequestId == id);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 if (request.Status == RequestStatus.Created)
                 {
@@ -96,35 +99,31 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    request.Status = RequestStatus.Accepted;
-                    request.AnswerDate = _clock.SwedenNow;
-                    request.AnsweredBy = User.GetUserId();
-                    request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
-
-                    request.InterpreterId = model.InterpreterId;
-                    request.ExpectedTravelCosts = model.ExpectedTravelCosts;
-                    request.InterpreterLocation = (int?)model.InterpreterLocation;
-                    request.CompetenceLevel = (int?)model.CompetenceLevel;
-                    if (model.RequirementAnswers != null)
+                    int interpreterId = model.InterpreterId;
+                    if(interpreterId == SelectListService.NewInterpreterId)
                     {
-                        // answer all extra requirements
-                        foreach (var answer in model.RequirementAnswers)
-                        {
-                            request.RequirementAnswers.Add(
-                                new OrderRequirementRequestAnswer
-                                {
-                                    RequestId = request.RequestId,
-                                    OrderRequirementId = answer.OrderRequirementId,
-                                    Answer = answer.Answer,
-                                    CanSatisfyRequirement = answer.CanMeetRequirement,
-                                });
-                        }
+                        interpreterId = await _interpreterService.GetInterpreterId(
+                            request.Ranking.BrokerId,
+                            model.NewInterpreterEmail);
                     }
 
-                    //TODO: This should differ depending on the incoming status.
-                    request.Order.Status = OrderStatus.RequestResponded;
+                    request.Accept(
+                        _clock.SwedenNow,
+                        User.GetUserId(),
+                        User.TryGetImpersonatorId(),
+                        interpreterId,
+                        model.ExpectedTravelCosts,
+                        model.InterpreterLocation,
+                        model.CompetenceLevel,
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            RequestId = request.RequestId,
+                            OrderRequirementId = ra.OrderRequirementId,
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement
+                        }));
 
                     _dbContext.SaveChanges();
 
@@ -144,7 +143,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Single(r => r.RequestId == model.RequestId);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Approve)).Succeeded)
+            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 //Get the order, and set Change the status on order and request?
                 //TODO: Validate that the has the correct state, is connected to the user

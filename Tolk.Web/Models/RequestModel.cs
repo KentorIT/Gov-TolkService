@@ -41,6 +41,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolk")]
         public int? InterpreterId { get; set; }
 
+        [Required]
+        [Display(Name ="Tolkens e-postadress")]
+        public string NewInterpreterEmail { get; set; }
+
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]

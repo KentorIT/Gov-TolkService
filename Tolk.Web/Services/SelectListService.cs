@@ -144,19 +144,34 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int regionId)
+        public const int NewInterpreterId = -1;
+
+        public IEnumerable<SelectListItem> GetInterpreters(int brokerId)
         {
-            return _dbContext.Interpreters.Where(i => i.BrokerRegions.Any(br => br.BrokerRegion.BrokerId == brokerId && br.BrokerRegion.RegionId == regionId))
+            yield return new SelectListItem
+            {
+                Value = NewInterpreterId.ToString(),
+                Text = "Ny tolk"
+            };
+
+            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId)) 
+
             .Select(i => new SelectListItem
             {
                 Value = i.InterpreterId.ToString(),
                 Text = i.User.UserName
             });
+
+            foreach(var i in interpretersInDb)
+            {
+                yield return i;
+            }
         }
+
         public IEnumerable<SelectListItem> GetCompetenceLevels(CompetenceAndSpecialistLevel minimumLevel)
         {
-            var filter = EnumHelper.GetBiggerOrEqual<CompetenceAndSpecialistLevel>(minimumLevel);
-            return EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>(filter)
+            var filter = EnumHelper.GetBiggerOrEqual(minimumLevel);
+            return EnumHelper.GetAllDescriptions(filter)
                             .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                             .ToList().AsReadOnly();
         }

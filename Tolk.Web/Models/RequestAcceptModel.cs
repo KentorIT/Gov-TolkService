@@ -16,23 +16,17 @@ namespace Tolk.Web.Models
         public int RequestId { get; set; }
 
         [Required]
-        [Display(Name = "Kompetensnivå")]
         public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
 
-        [Required]
-        [Display(Name = "Tolk")]
-        public int? InterpreterId { get; set; }
+        public int InterpreterId { get; set; }
 
-        public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
+        public string NewInterpreterEmail { get; set; }
 
-        [Display(Name = "Förväntad resekostnad (exkl. moms)")]
+        public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
+
         public decimal? ExpectedTravelCosts { get; set; }
 
         [Required]
-        [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
-
-        [Display(Name = "Svar senast")]
-        public DateTimeOffset? ExpiresAt { get; set; }
     }
 }
