@@ -18,7 +18,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
         private readonly ILogger<InterpreterService> _logger;
-        private readonly IOptions<TolkOptions> _options;
+        private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
 
         public InterpreterService(
@@ -31,7 +31,7 @@ namespace Tolk.BusinessLogic.Services
             _dbContext = dbContext;
             _userManager = userManager;
             _logger = logger;
-            _options = options;
+            _options = options.Value;
             _clock = clock;
         }
 
@@ -110,7 +110,7 @@ namespace Tolk.BusinessLogic.Services
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var activationLink = $"{_options.Value.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={token}";
+            var activationLink = $"{_options.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={Uri.EscapeDataString(token)}";
 
             var body =
 $@"Hej!
@@ -120,7 +120,9 @@ Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedlin
 För att aktivera ditt konto och se uppdrag från förmedlingen, vänligen klicka på
 nedanstående länk eller klistra in den i din webbläsare.
 
-{activationLink}";
+{activationLink}
+
+Vid frågor, vänligen kontakta {_options.SupportEmail}";
 
             _dbContext.Add(new OutboundEmail(
                 user.Email,

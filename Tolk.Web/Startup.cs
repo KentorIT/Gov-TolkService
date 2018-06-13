@@ -35,6 +35,7 @@ namespace Tolk.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TolkOptions>(Configuration);
+            services.PostConfigure<TolkOptions>(opt => opt.Validate());
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
