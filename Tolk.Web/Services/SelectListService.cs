@@ -154,7 +154,7 @@ namespace Tolk.Web.Services
                 Text = "Ny tolk"
             };
 
-            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId)) 
+            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId && b.AcceptedByInterpreter)) 
 
             .Select(i => new SelectListItem
             {

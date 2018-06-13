@@ -18,6 +18,7 @@ using Tolk.BusinessLogic.Services;
 using Microsoft.Extensions.Internal;
 using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web
 {
@@ -33,6 +34,8 @@ namespace Tolk.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<TolkOptions>(Configuration);
+
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
 

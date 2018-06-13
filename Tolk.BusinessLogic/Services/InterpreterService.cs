@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -15,14 +17,22 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly ILogger<InterpreterService> _logger;
+        private readonly IOptions<TolkOptions> _options;
+        private readonly ISwedishClock _clock;
 
         public InterpreterService(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
-            ILogger<InterpreterService> logger)
+            ILogger<InterpreterService> logger,
+            IOptions<TolkOptions> options,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _logger = logger;
+            _options = options;
+            _clock = clock;
         }
 
         // GetInterpreterId might be a bit missleading - this method kicks of the entire
@@ -32,12 +42,15 @@ namespace Tolk.BusinessLogic.Services
             var user = await GetOrCreateUser(newInterpreterEmail);
             await LoadOrCreateInterpreter(user);
 
-            ConnectInterpereterToBroker(user.Interpreter, brokerId);
+            ConnectInterpreterToBroker(user.Interpreter, brokerId);
+
+            // Save changes to get an id generated.
+            _dbContext.SaveChanges();
 
             return user.InterpreterId.Value;
         }
 
-        private void ConnectInterpereterToBroker(Interpreter interpreter, int brokerId)
+        private void ConnectInterpreterToBroker(Interpreter interpreter, int brokerId)
         {
             if(!interpreter.Brokers.Any(ib => ib.BrokerId == brokerId))
             {
@@ -72,6 +85,8 @@ namespace Tolk.BusinessLogic.Services
 
             if (user == null)
             {
+                _logger.LogInformation("Creating new interpreter user for {email}", newInterpreterEmail);
+
                 user = new AspNetUser
                 {
                     UserName = newInterpreterEmail,
@@ -84,9 +99,34 @@ namespace Tolk.BusinessLogic.Services
                 {
                     throw new InvalidOperationException($"User creation for {newInterpreterEmail} failed.");
                 }
+
+                await SendInvite(user);
             }
 
             return user;
+        }
+
+        public async Task SendInvite(AspNetUser user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var activationLink = $"{_options.Value.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={token}";
+
+            var body =
+$@"Hej!
+
+Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedling.
+
+För att aktivera ditt konto och se uppdrag från förmedlingen, vänligen klicka på
+nedanstående länk eller klistra in den i din webbläsare.
+
+{activationLink}";
+
+            _dbContext.Add(new OutboundEmail(
+                user.Email,
+                $"Du har blivit inbjuden som tolk till {Constants.SystemName}",
+                body,
+                _clock.SwedenNow));
         }
     }
 }
