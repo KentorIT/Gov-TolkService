@@ -313,7 +313,7 @@ supporten på {_options.SupportEmail}";
                     else
                     {
                         var user = new AspNetUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
-                        var result = await _userManager.CreateAsync(user, model.Password);
+                        var result = await _userManager.CreateAsync(user, model.NewPassword);
                         if (result.Succeeded)
                         {
                             _logger.LogInformation("Created initial user account {0}", user.UserName);
