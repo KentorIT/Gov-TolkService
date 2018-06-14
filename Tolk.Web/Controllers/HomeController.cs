@@ -77,7 +77,7 @@ namespace Tolk.Web.Controllers
                 result = result.Union(GetBrokerStartPageBoxes());
             }
 
-            if ((await _authorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
             {
                 result = result.Union(GetInterpreterStartPageBoxes());
             }
@@ -164,33 +164,38 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<StartViewModel.StartPageBox> GetInterpreterStartPageBoxes()
         {
-            yield return new StartViewModel.StartPageBox
-            {
-                Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == User.GetUserId()).Count(),
-                Header = "Tillsatt tolk",
-                Controller = "Order",
-                Action = "List"
-            };
+            var interpreterId = User.GetInterpreterId();
 
             yield return new StartViewModel.StartPageBox
             {
-                Count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
-                    r.Request.Order.Status == OrderStatus.Delivered &&
-                    r.Request.Order.CreatedBy == User.GetUserId()).Count(),
-                Header = "Rekvisitioner att kontrollera",
-                Controller = "Requisition",
+                //TODO: Here we need to check the order too!
+                Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
+                    r.Order.StartAt > _clock.SwedenNow &&
+                    r.InterpreterId == interpreterId).Count(),
+                Header = "Kommande uppdrag",
+                Controller = "Assignment",
                 Action = "List"
             };
-
-            int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
-            r.Request.Order.Status == OrderStatus.Delivered &&
-            r.Request.Order.ContactPersonId == User.GetUserId()).Count();
+            yield return new StartViewModel.StartPageBox
+            {
+                Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
+                    r.Order.StartAt < _clock.SwedenNow &&
+                    !!r.Requisitions.Any() &&
+                    r.InterpreterId == interpreterId).Count(),
+                Header = "Att avrapportera",
+                Controller = "Assignment",
+                Action = "List"
+            };
+            int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue &&
+                r.Status == RequisitionStatus.DeniedByCustomer &&
+                   !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
+                  r.Request.InterpreterId == interpreterId).Count();
             if (count > 0)
             {
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Rekvisitioner att kontrollera som kontakt",
+                    Header = "Nekade rekvisitioner",
                     Controller = "Requisition",
                     Action = "List"
                 };
