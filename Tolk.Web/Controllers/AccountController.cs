@@ -209,13 +209,7 @@ supporten på {_options.SupportEmail}";
                     return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
 
-                // For more information on how to enable account confirmation and password reset please
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
-                //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                return await SendPasswordResetLink(user);
             }
 
             // If we got this far, something failed, redisplay form
