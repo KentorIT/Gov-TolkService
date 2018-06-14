@@ -117,7 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ValueRequired" xml:space="preserve">
+  <data name="Compare" xml:space="preserve">
+    <value>{0} är inte samma som {1}.</value>
+  </data>
+  <data name="Required" xml:space="preserve">
     <value>{0} måste anges.</value>
+  </data>
+  <data name="StringLength" xml:space="preserve">
+    <value>{0} måste vara minst {2} och max {1} tecken långt.</value>
   </data>
 </root>

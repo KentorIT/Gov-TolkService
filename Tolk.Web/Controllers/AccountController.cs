@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
@@ -32,6 +34,8 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly IUserClaimsPrincipalFactory<AspNetUser> _claimsFactory;
         private readonly UserService _userService;
+        private readonly TolkOptions _options;
+        private readonly ISwedishClock _clock;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -40,7 +44,9 @@ namespace Tolk.Web.Controllers
             ILogger<AccountController> logger,
             TolkDbContext dbContext,
             IUserClaimsPrincipalFactory<AspNetUser> claimsFactory,
-            UserService userService)
+            UserService userService,
+            IOptions<TolkOptions> options,
+            ISwedishClock clock)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -49,6 +55,80 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _claimsFactory = claimsFactory;
             _userService = userService;
+            _options = options.Value;
+            _clock = clock;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var model = new ManageModel
+            {
+                HasPassword = await _userManager.HasPasswordAsync(user)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(ManageModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+
+            if (hasPassword)
+            {
+                // Check here for modelstate, if no password - there are no password entries.
+                if (ModelState.IsValid)
+                {
+                    var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction(nameof(ResetPasswordConfirmation));
+                    }
+                    AddErrors(result);
+                }
+                return View();
+            }
+
+            return await SendPasswordResetLink(user);
+        }
+
+        // Common logic for setting of password and forgot password flows.
+        private async Task<IActionResult> SendPasswordResetLink(AspNetUser user)
+        {
+            if (!(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // Here we'll just throw. Calling action might check this as well and do better error handling.
+                throw new InvalidOperationException($"Cannot send password reset to user {user.Id}/{user.Email} because email is not confirmed.");
+            }
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
+
+            var body =
+$@"Hej!
+
+För att återställa ditt lösenord i {Constants.SystemName}, använd följande länk.
+
+{resetLink}
+
+Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}";
+
+            _dbContext.Add(new OutboundEmail(
+                user.Email,
+                $"Återställning lösenord {Constants.SystemName}",
+                body,
+                _clock.SwedenNow));
+
+            _dbContext.SaveChanges();
+
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
         }
 
         [HttpGet]
@@ -70,15 +150,15 @@ namespace Tolk.Web.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
+                    _logger.LogInformation("User {userName} logged in.", model.Email);
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning("User account {userName} locked out.", model.Email);
                     return RedirectToAction(nameof(Lockout));
                 }
                 else
@@ -132,7 +212,7 @@ namespace Tolk.Web.Controllers
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id.ToString(), code, Request.Scheme);
+                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
                 //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
                 //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
@@ -151,12 +231,18 @@ namespace Tolk.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
+        public IActionResult ResetPassword(string userId, string code)
         {
-            if (code == null)
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
-                throw new ApplicationException("A code must be supplied for password reset.");
+                _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
+                return View("Error", new ErrorViewModel
+                {
+                    ErrorMessage = "Användar-ID eller kod saknas.",
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+                });
             }
+
             var model = new ResetPasswordViewModel { Code = code };
             return View(model);
         }
@@ -170,18 +256,26 @@ namespace Tolk.Web.Controllers
             {
                 return View(model);
             }
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
+                // Lie a bit to not reveal difference between incorrect user id and
+                // incorrect /missing token, to avoid a user enumeration issue.
+                ModelState.AddModelError(string.Empty, "Invalid token.");
             }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
+            else
             {
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
+                var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
+                if (result.Succeeded)
+                {
+                    if(!User.Identity.IsAuthenticated)
+                    {
+                        await _signInManager.SignInAsync(user, true);
+                    }
+                    return RedirectToAction(nameof(ResetPasswordConfirmation));
+                }
+                AddErrors(result);
             }
-            AddErrors(result);
             return View();
         }
 
@@ -300,7 +394,7 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
                 return View("Error", new ErrorViewModel
-                {   
+                {
                     ErrorMessage = "Användar-ID eller kod saknas.",
                     RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
                 });

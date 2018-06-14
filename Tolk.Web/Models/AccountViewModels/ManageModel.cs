@@ -6,15 +6,13 @@ using System.Threading.Tasks;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class LoginViewModel
+    public class ManageModel : NewPasswordModelBase
     {
         [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Lösenord")]
-        public string Password { get; set; }
+        [Display(Name = "Befintligt lösenord")]
+        public string CurrentPassword { get; set; }
+
+        public bool HasPassword { get; set; }
     }
 }

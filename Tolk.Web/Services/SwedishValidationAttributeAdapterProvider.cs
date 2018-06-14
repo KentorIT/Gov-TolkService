@@ -19,6 +19,10 @@ namespace Tolk.Web.Services
             {
                 case RequiredAttribute requiredAttribute:
                     return new LocalizedRequiredAttributeAdapter(requiredAttribute, stringLocalizer);
+                case StringLengthAttribute stringLengthAttribute:
+                    return new LocalizedStringLengthAttributeAdapter(stringLengthAttribute, stringLocalizer);
+                case CompareAttribute compareAttribute:
+                    return new LocalizedCompareAttributeAdapter(compareAttribute, stringLocalizer);
                 default:
                     return null;
             }
@@ -36,8 +40,32 @@ namespace Tolk.Web.Services
                     && attribute.ErrorMessageResourceType == null)
                 {
                     attribute.ErrorMessageResourceType = typeof(DataAnnotationValidationMessages);
-                    attribute.ErrorMessageResourceName = nameof(DataAnnotationValidationMessages.ValueRequired);
+                    attribute.ErrorMessageResourceName = nameof(DataAnnotationValidationMessages.Required);
                 }
+            }
+        }
+
+        private class LocalizedStringLengthAttributeAdapter : StringLengthAttributeAdapter
+        {
+            public LocalizedStringLengthAttributeAdapter(
+                StringLengthAttribute attribute,
+                IStringLocalizer stringLocalizer)
+                : base(attribute, stringLocalizer)
+            {
+                attribute.ErrorMessageResourceType = typeof(DataAnnotationValidationMessages);
+                attribute.ErrorMessageResourceName = nameof(DataAnnotationValidationMessages.StringLength);
+            }
+        }
+
+        private class LocalizedCompareAttributeAdapter: CompareAttributeAdapter
+        {
+            public LocalizedCompareAttributeAdapter(
+                CompareAttribute attribute,
+                IStringLocalizer stringLocalizer)
+                : base(attribute, stringLocalizer)
+            {
+                attribute.ErrorMessageResourceType = typeof(DataAnnotationValidationMessages);
+                attribute.ErrorMessageResourceName = nameof(DataAnnotationValidationMessages.Compare);
             }
         }
     }

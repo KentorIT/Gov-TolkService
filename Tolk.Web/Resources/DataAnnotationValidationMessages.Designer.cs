@@ -61,11 +61,29 @@ namespace Tolk.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} är inte samma som {1}..
+        /// </summary>
+        public static string Compare {
+            get {
+                return ResourceManager.GetString("Compare", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} måste anges..
         /// </summary>
-        public static string ValueRequired {
+        public static string Required {
             get {
-                return ResourceManager.GetString("ValueRequired", resourceCulture);
+                return ResourceManager.GetString("Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} måste vara minst {2} och max {1} tecken långt..
+        /// </summary>
+        public static string StringLength {
+            get {
+                return ResourceManager.GetString("StringLength", resourceCulture);
             }
         }
     }

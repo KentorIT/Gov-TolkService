@@ -11,19 +11,9 @@
     <div class="col-md-4">
         <section>
             <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
-                <h4>Använd ett lokalt konto för att logga in.</h4>
-                <hr />
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <form-entry asp-for="Email" />
                 <form-entry asp-for="Password" />
-                <div class="form-group">
-                    <div class="checkbox">
-                        <label asp-for="RememberMe">
-                            <input asp-for="RememberMe" />
-                            @Html.DisplayNameFor(m => m.RememberMe)
-                        </label>
-                    </div>
-                </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-default">Logga in</button>
                 </div>
