@@ -1,4 +1,5 @@
-﻿@model ErrorViewModel
+﻿@using Tolk.Web.Helpers
+@model ErrorViewModel
 @{
     ViewData["Title"] = "Fel";
 }
@@ -13,10 +14,13 @@
 @if (Model.ShowRequestId)
 {
     <p>
-        SpårningsID kan hjälpa support-personal att lokalisera felet.
+        SpårningsID och version kan hjälpa support-personal att lokalisera felet.
     </p>
     <p>
         <strong>SpårningsID:</strong> <code>@Model.RequestId</code>
+    </p>
+    <p>
+        <strong>Version:</strong> <code>@GitHelper.Version</code>
     </p>
 }
 

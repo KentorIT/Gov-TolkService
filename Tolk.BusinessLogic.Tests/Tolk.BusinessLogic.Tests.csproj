@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <IsPackable>false</IsPackable>
+    <TargetFramework>x64</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

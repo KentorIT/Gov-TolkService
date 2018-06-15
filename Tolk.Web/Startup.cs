@@ -85,7 +85,7 @@ namespace Tolk.Web
             IHostingEnvironment env,
             TolkDbContext dbContext)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() && false)
             {
                 app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();

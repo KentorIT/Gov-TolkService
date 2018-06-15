@@ -1,6 +1,7 @@
 ﻿@using Tolk.Web.Authorization
 @using Microsoft.AspNetCore.Authorization
 @using Tolk.BusinessLogic.Services
+@using Tolk.Web.Helpers
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 
@@ -99,6 +100,7 @@
                 <div class="row">
                     <div class="col-lg-10">
                         &copy; 2018 - Kammarkollegiet
+                        <small>(Version @GitHelper.Version)</small>
                     </div>
                     <div class="col-lg-2">
                         <a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a>
