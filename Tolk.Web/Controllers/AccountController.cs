@@ -229,12 +229,7 @@ supporten på {_options.SupportEmail}";
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
-                _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
-                return View("Error", new ErrorViewModel
-                {
-                    ErrorMessage = "Användar-ID eller kod saknas.",
-                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-                });
+                throw new ApplicationException($"Account confirmation failed for {userId} with code {code}");
             }
 
             var model = new ResetPasswordViewModel { Code = code };
@@ -386,12 +381,7 @@ supporten på {_options.SupportEmail}";
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
-                _logger.LogInformation("Account confirmation failed for {userId} with code {code}", userId, code);
-                return View("Error", new ErrorViewModel
-                {
-                    ErrorMessage = "Användar-ID eller kod saknas.",
-                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-                });
+                throw new ApplicationException($"Account confirmation failed for {userId} with code {code}");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
