@@ -19,6 +19,7 @@ namespace Tolk.Web.Models
             public int Count { get; set; }
             public string Controller { get; set; }
             public string Action { get; set; }
+            public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
         }
 
         public class ConfirmationMessage

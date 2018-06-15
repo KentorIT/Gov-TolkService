@@ -50,6 +50,9 @@
     <Content Update="Views\Account\ConfirmAccountLinkSent.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Order\_Filter.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Requisition\List.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

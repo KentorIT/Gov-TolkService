@@ -43,20 +43,32 @@ namespace Tolk.Web.Controllers
             _clock = clock;
         }
 
-        public IActionResult List()
+        public IActionResult List(OrderFilterModel model)
         {
-            return View(_dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
-                .Where(r => r.CreatedBy == User.GetUserId())
-                .Select(o => new OrderListItemModel
+            var orders = _dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
+                .Where(r => r.CreatedBy == User.GetUserId());
+
+            if (model.Status.HasValue)
+            {
+                orders = orders.Where(r => r.Status == model.Status);
+            }
+
+            return View(
+                new OrderListModel
                 {
-                    OrderId = o.OrderId,
-                    Language = o.Language.Name,
-                    OrderNumber = o.OrderNumber.ToString(),
-                    RegionName = o.Region.Name,
-                    Start = o.StartAt,
-                    End = o.EndAt,
-                    Status = o.Status
-                }));
+                    OrderFilterModel = model,
+
+                    Items = orders.Select(o => new OrderListItemModel
+                    {
+                        OrderId = o.OrderId,
+                        Language = o.Language.Name,
+                        OrderNumber = o.OrderNumber.ToString(),
+                        RegionName = o.Region.Name,
+                        Start = o.StartAt,
+                        End = o.EndAt,
+                        Status = o.Status
+                    })
+                });
         }
 
         public async Task<IActionResult> View(int id)
@@ -205,7 +217,7 @@ namespace Tolk.Web.Controllers
                 .ThenInclude(r => r.Ranking)
                 .SingleAsync(o => o.OrderId == model.OrderId);
 
-            if((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 

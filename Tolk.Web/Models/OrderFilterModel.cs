@@ -10,20 +10,11 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class OrderListItemModel
+    public class OrderFilterModel
     {
-        public int OrderId { get; set; }
-
-        public OrderStatus Status { get; set; }
-
+        public DateTimeOffset? CreatedFrom { get; set; }
+        public DateTimeOffset? CreatedTo { get; set; }
         public string OrderNumber { get; set; }
-
-        public string RegionName { get; set; }
-
-        public string Language { get; set; }
-
-        public DateTimeOffset Start { get; set; }
-
-        public DateTimeOffset End { get; set; }
+        public OrderStatus? Status { get; set; }
     }
 }

@@ -21,7 +21,7 @@
         <div class="row">
             @foreach (var box in Model.Boxes)
             {
-                <a asp-action="@box.Action" asp-controller="@box.Controller">
+                <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="box.Filters">
                     <div class="col-md-3">
                         <div class="panel panel-info center-block">
                             <div class="panel-heading">

@@ -92,7 +92,8 @@ namespace Tolk.Web.Controllers
                 Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == User.GetUserId()).Count(),
                 Header = "Tillsatt tolk",
                 Controller = "Order",
-                Action = "List"
+                Action = "List",
+                Filters = new Dictionary<string, string> { { "Status", "RequestResponded" } }
             };
 
             yield return new StartViewModel.StartPageBox
