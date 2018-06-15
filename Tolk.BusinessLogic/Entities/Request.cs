@@ -163,7 +163,6 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.RequestResponded;
         }
 
-
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (Status != RequestStatus.Accepted)
@@ -175,6 +174,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerProcessedAt = denyTime;
             AnswerProcessedBy = userId;
             ImpersonatingAnswerProcessedBy = impersonatorId;
+            Order.Status = OrderStatus.Requested;
         }
 
         public void CreateRequisition(Requisition requisition)
