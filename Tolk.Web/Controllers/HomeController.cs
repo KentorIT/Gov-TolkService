@@ -44,6 +44,11 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction("CreateInitialUser", "Account");
             }
 
+            if(!User.Identity.IsAuthenticated)
+            {
+                return View("IndexNotLoggedIn");
+            }
+
             return View(new StartViewModel
             {
                 Message = message,

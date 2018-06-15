@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic;
@@ -125,7 +126,6 @@ supporten på {_options.SupportEmail}";
                 $"Återställning lösenord {Constants.SystemName}",
                 body,
                 _clock.SwedenNow));
-
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",
@@ -207,14 +207,14 @@ supporten på {_options.SupportEmail}";
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if(user == null)
+                if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
                         model.Email);
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
-                if(!(await _userManager.IsEmailConfirmedAsync(user)))
+                if (!(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     _logger.LogInformation("Cannot reset password for {email}/{userId}, because email is not verified.",
                         user.Email, user.Id);
@@ -262,7 +262,7 @@ supporten på {_options.SupportEmail}";
             if (user == null)
             {
                 // Lie a bit to not reveal difference between incorrect user id and
-                // incorrect /missing token, to avoid a user enumeration issue.
+                // incorrect/missing token, to avoid a user enumeration issue.
                 ModelState.AddModelError(string.Empty, "Invalid token.");
             }
             else
@@ -270,7 +270,7 @@ supporten på {_options.SupportEmail}";
                 var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    if(!User.Identity.IsAuthenticated)
+                    if (!User.Identity.IsAuthenticated)
                     {
                         await _signInManager.SignInAsync(user, true);
                     }
@@ -320,7 +320,11 @@ supporten på {_options.SupportEmail}";
                     }
                     else
                     {
-                        var user = new AspNetUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
+                        var user = new AspNetUser(model.Email)
+                        {
+                            EmailConfirmed = true
+                        };
+
                         var result = await _userManager.CreateAsync(user, model.NewPassword);
                         if (result.Succeeded)
                         {
@@ -411,12 +415,17 @@ supporten på {_options.SupportEmail}";
                 // Resetting the security stamp invalidates the code so operation cannot be redone.
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _signInManager.SignInAsync(user, true);
-                return View();
+                return RedirectToAction(nameof(ConfirmAccountConfirmation));
             }
 
             var model = new ConfirmAccountModel { UserId = userId };
 
             return View("ConfirmAccountFailed", model);
+        }
+
+        public IActionResult ConfirmAccountConfirmation()
+        {
+            return View();
         }
 
         [AllowAnonymous]
@@ -431,15 +440,77 @@ supporten på {_options.SupportEmail}";
                 if (user != null)
                 {
                     _logger.LogInformation("Sent account confirmation link to {userId} ({email})", model.UserId, user.Email);
-                    await _userService.SendInvite(user);
-                    await _dbContext.SaveChangesAsync();
+                    await _userService.SendInviteAsync(user);
                 }
                 else
                 {
                     _logger.LogWarning("An account confirmation link was requested for non-existing user id {userId}", model.UserId);
                 }
             }
-            return View("ConfirmAccountLinkSent");
+            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+        }
+
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                {
+                    var domain = model.Email.Split('@')[1];
+
+                    var organization = await _dbContext.CustomerOrganisations
+                        .SingleOrDefaultAsync(o => o.EmailDomain == domain);
+
+                    if (organization != null)
+                    {
+                        var user = new AspNetUser(model.Email, organization);
+                        var result = await _userManager.CreateAsync(user);
+
+                        if (result.Succeeded)
+                        {
+                            await _userService.SendInviteAsync(user);
+
+                            trn.Commit();
+                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                        }
+                        AddErrors(result);
+                        return View(model);
+                    }
+
+                    var broker = await _dbContext.Brokers
+                        .SingleOrDefaultAsync(b => b.EmailDomain == domain);
+
+                    if(broker != null)
+                    {
+                        var user = new AspNetUser(model.Email, broker);
+                        var result = await _userManager.CreateAsync(user);
+
+                        if(result.Succeeded)
+                        {
+                            await _userService.SendInviteAsync(user);
+
+                            trn.Commit();
+                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                        }
+                        AddErrors(result);
+                        return View(model);
+                    }
+
+                    ModelState.AddModelError(nameof(model.Email),
+                        $"Maildomänen {domain} är inte registrerad på någon organisation i tjänsten.");
+                }
+            }
+
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        public IActionResult ConfirmAccountLinkSent()
+        {
+            return View();
         }
 
         #region Helpers

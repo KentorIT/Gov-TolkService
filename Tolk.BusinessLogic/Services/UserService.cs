@@ -29,20 +29,39 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
         }
 
-        public async Task SendInvite(AspNetUser user)
+        public async Task SendInviteAsync(AspNetUser user)
         {
+            string subject = null;
+            string body = null;
+
             if(user.InterpreterId.HasValue)
             {
-                await SendInviteToInterpreter(user);
-                return;
+                (subject, body) = CreateInterpreterInvite();
+            }
+            else
+            {
+                // Not interpreter => must belong to organization.
+                (subject, body) = CreateOrganizationUserActivation();
             }
 
-            throw new NotImplementedException();
-        }
-        public async Task SendInviteToInterpreter(AspNetUser user)
-        {
-            string activationLink = await GenerateActivationLink(user);
+            if(subject == null || body == null)
+            {
+                throw new NotImplementedException();
+            }
 
+            body = string.Format(body, await GenerateActivationLinkAsync(user));
+
+            _dbContext.Add(new OutboundEmail(
+                user.Email,
+                subject,
+                body,
+                _clock.SwedenNow));
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private (string, string) CreateInterpreterInvite()
+        {
             var body =
 $@"Hej!
 
@@ -51,18 +70,35 @@ Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedlin
 För att aktivera ditt konto och se uppdrag från förmedlingen, vänligen klicka på
 nedanstående länk eller klistra in den i din webbläsare.
 
-{activationLink}
+{{0}}
 
 Vid frågor, vänligen kontakta {_options.SupportEmail}";
 
-            _dbContext.Add(new OutboundEmail(
-                user.Email,
-                $"Du har blivit inbjuden som tolk till {Constants.SystemName}",
-                body,
-                _clock.SwedenNow));
+            var subject = $"Du har blivit inbjuden som tolk till {Constants.SystemName}";
+
+            return (subject, body);
         }
 
-        private async Task<string> GenerateActivationLink(AspNetUser user)
+        private (string, string) CreateOrganizationUserActivation()
+        {
+            var body =
+$@"Hej!
+
+Välkommen till {Constants.SystemName}!
+
+För att aktivera ditt konto, välnligen klicka på nedanstående länk eller klistra
+in den i din webbläsare.
+
+{{0}}
+
+Vid frågor, vänligen kontakta {_options.SupportEmail}";
+
+            var subject = $"Aktivering av konto i {Constants.SystemName}";
+
+            return (subject, body);
+        }
+
+        private async Task<string> GenerateActivationLinkAsync(AspNetUser user)
         {
             // Reset security stamp to kill any existing links.
             await _userManager.UpdateSecurityStampAsync(user);

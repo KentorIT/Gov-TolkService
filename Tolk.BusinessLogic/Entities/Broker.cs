@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<BrokerRegion> BrokerRegions { get; set; }
 
         public List<AspNetUser> Users { get; set; }
+        public string EmailDomain { get; set; }
 
         #endregion
     }

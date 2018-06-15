@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.StartViewModel
+@using Tolk.BusinessLogic
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = Constants.SystemName;
 }
 
 <div class="row">
@@ -33,7 +34,7 @@
                 </a>
             }
         </div>
-        @foreach(var message in Model.ConfirmationMessages)
+        @foreach (var message in Model.ConfirmationMessages)
         {
             <div class="panel panel-primary">
                 <div class="panel-heading">

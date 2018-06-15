@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\Account\ConfirmAccount.cshtml">
+    <Content Update="Views\Account\ConfirmAccountConfirmation.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Account\ConfirmAccountLinkSent.cshtml">
