@@ -16,5 +16,8 @@ namespace Tolk.BusinessLogic.Entities
         public List<AspNetUser> Users { get; set; }
 
         public PriceListType PriceListType { get; set; }
+
+        [MaxLength(50)]
+        public string EmailDomain { get; set; }
     }
 }

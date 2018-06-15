@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class RegisterViewModel : NewPasswordModelBase
+    public class RegisterViewModel
     {
         [Required]
         [EmailAddress]
-        [Display(Name = "Email")]
+        [Display(Name = "E-post")]
         public string Email { get; set; }
     }
 }

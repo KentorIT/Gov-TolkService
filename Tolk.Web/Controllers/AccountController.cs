@@ -125,7 +125,6 @@ supporten på {_options.SupportEmail}";
                 $"Återställning lösenord {Constants.SystemName}",
                 body,
                 _clock.SwedenNow));
-
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",
