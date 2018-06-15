@@ -33,6 +33,12 @@ namespace Tolk.Web.Helpers
                     Version = head.FormatVersion();
                 }
             }
+
+            var activeAzureVersion = "%home%/site/deployments/active";
+            if(File.Exists(activeAzureVersion))
+            {
+                Version = File.ReadAllText(activeAzureVersion).FormatVersion();
+            }
         }
     }
 }
