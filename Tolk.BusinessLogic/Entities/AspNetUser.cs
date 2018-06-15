@@ -24,6 +24,12 @@ namespace Tolk.BusinessLogic.Entities
             CustomerOrganisation = customer;
         }
 
+        public AspNetUser(string email, Broker broker)
+            :this(email)
+        {
+            Broker = broker;
+        }
+
         public List<IdentityUserRole<int>> Roles { get; set; }
 
         [ForeignKey(nameof(BrokerId))]

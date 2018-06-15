@@ -423,6 +423,11 @@ supporten på {_options.SupportEmail}";
             return View("ConfirmAccountFailed", model);
         }
 
+        public IActionResult ConfirmAccountConfirmation()
+        {
+            return View();
+        }
+
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -462,7 +467,6 @@ supporten på {_options.SupportEmail}";
                     if (organization != null)
                     {
                         var user = new AspNetUser(model.Email, organization);
-
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -476,7 +480,24 @@ supporten på {_options.SupportEmail}";
                         return View(model);
                     }
 
-                    // TODO: Registration on broker.
+                    var broker = await _dbContext.Brokers
+                        .SingleOrDefaultAsync(b => b.EmailDomain == domain);
+
+                    if(broker != null)
+                    {
+                        var user = new AspNetUser(model.Email, broker);
+                        var result = await _userManager.CreateAsync(user);
+
+                        if(result.Succeeded)
+                        {
+                            await _userService.SendInviteAsync(user);
+
+                            trn.Commit();
+                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                        }
+                        AddErrors(result);
+                        return View(model);
+                    }
 
                     ModelState.AddModelError(nameof(model.Email),
                         $"Maildomänen {domain} är inte registrerad på någon organisation i tjänsten.");
