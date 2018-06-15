@@ -128,6 +128,9 @@ supporten på {_options.SupportEmail}";
 
             _dbContext.SaveChanges();
 
+            _logger.LogInformation("Password reset link sent to {email} for {userId}",
+                user.Email, user.Id);
+
             return RedirectToAction(nameof(ForgotPasswordConfirmation));
         }
 
@@ -200,11 +203,21 @@ supporten på {_options.SupportEmail}";
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
+            _logger.LogDebug("Requesting password reset for {email}", model.Email);
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                if(user == null)
                 {
+                    _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
+                        model.Email);
+                    // Don't reveal that the user does not exist or is not confirmed
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                }
+                if(!(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    _logger.LogInformation("Cannot reset password for {email}/{userId}, because email is not verified.",
+                        user.Email, user.Id);
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
