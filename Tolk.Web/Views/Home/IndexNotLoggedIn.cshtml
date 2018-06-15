@@ -19,12 +19,10 @@
         </p>
     </div>
     <div class="col-md-4">
-        <h2>Registrera användarkonto</h2>
-        <form method="post" asp-action="Register" asp-controller="Account">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <form-entry asp-for="Email"/>
-            <button type="submit" class="btn btn-success">Skapa konto</button>
-        </form>
+        @await Html.PartialAsync("_RegisterAccount")
     </div>
 </div>
 
+@section Scripts{ 
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

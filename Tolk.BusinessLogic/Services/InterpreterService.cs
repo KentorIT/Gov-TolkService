@@ -43,7 +43,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task<int> GetInterpreterId(int brokerId, string newInterpreterEmail)
         {
             var user = await GetOrCreateUser(newInterpreterEmail);
-            await LoadOrCreateInterpreter(user);
+            await LoadExistingInterpreter(user);
 
             ConnectInterpreterToBroker(user.Interpreter, brokerId);
 
@@ -64,16 +64,9 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private async Task LoadOrCreateInterpreter(AspNetUser user)
+        private async Task LoadExistingInterpreter(AspNetUser user)
         {
-            if (!user.InterpreterId.HasValue)
-            {
-                user.Interpreter = new Interpreter
-                {
-                    User = user,
-                };
-            }
-            else
+            if(user.Interpreter == null)
             {
                 await _dbContext.Interpreters
                     .Include(i => i.Brokers)
@@ -90,11 +83,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 _logger.LogInformation("Creating new interpreter user for {email}", newInterpreterEmail);
 
-                user = new AspNetUser
-                {
-                    UserName = newInterpreterEmail,
-                    Email = newInterpreterEmail
-                };
+                user = AspNetUser.CreateInterpreter(newInterpreterEmail);
 
                 var result = await _userManager.CreateAsync(user);
 
@@ -103,7 +92,7 @@ namespace Tolk.BusinessLogic.Services
                     throw new InvalidOperationException($"User creation for {newInterpreterEmail} failed.");
                 }
 
-                await _userService.SendInviteToInterpreter(user);
+                await _userService.SendInviteAsync(user);
             }
 
             return user;

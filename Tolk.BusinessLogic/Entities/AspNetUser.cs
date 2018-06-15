@@ -10,6 +10,20 @@ namespace Tolk.BusinessLogic.Entities
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class AspNetUser : IdentityUser<int>
     {
+        private AspNetUser() { }
+
+        public AspNetUser(string email)
+        {
+            Email = email;
+            UserName = email;
+        }
+
+        public AspNetUser(string email, CustomerOrganisation customer)
+            : this(email)
+        {
+            CustomerOrganisation = customer;
+        }
+
         public List<IdentityUserRole<int>> Roles { get; set; }
 
         [ForeignKey(nameof(BrokerId))]
@@ -26,5 +40,18 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
+
+        public static AspNetUser CreateInterpreter(string email)
+        {
+            var user = new AspNetUser(email);
+
+            user.Interpreter = new Interpreter()
+            {
+                // Add empty list because other code expects initialized entity.
+                Brokers = new List<InterpreterBroker>()
+            };
+
+            return user;
+        }
     }
 }
