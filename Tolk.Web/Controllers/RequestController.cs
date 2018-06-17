@@ -28,7 +28,7 @@ namespace Tolk.Web.Controllers
 
         public RequestController(
             TolkDbContext dbContext,
-            ISwedishClock clock, 
+            ISwedishClock clock,
             OrderService orderService,
             IAuthorizationService authorizationService,
             InterpreterService interpreterService)
@@ -40,22 +40,33 @@ namespace Tolk.Web.Controllers
             _interpreterService = interpreterService;
         }
 
-        public IActionResult List()
+        public IActionResult List(RequestFilterModel model)
         {
-            return View(_dbContext.Requests.Include(r => r.Order)
-                .Where(r => r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
-                .Select(r => new RequestListItemModel
+            var items = _dbContext.Requests.Include(r => r.Order)
+                        .Where(r => r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
+                        .Select(r => new RequestListItemModel
+                        {
+                            RequestId = r.RequestId,
+                            Language = r.Order.Language.Name,
+                            OrderNumber = r.Order.OrderNumber.ToString(),
+                            CustomerName = r.Order.CustomerOrganisation.Name,
+                            RegionName = r.Order.Region.Name,
+                            Start = r.Order.StartAt,
+                            End = r.Order.EndAt,
+                            ExpiresAt = r.ExpiresAt,
+                            Status = r.Status
+                        });
+            if (model.Status.HasValue)
+            {
+                items = items.Where(r => r.Status == model.Status);
+            }
+
+            return View(
+                new RequestListModel
                 {
-                    RequestId = r.RequestId,
-                    Language = r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber.ToString(),
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    RegionName = r.Order.Region.Name,
-                    Start = r.Order.StartAt,
-                    End = r.Order.EndAt,
-                    ExpiresAt = r.ExpiresAt,
-                    Status = r.Status
-                }));
+                    Items = items,
+                    FilterModel = model
+                });
         }
 
         public async Task<IActionResult> Process(int id)
@@ -71,7 +82,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion)
                 .Single(o => o.RequestId == id);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 if (request.Status == RequestStatus.Created)
                 {
@@ -99,10 +110,10 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
                     int interpreterId = model.InterpreterId;
-                    if(interpreterId == SelectListService.NewInterpreterId)
+                    if (interpreterId == SelectListService.NewInterpreterId)
                     {
                         interpreterId = await _interpreterService.GetInterpreterId(
                             request.Ranking.BrokerId,
@@ -143,7 +154,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Single(r => r.RequestId == model.RequestId);
 
-            if((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 //Get the order, and set Change the status on order and request?
                 //TODO: Validate that the has the correct state, is connected to the user

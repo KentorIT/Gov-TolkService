@@ -10,18 +10,12 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class RequisitionListItemModel
+    public class RequisitionListModel
     {
-        public int RequisitionId { get; set; }
+        public string Action { get; set; }
 
-        public RequisitionStatus Status { get; set; }
+        public RequisitionFilterModel FilterModel { get; set; }
 
-        public string OrderNumber { get; set; }
-
-        public string Language { get; set; }
-
-        public DateTimeOffset Start { get; set; }
-
-        public DateTimeOffset End { get; set; }
+        public IEnumerable<RequisitionListItemModel> Items { get; set; }
     }
 }

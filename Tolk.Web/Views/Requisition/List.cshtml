@@ -1,15 +1,18 @@
-﻿@model IEnumerable<Tolk.Web.Models.RequisitionListItemModel>
+﻿@model RequisitionListModel
 @using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Rekvisitioner";
 }
+<h2>@ViewData["Title"]</h2>
+<div class="row">
+    @await Html.PartialAsync("_Filter", Model.FilterModel)
+</div>
 <div class="row">
     <div class="col-md-12">
-        <h2>@ViewData["Title"]</h2>
-        @if (Model.Any())
+        @if (Model.Items.Any())
         {
             <div class="table-responsive">
-                <table class="table table-striped table-hover clickable-rows" data-click-controller="Requisition" data-click-action="@Model.First().Action" data-click-parameter="id">
+                <table class="table table-striped table-hover clickable-rows" data-click-controller="Requisition" data-click-action="@Model.Action" data-click-parameter="id">
                     <thead>
                         <tr>
                             <th>AvropsID</th>
@@ -20,15 +23,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @foreach (var item in Model.Items)
                         {
-                        <tr data-id="@item.RequisitionId">
-                            <td>@item.OrderNumber</td>
-                            <td>@item.Language</td>
-                            <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td>@EnumHelper.GetDescription(item.Status)</td>
-                        </tr>
+                            <tr data-id="@item.RequisitionId">
+                                <td>@item.OrderNumber</td>
+                                <td>@item.Language</td>
+                                <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@EnumHelper.GetDescription(item.Status)</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

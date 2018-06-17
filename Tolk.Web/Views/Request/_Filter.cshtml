@@ -1,9 +1,9 @@
-﻿@model OrderFilterModel
+﻿@model RequestFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 <div class="col-md-4 pull-right">
     <h4>Filtera</h4>
     <form method="get" class="filter-form">
-        <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" />
+        <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequestStatuses" />
     </form>
 </div>

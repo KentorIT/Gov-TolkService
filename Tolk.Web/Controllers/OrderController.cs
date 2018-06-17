@@ -56,8 +56,7 @@ namespace Tolk.Web.Controllers
             return View(
                 new OrderListModel
                 {
-                    OrderFilterModel = model,
-
+                    FilterModel = model,
                     Items = orders.Select(o => new OrderListItemModel
                     {
                         OrderId = o.OrderId,

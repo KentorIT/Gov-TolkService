@@ -10,10 +10,8 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class OrderListModel
+    public class RequestFilterModel
     {
-        public OrderFilterModel FilterModel { get; set; }
-
-        public IEnumerable<OrderListItemModel> Items { get; set; }
+        public RequestStatus? Status { get; set; }
     }
 }

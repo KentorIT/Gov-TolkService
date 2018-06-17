@@ -1,0 +1,13 @@
+﻿@model RequisitionFilterModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+<div class="col-md-4 pull-right">
+    <h4>Filtera</h4>
+    <form method="get" class="filter-form">
+        <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" />
+        @if (Model.IsCustomer)
+        {
+            <form-entry asp-for="FilterByContact" type="checkbox" />
+        }
+    </form>
+</div>

@@ -32,6 +32,9 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
+    $("form.filter-form").on("change", "select, input, textarea", function (event) {
+        $(this).closest("form").submit();
+    });
     $("select").select2({ minimumResultsForSearch: 10 });
     $("body").on("click", "table.clickable-rows > tbody > tr > td", function () {
         var $table = $(this).parents("table.clickable-rows");

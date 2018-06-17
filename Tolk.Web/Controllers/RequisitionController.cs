@@ -118,7 +118,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public IActionResult List()
+        public IActionResult List(RequisitionFilterModel model)
         {
             var requisitions = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
@@ -130,8 +130,19 @@ namespace Tolk.Web.Controllers
             bool isCustomer = false;
             if (customerId.HasValue)
             {
-                requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId() ||
-                    r.Request.Order.ContactPersonId == User.GetUserId());
+                if (!model.FilterByContact.HasValue)
+                {
+                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId() ||
+                        r.Request.Order.ContactPersonId == User.GetUserId());
+                }
+                else if (model.FilterByContact.Value)
+                {
+                    requisitions = requisitions.Where(r => r.Request.Order.ContactPersonId == User.GetUserId());
+                }
+                else
+                {
+                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId());
+                }
                 isCustomer = true;
             }
             else if (brokerId.HasValue)
@@ -146,16 +157,28 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            return View(requisitions.Select(r => new RequisitionListItemModel
+            if (model.Status.HasValue)
             {
-                RequisitionId = r.RequisitionId,
-                Language = r.Request.Order.Language.Name,
-                OrderNumber = r.Request.Order.OrderNumber.ToString(),
-                Start = r.Request.Order.StartAt,
-                End = r.Request.Order.EndAt,
-                Status = r.Status,
-                Action = isCustomer ? nameof(Process) : nameof(View)
-            }));
+                requisitions = requisitions.Where(r => r.Status == model.Status);
+            }
+
+            model.IsCustomer = isCustomer;
+
+            return View(
+                new RequisitionListModel
+                {
+                    FilterModel = model,
+                    Action = isCustomer ? nameof(Process) : nameof(View),
+                    Items = requisitions.Select(r => new RequisitionListItemModel
+                    {
+                        RequisitionId = r.RequisitionId,
+                        Language = r.Request.Order.Language.Name,
+                        OrderNumber = r.Request.Order.OrderNumber.ToString(),
+                        Start = r.Request.Order.StartAt,
+                        End = r.Request.Order.EndAt,
+                        Status = r.Status,
+                    })
+                });
         }
 
         [ValidateAntiForgeryToken]

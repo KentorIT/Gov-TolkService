@@ -98,7 +98,7 @@ namespace Tolk.Web.Controllers
                 Header = "Tillsatt tolk",
                 Controller = "Order",
                 Action = "List",
-                Filters = new Dictionary<string, string> { { "Status", "RequestResponded" } }
+                Filters = new Dictionary<string, string> { { "Status", OrderStatus.RequestResponded.ToString() } }
             };
 
             yield return new StartViewModel.StartPageBox
@@ -108,7 +108,11 @@ namespace Tolk.Web.Controllers
                     r.Request.Order.CreatedBy == User.GetUserId()).Count(),
                 Header = "Rekvisitioner att kontrollera",
                 Controller = "Requisition",
-                Action = "List"
+                Action = "List",
+                Filters = new Dictionary<string, string> {
+                        { "Status", RequisitionStatus.Created.ToString() },
+                        { "FilterByContact", "false"}
+                    }
             };
 
             int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
@@ -122,7 +126,11 @@ namespace Tolk.Web.Controllers
                     Count = count,
                     Header = "Rekvisitioner att kontrollera som kontakt",
                     Controller = "Requisition",
-                    Action = "List"
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", RequisitionStatus.Created.ToString() },
+                        { "FilterByContact", "true"}
+                    }
                 };
             }
         }
@@ -137,7 +145,11 @@ namespace Tolk.Web.Controllers
                     r.Ranking.BrokerId == brokerId).Count(),
                 Header = "Inkomna förfrågningar",
                 Controller = "Request",
-                Action = "List"
+                Action = "List",
+                Filters = new Dictionary<string, string> {
+                        { "Status", RequestStatus.Created.ToString() }
+                    }
+
             };
 
             yield return new StartViewModel.StartPageBox
@@ -148,7 +160,10 @@ namespace Tolk.Web.Controllers
                     r.Ranking.BrokerId == brokerId).Count(),
                 Header = "Tolktillfällen att avrapportera",
                 Controller = "Assignment",
-                Action = "List"
+                Action = "List",
+                Filters = new Dictionary<string, string> {
+                        { "Status", RequestStatus.Approved.ToString() }
+                    }
             };
 
             int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue &&
@@ -163,7 +178,11 @@ namespace Tolk.Web.Controllers
                     Count = count,
                     Header = "Nekade rekvisitioner",
                     Controller = "Requisition",
-                    Action = "List"
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", RequisitionStatus.DeniedByCustomer.ToString() }
+                    }
+
                 };
             }
         }
@@ -180,7 +199,7 @@ namespace Tolk.Web.Controllers
                     r.InterpreterId == interpreterId).Count(),
                 Header = "Kommande uppdrag",
                 Controller = "Assignment",
-                Action = "List"
+                Action = "List",
             };
             yield return new StartViewModel.StartPageBox
             {
@@ -203,7 +222,11 @@ namespace Tolk.Web.Controllers
                     Count = count,
                     Header = "Nekade rekvisitioner",
                     Controller = "Requisition",
-                    Action = "List"
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", RequisitionStatus.DeniedByCustomer.ToString() }
+                    }
+
                 };
             }
         }
