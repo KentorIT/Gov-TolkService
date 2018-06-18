@@ -31,6 +31,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation InterpreterLocation { get; set; }
 
+        [Display(Name = "Typ av distanstolkning")]
+        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
+
+        [Display(Name = "Kontaktinformation för distanstolkning")]
+        public string OffSiteContactInformation { get; set; }
+
         [DataType(DataType.MultilineText)]
         [Display(Name = "Address")]
         public string Address { get; set; }
@@ -66,6 +72,8 @@ namespace Tolk.Web.Models
                 BrokerName = request.Ranking.BrokerRegion.Broker.Name,
                 LanguageName = request.Order.Language.Name,
                 RequestId = request.RequestId,
+                OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
+                OffSiteContactInformation = request.Order.OffSiteContactInformation,
                 RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId
             };
         }

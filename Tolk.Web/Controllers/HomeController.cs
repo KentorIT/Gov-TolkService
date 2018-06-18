@@ -205,7 +205,7 @@ namespace Tolk.Web.Controllers
             {
                 Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
                     r.Order.StartAt < _clock.SwedenNow &&
-                    !!r.Requisitions.Any() &&
+                    !r.Requisitions.Any() &&
                     r.InterpreterId == interpreterId).Count(),
                 Header = "Att avrapportera",
                 Controller = "Assignment",

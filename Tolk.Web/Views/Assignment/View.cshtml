@@ -8,9 +8,17 @@
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
         <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="ExpectedTravelCosts" />
         <display-entry asp-for="InterpreterLocation" />
-        <display-entry asp-for="Address" />
+        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSite)
+        {
+            <display-entry asp-for="OffSiteAssignmentType" />
+            <display-entry asp-for="OffSiteContactInformation" />
+        }
+        else
+        {
+            <display-entry asp-for="ExpectedTravelCosts" />
+            <display-entry asp-for="Address" />
+        }
         <display-entry asp-for="CustomerName" />
         <display-entry asp-for="StartDateTime" />
         <display-entry asp-for="EndDateTime" />
