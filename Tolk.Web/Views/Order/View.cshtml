@@ -15,6 +15,7 @@
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="ContactPerson" />
+        <display-entry asp-for="UnitName" />
         <display-entry asp-for="Status" />
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
@@ -39,7 +40,6 @@
 
         @if (Model.UseAddress)
         {
-            <display-entry asp-for="UnitName" />
             <display-entry asp-for="LocationStreet" />
             <display-entry asp-for="LocationZipCode" />
             <display-entry asp-for="LocationCity" />

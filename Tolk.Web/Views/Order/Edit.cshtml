@@ -16,6 +16,7 @@
             <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
+            <form-entry asp-for="UnitName" />
             <form-entry asp-for="AssignmentType" type="select" asp-items="SelectListService.AssignmentTypes" />
             <form-entry asp-for="UseRankedInterpreterLocation" />
             <div class="required-InterpreterLocation">
@@ -41,7 +42,6 @@
                 </ol>
             </div>
             <div class="address-InterpreterLocation">
-                <form-entry asp-for="UnitName" />
                 <form-entry asp-for="LocationStreet" />
                 <form-entry asp-for="LocationZipCode" />
                 <form-entry asp-for="LocationCity" />
