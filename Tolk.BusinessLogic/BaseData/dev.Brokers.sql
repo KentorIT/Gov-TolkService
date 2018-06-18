@@ -1,10 +1,10 @@
 use TolkDev
 
 insert Brokers
-Values(1, 'Första förmedlingen'),
-(2, 'Andra förmedlingen'),
-(3, 'Tredje förmedlingen'),
-(4, 'Fjärde förmedlingen')
+Values(1, 'Första förmedlingen', 'formedling1.se'),
+(2, 'Andra förmedlingen', 'formedling2.se'),
+(3, 'Tredje förmedlingen', 'formedling3.se'),
+(4, 'Fjärde förmedlingen', 'formedling4.se')
 
 Insert BrokerRegions
 Select RegionId, 1 from Regions

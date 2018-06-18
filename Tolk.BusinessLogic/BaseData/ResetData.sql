@@ -26,12 +26,3 @@ set @reseed = 1 - @increment
 
 delete Orders --
 DBCC CHECKIDENT (Orders, reseed, @reseed)--
-
--- Remove roles that are no longer directly assigned (instead policies are used
--- that relies on present of CustomerId etc.
-
--- Should probably reset data from dev data too:
--- 1. CustomerOrganisations
--- 2. Brokers
--- 3. Users
--- 4. PriceListRows
