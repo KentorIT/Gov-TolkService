@@ -16,6 +16,9 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
+        [Display(Name = "Avropets status")]
+        public RequestStatus Status { get; set; }
+
         public int BrokerId { get; set; }
 
         public OrderModel OrderModel { get; set; }
@@ -42,7 +45,7 @@ namespace Tolk.Web.Models
         public int? InterpreterId { get; set; }
 
         [Required]
-        [Display(Name ="Tolkens e-postadress")]
+        [Display(Name = "Tolkens e-postadress")]
         public string NewInterpreterEmail { get; set; }
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
@@ -57,12 +60,21 @@ namespace Tolk.Web.Models
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
+        #region view stuff
+
+        [Display(Name = "Vald tolk")]
+        public string Interpreter{ get; set; }
+
+        #endregion
+
         #region methods
 
         public static RequestModel GetModelFromRequest(Request request)
         {
             return new RequestModel
             {
+                Status = request.Status,
+                DenyMessage = request.DenyMessage,
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel

@@ -35,12 +35,18 @@ $(function () {
     $("form.filter-form").on("change", "select, input, textarea", function (event) {
         $(this).closest("form").submit();
     });
-    $("select").select2({ minimumResultsForSearch: 10 });
+
+    $("select.allow-clear").select2({ minimumResultsForSearch: 10, allowClear : true });
+    $("select:not(.allow-clear)").select2({ minimumResultsForSearch: 10 });
     $("body").on("click", "table.clickable-rows > tbody > tr > td", function () {
         var $table = $(this).parents("table.clickable-rows");
         var $parameterName = $table.data("click-parameter");
         var $parameter = $(this).parent("tr").data($parameterName);
         window.location.href = tolkBaseUrl + $table.data("click-controller") + "/" + $table.data("click-action") + "?" + $parameterName + "=" + $parameter;
+    });
+    $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
+        var $row = $(this).closest("tr");
+        window.location.href = $row.data("click-action-url");
     });
  
 });

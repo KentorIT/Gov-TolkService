@@ -42,6 +42,8 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(RequestFilterModel model)
         {
+            bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
+
             var items = _dbContext.Requests.Include(r => r.Order)
                         .Where(r => r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
                         .Select(r => new RequestListItemModel
@@ -54,7 +56,8 @@ namespace Tolk.Web.Controllers
                             Start = r.Order.StartAt,
                             End = r.Order.EndAt,
                             ExpiresAt = r.ExpiresAt,
-                            Status = r.Status
+                            Status = r.Status,
+                            Action = ((!isCustomer && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) || (isCustomer && r.Status == RequestStatus.Accepted) ? nameof(Process) : nameof(View))
                         });
             if (model.Status.HasValue)
             {
@@ -67,6 +70,29 @@ namespace Tolk.Web.Controllers
                     Items = items,
                     FilterModel = model
                 });
+        }
+
+        public async Task<IActionResult> View(int id)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.Requirements)
+                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(r => r.Language)
+                .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion).ThenInclude(b => b.Broker)
+                .Single(o => o.RequestId == id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                //Get request model from db
+                var model = RequestModel.GetModelFromRequest(request);
+                model.BrokerId = request.Ranking.BrokerId;
+                return View(model);
+            }
+            return Forbid();
         }
 
         public async Task<IActionResult> Process(int id)
@@ -167,7 +193,7 @@ namespace Tolk.Web.Controllers
                 request.Order.Status = OrderStatus.Requested;
 
                 request.Status = RequestStatus.DeclinedByBroker;
-                request.AnswerDate = DateTimeOffset.Now;
+                request.AnswerDate = _clock.SwedenNow;
                 request.AnsweredBy = User.GetUserId();
                 request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
                 request.DenyMessage = model.DenyMessage;

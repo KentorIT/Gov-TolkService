@@ -12,6 +12,8 @@ namespace Tolk.Web.Models
 {
     public class RequestListItemModel
     {
+        public string Action { get; set; }
+
         public int RequestId { get; set; }
 
         public RequestStatus Status { get; set; }
@@ -19,7 +21,7 @@ namespace Tolk.Web.Models
         public string OrderNumber { get; set; }
 
         public string RegionName { get; set; }
-
+    
         public string CustomerName { get; set; }
 
         public string Language { get; set; }

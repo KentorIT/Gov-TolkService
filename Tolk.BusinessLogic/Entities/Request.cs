@@ -175,6 +175,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerProcessedBy = userId;
             ImpersonatingAnswerProcessedBy = impersonatorId;
             Order.Status = OrderStatus.Requested;
+            DenyMessage = message;
         }
 
         public void CreateRequisition(Requisition requisition)

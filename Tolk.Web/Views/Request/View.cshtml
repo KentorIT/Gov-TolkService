@@ -1,0 +1,61 @@
+﻿@model Tolk.Web.Models.RequestModel
+@using Tolk.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "Avropsförfrågan";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderModel.OrderNumber" />
+        <display-entry asp-for="Status" />
+        @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
+        {
+            <display-entry asp-for="DenyMessage" />
+        }
+        <display-entry asp-for="OrderModel.CreatedAt" />
+        <display-entry asp-for="OrderModel.CreatedBy" />
+        <display-entry asp-for="OrderModel.ContactPerson" />
+        <display-entry asp-for="OrderModel.RegionName" />
+        <display-entry asp-for="OrderModel.LanguageName" />
+        <display-entry asp-for="OrderModel.CustomerReferenceNumber" />
+        <display-entry asp-for="OrderModel.AssignmentType" />
+        <display-entry asp-for="OrderModel.RequiredCompetenceLevel" />
+        <display-entry asp-for="OrderModel.StartAt" />
+        <display-entry asp-for="OrderModel.EndAt" />
+        <display-entry asp-for="OrderModel.Description" />
+        <display-entry asp-for="OrderModel.UnitName" />
+
+        @if (Model.OrderModel.UseAddress)
+        {
+            <display-entry asp-for="OrderModel.LocationStreet" />
+            <display-entry asp-for="OrderModel.LocationZipCode" />
+            <display-entry asp-for="OrderModel.LocationCity" />
+            <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
+        }
+        @if (Model.OrderModel.UseOffSiteInformation)
+        {
+            <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
+            <display-entry asp-for="OrderModel.OffSiteContactInformation" />
+        }
+
+        <display-entry asp-for="Interpreter" />
+        <display-entry asp-for="InterpreterLocation" />
+        @if (Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite)
+        {
+            //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
+            //TODO: Show if allow more than 2 h travel time
+            <display-entry asp-for="ExpectedTravelCosts" />
+        }
+
+        <display-entry asp-for="CompetenceLevel" />
+        @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
+        {
+            //TODO skold be a table or other kind if list.
+            <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
+            <display-entry asp-for="RequirementAnswers[i].Requirement" />
+            <display-entry asp-for="RequirementAnswers[i].Answer" />
+            <display-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
+        }
+    </div>
+</div>

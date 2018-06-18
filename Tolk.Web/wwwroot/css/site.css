@@ -31,7 +31,7 @@
     width: auto;
 }
 
-.clickable-rows > tbody > tr > td {
+.clickable-rows > tbody > tr > td, .clickable-rows-with-action > tbody > tr > td {
     cursor: pointer;
 }
 /*Should be in less or other*/
