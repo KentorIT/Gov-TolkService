@@ -12,8 +12,6 @@ namespace Tolk.Web.Models
 {
     public class RequisitionListModel
     {
-        public string Action { get; set; }
-
         public RequisitionFilterModel FilterModel { get; set; }
 
         public IEnumerable<RequisitionListItemModel> Items { get; set; }

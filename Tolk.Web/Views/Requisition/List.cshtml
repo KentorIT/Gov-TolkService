@@ -12,7 +12,7 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive">
-                <table class="table table-striped table-hover clickable-rows" data-click-controller="Requisition" data-click-action="@Model.Action" data-click-parameter="id">
+                <table class="table table-striped table-hover clickable-rows-with-action">
                     <thead>
                         <tr>
                             <th>AvropsID</th>
@@ -25,7 +25,7 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.RequisitionId">
+                            <tr data-id="@item.RequisitionId" data-click-action-url="@Url.Action(item.Action, new { id = item.RequisitionId })">
                                 <td>@item.OrderNumber</td>
                                 <td>@item.Language</td>
                                 <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>

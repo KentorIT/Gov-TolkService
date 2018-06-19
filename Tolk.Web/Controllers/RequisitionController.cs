@@ -168,7 +168,6 @@ namespace Tolk.Web.Controllers
                 new RequisitionListModel
                 {
                     FilterModel = model,
-                    Action = isCustomer ? nameof(Process) : nameof(View),
                     Items = requisitions.Select(r => new RequisitionListItemModel
                     {
                         RequisitionId = r.RequisitionId,
@@ -177,6 +176,7 @@ namespace Tolk.Web.Controllers
                         Start = r.Request.Order.StartAt,
                         End = r.Request.Order.EndAt,
                         Status = r.Status,
+                        Action = isCustomer && r.Status == RequisitionStatus.Created ? nameof(Process) : nameof(View),
                     })
                 });
         }
