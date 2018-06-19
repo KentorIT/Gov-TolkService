@@ -31,12 +31,12 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(CreatorHandler));
-                opt.AddPolicy(TimeTravel, builder => 
-                    builder.AddRequirements(new EnvironmentRequirement("Development"))
-                    .RequireAuthenticatedUser());
+                opt.AddPolicy(TimeTravel, builder =>
+                    builder.RequireRole(Roles.Admin)
+                    .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
             });
 
-            services.AddSingleton<IAuthorizationHandler, EnvironmentRequirement.EnvironmentHandler>();
+            services.AddSingleton<IAuthorizationHandler, TolkOptionsRequirementHandler>();
         }
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>

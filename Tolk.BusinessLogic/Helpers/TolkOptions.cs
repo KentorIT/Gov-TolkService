@@ -13,6 +13,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public SmtpSettings Smtp { get; set; }
 
+        public bool EnableTimeTravel { get; set; }
+
         public void Validate()
         {
             if (string.IsNullOrEmpty(PublicOrigin)
