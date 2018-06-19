@@ -25,10 +25,14 @@ namespace Tolk.BusinessLogic.Entities
         #region foreign keys
 
         public int BrokerId { get; set; }
+
         public int RegionId { get; set; }
 
-        [ForeignKey(nameof(BrokerId) + ", " + nameof(RegionId))]
-        public BrokerRegion BrokerRegion { get; set; }
+        [ForeignKey(nameof(BrokerId))]
+        public Broker Broker { get; set; }
+
+        [ForeignKey(nameof(RegionId))]
+        public Region Region { get; set; }
 
         #endregion
 

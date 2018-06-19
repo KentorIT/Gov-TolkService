@@ -17,9 +17,10 @@ namespace Tolk.BusinessLogic.Entities
 
         #region navigation properites
 
-        public List<BrokerRegion> BrokerRegions { get; set; }
+        public List<Ranking> Rankings { get; private set; }
 
         public List<AspNetUser> Users { get; set; }
+
         public string EmailDomain { get; set; }
 
         #endregion

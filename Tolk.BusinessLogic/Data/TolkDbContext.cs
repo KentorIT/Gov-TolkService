@@ -43,9 +43,6 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(r => r.RankingId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<BrokerRegion>()
-                .HasKey(br => new { br.BrokerId, br.RegionId });
-
             builder.Entity<InterpreterBroker>()
                 .HasKey(ib => new { ib.BrokerId, ib.InterpreterId });
 
@@ -134,8 +131,6 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Request> Requests { get; set; }
 
         public DbSet<Broker> Brokers { get; set; }
-
-        public DbSet<BrokerRegion> BrokerRegions { get; set; }
 
         public DbSet<Interpreter> Interpreters { get; set; }
 

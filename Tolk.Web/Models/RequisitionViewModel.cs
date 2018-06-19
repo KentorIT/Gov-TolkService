@@ -58,7 +58,7 @@ namespace Tolk.Web.Models
                 RequestId = requisition.RequestId,
                 PreviousRequisitionId = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)?.RequisitionId,
                 ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
-                BrokerName = requisition.Request.Ranking.BrokerRegion.Broker.Name,
+                BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,
                 ExpectedEndedAt = requisition.Request.Order.EndAt,
@@ -73,7 +73,7 @@ namespace Tolk.Web.Models
                 InterpreterName = requisition.Request.Interpreter.User.Email,
                 LanguageName = requisition.Request.Order.Language.Name,
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
-                RegionName = requisition.Request.Ranking.BrokerRegion.Region.Name,
+                RegionName = requisition.Request.Ranking.Region.Name,
                 //TODO: Should be Name!
                 CreatedBy = requisition.CreatedByUser.Email,
                 CreatedAt = requisition.CreatedAt,

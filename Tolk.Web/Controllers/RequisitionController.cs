@@ -48,8 +48,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
@@ -76,8 +76,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
             {
@@ -106,8 +106,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
-                .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Broker)
-                .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion).ThenInclude(o => o.Region)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
@@ -192,7 +192,6 @@ namespace Tolk.Web.Controllers
                     var request = _dbContext.Requests
                     .Include(r => r.Order)
                     .Include(r => r.Requisitions)
-                    .Include(r => r.Ranking).ThenInclude(o => o.BrokerRegion)
                     .Single(o => o.RequestId == model.RequestId);
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {

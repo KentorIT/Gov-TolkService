@@ -81,11 +81,10 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.Requirements)
-                .ThenInclude(r => r.RequirementAnswers)
+                    .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)
-                .ThenInclude(r => r.Ranking)
-                .ThenInclude(r => r.BrokerRegion)
-                .ThenInclude(r => r.Broker)
+                    .ThenInclude(r => r.Ranking)
+                    .ThenInclude(r => r.Broker)
                 .Single(o => o.OrderId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -103,7 +102,7 @@ namespace Tolk.Web.Controllers
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
                 model.RequestStatus = request?.Status;
-                model.BrokerName = request?.Ranking.BrokerRegion.Broker.Name;
+                model.BrokerName = request?.Ranking.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
                 {
                     model.RequestId = request.RequestId;

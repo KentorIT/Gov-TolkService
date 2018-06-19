@@ -271,7 +271,7 @@ namespace Tolk.Web.Models
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,
-                    BrokerName = r.Ranking.BrokerRegion.Broker.Name
+                    BrokerName = r.Ranking.Broker.Name
                 }).ToList()
             };
         }

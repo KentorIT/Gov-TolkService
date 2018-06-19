@@ -96,7 +96,7 @@ namespace Tolk.Web.Models
             return new RequisitionModel
             {
                 RequestId = request.RequestId,
-                BrokerName = request.Ranking.BrokerRegion.Broker.Name,
+                BrokerName = request.Ranking.Broker.Name,
                 CustomerName = request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
                 ExpectedEndedAt = request.Order.EndAt,
@@ -108,7 +108,7 @@ namespace Tolk.Web.Models
                 InterpreterName = request.Interpreter.User.Email,
                 LanguageName = request.Order.Language.Name,
                 OrderNumber = request.Order.OrderNumber.ToString(),
-                RegionName = request.Ranking.BrokerRegion.Region.Name,
+                RegionName = request.Ranking.Region.Name,
                 PreviousRequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue)?.RequisitionId
             };
         }

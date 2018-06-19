@@ -45,7 +45,7 @@ namespace Tolk.Web.Controllers
             bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
 
             var items = _dbContext.Requests.Include(r => r.Order)
-                        .Where(r => r.Ranking.BrokerRegion.Broker.BrokerId == User.GetBrokerId())
+                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId())
                         .Select(r => new RequestListItemModel
                         {
                             RequestId = r.RequestId,
@@ -82,7 +82,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion).ThenInclude(b => b.Broker)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Single(o => o.RequestId == id);
 
@@ -106,7 +106,6 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
