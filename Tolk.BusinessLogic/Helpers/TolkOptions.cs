@@ -15,6 +15,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableTimeTravel { get; set; }
 
+        public SideBarBox[] SideBar { get; set; }
+
         public void Validate()
         {
             if (string.IsNullOrEmpty(PublicOrigin)
@@ -41,6 +43,18 @@ namespace Tolk.BusinessLogic.Helpers
             public string Password { get; set; }
 
             public string FromAddress { get; set; }
+        }
+
+        public class SideBarBox
+        {
+            public SideBarBox() { }
+            public SideBarBox(string title, string message)
+            {
+                Title = title;
+                Message = message;
+            }
+            public string Title { get; set; }
+            public string Message { get; set; }
         }
     }
 }

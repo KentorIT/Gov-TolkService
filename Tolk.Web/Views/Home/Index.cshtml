@@ -1,5 +1,7 @@
 ﻿@model Tolk.Web.Models.StartViewModel
 @using Tolk.BusinessLogic
+@using Microsoft.Extensions.Options;
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @{
     ViewData["Title"] = Constants.SystemName;
 }
@@ -54,13 +56,16 @@
         }
     </div>
     <div class="col-md-4">
-        <div class="panel panel-info">
-            <div class="panel-heading">
-                <h3>2018-04-19 Utveckling</h3>
+        @foreach(var b in Options.Value.SideBar)
+        {
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3>@b.Title</h3>
+                </div>
+                <p class="panel-body">
+                    @b.Message
+                </p>
             </div>
-            <p class="panel-body">
-                Applikationen är under utveckling och detta är aktuell utvecklingsversion, som inte innehåller komplett funktionalitet.
-            </p>
-        </div>
+        }
     </div>
 </div>
