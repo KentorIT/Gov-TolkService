@@ -192,6 +192,7 @@ namespace Tolk.Web.Controllers
                     var request = _dbContext.Requests
                     .Include(r => r.Order)
                     .Include(r => r.Requisitions)
+                    .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
