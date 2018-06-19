@@ -31,5 +31,5 @@ Select BrokerId, RegionId, 0.14, 3, '19990101', '29990101' from BrokerRegions
 Where BrokerId = 3
 
 Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate)
-Select BrokerId, RegionId, 0.16, 3, '19990101', '29990101' from BrokerRegions
+Select BrokerId, RegionId, 0.16, 4, '19990101', '29990101' from BrokerRegions
 Where BrokerId = 4
