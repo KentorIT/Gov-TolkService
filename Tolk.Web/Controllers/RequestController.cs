@@ -83,6 +83,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Ranking).ThenInclude(r => r.BrokerRegion).ThenInclude(b => b.Broker)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)

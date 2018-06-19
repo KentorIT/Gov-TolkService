@@ -77,6 +77,8 @@ namespace Tolk.Web.Models
                 DenyMessage = request.DenyMessage,
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
+                Interpreter = request.Interpreter?.User.UserName,
+                CompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
