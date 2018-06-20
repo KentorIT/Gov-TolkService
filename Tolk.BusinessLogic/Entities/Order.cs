@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Entities
             }
             set
             {
-                if(value == OrderStatus.ResponseAccepted &&
+                if (value == OrderStatus.ResponseAccepted &&
                     (Status != OrderStatus.RequestResponded
                     || Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
                 {
@@ -93,6 +93,9 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(LanguageId))]
         public Language Language { get; set; }
 
+        [MaxLength(255)]
+        public string OtherLanguage { get; set; }
+
         public AssignmentType AssignentType { get; set; }
 
         public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
@@ -103,7 +106,7 @@ namespace Tolk.BusinessLogic.Entities
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
 
         public DateTimeOffset StartAt { get; set; }
-         
+
         public DateTimeOffset EndAt { get; set; }
 
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -141,7 +144,7 @@ namespace Tolk.BusinessLogic.Entities
         public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry)
         {
             // TODO Need to get/understand rules for how close to assignment a request can be allowed.
-            if(newRequestExpiry.AddHours(1) > StartAt)
+            if (newRequestExpiry.AddHours(1) > StartAt)
             {
                 // For now, require response time to end at least one hour before start of assignment.
                 return null;
@@ -157,7 +160,7 @@ namespace Tolk.BusinessLogic.Entities
             var ranking = rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId))
                 .OrderBy(r => r.RankingId).FirstOrDefault();
 
-            if(ranking == null)
+            if (ranking == null)
             {
                 // TODO: Rejected by all brokers, what to do now?
                 return null;

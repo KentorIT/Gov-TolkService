@@ -1,7 +1,10 @@
-use TolkDev
+﻿
+CREATE TABLE #Languages(
+	[LanguageId] [int] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL
+	)
 
-Set Identity_Insert Languages On
-insert Languages(LanguageId, [Name])
+insert #Languages(LanguageId, [Name])
 Values
 (1, 'Albanska'),
 (2, 'Arabiska'),
@@ -63,6 +66,20 @@ Values
 (58, 'Urdu'),
 (59, 'Uzbekiska'),
 (60, 'Vietnamesiska'),
-(61, 'Vitryska')
+(61, 'Vitryska'),
+(62, 'Övrigt språk')
 
-Set Identity_Insert Languages off
+Set IDENTITY_INSERT Languages ON
+
+MERGE Languages dst
+USING #Languages src
+ON (src.LanguageId = dst.LanguageId)
+WHEN MATCHED THEN
+UPDATE SET dst.Name = src.Name
+WHEN NOT MATCHED THEN
+INSERT (LanguageId, Name)
+VALUES (src.LanguageId, src.Name);
+
+Set IDENTITY_INSERT Languages OFF
+
+DROP TABLE #Languages

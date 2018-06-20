@@ -45,7 +45,9 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(OrderFilterModel model)
         {
-            var orders = _dbContext.Orders.Include(o => o.Language).Include(o => o.Region)
+            var orders = _dbContext.Orders
+                .Include(o => o.Language)
+                .Include(o => o.Region)
                 .Where(r => r.CreatedBy == User.GetUserId());
 
             if (model.Status.HasValue)
@@ -60,7 +62,7 @@ namespace Tolk.Web.Controllers
                     Items = orders.Select(o => new OrderListItemModel
                     {
                         OrderId = o.OrderId,
-                        Language = o.Language.Name,
+                        Language = o.OtherLanguage ?? o.Language.Name,
                         OrderNumber = o.OrderNumber.ToString(),
                         RegionName = o.Region.Name,
                         Start = o.StartAt,

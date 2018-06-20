@@ -13,6 +13,11 @@ namespace Tolk.Web.Models
 {
     public class OrderModel
     {
+        /// <summary>
+        /// This is the id for the row in the langaiges select box that should sho the other language box.
+        /// </summary>
+        public static int OtherLanguageId { get; } = 62;
+
         public int? OrderId { get; set; }
 
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
@@ -64,6 +69,11 @@ namespace Tolk.Web.Models
         [ClientRequired]
         [MaxLength(255)]
         public string OffSiteContactInformation { get; set; }
+
+        [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekter här, det görs i extra behov.")]
+        [ClientRequired]
+        [MaxLength(255)]
+        public string OtherLanguage { get; set; }
 
         [Display(Name = "Erbjud flera alternativ till inställelsesätt")]
         public bool UseRankedInterpreterLocation { get; set; } = false;
@@ -165,6 +175,7 @@ namespace Tolk.Web.Models
         public void UpdateOrder(Order order)
         {
             order.LanguageId = LanguageId;
+            order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
             order.RegionId = RegionId;
             order.ContactPersonId = ContactPersonId;
             order.AssignentType = AssignmentType;
@@ -229,7 +240,7 @@ namespace Tolk.Web.Models
                 ContactPerson = order.ContactPersonUser?.NormalizedEmail,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
-                LanguageName = order.Language.Name,
+                LanguageName = order.OtherLanguage ?? order.Language.Name,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,

@@ -106,7 +106,7 @@ namespace Tolk.Web.Models
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 //TODO: Should be Name!
                 InterpreterName = request.Interpreter.User.Email,
-                LanguageName = request.Order.Language.Name,
+                LanguageName = request.Order.OtherLanguage ?? request.Order.Language.Name,
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,
                 PreviousRequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue)?.RequisitionId

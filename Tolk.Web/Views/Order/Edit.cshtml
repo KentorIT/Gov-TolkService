@@ -13,6 +13,8 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
             <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" />
+            <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
+            <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
             <form-entry asp-for="RequiredCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />

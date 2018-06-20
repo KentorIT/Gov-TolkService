@@ -70,7 +70,7 @@ namespace Tolk.Web.Models
                 StartDateTime = request.Order.StartAt,
                 EndDateTime = request.Order.EndAt,
                 BrokerName = request.Ranking.Broker.Name,
-                LanguageName = request.Order.Language.Name,
+                LanguageName = request.Order.OtherLanguage ?? request.Order.Language.Name,
                 RequestId = request.RequestId,
                 OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
                 OffSiteContactInformation = request.Order.OffSiteContactInformation,

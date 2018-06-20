@@ -113,6 +113,15 @@
         //hidden field to propagate the value even if the select is disabled.
         $("#InterpreterLocation").val($(this).val());
     });
+    $("body").on("change", "#LanguageId", function () {
+        if ($(this).val() === $("#OtherLanguageId").val()) {
+            $('#other-language').collapse('show');
+        }
+        else {
+            $('#other-language').collapse('hide');
+        }
+    });
+
     $("ol.drag-panel").sortable({
         vertical: true,
         pullPlaceholder: true,
