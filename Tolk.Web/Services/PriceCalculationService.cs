@@ -45,7 +45,8 @@ namespace Tolk.Web.Services
                 extraTimePrice += n * extraPriceInfo.Price;
             }
             //The broker fee should be calculated from baseBrice maxMinutes 60!
-            var brokerFee = brokerFeePercent * prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60).Price;
+            int days = (endAt.Date - startAt.Date).Days + 1;
+            var brokerFee = days * brokerFeePercent * prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60).Price;
             return price + extraTimePrice + brokerFee;
         }
 
