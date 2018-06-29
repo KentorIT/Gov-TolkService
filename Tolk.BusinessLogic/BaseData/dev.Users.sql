@@ -1,7 +1,5 @@
 ﻿use TolkDev;
 
-DELETE AspNetUsers WHERE Email in ('pia@polisen.se', 'david@domstol.se', 'frida@formedling.se', 'tomas@tolk.se')
-
 INSERT AspNetUsers
 (ConcurrencyStamp, Email, NormalizedEmail, NormalizedUserName, SecurityStamp, UserName, AccessFailedCount, EmailConfirmed, LockoutEnabled, PhoneNumberConfirmed, TwoFactorEnabled, CustomerOrganisationId, BrokerId, InterpreterId)
 VALUES
