@@ -80,6 +80,7 @@ namespace Tolk.Web.Authorization
                 case Order order:
                     return order.CreatedBy == userId;
                 case Request request:
+                    //TODO: Validate that the has the correct state, is connected to the user
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
                 case Requisition requisition:
                     return requisition.Request.Order.CreatedBy == userId || 

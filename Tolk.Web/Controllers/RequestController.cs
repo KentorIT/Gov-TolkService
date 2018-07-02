@@ -177,20 +177,12 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
             var request = _dbContext.Requests
-                .Include(r => r.Order)
+                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking)
                 .Single(r => r.RequestId == model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                //Get the order, and set Change the status on order and request?
-                //TODO: Validate that the has the correct state, is connected to the user
-                //Validate that the request is in correct state.
-                //var order = _dbContext.Orders.Include(o => o.Requests)
-                //    .ThenInclude(r => r.Ranking)
-                //    .Single(o => o.OrderId == model.OrderId);
-                //var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-
                 request.Order.Status = OrderStatus.Requested;
 
                 request.Status = RequestStatus.DeclinedByBroker;
