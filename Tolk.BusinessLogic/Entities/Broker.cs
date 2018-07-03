@@ -15,13 +15,16 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string Name { get; set; }
 
+        [MaxLength(255)]
+        public string EmailAddress { get; set; }
+
+        public string EmailDomain { get; set; }
+
         #region navigation properites
 
         public List<Ranking> Rankings { get; private set; }
 
         public List<AspNetUser> Users { get; set; }
-
-        public string EmailDomain { get; set; }
 
         #endregion
     }
