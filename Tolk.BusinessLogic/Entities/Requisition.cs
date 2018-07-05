@@ -68,6 +68,8 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingProcessedBy))]
         public AspNetUser ProcessedByImpersonator { get; set; }
 
+        public List<RequisitionPriceRow> PriceRows { get; set; }
+
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (Status != RequisitionStatus.Created)

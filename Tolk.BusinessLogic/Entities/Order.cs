@@ -137,6 +137,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderInterpreterLocation> InterpreterLocations { get; set; }
 
+        public List<OrderPriceRow> PriceRows { get; set; }
+
         #endregion
 
         #region methods

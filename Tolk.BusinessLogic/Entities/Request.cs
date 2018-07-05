@@ -112,6 +112,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<Requisition> Requisitions { get; set; }
 
+        public List<RequestPriceRow> PriceRows { get; set; }
+
         #endregion
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)

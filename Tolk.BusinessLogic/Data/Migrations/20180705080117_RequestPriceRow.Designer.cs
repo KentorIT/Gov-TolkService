@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180705080117_RequestPriceRow")]
+    partial class RequestPriceRow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -386,9 +388,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("PriceListRowId");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
                     b.Property<DateTimeOffset>("EndAt");
 
                     b.Property<DateTimeOffset>("StartAt");
@@ -640,9 +639,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("PriceListRowId");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
                     b.Property<DateTimeOffset>("EndAt");
 
                     b.Property<DateTimeOffset>("StartAt");
@@ -714,29 +710,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("RequestId");
 
                     b.ToTable("Requisitions");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
-                {
-                    b.Property<int>("RequisitionId");
-
-                    b.Property<int>("PriceListRowId");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
-                    b.Property<DateTimeOffset>("EndAt");
-
-                    b.Property<DateTimeOffset>("StartAt");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(10, 2)");
-
-                    b.HasKey("RequisitionId", "PriceListRowId");
-
-                    b.HasIndex("PriceListRowId");
-
-                    b.ToTable("RequisitionPriceRow");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -855,7 +828,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderPriceRow", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("PriceRows")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -958,7 +931,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
-                        .WithMany("PriceRows")
+                        .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -992,19 +965,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("Requisitions")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.PriceListRow", "PriceListRow")
-                        .WithMany()
-                        .HasForeignKey("PriceListRowId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
-                        .WithMany("PriceRows")
-                        .HasForeignKey("RequisitionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
