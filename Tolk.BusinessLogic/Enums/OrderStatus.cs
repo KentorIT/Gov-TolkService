@@ -8,6 +8,7 @@ namespace Tolk.BusinessLogic.Enums
     public enum OrderStatus
     {
         [Description("Sparat, ej skickat")]
+        [Obsolete("Inte använd än")]
         Saved = 1,
         [Description("Uppdraget har skickats för tillsättning")]
         Requested = 2,
@@ -21,5 +22,7 @@ namespace Tolk.BusinessLogic.Enums
         Attested = 6,
         [Description("Leverans är bekräftad")]
         DeliveryAccepted = 7,
+        [Description("Uppdraget har avbokats av avropare")]
+        Cancelled = 8
     }
 }
