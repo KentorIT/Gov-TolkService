@@ -25,7 +25,7 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<Order>()
             .Property(p => p.OrderNumber)
-            .HasComputedColumnSql("[OrderId] + 10000000");
+            .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
             builder.Entity<IdentityUserRole<int>>()
                 .HasOne<AspNetUser>()
