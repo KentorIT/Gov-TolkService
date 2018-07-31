@@ -90,7 +90,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
-        [Display(Name = "Kompetensnivå")]
+        [Display(Name = "Beställd kompetensnivå")]
         [Required]
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
 
@@ -130,12 +130,15 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal CalculatedPrice { get; set; }
 
-        [Display(Name = "Beräknat resekostnad (exkl. moms)")]
+        [Display(Name = "Angiven förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Tillsatt tolk")]
         public string InterpreterName { get; set; }
+
+        [Display(Name = "Tolkens kompetensnivå")]
+        public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
 
         [Display(Name = "Inställelsesätt enl. svar")]
         public InterpreterLocation InterpreterLocationAnswer { get; set; }
