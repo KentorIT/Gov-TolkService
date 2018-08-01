@@ -37,7 +37,7 @@ namespace Tolk.Web.Models
         public string DenyMessage { get; set; }
 
         [Required]
-        [Display(Name = "Kompetensnivå")]
+        [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
 
         [Required]
@@ -51,6 +51,7 @@ namespace Tolk.Web.Models
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]
+        [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
 
         [ClientRequired]
@@ -62,7 +63,7 @@ namespace Tolk.Web.Models
 
         #region view stuff
 
-        [Display(Name = "Vald tolk")]
+        [Display(Name = "Tillsatt tolk")]
         public string Interpreter{ get; set; }
 
         #endregion
@@ -79,6 +80,7 @@ namespace Tolk.Web.Models
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.User.UserName,
                 CompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
+                ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
