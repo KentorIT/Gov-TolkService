@@ -141,3 +141,7 @@ li.placeholder {
 .line-break {
     white-space: pre-line;
 }
+
+.select-short {
+    width: 175px !important;
+}
