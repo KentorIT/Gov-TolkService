@@ -79,6 +79,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
+                .Include(o => o.PriceRows)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
@@ -91,19 +92,14 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel);
-                var listType = order.CustomerOrganisation.PriceListType;
                 //TODO: Handle this better. Preferably with a list that you can use contains on
                 var request = order.Requests.SingleOrDefault(r =>
                     r.Status == RequestStatus.Created ||
                     r.Status == RequestStatus.Received ||
                     r.Status == RequestStatus.Accepted ||
-                    r.Status == RequestStatus.SentToInterpreter ||
                     r.Status == RequestStatus.Approved
                     );
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                //TODO: Get from order.PriceRows instead
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0)).TotalPrice;
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
@@ -155,13 +151,14 @@ namespace Tolk.Web.Controllers
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
                     ImpersonatingCreator = User.TryGetImpersonatorId(),
                     Requirements = new List<OrderRequirement>(),
-                    InterpreterLocations = new List<OrderInterpreterLocation>()
-                };
-
+                    InterpreterLocations = new List<OrderInterpreterLocation>(),
+                    PriceRows = new List<OrderPriceRow>()
+                };                   
                 model.UpdateOrder(order);
                 _dbContext.Add(order);
 
                 await _orderService.CreateRequest(order);
+                _orderService.CreatePriceInformation(order);
 
                 _dbContext.SaveChanges();
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -97,6 +98,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
+        public PriceInformation PriceInformation { get; set; }
+
         #region details
 
         [Display(Name = "Status")]
@@ -128,7 +131,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
         [DataType(DataType.Currency)]
-        public decimal CalculatedPrice { get; set; }
+        public decimal CalculatedPrice { get => PriceInformation.TotalPrice; }
 
         [Display(Name = "Angiven förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
@@ -280,9 +283,20 @@ namespace Tolk.Web.Models
                     CanSatisfyRequirement = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.CanSatisfyRequirement,
                     Answer = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.Answer
                 }).ToList(),
+                PriceInformation = new PriceInformation
+                {
+                    PriceRows = order.PriceRows.Select(r => new PriceRow
+                    {
+                        StartAt = r.StartAt,
+                        EndAt = r.EndAt,
+                        IsBrokerFee = r.IsBrokerFee,
+                        Price = r.TotalPrice,
+                        Quantity = 1,
+                        PriceListRowId = r.PriceListRowId,
+                    }).ToList()
+                },
                 PreviousRequests = order.Requests.Where( r=> 
                     r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
-                    r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByInterpreter ||
                     r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
                     r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
                 ).Select(r => new BrokerListModel

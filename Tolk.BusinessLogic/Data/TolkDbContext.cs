@@ -128,7 +128,11 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<Order> Orders { get; set; }
 
+        public DbSet<OrderPriceRow> OrderPriceRows { get; set; }
+
         public DbSet<Request> Requests { get; set; }
+
+        public DbSet<RequestPriceRow> RequestPriceRows { get; set; }
 
         public DbSet<Broker> Brokers { get; set; }
 
@@ -139,6 +143,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Holiday> Holidays { get; set; }
 
         public DbSet<Requisition> Requisitions { get; set; }
+
+        public DbSet<RequisitionPriceRow> RequisitionPriceRows { get; set; }
 
         public DbSet<PriceListRow> PriceListRows { get; set; }
 

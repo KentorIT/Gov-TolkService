@@ -75,6 +75,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> View(int id)
         {
             var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
                 .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
                 .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
@@ -99,6 +100,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Process(int id)
         {
             var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
                 .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
                 .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)

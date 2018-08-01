@@ -11,6 +11,7 @@ using System.Data;
 using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Enums;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -20,6 +21,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly RankingService _rankingService;
         private readonly DateCalculationService _dateCalculationService;
+        private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
 
         public OrderService(
@@ -27,19 +29,21 @@ namespace Tolk.BusinessLogic.Services
             ISwedishClock clock,
             RankingService rankingService,
             DateCalculationService dateCalculationService,
+            PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger)
         {
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _rankingService = rankingService;
             _dateCalculationService = dateCalculationService;
+            _priceCalculationService = priceCalculationService;
             _logger = logger;
         }
         
         public async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter ))
+                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received ))
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
@@ -59,7 +63,7 @@ namespace Tolk.BusinessLogic.Services
                             .ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(
                             r => r.ExpiresAt <= _clock.SwedenNow
-                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.SentToInterpreter)
+                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received )
                             && r.RequestId == requestId);
 
                         if (expiredRequest == null)
@@ -133,6 +137,33 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
                    request.Ranking.BrokerId);
             }
+        }
+
+        public  void CreatePriceInformation(Order order)
+        {
+            var priceInformation = _priceCalculationService.GetPrices(
+                order.StartAt,
+                order.EndAt,
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel),
+                order.CustomerOrganisation.PriceListType,
+                order.Requests.Single(r => 
+                    r.Status == RequestStatus.Created || 
+                    r.Status == RequestStatus.Accepted || 
+                    r.Status == RequestStatus.Received ||
+                    r.Status == RequestStatus.Approved).Ranking.BrokerFee
+                );
+            foreach (var row in priceInformation.PriceRows)
+            {
+                order.PriceRows.Add(new OrderPriceRow
+                {
+                    StartAt = row.StartAt,
+                    EndAt = row.EndAt,
+                    IsBrokerFee = row.IsBrokerFee,
+                    PriceListRowId = row.PriceListRowId,
+                    TotalPrice = row.TotalPrice
+                });
+            }
+            _tolkDbContext.SaveChanges();
         }
 
         public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDateTime)

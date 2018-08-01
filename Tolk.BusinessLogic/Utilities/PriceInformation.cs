@@ -9,11 +9,7 @@ namespace Tolk.BusinessLogic.Utilities
 
     public class PriceInformation
     {
-        public List<PriceTime> PriceRows { get; set; }
-
-        public DateTimeOffset StartAt { get; set; }
-
-        public DateTimeOffset EndAt { get; set; }
+        public List<PriceRow> PriceRows { get; set; }
 
         public decimal TotalPrice
         {

@@ -2,7 +2,9 @@ Use TolkDev
 declare @increment bit
 declare @reseed int
 
-truncate table Requisitions
+truncate table OrderPriceRow
+truncate table RequestPriceRow
+truncate table RequisitionPriceRow
 truncate table OrderInterpreterLocation
 truncate table OrderRequirementRequestAnswer 
 
@@ -26,3 +28,10 @@ set @reseed = 1 - @increment
 
 delete Orders --
 DBCC CHECKIDENT (Orders, reseed, @reseed)--
+
+select @increment = IsNull(Max(RequisitionId), 1)
+from Requisitions 
+set @reseed = 1 - @increment
+
+delete Requisitions --
+DBCC CHECKIDENT (Requisitions, reseed, @reseed)--

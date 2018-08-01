@@ -7,7 +7,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
-namespace Tolk.Web.Services
+namespace Tolk.BusinessLogic.Services
 {
     public class PriceCalculationService
     {
@@ -26,45 +26,50 @@ namespace Tolk.Web.Services
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
-            var minutesPerPriceType = GetMinutesPerPriceType(startAt, endAt, prices, wasteStartAt, wasteEndAt).ToList();
+            var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, wasteStartAt, wasteEndAt).ToList();
 
             //The broker fee should be calculated from baseBrice maxMinutes 60.
             int days = (endAt.Date - startAt.Date).Days + 1;
 
             var brokerFee = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60);
-            minutesPerPriceType.Add(new PriceTime
+            minutesPerPriceType.Add(new PriceRow
             {
                 StartAt = startAt,
                 EndAt = startAt,
                 PriceRowType = PriceRowType.BasePrice,
                 Quantity = days,
                 Price = brokerFee.Price * brokerFeePercent,
+                PriceListRowId = brokerFee.PriceListRowId,
                 IsBrokerFee = true
             });
             var priceInformation = new PriceInformation
             {
-                StartAt = startAt,
-                EndAt = endAt,
                 PriceRows = minutesPerPriceType
             };
 
             return priceInformation;
         }
 
-        private static PriceTime GetPriceInformation(List<PriceListRow> prices, PriceTime priceTime)
+        private static PriceRow GetPriceInformation(DateTimeOffset startAt, DateTimeOffset endAt, PriceRowType rowType, List<PriceListRow> prices)
         {
-            var extraPriceInfo = prices.Single(r => r.PriceRowType == priceTime.PriceRowType);
-            priceTime.Quantity = priceTime.Minutes / extraPriceInfo.MaxMinutes;
-            if (priceTime.Minutes % extraPriceInfo.MaxMinutes > 0)
+            PriceListRow priceInfo = prices.Single(r => r.PriceRowType == rowType);
+            var priceTime = new PriceRow
+            {
+                StartAt = startAt,
+                EndAt = endAt,
+                PriceRowType = rowType
+            };
+            priceTime.Quantity = priceTime.Minutes / priceInfo.MaxMinutes;
+            if (priceTime.Minutes % priceInfo.MaxMinutes > 0)
             {
                 priceTime.Quantity++;
             }
-            priceTime.PriceListRowId = extraPriceInfo.PriceListRowId;
-            priceTime.Price = extraPriceInfo.Price;
+            priceTime.PriceListRowId = priceInfo.PriceListRowId;
+            priceTime.Price = priceInfo.Price;
             return priceTime;
         }
 
-        private IEnumerable<PriceTime> GetMinutesPerPriceType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, DateTimeOffset? wasteStartAt, DateTimeOffset? wasteEndAt)
+        private IEnumerable<PriceRow> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, DateTimeOffset? wasteStartAt, DateTimeOffset? wasteEndAt)
         {
             int maxMinutes = 330;
             TimeSpan span = endAt - startAt;
@@ -73,7 +78,7 @@ namespace Tolk.Web.Services
             {
                 DateTimeOffset extraTimeStartsAt = startAt.AddMinutes(maxMinutes);
                 var basePrice = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes >= maxMinutes);
-                yield return new PriceTime
+                yield return new PriceRow
                 {
                     StartAt = startAt,
                     EndAt = extraTimeStartsAt,
@@ -83,14 +88,13 @@ namespace Tolk.Web.Services
                     Price = basePrice.Price
                 };
                 //Calculate when the extra time starts, date wize.
-                yield return GetPriceInformation(
-                    prices,
-                    new PriceTime { StartAt = extraTimeStartsAt, EndAt = endAt, PriceRowType = PriceRowType.PriceOverMaxTime });
+                yield return GetPriceInformation(extraTimeStartsAt, endAt, PriceRowType.PriceOverMaxTime, prices);
             }
             else
             {
-                var basePrice = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes >= totalMinutes);
-                yield return new PriceTime
+                var basePrice = prices.OrderBy(p => p.MaxMinutes)
+                    .First(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes >= totalMinutes);
+                yield return new PriceRow
                 {
                     StartAt = startAt,
                     EndAt = endAt,
@@ -110,13 +114,10 @@ namespace Tolk.Web.Services
                     (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
                 {
                     yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                        {
-                            StartAt = start,
-                            EndAt = (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                            PriceRowType = dateTypes.Contains(DateType.BigHolidayFullDay) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.WeekendIWH
-                        }
+                        start,
+                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        dateTypes.Contains(DateType.BigHolidayFullDay) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.WeekendIWH,
+                        prices
                     );
                 }
 
@@ -126,13 +127,10 @@ namespace Tolk.Web.Services
                     start.TimeOfDay < new TimeSpan(7, 0, 0))
                 {
                     yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                        {
-                            StartAt = start,
-                            EndAt = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
-                            PriceRowType = dateTypes.Contains(DateType.DayAfterBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours
-                        }
+                        start,
+                        (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
+                        dateTypes.Contains(DateType.DayAfterBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
+                        prices
                     );
                 }
 
@@ -141,13 +139,10 @@ namespace Tolk.Web.Services
                     (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
                     yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                        {
-                            StartAt = (start.Hour < 18 ? start.Date.AddHours(18) : start),
-                            EndAt = (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                            PriceRowType = dateTypes.Contains(DateType.DayBeforeBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours
-                        }
+                        (start.Hour < 18 ? start.Date.AddHours(18) : start),
+                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        dateTypes.Contains(DateType.DayBeforeBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
+                        prices
                     );
                 }
                 //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayBeforeBigHoliday) 00:00 => 18:00
@@ -155,13 +150,10 @@ namespace Tolk.Web.Services
                    start.TimeOfDay < new TimeSpan(18, 0, 0))
                 {
                     yield return GetPriceInformation(
-                        prices,
-                         new PriceTime
-                        {
-                            StartAt = start,
-                            EndAt = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18) : stop),
-                            PriceRowType = PriceRowType.WeekendIWH
-                        }
+                        start,
+                        (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18) : stop),
+                        PriceRowType.WeekendIWH,
+                        prices
                      );
                 }
                 //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayAfterBigHoliday) 07:00 => 24:00
@@ -169,13 +161,10 @@ namespace Tolk.Web.Services
                     (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0)))
                 {
                     yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                        {
-                            StartAt = start.Date.AddHours(7),
-                            EndAt = (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                            PriceRowType = PriceRowType.WeekendIWH
-                        }
+                        start.Date.AddHours(7),
+                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        PriceRowType.WeekendIWH,
+                        prices
                     );
                 }
 
@@ -186,33 +175,27 @@ namespace Tolk.Web.Services
             //Get lost times, if any
             if (wasteStartAt.HasValue)
             {
-                yield return GetPriceInformation(
-                    prices,
-                    new PriceTime { StartAt = wasteStartAt.Value, EndAt = startAt, PriceRowType = PriceRowType.LostTime }
-                );
-               foreach (var x in GetIWHWasteMinutes(wasteStartAt.Value, startAt, prices))
+                yield return GetPriceInformation(wasteStartAt.Value, startAt, PriceRowType.LostTime, prices);
+                foreach (var row in GetIWHWasteTimePriceRows(wasteStartAt.Value, startAt, prices))
                 {
-                    yield return x;
+                    yield return row;
                 }
 
             }
             if (wasteEndAt.HasValue)
             {
-                yield return GetPriceInformation(
-                    prices,
-                    new PriceTime { StartAt = endAt, EndAt = wasteEndAt.Value, PriceRowType = PriceRowType.LostTime }
-                );
-                foreach (var x in GetIWHWasteMinutes(endAt, wasteEndAt.Value, prices))
+                yield return GetPriceInformation(endAt, wasteEndAt.Value, PriceRowType.LostTime, prices);
+                foreach (var row in GetIWHWasteTimePriceRows(endAt, wasteEndAt.Value, prices))
                 {
-                    yield return x;
+                    yield return row;
                 }
             }
         }
 
-        private IEnumerable<PriceTime> GetIWHWasteMinutes(DateTimeOffset startedAt, DateTimeOffset endedAt, List<PriceListRow> prices)
+        private IEnumerable<PriceRow> GetIWHWasteTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices)
         {
-            var start = startedAt.LocalDateTime;
-            var stop = endedAt.LocalDateTime;
+            var start = startAt.LocalDateTime;
+            var stop = endAt.LocalDateTime;
             while (start <= stop)
             {
                 var dateTypes = GetDateTypes(start);
@@ -220,15 +203,7 @@ namespace Tolk.Web.Services
                     dateTypes.Contains(DateType.Holiday) ||
                     dateTypes.Contains(DateType.Weekend))
                 {
-                    yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                        {
-                            StartAt = start,
-                            EndAt = (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                            PriceRowType = PriceRowType.LostTimeIWH
-                        }
-                    );
+                    yield return GetPriceInformation(start, (start.Date == stop.Date ? stop : start.Date.AddDays(1)), PriceRowType.LostTimeIWH, prices);
                 }
                 else
                 {
@@ -236,26 +211,20 @@ namespace Tolk.Web.Services
                     if (start.TimeOfDay < new TimeSpan(7, 0, 0))
                     {
                         yield return GetPriceInformation(
-                            prices,
-                            new PriceTime
-                            {
-                                StartAt = start,
-                                EndAt = (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
-                                PriceRowType = PriceRowType.LostTimeIWH
-                            }
+                            start,
+                            (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
+                            PriceRowType.LostTimeIWH,
+                            prices
                         );
                     }
 
                     if ((start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
                     {
                         yield return GetPriceInformation(
-                        prices,
-                        new PriceTime
-                            {
-                                StartAt = (start.Hour < 18 ? start.Date.AddHours(18) : start),
-                                EndAt = (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                                PriceRowType = PriceRowType.LostTimeIWH
-                            }
+                            (start.Hour < 18 ? start.Date.AddHours(18) : start),
+                            (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                            PriceRowType.LostTimeIWH,
+                            prices
                         );
                     }
                 }

@@ -7,10 +7,12 @@ using Tolk.BusinessLogic.Entities;
 namespace Tolk.BusinessLogic.Utilities
 {
 
-    public class PriceTime
+    public class PriceRow
     {
         public DateTimeOffset StartAt { get; set; }
+
         public DateTimeOffset EndAt { get; set; }
+
         public int Minutes
         {
             get
@@ -21,11 +23,15 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         public bool IsBrokerFee { get; set; } = false;
+
         public PriceRowType PriceRowType { get; set; }
 
         public int PriceListRowId { get; set; }
+
         public int Quantity { get; set; }
+
         public decimal Price { get; set; }
+
         public decimal TotalPrice
         {
             get
