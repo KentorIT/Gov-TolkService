@@ -48,13 +48,19 @@
             //TODO: Show if allow more than 2 h travel time
             <display-entry asp-for="ExpectedTravelCosts" />
         }
-        @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
+
+        @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
         {
-            //TODO skold be a table or other kind if list.
-            <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
-            <display-entry asp-for="RequirementAnswers[i].Requirement" />
-            <display-entry asp-for="RequirementAnswers[i].Answer" />
-            <display-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
+            <label>Extra behov</label><br />
+            @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
+            {
+                <span class="list-group-item-heading">@req.Requirement</span>
+                <ul>
+                    <li>
+                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
+                    </li>
+                </ul>
+            }
         }
     </div>
 </div>

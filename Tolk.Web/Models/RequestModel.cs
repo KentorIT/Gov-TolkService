@@ -85,7 +85,9 @@ namespace Tolk.Web.Models
                 {
                     OrderRequirementId = r.OrderRequirementId,
                     IsRequired = r.IsRequired,
-                    Requirement = $"{r.Description}({EnumHelper.GetDescription(r.RequirementType)}){(r.IsRequired ? " krav" : string.Empty)}"
+                    Requirement = $"{(r.IsRequired ? "Krav: " : "Önskemål: ")}{EnumHelper.GetDescription(r.RequirementType)} - {r.Description}",
+                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false,
                 }).ToList(),
                 InterpreterLocation = request.Order.InterpreterLocations.Count() == 1 ? request.Order.InterpreterLocations.Single()?.InterpreterLocation : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
