@@ -8,6 +8,9 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class RequestPriceRow
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int RequestPriceRowId { get; set; }
+
         public int RequestId { get; set; }
 
         public int PriceListRowId { get; set; }
@@ -28,5 +31,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(PriceListRowId))]
         public PriceListRow PriceListRow { get; set; }
+
+        public bool IsBrokerFee { get; set; }
     }
 }

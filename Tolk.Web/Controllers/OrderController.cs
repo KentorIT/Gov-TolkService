@@ -102,7 +102,8 @@ namespace Tolk.Web.Controllers
                     r.Status == RequestStatus.Approved
                     );
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0));
+                //TODO: Get from order.PriceRows instead
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, (request?.Ranking.BrokerFee ?? 0)).TotalPrice;
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))

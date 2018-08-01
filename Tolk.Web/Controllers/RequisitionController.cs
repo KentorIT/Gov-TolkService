@@ -60,9 +60,9 @@ namespace Tolk.Web.Controllers
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee);
-                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
-                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt);
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
+                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, request.Ranking.BrokerFee,
+                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
                 return View(model);
             }
             return Forbid();
@@ -86,9 +86,9 @@ namespace Tolk.Web.Controllers
                 var order = request.Order;
                 var listType = order.CustomerOrganisation.PriceListType;
                 var model = RequisitionProcessModel.GetProcessViewModelFromRequisition(requisition);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee);
+                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
                 model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
-                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt);
+                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
                 return View(model);
             }
             return Forbid();

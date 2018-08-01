@@ -52,15 +52,6 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<OrderInterpreterLocation>()
                 .HasKey(oil => new { oil.OrderId, oil.InterpreterLocation });
 
-            builder.Entity<OrderPriceRow>()
-                .HasKey(opr => new { opr.OrderId, opr.PriceListRowId });
-
-            builder.Entity<RequestPriceRow>()
-                .HasKey(opr => new { opr.RequestId, opr.PriceListRowId });
-
-            builder.Entity<RequisitionPriceRow>()
-                .HasKey(opr => new { opr.RequisitionId, opr.PriceListRowId });
-
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()
