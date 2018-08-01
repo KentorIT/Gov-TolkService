@@ -61,7 +61,7 @@ namespace Tolk.Web.Controllers
                         });
             if (model.Status.HasValue)
             {
-                items = items.Where(r => r.Status == model.Status);
+                items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
             }
 
             return View(

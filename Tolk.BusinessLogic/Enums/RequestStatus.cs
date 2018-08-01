@@ -7,6 +7,11 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum RequestStatus
     {
+        /// <summary>
+        /// This status is not used in db, just for filter lists
+        /// </summary>
+        [Description("Inkommen/mottagen")]
+        ToBeProcessedByBroker = -1,
         [Description("Inkommen")]
         Created = 1,
         [Description("Mottagen")]

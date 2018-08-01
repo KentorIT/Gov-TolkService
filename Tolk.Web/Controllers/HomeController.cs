@@ -147,7 +147,7 @@ namespace Tolk.Web.Controllers
                 Controller = "Request",
                 Action = "List",
                 Filters = new Dictionary<string, string> {
-                        { "Status", RequestStatus.Created.ToString() }
+                        { "Status", RequestStatus.ToBeProcessedByBroker.ToString() }
                     }
 
             };
