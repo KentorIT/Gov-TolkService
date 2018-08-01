@@ -328,7 +328,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("OrderNumber")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasComputedColumnSql("[OrderId] + 10000000");
+                        .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
                     b.Property<string>("OtherLanguage")
                         .HasMaxLength(255);

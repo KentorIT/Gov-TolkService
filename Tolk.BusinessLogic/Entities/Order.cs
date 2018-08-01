@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Entities
         public int OrderId { get; set; }
 
         [Required]
-        public int OrderNumber { get; set; }
+        public string OrderNumber { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
 

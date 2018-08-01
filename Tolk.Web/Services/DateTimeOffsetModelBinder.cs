@@ -21,7 +21,10 @@ namespace Tolk.Web.Services
                 return Task.CompletedTask;
             }
 
-            var rawDateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValue}");
+            var rawTime = timeValue.FirstValue.Contains(":") 
+                ? timeValue.FirstValue 
+                : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
+            var rawDateTime = DateTime.Parse($"{dateValue.FirstValue} {rawTime}");
 
             var model = rawDateTime.ToDateTimeOffsetSweden();
 
