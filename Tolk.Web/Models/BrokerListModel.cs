@@ -8,5 +8,7 @@ namespace Tolk.Web.Models
         public string BrokerName { get; set; }
 
         public RequestStatus Status {get;set;} 
+
+        public string DenyMessage { get; set; }
     }
 }
