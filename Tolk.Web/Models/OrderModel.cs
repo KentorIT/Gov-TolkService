@@ -131,7 +131,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
         [DataType(DataType.Currency)]
-        public decimal CalculatedPrice { get => PriceInformation.TotalPrice; }
+        public decimal CalculatedPrice { get => PriceInformation?.TotalPrice ?? 0; }
 
         [Display(Name = "Angiven förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]

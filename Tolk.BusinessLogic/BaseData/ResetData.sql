@@ -2,9 +2,9 @@ Use TolkDev
 declare @increment bit
 declare @reseed int
 
-truncate table OrderPriceRow
-truncate table RequestPriceRow
-truncate table RequisitionPriceRow
+truncate table OrderPriceRows
+truncate table RequestPriceRows
+truncate table RequisitionPriceRows
 truncate table OrderInterpreterLocation
 truncate table OrderRequirementRequestAnswer 
 
