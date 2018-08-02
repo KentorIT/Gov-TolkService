@@ -31,7 +31,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        [Display(Name = "Meddelande")]
+        [Display(Name = "Orsak till avslag")]
         [DataType(DataType.MultilineText)]
         [Required]
         public string DenyMessage { get; set; }
