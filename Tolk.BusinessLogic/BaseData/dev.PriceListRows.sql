@@ -1,5 +1,6 @@
 use TolkDev
-truncate table PriceListRows
+DELETE FROM PriceListRows
+DBCC CHECKIDENT ('TolkDev.dbo.PriceListRows',RESEED, 0)
 SET IDENTITY_INSERT PriceListRows ON
 insert PriceListRows(PriceListRowId, PriceListType, StartDate, EndDate, MaxMinutes, Price, CompetenceLevel, PriceRowType)
 Select 1, 1, '20180101', '20991231', 60, 355, 1, 1
