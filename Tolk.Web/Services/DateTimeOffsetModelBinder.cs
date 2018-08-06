@@ -21,12 +21,12 @@ namespace Tolk.Web.Services
                 return Task.CompletedTask;
             }
 
-            var rawTime = timeValue.FirstValue.Contains(":") 
+            var timeValueSanitized = timeValue.FirstValue.Contains(":") 
                 ? timeValue.FirstValue 
                 : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
-            var rawDateTime = DateTime.Parse($"{dateValue.FirstValue} {rawTime}");
+            var dateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValueSanitized}");
 
-            var model = rawDateTime.ToDateTimeOffsetSweden();
+            var model = dateTime.ToDateTimeOffsetSweden();
 
             bindingContext.Result = ModelBindingResult.Success(model);
 

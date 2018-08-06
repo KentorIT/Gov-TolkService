@@ -61,6 +61,7 @@ namespace Tolk.Web
             services.AddMvc(opt =>
             {
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
+                opt.ModelBinderProviders.Insert(1, new TimeSpanModelBinderProvider());
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
 

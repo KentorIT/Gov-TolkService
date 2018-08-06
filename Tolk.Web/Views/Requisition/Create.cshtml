@@ -22,7 +22,7 @@
                 <input asp-for="RequestId" type="hidden" />
                 @if (Model.PreviousRequisition != null)
                 {
-                    var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt).Value;
+                    var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt);
                     <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
                 }
                 <form-entry asp-for="WasteBefore" />
@@ -40,7 +40,7 @@
                 <form-entry asp-for="SessionEndedAt" />
                 @if (Model.PreviousRequisition != null)
                 {
-                    var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt).Value;
+                    var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt);
                     <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
                 }
                 <form-entry asp-for="WasteAfter" />
