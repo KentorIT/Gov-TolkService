@@ -1,0 +1,10 @@
+﻿@model AssignmentFilterModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+<div class="col-md-4 pull-right">
+    <h4>Filtrera</h4>
+    <form method="get" class="filter-form">
+        <form-entry asp-for="Status" type="select" asp-items="SelectListService.AssignmentStatuses" Class="allow-clear" />
+    </form>
+</div>
+
