@@ -162,7 +162,7 @@ namespace Tolk.Web.Controllers
                 Controller = "Assignment",
                 Action = "List",
                 Filters = new Dictionary<string, string> {
-                        { "Status", RequestStatus.Approved.ToString() }
+                        { "Status", AssignmentStatus.ToBeReported.ToString() }
                     }
             };
 
@@ -193,23 +193,30 @@ namespace Tolk.Web.Controllers
 
             yield return new StartViewModel.StartPageBox
             {
-                //TODO: Here we need to check the order too!
+                //TODO: Here we need to check the order too! 
                 Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
                     r.Order.StartAt > _clock.SwedenNow &&
+                    !r.Requisitions.Any() &&
                     r.InterpreterId == interpreterId).Count(),
                 Header = "Kommande uppdrag",
                 Controller = "Assignment",
                 Action = "List",
+                Filters = new Dictionary<string, string> {
+                        { "Status", AssignmentStatus.ToBeExecuted.ToString() }
+                    }
             };
             yield return new StartViewModel.StartPageBox
             {
                 Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
-                    r.Order.StartAt < _clock.SwedenNow &&
+                    r.Order.EndAt < _clock.SwedenNow &&
                     !r.Requisitions.Any() &&
                     r.InterpreterId == interpreterId).Count(),
                 Header = "Att avrapportera",
                 Controller = "Assignment",
-                Action = "List"
+                Action = "List",
+                Filters = new Dictionary<string, string> {
+                        { "Status", AssignmentStatus.ToBeReported.ToString() }
+                    }
             };
             int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue &&
                 r.Status == RequisitionStatus.DeniedByCustomer &&

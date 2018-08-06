@@ -13,6 +13,8 @@ using Tolk.Web.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Services;
+
 
 namespace Tolk.Web.Controllers
 {
@@ -21,22 +23,26 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly UserManager<AspNetUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ISwedishClock _clock;
 
         public AssignmentController(TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _authorizationService = authorizationService;
+            _clock = clock;
         }
 
-        public IActionResult List()
+        public IActionResult List(AssignmentFilterModel filterModel)
         {
             var requests = _dbContext.Requests.Include(r => r.Order).Where(r => r.Status == RequestStatus.Approved);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var interpreterId = User.TryGetInterpreterId();
             var brokerId = User.TryGetBrokerId();
+
             if (interpreterId.HasValue)
             {
                 requests = requests.Where(r => r.InterpreterId == interpreterId);
@@ -45,17 +51,37 @@ namespace Tolk.Web.Controllers
             {
                 requests = requests.Where(r => r.Ranking.BrokerId == brokerId);
             }
-            return View(requests.Select(r => new RequestListItemModel
+            if (filterModel.Status.HasValue)
             {
-                RequestId = r.RequestId,
-                Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                OrderNumber = r.Order.OrderNumber.ToString(),
-                CustomerName = r.Order.CustomerOrganisation.Name,
-                RegionName = r.Order.Region.Name,
-                Start = r.Order.StartAt,
-                End = r.Order.EndAt,
-                Status = r.Status
-            }));
+                switch (filterModel.Status)
+                {
+                    case AssignmentStatus.ToBeExecuted:
+                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt > _clock.SwedenNow);
+                        break;
+                    case AssignmentStatus.ToBeReported:
+                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.EndAt < _clock.SwedenNow);
+                        break;
+                    default:
+                        requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Attested || r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
+                        break;
+                }
+            }
+            return View(
+               new AssignmentListModel
+               {
+                   FilterModel = filterModel,
+                   Items = requests.Select(r => new RequestListItemModel
+                   {
+                       RequestId = r.RequestId,
+                       Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                       OrderNumber = r.Order.OrderNumber.ToString(),
+                       CustomerName = r.Order.CustomerOrganisation.Name,
+                       RegionName = r.Order.Region.Name,
+                       Start = r.Order.StartAt,
+                       End = r.Order.EndAt,
+                       Status = r.Status
+                   })
+               });
         }
 
         public async Task<IActionResult> View(int id)
