@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         {
             return new RequisitionProcessModel
             {
-                PreviousRequisitionId = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)?.RequisitionId,
+                PreviousRequisition = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId),
                 RequisitionId = requisition.RequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,

@@ -76,12 +76,12 @@ namespace Tolk.Web.Models
         public DateTimeOffset StoredTimeWasteAfterEndedAt { get; set; }
 
         [Display(Name = "Total registrerad tidsspillan")]
-        public string TotalRegisteredWasteTime
+        public TimeSpan TotalRegisteredWasteTime
         {
             get
             {
-                var waste = (StoredTimeWasteAfterEndedAt - SessionEndedAt) + (SessionStartedAt - StoredTimeWasteBeforeStartedAt);
-                return waste.Hours > 0 ? $"{waste.Hours} timmar {waste.Minutes} minuter" : $"{waste.Minutes} minuter";
+                return (StoredTimeWasteAfterEndedAt - SessionEndedAt) + (SessionStartedAt - StoredTimeWasteBeforeStartedAt);
+                //return waste.Hours > 0 ? $"{waste.Hours} timmar {waste.Minutes} minuter" : $"{waste.Minutes} minuter";
             }
         }
 
@@ -94,7 +94,7 @@ namespace Tolk.Web.Models
             return new RequisitionViewModel
             {
                 RequestId = requisition.RequestId,
-                PreviousRequisitionId = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)?.RequisitionId,
+                PreviousRequisition = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId),
                 ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,

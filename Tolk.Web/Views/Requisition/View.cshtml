@@ -28,9 +28,9 @@
         <display-entry asp-for="RequiredCompetenceLevel" />
         <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
         <display-entry asp-for="Status" />
-        @if (Model.PreviousRequisitionId.HasValue)
+        @if (Model.PreviousRequisition != null)
         {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisitionId })">Se tidigare rekvisition</a>
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
         @if (Model.ReplacingRequisitionId.HasValue)
         {

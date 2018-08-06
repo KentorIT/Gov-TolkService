@@ -13,24 +13,46 @@
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterName" />
-        @if (Model.PreviousRequisitionId.HasValue)
+        @if (Model.PreviousRequisition != null)
         {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisitionId })">Se tidigare rekvisition</a>
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
 
-        <form method="post">
-            <input asp-for="RequestId" type="hidden" />
-            <form-entry asp-for="WasteBefore" />
-            <display-entry asp-for="ExpectedStartedAt" />
-            <form-entry asp-for="SessionStartedAt" />
-            <display-entry asp-for="ExpectedEndedAt" />
-            <form-entry asp-for="SessionEndedAt" />
-            <form-entry asp-for="WasteAfter" />
-            <display-entry asp-for="ExpectedTravelCosts" />
-            <form-entry asp-for="TravelCosts" />
-            <form-entry asp-for="Message" />
-            <button class="btn btn-default">Skapa</button>
-        </form>
+            <form method="post">
+                <input asp-for="RequestId" type="hidden" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt).Value;
+                    <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
+                }
+                <form-entry asp-for="WasteBefore" />
+                <display-entry asp-for="ExpectedStartedAt" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
+                }
+                <form-entry asp-for="SessionStartedAt" />
+                <display-entry asp-for="ExpectedEndedAt" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
+                }
+                <form-entry asp-for="SessionEndedAt" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt).Value;
+                    <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
+                }
+                <form-entry asp-for="WasteAfter" />
+                <display-entry asp-for="ExpectedTravelCosts" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+                }
+                <form-entry asp-for="TravelCosts" />
+                <form-entry asp-for="Message" />
+                <button class="btn btn-default">Skapa</button>
+            </form>
     </div>
 </div>
 

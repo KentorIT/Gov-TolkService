@@ -27,9 +27,13 @@ namespace Tolk.Web.TagHelpers
         }
 
         private const string ForAttributeName = "asp-for";
+        private const string LabelOverrideattributeName = "label-override";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
+
+        [HtmlAttributeName(LabelOverrideattributeName)]
+        public string LabelOverride { get; set; }
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -59,13 +63,13 @@ namespace Tolk.Web.TagHelpers
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
-                labelText: null,
+                labelText: LabelOverride,
                 htmlAttributes: new { @class = "control-label" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText }
+        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText, TimeSpan }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -89,6 +93,10 @@ namespace Tolk.Web.TagHelpers
                 case OutputType.MultilineText:
                     className += " line-break";
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    break;
+                case OutputType.TimeSpan:
+                    var time = For.ModelExplorer.ModelType == typeof(TimeSpan) ? ((TimeSpan)For.ModelExplorer.Model) : ((TimeSpan?)For.ModelExplorer.Model).Value;
+                    text = time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter";
                     break;
                 default:
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);
@@ -119,6 +127,11 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
             {
                 return OutputType.MultilineText;
+            }
+            if (For.ModelExplorer.ModelType == typeof(TimeSpan) 
+                || For.ModelExplorer.ModelType == typeof(TimeSpan?))
+            {
+                return OutputType.TimeSpan;
             }
             return OutputType.Text;
         }
