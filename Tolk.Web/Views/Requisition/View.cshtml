@@ -7,8 +7,26 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="CustomerName"/>
+        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
+        {
+            <display-entry asp-for="CustomerReferenceNumber"/>
+        }
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="CreatedAt" />
+        <display-entry asp-for="AssignmentType" />
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <display-entry asp-for="Description" />
+        }
+        <display-entry asp-for="UnitName" />
+        <display-entry asp-for="LocationStreet" />
+        <display-entry asp-for="LocationZipCode" />
+        <display-entry asp-for="LocationCity" />
+        <display-entry asp-for="RegionName" />
+        <display-entry asp-for="LanguageName" />
+        <display-entry asp-for="RequiredCompetenceLevel" />
+        <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
         <display-entry asp-for="Status" />
         @if (Model.PreviousRequisitionId.HasValue)
         {
@@ -22,6 +40,17 @@
         @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
         {
             <display-entry asp-for="DenyMessage" />
+        }
+        <display-entry asp-for="BrokerName" />
+        <display-entry asp-for="InterpreterName" />
+        <display-entry asp-for="InterpreterLocation" />
+        @if (Model.OffSiteAssignmentType.HasValue)
+        {
+            <display-entry asp-for="OffSiteAssignmentType" />
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.OffSiteContactInformation))
+        {
+            <display-entry asp-for="OffSiteContactInformation" />
         }
         <display-entry asp-for="ExpectedStartedAt" />
         <display-entry asp-for="SessionStartedAt" />

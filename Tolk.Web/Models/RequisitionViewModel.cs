@@ -22,6 +22,44 @@ namespace Tolk.Web.Models
         [Display(Name = "Status")]
         public RequisitionStatus Status { get; set; }
 
+        [Display(Name = "Annan kontaktperson")]
+        public int? ContactPersonId { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Beskrivning", Description = "Extra information om uppdraget i det fall det behövs")]
+        public string Description { get; set; }
+
+        [Display(Name = "Typ av tolkuppdrag")]
+        [Required]
+        public AssignmentType AssignmentType { get; set; }
+
+        [Display(Name = "Enhet/avdelning")]
+        public string UnitName { get; set; }
+
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocation { get; set; }
+
+        [Display(Name = "Typ av distanstolkning")]
+        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
+
+        [Display(Name = "Kontaktinformation för distanstolkning")]
+        public string OffSiteContactInformation { get; set; }
+
+        [Display(Name = "Adress")]
+        public string LocationStreet { get; set; }
+
+        [Display(Name = "Postnummer")]
+        public string LocationZipCode { get; set; }
+
+        [Display(Name = "Ort")]
+        public string LocationCity { get; set; }
+
+        [Display(Name = "Beställd kompetensnivå")]
+        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
+
+        [Display(Name = "Accepterar mer än två timmar restidskostnad")]
+        public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal CalculatedPrice { get; set; }
@@ -61,6 +99,9 @@ namespace Tolk.Web.Models
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,
+                Description = requisition.Request.Order.Description,
+                AssignmentType = requisition.Request.Order.AssignentType,
+                UnitName = requisition.Request.Order.UnitName,
                 ExpectedEndedAt = requisition.Request.Order.EndAt,
                 ExpectedStartedAt = requisition.Request.Order.StartAt,
                 SessionEndedAt = requisition.SessionEndedAt,
@@ -71,7 +112,15 @@ namespace Tolk.Web.Models
                 StoredTimeWasteAfterEndedAt = requisition.TimeWasteAfterEndedAt ?? requisition.SessionEndedAt,
                 //TODO: Should be Name!
                 InterpreterName = requisition.Request.Interpreter.User.Email,
+                InterpreterLocation = (InterpreterLocation) requisition.Request.InterpreterLocation,
+                OffSiteAssignmentType = requisition.Request.Order.OffSiteAssignmentType,
+                OffSiteContactInformation = requisition.Request.Order.OffSiteContactInformation,
+                LocationStreet = requisition.Request.Order.Street,
+                LocationZipCode = requisition.Request.Order.ZipCode,
+                LocationCity = requisition.Request.Order.City,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language.Name,
+                RequiredCompetenceLevel = requisition.Request.Order.RequiredCompetenceLevel,
+                AllowMoreThanTwoHoursTravelTime = requisition.Request.Order.AllowMoreThanTwoHoursTravelTime,
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,
                 //TODO: Should be Name!

@@ -99,7 +99,7 @@
                 {
                     <li>
                         @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                        @if (request.DenyMessage != null)
+                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
                         {
                         <span> Orsak: @request.DenyMessage</span>
                         }
