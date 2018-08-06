@@ -95,7 +95,7 @@ namespace Tolk.Web.Models
         [Required]
         public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
 
-        [Display(Name = "Accepterar mer än två timmar restidskostnad")]
+        [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
         public PriceInformation PriceInformation { get; set; }
