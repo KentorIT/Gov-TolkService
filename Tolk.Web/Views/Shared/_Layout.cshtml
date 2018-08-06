@@ -48,6 +48,7 @@
                     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
                     {
                         <li><a asp-area="" asp-controller="Request" asp-action="List">Sök förfrågningar</a></li>
+                        <li><a asp-area="" asp-controller="Requisition" asp-action="List">Sök rekvisitioner</a></li>
                     }
                     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
                     {

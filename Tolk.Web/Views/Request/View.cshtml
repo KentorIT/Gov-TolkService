@@ -62,5 +62,9 @@
                 </ul>
             }
         }
+        @if (Model.RequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+        }
     </div>
 </div>

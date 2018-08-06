@@ -50,6 +50,8 @@ namespace Tolk.Web.Models
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
+        public int? RequisitionId { get; set; }
+
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
@@ -81,13 +83,14 @@ namespace Tolk.Web.Models
                 Interpreter = request.Interpreter?.User.UserName,
                 CompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
+                RequisitionId = request.Requisitions?.FirstOrDefault(req => req.Status == RequisitionStatus.Created || req.Status == RequisitionStatus.Approved)?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
                     IsRequired = r.IsRequired,
                     Requirement = $"{(r.IsRequired ? "Krav: " : "Önskemål: ")}{EnumHelper.GetDescription(r.RequirementType)} - {r.Description}",
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false,
+                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
                 InterpreterLocation = request.Order.InterpreterLocations.Count() == 1 ? request.Order.InterpreterLocations.Single()?.InterpreterLocation : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
