@@ -95,7 +95,7 @@ namespace Tolk.Web.TagHelpers
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);
                     break;
                 case OutputType.TimeSpan:
-                    var time = For.ModelExplorer.ModelType == typeof(TimeSpan) ? ((TimeSpan)For.ModelExplorer.Model) : ((TimeSpan?)For.ModelExplorer.Model).Value;
+                    var time = For.ModelExplorer.ModelType == typeof(TimeSpan) ? ((TimeSpan)For.ModelExplorer.Model) : ((TimeSpan?)For.ModelExplorer.Model) ?? TimeSpan.Zero;
                     text = time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter";
                     break;
                 default:

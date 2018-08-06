@@ -206,8 +206,8 @@ namespace Tolk.Web.Controllers
                             Message = model.Message,
                             SessionStartedAt = model.SessionStartedAt,
                             SessionEndedAt = model.SessionEndedAt,
-                            TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt ?? model.SessionStartedAt,
-                            TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt ?? model.SessionEndedAt,
+                            TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
+                            TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
                         };
                         request.CreateRequisition(requisition);
                         _dbContext.SaveChanges();
