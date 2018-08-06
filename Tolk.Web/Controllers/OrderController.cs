@@ -48,7 +48,10 @@ namespace Tolk.Web.Controllers
             var orders = _dbContext.Orders
                 .Include(o => o.Language)
                 .Include(o => o.Region)
-                .Where(r => r.CreatedBy == User.GetUserId());
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.Ranking)
+                    .ThenInclude(r => r.Broker)
+                .Where(o => o.CreatedBy == User.GetUserId());
 
             if (model.Status.HasValue)
             {
@@ -67,7 +70,13 @@ namespace Tolk.Web.Controllers
                         RegionName = o.Region.Name,
                         Start = o.StartAt,
                         End = o.EndAt,
-                        Status = o.Status
+                        Status = o.Status,
+                        BrokerName = o.Requests.Where(r =>
+                            r.Status == RequestStatus.Created ||
+                            r.Status == RequestStatus.Received ||
+                            r.Status == RequestStatus.Accepted ||
+                            r.Status == RequestStatus.Approved)
+                            .Select(r => r.Ranking.Broker.Name).FirstOrDefault()
                     })
                 });
         }

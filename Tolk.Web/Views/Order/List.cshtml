@@ -21,6 +21,7 @@
                             <th>Start</th>
                             <th>Slut</th>
                             <th>Status</th>
+                            <th>Förmedling</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,6 +34,7 @@
                                 <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@EnumHelper.GetDescription(item.Status)</td>
+                                <td>@item.BrokerName</td>
                             </tr>
                         }
                     </tbody>
