@@ -75,9 +75,10 @@
                     <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
                     <display-entry asp-for="RequirementAnswers[i].Requirement" />
                     <form-entry asp-for="RequirementAnswers[i].Answer" />
+                    <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
                     <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
                 }
-                <button class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
+                <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
                 <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-warning pull-right">Tacka nej</button>
             </form>
     </div>
