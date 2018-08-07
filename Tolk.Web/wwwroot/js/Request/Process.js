@@ -1,6 +1,12 @@
 $(function () {
     checkRequirements();
 
+    $("input[id$='IsRequired']").each(function () {
+        if ($(this).attr('value') === "True") {
+            $('label[for=' + $(this).attr('id').replace('IsRequired', "Answer") + ']').html('Svar <span class="required-star">*</span>');
+        }
+    });
+
     $('#InterpreterId').change(function () {
         if ($(this).val() === "-1") {
             $('#new-interpreter').collapse('show');

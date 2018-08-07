@@ -19,11 +19,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Är ett krav")]
         public bool IsRequired{ get; set; }
 
-        [Required]
         [Display(Name = "Svar")]
         public string Answer { get; set; }
 
-        [Display(Name = "Kan uppfylla kravet")]
+        [Display(Name = "Kan uppfylla behovet")]
         public bool CanMeetRequirement { get; set; }
     }
 }
