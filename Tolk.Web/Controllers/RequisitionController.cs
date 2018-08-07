@@ -15,6 +15,8 @@ using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Microsoft.Extensions.Logging;
+
 
 namespace Tolk.Web.Controllers
 {
@@ -25,19 +27,23 @@ namespace Tolk.Web.Controllers
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly ILogger _logger;
 
         public RequisitionController(
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             ISwedishClock clock,
             OrderService orderService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ILogger<RequisitionController> logger
+            )
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> View(int id)
@@ -191,6 +197,7 @@ namespace Tolk.Web.Controllers
                 {
                     var request = _dbContext.Requests
                     .Include(r => r.Order)
+                    .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
@@ -219,6 +226,7 @@ namespace Tolk.Web.Controllers
                             _dbContext.SaveChanges();
                         }
                         transaction.Commit();
+                        CreateEmailForRequisitionActions(requisition);
                         return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                     }
                 }
@@ -235,11 +243,13 @@ namespace Tolk.Web.Controllers
             {
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.CreatedByUser)
                     .Single(r => r.RequisitionId == requisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
+                    CreateEmailForRequisitionActions(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
@@ -255,16 +265,58 @@ namespace Tolk.Web.Controllers
             {
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.CreatedByUser)
                     .Single(r => r.RequisitionId == model.ParentId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
                     _dbContext.SaveChanges();
+                    CreateEmailForRequisitionActions(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
             }
             return RedirectToAction(nameof(Process), new { id = model.ParentId });
+        }
+
+        private void CreateEmailForRequisitionActions(Requisition requisition)
+        {
+            string receipent;
+            string subject;
+            string body;
+            string orderNumber = requisition.Request.Order.OrderNumber;
+            switch (requisition.Status)
+            {
+                case RequisitionStatus.Created:
+                    receipent = requisition.Request.Order.CreatedByUser.Email;
+                    subject = body = $"En rekvisition har registrerats på avrop {orderNumber}";
+                    break;
+                case RequisitionStatus.Approved:
+                    receipent = requisition.CreatedByUser.Email;
+                    subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
+                    break;
+                case RequisitionStatus.DeniedByCustomer:
+                    receipent = requisition.CreatedByUser.Email;
+                    subject = $"Rekvisition för avrop {orderNumber} har underkänts";
+                    body = $"Rekvisition för avrop {orderNumber} har underkänts med följande meddelande:\n{requisition.DenyMessage}";
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    subject,
+                    body +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
         }
     }
 }

@@ -208,7 +208,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartPageBox
             {
                 Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
-                    r.Order.EndAt < _clock.SwedenNow &&
+                    r.Order.StartAt < _clock.SwedenNow &&
                     !r.Requisitions.Any() &&
                     r.InterpreterId == interpreterId).Count(),
                 Header = "Att avrapportera",
