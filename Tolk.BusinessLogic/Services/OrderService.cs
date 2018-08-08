@@ -39,11 +39,11 @@ namespace Tolk.BusinessLogic.Services
             _priceCalculationService = priceCalculationService;
             _logger = logger;
         }
-        
+
         public async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received ))
+                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
@@ -63,7 +63,7 @@ namespace Tolk.BusinessLogic.Services
                             .ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(
                             r => r.ExpiresAt <= _clock.SwedenNow
-                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received )
+                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
                             && r.RequestId == requestId);
 
                         if (expiredRequest == null)
@@ -129,7 +129,7 @@ namespace Tolk.BusinessLogic.Services
                     $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                    "Detta mail går inte att svara på.",    
+                    "Detta mail går inte att svara på.",
                     _clock.SwedenNow));
             }
             else
@@ -139,16 +139,16 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public  void CreatePriceInformation(Order order)
+        public void CreatePriceInformation(Order order)
         {
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel),
                 order.CustomerOrganisation.PriceListType,
-                order.Requests.Single(r => 
-                    r.Status == RequestStatus.Created || 
-                    r.Status == RequestStatus.Accepted || 
+                order.Requests.Single(r =>
+                    r.Status == RequestStatus.Created ||
+                    r.Status == RequestStatus.Accepted ||
                     r.Status == RequestStatus.Received ||
                     r.Status == RequestStatus.Approved).Ranking.BrokerFee
                 );
@@ -171,7 +171,7 @@ namespace Tolk.BusinessLogic.Services
             // Grab current time to not risk it flipping over during execution of the method.
             var swedenNow = _clock.SwedenNow;
 
-            if(swedenNow.Date < startDateTime.Date)
+            if (swedenNow.Date < startDateTime.Date)
             {
                 var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
 
@@ -179,7 +179,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     return swedenNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
                 }
-                if(daysInAdvance == 1 && swedenNow.Hour < 14)
+                if (daysInAdvance == 1 && swedenNow.Hour < 14)
                 {
                     return _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
                 }

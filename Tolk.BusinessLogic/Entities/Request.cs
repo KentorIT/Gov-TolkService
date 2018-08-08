@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Data.Migrations;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -144,7 +145,8 @@ namespace Tolk.BusinessLogic.Entities
             decimal? expectedTravelCosts,
             Enums.InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
-            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)
+            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            PriceInformation priceInformation)
         {
             if(Status != RequestStatus.Received)
             {
@@ -161,6 +163,17 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceLevel = (int?)competenceLevel;
 
             RequirementAnswers.AddRange(requirementAnswers);
+            foreach (var row in priceInformation.PriceRows)
+            {
+                PriceRows.Add(new RequestPriceRow
+                {
+                    StartAt = row.StartAt,
+                    EndAt = row.EndAt,
+                    IsBrokerFee = row.IsBrokerFee,
+                    PriceListRowId = row.PriceListRowId,
+                    TotalPrice = row.TotalPrice
+                });
+            }
 
             Order.Status = OrderStatus.RequestResponded;
         }

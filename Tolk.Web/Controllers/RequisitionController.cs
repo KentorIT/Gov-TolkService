@@ -16,7 +16,7 @@ using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
 using Microsoft.Extensions.Logging;
-
+using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
@@ -196,7 +196,7 @@ namespace Tolk.Web.Controllers
                 using (var transaction = _dbContext.Database.BeginTransaction())
                 {
                     var request = _dbContext.Requests
-                    .Include(r => r.Order)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking)
@@ -215,7 +215,30 @@ namespace Tolk.Web.Controllers
                             SessionEndedAt = model.SessionEndedAt,
                             TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
                             TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
+                            PriceRows = new List<RequisitionPriceRow>()
                         };
+                        var priceInformation = _priceCalculationService.GetPrices(
+                            model.SessionStartedAt,
+                            model.SessionEndedAt,
+                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
+                            request.Order.CustomerOrganisation.PriceListType,
+                            request.Ranking.BrokerFee,
+                            model.TimeWasteBeforeStartedAt,
+                            model.TimeWasteAfterEndedAt
+                        );
+
+                        foreach (var row in priceInformation.PriceRows)
+                        {
+                            requisition.PriceRows.Add(new RequisitionPriceRow
+                            {
+                                StartAt = row.StartAt,
+                                EndAt = row.EndAt,
+                                IsBrokerFee = row.IsBrokerFee,
+                                PriceListRowId = row.PriceListRowId,
+                                TotalPrice = row.TotalPrice
+                            });
+                        }
+
                         request.CreateRequisition(requisition);
                         _dbContext.SaveChanges();
                         var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer &&

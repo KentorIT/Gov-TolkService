@@ -14,6 +14,7 @@ using Tolk.Web.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -25,19 +26,23 @@ namespace Tolk.Web.Controllers
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
         private readonly InterpreterService _interpreterService;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public RequestController(
             TolkDbContext dbContext,
             ISwedishClock clock,
             OrderService orderService,
             IAuthorizationService authorizationService,
-            InterpreterService interpreterService)
+            InterpreterService interpreterService,
+            PriceCalculationService priceCalculationService
+)
         {
             _dbContext = dbContext;
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
             _interpreterService = interpreterService;
+            _priceCalculationService = priceCalculationService;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -136,8 +141,9 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var request = _dbContext.Requests
-                    .Include(r => r.Order)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.RequirementAnswers)
+                    .Include(r => r.PriceRows)
                     .Include(r => r.Ranking)
                     .Single(o => o.RequestId == model.RequestId);
 
@@ -165,8 +171,14 @@ namespace Tolk.Web.Controllers
                             OrderRequirementId = ra.OrderRequirementId,
                             Answer = ra.Answer,
                             CanSatisfyRequirement = ra.CanMeetRequirement
-                        }));
-
+                        }),
+                        _priceCalculationService.GetPrices(
+                            request.Order.StartAt,
+                            request.Order.EndAt,
+                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(model.CompetenceLevel.Value),
+                            request.Order.CustomerOrganisation.PriceListType,
+                            request.Ranking.BrokerFee
+                    ));
                     _dbContext.SaveChanges();
 
                     return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
