@@ -101,7 +101,7 @@
                         @request.BrokerName (@EnumHelper.GetDescription(request.Status))
                         @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
                         {
-                        <span> Orsak: @request.DenyMessage</span>
+                            <span> Orsak: @request.DenyMessage</span>
                         }
                     </li>
                 }
@@ -111,12 +111,12 @@
         {
             <display-entry asp-for="InterpreterName" />
             <display-entry asp-for="CompetenceLevel" />
-            
+
             @if (Model.RequiredCompetenceLevel != Model.CompetenceLevel)
             {
-            <span>
-                Observera att den beställda kompetensnivån är @EnumHelper.GetDescription(Model.RequiredCompetenceLevel)<br /><br />
-            </span>
+                <span>
+                    Observera att den beställda kompetensnivån är @EnumHelper.GetDescription(Model.RequiredCompetenceLevel)<br /><br />
+                </span>
             }
             <display-entry asp-for="InterpreterLocationAnswer" />
             @if (Model.RequestStatus == RequestStatus.Accepted)
@@ -125,6 +125,7 @@
                     <input asp-for="OrderId" type="hidden" />
                     <input asp-for="RequestId" type="hidden" />
                     <button class="btn btn-default">Godkänn tillsättning</button>
+                    <button type="button" class="btn btn-warning pull-right" data-toggle="modal" data-target="#confirmDialog">Avbryt</button>
                 </form>
                 if (Model.AllowDenial)
                 {
@@ -133,41 +134,41 @@
                         <input asp-for="RequestId" type="hidden" />
                         <input asp-for="DenyMessage" type="hidden" />
 
-                        <button class="btn deny-button btn-warning pull-right">Neka tillsättning</button>
+                        <button class="btn deny-button btn-danger pull-right">Neka tillsättning</button>
                     </form>
                 }
             }
         }
     </div>
-    </div>
-    <div id="denyMessageDialog" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Meddelande vid nekande</h4>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <form-entry asp-for="DenyMessage" />
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
-                    <button type="button" class="btn btn-default send-message">Skicka</button>
-                </div>
+</div>
+<div id="denyMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Meddelande vid nekande</h4>
             </div>
-
+            <div class="modal-body">
+                <form>
+                    <form-entry asp-for="DenyMessage" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default send-message">Skicka</button>
+            </div>
         </div>
-    </div>
 
-    @section Scripts {
-        <environment include="Development">
-            <script src="~/js/Order/Process.js" asp-append-version="true"></script>
-        </environment>
-        @*<environment exclude="Development">
-                <script src="~/js/Order/process.min.js" asp-append-version="true"></script>
-            </environment>*@
-        @await Html.PartialAsync("_ValidationScriptsPartial")
-    }
+    </div>
+</div>
+@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToList", Message = "Är du säker att du vill gå tillbaka?", DialogHeader = "Avbryt" })
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Order/Process.js" asp-append-version="true"></script>
+    </environment>
+    @*<environment exclude="Development">
+            <script src="~/js/Order/process.min.js" asp-append-version="true"></script>
+        </environment>*@
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

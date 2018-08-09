@@ -239,5 +239,15 @@ namespace Tolk.Web.Controllers
 
             return Forbid();
         }
+
+        public IActionResult AbortToHome()
+        {
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+
+        public IActionResult AbortToList()
+        {
+            return RedirectToAction(nameof(List), new { Status = OrderStatus.RequestResponded });
+        }
     }
 }

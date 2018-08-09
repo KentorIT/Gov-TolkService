@@ -214,5 +214,10 @@ namespace Tolk.Web.Controllers
 
             return Forbid();
         }
+
+        public IActionResult AbortToList()
+        {
+            return RedirectToAction(nameof(List), new { Status = RequestStatus.ToBeProcessedByBroker });
+        }
     }
 }

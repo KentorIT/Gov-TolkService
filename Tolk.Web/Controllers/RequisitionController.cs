@@ -341,5 +341,15 @@ namespace Tolk.Web.Controllers
                 _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
             }
         }
+
+        public IActionResult AbortToListCreate()
+        {
+            return RedirectToAction(nameof(AssignmentController.List), "Assignment", new { Status = AssignmentStatus.ToBeReported });
+        }
+
+        public IActionResult AbortToListProcess()
+        {
+            return RedirectToAction(nameof(List), new { Status = RequisitionStatus.Created, FilterByContact = false });
+        }
     }
 }

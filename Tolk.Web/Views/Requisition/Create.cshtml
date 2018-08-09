@@ -18,44 +18,45 @@
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
 
-            <form method="post">
-                <input asp-for="RequestId" type="hidden" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt);
-                    <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
-                }
-                <form-entry asp-for="WasteBefore" />
-                <display-entry asp-for="ExpectedStartedAt" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
-                }
-                <form-entry asp-for="SessionStartedAt" />
-                <display-entry asp-for="ExpectedEndedAt" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
-                }
-                <form-entry asp-for="SessionEndedAt" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt);
-                    <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
-                }
-                <form-entry asp-for="WasteAfter" />
-                <display-entry asp-for="ExpectedTravelCosts" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
-                }
-                <form-entry asp-for="TravelCosts" />
-                <form-entry asp-for="Message" />
-                <button class="btn btn-default">Skapa</button>
-            </form>
+        <form method="post">
+            <input asp-for="RequestId" type="hidden" />
+            @if (Model.PreviousRequisition != null)
+            {
+                var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt);
+                <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
+            }
+            <form-entry asp-for="WasteBefore" />
+            <display-entry asp-for="ExpectedStartedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
+            }
+            <form-entry asp-for="SessionStartedAt" />
+            <display-entry asp-for="ExpectedEndedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
+            }
+            <form-entry asp-for="SessionEndedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt);
+                <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
+            }
+            <form-entry asp-for="WasteAfter" />
+            <display-entry asp-for="ExpectedTravelCosts" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+            }
+            <form-entry asp-for="TravelCosts" />
+            <form-entry asp-for="Message" />
+            <button class="btn btn-default">Skapa</button>
+            <button type="button" class="btn btn-warning pull-right" data-toggle="modal" data-target="#confirmDialog">Avbryt</button>
+        </form>
     </div>
 </div>
-
+@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToListCreate", Message = "Du kommer att förlora osparade data. Vill du avbryta?", DialogHeader = "Avbryt avrapportering" })
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
