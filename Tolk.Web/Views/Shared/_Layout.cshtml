@@ -53,6 +53,7 @@
                     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
                     {
                         <li><a asp-area="" asp-controller="Assignment" asp-action="List">Sök tilldelningar</a></li>
+                        <li><a asp-area="" asp-controller="Requisition" asp-action="List">Sök rekvisitioner</a></li>
                     }
                 </ul>
                 @await  Html.PartialAsync("_TimeTravelPartial")
