@@ -54,8 +54,8 @@
                 <form-entry asp-for="OffSiteContactInformation" />
             </div>
             <fieldset>
-                <legend>Extra behov</legend>
-                <div class="d-none order-requirement-list">
+                <legend>Extra behov <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
+                <div class="d-none order-requirement-list border">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover order-requirement-table">
                             <thead>
@@ -70,7 +70,6 @@
                         </table>
                     </div>
                 </div>
-                <a href="#" class="edit-link add-requirement-button" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till</a>
             </fieldset>
             <form-entry asp-for="StartAt" />
             <form-entry asp-for="EndAt" />
@@ -106,7 +105,7 @@
 
     </div>
 </div>
-@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToHome", Message = "Du kommer att förlora osparade data. Vill du avbryta?", DialogHeader = "Avbryt avropet"})
+@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToHome", Message = "Du kommer att förlora osparade data. Vill du avbryta?", DialogHeader = "Avbryt avropet" })
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Order/Add.js" asp-append-version="true"></script>
