@@ -15,6 +15,7 @@ using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web.Controllers
 {
@@ -27,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly ILogger _logger;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -34,7 +36,8 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             IAuthorizationService authorizationService,
             InterpreterService interpreterService,
-            PriceCalculationService priceCalculationService
+            PriceCalculationService priceCalculationService,
+            ILogger<RequisitionController> logger
 )
         {
             _dbContext = dbContext;
@@ -43,6 +46,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
+            _logger = logger;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -142,9 +146,10 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.RequirementAnswers)
                     .Include(r => r.PriceRows)
-                    .Include(r => r.Ranking)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Single(o => o.RequestId == model.RequestId);
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -180,7 +185,7 @@ namespace Tolk.Web.Controllers
                             request.Ranking.BrokerFee
                     ));
                     _dbContext.SaveChanges();
-
+                    CreateEmailForRequestActions(request);
                     return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
                 }
                 return Forbid();
@@ -194,7 +199,8 @@ namespace Tolk.Web.Controllers
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Ranking)
+                .Include(r => r.Order.CreatedByUser)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Single(r => r.RequestId == model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -209,7 +215,8 @@ namespace Tolk.Web.Controllers
                 await _orderService.CreateRequest(request.Order);
 
                 _dbContext.SaveChanges();
-                return RedirectToAction(nameof(List));
+                CreateEmailForRequestActions(request);
+                return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
 
             return Forbid();
@@ -218,6 +225,41 @@ namespace Tolk.Web.Controllers
         public IActionResult AbortToList()
         {
             return RedirectToAction(nameof(List), new { Status = RequestStatus.ToBeProcessedByBroker });
+        }
+
+        private void CreateEmailForRequestActions(Request request)
+        {
+            string receipent = request.Order.CreatedByUser.Email;
+            string subject;
+            string body;
+            string orderNumber = request.Order.OrderNumber;
+            switch (request.Status)
+            {
+                case RequestStatus.Accepted:
+                    subject = $"Förmedling har accepterat avrop {orderNumber}";
+                    body = $"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats.";
+                    break;
+                case RequestStatus.DeclinedByBroker:
+                    subject = $"Förmedling har tackat nej till avrop {orderNumber}";
+                    body = $"Svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till avropet med följande meddelande:\n{request.DenyMessage}";
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    subject,
+                    body +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for request action {request.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
         }
     }
 }

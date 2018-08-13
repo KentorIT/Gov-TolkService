@@ -53,6 +53,7 @@
                     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
                     {
                         <li><a class="check-dirty" asp-area="" asp-controller="Assignment" asp-action="List">Sök tilldelningar</a></li>
+                        <li><a class="check-dirty" asp-area="" asp-controller="Requisition" asp-action="List">Sök rekvisitioner</a></li>
                     }
                 </ul>
                 @await  Html.PartialAsync("_TimeTravelPartial")
@@ -62,7 +63,7 @@
     </nav>
     <div class="container body-content">
         @RenderBody()
-        @await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Id = "dirtyNavConfirmDialog", DialogHeader = "Lämna sidan", Message = "Du har osparade data. Fortsätta lämna sidan?" });
+        @await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Id = "dirtyNavConfirmDialog", DialogHeader = "Lämna sidan", Message = "Du har osparade data. Fortsätta lämna sidan?" })
         <hr />
         <footer>
             <p>

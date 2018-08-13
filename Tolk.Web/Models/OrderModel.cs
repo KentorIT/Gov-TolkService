@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
     public class OrderModel
     {
         /// <summary>
-        /// This is the id for the row in the langaiges select box that should sho the other language box.
+        /// This is the id for the row in the langaiges select box that should show the other language box.
         /// </summary>
         public static int OtherLanguageId { get; } = 62;
 
@@ -46,6 +46,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Postnummer")]
         [ClientRequired]
+        [RegularExpression("[0-9]{3} ?[0-9]{2}", ErrorMessage = "Ange postnummer enligt format 12345 eller 123 45")]
         public string LocationZipCode { get; set; }
 
         [Display(Name = "Ort")]
@@ -191,7 +192,7 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UseAddress ? UnitName : null;
             order.Street = UseAddress ? LocationStreet : null;
-            order.ZipCode = UseAddress ? LocationZipCode : null;
+            order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode: null;
             order.City = UseAddress ? LocationCity : null;
             order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
             order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
