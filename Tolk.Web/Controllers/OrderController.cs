@@ -14,6 +14,7 @@ using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web.Controllers
 {
@@ -26,6 +27,7 @@ namespace Tolk.Web.Controllers
         private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
         private readonly ISwedishClock _clock;
+        private readonly ILogger _logger;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -33,7 +35,8 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             RankingService rankingService,
             OrderService orderService,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            ILogger<OrderController> logger)
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
@@ -41,6 +44,7 @@ namespace Tolk.Web.Controllers
             _rankingService = rankingService;
             _orderService = orderService;
             _clock = clock;
+            _logger = logger;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -203,7 +207,11 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
-            var order = _dbContext.Orders.Include(o => o.Requests).Single(o => o.OrderId == model.OrderId);
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(o => o.CustomerOrganisation)
+                .Single(o => o.OrderId == model.OrderId);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
@@ -212,6 +220,8 @@ namespace Tolk.Web.Controllers
                 request.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
 
                 _dbContext.SaveChanges();
+
+                CreateEmailOnOrderRequestAction(request);
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
             return Forbid();
@@ -248,6 +258,37 @@ namespace Tolk.Web.Controllers
         public IActionResult AbortToList()
         {
             return RedirectToAction(nameof(List), new { Status = OrderStatus.RequestResponded });
+        }
+
+        private void CreateEmailOnOrderRequestAction(Request request)
+        {
+            string receipent = request.Interpreter.User.Email;
+            string subject;
+            string body;
+            string orderNumber = request.Order.OrderNumber;
+            switch (request.Status)
+            {
+                case RequestStatus.Approved:
+                    subject = $"Tilldelat tolkuppdrag avrops-ID {orderNumber}";
+                    body = $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {orderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.";
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    subject,
+                    body +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for orderrequest action {request.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
         }
     }
 }
