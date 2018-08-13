@@ -1,5 +1,7 @@
 // Write your JavaScript code.
 
+var isDirty = false;
+
 // Set up date-picker. See docs at https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html
 $('.datepicker').datepicker({
     language: 'sv',
@@ -87,5 +89,21 @@ $.fn.extend({
         return $(this).is(":checkbox")
             ? $(this).is(":checked") === value
             : $(this).val() == value; //eslint-disable-line eqeqeq
+    }
+});
+
+
+function setDirty() {
+    isDirty = true;
+}
+
+$('input').on('change', setDirty);
+$('select').on('change', setDirty);
+
+$('.check-dirty').on('click', function (event) {
+    if (isDirty) {
+        event.preventDefault();
+        $('#dirtyNavConfirmDialogForm').attr('action', $(this).attr('href'));
+        $('#dirtyNavConfirmDialog').modal();
     }
 });
