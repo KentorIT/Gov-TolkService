@@ -34,7 +34,7 @@ namespace Tolk.Web.Models
                 StoredTimeWasteAfterEndedAt = requisition.TimeWasteAfterEndedAt ?? requisition.SessionEndedAt,
                 //TODO: Should be Name!
                 InterpreterName = requisition.Request.Interpreter.User.Email,
-                LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language.Name,
+                LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,
                 //TODO: Should be Name!

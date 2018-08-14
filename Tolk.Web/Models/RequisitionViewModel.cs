@@ -118,7 +118,7 @@ namespace Tolk.Web.Models
                 LocationStreet = requisition.Request.Order.Street,
                 LocationZipCode = requisition.Request.Order.ZipCode,
                 LocationCity = requisition.Request.Order.City,
-                LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language.Name,
+                LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 RequiredCompetenceLevel = requisition.Request.Order.RequiredCompetenceLevel,
                 AllowMoreThanTwoHoursTravelTime = requisition.Request.Order.AllowMoreThanTwoHoursTravelTime,
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),

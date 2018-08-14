@@ -88,7 +88,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region order information
 
-        public int LanguageId { get; set; }
+        public int? LanguageId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
         public Language Language { get; set; }

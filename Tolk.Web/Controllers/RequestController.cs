@@ -58,7 +58,7 @@ namespace Tolk.Web.Controllers
                         .Select(r => new RequestListItemModel
                         {
                             RequestId = r.RequestId,
-                            Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                            Language = r.Order.OtherLanguage ?? r.Order.Language.Name ?? "(Tolkanvändarutbildning)",
                             OrderNumber = r.Order.OrderNumber.ToString(),
                             CustomerName = r.Order.CustomerOrganisation.Name,
                             RegionName = r.Order.Region.Name,
