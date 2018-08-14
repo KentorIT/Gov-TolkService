@@ -164,7 +164,8 @@ namespace Tolk.BusinessLogic.Entities
 
             if (ranking == null)
             {
-                // TODO: Rejected by all brokers, what to do now?
+                // Rejected by all brokers, close the order
+                Status = OrderStatus.NoBrokeracceptedOrder;
                 return null;
             }
 
