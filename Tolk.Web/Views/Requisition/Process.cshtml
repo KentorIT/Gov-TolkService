@@ -34,11 +34,11 @@
                     <button type="button" data-toggle="modal" data-target="#abortConfirmDialog" class="btn btn-warning">Avbryt</button>
                 </div>
                 <div class="col-xs-4">
-                    <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Avslå rekvisition</button>
+                    <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Underkänn rekvisition</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-@await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Neka rekvisitionen", ParentId = Model.RequisitionId })
+@await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Underkänn rekvisition", ParentId = Model.RequisitionId })
 @await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Id = "abortConfirmDialog", Action = "AbortToListProcess", Message = "Är du säker att du vill gå tillbaka?", DialogHeader = "Avbryt behandling av rekvisition" })
