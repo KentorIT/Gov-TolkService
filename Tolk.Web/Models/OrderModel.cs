@@ -157,7 +157,7 @@ namespace Tolk.Web.Models
         {
             get
             {
-                return OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false;
+                return ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
             }
         }
 
