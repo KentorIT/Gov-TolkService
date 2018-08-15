@@ -13,8 +13,6 @@ namespace Tolk.Web.Models
 {
     public class ConfirmDialogModel
     {
-        public string Id { get; set; }
-
         public string DialogHeader{ get; set; }
 
         public string Action { get; set; }
@@ -29,7 +27,6 @@ namespace Tolk.Web.Models
         public ConfirmDialogModel()
         {
             // Default values
-            Id = "confirmDialog";
             BtnTextConfirm = "Ja";
             BtnTextDeny = "Nej";
         }

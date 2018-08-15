@@ -1,5 +1,5 @@
 ﻿@model Tolk.Web.Models.ConfirmDialogModel
-<div id="@Model.Id" class="modal fade" role="dialog">
+<div id="confirmDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">
@@ -8,7 +8,7 @@
                 <h4 class="modal-title">@Model.DialogHeader</h4>
             </div>
             <div class="modal-body">
-                <form id="@string.Concat(Model.Id, "Form")" method="post" asp-action="@Model.Action">
+                <form method="post" asp-action="@Model.Action">
                     <display-entry asp-for="Message" />
                     <button type="submit" class="btn btn-default">@Model.BtnTextConfirm</button>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">@Model.BtnTextDeny</button>

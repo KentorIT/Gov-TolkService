@@ -10,7 +10,7 @@
 {
     <ul class="nav navbar-nav navbar-right">
         <li>
-            <a class="checkDirty" asp-area="" asp-controller="Account" asp-action="Index" title="Mitt Konto">
+            <a asp-area="" asp-controller="Account" asp-action="Index" title="Mitt Konto">
             @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) 
                 ??User.FindFirstValue(ClaimTypes.Name))</a>
         </li>
@@ -26,7 +26,7 @@
         </li>
         <li>
             <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
-                <button type="submit" class="btn btn-link navbar-btn navbar-link checkDirty">Logga ut</button>
+                <button type="submit" class="btn btn-link navbar-btn navbar-link">Logga ut</button>
             </form>
         </li>
     </ul>

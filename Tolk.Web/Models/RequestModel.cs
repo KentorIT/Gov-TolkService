@@ -52,10 +52,10 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        [Display(Name = "Förväntad resekostnad (exkl. moms)")]
+        [Display(Name = "Förväntad resekostnad (exkl. restid och moms)")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
-
+        
         [ClientRequired]
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }

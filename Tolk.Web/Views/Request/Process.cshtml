@@ -35,61 +35,65 @@
             <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
             <display-entry asp-for="OrderModel.OffSiteContactInformation" />
         }
-        <form method="post" asp-action="Accept">
-            <input asp-for="RequestId" type="hidden" />
-            <display-entry asp-for="ExpiresAt" />
-            <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
-            <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
-            <form-entry asp-for="CompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(Model.OrderModel.RequiredCompetenceLevel)" />
-            @if (Model.InterpreterLocation.HasValue)
-            {
+            <form method="post" asp-action="Accept">
+                <input asp-for="RequestId" type="hidden" />
+                <display-entry asp-for="ExpiresAt" />
+                <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
+                <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
+                <form-entry asp-for="CompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(Model.OrderModel.RequiredCompetenceLevel)" />
+                @if (Model.InterpreterLocation.HasValue)
+                {
                 <input asp-for="InterpreterLocation" type="hidden" />
                 <display-entry asp-for="InterpreterLocation" />
-            }
-            else
-            {
+                }
+                else
+                {
                 <label>Önskat inställelsesätt, helst överst</label>
                 <ul>
                     @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
                     {
-                        <li>
-                            @EnumHelper.GetDescription(location.InterpreterLocation)
-                        </li>
+                    <li>
+                        @EnumHelper.GetDescription(location.InterpreterLocation)
+                    </li>
                     }
                 </ul>
                 <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
-            }
-            @if (Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite)
-            {
+                }
+                @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
+                {
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
+                <label>Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
                 <form-entry asp-for="ExpectedTravelCosts" />
-            }
-            else
-            {
+                }
+                else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
+                {
                 // If it is set to Offsite it is not needed at all
                 // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
-                <form-entry asp-for="ExpectedTravelCosts" class="collapse" id="set-expected-travel-costs" />
-            }
-            @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
-            {
+                <div class="collapse" id="set-expected-travel-costs">
+                    <label>Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
+                    <form-entry asp-for="ExpectedTravelCosts" />
+                </div>
+                }
+                @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
+                {
                 <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
                 <display-entry asp-for="RequirementAnswers[i].Requirement" />
                 <form-entry asp-for="RequirementAnswers[i].Answer" />
                 <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
                 <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
-            }
-            <div class="row">
-                <div class="col-xs-4">
-                    <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
+                }
+                <div class="row">
+                    <div class="col-xs-4">
+                        <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" data-toggle="modal" data-target="#confirmDialog" class="btn btn-warning">Avbryt</button>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
+                    </div>
                 </div>
-                <div class="col-xs-4">
-                    <button type="button" data-toggle="modal" data-target="#confirmDialog" class="btn btn-warning">Avbryt</button>
-                </div>
-                <div class="col-xs-4">
-                    <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
-                </div>
-            </div>
-        </form>
+            </form>
     </div>
 </div>
 <div id="denyMessageDialog" class="modal fade" role="dialog">
