@@ -81,7 +81,6 @@ namespace Tolk.Web.Models
             get
             {
                 return (StoredTimeWasteAfterEndedAt - SessionEndedAt) + (SessionStartedAt - StoredTimeWasteBeforeStartedAt);
-                //return waste.Hours > 0 ? $"{waste.Hours} timmar {waste.Minutes} minuter" : $"{waste.Minutes} minuter";
             }
         }
 
