@@ -101,6 +101,8 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Ranking)
                     .ThenInclude(r => r.Broker)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.PriceRows)
                 .Single(o => o.OrderId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -117,6 +119,7 @@ namespace Tolk.Web.Controllers
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
                 {
+                    model.CalculatedPriceActiveRequest = request.PriceRows.Sum(p => p.TotalPrice);
                     model.RequestId = request.RequestId;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                     model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;

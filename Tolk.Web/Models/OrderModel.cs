@@ -138,6 +138,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
+        [Display(Name = "Beräknat pris enligt avropssvar inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
+        [DataType(DataType.Currency)]
+        public decimal? CalculatedPriceActiveRequest { get; set; }
+
         [Display(Name = "Tillsatt tolk")]
         public string InterpreterName { get; set; }
 

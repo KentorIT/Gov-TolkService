@@ -102,6 +102,7 @@ namespace Tolk.Web.Controllers
             {
                 //Get request model from db
                 var model = RequestModel.GetModelFromRequest(request);
+                model.CalculatedPrice = GetPrices(request, model.CompetenceLevel ?? model.OrderModel.RequiredCompetenceLevel).TotalPrice;
                 model.BrokerId = request.Ranking.BrokerId;
                 return View(model);
             }
@@ -132,6 +133,7 @@ namespace Tolk.Web.Controllers
 
                 //Get request model from db
                 var model = RequestModel.GetModelFromRequest(request);
+                model.CalculatedPrice = GetPrices(request, model.OrderModel.RequiredCompetenceLevel).TotalPrice;
                 model.BrokerId = request.Ranking.BrokerId;
                 return View(model);
             }
@@ -177,13 +179,8 @@ namespace Tolk.Web.Controllers
                             Answer = ra.Answer,
                             CanSatisfyRequirement = ra.CanMeetRequirement
                         }),
-                        _priceCalculationService.GetPrices(
-                            request.Order.StartAt,
-                            request.Order.EndAt,
-                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(model.CompetenceLevel.Value),
-                            request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.BrokerFee
-                    ));
+                        GetPrices(request, model.CompetenceLevel.Value)
+                    );
                     _dbContext.SaveChanges();
                     CreateEmailForRequestActions(request);
                     return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
@@ -220,6 +217,16 @@ namespace Tolk.Web.Controllers
             }
 
             return Forbid();
+        }
+
+        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel)
+        {
+            return _priceCalculationService.GetPrices(
+                            request.Order.StartAt,
+                            request.Order.EndAt,
+                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
+                            request.Order.CustomerOrganisation.PriceListType,
+                            request.Ranking.BrokerFee);
         }
 
         private void CreateEmailForRequestActions(Request request)

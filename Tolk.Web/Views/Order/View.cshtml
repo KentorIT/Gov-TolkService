@@ -55,94 +55,101 @@
         <display-entry asp-for="EndAt" />
         <display-entry asp-for="Description" />
         <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="CalculatedPrice" />
+        @if (Model.CalculatedPriceActiveRequest != null)
+        {
+            <display-entry asp-for="CalculatedPriceActiveRequest" />
+        }
+        else
+        {
+            <display-entry asp-for="CalculatedPrice" />
+        }
         @if (Model.AllowMoreThanTwoHoursTravelTime && (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved))
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
-            @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
-            {
-                <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
-                <ul>
-                    @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
-                    {
-                        <li>
-                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                            @if (req.CanSatisfyRequirement.HasValue)
-                            {
-                                <br />
-                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
-                            }
-                        </li>
-                    }
-                </ul>
-            }
-            @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
-            {
-                <label>@Html.DisplayNameFor(m => m.OrderRequirements) (önskemål)</label>
-                <ul>
-                    @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
-                    {
-                        <li>
-                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                            @if (req.CanSatisfyRequirement.HasValue)
-                            {
-                                <br />
-                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
-                            }
-                        </li>
-                    }
-                </ul>
-            }
-            @if (Model.PreviousRequests.Any())
-            {
-                <label>Tidigare förmedlingars svar</label>
-                <ul>
-                    @foreach (var request in Model.PreviousRequests)
-                    {
-                        <li>
-                            @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                            @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
-                            {
-                                <span> Orsak: @request.DenyMessage</span>
-                            }
-                        </li>
-                    }
-                </ul>
-            }
-            @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved)
-            {
-                <display-entry asp-for="InterpreterName" />
-                <display-entry asp-for="CompetenceLevel" />
-
-                @if (Model.RequiredCompetenceLevel != Model.CompetenceLevel)
+        @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+        {
+            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
+            <ul>
+                @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
                 {
-                    <span>
-                        Observera att den beställda kompetensnivån är @EnumHelper.GetDescription(Model.RequiredCompetenceLevel)<br /><br />
-                    </span>
+                    <li>
+                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                        @if (req.CanSatisfyRequirement.HasValue)
+                        {
+                            <br />
+                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                        }
+                    </li>
                 }
-                <display-entry asp-for="InterpreterLocationAnswer" />
-                @if (Model.RequestStatus == RequestStatus.Accepted)
+            </ul>
+        }
+        @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+        {
+            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (önskemål)</label>
+            <ul>
+                @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
                 {
-                    <form method="post" asp-action="Approve">
+                    <li>
+                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                        @if (req.CanSatisfyRequirement.HasValue)
+                        {
+                            <br />
+                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        @if (Model.PreviousRequests.Any())
+        {
+            <label>Tidigare förmedlingars svar</label>
+            <ul>
+                @foreach (var request in Model.PreviousRequests)
+                {
+                    <li>
+                        @request.BrokerName (@EnumHelper.GetDescription(request.Status))
+                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
+                        {
+                            <span> Orsak: @request.DenyMessage</span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved)
+        {
+            <display-entry asp-for="InterpreterName" />
+            <display-entry asp-for="CompetenceLevel" />
+
+            @if (Model.RequiredCompetenceLevel != Model.CompetenceLevel)
+            {
+                <span>
+                    Observera att den beställda kompetensnivån är @EnumHelper.GetDescription(Model.RequiredCompetenceLevel)<br /><br />
+                </span>
+            }
+            <display-entry asp-for="InterpreterLocationAnswer" />
+            @if (Model.RequestStatus == RequestStatus.Accepted)
+            {
+                <form method="post" asp-action="Approve">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-default">Godkänn tillsättning</button>
+                    <a class="btn btn-warning pull-right" asp-action="List" asp-route-Status="RequestResponded">Avbryt</a>
+                </form>
+                if (Model.AllowDenial)
+                {
+                    <form method="post" class="deny-form" asp-action="Deny">
                         <input asp-for="OrderId" type="hidden" />
                         <input asp-for="RequestId" type="hidden" />
-                        <button class="btn btn-default">Godkänn tillsättning</button>
-                        <a class="btn btn-warning pull-right" asp-action="List" asp-route-Status="RequestResponded">Avbryt</a>
-                    </form>
-                    if (Model.AllowDenial)
-                    {
-                        <form method="post" class="deny-form" asp-action="Deny">
-                            <input asp-for="OrderId" type="hidden" />
-                            <input asp-for="RequestId" type="hidden" />
-                            <input asp-for="DenyMessage" type="hidden" />
+                        <input asp-for="DenyMessage" type="hidden" />
 
-                            <button class="btn deny-button btn-danger pull-right">Neka tillsättning</button>
-                        </form>
-                    }
+                        <button class="btn deny-button btn-danger pull-right">Neka tillsättning</button>
+                    </form>
                 }
             }
-        </div>
+        }
+    </div>
 </div>
 <div id="denyMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">

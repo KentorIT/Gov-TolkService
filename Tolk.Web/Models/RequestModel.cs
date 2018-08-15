@@ -68,6 +68,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tillsatt tolk")]
         public string Interpreter{ get; set; }
 
+        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
+        [DataType(DataType.Currency)]
+        public decimal? CalculatedPrice { get; set; }
+
         #endregion
 
         #region methods
