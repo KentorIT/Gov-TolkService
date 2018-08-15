@@ -1,5 +1,11 @@
 ﻿$(function () {
     var currentId = 0;
+
+    $(document).ready(function () {
+        // Only show relevant fields
+        $("#AssignmentType").trigger("change");
+    });
+
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -101,7 +107,7 @@
         $("#InterpreterLocationSelector").trigger("change");
     });
     $("body").on("change", "#InterpreterLocationSelector", function (event) {
-        if ($(this).val() === null) {
+        if ($(this).val() === null || $(this).val() === "") {
             $(".address-InterpreterLocation").hide();
             // show offsite info
             $(".off-site-information").hide();
