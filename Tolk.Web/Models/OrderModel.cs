@@ -26,8 +26,8 @@ namespace Tolk.Web.Models
         public int RegionId { get; set; }
 
         [Display(Name = "Språk")]
-        [Required]
-        public int LanguageId { get; set; }
+        [ClientRequired]
+        public int? LanguageId { get; set; }
 
         [Display(Name = "Annan kontaktperson")]
         public int? ContactPersonId { get; set; }
@@ -157,7 +157,7 @@ namespace Tolk.Web.Models
         {
             get
             {
-                return OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false;
+                return ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
             }
         }
 
@@ -181,7 +181,7 @@ namespace Tolk.Web.Models
 
         public void UpdateOrder(Order order)
         {
-            order.LanguageId = LanguageId;
+            order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
             order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
             order.RegionId = RegionId;
             order.ContactPersonId = ContactPersonId;
@@ -247,7 +247,7 @@ namespace Tolk.Web.Models
                 ContactPerson = order.ContactPersonUser?.NormalizedEmail,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
-                LanguageName = order.OtherLanguage ?? order.Language.Name,
+                LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,

@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Enums
         Created = 1,
         [Description("Godkänd")]
         Approved = 2,
-        [Description("Nekad")]
+        [Description("Underkänd")]
         DeniedByCustomer = 3,
     }
 }

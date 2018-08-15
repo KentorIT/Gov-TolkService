@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -106,7 +101,7 @@ namespace Tolk.Web.Models
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 //TODO: Should be Name!
                 InterpreterName = request.Interpreter.User.Email,
-                LanguageName = request.Order.OtherLanguage ?? request.Order.Language.Name,
+                LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,
                 PreviousRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue),

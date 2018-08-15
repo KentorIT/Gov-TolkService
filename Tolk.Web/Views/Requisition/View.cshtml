@@ -7,10 +7,10 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CustomerName"/>
+        <display-entry asp-for="CustomerName" />
         @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
         {
-            <display-entry asp-for="CustomerReferenceNumber"/>
+            <display-entry asp-for="CustomerReferenceNumber" />
         }
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="CreatedAt" />
@@ -57,14 +57,17 @@
         <display-entry asp-for="ExpectedEndedAt" />
         <display-entry asp-for="SessionEndedAt" />
         <display-entry asp-for="TotalRegisteredWasteTime" />
-        <display-entry asp-for="ExpectedTravelCosts" />
-        <display-entry asp-for="TravelCosts" />
-        <display-entry asp-for="Message" />
-        <display-entry asp-for="CalculatedPrice" />
-        <display-entry asp-for="ResultingPrice" />
-        @if (Model.AllowCreation)
+        @if (Model.AllowMoreThanTwoHoursTravelTime)
         {
-            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+            <display-entry asp-for="ExpectedTravelCosts" />
         }
-    </div>
+            <display-entry asp-for="TravelCosts" />
+            <display-entry asp-for="Message" />
+            <display-entry asp-for="CalculatedPrice" />
+            <display-entry asp-for="ResultingPrice" />
+            @if (Model.AllowCreation)
+            {
+                <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+            }
+        </div>
 </div>

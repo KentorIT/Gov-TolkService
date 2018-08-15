@@ -88,7 +88,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region order information
 
-        public int LanguageId { get; set; }
+        public int? LanguageId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
         public Language Language { get; set; }
@@ -164,7 +164,8 @@ namespace Tolk.BusinessLogic.Entities
 
             if (ranking == null)
             {
-                // TODO: Rejected by all brokers, what to do now?
+                // Rejected by all brokers, close the order
+                Status = OrderStatus.NoBrokeracceptedOrder;
                 return null;
             }
 

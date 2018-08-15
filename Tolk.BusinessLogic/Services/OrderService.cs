@@ -105,38 +105,49 @@ namespace Tolk.BusinessLogic.Services
             {
                 _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                     request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
+                var brokerEmail = _tolkDbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
+                if (!string.IsNullOrEmpty(brokerEmail))
+                {
+                    var createdOrder = await _tolkDbContext.Orders
+                        .Include(o => o.CustomerOrganisation)
+                        .Include(o => o.Region)
+                        .Include(o => o.Language)
+                        .SingleAsync(o => o.OrderId == request.OrderId);
+                    _tolkDbContext.Add(new OutboundEmail(
+                        request.Ranking.Broker.EmailAddress,
+                        $"Nytt avrop registrerat: {order.OrderNumber}",
+                        $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
+                        $"\tRegion: {order.Region.Name}\n" +
+                        $"\tSpråk: {order.Language.Name}\n" +
+                        $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                        $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                        $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
+                        "Detta mail går inte att svara på.",
+                        _clock.SwedenNow));
+                }
+                else
+                {
+                    _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
+                       request.Ranking.BrokerId);
+                }
             }
             else
             {
+                //There are no more brokers to ask.
+                // Send an email to tell the order creator, and possibly the other user as well...
+                var terminatedOrder = await _tolkDbContext.Orders
+                    .Include(o => o.CreatedByUser)
+                    .SingleAsync(o => o.OrderId == order.OrderId);
+                _tolkDbContext.Add(new OutboundEmail(
+                    terminatedOrder.CreatedByUser.Email,
+                    $"Avrop fick ingen tolk: {order.OrderNumber}",
+                    $"Ingen förmedling kunde tillsätta en tolk för detta tillfälle.\n\n" +
+                    "Detta mail går inte att svara på.",
+                    _clock.SwedenNow));
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
                     order.OrderId);
             }
 
-            var brokerEmail = _tolkDbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
-            if (!string.IsNullOrEmpty(brokerEmail))
-            {
-                var createdOrder = await _tolkDbContext.Orders
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.Region)
-                    .Include(o => o.Language)
-                    .SingleAsync(o => o.OrderId == request.OrderId);
-                _tolkDbContext.Add(new OutboundEmail(
-                    request.Ranking.Broker.EmailAddress,
-                    $"Nytt avrop registrerat: {order.OrderNumber}",
-                    $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
-                    $"\tRegion: {order.Region.Name}\n" +
-                    $"\tSpråk: {order.Language.Name}\n" +
-                    $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                    "Detta mail går inte att svara på.",
-                    _clock.SwedenNow));
-            }
-            else
-            {
-                _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
-                   request.Ranking.BrokerId);
-            }
         }
 
         public void CreatePriceInformation(Order order)

@@ -86,7 +86,7 @@ $@"Hej!
 
 Välkommen till {Constants.SystemName}!
 
-För att aktivera ditt konto, välnligen klicka på nedanstående länk eller klistra
+För att aktivera ditt konto, vänligen klicka på nedanstående länk eller klistra
 in den i din webbläsare.
 
 {{0}}

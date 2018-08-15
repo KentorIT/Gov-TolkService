@@ -177,7 +177,7 @@ namespace Tolk.Web.Controllers
                     Items = requisitions.Select(r => new RequisitionListItemModel
                     {
                         RequisitionId = r.RequisitionId,
-                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
+                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name ?? "(Tolkanvändarutbildning)",
                         OrderNumber = r.Request.Order.OrderNumber.ToString(),
                         Start = r.Request.Order.StartAt,
                         End = r.Request.Order.EndAt,

@@ -73,6 +73,14 @@
         }
     });
     $("body").on("change", "#AssignmentType", function (event) {
+        if ($(this).val() === "Education") {
+            $('#language-panel').collapse('hide');
+            toggleOtherLanguage("");
+        }
+        else {
+            $('#language-panel').collapse('show');
+            toggleOtherLanguage($("#LanguageId").val());
+        }
         if ($(this).val() === "OnSite" || $(this).val() === "OffSite" || $(this).val() === "OffSiteDesignatedLocation") {
             //Uncheck (with event) the UseRankedInterpreterLocation
             if ($("#UseRankedInterpreterLocation").is(":checked")) {
@@ -114,12 +122,7 @@
         $("#InterpreterLocation").val($(this).val());
     });
     $("body").on("change", "#LanguageId", function () {
-        if ($(this).val() === $("#OtherLanguageId").val()) {
-            $('#other-language').collapse('show');
-        }
-        else {
-            $('#other-language').collapse('hide');
-        }
+        toggleOtherLanguage($(this).val());
     });
 
     $("ol.drag-panel").sortable({
@@ -164,4 +167,13 @@
             });
         }
     });
+
+    var toggleOtherLanguage = function (id) {
+        if (id === $("#OtherLanguageId").val()) {
+            $('#other-language').collapse('show');
+        }
+        else {
+            $('#other-language').collapse('hide');
+        }
+    };
 });
