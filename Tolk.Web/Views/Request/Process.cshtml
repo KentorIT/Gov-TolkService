@@ -87,7 +87,7 @@
                         <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
                     </div>
                     <div class="col-xs-4">
-                        <button type="button" data-toggle="modal" data-target="#confirmDialog" class="btn btn-warning">Avbryt</button>
+                        <a class="btn btn-warning" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt</a>
                     </div>
                     <div class="col-xs-4">
                         <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
@@ -118,7 +118,6 @@
 
     </div>
 </div>
-@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToList", Message = "Är du säker att du vill gå tillbaka?", DialogHeader = "Avbryt" })
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Request/Process.js" asp-append-version="true"></script>

@@ -52,11 +52,10 @@
             <form-entry asp-for="TravelCosts" />
             <form-entry asp-for="Message" />
             <button class="btn btn-default">Skapa</button>
-            <button type="button" class="btn btn-warning pull-right" data-toggle="modal" data-target="#confirmDialog">Avbryt</button>
+            <a class="btn btn-warning pull-right" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
         </form>
     </div>
 </div>
-@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToListCreate", Message = "Du kommer att förlora osparade data. Vill du avbryta?", DialogHeader = "Avbryt avrapportering" })
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

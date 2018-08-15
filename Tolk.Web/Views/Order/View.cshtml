@@ -128,7 +128,7 @@
                         <input asp-for="OrderId" type="hidden" />
                         <input asp-for="RequestId" type="hidden" />
                         <button class="btn btn-default">Godkänn tillsättning</button>
-                        <button type="button" class="btn btn-warning pull-right" data-toggle="modal" data-target="#confirmDialog">Avbryt</button>
+                        <a class="btn btn-warning pull-right" asp-action="List" asp-route-Status="RequestResponded">Avbryt</a>
                     </form>
                     if (Model.AllowDenial)
                     {
@@ -165,7 +165,6 @@
 
     </div>
 </div>
-@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToList", Message = "Är du säker att du vill gå tillbaka?", DialogHeader = "Avbryt" })
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Order/Process.js" asp-append-version="true"></script>

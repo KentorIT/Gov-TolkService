@@ -76,7 +76,7 @@
             <form-entry asp-for="Description" />
 
             <button class="btn btn-default">Skicka</button>
-            <button type="button" data-toggle="modal" data-target="#confirmDialog" class="btn btn-warning pull-right">Avbryt</button>
+            <a class="btn btn-warning pull-right" asp-controller="Home" asp-action="Index">Avbryt</a>
         </form>
         <span id="baseRequirement" class="d-none">
             <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
@@ -105,7 +105,6 @@
 
     </div>
 </div>
-@await Html.PartialAsync("_ConfirmDialog", new ConfirmDialogModel { Action = "AbortToHome", Message = "Du kommer att förlora osparade data. Vill du avbryta?", DialogHeader = "Avbryt avropet"})
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Order/Add.js" asp-append-version="true"></script>

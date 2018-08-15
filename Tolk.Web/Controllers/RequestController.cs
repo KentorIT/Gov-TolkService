@@ -222,11 +222,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public IActionResult AbortToList()
-        {
-            return RedirectToAction(nameof(List), new { Status = RequestStatus.ToBeProcessedByBroker });
-        }
-
         private void CreateEmailForRequestActions(Request request)
         {
             string receipent = request.Order.CreatedByUser.Email;

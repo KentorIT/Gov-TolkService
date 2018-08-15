@@ -250,16 +250,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public IActionResult AbortToHome()
-        {
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-        }
-
-        public IActionResult AbortToList()
-        {
-            return RedirectToAction(nameof(List), new { Status = OrderStatus.RequestResponded });
-        }
-
         private void CreateEmailOnOrderRequestAction(Request request)
         {
             string receipent = request.Interpreter.User.Email;
