@@ -118,7 +118,7 @@ namespace Tolk.BusinessLogic.Services
                         $"Nytt avrop registrerat: {order.OrderNumber}",
                         $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
                         $"\tRegion: {order.Region.Name}\n" +
-                        $"\tSpråk: {order.Language.Name}\n" +
+                        $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name ?? "(Tolkanvändarutbildning)"}\n" +
                         $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                         $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                         $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
