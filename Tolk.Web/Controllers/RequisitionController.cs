@@ -249,7 +249,7 @@ namespace Tolk.Web.Controllers
                             _dbContext.SaveChanges();
                         }
                         transaction.Commit();
-                        CreateEmailForRequisitionActions(requisition);
+                        CreateEmailOnRequisitionAction(requisition);
                         return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                     }
                 }
@@ -272,7 +272,7 @@ namespace Tolk.Web.Controllers
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
-                    CreateEmailForRequisitionActions(requisition);
+                    CreateEmailOnRequisitionAction(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
@@ -294,7 +294,7 @@ namespace Tolk.Web.Controllers
                 {
                     requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
                     _dbContext.SaveChanges();
-                    CreateEmailForRequisitionActions(requisition);
+                    CreateEmailOnRequisitionAction(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
@@ -302,7 +302,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.ParentId });
         }
 
-        private void CreateEmailForRequisitionActions(Requisition requisition)
+        private void CreateEmailOnRequisitionAction(Requisition requisition)
         {
             string receipent;
             string subject;
