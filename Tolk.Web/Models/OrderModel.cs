@@ -178,8 +178,8 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public bool UseAddress => UseRankedInterpreterLocation || AssignmentType != AssignmentType.OffSite;
-        public bool UseOffSiteInformation => UseRankedInterpreterLocation || AssignmentType == AssignmentType.OffSite;
+        public bool UseAddress => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value != BusinessLogic.Enums.InterpreterLocation.OffSite);
+        public bool UseOffSiteInformation => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value == BusinessLogic.Enums.InterpreterLocation.OffSite);
 
         #region methods
 
