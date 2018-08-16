@@ -24,7 +24,7 @@ namespace Tolk.BusinessLogic.Enums
         DeliveryAccepted = 7,
         [Description("Uppdraget har avbokats av avropare")]
         Cancelled = 8,
-        [Description("Alla förmedlingar nekade uppdraget.")]
+        [Description("Alla förmedlingar nekade uppdraget")]
         NoBrokeracceptedOrder = 9
     }
 }
