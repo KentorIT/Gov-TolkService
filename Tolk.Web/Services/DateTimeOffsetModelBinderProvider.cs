@@ -11,7 +11,8 @@ namespace Tolk.Web.Services
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            if(context.Metadata.ModelType == typeof(DateTimeOffset))
+            if(context.Metadata.ModelType == typeof(DateTimeOffset) || 
+                context.Metadata.ModelType == typeof(DateTimeOffset?))
             {
                 return new BinderTypeModelBinder(typeof(DateTimeOffsetModelBinder));
             }

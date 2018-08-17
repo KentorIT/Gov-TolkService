@@ -393,7 +393,7 @@ namespace Tolk.Web.TagHelpers
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.Attributes.Add("data-placeholder", "--- Välj ---");
-            if (currentValues == null)
+            if (For.Model == null)
             {
                 var existingOptionsBuilder = new HtmlContentBuilder();
                 tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);

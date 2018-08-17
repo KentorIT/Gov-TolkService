@@ -24,6 +24,7 @@ namespace Tolk.Web.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private const string languagesSelectListKey = nameof(languagesSelectListKey);
+        private const string brokersSelectListKey = nameof(brokersSelectListKey);
         private const string impersonationTargets = nameof(impersonationTargets);
 
         public SelectListService(
@@ -37,7 +38,8 @@ namespace Tolk.Web.Services
         }
 
         public static IEnumerable<SelectListItem> Regions { get; } =
-            Region.Regions.Select(r => new SelectListItem
+            Region.Regions.OrderBy(r => r.Name)
+            .Select(r => new SelectListItem
             {
                 Value = r.RegionId.ToString(),
                 Text = r.Name
@@ -109,6 +111,27 @@ namespace Tolk.Web.Services
                     .ToList().AsReadOnly();
 
                     _cache.Set(languagesSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                }
+
+                return items;
+            }
+        }
+
+        public IEnumerable<SelectListItem> Brokers
+        {
+            get
+            {
+                if (!_cache.TryGetValue(brokersSelectListKey, out IEnumerable<SelectListItem> items))
+                {
+                    items = _dbContext.Brokers.OrderBy(b => b.Name)
+                        .Select(b => new SelectListItem
+                        {
+                            Text = b.Name,
+                            Value = b.BrokerId.ToString(),
+                        })
+                    .ToList().AsReadOnly();
+
+                    _cache.Set(brokersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
                 }
 
                 return items;
