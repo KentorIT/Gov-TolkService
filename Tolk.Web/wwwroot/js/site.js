@@ -1,9 +1,5 @@
 // Write your JavaScript code.
 
-$(document).ready(function () {
-    $("form:not(.do-not-check-dirty)").areYouSure();
-});
-
 // Set up date-picker. See docs at https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html
 $('.datepicker').datepicker({
     language: 'sv',
@@ -36,6 +32,8 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
+    $("form:not(.do-not-check-dirty)").areYouSure();
+
     $("form.filter-form").on("change", "select, input, textarea", function (event) {
         $(this).closest("form").submit();
     });

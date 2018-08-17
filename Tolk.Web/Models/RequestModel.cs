@@ -60,6 +60,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
+        [Display(Name = "Inställelsesätt enl. svar")]
+        public InterpreterLocation? InterpreterLocationAnswer
+        {
+            get; set;
+        }
+
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 

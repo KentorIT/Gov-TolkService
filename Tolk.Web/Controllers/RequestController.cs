@@ -100,11 +100,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                //Get request model from db
-                var model = RequestModel.GetModelFromRequest(request);
-                model.CalculatedPrice = GetPrices(request, model.CompetenceLevel ?? model.OrderModel.RequiredCompetenceLevel).TotalPrice;
-                model.BrokerId = request.Ranking.BrokerId;
-                return View(model);
+                return View(GetModel(request));
             }
             return Forbid();
         }
@@ -130,12 +126,7 @@ namespace Tolk.Web.Controllers
                     request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
                 }
-
-                //Get request model from db
-                var model = RequestModel.GetModelFromRequest(request);
-                model.CalculatedPrice = GetPrices(request, model.OrderModel.RequiredCompetenceLevel).TotalPrice;
-                model.BrokerId = request.Ranking.BrokerId;
-                return View(model);
+                return View(GetModel(request));
             }
             return Forbid();
         }
@@ -182,7 +173,7 @@ namespace Tolk.Web.Controllers
                         GetPrices(request, model.CompetenceLevel.Value)
                     );
                     _dbContext.SaveChanges();
-                    CreateEmailForRequestActions(request);
+                    CreateEmailOnRequestAction(request);
                     return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
                 }
                 return Forbid();
@@ -212,7 +203,7 @@ namespace Tolk.Web.Controllers
                 await _orderService.CreateRequest(request.Order);
 
                 _dbContext.SaveChanges();
-                CreateEmailForRequestActions(request);
+                CreateEmailOnRequestAction(request);
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
 
@@ -251,7 +242,19 @@ namespace Tolk.Web.Controllers
                             request.Ranking.BrokerFee);
         }
 
-        private void CreateEmailForRequestActions(Request request)
+        private RequestModel GetModel(Request request)
+        {
+            var model = RequestModel.GetModelFromRequest(request);
+            model.CalculatedPrice = GetPrices(request, model.OrderModel.RequiredCompetenceLevel).TotalPrice;
+            if (request.InterpreterLocation != null)
+            {
+                model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
+            }
+            model.BrokerId = request.Ranking.BrokerId;
+            return model;
+        }
+
+        private void CreateEmailOnRequestAction(Request request)
         {
             string receipent = request.Order.CreatedByUser.Email;
             string subject;

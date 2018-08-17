@@ -175,11 +175,11 @@ namespace Tolk.Web.Models
 
         public bool AllowDenial => ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
 
-        public bool UseAddress => UseRankedInterpreterLocation || AssignmentType != AssignmentType.OffSite;
-        public bool UseOffSiteInformation => UseRankedInterpreterLocation || AssignmentType == AssignmentType.OffSite;
+        public bool UseAddress => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value != BusinessLogic.Enums.InterpreterLocation.OffSite);
+        public bool UseOffSiteInformation => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value == BusinessLogic.Enums.InterpreterLocation.OffSite);
 
         public bool AllowOrderCancellation { get; set; } = false;
-
+ 
         #region methods
 
         public void UpdateOrder(Order order)
