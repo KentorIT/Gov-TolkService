@@ -32,7 +32,7 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
-    $("form").areYouSure();
+    $("form:not(.do-not-check-dirty)").areYouSure();
 
     $("form.filter-form").on("change", "select, input, textarea", function (event) {
         $(this).closest("form").submit();

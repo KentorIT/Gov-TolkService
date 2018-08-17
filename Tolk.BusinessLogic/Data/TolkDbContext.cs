@@ -63,6 +63,26 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Request>()
+                .HasOne(o => o.CancelledByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(o => o.CancelledByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(o => o.CancelConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
+                .HasOne(o => o.CancelConfirmedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Request>()
                 .HasOne(r => r.ReceivedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);

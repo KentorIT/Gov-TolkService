@@ -1,20 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
-using System;
 using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Services;
-using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Utilities;
-using System.Collections.Generic;
-using Tolk.Web.Helpers;
-using System.Threading.Tasks;
-using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
-using Microsoft.Extensions.Logging;
+using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
@@ -26,6 +25,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
+        private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
 
@@ -35,6 +35,7 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             RankingService rankingService,
             OrderService orderService,
+            DateCalculationService dateCalculationService,
             ISwedishClock clock,
             ILogger<OrderController> logger)
         {
@@ -43,6 +44,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _rankingService = rankingService;
             _orderService = orderService;
+            _dateCalculationService = dateCalculationService;
             _clock = clock;
             _logger = logger;
         }
@@ -122,6 +124,7 @@ namespace Tolk.Web.Controllers
                     r.Status == RequestStatus.Approved
                     );
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
+                model.AllowOrderCancellation = request != null && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved))
@@ -176,7 +179,7 @@ namespace Tolk.Web.Controllers
                     Requirements = new List<OrderRequirement>(),
                     InterpreterLocations = new List<OrderInterpreterLocation>(),
                     PriceRows = new List<OrderPriceRow>()
-                };                   
+                };
                 model.UpdateOrder(order);
                 _dbContext.Add(order);
 
@@ -239,6 +242,39 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        public async Task<IActionResult> Cancel(CancelOrderModel model)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Requisitions)
+                .Include(r => r.PriceRows)
+                .Single(r => r.OrderId == model.OrderId &&
+                    (
+                        r.Status == RequestStatus.Created ||
+                        r.Status == RequestStatus.Received ||
+                        r.Status == RequestStatus.Accepted ||
+                        r.Status == RequestStatus.Approved
+                ));
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
+            {
+                var now = _clock.SwedenNow;
+                //If this is an approved request, and the cencallation is done to late, a requisition will be crated.
+                bool createRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;
+                bool isApprovedRequest = request.Status == RequestStatus.Approved;
+                request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createRequisition);
+
+                CreateEmailOnOrderCancellation(request, isApprovedRequest, createRequisition);
+
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(View), new { id = model.OrderId });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
             var order = await _dbContext.Orders.Include(o => o.Requests)
@@ -288,6 +324,59 @@ namespace Tolk.Web.Controllers
             else
             {
                 _logger.LogInformation($"No email sent for orderrequest action {request.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
+        }
+
+        private void CreateEmailOnOrderCancellation(Request request, bool requestWasApproved, bool willGetInvoiced)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            if (requestWasApproved)
+            {
+                string interpreter = request.Interpreter?.User.Email;
+                if (!string.IsNullOrEmpty(interpreter))
+                {
+                    _dbContext.Add(new OutboundEmail(
+                        interpreter,
+                        $"Avbokat avrop avrops-ID {orderNumber}",
+                        $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                        (willGetInvoiced ? "Uppdraget får faktureras eftersom avbokningen skedde så nära inpå." : string.Empty) +
+                        "\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                }
+                else
+                {
+                    _logger.LogInformation($"No email sent to interpreter when cancelling {orderNumber}. No email is set for user.");
+                }
+            }
+            string broker = request.Ranking.Broker.EmailAddress;
+            if (!string.IsNullOrEmpty(broker))
+            {
+                if (requestWasApproved)
+                {
+                    _dbContext.Add(new OutboundEmail(
+                        broker,
+                        $"Avbokat avrop avrops-ID {orderNumber}",
+                        $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                        (willGetInvoiced ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : string.Empty) +
+                        "\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                }
+                else
+                {
+                    _dbContext.Add(new OutboundEmail(
+                        broker,
+                        $"Avbokad förfrågan avrops-ID {request.Order.OrderNumber}",
+                        $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                        "\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent to broker when cancelling {orderNumber}. No email is set for broker.");
             }
         }
     }

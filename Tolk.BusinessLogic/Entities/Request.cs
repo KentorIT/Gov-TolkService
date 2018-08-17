@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Data.Migrations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -107,6 +105,33 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingAnswerProcessedBy))]
         public AspNetUser AnswerProcessedByImpersonator { get; private set; }
 
+        public DateTimeOffset? CancelledAt { get; set; }
+
+        public int? CancelledBy { get; set; }
+
+        [ForeignKey(nameof(CancelledBy))]
+        public AspNetUser CancelledByUser { get; set; }
+
+        public int? ImpersonatingCanceller { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingCanceller))]
+        public AspNetUser CancelledByImpersonator { get; set; }
+
+        public DateTimeOffset? CancelConfirmedAt { get; set; }
+
+        public int? CancelConfirmedBy { get; set; }
+
+        [ForeignKey(nameof(CancelConfirmedBy))]
+        public AspNetUser CancelConfirmedByUser { get; set; }
+
+        public int? ImpersonatingCancelConfirmer { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingCancelConfirmer))]
+        public AspNetUser CancelConfirmedByImpersonator { get; set; }
+
+        [MaxLength(1000)]
+        public string CancelMessage { get; set; }
+
         #region navigation
 
         public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
@@ -148,7 +173,7 @@ namespace Tolk.BusinessLogic.Entities
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
             PriceInformation priceInformation)
         {
-            if(Status != RequestStatus.Received)
+            if (Status != RequestStatus.Received)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Receved requests can be accepted.");
             }
@@ -191,6 +216,52 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnswerProcessedBy = impersonatorId;
             Order.Status = OrderStatus.Requested;
             DenyMessage = message;
+        }
+
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createRequisition)
+        {
+            if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.ResponseAccepted)
+            {
+                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}. Only Orders waiting to be delivered can be cancelled");
+            }
+            if (Order.StartAt < cancelledAt)
+            {
+                throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started cannot be cancelled");
+            }
+            if (Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.Accepted && Status != RequestStatus.Approved)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only active requests can be cancelled.");
+            }
+            if (Status == RequestStatus.Approved && createRequisition)
+            {
+                Requisitions.Add(
+                    new Requisition
+                    {
+                        CreatedAt = cancelledAt,
+                        CreatedBy = userId,
+                        ImpersonatingCreatedBy = impersonatorId,
+                        Message = "Genererat av systemet, eftersom tillfället avbokades för tätt inpå",
+                        Status = RequisitionStatus.AutomaticApprovalFromCancelledOrder,
+                        SessionStartedAt = Order.StartAt,
+                        SessionEndedAt = Order.EndAt,
+                        PriceRows = PriceRows.Select(p => new RequisitionPriceRow
+                        {
+                            StartAt = p.StartAt,
+                            EndAt = p.EndAt,
+                            IsBrokerFee = p.IsBrokerFee,
+                            PriceListRowId = p.PriceListRowId,
+                        }).ToList()
+                    }
+                );
+            }
+
+            Status = Status == RequestStatus.Approved ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
+            CancelledAt = cancelledAt;
+            CancelledBy = userId;
+            ImpersonatingCanceller = impersonatorId;
+            CancelMessage = message;
+
+            Order.Status = OrderStatus.Cancelled;
         }
 
         public void CreateRequisition(Requisition requisition)

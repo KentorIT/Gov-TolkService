@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace Tolk.BusinessLogic.Enums
 {
@@ -16,6 +13,8 @@ namespace Tolk.BusinessLogic.Enums
         Created = 1,
         [Description("Mottagen")]
         Received = 2,
+        [Description("Avbokad av avropare")]
+        CancelledByCreator = 3,
         [Description("Svar skickat")]
         Accepted = 4,
         [Description("Tillsättning godkänd")]
@@ -25,6 +24,10 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Nekad av avropare")]
         DeniedByCreator = 8,
         [Description("Inget svar, tiden gick ut")]
-        DeniedByTimeLimit = 9
+        DeniedByTimeLimit = 9,
+        [Description("Avbokad av avropare, att bekräfta")]
+        CancelledByCreatorWhenApproved = 10,
+        [Description("Bekräftad avbokning")]
+        CancelledByCreatorConfirmed = 11,
     }
 }

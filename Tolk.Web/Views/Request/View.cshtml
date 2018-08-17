@@ -42,7 +42,14 @@
 
         <display-entry asp-for="Interpreter" />
         <display-entry asp-for="CompetenceLevel" />
-        <display-entry asp-for="InterpreterLocation" />
+        @if (Model.InterpreterLocationAnswer != null && Model.InterpreterLocation == null)
+        {
+            <display-entry asp-for="InterpreterLocationAnswer" />
+        }
+        else
+        {
+            <display-entry asp-for="InterpreterLocation" />
+        }
         @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
         {
             //This should be visible if a specified  InterpreterLocation is set and not being OffSite, and allow more than 2 h travel time is set
@@ -65,6 +72,13 @@
         @if (Model.RequisitionId.HasValue)
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+        }
+        @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
+        {
+            <form method="post" asp-action="ConfirmCancallation">
+                <input asp-for="RequestId" type="hidden" />
+                <button class="btn deny-button btn-danger pull-right">Bekräfta avbokning</button>
+            </form>
         }
     </div>
 </div>
