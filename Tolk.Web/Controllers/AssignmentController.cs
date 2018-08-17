@@ -62,7 +62,7 @@ namespace Tolk.Web.Controllers
                         requests = requests.Where(r => !r.Requisitions.Any() && r.Order.EndAt < _clock.SwedenNow);
                         break;
                     default:
-                        requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Attested || r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
+                        requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
                         break;
                 }
             }

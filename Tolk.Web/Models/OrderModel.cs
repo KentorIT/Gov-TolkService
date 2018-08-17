@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -15,7 +12,7 @@ namespace Tolk.Web.Models
     public class OrderModel
     {
         /// <summary>
-        /// This is the id for the row in the langaiges select box that should show the other language box.
+        /// This is the id for the row in the languages select box that should show the other language box.
         /// </summary>
         public static int OtherLanguageId { get; } = 62;
 
@@ -157,17 +154,15 @@ namespace Tolk.Web.Models
 
         public List<BrokerListModel> PreviousRequests { get; set; }
 
-        public bool AllowDenial
-        {
-            get
-            {
-                return ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
-            }
-        }
-
         [Display(Name = "Anledning till att svaret inte godtas")]
         [DataType(DataType.MultilineText)]
+        [ClientRequired]
         public string DenyMessage { get; set; }
+
+        [Display(Name = "Anledning till att avropet avbokas")]
+        [DataType(DataType.MultilineText)]
+        [ClientRequired]
+        public string CancelMessage { get; set; }
 
         #endregion
 
@@ -178,8 +173,12 @@ namespace Tolk.Web.Models
 
         #endregion
 
+        public bool AllowDenial => ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
+
         public bool UseAddress => UseRankedInterpreterLocation || AssignmentType != AssignmentType.OffSite;
         public bool UseOffSiteInformation => UseRankedInterpreterLocation || AssignmentType == AssignmentType.OffSite;
+
+        public bool AllowOrderCancellation { get; set; } = false;
 
         #region methods
 
@@ -196,7 +195,7 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UseAddress ? UnitName : null;
             order.Street = UseAddress ? LocationStreet : null;
-            order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode: null;
+            order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
             order.City = UseAddress ? LocationCity : null;
             order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
             order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
@@ -297,10 +296,10 @@ namespace Tolk.Web.Models
                         PriceListRowId = r.PriceListRowId,
                     }).ToList()
                 },
-                PreviousRequests = order.Requests.Where( r=> 
-                    r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
-                    r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
-                    r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
+                PreviousRequests = order.Requests.Where(r =>
+                   r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
+                   r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
+                   r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180816065457_AddCancelToRequest")]
+    partial class AddCancelToRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -590,10 +592,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("BrokerMessage")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("CancelConfirmedAt");
-
-                    b.Property<int?>("CancelConfirmedBy");
-
                     b.Property<string>("CancelMessage")
                         .HasMaxLength(1000);
 
@@ -614,8 +612,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("ImpersonatingAnswerProcessedBy");
 
                     b.Property<int?>("ImpersonatingAnsweredBy");
-
-                    b.Property<int?>("ImpersonatingCancelConfirmer");
 
                     b.Property<int?>("ImpersonatingCanceller");
 
@@ -641,15 +637,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AnsweredBy");
 
-                    b.HasIndex("CancelConfirmedBy");
-
                     b.HasIndex("CancelledBy");
 
                     b.HasIndex("ImpersonatingAnswerProcessedBy");
 
                     b.HasIndex("ImpersonatingAnsweredBy");
-
-                    b.HasIndex("ImpersonatingCancelConfirmer");
 
                     b.HasIndex("ImpersonatingCanceller");
 
@@ -962,11 +954,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("AnsweredBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelConfirmedByUser")
-                        .WithMany()
-                        .HasForeignKey("CancelConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelledByUser")
                         .WithMany()
                         .HasForeignKey("CancelledBy")
@@ -980,11 +967,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "AnsweredByImpersonator")
                         .WithMany()
                         .HasForeignKey("ImpersonatingAnsweredBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelConfirmedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCancelConfirmer")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelledByImpersonator")

@@ -219,6 +219,28 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCancallation(int requestId)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Single(r => r.RequestId == requestId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                request.Status = RequestStatus.CancelledByCreatorConfirmed;
+                request.CancelConfirmedAt = _clock.SwedenNow;
+                request.CancelConfirmedBy = User.GetUserId();
+                request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
+
+                _dbContext.SaveChanges();
+                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+            }
+
+            return Forbid();
+        }
+
         private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel)
         {
             return _priceCalculationService.GetPrices(

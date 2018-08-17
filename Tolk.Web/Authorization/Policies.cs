@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Authorization
@@ -18,6 +19,7 @@ namespace Tolk.Web.Authorization
         public const string CreateRequisition = nameof(CreateRequisition);
         public const string View = nameof(View);
         public const string Accept = nameof(Accept);
+        public const string Cancel = nameof(Cancel);
         public const string TimeTravel = nameof(TimeTravel);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
@@ -31,6 +33,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
@@ -47,6 +50,19 @@ namespace Tolk.Web.Authorization
                     return order.CreatedBy == context.User.GetUserId();
                 case Request request:
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> CancelHandler = (context) =>
+        {
+            switch (context.Resource)
+            {
+                case Request request:
+                    return request.Order.CreatedBy == context.User.GetUserId() &&
+                        (request.Order.Status == OrderStatus.Requested || request.Order.Status == OrderStatus.RequestResponded || request.Order.Status == OrderStatus.ResponseAccepted) &&
+                        (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved);
                 default:
                     throw new NotImplementedException();
             }

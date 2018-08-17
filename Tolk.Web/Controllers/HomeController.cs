@@ -185,6 +185,24 @@ namespace Tolk.Web.Controllers
 
                 };
             }
+
+            count = _dbContext.Requests.Where(r => r.Status == RequestStatus.CancelledByCreatorWhenApproved && r.Ranking.BrokerId == brokerId).Count();
+
+            if (count > 0)
+            {
+                yield return new StartViewModel.StartPageBox
+                {
+                    Count = count,
+                    Header = "Avbokade förfrågningar",
+                    Controller = "Request",
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", nameof(RequestStatus.CancelledByCreatorWhenApproved) }
+                    }
+
+                };
+            }
+
         }
 
         private IEnumerable<StartViewModel.StartPageBox> GetInterpreterStartPageBoxes()

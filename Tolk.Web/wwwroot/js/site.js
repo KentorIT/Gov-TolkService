@@ -1,7 +1,7 @@
 // Write your JavaScript code.
 
 $(document).ready(function () {
-    $("form").areYouSure();
+    $("form:not(.do-not-check-dirty)").areYouSure();
 });
 
 // Set up date-picker. See docs at https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html

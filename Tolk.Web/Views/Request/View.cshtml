@@ -66,5 +66,12 @@
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
         }
+        @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
+        {
+            <form method="post" asp-action="ConfirmCancallation">
+                <input asp-for="RequestId" type="hidden" />
+                <button class="btn deny-button btn-danger pull-right">Bekräfta avbokning</button>
+            </form>
+        }
     </div>
 </div>

@@ -18,13 +18,14 @@ namespace Tolk.BusinessLogic.Enums
         ResponseAccepted = 4,
         [Description("Uppdraget har genomförts")]
         Delivered = 5,
-        [Description("Tolk har bekräftat tider")]
-        Attested = 6,
+        [Description("Uppdraget har avbokats av avropare")]
+        Cancelled = 6,
         [Description("Leverans är bekräftad")]
         DeliveryAccepted = 7,
-        [Description("Uppdraget har avbokats av avropare")]
-        Cancelled = 8,
-        [Description("Alla förmedlingar nekade uppdraget.")]
-        NoBrokeracceptedOrder = 9
+        [Description("Uppdraget har annulerats via reklamation")]
+        [Obsolete("Inte använd än")]
+        OrderAnulled = 8,
+        [Description("Alla förmedlingar nekade uppdraget")]
+        NoBrokerAcceptedOrder = 9
     }
 }
