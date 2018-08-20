@@ -66,7 +66,10 @@ namespace Tolk.Web.Controllers
                 orders = model.RegionId.HasValue ? orders.Where(r => r.Region.RegionId == model.RegionId) : orders;                 // Region
                 orders = model.LanguageId.HasValue ? orders.Where(r => r.Language.LanguageId == model.LanguageId) : orders;         // Language
                 orders = model.Status.HasValue ? orders.Where(r => r.Status == model.Status) : orders;                              // Status
-                orders = model.BrokerId.HasValue ? orders.Where(r => r.Requests.Any(req => req.Ranking.BrokerId == model.BrokerId)) : orders;   // Broker
+                orders = model.BrokerId.HasValue ? orders.Where(r => r.Requests.Any(req => req.Ranking.BrokerId == model.BrokerId && (req.Status == RequestStatus.Created ||
+                            req.Status == RequestStatus.Received ||
+                            req.Status == RequestStatus.Accepted ||
+                            req.Status == RequestStatus.Approved))) : orders;   // Broker
                 orders = model.StartTimeRange != null && model.StartTimeRange.IsValid() ? orders.Where(r => model.StartTimeRange.IsInRange(r.StartAt.Date, true)) : orders; // StartTimeRange
             }
 
