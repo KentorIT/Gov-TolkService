@@ -2,11 +2,6 @@
 $(function () {
     var currentId = 0;
 
-    $(document).ready(function () {
-        // Only show relevant fields
-        $("#AssignmentType").trigger("change");
-    });
-
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -183,4 +178,7 @@ $(function () {
             $('#other-language').collapse('hide');
         }
     };
+
+    // Triggers (handlers cannot be triggered before being declared)
+    $("#AssignmentType").trigger("change");
 });
