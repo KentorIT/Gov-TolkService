@@ -8,7 +8,7 @@
                 <h4 class="modal-title">@Model.DialogHeader</h4>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="@Model.Action">
+                <form method="post" asp-action="@Model.Action" class="do-not-check-dirty">
                     <input asp-for="ParentId" type="hidden" />
                     <form-entry asp-for="Message" />
                     <button type="submit" class="btn btn-warning">Skicka</button>

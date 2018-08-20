@@ -3,7 +3,7 @@
 @using Tolk.Web.Services
 <div class="col-md-4 pull-right">
     <h4>Filtrera</h4>
-    <form method="get" class="filter-form">
+    <form method="get" class="filter-form do-not-check-dirty">
         <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear"/>
         @if (Model.IsCustomer)
         {

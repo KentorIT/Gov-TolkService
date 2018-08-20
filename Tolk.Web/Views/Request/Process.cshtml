@@ -106,7 +106,7 @@
                 <h4 class="modal-title">Tacka nej till uppdrag</h4>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="Decline">
+                <form method="post" asp-action="Decline" class="do-not-check-dirty">
                     <input asp-for="RequestId" type="hidden" />
                     <form-entry asp-for="DenyMessage" />
                     <button type="submit" class="btn btn-warning">Skicka</button>

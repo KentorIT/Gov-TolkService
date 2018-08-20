@@ -11,7 +11,7 @@
         din verifieringskod gått ut. Du kan i så fall skicka en ny, som
         är giltig i 24 timmar.</p>
 
-        <form asp-action="ConfirmAccount" method="post">
+        <form asp-action="ConfirmAccount" method="post" class="do-not-check-dirty">
             <input type="hidden" asp-for="UserId" />
             <button class="btn btn-success" type="submit">Begär verifieringskod</button>
         </form>

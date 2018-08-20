@@ -1,7 +1,7 @@
 ﻿@model RegisterViewModel
 
 <h2>Registrera användarkonto</h2>
-<form method="post" asp-action="Register" asp-controller="Account">
+<form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
     <div asp-validation-summary="All" class="text-danger"></div>
     <form-entry asp-for="Email" />
     <button type="submit" class="btn btn-success">Skapa konto</button>
