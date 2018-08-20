@@ -84,6 +84,10 @@ namespace Tolk.Web.Models
 
         public Requisition PreviousRequisition { get; set; }
 
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Faktureringsinformation")]
+        public string InvoiceInformation { get; set; }
+
         #region methods
 
         public static RequisitionModel GetModelFromRequest(Request request)

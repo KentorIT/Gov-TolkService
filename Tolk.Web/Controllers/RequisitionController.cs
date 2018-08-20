@@ -50,6 +50,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
+                .Include(r => r.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
@@ -69,6 +70,7 @@ namespace Tolk.Web.Controllers
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
                 model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, request.Ranking.BrokerFee,
                     requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
+                model.InvoiceInformation = GetRequisitionPriceInformation(requisition);
                 return View(model);
             }
             return Forbid();
@@ -78,6 +80,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
+                .Include(r => r.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
@@ -95,6 +98,7 @@ namespace Tolk.Web.Controllers
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
                 model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
                     requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
+                model.InvoiceInformation = GetRequisitionPriceInformation(requisition);
                 return View(model);
             }
             return Forbid();
@@ -267,6 +271,7 @@ namespace Tolk.Web.Controllers
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Include(r => r.CreatedByUser)
+                    .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Single(r => r.RequisitionId == requisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
@@ -317,6 +322,7 @@ namespace Tolk.Web.Controllers
                 case RequisitionStatus.Approved:
                     receipent = requisition.CreatedByUser.Email;
                     subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
+                    body += "\n\n" + GetRequisitionPriceInformation(requisition);
                     break;
                 case RequisitionStatus.DeniedByCustomer:
                     receipent = requisition.CreatedByUser.Email;
@@ -341,5 +347,26 @@ namespace Tolk.Web.Controllers
                 _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
             }
         }
+
+        private string GetRequisitionPriceInformation(Requisition requisition)
+        {
+            if (requisition.PriceRows == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
+                string invoiceInfo = "Kostnader att fakturera:\n\n";
+                foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
+                {
+                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
+                }
+                invoiceInfo += $"Total reskostnad:\n{requisition.TravelCosts.ToString("#,0.00 SEK")}\n\n";
+                invoiceInfo += $"Summa totalt att fakturera: {(priceInfo.TotalPrice + requisition.TravelCosts).ToString("#,0.00 SEK")}";
+                return invoiceInfo;
+            }
+        }
+
     }
 }

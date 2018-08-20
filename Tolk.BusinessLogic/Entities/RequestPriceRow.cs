@@ -6,32 +6,17 @@ using System.Text;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class RequestPriceRow
+    public class RequestPriceRow : Utilities.PriceRowBase
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestPriceRowId { get; set; }
 
         public int RequestId { get; set; }
 
-        public int PriceListRowId { get; set; }
-
-        public DateTimeOffset StartAt { get; set; }
-
-        public DateTimeOffset EndAt { get; set; }
-
-        [Column(TypeName = "decimal(10, 2)")]
-
-        public decimal TotalPrice { get; set; }
-
         [MaxLength(255)]
         public string Description { get; set; }
 
         [ForeignKey(nameof(RequestId))]
         public Request Request { get; set; }
-
-        [ForeignKey(nameof(PriceListRowId))]
-        public PriceListRow PriceListRow { get; set; }
-
-        public bool IsBrokerFee { get; set; }
     }
 }

@@ -24,6 +24,9 @@
         <display-entry asp-for="Message" />
         <display-entry asp-for="CalculatedPrice" />
         <display-entry asp-for="ResultingPrice" />
+        <div class="border body-content">
+            <display-entry asp-for="InvoiceInformation" />
+        </div>
         <form method="post" asp-action="Approve">
             <input asp-for="RequisitionId" type="hidden" />
             <div class="row">

@@ -57,17 +57,24 @@
         <display-entry asp-for="ExpectedEndedAt" />
         <display-entry asp-for="SessionEndedAt" />
         <display-entry asp-for="TotalRegisteredWasteTime" />
+
         @if (Model.AllowMoreThanTwoHoursTravelTime)
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
-            <display-entry asp-for="TravelCosts" />
-            <display-entry asp-for="Message" />
-            <display-entry asp-for="CalculatedPrice" />
-            <display-entry asp-for="ResultingPrice" />
-            @if (Model.AllowCreation)
-            {
-                <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
-            }
-        </div>
+        <display-entry asp-for="TravelCosts" />
+        <display-entry asp-for="Message" />
+        <display-entry asp-for="CalculatedPrice" />
+        <display-entry asp-for="ResultingPrice" />
+        @if (Model.AllowCreation)
+        {
+            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+        }
+        else
+        {
+            <div class="border body-content">
+                <display-entry asp-for="InvoiceInformation" />
+            </div>
+        }
+    </div>
 </div>

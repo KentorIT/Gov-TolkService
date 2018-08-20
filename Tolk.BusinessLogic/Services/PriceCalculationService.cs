@@ -248,5 +248,42 @@ namespace Tolk.BusinessLogic.Services
             //TODO, Cache this table...
             return _dbContext.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
         }
+
+        public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
+        {
+
+            DisplayPriceInformation dpi = new DisplayPriceInformation();
+            int numberOfBrokerFees = 0;
+            string extraBrokerFee = string.Empty;
+            string hourTaxDescription = string.Empty;
+            foreach (PriceRowBase priceRow in priceRows.OrderByDescending(r => r.IsBrokerFee))
+            {
+                if (priceRow.IsBrokerFee)
+                {
+                    numberOfBrokerFees += 1;
+                    extraBrokerFee = numberOfBrokerFees > 1 ? $" dygn {numberOfBrokerFees}" : string.Empty;
+                }
+                else
+                {
+                    hourTaxDescription = priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice ?  $", taxa {GetDescriptionHourTax(priceRow.PriceListRow.MaxMinutes)} h" : string.Empty;
+                }
+                string startDescription = priceRow.IsBrokerFee ? $"Förmedlingsavgift{extraBrokerFee}" : priceRow.PriceListRow.PriceRowType.GetDescription() + hourTaxDescription;
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow { Description = $"{startDescription} för tolktyp {priceRow.PriceListRow.CompetenceLevel.GetDescription()}", Price = priceRow.TotalPrice });
+            }
+            return dpi;
+        }
+
+        private string GetDescriptionHourTax(int maxMinutes)
+        {
+            double noOfHours = (double)maxMinutes/60;
+
+            switch (noOfHours)
+            {
+                case 1:
+                    return $"0-{noOfHours}";
+                default:
+                    return $"{noOfHours-0.5}-{noOfHours}";
+            }
+        }
     }
 }
