@@ -62,6 +62,7 @@ namespace Tolk.Web
             {
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
                 opt.ModelBinderProviders.Insert(1, new TimeSpanModelBinderProvider());
+                opt.ModelBinderProviders.Insert(2, new DateRangeModelBinderProvider());
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
 

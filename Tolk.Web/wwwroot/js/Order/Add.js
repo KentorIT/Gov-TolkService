@@ -1,4 +1,5 @@
-﻿$(function () {
+﻿
+$(function () {
     var currentId = 0;
 
     $(document).ready(function () {

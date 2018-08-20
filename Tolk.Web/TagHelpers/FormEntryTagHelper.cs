@@ -35,6 +35,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeCheckbox = "checkbox";
         private const string InputTypeTextArea = "textarea";
         private const string InputTypeTime = "time";
+        private const string InputTypeDateRange = "date-range";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -69,6 +70,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeCheckbox:
                 case InputTypeDateTimeOffset:
                 case InputTypeTime:
+                case InputTypeDateRange:
                 case InputTypeTextArea:
                     if (Items != null)
                     {
@@ -76,7 +78,7 @@ namespace Tolk.Web.TagHelpers
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox, textarea. Omit type to get a default input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox, textarea, time. Omit type to get a default input.");
             }
         }
 
@@ -105,6 +107,11 @@ namespace Tolk.Web.TagHelpers
                     || For.ModelExplorer.ModelType == typeof(TimeSpan?))
                 {
                     InputType = InputTypeTime;
+                }
+                if (For.ModelExplorer.ModelType == typeof(Tuple<DateTimeOffset, DateTimeOffset>)
+                    || For.ModelExplorer.ModelType == typeof(Tuple<DateTimeOffset?, DateTimeOffset?>))
+                {
+                    InputType = InputTypeDateRange;
                 }
             }
         }
@@ -145,6 +152,11 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeTime:
                         WriteLabel(writer);
                         WriteTimeBox(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeDateRange:
+                        WriteLabel(writer);
+                        WriteDateRangeBox(writer);
                         WriteValidation(writer);
                         break;
                     default:
@@ -258,6 +270,56 @@ namespace Tolk.Web.TagHelpers
                 htmlAttributes: new { @class = "form-control" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteDateRangeBox(TextWriter writer)
+        {
+            writer.WriteLine("<div class=\"input-group input-daterange\">");
+
+            var fromModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Start");
+            var fromFieldName = $"{For.Name}.Start";
+            var toModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "End");
+            var toFieldName = $"{For.Name}.End";
+            object fromValue = fromModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
+            object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
+
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
+                ViewContext,
+                fromModelExplorer,
+                fromFieldName,
+                value: fromValue,
+                format: "{0:yyyy-MM-dd}",
+                htmlAttributes: new
+                {
+                    @class = "form-control",
+                    placeholder = "ÅÅÅÅ-MM-DD",
+                    type = "text",
+                    data_val_required = "Datum måste anges."
+                });
+
+            RemoveRequiredIfNullable(tagBuilder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            writer.WriteLine("<div class=\"input-group-addon\">t.o.m.</div>"); // addon to
+
+            tagBuilder = _htmlGenerator.GenerateTextBox(
+               ViewContext,
+               toModelExplorer,
+               toFieldName,
+               value: toValue,
+               format: "{0:yyyy-MM-dd}",
+               htmlAttributes: new
+               {
+                   @class = "form-control",
+                   placeholder = "ÅÅÅÅ-MM-DD",
+                   type = "text",
+                   data_val_required = "Datum måste anges."
+               });
+
+            RemoveRequiredIfNullable(tagBuilder);
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            writer.WriteLine("</div>"); // input-group
         }
 
         private void WriteTimeBox(TextWriter writer)

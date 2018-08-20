@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class OrderFilterModel
     {
-        [Display(Name = "Start")]
-        public DateTimeOffset? StartAt { get; set; }
-
-        [Display(Name = "Slut")]
-        public DateTimeOffset? EndAt { get; set; }
+        [Display(Name = "Starttidsintervall")]
+        public DateRange StartTimeRange { get; set; }
 
         [Display(Name = "Avrops-ID")]
         public string OrderNumber { get; set; }

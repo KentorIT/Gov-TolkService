@@ -63,12 +63,11 @@ namespace Tolk.Web.Controllers
             if (model != null)
             {
                 orders = !string.IsNullOrWhiteSpace(model.OrderNumber) ? orders.Where(r => r.OrderNumber.Contains(model.OrderNumber)) : orders; // OrderNumber
-                orders = model.RegionId.HasValue ? orders.Where(r => r.Region.RegionId == model.RegionId) : orders;         // Region
-                orders = model.LanguageId.HasValue ? orders.Where(r => r.Language.LanguageId == model.LanguageId) : orders; // Language
-                orders = model.StartAt.HasValue ? orders.Where(r => r.StartAt >= model.StartAt) : orders;                   // StartAt
-                orders = model.EndAt.HasValue ? orders.Where(r => r.EndAt <= model.EndAt) : orders;                         // EndAt
-                orders = model.Status.HasValue ? orders.Where(r => r.Status == model.Status) : orders;                      // Status
+                orders = model.RegionId.HasValue ? orders.Where(r => r.Region.RegionId == model.RegionId) : orders;                 // Region
+                orders = model.LanguageId.HasValue ? orders.Where(r => r.Language.LanguageId == model.LanguageId) : orders;         // Language
+                orders = model.Status.HasValue ? orders.Where(r => r.Status == model.Status) : orders;                              // Status
                 orders = model.BrokerId.HasValue ? orders.Where(r => r.Requests.Any(req => req.Ranking.BrokerId == model.BrokerId)) : orders;   // Broker
+                orders = model.StartTimeRange != null && model.StartTimeRange.IsValid() ? orders.Where(r => model.StartTimeRange.IsInRange(r.StartAt.Date, true)) : orders; // StartTimeRange
             }
 
             return View(

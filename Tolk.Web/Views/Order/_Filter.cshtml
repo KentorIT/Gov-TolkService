@@ -5,25 +5,23 @@
     <h4>Filtrera</h4>
     <form method="get" class="container filter-form">
         <div class="row">
-            <div class="col-xs-3">
+            <div class="col-xs-4">
                 <form-entry asp-for="OrderNumber" />
             </div>
-            <div class="col-xs-3">
+            <div class="col-xs-4">
                 <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
             </div>
-            <div class="col-xs-3">
+            <div class="col-xs-4">
                 <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
             </div>
-            <div class="col-xs-3">
-                <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
-            </div>
+            
         </div>
         <div class="row">
             <div class="col-xs-4">
-                <form-entry asp-for="StartAt" />
+                <form-entry asp-for="StartTimeRange" type="date-range" />
             </div>
             <div class="col-xs-4">
-                <form-entry asp-for="EndAt"/>
+                <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
             </div>
             <div class="col-xs-4">
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" class="allow-clear" />
