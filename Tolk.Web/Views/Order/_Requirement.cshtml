@@ -1,7 +1,7 @@
 ﻿@model Tolk.Web.Models.OrderRequirementModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<form>
+<form class="do-not-check-dirty">
     <form-entry asp-for="RequirementType" type="select" asp-items="SelectListService.RequirementTypes" />
     <form-entry asp-for="RequirementDescription" />
     <form-entry asp-for="RequirementIsRequired" />
