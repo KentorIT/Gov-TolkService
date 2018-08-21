@@ -68,10 +68,42 @@ namespace Tolk.Web.Controllers
                             Status = r.Status,
                             Action = ((!isCustomer && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) || (isCustomer && r.Status == RequestStatus.Accepted) ? nameof(Process) : nameof(View))
                         });
-            if (model.Status.HasValue)
+            // Filters
+            if (model != null)
             {
-                items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
+                // OrderNumber
+                items = !string.IsNullOrWhiteSpace(model.OrderNumber) 
+                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber)) 
+                    : items;
+                // Region
+                items = model.RegionId.HasValue 
+                    ? items.Where(i => i.RegionName == Region.Regions.Where(r => r.RegionId == model.RegionId).Single().Name) 
+                    : items;
+                // Customers
+                items = model.CustomerOrganizationId.HasValue 
+                    ? items.Where(i => i.CustomerName == _dbContext.CustomerOrganisations
+                        .Where(c => c.CustomerOrganisationId == model.CustomerOrganizationId)
+                        .Single().Name) 
+                    : items;
+                // Language
+                items = model.LanguageId.HasValue
+                    ? items.Where(i => i.Language == _dbContext.Languages.Where(l => l.LanguageId == model.LanguageId).Single().Name)
+                    : items;
+                // StartDateRange
+                items = model.StartDateRange != null && model.StartDateRange.HasValue 
+                    ? items.Where(i => model.StartDateRange.IsInRange(i.Start)) 
+                    : items;
+                // AnswerByDateRange
+                items = model.AnswerByDateRange != null && model.AnswerByDateRange.HasValue
+                    ? items.Where(i => i.ExpiresAt.HasValue && model.AnswerByDateRange.IsInRange(i.ExpiresAt.Value))
+                    : items;
+                // Status
+                if (model.Status.HasValue)
+                {
+                    items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
+                }
             }
+            
 
             return View(
                 new RequestListModel

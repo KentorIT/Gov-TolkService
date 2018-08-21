@@ -70,7 +70,7 @@ namespace Tolk.Web.Controllers
                             req.Status == RequestStatus.Received ||
                             req.Status == RequestStatus.Accepted ||
                             req.Status == RequestStatus.Approved))) : orders;   // Broker
-                orders = model.StartTimeRange != null && model.StartTimeRange.IsValid() ? orders.Where(r => model.StartTimeRange.IsInRange(r.StartAt.Date, true)) : orders; // StartTimeRange
+                orders = model.StartTimeRange != null && model.StartTimeRange.HasValue ? orders.Where(r => model.StartTimeRange.IsInRange(r.StartAt.Date)) : orders; // StartTimeRange
             }
 
             return View(

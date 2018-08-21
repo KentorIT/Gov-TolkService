@@ -9,6 +9,15 @@ namespace Tolk.BusinessLogic.Utilities
         public DateTimeOffset? Start { get; set; }
         public DateTimeOffset? End { get; set; }
 
+        public bool HasValue
+        {
+            get
+            {
+                // Return false if both are null
+                return !(Start == null && End == null);
+            }
+        }
+
         public DateRange()
         {
 
@@ -16,12 +25,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public bool IsInRange(DateTimeOffset date)
         {
-            return IsInRange(date, false);
-        }
-
-        public bool IsInRange(DateTimeOffset date, bool skipValidation)
-        {
-            if (!skipValidation && !IsValid())
+            if (!IsValid())
             {
                 return false;
             }
@@ -49,11 +53,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public bool IsValid()
         {
-            // Not a valid range if neither start nor end is set
-            if (Start == null && End == null)
-            {
-                return false;
-            }
             // If both start and end are set, start must be before end
             // If only one of them is set, it is valid
             return (Start != null && End != null) ? Start <= End : true;
