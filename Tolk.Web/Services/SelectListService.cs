@@ -26,6 +26,7 @@ namespace Tolk.Web.Services
         private const string languagesSelectListKey = nameof(languagesSelectListKey);
         private const string brokersSelectListKey = nameof(brokersSelectListKey);
         private const string impersonationTargets = nameof(impersonationTargets);
+        private const string customersSelectListKey = nameof(customersSelectListKey);
 
         public SelectListService(
             IMemoryCache cache,
@@ -128,6 +129,27 @@ namespace Tolk.Web.Services
                         {
                             Text = b.Name,
                             Value = b.BrokerId.ToString(),
+                        })
+                    .ToList().AsReadOnly();
+
+                    _cache.Set(brokersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                }
+
+                return items;
+            }
+        }
+
+        public IEnumerable<SelectListItem> CustomerOrganizations
+        {
+            get
+            {
+                if (!_cache.TryGetValue(customersSelectListKey, out IEnumerable<SelectListItem> items))
+                {
+                    items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
+                        .Select(c => new SelectListItem
+                        {
+                            Text = c.Name,
+                            Value = c.CustomerOrganisationId.ToString(),
                         })
                     .ToList().AsReadOnly();
 
