@@ -322,7 +322,7 @@ namespace Tolk.Web.Controllers
                 case RequisitionStatus.Approved:
                     receipent = requisition.CreatedByUser.Email;
                     subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
-                    body += "\n\n" + GetRequisitionPriceInformation(requisition);
+                    body += "\n\nKostnader att fakturera:\n\n" + GetRequisitionPriceInformation(requisition);
                     break;
                 case RequisitionStatus.DeniedByCustomer:
                     receipent = requisition.CreatedByUser.Email;
@@ -357,7 +357,7 @@ namespace Tolk.Web.Controllers
             else
             {
                 DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
-                string invoiceInfo = "Kostnader att fakturera:\n\n";
+                string invoiceInfo = string.Empty;
                 foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
                 {
                     invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
