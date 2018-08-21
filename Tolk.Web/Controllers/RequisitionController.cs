@@ -167,10 +167,29 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            if (model.Status.HasValue)
+
+            // Filters
+            if (model != null)
             {
-                requisitions = requisitions.Where(r => r.Status == model.Status);
+                // OrderNumber
+                requisitions = !string.IsNullOrWhiteSpace(model.OrderNumber) 
+                    ? requisitions.Where(r => r.Request.Order.OrderNumber.Contains(model.OrderNumber)) 
+                    : requisitions;
+                // Language
+                requisitions = model.LanguageId.HasValue
+                    ? requisitions.Where(r => r.Request.Order.LanguageId == model.LanguageId)
+                    : requisitions;
+                // StartDateRange
+                requisitions = model.StartTimeRange != null && model.StartTimeRange.HasValue
+                    ? requisitions.Where(r => model.StartTimeRange.IsInRange(r.Request.Order.StartAt))
+                    : requisitions;
+                // Status
+                if (model.Status.HasValue)
+                {
+                    requisitions = requisitions.Where(r => r.Status == model.Status);
+                }
             }
+            
 
             model.IsCustomer = isCustomer;
 
