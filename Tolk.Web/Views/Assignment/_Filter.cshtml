@@ -1,10 +1,31 @@
 ﻿@model AssignmentFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<div class="col-md-4 pull-right">
+<div class="col-md-4">
     <h4>Filtrera</h4>
-    <form method="get" class="filter-form" class="do-not-check-dirty">
-        <form-entry asp-for="Status" type="select" asp-items="SelectListService.AssignmentStatuses" Class="allow-clear" />
+    <form method="get" class="filter-form container do-not-check-dirty">
+        <div class="row">
+            <div class="col-xs-4">
+                <form-entry asp-for="OrderNumber" />
+            </div>
+            <div class="col-xs-4">
+                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" Class="allow-clear" />
+            </div>
+            <div class="col-xs-4">
+                <form-entry asp-for="CustomerOrganizationId" type="select" asp-items="SelectListService.CustomerOrganizations" Class="allow-clear" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4">
+                <form-entry asp-for="StartDateRange" type="date-range" />
+            </div>
+            <div class="col-xs-4">
+                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" Class="allow-clear" />
+            </div>
+            <div class="col-xs-4">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.AssignmentStatuses" Class="allow-clear" />
+            </div>
+        </div>
     </form>
 </div>
 
