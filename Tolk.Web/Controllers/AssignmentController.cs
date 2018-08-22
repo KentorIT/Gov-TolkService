@@ -72,7 +72,7 @@ namespace Tolk.Web.Controllers
                     : requests;
                 // StartDateRange
                 requests = filterModel.StartDateRange != null && filterModel.StartDateRange.HasValue
-                    ? requests.Where(r => filterModel.StartDateRange.IsInRange(r.Order.StartAt))
+                    ? requests.Where(r => filterModel.StartDateRange.IsInRange(r.Order.StartAt.Date))
                     : requests;
                 // Status
                 if (filterModel.Status.HasValue)

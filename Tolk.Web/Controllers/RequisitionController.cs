@@ -181,7 +181,7 @@ namespace Tolk.Web.Controllers
                     : requisitions;
                 // StartDateRange
                 requisitions = model.StartTimeRange != null && model.StartTimeRange.HasValue
-                    ? requisitions.Where(r => model.StartTimeRange.IsInRange(r.Request.Order.StartAt))
+                    ? requisitions.Where(r => model.StartTimeRange.IsInRange(r.Request.Order.StartAt.Date))
                     : requisitions;
                 // Status
                 if (model.Status.HasValue)

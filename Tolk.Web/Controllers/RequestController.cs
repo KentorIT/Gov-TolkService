@@ -95,7 +95,7 @@ namespace Tolk.Web.Controllers
                     : items;
                 // AnswerByDateRange
                 items = model.AnswerByDateRange != null && model.AnswerByDateRange.HasValue
-                    ? items.Where(i => i.ExpiresAt.HasValue && model.AnswerByDateRange.IsInRange(i.ExpiresAt.Value))
+                    ? items.Where(i => i.ExpiresAt.HasValue && model.AnswerByDateRange.IsInRange(i.ExpiresAt.Value.Date))
                     : items;
                 // Status
                 if (model.Status.HasValue)
