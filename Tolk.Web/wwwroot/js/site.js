@@ -5,8 +5,28 @@ var datePickerOptions = {
     language: 'sv',
     calendarWeeks: true,
     todayHighlight: true,
-    clearBtn: true
+    clearBtn: true,
+    format: {
+        toDisplay: function (date, format, language) {
+            return date.toISOString().slice(0, 10);
+        },
+        toValue: function (date, format, language) {
+            return new Date(formatDate(date));
+        }
+    },
 };
+
+// Fixes a date formatting bug, when entering dates manually without dashes
+function formatDate(date) {
+    if (date.length == 8 && !date.includes("-")) {
+        date = date.substring(0, 4) + "-" + date.substring(4);
+        date = date.substring(0, 7) + "-" + date.substring(7);
+        return date;
+    }
+    else if (date.length == 10) {
+        return date;
+    }
+}
 
 $('.datepicker').datepicker(datePickerOptions);
 
