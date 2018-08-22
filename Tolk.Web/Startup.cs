@@ -45,6 +45,8 @@ namespace Tolk.Web
             services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
 
+            services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
+
             services.AddIdentity<AspNetUser, IdentityRole<int>>(opt =>
             {
                 opt.SignIn.RequireConfirmedEmail = true;
