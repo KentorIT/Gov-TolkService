@@ -37,6 +37,7 @@ namespace Tolk.Web.Controllers
         private readonly UserService _userService;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
+        private readonly IdentityErrorDescriber _identityErrorDescriber;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -47,7 +48,9 @@ namespace Tolk.Web.Controllers
             IUserClaimsPrincipalFactory<AspNetUser> claimsFactory,
             UserService userService,
             IOptions<TolkOptions> options,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            IdentityErrorDescriber identityErrorDescriber
+            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -58,6 +61,7 @@ namespace Tolk.Web.Controllers
             _userService = userService;
             _options = options.Value;
             _clock = clock;
+            _identityErrorDescriber = identityErrorDescriber;
         }
 
         public async Task<IActionResult> Index()
@@ -166,7 +170,7 @@ supporten på {_options.SupportEmail}";
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
                     return View(model);
                 }
             }
@@ -263,7 +267,7 @@ supporten på {_options.SupportEmail}";
             {
                 // Lie a bit to not reveal difference between incorrect user id and
                 // incorrect/missing token, to avoid a user enumeration issue.
-                ModelState.AddModelError(string.Empty, "Invalid token.");
+                ModelState.AddModelError(string.Empty, _identityErrorDescriber.InvalidToken().Description);
             }
             else
             {
