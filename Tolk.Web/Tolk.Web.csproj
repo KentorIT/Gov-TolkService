@@ -72,4 +72,8 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\datatables\" />
+  </ItemGroup>
+
 </Project>
