@@ -26,6 +26,8 @@ namespace Tolk.Web.Models
 
         public decimal? ExpectedTravelCosts { get; set; }
 
+        public RequestStatus Status { get; set; }
+
         [Required]
         public InterpreterLocation? InterpreterLocation { get; set; }
     }

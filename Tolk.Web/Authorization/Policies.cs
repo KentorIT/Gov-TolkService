@@ -61,8 +61,8 @@ namespace Tolk.Web.Authorization
             {
                 case Request request:
                     return request.Order.CreatedBy == context.User.GetUserId() &&
-                        (request.Order.Status == OrderStatus.Requested || request.Order.Status == OrderStatus.RequestResponded || request.Order.Status == OrderStatus.ResponseAccepted) &&
-                        (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved);
+                        (request.Order.Status == OrderStatus.Requested || request.Order.Status == OrderStatus.RequestResponded || request.Order.Status == OrderStatus.ResponseAccepted || request.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                        (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed);
                 default:
                     throw new NotImplementedException();
             }

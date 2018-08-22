@@ -144,7 +144,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if (Status != RequestStatus.Accepted)
+            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
             }
@@ -175,7 +175,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.Received)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Receved requests can be accepted.");
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
             }
 
             Status = RequestStatus.Accepted;
@@ -203,9 +203,56 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.RequestResponded;
         }
 
+        public void ReplaceInterpreter(
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            int interperterId,
+            decimal? expectedTravelCosts,
+            Enums.InterpreterLocation? interpreterLocation,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            PriceInformation priceInformation,
+            bool isAutoAccepted,
+            Request oldRequest)
+        {
+            if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only AcceptedNewInterpreter requests can be replaced by new interpreter.");
+            }
+            Status = isAutoAccepted ? oldRequest.Status : RequestStatus.AcceptedNewInterpreterAppointed;
+            AnswerDate = acceptTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            InterpreterId = interperterId;
+            ExpectedTravelCosts = expectedTravelCosts;
+            InterpreterLocation = (int?)interpreterLocation;
+            CompetenceLevel = (int?)competenceLevel;
+            AnswerProcessedAt = isAutoAccepted ? oldRequest.AnswerProcessedAt : null;
+            AnswerProcessedBy = isAutoAccepted ? oldRequest.AnswerProcessedBy : null;
+            ImpersonatingAnswerProcessedBy = isAutoAccepted ? oldRequest.ImpersonatingAnswerProcessedBy : null;
+            ReceivedBy = oldRequest.ReceivedBy;
+            RecievedAt = oldRequest.RecievedAt;
+            ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
+            PriceRows = new List<RequestPriceRow>();
+            RequirementAnswers = new List<OrderRequirementRequestAnswer>(requirementAnswers);
+            foreach (var row in priceInformation.PriceRows)
+            {
+                PriceRows.Add(new RequestPriceRow
+                {
+                    StartAt = row.StartAt,
+                    EndAt = row.EndAt,
+                    IsBrokerFee = row.IsBrokerFee,
+                    PriceListRowId = row.PriceListRowId,
+                    TotalPrice = row.TotalPrice
+                });
+            }
+            Order.Status = isAutoAccepted ? Order.Status : OrderStatus.RequestRespondedNewInterpreter;
+        }
+
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
-            if (Status != RequestStatus.Accepted)
+            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be denied.");
             }
@@ -220,7 +267,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createRequisition)
         {
-            if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.ResponseAccepted)
+            if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.RequestRespondedNewInterpreter && Order.Status != OrderStatus.ResponseAccepted)
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Order.Status}. Only Orders waiting to be delivered can be cancelled");
             }
@@ -228,7 +275,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started cannot be cancelled");
             }
-            if (Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.Accepted && Status != RequestStatus.Approved)
+            if (Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.Accepted && Status != RequestStatus.Approved && Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only active requests can be cancelled.");
             }

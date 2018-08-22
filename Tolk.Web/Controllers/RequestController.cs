@@ -14,6 +14,7 @@ using Tolk.Web.Helpers;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -72,26 +73,26 @@ namespace Tolk.Web.Controllers
             if (model != null)
             {
                 // OrderNumber
-                items = !string.IsNullOrWhiteSpace(model.OrderNumber) 
-                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber)) 
+                items = !string.IsNullOrWhiteSpace(model.OrderNumber)
+                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber))
                     : items;
                 // Region
-                items = model.RegionId.HasValue 
-                    ? items.Where(i => i.RegionName == Region.Regions.Where(r => r.RegionId == model.RegionId).Single().Name) 
+                items = model.RegionId.HasValue
+                    ? items.Where(i => i.RegionName == Region.Regions.Where(r => r.RegionId == model.RegionId).Single().Name)
                     : items;
                 // Customers
-                items = model.CustomerOrganizationId.HasValue 
+                items = model.CustomerOrganizationId.HasValue
                     ? items.Where(i => i.CustomerName == _dbContext.CustomerOrganisations
                         .Where(c => c.CustomerOrganisationId == model.CustomerOrganizationId)
-                        .Single().Name) 
+                        .Single().Name)
                     : items;
                 // Language
                 items = model.LanguageId.HasValue
                     ? items.Where(i => i.Language == _dbContext.Languages.Where(l => l.LanguageId == model.LanguageId).Single().Name)
                     : items;
                 // StartDateRange
-                items = model.StartDateRange != null && model.StartDateRange.HasValue 
-                    ? items.Where(i => model.StartDateRange.IsInRange(i.Start)) 
+                items = model.StartDateRange != null && model.StartDateRange.HasValue
+                    ? items.Where(i => model.StartDateRange.IsInRange(i.Start))
                     : items;
                 // AnswerByDateRange
                 items = model.AnswerByDateRange != null && model.AnswerByDateRange.HasValue
@@ -103,7 +104,7 @@ namespace Tolk.Web.Controllers
                     items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
                 }
             }
-            
+
 
             return View(
                 new RequestListModel
@@ -163,6 +164,33 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        public async Task<IActionResult> Change(int id)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
+                .Include(r => r.Order).ThenInclude(r => r.Requirements)
+                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(r => r.Language)
+                .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Ranking)
+                .Include(r => r.RequirementAnswers)
+                .Single(o => o.RequestId == id);
+            RequestModel model = GetModel(request);
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            {
+                if (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted)
+                {
+                    model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+                    model.ExpectedTravelCosts = 0;
+                }
+                return View("Process", model);
+            }
+            return Forbid();
+        }
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Accept(RequestAcceptModel model)
@@ -186,31 +214,65 @@ namespace Tolk.Web.Controllers
                             request.Ranking.BrokerId,
                             model.NewInterpreterEmail);
                     }
-
-                    request.Accept(
-                        _clock.SwedenNow,
-                        User.GetUserId(),
-                        User.TryGetImpersonatorId(),
-                        interpreterId,
-                        model.ExpectedTravelCosts,
-                        model.InterpreterLocation,
-                        model.CompetenceLevel,
-                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                        {
-                            RequestId = request.RequestId,
-                            OrderRequirementId = ra.OrderRequirementId,
-                            Answer = ra.Answer,
-                            CanSatisfyRequirement = ra.CanMeetRequirement
-                        }),
-                        GetPrices(request, model.CompetenceLevel.Value)
-                    );
+                    if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                    {
+                        CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
+                        request.Status = RequestStatus.InterpreterReplaced;
+                    }
+                    else
+                    {
+                        request.Accept(
+                            _clock.SwedenNow,
+                            User.GetUserId(),
+                            User.TryGetImpersonatorId(),
+                            interpreterId,
+                            model.ExpectedTravelCosts,
+                            model.InterpreterLocation,
+                            model.CompetenceLevel,
+                            model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                            {
+                                RequestId = request.RequestId,
+                                OrderRequirementId = ra.OrderRequirementId,
+                                Answer = ra.Answer,
+                                CanSatisfyRequirement = ra.CanMeetRequirement
+                            }),
+                            GetPrices(request, model.CompetenceLevel.Value)
+                        );
+                    }
                     _dbContext.SaveChanges();
                     CreateEmailOnRequestAction(request);
-                    return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
+                    return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
                 }
                 return Forbid();
             }
             return View("Process", model);
+        }
+
+        private void CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, int interpreterId)
+        {
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt);
+            newRequest.OrderId = request.OrderId;
+            newRequest.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+            request.Order.Requests.Add(newRequest);
+            _dbContext.SaveChanges();
+            newRequest.ReplaceInterpreter(_clock.SwedenNow,
+                User.GetUserId(),
+                User.TryGetImpersonatorId(),
+                interpreterId,
+                model.ExpectedTravelCosts,
+                model.InterpreterLocation,
+                model.CompetenceLevel,
+                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                {
+                    RequestId = newRequest.RequestId,
+                    OrderRequirementId = ra.OrderRequirementId,
+                    Answer = ra.Answer,
+                    CanSatisfyRequirement = ra.CanMeetRequirement
+                }),
+                GetPrices(request, model.CompetenceLevel.Value),
+                !request.Order.AllowMoreThanTwoHoursTravelTime,
+                request
+                 );
         }
 
         [ValidateAntiForgeryToken]
@@ -301,6 +363,11 @@ namespace Tolk.Web.Controllers
                 case RequestStatus.DeclinedByBroker:
                     subject = $"Förmedling har tackat nej till avrop {orderNumber}";
                     body = $"Svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till avropet med följande meddelande:\n{request.DenyMessage}";
+                    break;
+                case RequestStatus.InterpreterReplaced:
+                    subject = $"Förmedling har bytt tolk på avrop {orderNumber}";
+                    body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n";
+                    body += request.Order.AllowMoreThanTwoHoursTravelTime ? "Eventuellt förändrade krav finns som måste godkännas." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
                     break;
                 default:
                     throw new NotImplementedException();

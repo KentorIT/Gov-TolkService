@@ -63,7 +63,7 @@
         {
             <display-entry asp-for="CalculatedPrice" />
         }
-        @if (Model.AllowMoreThanTwoHoursTravelTime && (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved))
+        @if (Model.AllowMoreThanTwoHoursTravelTime && (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed))
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
@@ -117,7 +117,7 @@
                 }
             </ul>
         }
-        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved)
+        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
         {
             <display-entry asp-for="InterpreterName" />
             <display-entry asp-for="CompetenceLevel" />
@@ -129,7 +129,7 @@
                 </span>
             }
             <display-entry asp-for="InterpreterLocationAnswer" />
-            @if (Model.RequestStatus == RequestStatus.Accepted)
+            @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <form method="post" asp-action="Approve">
                     <input asp-for="OrderId" type="hidden" />

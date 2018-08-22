@@ -94,11 +94,11 @@ namespace Tolk.Web.Controllers
         {
             yield return new StartViewModel.StartPageBox
             {
-                Count = _dbContext.Orders.Where(o => o.Status == OrderStatus.RequestResponded && o.CreatedBy == User.GetUserId()).Count(),
+                Count = _dbContext.Orders.Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter) && o.CreatedBy == User.GetUserId()).Count(),
                 Header = "Tillsatt tolk",
                 Controller = "Order",
                 Action = "List",
-                Filters = new Dictionary<string, string> { { "Status", OrderStatus.RequestResponded.ToString() } }
+                Filters = new Dictionary<string, string> { { "Status", OrderStatus.ToBeProcessedByCustomer.ToString() } }
             };
 
             yield return new StartViewModel.StartPageBox

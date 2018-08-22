@@ -7,6 +7,11 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum OrderStatus
     {
+        /// <summary>
+        /// This status is not used in db, just for filter lists
+        /// </summary>
+        [Description("Tolktillsättning finns/Tolktillsättning finns (Ny tolk)")]
+        ToBeProcessedByCustomer = -1,
         [Description("Sparat, ej skickat")]
         [Obsolete("Inte använd än")]
         Saved = 1,
@@ -26,6 +31,8 @@ namespace Tolk.BusinessLogic.Enums
         [Obsolete("Inte använd än")]
         OrderAnulled = 8,
         [Description("Alla förmedlingar nekade uppdraget")]
-        NoBrokerAcceptedOrder = 9
+        NoBrokerAcceptedOrder = 9,
+        [Description("Tolktillsättning finns (Ny tolk)")]
+        RequestRespondedNewInterpreter = 10
     }
 }
