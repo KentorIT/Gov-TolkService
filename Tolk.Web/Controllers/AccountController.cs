@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -315,7 +316,7 @@ supporten på {_options.SupportEmail}";
                 // Explicit transaction to ensure both check and all updates
                 // are done atomically. The user and role managers call SaveChanges
                 // multiple times internally.
-                using (var transaction = _dbContext.Database.BeginTransaction())
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     if (_dbContext.IsUserStoreInitialized)
                     {
@@ -358,7 +359,7 @@ supporten på {_options.SupportEmail}";
                                 if (result.Succeeded)
                                 {
                                     _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
-                                    transaction.Commit();
+                                    transaction.Complete();
                                     return RedirectToAction("Index", "Home");
                                 }
                             }
