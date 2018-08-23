@@ -29,5 +29,9 @@ namespace Tolk.BusinessLogic.Enums
         CancelledByCreatorWhenApproved = 10,
         [Description("Bekräftad avbokning")]
         CancelledByCreatorConfirmed = 11,
+        [Description("Svar skickat - Ny tolk")]
+        AcceptedNewInterpreterAppointed = 12,
+        [Description("Tolk har ersatts")]
+        InterpreterReplaced = 13,
     }
 }

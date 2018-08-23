@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,7 @@ namespace Tolk.Web.Controllers
         private readonly UserService _userService;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
+        private readonly IdentityErrorDescriber _identityErrorDescriber;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -47,7 +49,9 @@ namespace Tolk.Web.Controllers
             IUserClaimsPrincipalFactory<AspNetUser> claimsFactory,
             UserService userService,
             IOptions<TolkOptions> options,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            IdentityErrorDescriber identityErrorDescriber
+            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -58,6 +62,7 @@ namespace Tolk.Web.Controllers
             _userService = userService;
             _options = options.Value;
             _clock = clock;
+            _identityErrorDescriber = identityErrorDescriber;
         }
 
         public async Task<IActionResult> Index()
@@ -166,7 +171,7 @@ supporten på {_options.SupportEmail}";
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
                     return View(model);
                 }
             }
@@ -263,7 +268,7 @@ supporten på {_options.SupportEmail}";
             {
                 // Lie a bit to not reveal difference between incorrect user id and
                 // incorrect/missing token, to avoid a user enumeration issue.
-                ModelState.AddModelError(string.Empty, "Invalid token.");
+                ModelState.AddModelError(string.Empty, _identityErrorDescriber.InvalidToken().Description);
             }
             else
             {
@@ -311,7 +316,7 @@ supporten på {_options.SupportEmail}";
                 // Explicit transaction to ensure both check and all updates
                 // are done atomically. The user and role managers call SaveChanges
                 // multiple times internally.
-                using (var transaction = _dbContext.Database.BeginTransaction())
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     if (_dbContext.IsUserStoreInitialized)
                     {
@@ -354,7 +359,7 @@ supporten på {_options.SupportEmail}";
                                 if (result.Succeeded)
                                 {
                                     _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
-                                    transaction.Commit();
+                                    transaction.Complete();
                                     return RedirectToAction("Index", "Home");
                                 }
                             }

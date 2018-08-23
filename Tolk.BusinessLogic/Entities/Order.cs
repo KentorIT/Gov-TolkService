@@ -35,7 +35,7 @@ namespace Tolk.BusinessLogic.Entities
             set
             {
                 if (value == OrderStatus.ResponseAccepted &&
-                    (Status != OrderStatus.RequestResponded
+                    ((Status != OrderStatus.RequestResponded && Status != OrderStatus.RequestRespondedNewInterpreter)
                     || Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
                 {
                     throw new InvalidOperationException($"Order {OrderId} is in the wrong state to be set as accepted.");

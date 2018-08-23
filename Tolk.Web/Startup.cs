@@ -19,6 +19,7 @@ using Microsoft.Extensions.Internal;
 using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Tolk.BusinessLogic.Helpers;
+using System;
 
 namespace Tolk.Web
 {
@@ -44,6 +45,16 @@ namespace Tolk.Web
             // within AddIdentity won't do anything.
             services.AddScoped<IUserClaimsPrincipalFactory<AspNetUser>, TolkClaimsPrincipalFactory>();
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
+
+            services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
+
+            services.Configure<CookieAuthenticationOptions>(opt =>
+            {
+                // Log in sessions last for 90 days.
+                opt.ExpireTimeSpan = TimeSpan.FromDays(90);
+                // If less than half of ExpireTimeSpan remains, lengthen session to ExpireTimeSpan again.
+                opt.SlidingExpiration = true;
+            });
 
             services.AddIdentity<AspNetUser, IdentityRole<int>>(opt =>
             {
