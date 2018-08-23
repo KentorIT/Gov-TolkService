@@ -140,6 +140,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestPriceRow> PriceRows { get; set; }
 
+        public List<Complaint> Complaints { get; set; }
+
         #endregion
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
@@ -274,6 +276,16 @@ namespace Tolk.BusinessLogic.Entities
             Requisitions.Add(requisition);
             //Change status on order accordingly.
             Order.DeliverRequisition();
+        }
+
+        public void CreateComplaint(Complaint complaint)
+        {
+            if (Complaints.Any())
+            {
+                throw new InvalidOperationException($"Several complaints cannot be created.");
+            }
+
+            Complaints.Add(complaint);
         }
     }
 }

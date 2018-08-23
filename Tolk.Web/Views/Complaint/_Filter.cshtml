@@ -1,4 +1,4 @@
-﻿@model ComplaintFilterModel
+﻿@model RequisitionFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 <div class="col-md-4">
@@ -18,5 +18,9 @@
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear" />
             </div>
         </div>
+        @if (Model.IsCustomer)
+        {
+            <form-entry asp-for="FilterByContact" type="checkbox" />
+        }
     </form>
 </div>

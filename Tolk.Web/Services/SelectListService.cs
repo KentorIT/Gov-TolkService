@@ -52,6 +52,11 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
+        public static IEnumerable<SelectListItem> ComplaintTypes { get; } =
+            EnumHelper.GetAllDescriptions<ComplaintType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
         public static IEnumerable<SelectListItem> RequisitionStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequisitionStatus>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })

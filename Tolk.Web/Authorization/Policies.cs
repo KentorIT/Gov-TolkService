@@ -17,6 +17,7 @@ namespace Tolk.Web.Authorization
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
         public const string CreateRequisition = nameof(CreateRequisition);
+        public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
         public const string Accept = nameof(Accept);
         public const string Cancel = nameof(Cancel);
@@ -31,6 +32,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
+                opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(CreatorHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
@@ -80,6 +82,21 @@ namespace Tolk.Web.Authorization
                     else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {
                         return request.InterpreterId == context.User.GetInterpreterId();
+                    }
+                    return false;
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
+        {
+            switch (context.Resource)
+            {
+                case Request request:
+                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return request.Order.CreatedBy == context.User.GetUserId() || request.Order.ContactPersonId == context.User.GetUserId();
                     }
                     return false;
                 default:

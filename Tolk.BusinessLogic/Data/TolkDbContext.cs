@@ -136,6 +136,46 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.ProcessedByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.CreatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.AnsweringUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.AnsweredByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.TerminatingUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.TerminatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.AnswerDisputingUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Complaint>()
+                .HasOne(r => r.AnswerDisputedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -169,6 +209,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<PriceListRow> PriceListRows { get; set; }
 
         public DbSet<OutboundEmail> OutboundEmails { get; set; }
+
+        public DbSet<Complaint> Complaints { get; set; }
 
         public DbSet<InterpreterBroker> InterpreterBrokers { get; set; }
 

@@ -1,0 +1,80 @@
+﻿@model Tolk.Web.Models.RequisitionViewModel
+@{
+    ViewData["Title"] = "Rekvisition";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="CustomerName" />
+        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
+        {
+            <display-entry asp-for="CustomerReferenceNumber" />
+        }
+        <display-entry asp-for="CreatedBy" />
+        <display-entry asp-for="CreatedAt" />
+        <display-entry asp-for="AssignmentType" />
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <display-entry asp-for="Description" />
+        }
+        <display-entry asp-for="UnitName" />
+        <display-entry asp-for="LocationStreet" />
+        <display-entry asp-for="LocationZipCode" />
+        <display-entry asp-for="LocationCity" />
+        <display-entry asp-for="RegionName" />
+        <display-entry asp-for="LanguageName" />
+        <display-entry asp-for="RequiredCompetenceLevel" />
+        <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+        <display-entry asp-for="Status" />
+        @if (Model.PreviousRequisition != null)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
+        }
+        @if (Model.ReplacingRequisitionId.HasValue)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.ReplacingRequisitionId })">Se ersättande rekvisition</a>
+        }
+
+        @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
+        {
+            <display-entry asp-for="DenyMessage" />
+        }
+        <display-entry asp-for="BrokerName" />
+        <display-entry asp-for="InterpreterName" />
+        <display-entry asp-for="InterpreterLocation" />
+        @if (Model.OffSiteAssignmentType.HasValue)
+        {
+            <display-entry asp-for="OffSiteAssignmentType" />
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.OffSiteContactInformation))
+        {
+            <display-entry asp-for="OffSiteContactInformation" />
+        }
+        <display-entry asp-for="ExpectedStartedAt" />
+        <display-entry asp-for="SessionStartedAt" />
+        <display-entry asp-for="ExpectedEndedAt" />
+        <display-entry asp-for="SessionEndedAt" />
+        <display-entry asp-for="TotalRegisteredWasteTime" />
+
+        @if (Model.AllowMoreThanTwoHoursTravelTime)
+        {
+            <display-entry asp-for="ExpectedTravelCosts" />
+        }
+        <display-entry asp-for="TravelCosts" />
+        <display-entry asp-for="Message" />
+        <display-entry asp-for="CalculatedPrice" />
+        <display-entry asp-for="ResultingPrice" />
+        @if (Model.AllowCreation)
+        {
+            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+        }
+        else
+        {
+            <div class="border body-content">
+                <display-entry asp-for="InvoiceInformation" />
+            </div>
+        }
+    </div>
+</div>
