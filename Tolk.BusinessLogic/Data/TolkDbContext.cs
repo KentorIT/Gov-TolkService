@@ -114,7 +114,7 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<OrderRequirementRequestAnswer>()
                 .HasOne(r => r.Request)
-                .WithMany()
+                .WithMany(nameof(Request.RequirementAnswers))
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Requisition>()

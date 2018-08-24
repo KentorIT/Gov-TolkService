@@ -517,13 +517,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<bool>("CanSatisfyRequirement");
 
-                    b.Property<int?>("RequestId1");
-
                     b.HasKey("RequestId", "OrderRequirementId");
 
                     b.HasIndex("OrderRequirementId");
-
-                    b.HasIndex("RequestId1");
 
                     b.ToTable("OrderRequirementRequestAnswer");
                 });
@@ -1048,13 +1044,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
-                        .WithMany()
+                        .WithMany("RequirementAnswers")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Request")
-                        .WithMany("RequirementAnswers")
-                        .HasForeignKey("RequestId1");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Ranking", b =>
