@@ -36,6 +36,12 @@ namespace Tolk.Web.Models
         [Required]
         public string DenyMessage { get; set; }
 
+
+        [Display(Name = "Orsak till avbokning")]
+        [DataType(DataType.MultilineText)]
+        [Required]
+        public string CancelMessage { get; set; }
+
         [Required]
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
@@ -88,6 +94,7 @@ namespace Tolk.Web.Models
             {
                 Status = request.Status,
                 DenyMessage = request.DenyMessage,
+                CancelMessage = request.CancelMessage,
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.User.UserName,
