@@ -78,12 +78,23 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal? CalculatedPrice { get; set; }
 
+        public int? ComplaintId { get; set; }
+
+        [Display(Name = "Reklamationens status")]
+        public ComplaintStatus? ComplaintStatus { get; set; }
+
+        [Display(Name = "Typ av reklamation")]
+        public ComplaintType? ComplaintType { get; set; }
+        [Display(Name = "Reklamationens beskriving")]
+        public string ComplaintMessage { get; set; }
+
         #endregion
 
         #region methods
 
         public static RequestModel GetModelFromRequest(Request request)
         {
+            var complaint = request.Complaints.FirstOrDefault();
             return new RequestModel
             {
                 Status = request.Status,
@@ -104,6 +115,10 @@ namespace Tolk.Web.Models
                 }).ToList(),
                 InterpreterLocation = request.Order.InterpreterLocations.Count() == 1 ? request.Order.InterpreterLocations.Single()?.InterpreterLocation : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
+                ComplaintId = complaint?.ComplaintId,
+                ComplaintMessage = complaint?.ComplaintMessage,
+                ComplaintStatus = complaint?.Status,
+                ComplaintType = complaint?.ComplaintType
             };
         }
 

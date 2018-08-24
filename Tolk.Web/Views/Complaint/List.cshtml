@@ -1,7 +1,7 @@
-﻿@model RequisitionListModel
+﻿@model ComplaintListModel 
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Rekvisitioner";
+    ViewData["Title"] = "Reklamationer";
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
@@ -16,22 +16,26 @@
                     <thead>
                         <tr>
                             <th>AvropsID</th>
-                            <th>Språk</th>
-                            <th>Start</th>
-                            <th>Slut</th>
+                            <th>Region</th>
+                            <th>Kund</th>
+                            <th>Förmedling</th>
+                            <th>Skapad</th>
+                            <th>Reklamationstyp</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.RequisitionId" data-click-action-url="@Url.Action(item.Action, new { id = item.RequisitionId })">
-                                <td>@item.OrderNumber</td>
-                                <td>@item.Language</td>
-                                <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@EnumHelper.GetDescription(item.Status)</td>
-                            </tr>
+                        <tr data-id="@item.ComplaintId" data-click-action-url="@Url.Action(item.Action, new { id = item.ComplaintId })">
+                            <td>@item.OrderNumber</td>
+                            <td>@item.RegionName</td>
+                            <td>@item.CustomerName</td>
+                            <td>@item.BrokerName</td>
+                            <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@EnumHelper.GetDescription(item.ComplaintType)</td>
+                            <td>@EnumHelper.GetDescription(item.Status)</td>
+                        </tr>
                         }
                     </tbody>
                 </table>

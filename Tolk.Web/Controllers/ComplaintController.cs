@@ -38,12 +38,10 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var complaint = _dbContext.Complaints
-              .Single(o => o.ComplaintId == id);
+            var complaint = GetComplaint(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
-                //var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
-                return View();
+                return View(ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId)));
             }
             return Forbid();
         }
@@ -55,13 +53,7 @@ namespace Tolk.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Create(int id)
         {
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Ranking).ThenInclude(r => r.Region)
-                .Single(o => o.RequestId == id);
+            Request request = GetRequest(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {
@@ -71,11 +63,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public IActionResult List(ComplaintFilterModel model)
-        {
-            return View();
-        }
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(ComplaintModel model)
@@ -83,12 +70,16 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var request = _dbContext.Requests
+                .Include(r => r.Order)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Complaints)
                 .Single(o => o.RequestId == model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
                 {
                     var complaint = new Complaint
                     {
                         RequestId = model.RequestId,
+                        ComplaintType = model.ComplaintType.Value,
                         ComplaintMessage = model.Message,
                         Status = ComplaintStatus.Created,
                         CreatedAt = _clock.SwedenNow,
@@ -105,43 +96,141 @@ namespace Tolk.Web.Controllers
             return View("Create", model);
         }
 
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Accept(int id)
+        public IActionResult List(ComplaintFilterModel model)
         {
-            if (ModelState.IsValid)
+            bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
+            var brokerId = User.TryGetBrokerId();
+            var items = _dbContext.Complaints.Include(c => c.Request)
+                        .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId || 
+                            c.CreatedBy == User.GetUserId())
+                        .Select(c => new ComplaintListItemModel
+                        {
+                            ComplaintId = c.ComplaintId,
+                            BrokerName = c.Request.Ranking.Broker.Name,
+                            CustomerName = c.Request.Order.CustomerOrganisation.Name,
+                            ComplaintType = c.ComplaintType,
+                            CreatedAt = c.CreatedAt,
+                            OrderNumber = c.Request.Order.OrderNumber,
+                            RegionName = c.Request.Order.Region.Name,
+                            Status = c.Status,
+                            Action = nameof(View)
+                        });
+            // Filters
+            if (model != null)
             {
-                var complaint = _dbContext.Complaints
-                    .Single(r => r.ComplaintId == id);
-                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                // OrderNumber
+                items = !string.IsNullOrWhiteSpace(model.OrderNumber)
+                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber))
+                    : items;
+                // Status
+                if (model.Status.HasValue)
                 {
-                    complaint.Accept(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.SaveChanges();
-                    return RedirectToAction(nameof(View), new { id });
+                    items = items.Where(r => r.Status == model.Status);
                 }
-                return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id });
+            return View(
+                new ComplaintListModel
+                {
+                    Items = items,
+                    FilterModel = model
+                });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Dispute(DenyMessageDialogModel model)
+        public async Task<IActionResult> Accept(int complaintId)
         {
             if (ModelState.IsValid)
             {
-                var complaint = _dbContext.Complaints
-                    .Single(r => r.ComplaintId == model.ParentId);
+                var complaint = GetComplaint(complaintId);
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    complaint.Dispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
+                    complaint.Accept(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
-                    CreateEmailOnComplaintAction(complaint);
-                    return RedirectToAction(nameof(View), new { id = model.ParentId});
+                    return RedirectToAction(nameof(View), new { id = complaintId });
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(Accept), new { id = model.ParentId });
+            return RedirectToAction(nameof(View), new { id = complaintId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Dispute(DisputeComplaintModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var complaint = GetComplaint(model.ComplaintId);
+                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                {
+                    complaint.Dispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage);
+                    _dbContext.SaveChanges();
+                    CreateEmailOnComplaintAction(complaint);
+                    return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> AcceptDispute(int complaintId)
+        {
+            if (ModelState.IsValid)
+            {
+                var complaint = GetComplaint(complaintId);
+                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                {
+                    complaint.AcceptDispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    _dbContext.SaveChanges();
+                    return RedirectToAction(nameof(View), new { id = complaintId });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(View), new { id = complaintId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Refute(RefuteComplaintModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var complaint = GetComplaint(model.ComplaintId);
+                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                {
+                    complaint.Refute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.RefuteMessage);
+                    _dbContext.SaveChanges();
+                    CreateEmailOnComplaintAction(complaint);
+                    return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+        }
+
+        private Request GetRequest(int id)
+        {
+            return _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking).ThenInclude(r => r.Region)
+                .Single(o => o.RequestId == id);
+        }
+
+        private Complaint GetComplaint(int id)
+        {
+            return _dbContext.Complaints
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
+                .Single(o => o.ComplaintId == id);
         }
 
         private void CreateEmailOnComplaintAction(Complaint complaint)
@@ -154,19 +243,19 @@ namespace Tolk.Web.Controllers
             {
                 case ComplaintStatus.Created:
                     receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject =  $"En reklamation har registrerats på avrop {orderNumber}";
+                    subject = $"En reklamation har registrerats på avrop {orderNumber}";
                     body = $"Reklamation för avrop {orderNumber} har skapats med följande meddelande:\n{complaint.ComplaintType.GetDescription()}\n{complaint.ComplaintMessage}";
                     break;
-                //case RequisitionStatus.Approved:
-                //    receipent = complaint.CreatedByUser.Email;
-                //    subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
-                //    body = $"Rekvisition för avrop {orderNumber} har underkänts med följande meddelande:\n{complaint.DenyMessage}";
-                //    break;
-                //case RequisitionStatus.DeniedByCustomer:
-                //    receipent = complaint.CreatedByUser.Email;
-                //    subject = $"Rekvisition för avrop {orderNumber} har underkänts";
-                //    body = $"Rekvisition för avrop {orderNumber} har underkänts med följande meddelande:\n{complaint.DenyMessage}";
-                //    break;
+                case ComplaintStatus.Disputed:
+                    receipent = complaint.CreatedByUser.Email;
+                    subject = $"Reklamation kopplad till order {orderNumber} har blivit bestriden";
+                    body = $"Reklamation för avrop {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage}";
+                    break;
+                case ComplaintStatus.DisputePendingTrial:
+                    receipent = complaint.Request.Ranking.Broker.EmailAddress;
+                    subject = $"Er bestridan av reklamation ogillades på avrop {orderNumber}";
+                    body = $"Bestridan av reklamation för avrop {orderNumber} har ogillats med följande meddelande:\n{complaint.ComplaintMessage}";
+                    break;
                 default:
                     throw new NotImplementedException();
             }

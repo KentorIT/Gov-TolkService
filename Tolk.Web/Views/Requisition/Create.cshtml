@@ -1,9 +1,8 @@
-﻿@model Tolk.Web.Models.ComplaintModel
-@using Tolk.Web.Services
-@inject SelectListService SelectListService
+﻿@model Tolk.Web.Models.RequisitionModel
 @{
-    ViewData["Title"] = "Skapa reklamation";
+    ViewData["Title"] = "Skapa rekvisition";
 }
+
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
@@ -14,13 +13,45 @@
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="StartAt" />
-        <display-entry asp-for="EndAt" />
+        @if (Model.PreviousRequisition != null)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
+        }
+
         <form method="post">
             <input asp-for="RequestId" type="hidden" />
-            <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypes" />
+            @if (Model.PreviousRequisition != null)
+            {
+                var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt);
+                <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
+            }
+            <form-entry asp-for="WasteBefore" />
+            <display-entry asp-for="ExpectedStartedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
+            }
+            <form-entry asp-for="SessionStartedAt" />
+            <display-entry asp-for="ExpectedEndedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
+            }
+            <form-entry asp-for="SessionEndedAt" />
+            @if (Model.PreviousRequisition != null)
+            {
+                var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt);
+                <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
+            }
+            <form-entry asp-for="WasteAfter" />
+            <display-entry asp-for="ExpectedTravelCosts" />
+            @if (Model.PreviousRequisition != null)
+            {
+                <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+            }
+            <form-entry asp-for="TravelCosts" />
             <form-entry asp-for="Message" />
-            <button class="btn btn-default">Registera reklamation</button>
+            <button class="btn btn-default">Skapa</button>
             <a class="btn btn-warning pull-right" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
         </form>
     </div>

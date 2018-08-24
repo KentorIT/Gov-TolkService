@@ -133,6 +133,23 @@ namespace Tolk.Web.Controllers
                     }
                 };
             }
+
+            count = _dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Disputed &&
+                    c.CreatedBy == User.GetUserId()).Count();
+
+            if (count > 0)
+            {
+                yield return new StartViewModel.StartPageBox
+                {
+                    Count = count,
+                    Header = "Bestridda reklamationer",
+                    Controller = "Complaint",
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", ComplaintStatus.Disputed.ToString() }
+                    }
+                };
+            }
         }
 
         private IEnumerable<StartViewModel.StartPageBox> GetBrokerStartPageBoxes()
@@ -182,7 +199,6 @@ namespace Tolk.Web.Controllers
                     Filters = new Dictionary<string, string> {
                         { "Status", RequisitionStatus.DeniedByCustomer.ToString() }
                     }
-
                 };
             }
 
@@ -203,6 +219,22 @@ namespace Tolk.Web.Controllers
                 };
             }
 
+            count = _dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created &&
+                    c.Request.Ranking.BrokerId == brokerId).Count();
+
+            if (count > 0)
+            {
+                yield return new StartViewModel.StartPageBox
+                {
+                    Count = count,
+                    Header = "Inkommna reklamationer",
+                    Controller = "Complaint",
+                    Action = "List",
+                    Filters = new Dictionary<string, string> {
+                        { "Status", ComplaintStatus.Created.ToString() }
+                    }
+                };
+            }
         }
 
         private IEnumerable<StartViewModel.StartPageBox> GetInterpreterStartPageBoxes()

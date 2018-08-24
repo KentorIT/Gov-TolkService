@@ -116,6 +116,8 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Broker)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.PriceRows)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.Complaints)
                 .Single(o => o.OrderId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -125,7 +127,7 @@ namespace Tolk.Web.Controllers
                     r.Status == RequestStatus.Created ||
                     r.Status == RequestStatus.Received ||
                     r.Status == RequestStatus.Accepted ||
-                    r.Status == RequestStatus.Approved || 
+                    r.Status == RequestStatus.Approved ||
                     r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
@@ -142,7 +144,19 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.Interpreter)
                         .ThenInclude(i => i.User)
                         .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
+                    model.AllowComplaintCreation = !request.Complaints.Any() && 
+                        (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                        order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
+                    var complaint = request.Complaints.FirstOrDefault();
+                    if (complaint != null)
+                    {
+                        model.ComplaintId = complaint.ComplaintId;
+                        model.ComplaintMessage = complaint.ComplaintMessage;
+                        model.ComplaintStatus = complaint.Status;
+                        model.ComplaintType = complaint.ComplaintType;
+                    }
                 }
+
                 return View(model);
             }
 

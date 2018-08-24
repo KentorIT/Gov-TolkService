@@ -42,7 +42,7 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [Required]
-        [Display(Name = "Beskrivning")]
+        [Display(Name = "Reklamationsbeskrivning")]
         public string Message { get; set; }
 
         #region methods

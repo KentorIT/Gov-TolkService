@@ -129,6 +129,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions)
+                .Include(r => r.Complaints)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)

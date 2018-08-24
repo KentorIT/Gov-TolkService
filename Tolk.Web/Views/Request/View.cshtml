@@ -69,9 +69,19 @@
                 </ul>
             }
         }
+        @if (Model.ComplaintId.HasValue)
+        {
+            <display-entry asp-for="ComplaintStatus" />
+            <display-entry asp-for="ComplaintType" />
+            <display-entry asp-for="ComplaintMessage" />
+            <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+            <br />
+        }
         @if (Model.RequisitionId.HasValue)
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+            <br />
+
         }
         @if ((Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Accepted) && Model.OrderModel.StartAt > DateTime.Now)
         {

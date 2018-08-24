@@ -34,7 +34,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
-                opt.AddPolicy(Accept, builder => builder.RequireAssertion(CreatorHandler));
+                opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
@@ -123,6 +123,35 @@ namespace Tolk.Web.Authorization
             }
         };
 
+        private readonly static Func<AuthorizationHandlerContext, bool> AcceptHandler = (context) =>
+        {
+            int userId = context.User.GetUserId();
+
+            switch (context.Resource)
+            {
+                case Order order:
+                    return order.CreatedBy == userId;
+                case Request request:
+                    //TODO: Validate that the has the correct state, is connected to the user
+                    return request.Ranking.BrokerId == context.User.GetBrokerId();
+                case Requisition requisition:
+                    return requisition.Request.Order.CreatedBy == userId ||
+                        requisition.Request.Order.ContactPersonId == userId;
+                case Complaint complaint:
+                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return complaint.Request.Ranking.BrokerId == context.User.GetBrokerId();
+                    }
+                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return complaint.CreatedBy == context.User.GetUserId();
+                    }
+                    return false;
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
         private readonly static Func<AuthorizationHandlerContext, bool> ViewHandler = (context) =>
         {
             var user = context.User;
@@ -158,6 +187,16 @@ namespace Tolk.Web.Authorization
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
                         return request.Order.CreatedBy == user.GetUserId();
+                    }
+                    return false;
+                case Complaint complaint:
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return complaint.Request.Ranking.BrokerId == user.GetBrokerId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return complaint.Request.Order.CreatedBy == context.User.GetUserId() || complaint.Request.Order.ContactPersonId == context.User.GetUserId();
                     }
                     return false;
                 default:

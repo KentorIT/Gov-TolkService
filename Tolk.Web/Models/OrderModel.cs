@@ -179,7 +179,19 @@ namespace Tolk.Web.Models
         public bool UseOffSiteInformation => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value == BusinessLogic.Enums.InterpreterLocation.OffSite);
 
         public bool AllowOrderCancellation { get; set; } = false;
- 
+
+        public bool AllowComplaintCreation { get; set; } = false;
+
+        public int? ComplaintId { get; set; }
+
+        [Display(Name = "Reklamationens status")]
+        public ComplaintStatus? ComplaintStatus { get; set; }
+
+        [Display(Name = "Typ av reklamation")]
+        public ComplaintType? ComplaintType { get; set; }
+        [Display(Name = "Reklamationens beskriving")]
+        public string ComplaintMessage { get; set; }
+
         #region methods
 
         public void UpdateOrder(Order order)

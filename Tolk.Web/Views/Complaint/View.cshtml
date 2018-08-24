@@ -1,8 +1,7 @@
-﻿@model Tolk.Web.Models.RequisitionViewModel
+﻿@model Tolk.Web.Models.ComplaintViewModel
 @{
-    ViewData["Title"] = "Rekvisition";
+    ViewData["Title"] = "Reklamation";
 }
-
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
@@ -15,66 +14,90 @@
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="AssignmentType" />
-        @if (!string.IsNullOrWhiteSpace(Model.Description))
-        {
-            <display-entry asp-for="Description" />
-        }
-        <display-entry asp-for="UnitName" />
-        <display-entry asp-for="LocationStreet" />
-        <display-entry asp-for="LocationZipCode" />
-        <display-entry asp-for="LocationCity" />
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="RequiredCompetenceLevel" />
-        <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-        <display-entry asp-for="Status" />
-        @if (Model.PreviousRequisition != null)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
-        }
-        @if (Model.ReplacingRequisitionId.HasValue)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.ReplacingRequisitionId })">Se ersättande rekvisition</a>
-        }
-
-        @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
-        {
-            <display-entry asp-for="DenyMessage" />
-        }
         <display-entry asp-for="BrokerName" />
         <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="InterpreterLocation" />
-        @if (Model.OffSiteAssignmentType.HasValue)
-        {
-            <display-entry asp-for="OffSiteAssignmentType" />
-        }
-        @if (!string.IsNullOrWhiteSpace(Model.OffSiteContactInformation))
-        {
-            <display-entry asp-for="OffSiteContactInformation" />
-        }
-        <display-entry asp-for="ExpectedStartedAt" />
-        <display-entry asp-for="SessionStartedAt" />
-        <display-entry asp-for="ExpectedEndedAt" />
-        <display-entry asp-for="SessionEndedAt" />
-        <display-entry asp-for="TotalRegisteredWasteTime" />
-
-        @if (Model.AllowMoreThanTwoHoursTravelTime)
-        {
-            <display-entry asp-for="ExpectedTravelCosts" />
-        }
-        <display-entry asp-for="TravelCosts" />
+        <display-entry asp-for="Status" />
         <display-entry asp-for="Message" />
-        <display-entry asp-for="CalculatedPrice" />
-        <display-entry asp-for="ResultingPrice" />
-        @if (Model.AllowCreation)
+        @if (!string.IsNullOrEmpty(Model.DisputeMessage))
         {
-            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+            <display-entry asp-for="DisputeMessage" />
         }
-        else
+        @if (!string.IsNullOrEmpty(Model.RefuteMessage))
         {
-            <div class="border body-content">
-                <display-entry asp-for="InvoiceInformation" />
-            </div>
+            <display-entry asp-for="RefuteMessage" />
         }
+        @if (Model.AllowAnwser)
+        {
+            <form method="post" asp-action="Accept">
+                <input asp-for="ComplaintId" type="hidden" />
+                <button class="btn accept-button pull-left">Godta reklamationen</button>
+            </form>
+            <button class="btn decline-button btn-danger pull-right">Bestrid reklamation</button>
+        }
+        @if (Model.AllowAnwserOnDispute)
+        {
+            <form method="post" asp-action="AcceptDispute">
+                <input asp-for="ComplaintId" type="hidden" />
+                <button class="btn accept-button pull-left">Godta bestridandet av reklamationen</button>
+            </form>
+            <button class="btn refute-button btn-danger pull-right">Ogilla bestridning av reklamation</button>
+        }
+
     </div>
 </div>
+<div id="disputeMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Bestrid reklamation</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-action="Dispute" class="do-not-check-dirty">
+                    <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
+                    <form-entry asp-for="DisputeMessage" />
+                    <button type="submit" class="btn btn-warning">Skicka</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="refuteMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Ogilla bestridning av reklamation</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-action="refute" class="do-not-check-dirty">
+                    <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
+                    <form-entry asp-for="RefuteMessage" />
+                    <button type="submit" class="btn btn-warning">Skicka</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+

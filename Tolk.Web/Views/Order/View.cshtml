@@ -164,6 +164,18 @@
         </div>
     </div>
 }
+@if (Model.AllowComplaintCreation)
+{
+    <a href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
+}
+@if (Model.ComplaintId.HasValue)
+{
+    <display-entry asp-for="ComplaintStatus" />
+    <display-entry asp-for="ComplaintType" />
+    <display-entry asp-for="ComplaintMessage" />
+    <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+}
+
 <div id="cancelMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->

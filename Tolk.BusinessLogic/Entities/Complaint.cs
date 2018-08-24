@@ -80,14 +80,58 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string TerminationMessage { get; set; }
 
-        public void Accept(DateTimeOffset swedenNow, int v1, int? v2)
+        public void Accept(DateTimeOffset acceptedAt, int userId, int? impersonatorId)
         {
-            throw new NotImplementedException();
+            if (Status != ComplaintStatus.Created)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be accepted.");
+            }
+
+            Status = ComplaintStatus.Confirmed;
+            AnswerDisputedAt = acceptedAt;
+            AnsweredAt = acceptedAt;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
         }
 
-        public void Dispute(DateTimeOffset swedenNow, int v1, int? v2, string message)
+        public void Dispute(DateTimeOffset disputedAt, int userId, int? impersonatorId, string message)
         {
-            throw new NotImplementedException();
+            if (Status != ComplaintStatus.Created)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be Disputed.");
+            }
+            Status = ComplaintStatus.Disputed;
+            AnsweredAt = disputedAt;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            AnswerMessage = message;
         }
+
+        public void AcceptDispute(DateTimeOffset acceptedAt, int userId, int? impersonatorId)
+        {
+            if (Status != ComplaintStatus.Disputed)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be terminated as accepted.");
+            }
+
+            Status = ComplaintStatus.TerminatedAsDisputeAccepted;
+            AnswerDisputedAt = acceptedAt;
+            AnswerDisputedBy = userId;
+            ImpersonatingAnswerDisputedBy = impersonatorId;
+        }
+
+        public void Refute(DateTimeOffset refutedAt, int userId, int? impersonatorId, string message)
+        {
+            if (Status != ComplaintStatus.Disputed)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be refuted.");
+            }
+            Status = ComplaintStatus.DisputePendingTrial;
+            AnswerDisputedAt = refutedAt;
+            AnswerDisputedBy = userId;
+            ImpersonatingAnswerDisputedBy = impersonatorId;
+            AnswerDisputedMessage = message;
+        }
+
     }
 }
