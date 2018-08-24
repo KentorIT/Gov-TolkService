@@ -13,6 +13,10 @@
         {
             <display-entry asp-for="DenyMessage" />
         }
+        @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+        {
+            <display-entry asp-for="CancelMessage" />
+        }
         <display-entry asp-for="OrderModel.CreatedAt" />
         <display-entry asp-for="OrderModel.CreatedBy" />
         <display-entry asp-for="OrderModel.ContactPerson" />
@@ -89,6 +93,10 @@
         }
         @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
         {
+            @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+            {
+                <display-entry asp-for="CancelMessage" />
+            }
             <form method="post" asp-action="ConfirmCancallation">
                 <input asp-for="RequestId" type="hidden" />
                 <button class="btn deny-button btn-danger pull-right">Bekräfta avbokning</button>

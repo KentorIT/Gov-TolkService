@@ -11,33 +11,38 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            DateTimeOffset? dateFrom, dateTo;
             var fromValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Start");
             var toValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.End");
 
-            if (fromValue == ValueProviderResult.None || string.IsNullOrWhiteSpace(fromValue.FirstValue))
-            {
-                dateFrom = null;
-            }
-            else
-            {
-                dateFrom = DateTimeOffset.Parse(fromValue.FirstValue);
-            }
-
-            if (toValue == ValueProviderResult.None || string.IsNullOrWhiteSpace(toValue.FirstValue))
-            {
-                dateTo = null;
-            }
-            else
-            {
-                dateTo = DateTimeOffset.Parse(toValue.FirstValue);
-            }
+            var dateFrom = ParseDateTimeValue(fromValue);
+            var dateTo = ParseDateTimeValue(toValue);
 
             var model = new DateRange { Start = dateFrom, End = dateTo };
 
             bindingContext.Result = ModelBindingResult.Success(model);
 
             return Task.CompletedTask;
+        }
+
+        private DateTimeOffset? ParseDateTimeValue(ValueProviderResult dateValue)
+        {
+            try
+            {
+                if (dateValue == ValueProviderResult.None 
+                    || string.IsNullOrWhiteSpace(dateValue.FirstValue))
+                {
+                    return null;
+                }
+                else
+                {
+                    return DateTimeOffset.Parse(dateValue.FirstValue);
+                }
+            }
+            catch (FormatException)
+            {
+                // Invalid format, return null
+                return null;
+            }
         }
     }
 }

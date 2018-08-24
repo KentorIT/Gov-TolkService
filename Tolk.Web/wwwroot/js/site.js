@@ -67,7 +67,7 @@ $(function () {
         $(this).closest("form").submit();
     });
 
-    $(".table-responsive table").DataTable({
+    $(".table-datatable table").DataTable({
         searching: false,
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"

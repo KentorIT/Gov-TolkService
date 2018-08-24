@@ -1,7 +1,7 @@
-﻿@model OrderListModel
+﻿@model RequisitionListModel
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Avrop";
+    ViewData["Title"] = "Rekvisitioner";
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
@@ -12,29 +12,25 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-datatable">
-                <table class="table table-striped table-hover clickable-rows" data-click-controller="Order" data-click-action="View" data-click-parameter="id">
+                <table class="table table-striped table-hover clickable-rows-with-action">
                     <thead>
                         <tr>
                             <th>AvropsID</th>
-                            <th>Region</th>
                             <th>Språk</th>
                             <th>Start</th>
                             <th>Slut</th>
                             <th>Status</th>
-                            <th>Förmedling</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.OrderId">
+                            <tr data-id="@item.RequisitionId" data-click-action-url="@Url.Action(item.Action, new { id = item.RequisitionId })">
                                 <td>@item.OrderNumber</td>
-                                <td>@item.RegionName</td>
                                 <td>@item.Language</td>
                                 <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@EnumHelper.GetDescription(item.Status)</td>
-                                <td>@item.BrokerName</td>
                             </tr>
                         }
                     </tbody>

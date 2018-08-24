@@ -1,0 +1,37 @@
+﻿@model Tolk.Web.Models.RequisitionProcessModel
+@{
+    ViewData["Title"] = "Behandla rekvisition";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
+        <display-entry asp-for="OrderNumber" />
+        <display-entry asp-for="CreatedBy" />
+        @if (Model.PreviousRequisition != null)
+        {
+            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
+        }
+        <display-entry asp-for="CreatedAt" />
+        <display-entry asp-for="Status" />
+        <display-entry asp-for="ExpectedStartedAt" />
+        <display-entry asp-for="SessionStartedAt" />
+        <display-entry asp-for="ExpectedEndedAt" />
+        <display-entry asp-for="SessionEndedAt" />
+        <display-entry asp-for="TotalRegisteredWasteTime" />
+        <display-entry asp-for="ExpectedTravelCosts" />
+        <display-entry asp-for="TravelCosts" />
+        <display-entry asp-for="Message" />
+        <display-entry asp-for="CalculatedPrice" />
+        <display-entry asp-for="ResultingPrice" />
+        <div class="border body-content">
+            <display-entry asp-for="InvoiceInformation" />
+        </div>
+        <form method="post" asp-action="Approve">
+            <input asp-for="RequisitionId" type="hidden" />
+            <button class="btn btn-primary">Godkänn</button>
+            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger pull-right">Underkänn rekvisition</button>
+        </form>
+    </div>
+</div>
+@await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Neka rekvisitionen", ParentId = Model.RequisitionId })

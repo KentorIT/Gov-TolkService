@@ -222,7 +222,6 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only AcceptedNewInterpreter requests can be replaced by new interpreter.");
             }
-            Status = isAutoAccepted ? oldRequest.Status : RequestStatus.AcceptedNewInterpreterAppointed;
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -249,7 +248,18 @@ namespace Tolk.BusinessLogic.Entities
                     TotalPrice = row.TotalPrice
                 });
             }
-            Order.Status = isAutoAccepted ? Order.Status : OrderStatus.RequestRespondedNewInterpreter;
+            //if old request already was approved by customer
+            if (oldRequest.Status == RequestStatus.Approved)
+            {
+                if (!isAutoAccepted)
+                {
+                    Order.Status = OrderStatus.RequestRespondedNewInterpreter;
+                }
+                else
+                {
+                    Status = oldRequest.Status;
+                }
+            }
         }
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
