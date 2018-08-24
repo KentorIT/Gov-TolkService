@@ -29,17 +29,8 @@
         </div>
         <form method="post" asp-action="Approve">
             <input asp-for="RequisitionId" type="hidden" />
-            <div class="row">
-                <div class="col-xs-4">
-                    <button class="btn btn-primary">Godkänn</button>
-                </div>
-                <div class="col-xs-4">
-                    <a class="btn btn-warning" asp-action="List" asp-route-Status="Created" asp-route-FilterByContact="false">Avbryt</a>
-                </div>
-                <div class="col-xs-4">
-                    <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Underkänn rekvisition</button>
-                </div>
-            </div>
+            <button class="btn btn-primary">Godkänn</button>
+            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger pull-right">Underkänn rekvisition</button>
         </form>
     </div>
 </div>
