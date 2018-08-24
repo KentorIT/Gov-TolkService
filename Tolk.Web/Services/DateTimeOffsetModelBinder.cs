@@ -22,9 +22,20 @@ namespace Tolk.Web.Services
                 return Task.CompletedTask;
             }
 
-            var timeValueSanitized = timeValue.FirstValue.Contains(":")
-                ? timeValue.FirstValue
-                : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
+            string timeValueSanitized;
+
+            if (timeValue.FirstValue == "0" 
+                || timeValue.FirstValue == "00")
+            {
+                timeValueSanitized = "00:00";
+            }
+            else
+            {
+                timeValueSanitized = timeValue.FirstValue.Contains(":")
+                    ? timeValue.FirstValue
+                    : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
+            }
+
             var dateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValueSanitized}");
 
             var model = dateTime.ToDateTimeOffsetSweden();
