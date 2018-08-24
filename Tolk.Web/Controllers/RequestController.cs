@@ -104,8 +104,6 @@ namespace Tolk.Web.Controllers
                     items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
                 }
             }
-
-
             return View(
                 new RequestListModel
                 {
@@ -199,6 +197,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Interpreter).ThenInclude(i => i.User)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.RequirementAnswers)
                     .Include(r => r.PriceRows)
@@ -207,6 +206,7 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
+                    bool sendExtraEmailToInterpreter = false;
                     int interpreterId = model.InterpreterId;
                     if (interpreterId == SelectListService.NewInterpreterId)
                     {
@@ -217,6 +217,7 @@ namespace Tolk.Web.Controllers
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                     {
                         CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
+                        sendExtraEmailToInterpreter = (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime);
                         request.Status = RequestStatus.InterpreterReplaced;
                     }
                     else
@@ -239,8 +240,8 @@ namespace Tolk.Web.Controllers
                             GetPrices(request, model.CompetenceLevel.Value)
                         );
                     }
+                    CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
                     _dbContext.SaveChanges();
-                    CreateEmailOnRequestAction(request);
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
                 }
                 return Forbid();
@@ -295,9 +296,8 @@ namespace Tolk.Web.Controllers
                 request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
                 request.DenyMessage = model.DenyMessage;
                 await _orderService.CreateRequest(request.Order);
-
+                CreateEmailOnRequestAction(request, false);
                 _dbContext.SaveChanges();
-                CreateEmailOnRequestAction(request);
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
 
@@ -348,7 +348,7 @@ namespace Tolk.Web.Controllers
             return model;
         }
 
-        private void CreateEmailOnRequestAction(Request request)
+        private void CreateEmailOnRequestAction(Request request, bool sendExtraMailToInterpreter)
         {
             string receipent = request.Order.CreatedByUser.Email;
             string subject;
@@ -367,7 +367,16 @@ namespace Tolk.Web.Controllers
                 case RequestStatus.InterpreterReplaced:
                     subject = $"Förmedling har bytt tolk på avrop {orderNumber}";
                     body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n";
-                    body += request.Order.AllowMoreThanTwoHoursTravelTime ? "Eventuellt förändrade krav finns som måste godkännas." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
+                    body += request.Order.AllowMoreThanTwoHoursTravelTime ? "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt 2 timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
+                    //send email to new interpreter
+                    if (sendExtraMailToInterpreter && !string.IsNullOrEmpty(request.Interpreter.User.Email))
+                    {
+                        _dbContext.Add(new OutboundEmail(
+                        request.Interpreter.User.Email,
+                        $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
+                        $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                    }
                     break;
                 default:
                     throw new NotImplementedException();
@@ -380,7 +389,6 @@ namespace Tolk.Web.Controllers
                     body +
                     "\n\nDetta mejl går inte att svara på.",
                     _clock.SwedenNow));
-                _dbContext.SaveChanges();
             }
             else
             {

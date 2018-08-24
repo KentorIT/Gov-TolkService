@@ -40,10 +40,14 @@ namespace Tolk.Web.Services
             {
                 using (var serviceScope = _services.CreateScope())
                 {
-                    var orderTask = serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests();
-                    var emailTask = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails();
+                    Task[] tasksToRun = new[] 
+                    {
+                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
+                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().ApproveReplacedInterpreterRequests(),
+                        serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails()
+                    };
 
-                    Task.WaitAll(orderTask, emailTask);
+                    Task.WaitAll(tasksToRun);
                 }
             }
             catch(Exception ex)

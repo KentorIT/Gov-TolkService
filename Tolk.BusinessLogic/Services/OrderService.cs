@@ -91,6 +91,79 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public async Task ApproveReplacedInterpreterRequests()
+        {
+            const int hoursBeforeStart = 2; //OBS! If this is changed it also must be changed in CreateEmailOnRequestAction for InterpreterReplaced in RequestController
+            var replacedInterpreterRequestsId = await _tolkDbContext.Requests
+                .Include(r => r.Order).Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-hoursBeforeStart) <= _clock.SwedenNow)
+                .Where(r => r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogDebug("Found {count} to be approved for replaced interpreter: {requestIds}",
+                replacedInterpreterRequestsId.Count, string.Join(", ", replacedInterpreterRequestsId));
+
+            foreach (var requestId in replacedInterpreterRequestsId)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var request = await _tolkDbContext.Requests
+                            .Include(r => r.Ranking)
+                            .ThenInclude(r => r.Broker)
+                            .Include(r => r.Interpreter)
+                            .ThenInclude(i => i.User)
+                            .Include(r => r.Order)
+                            .ThenInclude(o => o.Requests)
+                            .Include(r => r.Order)
+                            .ThenInclude(o => o.CustomerOrganisation)
+                            .Include(r => r.Order)
+                            .ThenInclude(o => o.CreatedByUser)
+                            .SingleOrDefaultAsync(
+                            r => r.Order.StartAt.AddHours(-hoursBeforeStart) <= _clock.SwedenNow && r.Order.Status == OrderStatus.RequestRespondedNewInterpreter
+                            && (r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                            && r.RequestId == requestId);
+
+                        if (request == null)
+                        {
+                            _logger.LogDebug("Request {requestId} was in list to be approved for replaced interpreter, but doesn't match criteria when re-read from database - skipping.",
+                                requestId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Approving replaced interpreter request {requestId} for Order {orderId}.",
+                                request.RequestId, request.OrderId);
+
+                            //TODO set a system user that is AnswerProcessedBy, probably needed for info and for display in system 
+                            request.Status = RequestStatus.Approved;
+                            request.AnswerProcessedAt = _clock.SwedenNow;
+                            request.Order.Status = OrderStatus.ResponseAccepted;
+
+                            _tolkDbContext.Add(new OutboundEmail(
+                            request.Interpreter.User.Email,
+                            $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
+                            $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
+                            _clock.SwedenNow));
+
+                            _tolkDbContext.Add(new OutboundEmail(
+                            request.Order.CreatedByUser.Email,
+                            $"Svar på avrop med avrops-ID {request.Order.OrderNumber} har godkänts av systemet",
+                            $"Svar på avrop {request.Order.OrderNumber} där tolk har bytts ut har godkänts av systemet då uppdraget startar inom {hoursBeforeStart} timmar. Uppdraget startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
+                            _clock.SwedenNow));
+
+                            _tolkDbContext.SaveChanges();
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing ApproveReplacedInterpreter {requestId}", requestId);
+                    }
+                }
+            }
+        }
+
         public async Task CreateRequest(Order order)
         {
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
