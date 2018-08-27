@@ -55,10 +55,13 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
+        public bool RequisitionCreationAllowed { get; set; }
+
         #region methods
 
-        public static AssignmentModel GetModelFromRequest(Request request)
+        public static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
         {
+            int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId;
             return new AssignmentModel
             {
                 OrderId = request.OrderId,
@@ -74,7 +77,8 @@ namespace Tolk.Web.Models
                 RequestId = request.RequestId,
                 OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
                 OffSiteContactInformation = request.Order.OffSiteContactInformation,
-                RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId
+                RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
+                RequisitionCreationAllowed = (request.Order.StartAt < timeNow && !requisitionId.HasValue)
             };
         }
 

@@ -120,7 +120,7 @@ namespace Tolk.Web.Controllers
                     .Where(r => r.RequestId == id).Single();
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                return View(AssignmentModel.GetModelFromRequest(request));
+                return View(AssignmentModel.GetModelFromRequest(request, _clock.SwedenNow));
             }
             return Forbid();
         }
