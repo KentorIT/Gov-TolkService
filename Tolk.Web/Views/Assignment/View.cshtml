@@ -27,7 +27,7 @@
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
         }
-        else if (Model.RequisitionCreationAllowed)
+        else if (Model.AllowRequisitionRegistration)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
         }
