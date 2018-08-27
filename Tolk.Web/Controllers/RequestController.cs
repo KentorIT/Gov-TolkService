@@ -349,6 +349,7 @@ namespace Tolk.Web.Controllers
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
             }
             model.BrokerId = request.Ranking.BrokerId;
+            model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted) && request.Order.StartAt > _clock.SwedenNow);
             return model;
         }
 

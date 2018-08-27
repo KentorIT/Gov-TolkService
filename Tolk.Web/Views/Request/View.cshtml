@@ -87,7 +87,7 @@
             <br />
 
         }
-        @if ((Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Accepted) && Model.OrderModel.StartAt > DateTime.Now)
+        @if (Model.AllowInterpreterChange)
         {
             <a href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
         }

@@ -75,6 +75,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
+        public bool AllowInterpreterChange { get; set; } = false;
+
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]
