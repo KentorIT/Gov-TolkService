@@ -100,7 +100,7 @@ namespace Tolk.Web.Models
 
         public static RequestModel GetModelFromRequest(Request request)
         {
-            var complaint = request.Complaints.FirstOrDefault();
+            var complaint = request.Complaints?.FirstOrDefault();
             return new RequestModel
             {
                 Status = request.Status,
