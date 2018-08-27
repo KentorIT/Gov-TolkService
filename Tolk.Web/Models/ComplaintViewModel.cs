@@ -79,6 +79,7 @@ namespace Tolk.Web.Models
                 //TODO: Should be Name!
                 CreatedBy = complaint.CreatedByUser.Email,
                 CreatedAt = complaint.CreatedAt,
+                ComplaintType = complaint.ComplaintType,
                 Message = complaint.ComplaintMessage,
                 Status = complaint.Status,
                 DisputeMessage = complaint.AnswerMessage,
