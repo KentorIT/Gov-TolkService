@@ -207,7 +207,7 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    bool sendExtraEmailToInterpreter = false;
+                    string sendExtraEmailToInterpreter = string.Empty;
                     int interpreterId = model.InterpreterId;
                     if (interpreterId == SelectListService.NewInterpreterId)
                     {
@@ -218,7 +218,10 @@ namespace Tolk.Web.Controllers
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                     {
                         CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
-                        sendExtraEmailToInterpreter = (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime);
+                        if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+                        {
+                            sendExtraEmailToInterpreter = _dbContext.Users.Single(u => u.InterpreterId == interpreterId).Email;
+                        }
                         request.Status = RequestStatus.InterpreterReplaced;
                     }
                     else
@@ -297,7 +300,7 @@ namespace Tolk.Web.Controllers
                 request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
                 request.DenyMessage = model.DenyMessage;
                 await _orderService.CreateRequest(request.Order);
-                CreateEmailOnRequestAction(request, false);
+                CreateEmailOnRequestAction(request, string.Empty);
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
@@ -349,7 +352,7 @@ namespace Tolk.Web.Controllers
             return model;
         }
 
-        private void CreateEmailOnRequestAction(Request request, bool sendExtraMailToInterpreter)
+        private void CreateEmailOnRequestAction(Request request, string sendExtraMailToInterpreter)
         {
             string receipent = request.Order.CreatedByUser.Email;
             string subject;
@@ -370,10 +373,10 @@ namespace Tolk.Web.Controllers
                     body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n";
                     body += request.Order.AllowMoreThanTwoHoursTravelTime ? "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt 2 timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
                     //send email to new interpreter
-                    if (sendExtraMailToInterpreter && !string.IsNullOrEmpty(request.Interpreter.User.Email))
+                    if (!string.IsNullOrEmpty(sendExtraMailToInterpreter))
                     {
                         _dbContext.Add(new OutboundEmail(
-                        request.Interpreter.User.Email,
+                        sendExtraMailToInterpreter,
                         $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
                         $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
