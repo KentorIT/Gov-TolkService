@@ -227,7 +227,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Inkommna reklamationer",
+                    Header = "Inkomna reklamationer",
                     Controller = "Complaint",
                     Action = "List",
                     Filters = new Dictionary<string, string> {
