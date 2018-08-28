@@ -16,14 +16,13 @@ var datePickerOptions = {
     },
 };
 
-// Fixes a date formatting bug, when entering dates manually without dashes
+// Auto-format date entered with just digits.
 function formatDate(date) {
-    if (date.length == 8 && !date.includes("-")) {
-        date = date.substring(0, 4) + "-" + date.substring(4);
-        date = date.substring(0, 7) + "-" + date.substring(7);
-        return date;
+    if (/^[0-9]{6}$/.test(date)) {
+        date = "20" + date;
     }
-    else if (date.length == 10) {
+    if (/^[0-9]{8}$/.test(date)) {
+        date = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
         return date;
     }
 }
