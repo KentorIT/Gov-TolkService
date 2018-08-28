@@ -36,5 +36,11 @@
     "inputFiles": [
       "wwwroot/lib/jquery-sortable/jquery-sortable.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/jquery-areyousure/jquery.are-you-sure.min.js",
+    "inputFiles": [
+      "wwwroot/lib/jquery-areyousure/jquery.are-you-sure.js"
+    ]
   }
 ]
