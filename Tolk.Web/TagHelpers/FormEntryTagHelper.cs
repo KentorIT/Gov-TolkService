@@ -108,11 +108,6 @@ namespace Tolk.Web.TagHelpers
                 {
                     InputType = InputTypeTime;
                 }
-                if (For.ModelExplorer.ModelType == typeof(Tuple<DateTimeOffset, DateTimeOffset>)
-                    || For.ModelExplorer.ModelType == typeof(Tuple<DateTimeOffset?, DateTimeOffset?>))
-                {
-                    InputType = InputTypeDateRange;
-                }
             }
         }
 
@@ -156,7 +151,7 @@ namespace Tolk.Web.TagHelpers
                         break;
                     case InputTypeDateRange:
                         WriteLabel(writer);
-                        WriteDateRangeBox(writer);
+                        WriteDateRangeBlock(writer);
                         WriteValidation(writer);
                         break;
                     default:
@@ -272,9 +267,9 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private void WriteDateRangeBox(TextWriter writer)
+        private void WriteDateRangeBlock(TextWriter writer)
         {
-            writer.WriteLine("<div class=\"input-group input-daterange\">");
+            writer.WriteLine("<div class=\"form-inline\">");
 
             var fromModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Start");
             var fromFieldName = $"{For.Name}.Start";
@@ -283,43 +278,14 @@ namespace Tolk.Web.TagHelpers
             object fromValue = fromModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
-            var tagBuilder = _htmlGenerator.GenerateTextBox(
-                ViewContext,
-                fromModelExplorer,
-                fromFieldName,
-                value: fromValue,
-                format: "{0:yyyy-MM-dd}",
-                htmlAttributes: new
-                {
-                    @class = "form-control",
-                    placeholder = "ÅÅÅÅ-MM-DD",
-                    type = "text",
-                    data_val_required = "Datum måste anges."
-                });
+            WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer);
 
-            RemoveRequiredIfNullable(tagBuilder);
-            tagBuilder.WriteTo(writer, _htmlEncoder);
+            // Using &nbsp; is an ugly hack. Should be fixed when layout is finalized.
+            writer.WriteLine("&nbsp;&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span>");
 
-            writer.WriteLine("<div class=\"input-group-addon\">t.o.m.</div>"); // addon to
+            WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer);
 
-            tagBuilder = _htmlGenerator.GenerateTextBox(
-               ViewContext,
-               toModelExplorer,
-               toFieldName,
-               value: toValue,
-               format: "{0:yyyy-MM-dd}",
-               htmlAttributes: new
-               {
-                   @class = "form-control",
-                   placeholder = "ÅÅÅÅ-MM-DD",
-                   type = "text",
-                   data_val_required = "Datum måste anges."
-               });
-
-            RemoveRequiredIfNullable(tagBuilder);
-            tagBuilder.WriteTo(writer, _htmlEncoder);
-
-            writer.WriteLine("</div>"); // input-group
+            writer.WriteLine("</div>"); // form-inline.
         }
 
         private void WriteTimeBox(TextWriter writer)
@@ -347,7 +313,7 @@ namespace Tolk.Web.TagHelpers
         {
             // First write a label
             writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
-            if(For.ModelExplorer.Metadata.IsRequired)
+            if (For.ModelExplorer.Metadata.IsRequired)
             {
                 writer.Write(RequiredStarSpan);
             }
@@ -356,7 +322,6 @@ namespace Tolk.Web.TagHelpers
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
-            writer.WriteLine("<div class=\"input-group date\">");
 
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
             var dateFieldName = $"{For.Name}.Date";
@@ -376,28 +341,11 @@ namespace Tolk.Web.TagHelpers
                 timeValue = timeModelExplorer.Model;
             }
 
-            var tagBuilder = _htmlGenerator.GenerateTextBox(
-                ViewContext,
-                dateModelExplorer,
-                dateFieldName,
-                value: dateValue,
-                format: "{0:yyyy-MM-dd}",
-                htmlAttributes: new
-                {
-                    @class = "form-control datepicker",
-                    placeholder = "ÅÅÅÅ-MM-DD",
-                    type = "text",
-                    data_val_required = "Datum måste anges."
-                });
-
-            RemoveRequiredIfNullable(tagBuilder);
-            tagBuilder.WriteTo(writer, _htmlEncoder);
-
-            writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
+            WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
 
             writer.WriteLine("<div class=\"input-group time\">");
 
-            tagBuilder = _htmlGenerator.GenerateTextBox(
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 timeModelExplorer,
                 timeFieldName,
@@ -422,6 +370,31 @@ namespace Tolk.Web.TagHelpers
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine();
             WriteValidation(writer, timeModelExplorer, timeFieldName);
+        }
+
+        private void WriteDatePickerInput(ModelExplorer dateModelExplorer, string dateFieldName, object dateValue, TextWriter writer)
+        {
+            writer.WriteLine("<div class=\"input-group date\">");
+
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
+                ViewContext,
+                dateModelExplorer,
+                dateFieldName,
+                value: dateValue,
+                format: "{0:yyyy-MM-dd}",
+                htmlAttributes: new
+                {
+                    @class = "form-control datepicker",
+                    placeholder = "ÅÅÅÅ-MM-DD",
+                    type = "text",
+                    data_val_required = "Datum måste anges."
+                });
+
+            RemoveRequiredIfNullable(tagBuilder);
+
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+
+            writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
         }
 
         private void RemoveRequiredIfNullable(TagBuilder tagBuilder)
