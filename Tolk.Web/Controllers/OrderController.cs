@@ -62,16 +62,7 @@ namespace Tolk.Web.Controllers
             // Filters
             if (model != null)
             {
-                orders = !string.IsNullOrWhiteSpace(model.OrderNumber) ? orders.Where(r => r.OrderNumber.Contains(model.OrderNumber)) : orders; // OrderNumber
-                orders = model.RegionId.HasValue ? orders.Where(r => r.Region.RegionId == model.RegionId) : orders;                 // Region
-                orders = model.LanguageId.HasValue ? orders.Where(r => r.Language.LanguageId == model.LanguageId) : orders;         // Language
-                orders = model.Status.HasValue ? model.Status.Value == OrderStatus.ToBeProcessedByCustomer ? orders.Where(r => r.Status == OrderStatus.RequestResponded || r.Status == OrderStatus.RequestRespondedNewInterpreter) : orders.Where(r => r.Status == model.Status) : orders; //status                            // Status
-                orders = model.BrokerId.HasValue ? orders.Where(r => r.Requests.Any(req => req.Ranking.BrokerId == model.BrokerId && (req.Status == RequestStatus.Created ||
-                            req.Status == RequestStatus.Received ||
-                            req.Status == RequestStatus.Accepted ||
-                            req.Status == RequestStatus.Approved ||
-                            req.Status == RequestStatus.AcceptedNewInterpreterAppointed))) : orders;   // Broker
-                orders = model.StartTimeRange != null && model.StartTimeRange.HasValue ? orders.Where(r => model.StartTimeRange.IsInRange(r.StartAt.Date)) : orders; // StartTimeRange
+                orders = model.Apply(orders);
             }
 
             return View(

@@ -32,31 +32,28 @@ namespace Tolk.Web.Models
 
         internal IQueryable<Request> Apply(IQueryable<Request> requests, ISwedishClock clock)
         {
-            // OrderNumber
             requests = !string.IsNullOrWhiteSpace(OrderNumber)
                 ? requests.Where(r => r.Order.OrderNumber.Contains(OrderNumber))
                 : requests;
-            // Region
             requests = RegionId.HasValue
                 ? requests.Where(r => r.Order.RegionId == RegionId)
                 : requests;
-            // CustomerOrganization
             requests = CustomerOrganizationId.HasValue
                 ? requests.Where(r => r.Order.CustomerOrganisationId == CustomerOrganizationId)
                 : requests;
-            // Language
             requests = LanguageId.HasValue
                 ? requests.Where(r => r.Order.LanguageId == LanguageId)
                 : requests;
-            // DateRange.Start
+
+            // Compare start filter with end date date/time and end filter with
+            // start date time to include occassions spanning midnight on filter date.
             requests = DateRange.Start.HasValue ?
-                requests.Where(r => DateRange.Start <= r.Order.StartAt.Date)
+                requests.Where(r => DateRange.Start <= r.Order.EndAt.Date)
                 : requests;
-            // DateRange.End
             requests = DateRange.End.HasValue ?
-                requests.Where(r => DateRange.End >= r.Order.EndAt.Date)
+                requests.Where(r => DateRange.End >= r.Order.StartAt.Date)
                 : requests;
-            // Status
+
             if (Status.HasValue)
             {
                 switch (Status)
