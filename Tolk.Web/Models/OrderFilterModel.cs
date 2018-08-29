@@ -57,12 +57,15 @@ namespace Tolk.Web.Models
 
             // Compare start filter with end date date/time and end filter with
             // start date time to include occassions spanning midnight on filter date.
-            orders = DateRange.Start.HasValue
-                ? orders.Where(o => DateRange.Start <= o.EndAt.Date)
-                : orders;
-            orders = DateRange.End.HasValue
-                ? orders.Where(o => DateRange.End >= o.StartAt.Date)
-                : orders;
+            if (DateRange != null)
+            {
+                orders = DateRange.Start.HasValue
+                    ? orders.Where(o => DateRange.Start <= o.EndAt.Date)
+                    : orders;
+                orders = DateRange.End.HasValue
+                    ? orders.Where(o => DateRange.End >= o.StartAt.Date)
+                    : orders;
+            }
                 
             return orders;
         }
