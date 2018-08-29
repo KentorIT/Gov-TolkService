@@ -42,5 +42,17 @@
     "inputFiles": [
       "wwwroot/lib/jquery-areyousure/jquery.are-you-sure.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Complaint/View.min.js",
+    "inputFiles": [
+      "wwwroot/js/Complaint/View.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Order/Process.min.js",
+    "inputFiles": [
+      "wwwroot/js/Order/Process.js"
+    ]
   }
 ]
