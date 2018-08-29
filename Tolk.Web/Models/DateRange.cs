@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Tolk.BusinessLogic.Utilities
+namespace Tolk.Web.Models
 {
     public class DateRange
     {
-        public DateTimeOffset? Start { get; set; }
-        public DateTimeOffset? End { get; set; }
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
 
         public bool HasValue
         {
@@ -16,11 +16,6 @@ namespace Tolk.BusinessLogic.Utilities
                 // Return false if both are null
                 return !(Start == null && End == null);
             }
-        }
-
-        public DateRange()
-        {
-
         }
 
         public bool IsInRange(DateTimeOffset date)

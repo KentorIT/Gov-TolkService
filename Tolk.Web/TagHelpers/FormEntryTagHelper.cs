@@ -283,7 +283,7 @@ namespace Tolk.Web.TagHelpers
             // Using &nbsp; is an ugly hack. Should be fixed when layout is finalized.
             writer.WriteLine("&nbsp;&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span>");
 
-            WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer);
+            WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer, "pull-right");
 
             writer.WriteLine("</div>"); // form-inline.
         }
@@ -372,9 +372,14 @@ namespace Tolk.Web.TagHelpers
             WriteValidation(writer, timeModelExplorer, timeFieldName);
         }
 
-        private void WriteDatePickerInput(ModelExplorer dateModelExplorer, string dateFieldName, object dateValue, TextWriter writer)
+        private void WriteDatePickerInput(
+            ModelExplorer dateModelExplorer,
+            string dateFieldName,
+            object dateValue,
+            TextWriter writer,
+            string extraGroupDivClass = "")
         {
-            writer.WriteLine("<div class=\"input-group date\">");
+            writer.WriteLine("<div class=\"input-group date " + extraGroupDivClass + "\">");
 
             var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,

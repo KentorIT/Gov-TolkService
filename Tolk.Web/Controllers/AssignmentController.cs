@@ -54,42 +54,7 @@ namespace Tolk.Web.Controllers
             // Filters
             if (filterModel != null)
             {
-                // OrderNumber
-                requests = !string.IsNullOrWhiteSpace(filterModel.OrderNumber)
-                    ? requests.Where(r => r.Order.OrderNumber.Contains(filterModel.OrderNumber))
-                    : requests;
-                // Region
-                requests = filterModel.RegionId.HasValue
-                    ? requests.Where(r => r.Order.RegionId == filterModel.RegionId)
-                    : requests;
-                // CustomerOrganization
-                requests = filterModel.CustomerOrganizationId.HasValue
-                    ? requests.Where(r => r.Order.CustomerOrganisationId == filterModel.CustomerOrganizationId)
-                    : requests;
-                // Language
-                requests = filterModel.LanguageId.HasValue
-                    ? requests.Where(r => r.Order.LanguageId == filterModel.LanguageId)
-                    : requests;
-                // StartDateRange
-                requests = filterModel.StartDateRange != null && filterModel.StartDateRange.HasValue
-                    ? requests.Where(r => filterModel.StartDateRange.IsInRange(r.Order.StartAt.Date))
-                    : requests;
-                // Status
-                if (filterModel.Status.HasValue)
-                {
-                    switch (filterModel.Status)
-                    {
-                        case AssignmentStatus.ToBeExecuted:
-                            requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt > _clock.SwedenNow);
-                            break;
-                        case AssignmentStatus.ToBeReported:
-                            requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < _clock.SwedenNow);
-                            break;
-                        default:
-                            requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
-                            break;
-                    }
-                }
+                requests = filterModel.Apply(requests, _clock);
             }
             
             return View(
