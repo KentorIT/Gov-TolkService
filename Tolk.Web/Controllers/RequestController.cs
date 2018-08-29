@@ -56,54 +56,13 @@ namespace Tolk.Web.Controllers
 
             var items = _dbContext.Requests.Include(r => r.Order)
                         .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId())
-                        .Select(r => new RequestListItemModel
-                        {
-                            RequestId = r.RequestId,
-                            Language = r.Order.OtherLanguage ?? r.Order.Language.Name ?? "(Tolkanvändarutbildning)",
-                            OrderNumber = r.Order.OrderNumber.ToString(),
-                            CustomerName = r.Order.CustomerOrganisation.Name,
-                            RegionName = r.Order.Region.Name,
-                            Start = r.Order.StartAt,
-                            End = r.Order.EndAt,
-                            ExpiresAt = r.ExpiresAt,
-                            Status = r.Status,
-                            Action = ((!isCustomer && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) || (isCustomer && r.Status == RequestStatus.Accepted) ? nameof(Process) : nameof(View))
-                        });
+                        .SelectRequestListItemModel(isCustomer);
             // Filters
             if (model != null)
             {
-                // OrderNumber
-                items = !string.IsNullOrWhiteSpace(model.OrderNumber)
-                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber))
-                    : items;
-                // Region
-                items = model.RegionId.HasValue
-                    ? items.Where(i => i.RegionName == Region.Regions.Where(r => r.RegionId == model.RegionId).Single().Name)
-                    : items;
-                // Customers
-                items = model.CustomerOrganizationId.HasValue
-                    ? items.Where(i => i.CustomerName == _dbContext.CustomerOrganisations
-                        .Where(c => c.CustomerOrganisationId == model.CustomerOrganizationId)
-                        .Single().Name)
-                    : items;
-                // Language
-                items = model.LanguageId.HasValue
-                    ? items.Where(i => i.Language == _dbContext.Languages.Where(l => l.LanguageId == model.LanguageId).Single().Name)
-                    : items;
-                // StartDateRange
-                items = model.StartDateRange != null && model.StartDateRange.HasValue
-                    ? items.Where(i => model.StartDateRange.IsInRange(i.Start))
-                    : items;
-                // AnswerByDateRange
-                items = model.AnswerByDateRange != null && model.AnswerByDateRange.HasValue
-                    ? items.Where(i => i.ExpiresAt.HasValue && model.AnswerByDateRange.IsInRange(i.ExpiresAt.Value.Date))
-                    : items;
-                // Status
-                if (model.Status.HasValue)
-                {
-                    items = model.Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == model.Status);
-                }
+                items = model.Apply(items);
             }
+
             return View(
                 new RequestListModel
                 {
