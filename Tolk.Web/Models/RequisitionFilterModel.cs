@@ -19,12 +19,33 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Startdatum")]
-        public DateRange StartTimeRange { get; set; }
+        [Display(Name = "Datum")]
+        public DateRange DateRange { get; set; }
 
         public RequisitionStatus? Status { get; set; }
         [Display(Name = "Filtrera på kontaktperson")]
         public bool? FilterByContact { get; set; }
         public bool IsCustomer { get; set; }
+
+        internal IQueryable<Requisition> Apply(IQueryable<Requisition> requisitions)
+        {
+            requisitions = !string.IsNullOrWhiteSpace(OrderNumber)
+                ? requisitions.Where(r => r.Request.Order.OrderNumber.Contains(OrderNumber))
+                : requisitions;
+            requisitions = LanguageId.HasValue
+                ? requisitions.Where(r => r.Request.Order.LanguageId == LanguageId)
+                : requisitions;
+            requisitions = DateRange?.Start != null
+                ? requisitions = requisitions.Where(r => DateRange.Start <= r.Request.Order.EndAt.Date)
+                : requisitions;
+            requisitions = DateRange?.End != null
+                ? requisitions = requisitions.Where(r => DateRange.End >= r.Request.Order.StartAt.Date)
+                : requisitions;
+            requisitions = Status.HasValue
+                ? requisitions = requisitions.Where(r => r.Status == Status)
+                : requisitions;
+
+            return requisitions;
+        }
     }
 }
