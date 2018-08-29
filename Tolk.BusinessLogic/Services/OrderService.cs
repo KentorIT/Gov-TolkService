@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Enums;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Microsoft.Extensions.Options;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -23,6 +24,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly DateCalculationService _dateCalculationService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
+        private readonly TolkOptions _options;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -30,7 +32,9 @@ namespace Tolk.BusinessLogic.Services
             RankingService rankingService,
             DateCalculationService dateCalculationService,
             PriceCalculationService priceCalculationService,
-            ILogger<OrderService> logger)
+            ILogger<OrderService> logger,
+            IOptions<TolkOptions> options
+            )
         {
             _tolkDbContext = tolkDbContext;
             _clock = clock;
@@ -38,6 +42,7 @@ namespace Tolk.BusinessLogic.Services
             _dateCalculationService = dateCalculationService;
             _priceCalculationService = priceCalculationService;
             _logger = logger;
+            _options = options.Value;
         }
 
         public async Task HandleExpiredRequests()
@@ -91,11 +96,55 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task ApproveReplacedInterpreterRequests()
+        public async Task HandleExpiredComplaints()
         {
-            const int hoursBeforeStart = 2; //OBS! If this is changed it also must be changed in CreateEmailOnRequestAction for InterpreterReplaced in RequestController
+            var expiredComplaintIds = await _tolkDbContext.Complaints
+                .Where(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow && c.Status == ComplaintStatus.Created)
+                .Select(c => c.ComplaintId)
+                .ToListAsync();
+
+            _logger.LogDebug("Found {count} expired complaints to process: {expiredComplaintIds}",
+                expiredComplaintIds.Count, string.Join(", ", expiredComplaintIds));
+
+            foreach (var complaintId in expiredComplaintIds)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var expiredComplaint = await _tolkDbContext.Complaints
+                            .SingleOrDefaultAsync(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow 
+                        && c.Status == ComplaintStatus.Created && c.ComplaintId == complaintId);
+
+                        if (expiredComplaint == null)
+                        {
+                            _logger.LogDebug("Complaint {complaintId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                complaintId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Processing expired Complaint {complaintId}.",
+                                expiredComplaint.ComplaintId);
+
+                            expiredComplaint.Status = ComplaintStatus.Confirmed;
+                            expiredComplaint.AnsweredAt = _clock.SwedenNow;
+                            expiredComplaint.AnswerMessage = $"Systemet har efter {_options.MonthsToApproveComplaints} månader automatiskt accepterat reklamationen då svar uteblivit.";
+                            _tolkDbContext.SaveChanges();
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing expired complaint {complaintId}", complaintId);
+                    }
+                }
+            }
+        }
+
+        public async Task HandleExpiredReplacedInterpreterRequests()
+        {
             var replacedInterpreterRequestsId = await _tolkDbContext.Requests
-                .Include(r => r.Order).Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-hoursBeforeStart) <= _clock.SwedenNow)
+                .Include(r => r.Order).Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow)
                 .Where(r => r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                 .Select(r => r.RequestId)
                 .ToListAsync();
@@ -121,7 +170,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order)
                             .ThenInclude(o => o.CreatedByUser)
                             .SingleOrDefaultAsync(
-                            r => r.Order.StartAt.AddHours(-hoursBeforeStart) <= _clock.SwedenNow && r.Order.Status == OrderStatus.RequestRespondedNewInterpreter
+                            r => r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow && r.Order.Status == OrderStatus.RequestRespondedNewInterpreter
                             && (r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             && r.RequestId == requestId);
 
@@ -149,7 +198,7 @@ namespace Tolk.BusinessLogic.Services
                             _tolkDbContext.Add(new OutboundEmail(
                             request.Order.CreatedByUser.Email,
                             $"Svar på avrop med avrops-ID {request.Order.OrderNumber} har godkänts av systemet",
-                            $"Svar på avrop {request.Order.OrderNumber} där tolk har bytts ut har godkänts av systemet då uppdraget startar inom {hoursBeforeStart} timmar. Uppdraget startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
+                            $"Svar på avrop {request.Order.OrderNumber} där tolk har bytts ut har godkänts av systemet då uppdraget startar inom {_options.HoursToApproveChangeInterpreterRequests} timmar. Uppdraget startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
                             _clock.SwedenNow));
 
                             _tolkDbContext.SaveChanges();

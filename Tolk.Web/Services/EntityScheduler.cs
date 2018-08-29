@@ -43,7 +43,8 @@ namespace Tolk.Web.Services
                     Task[] tasksToRun = new[] 
                     {
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().ApproveReplacedInterpreterRequests(),
+                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
+                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredReplacedInterpreterRequests(),
                         serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails()
                     };
 

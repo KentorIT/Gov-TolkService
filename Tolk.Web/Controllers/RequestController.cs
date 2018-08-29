@@ -16,7 +16,9 @@ using Tolk.BusinessLogic.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Tolk.Web.Controllers
 {
@@ -30,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
+        private readonly TolkOptions _options;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -38,7 +41,8 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
-            ILogger<RequisitionController> logger
+            ILogger<RequisitionController> logger,
+            IOptions<TolkOptions> options
 )
         {
             _dbContext = dbContext;
@@ -48,6 +52,7 @@ namespace Tolk.Web.Controllers
             _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
             _logger = logger;
+            _options = options.Value;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -331,7 +336,7 @@ namespace Tolk.Web.Controllers
                 case RequestStatus.InterpreterReplaced:
                     subject = $"Förmedling har bytt tolk på avrop {orderNumber}";
                     body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n";
-                    body += request.Order.AllowMoreThanTwoHoursTravelTime ? "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt 2 timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
+                    body += request.Order.AllowMoreThanTwoHoursTravelTime ? $"Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt {_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
                     //send email to new interpreter
                     if (!string.IsNullOrEmpty(sendExtraMailToInterpreter))
                     {

@@ -15,6 +15,10 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableTimeTravel { get; set; }
 
+        public int MonthsToApproveComplaints { get; set; }
+
+        public int HoursToApproveChangeInterpreterRequests { get; set; }
+
         public SideBarBox[] SideBar { get; set; }
 
         public void Validate()
