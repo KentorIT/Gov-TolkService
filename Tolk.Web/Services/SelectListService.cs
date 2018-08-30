@@ -163,7 +163,7 @@ namespace Tolk.Web.Services
                         })
                     .ToList().AsReadOnly();
 
-                    _cache.Set(brokersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(customersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
                 }
 
                 return items;
