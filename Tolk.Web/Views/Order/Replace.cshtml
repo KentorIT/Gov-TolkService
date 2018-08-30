@@ -1,0 +1,96 @@
+﻿@model Tolk.Web.Models.OrderModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
+@using Tolk.BusinessLogic.Entities
+@using Tolk.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "Ersätt avbokat avrop";
+}
+
+<div class="row">
+    <form method="post">
+        <div class="col-md-8">
+            <h2>@ViewData["Title"]</h2>
+            <display-entry asp-for="ReplacingOrderNumber" />
+            <display-entry asp-for="RegionName" />
+            <display-entry asp-for="BrokerName" />
+            <display-entry asp-for="LanguageName" />
+            <display-entry asp-for="RequiredCompetenceLevel" />
+            <display-entry asp-for="AssignmentType" />
+            <display-entry asp-for="CalculatedPriceActiveRequest" />
+            @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+            {
+                <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
+                <ul>
+                    @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
+                    {
+                        <li>
+                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                            @if (req.CanSatisfyRequirement.HasValue)
+                            {
+                                <br />
+                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+            {
+                <label>@Html.DisplayNameFor(m => m.OrderRequirements) (önskemål)</label>
+                <ul>
+                    @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
+                    {
+                        <li>
+                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                            @if (req.CanSatisfyRequirement.HasValue)
+                            {
+                                <br />
+                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            @if (!Model.UseRankedInterpreterLocation)
+            {
+                <display-entry asp-for="InterpreterLocation" />
+            }
+            else
+            {
+                <label>Önskat inställelsesätt, helst överst</label>
+                <ul>
+                    @foreach (var location in Model.InterpreterLocations.OrderBy(l => l.Rank))
+                    {
+                        <li>
+                            @EnumHelper.GetDescription(location.InterpreterLocation)
+                        </li>
+                    }
+                </ul>
+            }
+            <form-entry asp-for="CustomerReferenceNumber" />
+            <form-entry asp-for="ContactPerson" />
+            <form-entry asp-for="UnitName" />
+
+            @if (Model.UseAddress)
+            {
+                <form-entry asp-for="LocationStreet" />
+                <form-entry asp-for="LocationZipCode" />
+                <form-entry asp-for="LocationCity" />
+                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+            }
+            @if (Model.UseOffSiteInformation)
+            {
+                <form-entry asp-for="OffSiteAssignmentType" />
+                <form-entry asp-for="OffSiteContactInformation" />
+            }
+            <form-entry asp-for="StartAt" />
+            <form-entry asp-for="EndAt" />
+            <form-entry asp-for="Description" />
+        </div>
+    </form>
+</div>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

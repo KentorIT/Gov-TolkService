@@ -116,6 +116,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
+                var now = _clock.SwedenNow;
                 //TODO: Handle this better. Preferably with a list that you can use contains on
                 var request = order.Requests.SingleOrDefault(r =>
                         r.Status != RequestStatus.InterpreterReplaced &&
@@ -123,7 +124,13 @@ namespace Tolk.Web.Controllers
                         r.Status != RequestStatus.DeniedByCreator &&
                         r.Status != RequestStatus.DeclinedByBroker);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                model.AllowOrderCancellation = request != null && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
+                model.AllowOrderCancellation = request != null && 
+                    order.StartAt > _clock.SwedenNow && 
+                    (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
+                model.AllowReplacementOnCancel = model.AllowOrderCancellation && 
+                    request.Status == RequestStatus.Approved && 
+                    _dateCalculationService.GetWorkDaysBetween(now.Date, order.StartAt.Date) < 2;
+
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (model.ActiveRequestIsAnswered)
@@ -171,6 +178,21 @@ namespace Tolk.Web.Controllers
         public IActionResult Add()
         {
             return View("Edit");
+        }
+
+        public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
+        {
+            var order = _dbContext.Orders.Single(o => o.OrderId == replacingOrderId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            {
+                var model = OrderModel.GetModelFromOrder(order);
+                model.OrderId = null;
+                model.ReplacingOrderId = replacingOrderId;
+                model.CancelMessage = cancelMessage;
+                return View(model);
+            }
+            return Forbid();
         }
 
         [ValidateAntiForgeryToken]
@@ -273,6 +295,11 @@ namespace Tolk.Web.Controllers
                 ));
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
             {
+                if (model.AddReplacementOrder)
+                {
+                    //Forward the message
+                    return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
+                }
                 var now = _clock.SwedenNow;
                 //If this is an approved request, and the cancellation is done to late, a complete requisition will be created (full compensation).
                 bool createFullCompensationRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;

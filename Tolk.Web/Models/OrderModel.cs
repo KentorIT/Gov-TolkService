@@ -17,6 +17,7 @@ namespace Tolk.Web.Models
         public static int OtherLanguageId { get; } = 62;
 
         public int? OrderId { get; set; }
+        public int? ReplacingOrderId { get; set; }
 
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
@@ -119,6 +120,9 @@ namespace Tolk.Web.Models
         [Display(Name = "AvropsID")]
         public string OrderNumber { get; set; }
 
+        [Display(Name = "Ersätter AvropsID")]
+        public string ReplacingOrderNumber => OrderNumber;
+
         [Display(Name = "Region")]
         public string RegionName { get; set; }
 
@@ -192,6 +196,10 @@ namespace Tolk.Web.Models
         public bool UseOffSiteInformation => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value == BusinessLogic.Enums.InterpreterLocation.OffSite);
 
         public bool AllowOrderCancellation { get; set; } = false;
+        public bool AllowReplacementOnCancel { get; set; } = false;
+
+        [Display(Name = "Skapa ersättningsuppdrag")]
+        public bool AddReplacementOrder { get; set; } = false;
 
         public bool AllowComplaintCreation { get; set; } = false;
 
