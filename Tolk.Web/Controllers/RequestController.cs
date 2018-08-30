@@ -274,10 +274,11 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> ConfirmCancallation(int requestId)
+        public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
             var request = _dbContext.Requests
                 .Include(r => r.Ranking)
+                .Include(r=> r.Order)
                 .Single(r => r.RequestId == requestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
@@ -286,7 +287,7 @@ namespace Tolk.Web.Controllers
                 request.CancelConfirmedAt = _clock.SwedenNow;
                 request.CancelConfirmedBy = User.GetUserId();
                 request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
-
+                request.Order.Status = OrderStatus.CancelledByCreatorConfirmed;
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
             }

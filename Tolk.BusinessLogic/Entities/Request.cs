@@ -320,7 +320,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingCanceller = impersonatorId;
             CancelMessage = message;
 
-            Order.Status = OrderStatus.Cancelled;
+            Order.Status = OrderStatus.CancelledByCreator;
         }
 
         public void CreateRequisition(Requisition requisition)

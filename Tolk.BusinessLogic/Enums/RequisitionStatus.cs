@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Enums
         Approved = 2,
         [Description("Underkänd")]
         DeniedByCustomer = 3,
-        [Description("Automatiskt godkänd pge sen avbokning")]
+        [Description("Automatiskt godkänd pga sen avbokning")]
         AutomaticApprovalFromCancelledOrder = 4,
     }
 }

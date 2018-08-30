@@ -270,7 +270,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
             {
                 var now = _clock.SwedenNow;
-                //If this is an approved request, and the cencallation is done to late, a requisition will be crated.
+                //If this is an approved request, and the cancellation is done to late, a requisition will be created.
                 bool createRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;
                 bool isApprovedRequest = request.Status == RequestStatus.Approved;
                 request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createRequisition);

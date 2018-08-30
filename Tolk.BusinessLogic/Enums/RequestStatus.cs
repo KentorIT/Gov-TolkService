@@ -27,11 +27,11 @@ namespace Tolk.BusinessLogic.Enums
         DeniedByTimeLimit = 9,
         [Description("Avbokad av avropare, att bekräfta")]
         CancelledByCreatorWhenApproved = 10,
-        [Description("Bekräftad avbokning")]
+        [Description("Avbokning bekräftad av förmedling")]
         CancelledByCreatorConfirmed = 11,
         [Description("Svar skickat - Ny tolk")]
         AcceptedNewInterpreterAppointed = 12,
         [Description("Tolk har ersatts")]
-        InterpreterReplaced = 13,
+        InterpreterReplaced = 13
     }
 }

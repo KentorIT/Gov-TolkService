@@ -24,7 +24,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Uppdraget har genomförts")]
         Delivered = 5,
         [Description("Uppdraget har avbokats av avropare")]
-        Cancelled = 6,
+        CancelledByCreator = 6,
         [Description("Leverans är bekräftad")]
         DeliveryAccepted = 7,
         [Description("Uppdraget har annulerats via reklamation")]
@@ -33,6 +33,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Alla förmedlingar nekade uppdraget")]
         NoBrokerAcceptedOrder = 9,
         [Description("Tolktillsättning finns (Ny tolk)")]
-        RequestRespondedNewInterpreter = 10
+        RequestRespondedNewInterpreter = 10,
+        [Description("Avbokning bekräftad av förmedling")]
+        CancelledByCreatorConfirmed = 11
     }
 }
