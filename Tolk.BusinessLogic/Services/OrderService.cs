@@ -269,13 +269,12 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
                     order.OrderId);
             }
-
         }
 
         public void CreatePriceInformation(Order order)
         {
             _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
-                order.OrderId, order.CustomerOrganisation.Name);
+                order?.OrderId, order?.CustomerOrganisation?.Name);
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,
