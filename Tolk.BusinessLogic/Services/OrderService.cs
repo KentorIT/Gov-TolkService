@@ -274,6 +274,8 @@ namespace Tolk.BusinessLogic.Services
 
         public void CreatePriceInformation(Order order)
         {
+            _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
+                order.OrderId, order.CustomerOrganisation.Name);
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,

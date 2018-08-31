@@ -24,8 +24,6 @@ namespace Tolk.BusinessLogic.Services
 
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent, DateTimeOffset? wasteStartAt = null, DateTimeOffset? wasteEndAt = null)
         {
-            _logger.LogDebug("Get prices for{startAt}, {endAt}, {competenceLevel}, {listType}, {brokerFeePercent}, {wasteStartAt}, {wasteEndAt}", startAt, endAt, competenceLevel, listType, brokerFeePercent, wasteStartAt, wasteEndAt);
-
             //TODO: Should get the prices from the creation date, not the start date. At least on order creation...
             var prices = _dbContext.PriceListRows
                 .Where(r =>
