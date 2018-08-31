@@ -253,13 +253,8 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public void UpdateOrder(Order order)
+        public void UpdateOrder(Order order, bool isReplace = false)
         {
-            order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
-            order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
-            order.RegionId = RegionId;
-            order.ContactPersonId = ContactPersonId;
-            order.AssignentType = AssignmentType;
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartAt = TimeRange.StartDateTime;
             order.EndAt = TimeRange.EndDateTime;
@@ -268,44 +263,56 @@ namespace Tolk.Web.Models
             order.Street = UseAddress ? LocationStreet : null;
             order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
             order.City = UseAddress ? LocationCity : null;
-            order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
-            order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
             order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
-            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
-            if (UseRankedInterpreterLocation)
+            if (isReplace)
             {
-                //Add one(3) rows to OrderInterpreterLocation
-                foreach (var location in InterpreterLocations.OrderBy(l => l.Rank))
-                {
-                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank });
-                }
+                order.ReplacingOrderId = ReplacingOrderId;
             }
             else
             {
-                //Add one(1) row to OrderInterpreterLocation
-                // with rank 0
-                order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0 });
-            }
-
-            if (OrderRequirements != null)
-            {
-                // add all extra requirements
-                foreach (var req in OrderRequirements)
+                order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
+                order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
+                order.RegionId = RegionId;
+                order.ContactPersonId = ContactPersonId;
+                order.AssignentType = AssignmentType;
+                order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
+                order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
+	        order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+                if (UseRankedInterpreterLocation)
                 {
-                    //TODO: Handle deletes too!
-                    OrderRequirement requirement = null;
-                    if (req.OrderRequirementId.HasValue)
+                    //Add one(3) rows to OrderInterpreterLocation
+                    foreach (var location in InterpreterLocations.OrderBy(l => l.Rank))
                     {
-                        requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                        order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank });
                     }
-                    else
+                }
+                else
+                {
+                    //Add one(1) row to OrderInterpreterLocation
+                    // with rank 0
+                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0 });
+                }
+
+                if (OrderRequirements != null)
+                {
+                    // add all extra requirements
+                    foreach (var req in OrderRequirements)
                     {
-                        requirement = new OrderRequirement();
-                        order.Requirements.Add(requirement);
+                        //TODO: Handle deletes too!
+                        OrderRequirement requirement = null;
+                        if (req.OrderRequirementId.HasValue)
+                        {
+                            requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                        }
+                        else
+                        {
+                            requirement = new OrderRequirement();
+                            order.Requirements.Add(requirement);
+                        }
+                        requirement.RequirementType = req.RequirementType.Value;
+                        requirement.IsRequired = req.RequirementIsRequired;
+                        requirement.Description = req.RequirementDescription;
                     }
-                    requirement.RequirementType = req.RequirementType.Value;
-                    requirement.IsRequired = req.RequirementIsRequired;
-                    requirement.Description = req.RequirementDescription;
                 }
             }
             // OrderCompetenceRequirements

@@ -1,18 +1,15 @@
-﻿using Microsoft.Extensions.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Helpers;
-using System.Data;
-using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Enums;
-using System.Threading.Tasks;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
-using Microsoft.Extensions.Options;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -113,7 +110,7 @@ namespace Tolk.BusinessLogic.Services
                     try
                     {
                         var expiredComplaint = await _tolkDbContext.Complaints
-                            .SingleOrDefaultAsync(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow 
+                            .SingleOrDefaultAsync(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow
                         && c.Status == ComplaintStatus.Created && c.ComplaintId == complaintId);
 
                         if (expiredComplaint == null)
@@ -269,6 +266,18 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
                     order.OrderId);
             }
+        }
+        public async Task<Request> CreateReplacementRequest(DateTimeOffset startAt, Request originalRequest)
+        {
+            var newExpiry = CalculateExpiryForNewRequest(startAt);
+
+            var request = new Request(originalRequest, newExpiry);
+            // Save to get ids for the log message.
+
+            await _tolkDbContext.SaveChangesAsync();
+            _logger.LogInformation("Created replacement request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
+                request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
+            return request;
         }
 
         public void CreatePriceInformation(Order order)

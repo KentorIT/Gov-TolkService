@@ -18,6 +18,15 @@ namespace Tolk.BusinessLogic.Entities
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
         }
+        public Request(Request replacingRequest, DateTimeOffset expiry)
+        {
+            RankingId = replacingRequest.RankingId;
+            Status = RequestStatus.Created;
+            ExpiresAt = expiry;
+            InterpreterId = replacingRequest.InterpreterId;
+            CompetenceLevel = replacingRequest.CompetenceLevel;
+            ExpectedTravelCosts = replacingRequest.ExpectedTravelCosts;
+        }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }

@@ -18,7 +18,7 @@
             <display-entry asp-for="LanguageName" />
             <display-entry asp-for="RequiredCompetenceLevel" />
             <display-entry asp-for="AssignmentType" />
-            <display-entry asp-for="CalculatedPriceActiveRequest" />
+            <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
             {
                 <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
@@ -78,7 +78,6 @@
                 <form-entry asp-for="LocationStreet" />
                 <form-entry asp-for="LocationZipCode" />
                 <form-entry asp-for="LocationCity" />
-                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             }
             @if (Model.UseOffSiteInformation)
             {
@@ -88,6 +87,9 @@
             <form-entry asp-for="StartAt" />
             <form-entry asp-for="EndAt" />
             <form-entry asp-for="Description" />
+            <button class="btn btn-default">Skapa ersättningsuppdrag</button>
+            <a class="btn btn-warning pull-right" asp-controller="Home" asp-action="Index">Avbryt</a>
+
         </div>
     </form>
 </div>

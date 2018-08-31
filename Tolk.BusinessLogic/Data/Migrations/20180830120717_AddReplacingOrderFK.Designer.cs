@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180830120717_AddReplacingOrderFK")]
+    partial class AddReplacingOrderFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -408,9 +410,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("RegionId");
 
-                    b.Property<bool>("SpecificCompetenceLevelRequired");
-
                     b.Property<int?>("ReplacingOrderId");
+
+                    b.Property<int>("RequiredCompetenceLevel");
 
                     b.Property<DateTimeOffset>("StartAt");
 
@@ -444,25 +446,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasFilter("[ReplacingOrderId] IS NOT NULL");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
-                {
-                    b.Property<int>("OrderCompetenceRequirementId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CompetenceLevel");
-
-                    b.Property<int>("OrderId");
-
-                    b.Property<int?>("Rank");
-
-                    b.HasKey("OrderCompetenceRequirementId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderCompetenceRequirements");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -1029,14 +1012,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
                         .WithMany()
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("OrderCompetenceRequirements")
-                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "ReplacedByOrder")

@@ -55,6 +55,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(RegionId))]
         public Region Region { get; set; }
 
+        public int? ReplacingOrderId { get; set; }
+
+        [ForeignKey(nameof(ReplacingOrderId))]
+        public Order ReplacingOrder { get; set; }
+
         #endregion
 
         #region customer information
@@ -136,6 +141,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderPriceRow> PriceRows { get; set; }
 
+        public Order ReplacedByOrder { get; set; }
+
         #endregion
 
         #region methods
@@ -181,6 +188,37 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Status = OrderStatus.Delivered;
+        }
+
+        public void MakeCopy(Order order, int? originalRequestId, int? replacementRequestId)
+        {
+            order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
+            order.AssignentType = AssignentType;
+            order.CustomerOrganisationId = CustomerOrganisationId;
+            order.InterpreterLocations = InterpreterLocations.Select(i => new OrderInterpreterLocation
+            {
+                InterpreterLocation = i.InterpreterLocation,
+                Rank = i.Rank
+            }).ToList();
+            order.LanguageId = LanguageId;
+            order.OffSiteAssignmentType = OffSiteAssignmentType;
+            order.OtherLanguage = OtherLanguage;
+            order.RegionId = RegionId;
+            order.RequiredCompetenceLevel = RequiredCompetenceLevel;
+            order.Requirements = Requirements.Select(r => new OrderRequirement
+            {
+                Description = r.Description,
+                IsRequired = r.IsRequired,
+                RequirementType = r.RequirementType,
+                RequirementAnswers = r.RequirementAnswers
+                    .Where(a => a.RequestId == originalRequestId)
+                    .Select(a => new OrderRequirementRequestAnswer
+                    {
+                        Answer = a.Answer,
+                        CanSatisfyRequirement = a.CanSatisfyRequirement,
+                        RequestId = replacementRequestId.Value
+                    }).ToList(),
+            }).ToList();
         }
 
         #endregion
