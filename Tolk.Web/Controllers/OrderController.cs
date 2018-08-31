@@ -187,50 +187,53 @@ namespace Tolk.Web.Controllers
                 Order order = GetOrder(model.ReplacingOrderId.Value);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
                 {
-                    //TODO: Handle this better. Preferably with a list that you can use contains on
-                    var request = order.Requests.SingleOrDefault(r =>
+                    using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                    {
+                        //TODO: Handle this better. Preferably with a list that you can use contains on
+                        var request = order.Requests.SingleOrDefault(r =>
                         r.Status == RequestStatus.Created ||
                         r.Status == RequestStatus.Received ||
                         r.Status == RequestStatus.Accepted ||
                         r.Status == RequestStatus.Approved ||
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
-                    //First, copy all fields from first order not from model.
-                    var replacingRequest = await _orderService.CreateReplacementRequest(model.StartAt, request);
-                    Order replacementOrder = CreateNewOrder();
-                    order.MakeCopy(replacementOrder, request.RequestId, replacingRequest.RequestId);
-                    model.UpdateOrder(order, true);
-                    //copy the request.
-                    bool createRequisition = _dateCalculationService.GetWorkDaysBetween(_clock.SwedenNow.Date, request.Order.StartAt.Date) < 2;
-                    bool isApprovedRequest = request.Status == RequestStatus.Approved;
-                    request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isApprovedRequest && createRequisition);
-                    //Genarate new price rows from current times, might be subject to change!!!
-                    _orderService.CreatePriceInformation(replacementOrder);
-                    var brokerEmail = _dbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
-                    if (!string.IsNullOrEmpty(brokerEmail))
-                    {
-                        _dbContext.Add(new OutboundEmail(
-                            request.Ranking.Broker.EmailAddress,
-                            $"Avrop {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
-                            $"\tOrginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                            $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                            $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                            $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                            $"\tTolk: {replacingRequest.Interpreter.User.Email}\n" +
-                            $"\tSvara senast: {replacingRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                            "Detta mail går inte att svara på.",
-                            _clock.SwedenNow));
-                    }
-                    else
-                    {
-                        _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
-                           request.Ranking.BrokerId);
-                    }
+                        //First, copy all fields from first order not from model.
+                        var replacingRequest = await _orderService.CreateReplacementRequest(model.StartAt, request);
+                        Order replacementOrder = CreateNewOrder();
+                        replacementOrder.Requests.Add(replacingRequest);
+                        order.MakeCopy(replacementOrder, request.RequestId, replacingRequest.RequestId);
+                        model.UpdateOrder(replacementOrder, true);
+                        //copy the request.
+                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                        //Genarate new price rows from current times, might be subject to change!!!
+                        _orderService.CreatePriceInformation(replacementOrder);
+                        var brokerEmail = _dbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
+                        if (!string.IsNullOrEmpty(brokerEmail))
+                        {
+                            _dbContext.Add(new OutboundEmail(
+                                request.Ranking.Broker.EmailAddress,
+                                $"Avrop {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
+                                $"\tOrginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tTolk: {request.Interpreter.User.Email}\n" +
+                                $"\tSvara senast: {replacingRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
+                                "Detta mail går inte att svara på.",
+                                _clock.SwedenNow));
+                        }
+                        else
+                        {
+                            _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
+                               request.Ranking.BrokerId);
+                        }
 
-                    _dbContext.SaveChanges();
-                    //Close the previous request as cancelled.
-                    //Close the replaced order as cancelled
-                    //Send mail?
+                        _dbContext.SaveChanges();
+                        //Close the previous request as cancelled.
+                        //Close the replaced order as cancelled
+                        //Send mail?
+                        trn.Commit();
+                    }
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
             }
@@ -257,22 +260,7 @@ namespace Tolk.Web.Controllers
             return View("Edit", model);
         }
 
-        private Order CreateNewOrder()
-        {
-            return new Order
-            {
-                Status = OrderStatus.Requested,
-                CreatedBy = User.GetUserId(),
-                CreatedAt = _clock.SwedenNow.DateTime,
-                CustomerOrganisationId = User.GetCustomerOrganisationId(),
-                ImpersonatingCreator = User.TryGetImpersonatorId(),
-                Requirements = new List<OrderRequirement>(),
 		CompetenceRequirements = new List<OrderCompetenceRequirement>(),
-                InterpreterLocations = new List<OrderInterpreterLocation>(),
-                PriceRows = new List<OrderPriceRow>()
-            };
-        }
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Edit(OrderModel model)
@@ -403,6 +391,23 @@ namespace Tolk.Web.Controllers
 
             return Forbid();
         }
+
+        private Order CreateNewOrder()
+        {
+            return new Order
+            {
+                Status = OrderStatus.Requested,
+                CreatedBy = User.GetUserId(),
+                CreatedAt = _clock.SwedenNow.DateTime,
+                CustomerOrganisationId = User.GetCustomerOrganisationId(),
+                ImpersonatingCreator = User.TryGetImpersonatorId(),
+                Requirements = new List<OrderRequirement>(),
+                InterpreterLocations = new List<OrderInterpreterLocation>(),
+                PriceRows = new List<OrderPriceRow>(),
+                Requests = new List<Request>()
+            };
+        }
+
         private Order GetOrder(int id)
         {
             return _dbContext.Orders
@@ -422,6 +427,9 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.PriceRows)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Complaints)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.Interpreter)
+                    .ThenInclude(i => i.User)
                 .Single(o => o.OrderId == id);
         }
 

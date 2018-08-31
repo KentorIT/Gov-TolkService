@@ -18,14 +18,15 @@ namespace Tolk.BusinessLogic.Entities
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
         }
-        public Request(Request replacingRequest, DateTimeOffset expiry)
+        public Request(Request originalRequest, DateTimeOffset expiry)
         {
-            RankingId = replacingRequest.RankingId;
+            Ranking = originalRequest.Ranking;
+            Order = originalRequest.Order;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
-            InterpreterId = replacingRequest.InterpreterId;
-            CompetenceLevel = replacingRequest.CompetenceLevel;
-            ExpectedTravelCosts = replacingRequest.ExpectedTravelCosts;
+            Interpreter = originalRequest.Interpreter;
+            CompetenceLevel = originalRequest.CompetenceLevel;
+            ExpectedTravelCosts = originalRequest.ExpectedTravelCosts;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -286,7 +287,7 @@ namespace Tolk.BusinessLogic.Entities
             DenyMessage = message;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition)
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false)
         {
             if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.RequestRespondedNewInterpreter && Order.Status != OrderStatus.ResponseAccepted)
             {

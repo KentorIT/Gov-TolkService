@@ -70,7 +70,7 @@
                 </ul>
             }
             <form-entry asp-for="CustomerReferenceNumber" />
-            <form-entry asp-for="ContactPerson" />
+            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
             <form-entry asp-for="UnitName" />
 
             @if (Model.UseAddress)
@@ -89,7 +89,6 @@
             <form-entry asp-for="Description" />
             <button class="btn btn-default">Skapa ersättningsuppdrag</button>
             <a class="btn btn-warning pull-right" asp-controller="Home" asp-action="Index">Avbryt</a>
-
         </div>
     </form>
 </div>
