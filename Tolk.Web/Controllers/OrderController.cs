@@ -228,10 +228,9 @@ namespace Tolk.Web.Controllers
                                request.Ranking.BrokerId);
                         }
 
+                        _dbContext.Add(replacementOrder);
                         _dbContext.SaveChanges();
-                        //Close the previous request as cancelled.
                         //Close the replaced order as cancelled
-                        //Send mail?
                         trn.Commit();
                     }
                     return RedirectToAction(nameof(View), new { id = order.OrderId });

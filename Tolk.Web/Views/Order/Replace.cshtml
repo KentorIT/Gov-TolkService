@@ -81,7 +81,7 @@
             }
             @if (Model.UseOffSiteInformation)
             {
-                <form-entry asp-for="OffSiteAssignmentType" />
+                <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
                 <form-entry asp-for="OffSiteContactInformation" />
             }
             <form-entry asp-for="StartAt" />

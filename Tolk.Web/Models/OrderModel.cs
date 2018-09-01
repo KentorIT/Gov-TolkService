@@ -259,11 +259,12 @@ namespace Tolk.Web.Models
             order.StartAt = TimeRange.StartDateTime;
             order.EndAt = TimeRange.EndDateTime;
             order.Description = Description;
-            order.UnitName = UseAddress ? UnitName : null;
+            order.UnitName = UnitName;
             order.Street = UseAddress ? LocationStreet : null;
             order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
             order.City = UseAddress ? LocationCity : null;
             order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
+            order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
             if (isReplace)
             {
                 order.ReplacingOrderId = ReplacingOrderId;
@@ -276,7 +277,6 @@ namespace Tolk.Web.Models
                 order.ContactPersonId = ContactPersonId;
                 order.AssignentType = AssignmentType;
                 order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
-                order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
 	        order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (UseRankedInterpreterLocation)
                 {
