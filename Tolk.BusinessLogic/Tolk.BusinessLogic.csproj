@@ -4,6 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Data\Migrations\20180524143518_RankinStartEndDateNonAmbigous.cs" />
     <Compile Remove="Data\Migrations\20180525091610_RankingDatesNonAmbigous.cs" />
