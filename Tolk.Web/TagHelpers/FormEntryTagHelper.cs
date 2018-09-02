@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -36,6 +37,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeTextArea = "textarea";
         private const string InputTypeTime = "time";
         private const string InputTypeDateRange = "date-range";
+        private const string InputTypeTimeRange = "time-range";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -72,13 +74,14 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeTime:
                 case InputTypeDateRange:
                 case InputTypeTextArea:
+                case InputTypeTimeRange:
                     if (Items != null)
                     {
                         throw new ArgumentException("Items is only relevant if type is select.");
                     }
                     break;
                 default:
-                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}, known types are select, datetime, text, password, checkbox, textarea, time. Omit type to get a default input.");
+                    throw new ArgumentException($"Unknown input type {InputType} for expression {For.Name}. Omit type to get a default input.");
             }
         }
 
@@ -90,23 +93,38 @@ namespace Tolk.Web.TagHelpers
                     || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))
                 {
                     InputType = InputTypeDateTimeOffset;
+                    return;
                 }
                 if (For.ModelExplorer.Metadata.DataTypeName == "Password")
                 {
                     InputType = InputTypePassword;
+                    return;
                 }
                 if (For.ModelExplorer.ModelType == typeof(bool))
                 {
                     InputType = InputTypeCheckbox;
+                    return;
                 }
                 if(For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
                 {
                     InputType = InputTypeTextArea;
+                    return;
                 }
                 if (For.ModelExplorer.ModelType == typeof(TimeSpan)
                     || For.ModelExplorer.ModelType == typeof(TimeSpan?))
                 {
                     InputType = InputTypeTime;
+                    return;
+                }
+                if(For.ModelExplorer.ModelType == typeof(TimeRange))
+                {
+                    InputType = InputTypeTimeRange;
+                    return;
+                }
+                if(For.ModelExplorer.ModelType == typeof(DateRange))
+                {
+                    InputType = InputTypeDateRange;
+                    return;
                 }
             }
         }
@@ -150,9 +168,10 @@ namespace Tolk.Web.TagHelpers
                         WriteValidation(writer);
                         break;
                     case InputTypeDateRange:
-                        WriteLabel(writer);
                         WriteDateRangeBlock(writer);
-                        WriteValidation(writer);
+                        break;
+                    case InputTypeTimeRange:
+                        WriteTimeRangeBlock(writer);
                         break;
                     default:
                         WriteLabel(writer);
@@ -269,6 +288,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteDateRangeBlock(TextWriter writer)
         {
+            WriteLabelWithoutFor(writer);
             writer.WriteLine("<div class=\"form-inline\">");
 
             var fromModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Start");
@@ -279,13 +299,18 @@ namespace Tolk.Web.TagHelpers
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
             WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer);
-
-            // Using &nbsp; is an ugly hack. Should be fixed when layout is finalized.
-            writer.WriteLine("&nbsp;&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span>");
-
+            WriteRightArrowSpan(writer);
             WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer, "pull-right");
 
             writer.WriteLine("</div>"); // form-inline.
+            WriteValidation(writer, fromModelExplorer, fromFieldName);
+            WriteValidation(writer, toModelExplorer, toFieldName);
+        }
+
+        private static void WriteRightArrowSpan(TextWriter writer)
+        {
+            // Using &nbsp; is an ugly hack. Should be fixed when layout is finalized.
+            writer.WriteLine("&nbsp;&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span>&nbsp;&nbsp;");
         }
 
         private void WriteTimeBox(TextWriter writer)
@@ -312,13 +337,7 @@ namespace Tolk.Web.TagHelpers
         private void WriteDateTimeOffsetBlock(TextWriter writer)
         {
             // First write a label
-            writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
-            if (For.ModelExplorer.Metadata.IsRequired)
-            {
-                writer.Write(RequiredStarSpan);
-            }
-            writer.WriteLine("</label>");
-            WriteInfoIfDescription(writer);
+            WriteLabelWithoutFor(writer);
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
@@ -327,15 +346,10 @@ namespace Tolk.Web.TagHelpers
             var dateFieldName = $"{For.Name}.Date";
             var timeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "TimeOfDay");
             var timeFieldName = $"{For.Name}.TimeOfDay";
-            object dateValue;
-            object timeValue;
+            object dateValue = null;
+            object timeValue = null;
 
-            if (Equals(For.Model, default(DateTimeOffset)))
-            {
-                dateValue = null;
-                timeValue = null;
-            }
-            else
+            if (!Equals(For.Model, default(DateTimeOffset)))
             {
                 dateValue = dateModelExplorer.Model;
                 timeValue = timeModelExplorer.Model;
@@ -343,6 +357,17 @@ namespace Tolk.Web.TagHelpers
 
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
 
+            WriteTimePickerInput(timeModelExplorer, timeFieldName, timeValue, writer);
+
+            writer.WriteLine("</div>"); // form-inline
+
+            WriteValidation(writer, dateModelExplorer, dateFieldName);
+            writer.WriteLine();
+            WriteValidation(writer, timeModelExplorer, timeFieldName);
+        }
+
+        private void WriteTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer)
+        {
             writer.WriteLine("<div class=\"input-group time\">");
 
             var tagBuilder = _htmlGenerator.GenerateTextBox(
@@ -364,12 +389,17 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
 
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
+        }
 
-            writer.WriteLine("</div>"); // form-inline
-
-            WriteValidation(writer, dateModelExplorer, dateFieldName);
-            writer.WriteLine();
-            WriteValidation(writer, timeModelExplorer, timeFieldName);
+        private void WriteLabelWithoutFor(TextWriter writer)
+        {
+            writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
+            if (For.ModelExplorer.Metadata.IsRequired)
+            {
+                writer.Write(RequiredStarSpan);
+            }
+            writer.WriteLine("</label>");
+            WriteInfoIfDescription(writer);
         }
 
         private void WriteDatePickerInput(
@@ -400,6 +430,42 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
 
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
+        }
+
+        private void WriteTimeRangeBlock(TextWriter writer)
+        {
+            WriteLabelWithoutFor(writer);
+
+            writer.WriteLine("<div class=\"form-inline\">");
+
+            var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(TimeRange.StartDate));
+            var dateFieldName = $"{For.Name}.{nameof(TimeRange.StartDate)}";
+            var startTimeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(TimeRange.StartTime));
+            var startTimeFieldName = $"{For.Name}.{nameof(TimeRange.StartTime)}";
+            var endTimeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(TimeRange.EndTime));
+            var endTimeFieldName = $"{For.Name}.{nameof(TimeRange.EndTime)}";
+
+            object dateValue = null;
+            object startTimeValue = null;
+            object endTimeValue = null;
+
+            if(For.Model != null)
+            {
+                dateValue = dateModelExplorer.Model;
+                startTimeValue = startTimeModelExplorer.Model;
+                endTimeValue = endTimeModelExplorer.Model;
+            }
+
+            WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
+            WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer);
+            WriteRightArrowSpan(writer);
+            WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer);
+
+            writer.WriteLine("</div>"); // form-inline.
+
+            WriteValidation(writer, dateModelExplorer, dateFieldName);
+            WriteValidation(writer, startTimeModelExplorer, startTimeFieldName);
+            WriteValidation(writer, endTimeModelExplorer, endTimeFieldName);
         }
 
         private void RemoveRequiredIfNullable(TagBuilder tagBuilder)

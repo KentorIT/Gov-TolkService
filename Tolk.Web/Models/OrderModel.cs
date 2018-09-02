@@ -50,11 +50,9 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Startdatum och tid", Description = "Datum och tid när tolkuppdraget startar.")]
-        public DateTimeOffset StartAt { get; set; }
-
-        [Display(Name = "Slutdatum och tid")]
-        public DateTimeOffset EndAt { get; set; }
+        [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
+        [Required]
+        public TimeRange TimeRange { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
@@ -202,8 +200,8 @@ namespace Tolk.Web.Models
             order.ContactPersonId = ContactPersonId;
             order.AssignentType = AssignmentType;
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = StartAt;
-            order.EndAt = EndAt;
+            order.StartAt = TimeRange.StartDateTime;
+            order.EndAt = TimeRange.EndDateTime;
             order.Description = Description;
             order.UnitName = UseAddress ? UnitName : null;
             order.Street = UseAddress ? LocationStreet : null;
@@ -269,8 +267,11 @@ namespace Tolk.Web.Models
                 AssignmentType = order.AssignentType,
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
-                StartAt = order.StartAt,
-                EndAt = order.EndAt,
+                TimeRange = new TimeRange
+                {
+                    StartDateTime = order.StartAt,
+                    EndDateTime = order.EndAt
+                },
                 Description = order.Description,
                 UnitName = order.UnitName,
                 LocationStreet = order.Street,
