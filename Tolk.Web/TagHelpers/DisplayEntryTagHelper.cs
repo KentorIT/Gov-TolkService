@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -69,7 +70,7 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText, TimeSpan }
+        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText, TimeSpan, TimeRange }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -86,6 +87,12 @@ namespace Tolk.Web.TagHelpers
                     break;
                 case OutputType.DateTimeOffset:
                     text = ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
+                    break;
+                case OutputType.TimeRange:
+                    var timeRange = (TimeRange)For.ModelExplorer.Model;
+                    text = timeRange.StartDate.ToString("yyyy-MM-dd") + " "
+                        + timeRange.StartTime.ToString("hh\\:mm") + "-"
+                        + timeRange.EndTime.ToString("hh\\:mm");
                     break;
                 case OutputType.Currency:
                     text = ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
@@ -132,6 +139,10 @@ namespace Tolk.Web.TagHelpers
                 || For.ModelExplorer.ModelType == typeof(TimeSpan?))
             {
                 return OutputType.TimeSpan;
+            }
+            if(For.ModelExplorer.ModelType == typeof(TimeRange))
+            {
+                return OutputType.TimeRange;
             }
             return OutputType.Text;
         }
