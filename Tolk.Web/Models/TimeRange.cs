@@ -46,11 +46,11 @@ namespace Tolk.Web.Models
 
                 if(endDateFromTime != valueSweden.Date)
                 {
-                    throw new InvalidOperationException("TimeRange can only express ranges of up to 24 hours. "
-                        + $"Automatically calculated end date {endDateFromTime} doesn't match supplied end date {value.Date}");
+                    throw new InvalidOperationException("TimeRange can only express positive ranges of up to 24 hours. "
+                        + $"Automatically calculated end date {endDateFromTime.ToShortDateString()} "
+                        + $"doesn't match supplied end date {value.Date.ToShortDateString()}");
                 }
 
-                EndDateTime = valueSweden.Date;
                 EndTime = valueSweden.TimeOfDay;
             }
         }
