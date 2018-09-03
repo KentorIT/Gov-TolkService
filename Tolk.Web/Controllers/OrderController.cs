@@ -115,17 +115,17 @@ namespace Tolk.Web.Controllers
             {
                 //TODO: Handle this better. Preferably with a list that you can use contains on
                 var request = order.Requests.SingleOrDefault(r =>
-                    r.Status == RequestStatus.Created ||
-                    r.Status == RequestStatus.Received ||
-                    r.Status == RequestStatus.Accepted ||
-                    r.Status == RequestStatus.Approved ||
-                    r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+                        r.Status != RequestStatus.InterpreterReplaced &&
+                        r.Status != RequestStatus.DeniedByTimeLimit &&
+                        r.Status != RequestStatus.DeniedByCreator &&
+                        r.Status != RequestStatus.DeclinedByBroker);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
-                if (request != null && (request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed))
-                {
+                if (model.ActiveRequestIsAnswered)
+                { 
+                    model.CancelMessage = request.CancelMessage;
                     model.CalculatedPriceActiveRequest = request.PriceRows.Sum(p => p.TotalPrice);
                     model.RequestId = request.RequestId;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;

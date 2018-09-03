@@ -17,6 +17,10 @@
         <display-entry asp-for="ContactPerson" />
         <display-entry asp-for="UnitName" />
         <display-entry asp-for="Status" />
+        @if (!string.IsNullOrEmpty(Model.CancelMessage))
+        {
+            <display-entry asp-for="CancelMessage" />
+        }
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="CustomerReferenceNumber" />
@@ -62,7 +66,7 @@
         {
             <display-entry asp-for="CalculatedPrice" />
         }
-        @if (Model.AllowMoreThanTwoHoursTravelTime && (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed))
+        @if (Model.AllowMoreThanTwoHoursTravelTime && Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
@@ -116,7 +120,7 @@
                 }
             </ul>
         }
-        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.Approved || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
+        @if (Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="InterpreterName" />
             <display-entry asp-for="CompetenceLevel" />
