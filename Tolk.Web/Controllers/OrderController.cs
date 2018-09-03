@@ -171,6 +171,7 @@ namespace Tolk.Web.Controllers
             {
                 var model = OrderModel.GetModelFromOrder(order);
                 model.OrderId = null;
+                model.ReplacingOrderNumber = order.OrderNumber;
                 model.ReplacingOrderId = replacingOrderId;
                 model.CancelMessage = cancelMessage;
                 return View(model);
@@ -198,7 +199,7 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
                         //First, copy all fields from first order not from model.
-                        var replacingRequest = await _orderService.CreateReplacementRequest(model.StartAt, request);
+                        var replacingRequest = await _orderService.CreateReplacementRequest(model.TimeRange.StartDateTime, request);
                         Order replacementOrder = CreateNewOrder();
                         replacementOrder.Requests.Add(replacingRequest);
                         order.MakeCopy(replacementOrder, request.RequestId, replacingRequest.RequestId);
@@ -410,6 +411,8 @@ namespace Tolk.Web.Controllers
         private Order GetOrder(int id)
         {
             return _dbContext.Orders
+                .Include(o => o.ReplacedByOrder)
+                .Include(o => o.ReplacingOrder)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)

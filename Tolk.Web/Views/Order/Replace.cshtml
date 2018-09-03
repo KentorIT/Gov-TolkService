@@ -2,8 +2,6 @@
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
-@using Tolk.BusinessLogic.Entities
-@using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = "Ersätt avbokat avrop";
 }
@@ -84,8 +82,7 @@
                 <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
                 <form-entry asp-for="OffSiteContactInformation" />
             }
-            <form-entry asp-for="StartAt" />
-            <form-entry asp-for="EndAt" />
+            <form-entry asp-for="TimeRange" />
             <form-entry asp-for="Description" />
             <button class="btn btn-default">Skapa ersättningsuppdrag</button>
             <a class="btn btn-warning pull-right" asp-controller="Home" asp-action="Index">Avbryt</a>

@@ -17,6 +17,7 @@ namespace Tolk.Web.Models
         public static int OtherLanguageId { get; } = 62;
 
         public int? OrderId { get; set; }
+
         public int? ReplacingOrderId { get; set; }
 
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
@@ -120,8 +121,13 @@ namespace Tolk.Web.Models
         [Display(Name = "AvropsID")]
         public string OrderNumber { get; set; }
 
+        public int? ReplacedByOrderId { get; set; }
+
+        [Display(Name = "Ersatt av AvropsID")]
+        public string ReplacedByOrderNumber { get; set; }
+
         [Display(Name = "Ersätter AvropsID")]
-        public string ReplacingOrderNumber => OrderNumber;
+        public string ReplacingOrderNumber { get; set; }
 
         [Display(Name = "Region")]
         public string RegionName { get; set; }
@@ -387,6 +393,10 @@ namespace Tolk.Web.Models
             {
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber.ToString(),
+                ReplacingOrderNumber = order?.ReplacingOrder?.OrderNumber,
+                ReplacedByOrderNumber = order?.ReplacedByOrder?.OrderNumber,
+                ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
+                ReplacingOrderId = order.ReplacingOrderId,
                 CreatedBy = order.CreatedByUser.NormalizedEmail,
                 ContactPerson = order.ContactPersonUser?.NormalizedEmail,
                 CreatedAt = order.CreatedAt,

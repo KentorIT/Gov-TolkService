@@ -58,6 +58,7 @@ namespace Tolk.BusinessLogic.Entities
         public int? ReplacingOrderId { get; set; }
 
         [ForeignKey(nameof(ReplacingOrderId))]
+        [InverseProperty(nameof(ReplacedByOrder))]
         public Order ReplacingOrder { get; set; }
 
         #endregion
@@ -141,6 +142,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderPriceRow> PriceRows { get; set; }
 
+        [InverseProperty(nameof(ReplacingOrder))]
         public Order ReplacedByOrder { get; set; }
 
         #endregion

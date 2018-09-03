@@ -2,17 +2,16 @@
 @using Tolk.BusinessLogic.Entities
 @using System.Security.Claims
 @using Tolk.Web.Authorization
-
 @inject SignInManager<AspNetUser> SignInManager
 @inject Tolk.Web.Services.SelectListService SelectListService
-
 @if (SignInManager.IsSignedIn(User))
 {
     <ul class="nav navbar-nav navbar-right">
         <li>
             <a asp-area="" asp-controller="Account" asp-action="Index" title="Mitt Konto">
-            @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) 
-                ??User.FindFirstValue(ClaimTypes.Name))</a>
+                @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)
+                                    ?? User.FindFirstValue(ClaimTypes.Name))
+            </a>
         </li>
         <li>
             @if (User.IsInRole(Roles.Impersonator))
@@ -29,6 +28,7 @@
                 <button type="submit" class="btn btn-link navbar-btn navbar-link">Logga ut</button>
             </form>
         </li>
+        @await Html.PartialAsync("_TimeTravelPartial")
     </ul>
 }
 else

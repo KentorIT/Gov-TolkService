@@ -12,6 +12,18 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
+        @if (Model.ReplacingOrderId.HasValue)
+        {
+            <span>
+                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
+            </span>
+        }
+        @if (Model.ReplacedByOrderId.HasValue)
+        {
+            <span>
+                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
+            </span>
+        }
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="ContactPerson" />
@@ -234,8 +246,8 @@
             <div class="modal-body">
                 <form class="do-not-check-dirty">
                     <form-entry asp-for="CancelMessage" />
-                    @if(Model.AllowReplacementOnCancel)
-                    { 
+                    @if (Model.AllowReplacementOnCancel)
+                    {
                         <form-entry asp-for="AddReplacementOrder" />
                     }
                 </form>
