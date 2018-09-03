@@ -77,6 +77,8 @@ namespace Tolk.Web.Models
 
         public bool AllowInterpreterChange { get; set; } = false;
 
+        public bool AllowCancellation { get; set; } = false;
+
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]

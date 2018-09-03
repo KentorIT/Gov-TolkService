@@ -323,6 +323,29 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.CancelledByCreator;
         }
 
+        public void CancelByBroker(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string cancelMessage)
+        {
+            if (Order.Status != OrderStatus.ResponseAccepted)
+            {
+                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}. Only Orders where response is accepted can be cancelled by broker.");
+            }
+            if (Order.StartAt < cancelledAt)
+            {
+                throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started can not be cancelled");
+            }
+            if (Status != RequestStatus.Approved)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only approved requests can be cancelled.");
+            }
+
+            Status = RequestStatus.CancelledByBroker;
+            CancelledAt = cancelledAt;
+            CancelledBy = userId;
+            ImpersonatingCanceller = impersonatorId;
+            CancelMessage = cancelMessage;
+            Order.Status = OrderStatus.CancelledByBroker;
+        }
+
         public void CreateRequisition(Requisition requisition)
         {
             if (Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created))

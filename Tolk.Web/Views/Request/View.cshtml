@@ -90,6 +90,39 @@
         {
             <a href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
         }
+        @if (Model.AllowCancellation)
+        {
+            <div class="row">
+                <div class="col-md-8">
+                    <form method="post" class="cancel-form" asp-action="Cancel">
+                        <input asp-for="RequestId" type="hidden" />
+                        <input name="CancelMessage" type="hidden" />
+                        <button class="btn cancel-button btn-warning pull-right">Avboka uppdrag</button>
+                    </form>
+                </div>
+            </div>
+        }
+        <div id="cancelMessageDialog" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Meddelande vid avbokning</h4>
+                        <h6>Du måste ange en orsak till avbokningen. Observera att avbokning, beroende på omständighet, kan vara förknippad med vite.</h6>
+                    </div>
+                    <div class="modal-body">
+                        <form class="do-not-check-dirty">
+                            <form-entry asp-for="CancelMessage" />
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
+                        <button type="button" class="btn btn-default send-message">Skicka</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
         {
             @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
@@ -103,3 +136,13 @@
         }
     </div>
 </div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+

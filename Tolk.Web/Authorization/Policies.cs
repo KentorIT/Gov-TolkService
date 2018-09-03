@@ -62,9 +62,17 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Request request:
-                    return request.Order.CreatedBy == context.User.GetUserId() &&
+                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return request.Order.CreatedBy == context.User.GetUserId() &&
                         (request.Order.Status == OrderStatus.Requested || request.Order.Status == OrderStatus.RequestResponded || request.Order.Status == OrderStatus.ResponseAccepted || request.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
                         (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+                    }
+                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return request.Ranking.BrokerId == context.User.GetBrokerId() && request.Status == RequestStatus.Approved && request.Order.Status == OrderStatus.ResponseAccepted;
+                    }
+                    return false;
                 default:
                     throw new NotImplementedException();
             }
@@ -116,7 +124,7 @@ namespace Tolk.Web.Authorization
                     //TODO: Validate that the has the correct state, is connected to the user
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
                 case Requisition requisition:
-                    return requisition.Request.Order.CreatedBy == userId || 
+                    return requisition.Request.Order.CreatedBy == userId ||
                         requisition.Request.Order.ContactPersonId == userId;
                 default:
                     throw new NotImplementedException();

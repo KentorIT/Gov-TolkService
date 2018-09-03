@@ -35,6 +35,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolktillsättning finns (Ny tolk)")]
         RequestRespondedNewInterpreter = 10,
         [Description("Avbokning bekräftad av förmedling")]
-        CancelledByCreatorConfirmed = 11
+        CancelledByCreatorConfirmed = 11,
+        [Description("Uppdraget har avbokats av förmedling")]
+        CancelledByBroker = 12
     }
 }
