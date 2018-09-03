@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
@@ -12,7 +13,7 @@ namespace Tolk.Web.Models.AccountViewModels
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required]
+        [ClientRequired]
         [DataType(DataType.Password)]
         [Display(Name = "Lösenord")]
         public string Password { get; set; }

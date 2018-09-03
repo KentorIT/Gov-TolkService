@@ -63,6 +63,8 @@ namespace Tolk.Web
                 .AddEntityFrameworkStores<TolkDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddTransient<LoginLinkTokenProvider>();
+
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
             services.AddScoped<PriceCalculationService>();

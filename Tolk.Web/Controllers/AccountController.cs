@@ -39,6 +39,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
+        private readonly LoginLinkTokenProvider _loginLinkTokenProvider;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -50,8 +51,8 @@ namespace Tolk.Web.Controllers
             UserService userService,
             IOptions<TolkOptions> options,
             ISwedishClock clock,
-            IdentityErrorDescriber identityErrorDescriber
-            )
+            IdentityErrorDescriber identityErrorDescriber,
+            LoginLinkTokenProvider loginLinkTokenProvider)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -63,6 +64,7 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
+            _loginLinkTokenProvider = loginLinkTokenProvider;
         }
 
         public async Task<IActionResult> Index()
@@ -158,26 +160,105 @@ supporten på {_options.SupportEmail}";
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
-                if (result.Succeeded)
+                if(string.IsNullOrEmpty(model.Password))
                 {
-                    _logger.LogInformation("User {userName} logged in.", model.Email);
-                    return RedirectToLocal(returnUrl);
+                    return await SendEmailLoginLink(model.Email);
                 }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account {userName} locked out.", model.Email);
-                    return RedirectToAction(nameof(Lockout));
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
-                    return View(model);
-                }
+
+                return await PasswordLogin(model, returnUrl);
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        private async Task<IActionResult> SendEmailLoginLink(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if(user != null)
+            {
+                var token = await _loginLinkTokenProvider.GenerateAsync(_userManager, user);
+
+                var url = Request.Scheme + "://" + Request.Host + Url.Action(nameof(EmailLinkLogin), new { token });
+
+                var body =
+$@"Hej!
+
+För att logga in i {Constants.SystemName}, vänligen klicka på nedanstående länk eller klistra in den i din webbläsare.
+
+{url}
+
+Vid frågor, vänligen kontakta {_options.SupportEmail}";
+
+                var subject = $"Inloggning {Constants.SystemName}";
+
+                _dbContext.Add(new OutboundEmail(
+                    user.Email,
+                    subject,
+                    body,
+                    _clock.SwedenNow));
+
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(EmailLinkSent));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> EmailLinkLogin(string token)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var result = await _loginLinkTokenProvider.ValidateAsync(token, _userManager);
+
+            if(result == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            // If we're already logged in as the user from the link, just accept the link
+            // as convenience to the user. They probably just use the e-mail as a bookmark...
+            if (user == null || result.UserId != user.Id)
+            {
+                user = await _userManager.FindByIdAsync(result.UserId.ToString());
+
+                if (result.Expired)
+                {
+                    return await SendEmailLoginLink(user.Email);
+                }
+
+                await _signInManager.SignInAsync(user, isPersistent: true);
+            }
+
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+
+        private async Task<IActionResult> PasswordLogin(LoginViewModel model, string returnUrl)
+        {
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("User {userName} logged in.", model.Email);
+                return RedirectToLocal(returnUrl);
+            }
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("User account {userName} locked out.", model.Email);
+                return RedirectToAction(nameof(Lockout));
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult EmailLinkSent()
+        {
+            return View();
         }
 
         [HttpGet]
