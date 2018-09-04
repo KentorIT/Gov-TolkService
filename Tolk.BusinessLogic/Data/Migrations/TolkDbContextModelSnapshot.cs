@@ -408,7 +408,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("RegionId");
 
-                    b.Property<int>("RequiredCompetenceLevel");
+                    b.Property<bool>("SpecificCompetenceLevelRequired");
 
                     b.Property<DateTimeOffset>("StartAt");
 
@@ -438,6 +438,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("RegionId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
+                {
+                    b.Property<int>("OrderCompetenceRequirementId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CompetenceLevel");
+
+                    b.Property<int>("OrderId");
+
+                    b.Property<int?>("Rank");
+
+                    b.HasKey("OrderCompetenceRequirementId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderCompetenceRequirements");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -1004,6 +1023,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
                         .WithMany()
                         .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("OrderCompetenceRequirements")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

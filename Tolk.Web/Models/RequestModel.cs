@@ -44,7 +44,7 @@ namespace Tolk.Web.Models
 
         [Required]
         [Display(Name = "Tolkens kompetensnivå")]
-        public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Required]
         [Display(Name = "Tolk")]
@@ -113,7 +113,7 @@ namespace Tolk.Web.Models
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.User.UserName,
-                CompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
+                InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 RequisitionId = request.Requisitions?.FirstOrDefault(req => req.Status == RequisitionStatus.Created || req.Status == RequisitionStatus.Approved)?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel

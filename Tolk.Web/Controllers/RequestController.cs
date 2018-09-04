@@ -87,6 +87,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.RequirementAnswers)
@@ -112,6 +113,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
 
@@ -138,6 +140,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Ranking)
                 .Include(r => r.RequirementAnswers)
                 .Single(o => o.RequestId == id);
@@ -162,6 +165,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.Interpreter).ThenInclude(i => i.User)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Order.ContactPersonUser)
@@ -198,7 +202,7 @@ namespace Tolk.Web.Controllers
                             interpreterId,
                             model.ExpectedTravelCosts,
                             model.InterpreterLocation,
-                            model.CompetenceLevel,
+                            model.InterpreterCompetenceLevel,
                             model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                             {
                                 RequestId = request.RequestId,
@@ -206,7 +210,7 @@ namespace Tolk.Web.Controllers
                                 Answer = ra.Answer,
                                 CanSatisfyRequirement = ra.CanMeetRequirement
                             }),
-                            GetPrices(request, model.CompetenceLevel.Value)
+                            GetPrices(request, model.InterpreterCompetenceLevel.Value)
                         );
                     }
                     CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
@@ -258,7 +262,7 @@ namespace Tolk.Web.Controllers
                 interpreterId,
                 model.ExpectedTravelCosts,
                 model.InterpreterLocation,
-                model.CompetenceLevel,
+                model.InterpreterCompetenceLevel,
                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                 {
                     RequestId = newRequest.RequestId,
@@ -266,7 +270,7 @@ namespace Tolk.Web.Controllers
                     Answer = ra.Answer,
                     CanSatisfyRequirement = ra.CanMeetRequirement
                 }),
-                GetPrices(request, model.CompetenceLevel.Value),
+                GetPrices(request, model.InterpreterCompetenceLevel.Value),
                 !request.Order.AllowMoreThanTwoHoursTravelTime,
                 request
                  );
@@ -337,11 +341,12 @@ namespace Tolk.Web.Controllers
         private RequestModel GetModel(Request request)
         {
             var model = RequestModel.GetModelFromRequest(request);
-            model.CalculatedPrice = GetPrices(request, model.OrderModel.RequiredCompetenceLevel).TotalPrice;
+            model.CalculatedPrice = GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(model.OrderModel.RequestedCompetenceLevels)).TotalPrice;
             if (request.InterpreterLocation != null)
             {
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
             }
+            
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow);
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;

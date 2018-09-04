@@ -186,6 +186,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OrderRequirement> OrderRequirements { get; set; }
 
+        public DbSet<OrderCompetenceRequirement> OrderCompetenceRequirements { get; set; }
+
         public DbSet<Order> Orders { get; set; }
 
         public DbSet<OrderPriceRow> OrderPriceRows { get; set; }

@@ -87,9 +87,24 @@ namespace Tolk.Web.Models
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
-        [Display(Name = "Beställd kompetensnivå")]
-        [Required]
-        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
+        [Display(Name = "Kompetensnivå är ett krav")]
+        public bool SpecificCompetenceLevelRequired { get; set; }
+
+        [Display(Name = "Kravade kompetensnivåer")]
+        [ClientRequired]
+        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelFirst { get; set; }
+
+        [NoDisplayName]
+        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
+
+        [Display(Name = "Önskade kompetensnivåer")]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
+
+        [NoDisplayName]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelSecond { get; set; }
+
+        [NoDisplayName]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
         [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -141,7 +156,7 @@ namespace Tolk.Web.Models
         public string InterpreterName { get; set; }
 
         [Display(Name = "Tolkens kompetensnivå")]
-        public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Display(Name = "Inställelsesätt enl. svar")]
         public InterpreterLocation InterpreterLocationAnswer { get; set; }
@@ -192,6 +207,42 @@ namespace Tolk.Web.Models
         [Display(Name = "Reklamationens beskriving")]
         public string ComplaintMessage { get; set; }
 
+        public List<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
+        {
+            get
+            {
+                List<CompetenceAndSpecialistLevel> list = new List<CompetenceAndSpecialistLevel>();
+                if (SpecificCompetenceLevelRequired)
+                {
+                    if (RequiredCompetenceLevelFirst.HasValue)
+                    {
+                        list.Add(RequiredCompetenceLevelFirst.Value);
+                    }
+                    if (RequiredCompetenceLevelSecond.HasValue)
+                    {
+                        list.Add(RequiredCompetenceLevelSecond.Value);
+                    }
+                }
+                else
+                {
+                    if (RequestedCompetenceLevelFirst.HasValue)
+                    {
+                        list.Add(RequestedCompetenceLevelFirst.Value);
+                    }
+                    if (RequestedCompetenceLevelSecond.HasValue)
+                    {
+                        list.Add(RequestedCompetenceLevelSecond.Value);
+                    }
+                    if (RequestedCompetenceLevelThird.HasValue)
+                    {
+                        list.Add(RequestedCompetenceLevelThird.Value);
+                    }
+                }
+                
+                return list;
+            }
+        }
+
         #region methods
 
         public void UpdateOrder(Order order)
@@ -212,7 +263,7 @@ namespace Tolk.Web.Models
             order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
             order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
             order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
-            order.RequiredCompetenceLevel = RequiredCompetenceLevel;
+            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
             if (UseRankedInterpreterLocation)
             {
                 //Add one(3) rows to OrderInterpreterLocation
@@ -249,11 +300,74 @@ namespace Tolk.Web.Models
                     requirement.Description = req.RequirementDescription;
                 }
             }
+            // OrderCompetenceRequirements
+            if (RequestedCompetenceLevels.Count > 0)
+            {
+                if (SpecificCompetenceLevelRequired)
+                {
+                    if (RequiredCompetenceLevelFirst.HasValue)
+                    {
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        {
+                            CompetenceLevel = RequiredCompetenceLevelFirst.Value,
+                        });
+                    }
+                    if (RequiredCompetenceLevelSecond.HasValue)
+                    {
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        {
+                            CompetenceLevel = RequiredCompetenceLevelSecond.Value,
+                        });
+                    }
+                }
+                else
+                {
+                    // Counting rank for cases where e.g. first option is undefined, but second and third are defined
+                    int rank = 0;
+                    if (RequestedCompetenceLevelFirst.HasValue)
+                    {
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        {
+                            CompetenceLevel = RequestedCompetenceLevelFirst.Value,
+                            Rank = ++rank
+                        });
+                    }
+                    if (RequestedCompetenceLevelSecond.HasValue)
+                    {
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        {
+                            CompetenceLevel = RequestedCompetenceLevelSecond.Value,
+                            Rank = ++rank
+                        });
+                    }
+                    if (RequestedCompetenceLevelThird.HasValue)
+                    {
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        {
+                            CompetenceLevel = RequestedCompetenceLevelThird.Value,
+                            Rank = ++rank
+                        });
+                    }
+                }
+            }
         }
 
         public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
+            
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+            var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank,
+            }).ToList();
+            if (!order.SpecificCompetenceLevelRequired)
+            {
+                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank ).ToList();
+            }
+            var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+            var competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
             return new OrderModel
             {
                 OrderId = order.OrderId,
@@ -281,7 +395,12 @@ namespace Tolk.Web.Models
                 LocationCity = order.City,
                 OffSiteAssignmentType = order.OffSiteAssignmentType,
                 OffSiteContactInformation = order.OffSiteContactInformation,
-                RequiredCompetenceLevel = order.RequiredCompetenceLevel,
+                SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
+                RequiredCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
+                RequiredCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
+                RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
+                RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
                 Status = order.Status,
                 UseRankedInterpreterLocation = useRankedInterpreterLocation,
                 InterpreterLocation = !useRankedInterpreterLocation ? (InterpreterLocation?)order.InterpreterLocations.Single().InterpreterLocation : null,

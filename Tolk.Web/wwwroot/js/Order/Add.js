@@ -2,6 +2,14 @@
 $(function () {
     var currentId = 0;
 
+    {
+        // Add ranking
+        var i = 0;
+        $("#competence-requested > .competence-level").each(function () {
+            $(this).find(".select2").before("<div class=\"competence-ranking-num\">" + ++i + ".</span>");
+        });
+    }
+
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -170,6 +178,19 @@ $(function () {
         }
     });
 
+    $("body").on("change", "#SpecificCompetenceLevelRequired :checkbox", function () {
+        if (this.checked) {
+            // Is requirement
+            $("#competence-requested").hide();
+            $("#competence-required").show();
+        }
+        else {
+            // Is request
+            $("#competence-required").hide();
+            $("#competence-requested").show();
+        }
+    });
+
     var toggleOtherLanguage = function (id) {
         if (id === $("#OtherLanguageId").val()) {
             $('#other-language').collapse('show');
@@ -181,4 +202,5 @@ $(function () {
 
     // Triggers (handlers cannot be triggered before being declared)
     $("#AssignmentType").trigger("change");
+    $("#SpecificCompetenceLevelRequired :checkbox").trigger("change");
 });

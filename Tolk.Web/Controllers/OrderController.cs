@@ -102,6 +102,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
+                .Include(o => o.CompetenceRequirements)
                 .Include(o => o.Requirements)
                     .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)
@@ -132,7 +133,7 @@ namespace Tolk.Web.Controllers
                     model.RequestId = request.RequestId;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                     model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
-                    model.CompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel;
+                    model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
                     model.InterpreterName = _dbContext.Requests
                         .Include(r => r.Interpreter)
                         .ThenInclude(i => i.User)
@@ -188,6 +189,7 @@ namespace Tolk.Web.Controllers
                     CustomerOrganisationId = User.GetCustomerOrganisationId(),
                     ImpersonatingCreator = User.TryGetImpersonatorId(),
                     Requirements = new List<OrderRequirement>(),
+                    CompetenceRequirements = new List<OrderCompetenceRequirement>(),
                     InterpreterLocations = new List<OrderInterpreterLocation>(),
                     PriceRows = new List<OrderPriceRow>()
                 };

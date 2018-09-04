@@ -98,7 +98,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string OffSiteContactInformation { get; set; }
 
-        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
+        public bool SpecificCompetenceLevelRequired { get; set; }
 
         public DateTimeOffset StartAt { get; set; }
 
@@ -129,6 +129,8 @@ namespace Tolk.BusinessLogic.Entities
         public List<Request> Requests { get; set; }
 
         public List<OrderRequirement> Requirements { get; set; }
+
+        public List<OrderCompetenceRequirement> CompetenceRequirements { get; set; }
 
         public List<OrderInterpreterLocation> InterpreterLocations { get; set; }
 

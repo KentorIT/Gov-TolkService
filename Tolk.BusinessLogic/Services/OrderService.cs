@@ -278,7 +278,7 @@ namespace Tolk.BusinessLogic.Services
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,
-                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(order.RequiredCompetenceLevel),
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
                 order.CustomerOrganisation.PriceListType,
                 order.Requests.Single(r =>
                     r.Status == RequestStatus.Created ||
@@ -321,6 +321,22 @@ namespace Tolk.BusinessLogic.Services
 
             // TODO Need to get/understand rules for late day before or same day requests.
             return swedenNow.AddHours(1).ToDateTimeOffsetSweden();
+        }
+
+        // This is an auxilary method for calculating initial estimate
+        public static CompetenceAndSpecialistLevel SelectCompetenceLevelForPriceEstimation(IEnumerable<CompetenceAndSpecialistLevel> list)
+        {
+            if (list == null || list.Count() == 0)
+            {
+                // Choose the lowest if no level is specified
+                return CompetenceAndSpecialistLevel.OtherInterpreter;
+            }
+            if (list.Count() == 1)
+            {
+                return list.First();
+            }
+            // Otherwise, base estimation on the highest (and most expensive) competence level
+            return list.OrderByDescending(item => (int)item).First();
         }
     }
 }

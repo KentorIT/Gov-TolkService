@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Tolk.Web.Models;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -190,15 +191,23 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteLabel(TextWriter writer)
         {
-            TagBuilder tagBuilder = GenerateLabel();
+            // Check if label will be displayed
+            var type = For.ModelExplorer.Metadata.ContainerType;
+            var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
+            var IsDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
 
-            if (For.ModelExplorer.Metadata.IsRequired)
+            if (IsDisplayed)
             {
-                tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
-            }
-            tagBuilder.WriteTo(writer, _htmlEncoder);
+                TagBuilder tagBuilder = GenerateLabel();
 
-            WriteInfoIfDescription(writer);
+                if (For.ModelExplorer.Metadata.IsRequired)
+                {
+                    tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
+                }
+                tagBuilder.WriteTo(writer, _htmlEncoder);
+
+                WriteInfoIfDescription(writer);
+            }
         }
 
         private void WriteInfoIfDescription(TextWriter writer)

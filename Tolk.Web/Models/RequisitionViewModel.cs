@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -54,8 +55,26 @@ namespace Tolk.Web.Models
         [Display(Name = "Ort")]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Beställd kompetensnivå")]
-        public CompetenceAndSpecialistLevel RequiredCompetenceLevel { get; set; }
+        [Display(Name = "Krav på kompetensnivå")]
+        public bool SpecificCompetenceLevelRequired { get; set; }
+
+        [Display(Name = "Kravad kompetensnivå")]
+        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelFirst { get; set; }
+
+        [Display(Name = "Alternativ kravad kompetensnivå")]
+        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
+
+        [Display(Name = "Önskad kompetensnivå (förstahand)")]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
+
+        [Display(Name = "Önskad kompetensnivå (andrahand)")]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelSecond { get; set; }
+
+        [Display(Name = "Önskad kompetensnivå (tredjehand)")]
+        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
+
+        [Display(Name = "Tolkens faktiska kompetensnivå")]
+        public CompetenceAndSpecialistLevel? InterpretersCompetenceLevel { get; set; }
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -90,6 +109,19 @@ namespace Tolk.Web.Models
 
         public static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)
         {
+            var competenceLevels = requisition.Request.Order.CompetenceRequirements
+                .Select(item => new OrderCompetenceRequirement
+                {
+                    CompetenceLevel = item.CompetenceLevel,
+                    Rank = item.Rank,
+                }).ToList();
+            if (!requisition.Request.Order.SpecificCompetenceLevelRequired)
+            {
+                competenceLevels = competenceLevels.OrderBy(l => l.Rank).ToList();
+            }
+            var competenceFirst = competenceLevels.Count > 0 ? competenceLevels[0] : null;
+            var competenceSecond = competenceLevels.Count > 1 ? competenceLevels[1] : null;
+            var competenceThird = competenceLevels.Count > 2 ? competenceLevels[2] : null;
             return new RequisitionViewModel
             {
                 RequestId = requisition.RequestId,
@@ -111,14 +143,20 @@ namespace Tolk.Web.Models
                 StoredTimeWasteAfterEndedAt = requisition.TimeWasteAfterEndedAt ?? requisition.SessionEndedAt,
                 //TODO: Should be Name!
                 InterpreterName = requisition.Request.Interpreter.User.Email,
-                InterpreterLocation = (InterpreterLocation) requisition.Request.InterpreterLocation,
+                InterpreterLocation = (InterpreterLocation)requisition.Request.InterpreterLocation,
+                InterpretersCompetenceLevel = (CompetenceAndSpecialistLevel?)requisition.Request.CompetenceLevel,
                 OffSiteAssignmentType = requisition.Request.Order.OffSiteAssignmentType,
                 OffSiteContactInformation = requisition.Request.Order.OffSiteContactInformation,
                 LocationStreet = requisition.Request.Order.Street,
                 LocationZipCode = requisition.Request.Order.ZipCode,
                 LocationCity = requisition.Request.Order.City,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
-                RequiredCompetenceLevel = requisition.Request.Order.RequiredCompetenceLevel,
+                SpecificCompetenceLevelRequired = requisition.Request.Order.SpecificCompetenceLevelRequired,
+                RequiredCompetenceLevelFirst = requisition.Request.Order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
+                RequiredCompetenceLevelSecond = requisition.Request.Order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
+                RequestedCompetenceLevelFirst = requisition.Request.Order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = requisition.Request.Order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
+                RequestedCompetenceLevelThird = requisition.Request.Order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
                 AllowMoreThanTwoHoursTravelTime = requisition.Request.Order.AllowMoreThanTwoHoursTravelTime,
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,

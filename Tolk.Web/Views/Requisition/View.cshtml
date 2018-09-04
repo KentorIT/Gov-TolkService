@@ -25,7 +25,34 @@
         <display-entry asp-for="LocationCity" />
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="RequiredCompetenceLevel" />
+        <display-entry asp-for="SpecificCompetenceLevelRequired" />
+        @if (Model.SpecificCompetenceLevelRequired)
+        {
+            @if (Model.RequiredCompetenceLevelFirst.HasValue)
+            {
+                <display-entry asp-for="RequiredCompetenceLevelFirst" />
+            }
+            @if (Model.RequiredCompetenceLevelSecond.HasValue)
+            {
+                <display-entry asp-for="RequiredCompetenceLevelSecond" />
+            }
+        }
+        else
+        {
+            @if (Model.RequestedCompetenceLevelFirst.HasValue)
+            {
+                <display-entry asp-for="RequestedCompetenceLevelFirst" />
+            }
+            @if (Model.RequestedCompetenceLevelSecond.HasValue)
+            {
+                <display-entry asp-for="RequestedCompetenceLevelSecond" />
+            }
+            @if (Model.RequestedCompetenceLevelThird.HasValue)
+            {
+                <display-entry asp-for="RequestedCompetenceLevelThird" />
+            }
+        }
+        <display-entry asp-for="InterpretersCompetenceLevel" />
         <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
         <display-entry asp-for="Status" />
         @if (Model.PreviousRequisition != null)

@@ -12,6 +12,9 @@
   <ItemGroup>
     <Compile Remove="Data\Migrations\20180524143518_RankinStartEndDateNonAmbigous.cs" />
     <Compile Remove="Data\Migrations\20180525091610_RankingDatesNonAmbigous.cs" />
+    <Compile Remove="Data\Migrations\20180831121704_OrderCompetenceRequirements.cs" />
+    <Compile Remove="Data\Migrations\20180831122947_AddOrderCompetenceRequirement.cs" />
+    <Compile Remove="Data\Migrations\20180831135433_AddOrderCompetenceRequirement.cs" />
   </ItemGroup>
 
   <ItemGroup>

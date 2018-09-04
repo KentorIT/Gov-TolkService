@@ -54,7 +54,40 @@
             <display-entry asp-for="OffSiteAssignmentType" />
             <display-entry asp-for="OffSiteContactInformation" />
         }
-        <display-entry asp-for="RequiredCompetenceLevel" />
+        <display-entry asp-for="SpecificCompetenceLevelRequired" />
+        @if (Model.RequestedCompetenceLevels.Count != 0)
+        {
+            @if (Model.SpecificCompetenceLevelRequired)
+            {
+                @if (Model.RequiredCompetenceLevelFirst.HasValue)
+                {
+                    <display-entry asp-for="RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
+                }
+                @if (Model.RequiredCompetenceLevelSecond.HasValue)
+                {
+                    <display-entry asp-for="RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                }
+            }
+            else
+            {
+                @if (Model.RequestedCompetenceLevelFirst.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                }
+                @if (Model.RequestedCompetenceLevelSecond.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                }
+                @if (Model.RequestedCompetenceLevelThird.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
+                }
+            }
+        }
+        else
+        {
+            <span>Inga önskemål kring kompetensnivå</span> <br /><br />
+        }
         <display-entry asp-for="TimeRange" />
         <display-entry asp-for="Description" />
         <display-entry asp-for="BrokerName" />
@@ -123,12 +156,12 @@
         @if (Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="InterpreterName" />
-            <display-entry asp-for="CompetenceLevel" />
+            <display-entry asp-for="InterpreterCompetenceLevel" />
 
-            @if (Model.RequiredCompetenceLevel != Model.CompetenceLevel)
+            @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
                 <span>
-                    Observera att den beställda kompetensnivån är @EnumHelper.GetDescription(Model.RequiredCompetenceLevel)<br /><br />
+                    Observera att tolken ej matchar den beställda kompetensnivån<br /><br />
                 </span>
             }
             <display-entry asp-for="InterpreterLocationAnswer" />

@@ -16,7 +16,7 @@ namespace Tolk.Web.Models
         public int RequestId { get; set; }
 
         [Required]
-        public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         public int InterpreterId { get; set; }
 
