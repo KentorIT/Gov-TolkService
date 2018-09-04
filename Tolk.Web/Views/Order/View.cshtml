@@ -210,6 +210,17 @@
     <display-entry asp-for="ComplaintMessage" />
     <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
 }
+@if (Model.Status == OrderStatus.CancelledByBroker)
+{
+    @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+    {
+        <display-entry asp-for="CancelMessage" />
+    }
+    <form method="post" asp-action="ConfirmCancellation">
+        <input asp-for="RequestId" type="hidden" />
+        <button class="btn btn-danger">Bekräfta avbokning</button>
+    </form>
+}
 
 <div id="cancelMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">

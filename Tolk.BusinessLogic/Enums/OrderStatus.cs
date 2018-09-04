@@ -37,6 +37,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Avbokning bekräftad av förmedling")]
         CancelledByCreatorConfirmed = 11,
         [Description("Uppdraget har avbokats av förmedling")]
-        CancelledByBroker = 12
+        CancelledByBroker = 12,
+        [Description("Avbokning bekräftad av avropare")]
+        CancelledByBrokerConfirmed = 13
     }
 }

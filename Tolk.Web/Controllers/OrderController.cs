@@ -289,6 +289,28 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        public async Task<IActionResult> ConfirmCancellation(int requestId)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order)
+                .Single(r => r.RequestId == requestId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded)
+            {
+                request.Status = RequestStatus.CancelledByBrokerConfirmed;
+                request.CancelConfirmedAt = _clock.SwedenNow;
+                request.CancelConfirmedBy = User.GetUserId();
+                request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
+                request.Order.Status = OrderStatus.CancelledByBrokerConfirmed;
+                _dbContext.SaveChanges();
+                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
             var order = await _dbContext.Orders.Include(o => o.Requests)

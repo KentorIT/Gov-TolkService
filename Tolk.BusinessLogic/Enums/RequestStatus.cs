@@ -34,7 +34,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolk har ersatts")]
         InterpreterReplaced = 13,
         [Description("Avbokad av tolkförmedling")]
-        CancelledByBroker = 14
-
+        CancelledByBroker = 14,
+        [Description("Avbokning bekräftad av avropare")]
+        CancelledByBrokerConfirmed = 15
     }
 }

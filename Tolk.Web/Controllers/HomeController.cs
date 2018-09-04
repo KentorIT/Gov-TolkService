@@ -150,6 +150,21 @@ namespace Tolk.Web.Controllers
                     }
                 };
             }
+
+            count = _dbContext.Orders.Where(o => o.Status == OrderStatus.CancelledByBroker && 
+                o.CreatedBy == User.GetUserId()).Count();
+
+            if (count > 0)
+            {
+                yield return new StartViewModel.StartPageBox
+                {
+                    Count = count,
+                    Header = "Avbokade avrop från förmedling",
+                    Controller = "Order",
+                    Action = "List",
+                    Filters = new Dictionary<string, string> { { "Status", OrderStatus.CancelledByBroker.ToString() } }
+                };
+            }
         }
 
         private IEnumerable<StartViewModel.StartPageBox> GetBrokerStartPageBoxes()
@@ -209,7 +224,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Avbokade förfrågningar",
+                    Header = "Avbokade förfrågningar från kund",
                     Controller = "Request",
                     Action = "List",
                     Filters = new Dictionary<string, string> {
