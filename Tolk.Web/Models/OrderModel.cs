@@ -271,6 +271,7 @@ namespace Tolk.Web.Models
             order.City = UseAddress ? LocationCity : null;
             order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
             order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
+            order.ContactPersonId = ContactPersonId;
             if (isReplace)
             {
                 order.ReplacingOrderId = ReplacingOrderId;
@@ -280,7 +281,6 @@ namespace Tolk.Web.Models
                 order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId;
-                order.ContactPersonId = ContactPersonId;
                 order.AssignentType = AssignmentType;
                 order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
 	        order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;

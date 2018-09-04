@@ -155,18 +155,14 @@ namespace Tolk.BusinessLogic.Entities
             if (newRequestExpiry.AddHours(1) > StartAt)
             {
                 // For now, require response time to end at least one hour before start of assignment.
+                Status = OrderStatus.NoBrokerAcceptedOrder;
                 return null;
-            }
-
-            if (Requests == null)
-            {
-                Requests = new List<Request>();
             }
 
             var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
 
-            var ranking = rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId))
-                .OrderBy(r => r.RankingId).FirstOrDefault();
+            var ranking = ReplacingOrderId.HasValue && brokersWithRequest.Any() ? null :
+                rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId)).OrderBy(r => r.RankingId).FirstOrDefault();
 
             if (ranking == null)
             {

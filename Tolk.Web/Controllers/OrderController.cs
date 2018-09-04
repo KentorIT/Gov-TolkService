@@ -190,7 +190,8 @@ namespace Tolk.Web.Controllers
                 {
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
-                        //TODO: Handle this better. Preferably with a list that you can use contains on
+                        //TODO: Handle this better. Preferably with a list that you can use contains on,
+                        //OR a property on order!! Should probably throw null pointer exeption if Requests are not included.
                         var request = order.Requests.SingleOrDefault(r =>
                         r.Status == RequestStatus.Created ||
                         r.Status == RequestStatus.Received ||
@@ -205,7 +206,7 @@ namespace Tolk.Web.Controllers
                         order.MakeCopy(replacementOrder, request.RequestId, replacingRequest.RequestId);
                         model.UpdateOrder(replacementOrder, true);
                         //copy the request.
-                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isReplaced : true);
                         //Genarate new price rows from current times, might be subject to change!!!
                         _orderService.CreatePriceInformation(replacementOrder);
                         var brokerEmail = _dbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
@@ -233,8 +234,8 @@ namespace Tolk.Web.Controllers
                         _dbContext.SaveChanges();
                         //Close the replaced order as cancelled
                         trn.Commit();
+                        return RedirectToAction(nameof(View), new { id = replacementOrder.OrderId });
                     }
-                    return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
             }
             return View(model);
@@ -246,16 +247,19 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                Order order = CreateNewOrder();
-                model.UpdateOrder(order);
-                _dbContext.Add(order);
+                using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                {
+                    Order order = CreateNewOrder();
+                    model.UpdateOrder(order);
+                    _dbContext.Add(order);
 
-                await _orderService.CreateRequest(order);
-                _orderService.CreatePriceInformation(order);
+                    await _orderService.CreateRequest(order);
+                    _orderService.CreatePriceInformation(order);
 
-                _dbContext.SaveChanges();
-
-                return RedirectToAction(nameof(View), new { id = order.OrderId });
+                    _dbContext.SaveChanges();
+                    trn.Commit();
+                    return RedirectToAction(nameof(View), new { id = order.OrderId });
+                }
             }
             return View("Edit", model);
         }

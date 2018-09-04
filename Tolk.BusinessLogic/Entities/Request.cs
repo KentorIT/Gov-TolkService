@@ -287,7 +287,7 @@ namespace Tolk.BusinessLogic.Entities
             DenyMessage = message;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false)
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false)
         {
             if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.RequestRespondedNewInterpreter && Order.Status != OrderStatus.ResponseAccepted)
             {
@@ -317,7 +317,7 @@ namespace Tolk.BusinessLogic.Entities
                     }
                 );
             }
-            Status = Status == RequestStatus.Approved ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
+            Status = Status == RequestStatus.Approved && !isReplaced ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;
             ImpersonatingCanceller = impersonatorId;

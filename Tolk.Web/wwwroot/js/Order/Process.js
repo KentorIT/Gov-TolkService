@@ -25,7 +25,7 @@
         var $form = $(this).parents(".modal-content").find("form");
         if ($form.valid()) {
             $('.cancel-form [name="CancelMessage"]').val($form.find("#CancelMessage").val());
-            $('.cancel-form [name="AddReplacementOrder"]').val($form.find("#AddReplacementOrder").val());
+            $('.cancel-form [name="AddReplacementOrder"]').val($form.find("#AddReplacementOrder").is(":checked"));
             $(".cancel-form").submit();
             $("#denyMessageDialog").modal("hide");
         }
