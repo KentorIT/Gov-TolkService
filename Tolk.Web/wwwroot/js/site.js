@@ -77,18 +77,14 @@ $(function () {
         var allowClear = $(this).parent().hasClass("allow-clear");
         $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });
     });
-    $("body").on("click", "table.clickable-rows > tbody > tr > td", function () {
-        var $table = $(this).parents("table.clickable-rows");
-        var $parameterName = $table.data("click-parameter");
-        var $parameter = $(this).parent("tr").data($parameterName);
-        window.location.href = tolkBaseUrl + $table.data("click-controller") + "/" + $table.data("click-action") + "?" + $parameterName + "=" + $parameter;
-    });
+  
     $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
         var $row = $(this).closest("tr");
         window.location.href = $row.data("click-action-url");
     });
  
 });
+
 $.fn.extend({
     bindEnterKey: function (input, button, context) {
         var $context = context ? $(context) : $(this);

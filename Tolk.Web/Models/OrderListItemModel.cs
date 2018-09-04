@@ -12,6 +12,8 @@ namespace Tolk.Web.Models
 {
     public class OrderListItemModel
     {
+        public string Action { get; set; }
+
         public int OrderId { get; set; }
 
         public OrderStatus Status { get; set; }

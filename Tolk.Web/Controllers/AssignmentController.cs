@@ -56,7 +56,7 @@ namespace Tolk.Web.Controllers
             {
                 requests = filterModel.Apply(requests, _clock);
             }
-            
+
             return View(
                new AssignmentListModel
                {
@@ -70,7 +70,8 @@ namespace Tolk.Web.Controllers
                        RegionName = r.Order.Region.Name,
                        Start = r.Order.StartAt,
                        End = r.Order.EndAt,
-                       Status = r.Status
+                       Status = r.Status,
+                       Action = nameof(View)
                    })
                });
         }

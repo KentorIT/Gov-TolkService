@@ -84,8 +84,10 @@ namespace Tolk.Web.Controllers
                             r.Status == RequestStatus.Accepted ||
                             r.Status == RequestStatus.Approved ||
                             r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                            .Select(r => r.Ranking.Broker.Name).FirstOrDefault()
+                            .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
+                        Action = nameof(View)
                     })
+                    
                 });
         }
 
