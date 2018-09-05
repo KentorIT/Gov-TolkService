@@ -277,7 +277,7 @@ namespace Tolk.BusinessLogic.Entities
             DenyMessage = message;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createRequisition)
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition)
         {
             if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.RequestRespondedNewInterpreter && Order.Status != OrderStatus.ResponseAccepted)
             {
@@ -291,7 +291,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only active requests can be cancelled.");
             }
-            if (Status == RequestStatus.Approved && createRequisition)
+            if (Status == RequestStatus.Approved)
             {
                 Requisitions.Add(
                     new Requisition
@@ -299,28 +299,33 @@ namespace Tolk.BusinessLogic.Entities
                         CreatedAt = cancelledAt,
                         CreatedBy = userId,
                         ImpersonatingCreatedBy = impersonatorId,
-                        Message = "Genererat av systemet, eftersom tillfället avbokades för tätt inpå",
+                        Message = createFullCompensationRequisition ? "Genererat av systemet, eftersom tillfället avbokades för tätt inpå" : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår",
                         Status = RequisitionStatus.AutomaticApprovalFromCancelledOrder,
                         SessionStartedAt = Order.StartAt,
                         SessionEndedAt = Order.EndAt,
-                        PriceRows = PriceRows.Select(p => new RequisitionPriceRow
-                        {
-                            StartAt = p.StartAt,
-                            EndAt = p.EndAt,
-                            IsBrokerFee = p.IsBrokerFee,
-                            PriceListRowId = p.PriceListRowId,
-                        }).ToList()
+                        PriceRows = GetPriceRows(createFullCompensationRequisition)
                     }
                 );
             }
-
             Status = Status == RequestStatus.Approved ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;
             ImpersonatingCanceller = impersonatorId;
             CancelMessage = message;
-
             Order.Status = OrderStatus.CancelledByCreator;
+        }
+        private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
+        {
+            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.IsBrokerFee).ToList();
+            return priceRows
+                .Select(p => new RequisitionPriceRow
+                {
+                    StartAt = p.StartAt,
+                    EndAt = p.EndAt,
+                    IsBrokerFee = p.IsBrokerFee,
+                    PriceListRowId = p.PriceListRowId,
+                    TotalPrice = p.TotalPrice
+                }).ToList();
         }
 
         public void CancelByBroker(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string cancelMessage)

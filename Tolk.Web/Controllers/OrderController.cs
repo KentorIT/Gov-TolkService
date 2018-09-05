@@ -274,12 +274,12 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
             {
                 var now = _clock.SwedenNow;
-                //If this is an approved request, and the cancellation is done to late, a requisition will be created.
-                bool createRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;
+                //If this is an approved request, and the cancellation is done to late, a complete requisition will be created (full compensation).
+                bool createFullCompensationRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;
                 bool isApprovedRequest = request.Status == RequestStatus.Approved;
-                request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createRequisition);
+                request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createFullCompensationRequisition);
 
-                CreateEmailOnOrderCancellation(request, isApprovedRequest, createRequisition);
+                CreateEmailOnOrderCancellation(request, isApprovedRequest, createFullCompensationRequisition);
 
                 _dbContext.SaveChanges();
                 return RedirectToAction(nameof(View), new { id = model.OrderId });
@@ -363,7 +363,7 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private void CreateEmailOnOrderCancellation(Request request, bool requestWasApproved, bool willGetInvoiced)
+        private void CreateEmailOnOrderCancellation(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
         {
             string orderNumber = request.Order.OrderNumber;
             if (requestWasApproved)
@@ -374,9 +374,9 @@ namespace Tolk.Web.Controllers
                     _dbContext.Add(new OutboundEmail(
                         interpreter,
                         $"Avbokat avrop avrops-ID {orderNumber}",
-                        $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (willGetInvoiced ? "Uppdraget får faktureras eftersom avbokningen skedde så nära inpå." : string.Empty) +
+                        (createFullCompensationRequisition ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : "\nFörmedlingsavgift utgår som får faktureras") +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
                 }
@@ -393,9 +393,9 @@ namespace Tolk.Web.Controllers
                     _dbContext.Add(new OutboundEmail(
                         broker,
                         $"Avbokat avrop avrops-ID {orderNumber}",
-                        $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (willGetInvoiced ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : string.Empty) +
+                        (createFullCompensationRequisition ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : "\nFörmedlingsavgift utgår som får faktureras") +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
                 }
@@ -404,7 +404,7 @@ namespace Tolk.Web.Controllers
                     _dbContext.Add(new OutboundEmail(
                         broker,
                         $"Avbokad förfrågan avrops-ID {request.Order.OrderNumber}",
-                        $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n {request.CancelMessage}\n" +
+                        $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
