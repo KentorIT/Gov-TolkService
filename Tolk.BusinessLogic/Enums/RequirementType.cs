@@ -26,10 +26,7 @@ namespace Tolk.BusinessLogic.Enums
         HasRegisterCheck = 6,
 
         [Description("Särskilda egenskaper eller kunskaper")]
-        SpecialQualities = 7,
-
-        [Description("Övrigt")]
-        Other = 8,
+        SpecialQualities = 7
     }
 }
 
