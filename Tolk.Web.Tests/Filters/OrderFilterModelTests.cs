@@ -331,5 +331,43 @@ namespace Tolk.Web.Tests.Filters
 
             listSecond.Should().OnlyContain(o => o == orders[0]);
         }
+
+        [Fact]
+        public void OrderFilter_DateInclusivity()
+        {
+            var filter = new OrderFilterModel
+            {
+                DateRange = new DateRange { Start = new DateTime(2018, 06, 07), End = new DateTime(2018, 08, 07) }
+            };
+
+            var list = filter.Apply(orders.AsQueryable());
+
+            list.Should().HaveCount(3);
+            list.Should().Contain(new[] { orders[0], orders[1], orders[2] }, because: "these orders fall within these dates");
+        }
+
+        [Fact]
+        public void OrderFilter_NoSettings()
+        {
+            var filter = new OrderFilterModel {};
+
+            var list = filter.Apply(orders.AsQueryable());
+
+            list.Should().HaveCount(7);
+            list.Should().Contain(orders, because: "no filter parameters are specified");
+        }
+
+        [Fact]
+        public void OrderFilter_NoResults()
+        {
+            var filter = new OrderFilterModel
+            {
+                BrokerId = 3
+            };
+
+            var list = filter.Apply(orders.AsQueryable());
+
+            list.Should().BeEmpty("no order is assigned to {0}", filter.BrokerId);
+        }
     }
 }
