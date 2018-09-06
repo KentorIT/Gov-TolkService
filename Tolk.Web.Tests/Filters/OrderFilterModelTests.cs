@@ -4,7 +4,6 @@ using System.Text;
 using Tolk.BusinessLogic.Entities;
 using System.Linq;
 using Tolk.Web.Models;
-using Tolk.Web.Tests.TestHelpers;
 using Xunit;
 using FluentAssertions;
 
@@ -273,6 +272,64 @@ namespace Tolk.Web.Tests.Filters
 
             listSecond.Should().HaveCount(2);
             listSecond.Should().Contain(new[] { orders[0], orders[5] });
+        }
+
+        [Fact]
+        public void OrderFilter_ComboByRegionLanguage()
+        {
+            var filterFirst = new OrderFilterModel
+            {
+                LanguageId = mockLanguages
+                    .Where(l => l.Name == "Chinese")
+                    .Select(l => l.LanguageId)
+                    .Single(),
+                RegionId = Region.Regions
+                    .Where(r => r.Name == "Västra Götaland")
+                    .Select(r => r.RegionId)
+                    .Single()
+            };
+            var filterSecond = new OrderFilterModel
+            {
+                LanguageId = mockLanguages
+                    .Where(l => l.Name == "German")
+                    .Select(l => l.LanguageId)
+                    .Single(),
+                RegionId = Region.Regions
+                    .Where(r => r.Name == "Stockholm")
+                    .Select(r => r.RegionId)
+                    .Single()
+            };
+
+            var listFirst = filterFirst.Apply(orders.AsQueryable());
+            var listSecond = filterSecond.Apply(orders.AsQueryable());
+
+            listFirst.Should().HaveCount(2);
+            listFirst.Should().Contain(new[] { orders[3], orders[6] });
+
+            listSecond.Should().OnlyContain(o => o == orders[1] );
+        }
+
+        [Fact]
+        public void OrderFilter_ComboByTimeBroker()
+        {
+            var filterFirst = new OrderFilterModel
+            {
+                DateRange = new DateRange { Start = new DateTime(2018,09,01), End = new DateTime(2018,10,30) },
+                BrokerId = 0
+            };
+            var filterSecond = new OrderFilterModel
+            {
+                DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 08, 31) },
+                BrokerId = 1
+            };
+
+            var listFirst = filterFirst.Apply(orders.AsQueryable());
+            var listSecond = filterSecond.Apply(orders.AsQueryable());
+
+            listFirst.Should().HaveCount(3);
+            listFirst.Should().Contain(new[] { orders[3], orders[4], orders[6], });
+
+            listSecond.Should().OnlyContain(o => o == orders[0]);
         }
     }
 }
