@@ -21,7 +21,6 @@ namespace Tolk.BusinessLogic.Entities
         public Request(Request originalRequest, DateTimeOffset expiry)
         {
             Ranking = originalRequest.Ranking;
-            Order = originalRequest.Order;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
             Interpreter = originalRequest.Interpreter;
@@ -349,7 +348,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only active requests can be cancelled.");
             }
-            if (Status == RequestStatus.Approved)
+            if (Status == RequestStatus.Approved && !isReplaced)
             {
                 Requisitions.Add(
                     new Requisition

@@ -87,7 +87,7 @@ namespace Tolk.Web.Controllers
                             .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
                         Action = nameof(View)
                     })
-                    
+
                 });
         }
 
@@ -116,7 +116,7 @@ namespace Tolk.Web.Controllers
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (model.ActiveRequestIsAnswered)
-                { 
+                {
                     model.CancelMessage = request.CancelMessage;
                     model.CalculatedPriceActiveRequest = request.PriceRows.Sum(p => p.TotalPrice);
                     model.RequestId = request.RequestId;
@@ -198,14 +198,29 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.Approved ||
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
-                        //First, copy all fields from first order not from model.
-                        var replacingRequest = await _orderService.CreateReplacementRequest(model.TimeRange.StartDateTime, request);
                         Order replacementOrder = CreateNewOrder();
-                        replacementOrder.Requests.Add(replacingRequest);
-                        order.MakeCopy(replacementOrder, request.RequestId, replacingRequest.RequestId);
+                        var replacingRequest = new Request(request, _orderService.CalculateExpiryForNewRequest(model.TimeRange.StartDateTime));
+                        order.MakeCopy(replacementOrder);
                         model.UpdateOrder(replacementOrder, true);
-                        //copy the request.
-                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isReplaced : true);
+                        replacementOrder.Requests.Add(replacingRequest);
+                        _dbContext.Add(replacementOrder);
+                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isReplaced: true);
+                        
+                        replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
+                        {
+                            Description = r.Description,
+                            IsRequired = r.IsRequired,
+                            RequirementType = r.RequirementType,
+                            RequirementAnswers = r.RequirementAnswers
+                            .Where(a => a.RequestId == request.RequestId)
+                            .Select(a => new OrderRequirementRequestAnswer
+                            {
+                                Answer = a.Answer,
+                                CanSatisfyRequirement = a.CanSatisfyRequirement,
+                                RequestId = replacingRequest.RequestId
+                            }).ToList(),
+                        }).ToList();
+
                         //Genarate new price rows from current times, might be subject to change!!!
                         _orderService.CreatePriceInformation(replacementOrder);
                         var brokerEmail = _dbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
@@ -229,7 +244,6 @@ namespace Tolk.Web.Controllers
                                request.Ranking.BrokerId);
                         }
 
-                        _dbContext.Add(replacementOrder);
                         _dbContext.SaveChanges();
                         //Close the replaced order as cancelled
                         trn.Commit();
@@ -406,7 +420,8 @@ namespace Tolk.Web.Controllers
                 Requirements = new List<OrderRequirement>(),
                 InterpreterLocations = new List<OrderInterpreterLocation>(),
                 PriceRows = new List<OrderPriceRow>(),
-                Requests = new List<Request>()
+                Requests = new List<Request>(),
+                CompetenceRequirements = new List<OrderCompetenceRequirement>()
             };
         }
 

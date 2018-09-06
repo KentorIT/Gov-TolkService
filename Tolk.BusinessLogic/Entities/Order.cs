@@ -190,7 +190,7 @@ namespace Tolk.BusinessLogic.Entities
             Status = OrderStatus.Delivered;
         }
 
-        public void MakeCopy(Order order, int? originalRequestId, int? replacementRequestId)
+        public void MakeCopy(Order order)
         {
             order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
             order.AssignentType = AssignentType;
@@ -208,20 +208,6 @@ namespace Tolk.BusinessLogic.Entities
             {
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank
-            }).ToList();
-            order.Requirements = Requirements.Select(r => new OrderRequirement
-            {
-                Description = r.Description,
-                IsRequired = r.IsRequired,
-                RequirementType = r.RequirementType,
-                RequirementAnswers = r.RequirementAnswers
-                    .Where(a => a.RequestId == originalRequestId)
-                    .Select(a => new OrderRequirementRequestAnswer
-                    {
-                        Answer = a.Answer,
-                        CanSatisfyRequirement = a.CanSatisfyRequirement,
-                        RequestId = replacementRequestId.Value
-                    }).ToList(),
             }).ToList();
         }
 

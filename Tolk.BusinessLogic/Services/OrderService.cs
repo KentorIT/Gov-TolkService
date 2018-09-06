@@ -268,18 +268,6 @@ namespace Tolk.BusinessLogic.Services
                     order.OrderId);
             }
         }
-        public async Task<Request> CreateReplacementRequest(DateTimeOffset startAt, Request originalRequest)
-        {
-            var newExpiry = CalculateExpiryForNewRequest(startAt);
-
-            var request = new Request(originalRequest, newExpiry);
-            // Save to get ids for the log message.
-
-            await _tolkDbContext.SaveChangesAsync();
-            _logger.LogInformation("Created replacement request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
-                request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
-            return request;
-        }
 
         public void CreatePriceInformation(Order order)
         {
