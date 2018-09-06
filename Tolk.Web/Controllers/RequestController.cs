@@ -1,24 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
-using System;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Services;
-using Tolk.Web.Helpers;
-using Tolk.Web.Authorization;
-using Tolk.BusinessLogic.Services;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
+using Tolk.Web.Models;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -105,15 +102,16 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Process(int id)
         {
             var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
-                .Include(r => r.Order).ThenInclude(r => r.Requirements)
-                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(r => r.Language)
-                .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking)
                 .Single(o => o.RequestId == id);
 
@@ -165,61 +163,78 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+		    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+		    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Interpreter).ThenInclude(i => i.User)
-                    .Include(r => r.Order.CreatedByUser)
-                    .Include(r => r.Order.ContactPersonUser)
                     .Include(r => r.RequirementAnswers)
                     .Include(r => r.PriceRows)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+
                     .Single(o => o.RequestId == model.RequestId);
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    string sendExtraEmailToInterpreter = string.Empty;
-                    int interpreterId = model.InterpreterId;
-                    if (interpreterId == SelectListService.NewInterpreterId)
+                    if (!request.Order.ReplacingOrderId.HasValue)
                     {
-                        interpreterId = await _interpreterService.GetInterpreterId(
-                            request.Ranking.BrokerId,
-                            model.NewInterpreterEmail);
-                    }
-                    if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                    {
-                        CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
-                        if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+                        string sendExtraEmailToInterpreter = string.Empty;
+                        int interpreterId = model.InterpreterId.Value;
+                        if (interpreterId == SelectListService.NewInterpreterId)
                         {
-                            sendExtraEmailToInterpreter = _dbContext.Users.Single(u => u.InterpreterId == interpreterId).Email;
+                            interpreterId = await _interpreterService.GetInterpreterId(
+                                request.Ranking.BrokerId,
+                                model.NewInterpreterEmail);
                         }
-                        request.Status = RequestStatus.InterpreterReplaced;
+                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        {
+                            CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
+                            if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+                            {
+                                sendExtraEmailToInterpreter = _dbContext.Users.Single(u => u.InterpreterId == interpreterId).Email;
+                            }
+                            request.Status = RequestStatus.InterpreterReplaced;
+                        }
+                        else
+                        {
+                            request.Accept(
+                                _clock.SwedenNow,
+                                User.GetUserId(),
+                                User.TryGetImpersonatorId(),
+                                interpreterId,
+                                model.ExpectedTravelCosts,
+                                model.InterpreterLocation,
+                            model.InterpreterCompetenceLevel,
+                                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                                {
+                                    RequestId = request.RequestId,
+                                    OrderRequirementId = ra.OrderRequirementId,
+                                    Answer = ra.Answer,
+                                    CanSatisfyRequirement = ra.CanMeetRequirement
+                                }),
+                            GetPrices(request, model.InterpreterCompetenceLevel.Value)
+                            );
+                        }
+                        CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
                     }
                     else
                     {
-                        request.Accept(
+                        request.AcceptReplacementOrder(
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
-                            interpreterId,
                             model.ExpectedTravelCosts,
-                            model.InterpreterLocation,
-                            model.InterpreterCompetenceLevel,
-                            model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                            {
-                                RequestId = request.RequestId,
-                                OrderRequirementId = ra.OrderRequirementId,
-                                Answer = ra.Answer,
-                                CanSatisfyRequirement = ra.CanMeetRequirement
-                            }),
-                            GetPrices(request, model.InterpreterCompetenceLevel.Value)
+                            GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel)
                         );
+
+                        CreateEmailOnProcessReplacementOrder(request);
                     }
-                    CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
                     _dbContext.SaveChanges();
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
                 }
                 return Forbid();
             }
-            return View("Process", model);
+            return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
         [ValidateAntiForgeryToken]
@@ -285,19 +300,28 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Single(r => r.RequestId == model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                request.Order.Status = OrderStatus.Requested;
-
                 request.Status = RequestStatus.DeclinedByBroker;
                 request.AnswerDate = _clock.SwedenNow;
                 request.AnsweredBy = User.GetUserId();
                 request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
                 request.DenyMessage = model.DenyMessage;
-                await _orderService.CreateRequest(request.Order);
-                CreateEmailOnRequestAction(request, string.Empty);
+                if (!request.Order.ReplacingOrderId.HasValue)
+                {
+                    request.Order.Status = OrderStatus.Requested;
+                    await _orderService.CreateRequest(request.Order);
+                    CreateEmailOnRequestAction(request, string.Empty);
+                }
+                else
+                {
+                    request.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
+                    CreateEmailOnProcessReplacementOrder(request);
+                }
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
@@ -400,7 +424,7 @@ namespace Tolk.Web.Controllers
                 default:
                     throw new NotImplementedException();
             }
-           
+
             if (!string.IsNullOrEmpty(receipent))
             {
                 _dbContext.Add(new OutboundEmail(
@@ -423,6 +447,75 @@ namespace Tolk.Web.Controllers
                     body +
                     "\n\nDetta mejl går inte att svara på.",
                     _clock.SwedenNow));
+            }
+        }
+
+        private void CreateEmailOnProcessReplacementOrder(Request request)
+        {
+            string receipent = request.Order.CreatedByUser.Email;
+            string subject;
+            string body;
+            string orderNumber = request.Order.OrderNumber;
+            switch (request.Status)
+            {
+                case RequestStatus.Accepted:
+                    subject = $"Förmedling har accepterat ersättningsuppdrag {orderNumber}";
+                    body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats." +
+                        "Eventuellt förändrade svar finns som måste beaktas.";
+                    break;
+                case RequestStatus.Approved:
+                    subject = $"Förmedling har accepterat ersättningsuppdrag {orderNumber}";
+                    body = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras." +
+                        "Inga förändrade krav finns, avropet är klart för utförande.";
+                    //send mail to interpreter about changes replaced order => order
+                    if (!string.IsNullOrEmpty(request.Interpreter.User.Email))
+                    {
+                        _dbContext.Add(new OutboundEmail(
+                        request.Interpreter.User.Email,
+                        $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
+                        $"Ditt tolkuppdrag {request.Order.ReplacingOrder.OrderNumber} hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name} har ersatts av ett nytt uppdrag: {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                    }
+                    break;
+                case RequestStatus.DeclinedByBroker:
+                    subject = $"Förmedling har tackat nej till ersättningsuppdrag {orderNumber}";
+                    body = $"Svar på ersättningsuppdrag {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till ersättningsuppdrag med följande meddelande:\n{request.DenyMessage}";
+                    //send mail to interpreter about cancelled order (the replaced one)
+                    if (!string.IsNullOrEmpty(request.Interpreter.User.Email))
+                    {
+                        var cancelMessage = request.Order.ReplacingOrder.Requests.Single(r => r.Ranking.BrokerId == request.Ranking.BrokerId && (
+                            r.Status == RequestStatus.CancelledByCreator ||
+                            r.Status == RequestStatus.CancelledByCreatorConfirmed ||
+                            r.Status == RequestStatus.CancelledByCreatorWhenApproved)).CancelMessage;
+                        _dbContext.Add(new OutboundEmail(
+                        request.Interpreter.User.Email,
+                            $"Avbokat avrop avrops-ID {orderNumber}",
+                            $"Ditt tolkuppdrag hos {request.Order.ReplacingOrder.OrderNumber} har avbokats, med detta meddelande:\n {cancelMessage}\n" +
+                            $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                            "\n\nDetta mejl går inte att svara på.",
+                        _clock.SwedenNow));
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"No email sent to interpreter when cancelling {request.Order.ReplacingOrder.OrderNumber}. No email is set for user.");
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    subject,
+                    body +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for request action {request.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
             }
         }
     }

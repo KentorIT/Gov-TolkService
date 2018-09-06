@@ -112,7 +112,7 @@ namespace Tolk.Web.Models
                 CancelMessage = request.CancelMessage,
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
-                Interpreter = request.Interpreter?.User.UserName,
+                Interpreter = request.Interpreter?.User?.UserName,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 RequisitionId = request.Requisitions?.FirstOrDefault(req => req.Status == RequisitionStatus.Created || req.Status == RequisitionStatus.Approved)?.RequisitionId,

@@ -221,6 +221,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Reklamationens beskriving")]
         public string ComplaintMessage { get; set; }
 
+        public bool IsReplacement => ReplacingOrderId.HasValue;
+        
         public List<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {
             get

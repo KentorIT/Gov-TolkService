@@ -27,6 +27,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
             ExpectedTravelCosts = originalRequest.ExpectedTravelCosts;
+            InterpreterLocation = originalRequest.InterpreterLocation;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -189,6 +190,10 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
             }
+            if (Order.ReplacingOrderId.HasValue)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is connected to a replacement order. use the {nameof(AcceptReplacementOrder)} method instead.");
+            }
 
             Status = RequestStatus.Accepted;
             AnswerDate = acceptTime;
@@ -213,6 +218,49 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Order.Status = OrderStatus.RequestResponded;
+        }
+
+        public void AcceptReplacementOrder(
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            decimal? expectedTravelCosts,
+            PriceInformation priceInformation)
+        {
+            if (Status != RequestStatus.Received)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
+            }
+            if (!Order.ReplacingOrderId.HasValue)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
+            }
+
+            AnswerDate = acceptTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            if (Order.AllowMoreThanTwoHoursTravelTime)
+            {
+                ExpectedTravelCosts = expectedTravelCosts;
+                Status = RequestStatus.Accepted;
+                Order.Status = OrderStatus.RequestResponded;
+            }
+            else
+            {
+                Status = RequestStatus.Approved;
+                Order.Status = OrderStatus.ResponseAccepted;
+            }
+            foreach (var row in priceInformation.PriceRows)
+            {
+                PriceRows.Add(new RequestPriceRow
+                {
+                    StartAt = row.StartAt,
+                    EndAt = row.EndAt,
+                    IsBrokerFee = row.IsBrokerFee,
+                    PriceListRowId = row.PriceListRowId,
+                    TotalPrice = row.TotalPrice
+                });
+            }
         }
 
         public void ReplaceInterpreter(

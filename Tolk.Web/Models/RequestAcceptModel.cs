@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -15,10 +16,11 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
-        [Required]
+        [ClientRequired]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
-        public int InterpreterId { get; set; }
+        [ClientRequired]
+        public int? InterpreterId { get; set; }
 
         public string NewInterpreterEmail { get; set; }
 
@@ -28,7 +30,7 @@ namespace Tolk.Web.Models
 
         public RequestStatus Status { get; set; }
 
-        [Required]
+        [ClientRequired]
         public InterpreterLocation? InterpreterLocation { get; set; }
     }
 }
