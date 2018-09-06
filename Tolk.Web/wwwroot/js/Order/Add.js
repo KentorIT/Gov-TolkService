@@ -178,7 +178,7 @@ $(function () {
         }
     });
 
-    $("body").on("change", "#SpecificCompetenceLevelRequired :checkbox", function () {
+    $("body").on("change", "#SpecificCompetenceLevelRequired", function () {
         if (this.checked) {
             // Is requirement
             $("#competence-requested").hide();
@@ -202,5 +202,5 @@ $(function () {
 
     // Triggers (handlers cannot be triggered before being declared)
     $("#AssignmentType").trigger("change");
-    $("#SpecificCompetenceLevelRequired :checkbox").trigger("change");
+    $("#SpecificCompetenceLevelRequired").trigger("change");
 });
