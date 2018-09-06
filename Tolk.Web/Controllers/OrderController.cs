@@ -95,7 +95,6 @@ namespace Tolk.Web.Controllers
         {
             //Get order model from db
             Order order = GetOrder(id);
-                .Include(o => o.CompetenceRequirements)
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
@@ -264,7 +263,6 @@ namespace Tolk.Web.Controllers
             return View("Edit", model);
         }
 
-		CompetenceRequirements = new List<OrderCompetenceRequirement>(),
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Edit(OrderModel model)
@@ -424,6 +422,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
+                .Include(o => o.CompetenceRequirements)
                 .Include(o => o.Requirements)
                     .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)

@@ -82,20 +82,53 @@
                 {
                     <display-entry asp-for="OrderModel.ReplacingOrderNumber" />
                     <display-entry asp-for="Interpreter" />
-                    <display-entry asp-for="CompetenceLevel" />
+                    <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
+                    @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
+                    {
+                        @if (Model.OrderModel.SpecificCompetenceLevelRequired)
+                        {
+                            @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
+                            {
+                                <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
+                            }
+                            @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
+                            {
+                                <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                            }
+                        }
+                        else
+                        {
+                            @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
+                            {
+                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                            }
+                            @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
+                            {
+                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                            }
+                            @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
+                            {
+                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <span>Inga önskemål kring kompetensnivå</span> <br /><br />
+                    }
                 }
                 else
                 {
                     <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
                     <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
-            @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-            {
-                <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
-            }
-            else
-            {
-                <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
-            }
+                    @if (Model.OrderModel.SpecificCompetenceLevelRequired)
+                    {
+                        <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                    }
+                    else
+                    {
+                        <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
+                    }
                     @if (Model.InterpreterLocation.HasValue)
                     {
                         <input asp-for="InterpreterLocation" type="hidden" />
@@ -127,7 +160,7 @@
                     // If it is set to Offsite it is not needed at all
                     // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
                     <div class="collapse" id="set-expected-travel-costs">
-                    <label> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
+                        <label> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
 
                         <form-entry asp-for="ExpectedTravelCosts" />
 
@@ -167,7 +200,7 @@
                             <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Byt tolk</button>
                         </div>
                         <div class="col-xs-4">
-                        <a class="btn btn-warning" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt</a>
+                            <a class="btn btn-warning" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt</a>
                         </div>
                     </div>
                 }

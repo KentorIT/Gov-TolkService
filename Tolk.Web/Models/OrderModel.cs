@@ -285,7 +285,7 @@ namespace Tolk.Web.Models
                 order.RegionId = RegionId;
                 order.AssignentType = AssignmentType;
                 order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
-	        order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+	            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (UseRankedInterpreterLocation)
                 {
                     //Add one(3) rows to OrderInterpreterLocation

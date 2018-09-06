@@ -204,7 +204,11 @@ namespace Tolk.BusinessLogic.Entities
             order.OffSiteAssignmentType = OffSiteAssignmentType;
             order.OtherLanguage = OtherLanguage;
             order.Region = Region;
-            order.RequiredCompetenceLevel = RequiredCompetenceLevel;
+            order.CompetenceRequirements = CompetenceRequirements.Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank
+            }).ToList();
             order.Requirements = Requirements.Select(r => new OrderRequirement
             {
                 Description = r.Description,

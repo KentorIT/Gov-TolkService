@@ -13,7 +13,7 @@ var datePickerOptions = {
         toValue: function (date, format, language) {
             return new Date(formatDate(date));
         }
-    },
+    }
 };
 
 // Auto-format date entered with just digits.

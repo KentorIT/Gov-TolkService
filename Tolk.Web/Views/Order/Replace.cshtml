@@ -14,7 +14,40 @@
             <display-entry asp-for="RegionName" />
             <display-entry asp-for="BrokerName" />
             <display-entry asp-for="LanguageName" />
-            <display-entry asp-for="RequiredCompetenceLevel" />
+            <display-entry asp-for="SpecificCompetenceLevelRequired" />
+            @if (Model.RequestedCompetenceLevels.Count != 0)
+            {
+                @if (Model.SpecificCompetenceLevelRequired)
+                {
+                    @if (Model.RequiredCompetenceLevelFirst.HasValue)
+                    {
+                        <display-entry asp-for="RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
+                    }
+                    @if (Model.RequiredCompetenceLevelSecond.HasValue)
+                    {
+                        <display-entry asp-for="RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                    }
+                }
+                else
+                {
+                    @if (Model.RequestedCompetenceLevelFirst.HasValue)
+                    {
+                        <display-entry asp-for="RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                    }
+                    @if (Model.RequestedCompetenceLevelSecond.HasValue)
+                    {
+                        <display-entry asp-for="RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                    }
+                    @if (Model.RequestedCompetenceLevelThird.HasValue)
+                    {
+                        <display-entry asp-for="RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
+                    }
+                }
+            }
+            else
+            {
+                <span>Inga önskemål kring kompetensnivå</span> <br /><br />
+            }
             <display-entry asp-for="AssignmentType" />
             <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
