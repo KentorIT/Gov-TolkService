@@ -214,5 +214,20 @@ namespace Tolk.Web.Tests.Filters
 
             list.Should().OnlyContain(r => r == requests[2]);
         }
+
+        [Fact]
+        public void RequestFilter_ComboByRegionLanguageStatus()
+        {
+            var filter = new RequestFilterModel
+            {
+                RegionId = Region.Regions.Where(r => r.Name == "Dalarna").Single().RegionId,
+                LanguageId = mockLanguages.Where(l => l.Name == "German").Single().LanguageId,
+                Status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced
+            };
+
+            var list = filter.Apply(requests.AsQueryable());
+
+            list.Should().OnlyContain(r => r == requests[1]);
+        }
     }
 }
