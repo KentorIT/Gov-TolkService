@@ -6,6 +6,7 @@ using System.Linq;
 using Tolk.Web.Models;
 using Xunit;
 using FluentAssertions;
+using Tolk.Web.Tests.Helpers;
 
 namespace Tolk.Web.Tests.Filters
 {
@@ -16,13 +17,7 @@ namespace Tolk.Web.Tests.Filters
         private List<Order> orders;
         private readonly List<Ranking> rankings;
 
-        private Language[] mockLanguages = new[]
-        {
-            new Language { LanguageId = 0, Name = "English" },
-            new Language { LanguageId = 1, Name = "German" },
-            new Language { LanguageId = 2, Name = "French" },
-            new Language { LanguageId = 3, Name = "Chinese" },
-        };
+        private Language[] mockLanguages = MockHelper.MockLanguages();
 
         public OrderFilterModelTests()
         {
