@@ -25,7 +25,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Datum för tolkning")]
+        [Display(Name = "Startdatum för tolkning")]
         public DateRange OrderDateRange { get; set; }
 
         [Display(Name = "Svarsdatum")]
@@ -48,16 +48,16 @@ namespace Tolk.Web.Models
                 ? items.Where(i => LanguageId == i.LanguageId)
                 : items;
             items = OrderDateRange?.Start != null
-                ? items.Where(i => OrderDateRange.Start <= i.Start.Date)
+                ? items.Where(i => i.Start.Date >= OrderDateRange.Start)
                 : items;
             items = OrderDateRange?.End != null
-                ? items.Where(i => OrderDateRange.End >= i.End.Date)
+                ? items.Where(i => i.Start.Date <= OrderDateRange.End)
                 : items;
             items = AnswerByDateRange?.Start != null
-                ? items.Where(i => AnswerByDateRange.Start <= i.ExpiresAt.Value.Date)
+                ? items.Where(i => i.ExpiresAt.Value.Date >= AnswerByDateRange.Start)
                 : items;
             items = AnswerByDateRange?.End != null
-                ? items.Where(i => AnswerByDateRange.End >= i.ExpiresAt.Value.Date)
+                ? items.Where(i => i.ExpiresAt.Value.Date <= AnswerByDateRange.End)
                 : items;
             items = Status.HasValue
                 ? Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == Status)

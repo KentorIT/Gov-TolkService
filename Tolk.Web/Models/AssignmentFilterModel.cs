@@ -24,7 +24,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Datum")]
+        [Display(Name = "Startdatum")]
         public DateRange DateRange { get; set; }
 
         [Display(Name = "Uppdragets status")]
@@ -45,13 +45,11 @@ namespace Tolk.Web.Models
                 ? requests.Where(r => r.Order.LanguageId == LanguageId)
                 : requests;
 
-            // Compare start filter with end date date/time and end filter with
-            // start date time to include occassions spanning midnight on filter date.
             requests = DateRange?.Start != null 
-                ? requests.Where(r => DateRange.Start <= r.Order.EndAt.Date)
+                ? requests.Where(r => r.Order.StartAt.Date >= DateRange.Start)
                 : requests;
             requests = DateRange?.End != null 
-                ? requests.Where(r => DateRange.End >= r.Order.StartAt.Date)
+                ? requests.Where(r => r.Order.StartAt.Date <= DateRange.End)
                 : requests;
 
             if (Status.HasValue)

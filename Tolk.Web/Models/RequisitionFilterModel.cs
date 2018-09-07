@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Datum")]
+        [Display(Name = "Startdatum")]
         public DateRange DateRange { get; set; }
 
         public RequisitionStatus? Status { get; set; }
@@ -36,10 +36,10 @@ namespace Tolk.Web.Models
                 ? requisitions.Where(r => r.Request.Order.LanguageId == LanguageId)
                 : requisitions;
             requisitions = DateRange?.Start != null
-                ? requisitions = requisitions.Where(r => DateRange.Start <= r.Request.Order.EndAt.Date)
+                ? requisitions = requisitions.Where(r => r.Request.Order.StartAt.Date >= DateRange.Start)
                 : requisitions;
             requisitions = DateRange?.End != null
-                ? requisitions = requisitions.Where(r => DateRange.End >= r.Request.Order.StartAt.Date)
+                ? requisitions = requisitions.Where(r => r.Request.Order.StartAt.Date <= DateRange.End)
                 : requisitions;
             requisitions = Status.HasValue
                 ? requisitions = requisitions.Where(r => r.Status == Status)

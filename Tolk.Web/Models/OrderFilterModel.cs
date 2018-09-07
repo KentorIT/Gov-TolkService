@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
 {
     public class OrderFilterModel
     {
-        [Display(Name = "Datum")]
+        [Display(Name = "Startdatum")]
         public DateRange DateRange { get; set; }
 
         [Display(Name = "Avrops-ID")]
@@ -56,13 +56,11 @@ namespace Tolk.Web.Models
                         req.Status == RequestStatus.AcceptedNewInterpreterAppointed))) 
                 : orders;
 
-            // Compare start filter with end date date/time and end filter with
-            // start date time to include occassions spanning midnight on filter date.
             orders = DateRange?.Start != null
-                    ? orders.Where(o => DateRange.Start <= o.EndAt.Date)
+                    ? orders.Where(o => o.StartAt.Date >= DateRange.Start)
                     : orders;
             orders = DateRange?.End != null
-                    ? orders.Where(o => DateRange.End >= o.StartAt.Date)
+                    ? orders.Where(o => o.StartAt.Date <= DateRange.End)
                     : orders;
                 
             return orders;
