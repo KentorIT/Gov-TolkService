@@ -118,15 +118,7 @@ namespace Tolk.Web.Controllers
             // Filters
             if (model != null)
             {
-                // OrderNumber
-                items = !string.IsNullOrWhiteSpace(model.OrderNumber)
-                    ? items.Where(i => i.OrderNumber.Contains(model.OrderNumber))
-                    : items;
-                // Status
-                if (model.Status.HasValue)
-                {
-                    items = items.Where(r => r.Status == model.Status);
-                }
+                items = model.Apply(items);
             }
             return View(
                 new ComplaintListModel
