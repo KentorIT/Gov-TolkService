@@ -260,15 +260,15 @@ namespace Tolk.BusinessLogic.Services
             return _dbContext.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
         }
 
-        public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
+        public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows, decimal? travelcost)
         {
-
             DisplayPriceInformation dpi = new DisplayPriceInformation();
             int numberOfBrokerFees = 0;
             string extraBrokerFee = string.Empty;
             string hourTaxDescription = string.Empty;
             foreach (PriceRowBase priceRow in priceRows.OrderByDescending(r => r.IsBrokerFee))
             {
+                dpi.TaxTypeAndCompetenceLevelDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
                 if (priceRow.IsBrokerFee)
                 {
                     numberOfBrokerFees += 1;
@@ -279,7 +279,13 @@ namespace Tolk.BusinessLogic.Services
                     hourTaxDescription = priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice ? $", taxa {GetDescriptionHourTax(priceRow.PriceListRow.MaxMinutes)} h" : string.Empty;
                 }
                 string startDescription = priceRow.IsBrokerFee ? $"Förmedlingsavgift{extraBrokerFee}" : priceRow.PriceListRow.PriceRowType.GetDescription() + hourTaxDescription;
-                dpi.DisplayPriceRows.Add(new DisplayPriceRow { Description = $"{startDescription} för tolktyp {priceRow.PriceListRow.CompetenceLevel.GetDescription()}", Price = priceRow.TotalPrice });
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow { DescriptionWithCompetenceLevel = $"{startDescription} för tolktyp {priceRow.PriceListRow.CompetenceLevel.GetDescription()}", ShortDescription = startDescription, Price = priceRow.TotalPrice });
+            }
+            //do not check if zero since sometimes you want to display thet it was 0 in travelcost
+            //might be better to have different descriptions of travel costs (estimated, actual etc)
+            if (travelcost != null)
+            {
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow {ShortDescription = "Total reskostnad", Price = travelcost.Value });
             }
             return dpi;
         }

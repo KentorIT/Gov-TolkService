@@ -6,7 +6,9 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public class DisplayPriceRow
     {
-        public string Description { get; set; }
+        public string DescriptionWithCompetenceLevel { get; set; }
+
+        public string ShortDescription { get; set; }
 
         public decimal Price { get; set; }
     }

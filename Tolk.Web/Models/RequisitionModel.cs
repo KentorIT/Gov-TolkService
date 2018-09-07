@@ -88,6 +88,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Faktureringsinformation")]
         public string InvoiceInformation { get; set; }
 
+
+        public PriceInformationModel PriceInformationModel { get; set; }
+
         #region methods
 
         public static RequisitionModel GetModelFromRequest(Request request)

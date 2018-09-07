@@ -71,7 +71,7 @@ namespace Tolk.Web.Controllers
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
                 model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, request.Ranking.BrokerFee,
                     requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
-                model.InvoiceInformation = GetRequisitionPriceInformation(requisition);
+                model.PriceInformationModel = GetRequisitionPriceInformation(requisition);
                 return View(model);
             }
             return Forbid();
@@ -100,7 +100,7 @@ namespace Tolk.Web.Controllers
                 model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
                 model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
                     requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
-                model.InvoiceInformation = GetRequisitionPriceInformation(requisition);
+                model.PriceInformationModel = GetRequisitionPriceInformation(requisition);
                 return View(model);
             }
             return Forbid();
@@ -326,7 +326,7 @@ namespace Tolk.Web.Controllers
                 case RequisitionStatus.Approved:
                     receipent = requisition.CreatedByUser.Email;
                     subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
-                    body += "\n\nKostnader att fakturera:\n\n" + GetRequisitionPriceInformation(requisition);
+                    body += "\n\nKostnader att fakturera:\n\n" + GetRequisitionPriceInformationForMail(requisition);
                     break;
                 case RequisitionStatus.DeniedByCustomer:
                     receipent = requisition.CreatedByUser.Email;
@@ -352,7 +352,7 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private string GetRequisitionPriceInformation(Requisition requisition)
+        private string GetRequisitionPriceInformationForMail(Requisition requisition)
         {
             if (requisition.PriceRows == null)
             {
@@ -360,16 +360,28 @@ namespace Tolk.Web.Controllers
             }
             else
             {
-                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
+                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
                 string invoiceInfo = string.Empty;
+                invoiceInfo += $"{priceInfo.TaxTypeAndCompetenceLevelDescription}\n\n";
                 foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
                 {
-                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
+                    invoiceInfo += $"{dpr.ShortDescription}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
                 }
-                invoiceInfo += $"Total reskostnad:\n{requisition.TravelCosts.ToString("#,0.00 SEK")}\n\n";
-                invoiceInfo += $"Summa totalt att fakturera: {(priceInfo.TotalPrice + requisition.TravelCosts).ToString("#,0.00 SEK")}";
+                invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
                 return invoiceInfo;
             }
+        }
+
+        private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition)
+        {
+            if (requisition.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay =_priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
+            model.Header = "Fakturainformation";
+            return model;
         }
 
     }

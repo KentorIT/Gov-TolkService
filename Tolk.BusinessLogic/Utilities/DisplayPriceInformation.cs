@@ -16,6 +16,10 @@ namespace Tolk.BusinessLogic.Utilities
             {
                 return DisplayPriceRows.Sum(p => p.Price);
             }
+
         }
+
+        public string TaxTypeAndCompetenceLevelDescription { get; set; }
+
     }
 }

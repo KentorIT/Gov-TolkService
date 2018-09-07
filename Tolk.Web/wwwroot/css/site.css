@@ -155,3 +155,16 @@ li.placeholder {
 .select-short {
     width: 175px !important;
 }
+
+.price-header {
+    font-size: 16px;
+}
+
+.price-column {
+    text-align: right;
+    padding-left: 20px;
+}
+
+.bold {
+    font-weight: bold;
+}

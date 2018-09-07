@@ -1,0 +1,26 @@
+﻿@model Tolk.Web.Models.PriceInformationModel
+<div class="border body-content">
+    <span class="price-header bold"><display-entry asp-for="Header" label-override="" /></span>
+    <display-entry asp-for="PriceInformationToDisplay.TaxTypeAndCompetenceLevelDescription" label-override="" />
+    <table>
+        <thead>
+            <tr>
+                <th>Beskrivning</th>
+                <th class="price-column">Pris</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows)
+            {
+                <tr>
+                    <td>@item.ShortDescription</td>
+                    <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
+                </tr>
+            }
+            <tr>
+                <td class="bold">Total summa:</td>
+                <td class="price-column bold"><display-entry asp-for="TotalPriceToDisplay" label-override="" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
