@@ -11,8 +11,6 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
-[assembly: InternalsVisibleTo("Tolk.Web.Tests")]
-
 namespace Tolk.Web.Models
 {
     public class OrderFilterModel
