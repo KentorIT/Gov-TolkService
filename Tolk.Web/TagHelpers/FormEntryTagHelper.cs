@@ -387,11 +387,12 @@ namespace Tolk.Web.TagHelpers
                 format: "{0:hh\\:mm}",
                 htmlAttributes: new
                 {
-                    @class = "form-control",
+                    @class = "form-control inside-time",
                     placeholder = "HH:MM",
                     data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):?[0-5][0-9]$",
                     data_val_regex = "Ange tid som HH:MM eller HHMM",
-                    data_val_required = "Tid måste anges."
+                    data_val_required = "Tid måste anges.",
+                    data_rule_insidetime = ".inside-time",
                 });
 
             RemoveRequiredIfNullable(tagBuilder);
@@ -428,10 +429,11 @@ namespace Tolk.Web.TagHelpers
                 format: "{0:yyyy-MM-dd}",
                 htmlAttributes: new
                 {
-                    @class = "form-control datepicker",
+                    @class = "form-control datepicker inside-time",
                     placeholder = "ÅÅÅÅ-MM-DD",
                     type = "text",
-                    data_val_required = "Datum måste anges."
+                    data_val_required = "Datum måste anges.",
+                    data_rule_insidetime = ".inside-time",
                 });
 
             RemoveRequiredIfNullable(tagBuilder);

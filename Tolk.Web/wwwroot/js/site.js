@@ -60,6 +60,12 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
+    if (Globalize && $.validator) {
+        $.validator.methods.number = function (value, element) {
+            return value === "" || value === "0" || Globalize.parseFloat(value);
+        };
+        Globalize.culture('sv-SE');
+    }
     $("form:not(.do-not-check-dirty)").areYouSure();
 
     $("form.filter-form").on("change", "select, input, textarea", function (event) {

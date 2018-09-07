@@ -54,5 +54,17 @@
     "inputFiles": [
       "wwwroot/js/Order/Process.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/jquery-globalize/globalize.min.js",
+    "inputFiles": [
+      "wwwroot/lib/jquery-globalize/globalize.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/jquery-globalize/cultures/globalize.culture.sv-SE.min.js",
+    "inputFiles": [
+      "wwwroot/lib/jquery-globalize/cultures/globalize.culture.sv-SE.js"
+    ]
   }
 ]
