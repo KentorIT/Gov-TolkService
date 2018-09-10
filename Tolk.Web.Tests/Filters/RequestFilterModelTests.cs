@@ -26,72 +26,65 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByOrderNumber()
         {
+            var orderNum = "33";
             var filter = new RequestFilterModel
             {
-                OrderNumber = "33"
+                OrderNumber = orderNum
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.OrderNumber.Contains(orderNum));
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { requests[1], requests[4] }, 
-                because: "Both ordernumbers contain the number {0}", 
-                becauseArgs: filter.OrderNumber);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void RequestFilter_ByRegion()
         {
+            var region = Region.Regions.Where(r => r.Name == "Stockholm").Single();
             var filter = new RequestFilterModel
             {
-                RegionId = Region.Regions
-                    .Where(r => r.Name == "Stockholm")
-                    .Single().RegionId
+                RegionId = region.RegionId
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.RegionId == region.RegionId);
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { requests[1], requests[2] }, 
-                because: "Both requests regard RegionId {0}", 
-                becauseArgs: filter.RegionId);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void RequestFilter_ByCustomer()
         {
+            var customerId = 2;
             var filter = new RequestFilterModel
             {
-                CustomerOrganizationId = 2
+                CustomerOrganizationId = customerId,
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.CustomerId == customerId);
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { requests[1], requests[2] }, 
-                because: "Both requests regard CustomerId {0}", 
-                becauseArgs: filter.CustomerOrganizationId);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void RequestFilter_ByLanguage()
         {
+            var language = mockLanguages.Where(l => l.Name == "English").Single();
             var filter = new RequestFilterModel
             {
-                LanguageId = mockLanguages
-                    .Where(l => l.Name == "English")
-                    .Single().LanguageId
+                LanguageId = language.LanguageId
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.LanguageId == language.LanguageId);
 
-            list.Should().OnlyContain(r => r == requests[1], 
-                because: "Only {0} has {1} as language", 
-                becauseArgs: new[] 
-                {
-                    requests[4].OrderNumber,
-                    mockLanguages.Where(l => l.LanguageId == filter.LanguageId).Single().Name
-                });
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
@@ -124,29 +117,39 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByStatus()
         {
+            var status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced;
             var filter = new RequestFilterModel
             {
-                Status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced
+                Status = status
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.Status == status);
 
-            list.Should().OnlyContain(r => r == requests[1]);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void RequestFilter_ComboByRegionLanguageStatus()
         {
+            var region = Region.Regions.Where(r => r.Name == "Stockholm").Single();
+            var language = mockLanguages.Where(l => l.Name == "German").Single();
+            var status = BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed;
             var filter = new RequestFilterModel
             {
-                RegionId = Region.Regions.Where(r => r.Name == "Stockholm").Single().RegionId,
-                LanguageId = mockLanguages.Where(l => l.Name == "German").Single().LanguageId,
-                Status = BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed
+                RegionId = region.RegionId,
+                LanguageId = language.LanguageId,
+                Status = status,
             };
 
             var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.RegionId == region.RegionId
+                && r.LanguageId == language.LanguageId
+                && r.Status == status);
 
-            list.Should().OnlyContain(r => r == requests[2]);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
     }
 }

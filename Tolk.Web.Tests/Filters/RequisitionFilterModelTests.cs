@@ -26,27 +26,33 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequisitionFilter_ByOrderNumber()
         {
+            var orderNum = "1337";
             var filter = new RequisitionFilterModel
             {
-                OrderNumber = "1337"
+                OrderNumber = orderNum
             };
 
             var list = filter.Apply(mockRequisitions.AsQueryable());
+            var actual = mockRequisitions.Where(r => r.Request.Order.OrderNumber.Contains(orderNum));
 
-            list.Should().OnlyContain(r => r == mockRequisitions[0]);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void RequisitionFilter_ByLanguage()
         {
+            var language = mockLanguages.Where(l => l.Name == "French").Single();
             var filter = new RequisitionFilterModel
             {
-                LanguageId = mockLanguages.Where(l => l.Name == "French").Single().LanguageId
+                LanguageId = language.LanguageId
             };
 
             var list = filter.Apply(mockRequisitions.AsQueryable());
+            var actual = mockRequisitions.Where(r => r.Request.Order.Language == language);
 
-            list.Should().OnlyContain(r => r == mockRequisitions[3]);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
@@ -72,9 +78,10 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(mockRequisitions.AsQueryable());
+            var actual = mockRequisitions.Where(r => r.Status == BusinessLogic.Enums.RequisitionStatus.Approved);
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { mockRequisitions[1], mockRequisitions[2] });
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]

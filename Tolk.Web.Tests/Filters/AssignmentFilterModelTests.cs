@@ -31,14 +31,17 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         private void AssignmentFilter_ByOrderNumber()
         {
+            var orderNum = "654";
             var filter = new AssignmentFilterModel
             {
-                OrderNumber = "654"
+                OrderNumber = orderNum
             };
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
+            var actual = mockRequests.Where(req => req.Order.OrderNumber.Contains(orderNum));
 
-            list.Should().OnlyContain(r => r == mockRequests.Where(req => req.Order.OrderNumber == "2018-000654").Single());
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
