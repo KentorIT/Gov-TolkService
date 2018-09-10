@@ -6,7 +6,7 @@ using System.Linq;
 using Tolk.Web.Models;
 using Xunit;
 using FluentAssertions;
-using Tolk.Web.Tests.Helpers;
+using Tolk.Web.Tests.TestHelpers;
 
 namespace Tolk.Web.Tests.Filters
 {
@@ -86,8 +86,8 @@ namespace Tolk.Web.Tests.Filters
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
             var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
 
-            listFirst.Should().HaveCount(2);
-            listFirst.Should().Contain(new[] { mockOrders[3], mockOrders[5] });
+            listFirst.Should().HaveCount(3);
+            listFirst.Should().Contain(new[] { mockOrders[3], mockOrders[5], mockOrders[7] });
 
             listSecond.Should().OnlyContain(o => o == mockOrders[6]);
         }
@@ -161,8 +161,8 @@ namespace Tolk.Web.Tests.Filters
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
             var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
 
-            listFirst.Should().HaveCount(5);
-            listFirst.Should().Contain(new[] { mockOrders[1], mockOrders[2], mockOrders[3], mockOrders[4], mockOrders[6] });
+            listFirst.Should().HaveCount(6);
+            listFirst.Should().Contain(new[] { mockOrders[1], mockOrders[2], mockOrders[3], mockOrders[4], mockOrders[6], mockOrders[7] });
 
             listSecond.Should().HaveCount(2);
             listSecond.Should().Contain(new[] { mockOrders[0], mockOrders[5] });
@@ -247,7 +247,7 @@ namespace Tolk.Web.Tests.Filters
 
             var list = filter.Apply(mockOrders.AsQueryable());
 
-            list.Should().HaveCount(7);
+            list.Should().HaveCount(8);
             list.Should().Contain(mockOrders, because: "no filter parameters are specified");
         }
 

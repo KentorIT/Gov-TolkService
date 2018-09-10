@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
-using Tolk.Web.Tests.Helpers;
+using Tolk.Web.Tests.TestHelpers;
 using Xunit;
 
 namespace Tolk.Web.Tests.Filters

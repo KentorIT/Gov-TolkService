@@ -5,7 +5,7 @@ using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 
-namespace Tolk.Web.Tests.Helpers
+namespace Tolk.Web.Tests.TestHelpers
 {
     // Shared mock-entities
     public static class MockEntities
@@ -41,6 +41,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,06,07,15,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Stockholm").Single(),
                     Language = mockLanguages.Where(l => l.Name == "English").Single(),
+                    CustomerOrganisationId = 2,
                     Status = BusinessLogic.Enums.OrderStatus.RequestRespondedNewInterpreter,
                     Requests = new List<Request>
                     {
@@ -55,6 +56,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,07,07,17,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Stockholm").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
+                    CustomerOrganisationId = 2,
                     Status = BusinessLogic.Enums.OrderStatus.DeliveryAccepted,
                     Requests = new List<Request>
                     {
@@ -68,6 +70,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Skåne").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    CustomerOrganisationId = 1,
                     Status = BusinessLogic.Enums.OrderStatus.Requested,
                     Requests = new List<Request>
                     {
@@ -82,6 +85,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "Chinese").Single(),
+                    CustomerOrganisationId = 1,
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
@@ -95,6 +99,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,09,18,13,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
+                    CustomerOrganisationId = 1,
                     Status = BusinessLogic.Enums.OrderStatus.RequestResponded,
                     Requests = new List<Request>
                     {
@@ -108,6 +113,7 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,10,09,15,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Gotland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    CustomerOrganisationId = 1,
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
@@ -122,18 +128,35 @@ namespace Tolk.Web.Tests.Helpers
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "Chinese").Single(),
+                    CustomerOrganisationId = 6,
                     Status = BusinessLogic.Enums.OrderStatus.CancelledByCreatorConfirmed,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
+                new Order
+                {
+                    OrderId = 7,
+                    OrderNumber = "2018-000007",
+                    StartAt = new DateTimeOffset(2018,12,15,00,00,00, new TimeSpan(02,00,00)),
+                    EndAt = new DateTimeOffset(2018,12,15,19,00,00, new TimeSpan(02,00,00)),
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    CustomerOrganisationId = 6,
+                    Status = BusinessLogic.Enums.OrderStatus.Delivered,
+                    Requests = new List<Request>
+                    {
+                        new Request(mockRankings[0], new DateTimeOffset(2018,12,01,14,56,00, new TimeSpan(02,00,00))),
+                    }
+                }
             };
 
             // Set required properties
             foreach (Order o in orders)
             {
                 o.LanguageId = o.Language.LanguageId;
+                o.RegionId = o.Region.RegionId;
                 foreach (Request r in o.Requests)
                 {
                     r.Order = o;
@@ -141,6 +164,16 @@ namespace Tolk.Web.Tests.Helpers
             }
 
             return orders;
+        }
+
+        internal static Request[] GetRequestsFromOrders(Order[] mockOrders)
+        {
+            List<Request> mockRequests = new List<Request>();
+            foreach (Order o in mockOrders)
+            {
+                mockRequests.AddRange(o.Requests);
+            }
+            return mockRequests.ToArray();
         }
 
         internal static RequestListItemModel[] MockRequestListItems(Order[] mockOrders)
@@ -152,7 +185,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[3].OrderNumber,
                     RegionId = mockOrders[3].Region.RegionId,
                     RegionName = mockOrders[3].Region.Name,
-                    CustomerId = 1,
+                    CustomerId = mockOrders[3].CustomerOrganisationId,
                     LanguageId = mockOrders[3].Language.LanguageId,
                     Start = mockOrders[3].StartAt,
                     End = mockOrders[3].EndAt,
@@ -164,7 +197,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[0].OrderNumber,
                     RegionId = mockOrders[0].Region.RegionId,
                     RegionName = mockOrders[0].Region.Name,
-                    CustomerId = 2,
+                    CustomerId = mockOrders[0].CustomerOrganisationId,
                     LanguageId = mockOrders[0].Language.LanguageId,
                     Start = mockOrders[0].StartAt,
                     End = mockOrders[0].EndAt,
@@ -176,7 +209,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[1].OrderNumber,
                     RegionId = mockOrders[1].Region.RegionId,
                     RegionName = mockOrders[1].Region.Name,
-                    CustomerId = 2,
+                    CustomerId = mockOrders[1].CustomerOrganisationId,
                     LanguageId = mockOrders[1].Language.LanguageId,
                     Start = mockOrders[1].StartAt,
                     End = mockOrders[1].EndAt,
@@ -188,7 +221,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[2].OrderNumber,
                     RegionId = mockOrders[2].Region.RegionId,
                     RegionName = mockOrders[2].Region.Name,
-                    CustomerId = 1,
+                    CustomerId = mockOrders[2].CustomerOrganisationId,
                     LanguageId = mockOrders[2].Language.LanguageId,
                     Start = mockOrders[2].StartAt,
                     End = mockOrders[2].EndAt,
@@ -200,7 +233,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[4].OrderNumber,
                     RegionId = mockOrders[4].Region.RegionId,
                     RegionName = mockOrders[4].Region.Name,
-                    CustomerId = 1,
+                    CustomerId = mockOrders[4].CustomerOrganisationId,
                     LanguageId = mockOrders[4].Language.LanguageId,
                     Start = mockOrders[4].StartAt,
                     End = mockOrders[4].EndAt,
@@ -212,7 +245,7 @@ namespace Tolk.Web.Tests.Helpers
                     OrderNumber = mockOrders[5].OrderNumber,
                     RegionId = mockOrders[5].Region.RegionId,
                     RegionName = mockOrders[5].Region.Name,
-                    CustomerId = 1,
+                    CustomerId = mockOrders[5].CustomerOrganisationId,
                     LanguageId = mockOrders[5].Language.LanguageId,
                     Start = mockOrders[5].StartAt,
                     End = mockOrders[5].EndAt,
@@ -224,7 +257,7 @@ namespace Tolk.Web.Tests.Helpers
 
         internal static Requisition[] MockRequisitions(Order[] orders)
         {
-            return new[]
+            var requisitions = new List<Requisition>
             {
                 new Requisition
                 {
@@ -247,6 +280,34 @@ namespace Tolk.Web.Tests.Helpers
                     Request = orders[5].Requests[1]
                 },
             };
+
+            foreach (Requisition r in requisitions)
+            {
+                if (r.Request.Requisitions == null)
+                {
+                    r.Request.Requisitions = new List<Requisition>();
+                }
+                r.Request.Requisitions.Add(r);
+            }
+
+            return requisitions.ToArray();
+        }
+
+        internal static Order[] LinkRequisitionsInOrdersRequests(Order[] orders, Requisition[] requisitions)
+        {
+            foreach (Order o in orders)
+            {
+                foreach (Request r in o.Requests)
+                {
+                    if (r.Requisitions == null)
+                    {
+                        r.Requisitions = new List<Requisition>();
+                    }
+                    r.Requisitions = requisitions.Where(req => req.Request == r).ToList();
+                }
+            }
+
+            return orders;
         }
     }
 }
