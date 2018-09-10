@@ -20,7 +20,7 @@ namespace Tolk.Web.Tests.Filters
         {
             var mockRankings = MockEntities.MockRankings();
             var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
-            requests = MockEntities.MockRequests(mockOrders);
+            requests = MockEntities.MockRequestListItems(mockOrders);
         }
 
         [Fact]

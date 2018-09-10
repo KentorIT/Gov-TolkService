@@ -32,7 +32,7 @@ namespace Tolk.Web.Tests.Helpers
 
         internal static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings)
         {
-            return new[]
+            var orders = new[]
             {
                 new Order {
                     OrderId = 0,
@@ -129,9 +129,21 @@ namespace Tolk.Web.Tests.Helpers
                     }
                 },
             };
+
+            // Set required properties
+            foreach (Order o in orders)
+            {
+                o.LanguageId = o.Language.LanguageId;
+                foreach (Request r in o.Requests)
+                {
+                    r.Order = o;
+                }
+            }
+
+            return orders;
         }
 
-        internal static RequestListItemModel[] MockRequests(Order[] mockOrders)
+        internal static RequestListItemModel[] MockRequestListItems(Order[] mockOrders)
         {
             return new[]
             {
@@ -206,6 +218,33 @@ namespace Tolk.Web.Tests.Helpers
                     End = mockOrders[5].EndAt,
                     ExpiresAt = mockOrders[5].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.Accepted
+                },
+            };
+        }
+
+        internal static Requisition[] MockRequisitions(Order[] orders)
+        {
+            return new[]
+            {
+                new Requisition
+                {
+                    Status = BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer,
+                    Request = orders[0].Requests[1]
+                },
+                new Requisition
+                {
+                    Status = BusinessLogic.Enums.RequisitionStatus.Approved,
+                    Request = orders[1].Requests[0]
+                },
+                new Requisition
+                {
+                    Status = BusinessLogic.Enums.RequisitionStatus.Approved,
+                    Request = orders[3].Requests[0]
+                },
+                new Requisition
+                {
+                    Status = BusinessLogic.Enums.RequisitionStatus.Created,
+                    Request = orders[5].Requests[1]
                 },
             };
         }
