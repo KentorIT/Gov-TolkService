@@ -30,43 +30,51 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void ComplaintFilter_ByOrderNumber()
         {
+            var orderNum = "3";
             var filter = new ComplaintFilterModel
             {
-                OrderNumber = "3"
+                OrderNumber = orderNum
             };
 
             var list = filter.Apply(complaints.AsQueryable());
+            var actual = complaints.Where(c => c.OrderNumber.Contains(orderNum));
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { complaints[2], complaints[4] });
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void ComplaintFilter_ByStatus()
         {
+            var status = ComplaintStatus.Confirmed;
             var filter = new ComplaintFilterModel
             {
-                Status = ComplaintStatus.Confirmed
+                Status = status
             };
 
             var list = filter.Apply(complaints.AsQueryable());
+            var actual = complaints.Where(c => c.Status == status);
 
-            list.Should().HaveCount(2);
-            list.Should().Contain(new[] { complaints[0], complaints[1] });
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
         }
 
         [Fact]
         public void ComplaintFilter_ComboByOrderNumberStatus()
         {
+            var orderNum = "5";
+            var status = ComplaintStatus.Created;
             var filter = new ComplaintFilterModel
             {
-                OrderNumber = "5",
-                Status = ComplaintStatus.Created
+                OrderNumber = orderNum,
+                Status = status
             };
 
             var list = filter.Apply(complaints.AsQueryable());
+            var actual = complaints.Where(c => c.OrderNumber.Contains(orderNum)
+                && c.Status == status).Single();
 
-            list.Should().OnlyContain(c => c == complaints[5]);
+            list.Should().OnlyContain(c => c == actual);
         }
     }
 }
