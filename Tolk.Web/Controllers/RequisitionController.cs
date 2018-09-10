@@ -50,13 +50,14 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
-                .Include(r => r.PriceRows)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
@@ -68,10 +69,8 @@ namespace Tolk.Web.Controllers
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
-                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, request.Ranking.BrokerFee,
-                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
-                model.PriceInformationModel = GetRequisitionPriceInformation(requisition);
+                model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
+                model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 return View(model);
             }
             return Forbid();
@@ -97,10 +96,7 @@ namespace Tolk.Web.Controllers
                 var order = request.Order;
                 var listType = order.CustomerOrganisation.PriceListType;
                 var model = RequisitionProcessModel.GetProcessViewModelFromRequisition(requisition);
-                model.CalculatedPrice = _priceCalculationService.GetPrices(order.StartAt, order.EndAt, competenceLevel, listType, request.Ranking.BrokerFee).TotalPrice;
-                model.ResultingPrice = _priceCalculationService.GetPrices(requisition.SessionStartedAt, requisition.SessionEndedAt, competenceLevel, listType, (request.Ranking.BrokerFee),
-                    requisition.TimeWasteBeforeStartedAt, requisition.TimeWasteAfterEndedAt).TotalPrice;
-                model.PriceInformationModel = GetRequisitionPriceInformation(requisition);
+                model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 return View(model);
             }
             return Forbid();
@@ -381,6 +377,20 @@ namespace Tolk.Web.Controllers
             PriceInformationModel model = new PriceInformationModel();
             model.PriceInformationToDisplay =_priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
             model.Header = "Fakturainformation";
+            model.UseDisplayHideInfo = false;
+            return model;
+        }
+
+        private PriceInformationModel GetRequisitionPriceInformation(Request request)
+        {
+            if (request.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
+            model.Header = "Beräknat pris för avropssvar";
+            model.UseDisplayHideInfo = false;
             return model;
         }
 

@@ -103,17 +103,18 @@
         <display-entry asp-for="TimeRange" />
         <display-entry asp-for="Description" />
         <display-entry asp-for="BrokerName" />
-        @if (Model.CalculatedPriceActiveRequest != null)
-        {
-            <display-entry asp-for="CalculatedPriceActiveRequest" />
-        }
-        else
-        {
-            <display-entry asp-for="CalculatedPrice" />
-        }
         @if (Model.AllowMoreThanTwoHoursTravelTime && Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="ExpectedTravelCosts" />
+        }
+
+        @if (Model.ActiveRequestPriceInformationModel != null)
+        {
+            Html.RenderPartial("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel);
+        }
+        else if (Model.OrderCalculatedPriceInformationModel != null)
+        {
+            Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
         }
         @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
         {

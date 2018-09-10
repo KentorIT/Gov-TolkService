@@ -85,6 +85,11 @@ $(function () {
  
 });
 
+$('.more-info-price').click(function () {
+    $('.detail-price-info').collapse('toggle');
+});
+
+
 $.fn.extend({
     bindEnterKey: function (input, button, context) {
         var $context = context ? $(context) : $(this);

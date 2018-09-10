@@ -112,13 +112,13 @@ namespace Tolk.Web.Controllers
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
                     request.Status == RequestStatus.Approved &&
                     _dateCalculationService.GetWorkDaysBetween(now.Date, order.StartAt.Date) < 2;
-
+                model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
-                    model.CalculatedPriceActiveRequest = request.PriceRows.Sum(p => p.TotalPrice);
+                    model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
                     model.RequestId = request.RequestId;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                     model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
@@ -144,6 +144,32 @@ namespace Tolk.Web.Controllers
             }
 
             return Forbid();
+        }
+
+        private PriceInformationModel GetPriceinformationToDisplay(Request request)
+        {
+            if (request.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
+            model.Header = "Beräknat pris enligt avropssvar";
+            model.UseDisplayHideInfo = true;
+            return model;
+        }
+
+        private PriceInformationModel GetPriceinformationToDisplay(Order order)
+        {
+            if (order.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), null);
+            model.Header = "Beräknat pris enligt ursprungligt avrop";
+            model.UseDisplayHideInfo = true;
+            return model;
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -433,7 +459,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
-                .Include(o => o.PriceRows)
+                .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
@@ -444,7 +470,7 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Ranking)
                     .ThenInclude(r => r.Broker)
                 .Include(o => o.Requests)
-                    .ThenInclude(r => r.PriceRows)
+                    .ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Complaints)
                 .Include(o => o.Requests)

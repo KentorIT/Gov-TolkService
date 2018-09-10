@@ -12,14 +12,15 @@ namespace Tolk.Web.Models
     public class PriceInformationModel
     {
 
-        [NoDisplayName]
         public DisplayPriceInformation PriceInformationToDisplay { get; set; }
 
-        [NoDisplayName]
         public string Header { get; set; }
 
         [DataType(DataType.Currency)]
         public decimal TotalPriceToDisplay { get { return PriceInformationToDisplay.TotalPrice; } }
+
+        public bool UseDisplayHideInfo { get; set; }
+
 
     }
 }

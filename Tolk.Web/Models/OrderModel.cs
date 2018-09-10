@@ -150,17 +150,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 
-        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal CalculatedPrice { get => PriceInformation?.TotalPrice ?? 0; }
+        public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
         [Display(Name = "Angiven förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
-        [Display(Name = "Beräknat pris enligt avropssvar inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal? CalculatedPriceActiveRequest { get; set; }
+        public PriceInformationModel ActiveRequestPriceInformationModel { get; set; }
 
         [Display(Name = "Tillsatt tolk")]
         public string InterpreterName { get; set; }
@@ -222,7 +218,7 @@ namespace Tolk.Web.Models
         public string ComplaintMessage { get; set; }
 
         public bool IsReplacement => ReplacingOrderId.HasValue;
-        
+
         public List<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {
             get
@@ -254,7 +250,7 @@ namespace Tolk.Web.Models
                         list.Add(RequestedCompetenceLevelThird.Value);
                     }
                 }
-                
+
                 return list;
             }
         }
@@ -285,7 +281,7 @@ namespace Tolk.Web.Models
                 order.RegionId = RegionId;
                 order.AssignentType = AssignmentType;
                 order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
-	            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+                order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (UseRankedInterpreterLocation)
                 {
                     //Add one(3) rows to OrderInterpreterLocation
@@ -377,7 +373,7 @@ namespace Tolk.Web.Models
 
         public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
-            
+
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
@@ -386,7 +382,7 @@ namespace Tolk.Web.Models
             }).ToList();
             if (!order.SpecificCompetenceLevelRequired)
             {
-                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank ).ToList();
+                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
             }
             var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
             var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
@@ -457,10 +453,11 @@ namespace Tolk.Web.Models
                         PriceListRowId = r.PriceListRowId,
                     }).ToList()
                 },
+
                 PreviousRequests = order.Requests.Where(r =>
-                   r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
-                   r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
-                   r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
+                       r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
+                       r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
+                       r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

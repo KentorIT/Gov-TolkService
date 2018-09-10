@@ -96,9 +96,9 @@
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
         }
-        @if (Model.PriceInformationModel != null)
+        @if (Model.ResultPriceInformationModel != null)
         {
-            Html.RenderPartial("_PriceInformationDisplay", Model.PriceInformationModel);
+            Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
         }
         else
         {

@@ -89,7 +89,9 @@ namespace Tolk.Web.Models
         public string InvoiceInformation { get; set; }
 
 
-        public PriceInformationModel PriceInformationModel { get; set; }
+        public PriceInformationModel ResultPriceInformationModel { get; set; }
+
+        public PriceInformationModel RequestPriceInformationModel { get; set; }
 
         #region methods
 
