@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Enums
         Confirmed = 2,
         [Description("Reklamation bestridd av förmedling")]
         Disputed = 3,
-        [Description("Bestridning accepterad")]
+        [Description("Bestridande accepterat")]
         TerminatedAsDisputeAccepted = 4,
         [Description("Avvaktar extern process")]
         DisputePendingTrial = 5,
