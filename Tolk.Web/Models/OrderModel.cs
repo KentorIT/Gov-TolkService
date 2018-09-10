@@ -54,7 +54,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
         [Required]
-        public TimeRange TimeRange { get; set; }
+        public virtual TimeRange TimeRange { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]

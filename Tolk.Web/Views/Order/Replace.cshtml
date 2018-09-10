@@ -1,4 +1,4 @@
-﻿@model Tolk.Web.Models.OrderModel
+﻿@model Tolk.Web.Models.ReplaceOrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
@@ -115,6 +115,8 @@
                 <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
                 <form-entry asp-for="OffSiteContactInformation" />
             }
+            <display-entry asp-for="ReplacedTimeRange" />
+            <form-entry asp-for="ReplacedTimeRange" type="hidden" />
             <form-entry asp-for="TimeRange" />
             <form-entry asp-for="Description" />
             <button class="btn btn-default">Skapa ersättningsuppdrag</button>

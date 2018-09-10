@@ -39,6 +39,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeTime = "time";
         private const string InputTypeDateRange = "date-range";
         private const string InputTypeTimeRange = "time-range";
+        private const string InputTypeHiddenTimeRangeHidden = "time-range-hidden";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -74,6 +75,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeDateTimeOffset:
                 case InputTypeTime:
                 case InputTypeDateRange:
+                case InputTypeHiddenTimeRangeHidden:
                 case InputTypeTextArea:
                 case InputTypeTimeRange:
                     if (Items != null)
@@ -106,7 +108,7 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeCheckbox;
                     return;
                 }
-                if(For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
+                if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
                 {
                     InputType = InputTypeTextArea;
                     return;
@@ -117,16 +119,21 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeTime;
                     return;
                 }
-                if(For.ModelExplorer.ModelType == typeof(TimeRange))
+                if (For.ModelExplorer.ModelType == typeof(TimeRange))
                 {
                     InputType = InputTypeTimeRange;
                     return;
                 }
-                if(For.ModelExplorer.ModelType == typeof(DateRange))
+                if (For.ModelExplorer.ModelType == typeof(DateRange))
                 {
                     InputType = InputTypeDateRange;
                     return;
                 }
+            }
+            else if (InputType == "hidden" && For.ModelExplorer.ModelType == typeof(TimeRange))
+            {
+                InputType = InputTypeHiddenTimeRangeHidden;
+                return;
             }
         }
 
@@ -173,6 +180,9 @@ namespace Tolk.Web.TagHelpers
                         break;
                     case InputTypeTimeRange:
                         WriteTimeRangeBlock(writer);
+                        break;
+                    case InputTypeHiddenTimeRangeHidden:
+                        WriteTimeRangeBlock(writer, true);
                         break;
                     default:
                         WriteLabel(writer);
@@ -443,12 +453,8 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
         }
 
-        private void WriteTimeRangeBlock(TextWriter writer)
+        private void WriteTimeRangeBlock(TextWriter writer, bool isHidden = false)
         {
-            WriteLabelWithoutFor(writer);
-
-            writer.WriteLine("<div class=\"form-inline\">");
-
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(TimeRange.StartDate));
             var dateFieldName = $"{For.Name}.{nameof(TimeRange.StartDate)}";
             var startTimeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(TimeRange.StartTime));
@@ -460,23 +466,46 @@ namespace Tolk.Web.TagHelpers
             object startTimeValue = null;
             object endTimeValue = null;
 
-            if(For.Model != null)
+            if (For.Model != null)
             {
                 dateValue = dateModelExplorer.Model;
                 startTimeValue = startTimeModelExplorer.Model;
                 endTimeValue = endTimeModelExplorer.Model;
             }
 
-            WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-            WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer);
-            WriteRightArrowSpan(writer);
-            WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer);
+            if (isHidden)
+            {
+                //Make three hidden fields
+                var tagBuilder = _htmlGenerator.GenerateHidden(ViewContext, dateModelExplorer, dateFieldName, dateValue, true, null);
+                tagBuilder.WriteTo(writer, _htmlEncoder);
+                var tagBuilder2 = _htmlGenerator.GenerateHidden(ViewContext, startTimeModelExplorer, startTimeFieldName, startTimeValue, true, null);
+                tagBuilder2.WriteTo(writer, _htmlEncoder);
+                var tagBuilder3 = _htmlGenerator.GenerateHidden(ViewContext, endTimeModelExplorer, endTimeFieldName, endTimeFieldName, true, null);
+                tagBuilder3.WriteTo(writer, _htmlEncoder);
 
-            writer.WriteLine("</div>"); // form-inline.
+            }
+            else
+            {
+                // Check if label will be displayed
+                var type = For.ModelExplorer.Metadata.ContainerType;
+                var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
+                var validateRange = !Attribute.IsDefined(property, typeof(StayWithinOriginalRangeAttribute));
 
-            WriteValidation(writer, dateModelExplorer, dateFieldName);
-            WriteValidation(writer, startTimeModelExplorer, startTimeFieldName);
-            WriteValidation(writer, endTimeModelExplorer, endTimeFieldName);
+                WriteLabelWithoutFor(writer);
+
+                writer.WriteLine("<div class=\"form-inline\">");
+
+                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
+                WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer);
+                WriteRightArrowSpan(writer);
+                WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer);
+
+                writer.WriteLine("</div>"); // form-inline.
+
+                WriteValidation(writer, dateModelExplorer, dateFieldName);
+                WriteValidation(writer, startTimeModelExplorer, startTimeFieldName);
+                WriteValidation(writer, endTimeModelExplorer, endTimeFieldName);
+            }
         }
 
         private void RemoveRequiredIfNullable(TagBuilder tagBuilder)

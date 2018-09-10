@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -194,7 +195,13 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
-                var model = OrderModel.GetModelFromOrder(order);
+                ReplaceOrderModel model = Mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
+#warning FLYTTA DESSA TILL REPLACE, GÖR EN EGEN GET MODEL OSV...
+                model.ReplacedTimeRange = new TimeRange
+                {
+                    StartDateTime = order.StartAt,
+                    EndDateTime = order.EndAt
+                };
                 model.OrderId = null;
                 model.ReplacingOrderNumber = order.OrderNumber;
                 model.ReplacingOrderId = replacingOrderId;
@@ -206,7 +213,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Replace(OrderModel model)
+        public async Task<IActionResult> Replace(ReplaceOrderModel model)
         {
             if (ModelState.IsValid)
             {

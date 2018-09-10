@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Tolk.BusinessLogic.Helpers;
 using System;
 using Microsoft.AspNetCore.Http;
+using Tolk.Web.Models;
+using AutoMapper;
 
 namespace Tolk.Web
 {
@@ -79,6 +81,10 @@ namespace Tolk.Web
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
                 opt.ModelBinderProviders.Insert(1, new TimeSpanModelBinderProvider());
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
+            });
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.CreateMap<OrderModel, ReplaceOrderModel>();
             });
 
             services.Configure<RequestLocalizationOptions>(opt =>
