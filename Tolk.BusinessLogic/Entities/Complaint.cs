@@ -107,27 +107,14 @@ namespace Tolk.BusinessLogic.Entities
             AnswerMessage = message;
         }
 
-        public void AcceptDispute(DateTimeOffset acceptedAt, int userId, int? impersonatorId)
+        public void AnswerDispute(DateTimeOffset answerDisputedAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
         {
             if (Status != ComplaintStatus.Disputed)
             {
-                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be terminated as accepted.");
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be answered.");
             }
-
-            Status = ComplaintStatus.TerminatedAsDisputeAccepted;
-            AnswerDisputedAt = acceptedAt;
-            AnswerDisputedBy = userId;
-            ImpersonatingAnswerDisputedBy = impersonatorId;
-        }
-
-        public void Refute(DateTimeOffset refutedAt, int userId, int? impersonatorId, string message)
-        {
-            if (Status != ComplaintStatus.Disputed)
-            {
-                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be refuted.");
-            }
-            Status = ComplaintStatus.DisputePendingTrial;
-            AnswerDisputedAt = refutedAt;
+            Status = status;
+            AnswerDisputedAt = answerDisputedAt;
             AnswerDisputedBy = userId;
             ImpersonatingAnswerDisputedBy = impersonatorId;
             AnswerDisputedMessage = message;

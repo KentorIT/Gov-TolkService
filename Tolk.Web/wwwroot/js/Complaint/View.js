@@ -8,6 +8,10 @@ $(function () {
         event.preventDefault();
         $("#refuteMessageDialog").openDialog();
     });
+    $("body").on("click", ".accept-button", function () {
+        event.preventDefault();
+        $("#acceptDisputeMessageDialog").openDialog();
+    });
 });
 $.fn.extend({
     openDialog: function () {

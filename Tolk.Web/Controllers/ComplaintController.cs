@@ -175,40 +175,39 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> AcceptDispute(int complaintId)
+        public async Task<IActionResult> AcceptDispute(AnswerDisputeComplaintModel model)
         {
             if (ModelState.IsValid)
             {
-                var complaint = GetComplaint(complaintId);
-                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
-                {
-                    complaint.AcceptDispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.SaveChanges();
-                    return RedirectToAction(nameof(View), new { id = complaintId });
-                }
-                return Forbid();
+                return await AnswerDispute(model, ComplaintStatus.TerminatedAsDisputeAccepted);
             }
-            return RedirectToAction(nameof(View), new { id = complaintId });
+            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Refute(RefuteComplaintModel model)
+        public async Task<IActionResult> Refute(AnswerDisputeComplaintModel model)
         {
             if (ModelState.IsValid)
             {
-                var complaint = GetComplaint(model.ComplaintId);
-                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
-                {
-                    complaint.Refute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.RefuteMessage);
-                    _dbContext.SaveChanges();
-                    CreateEmailOnComplaintAction(complaint);
-                    return RedirectToAction(nameof(View), new { id = model.ComplaintId });
-                }
-                return Forbid();
+                return await AnswerDispute(model, ComplaintStatus.DisputePendingTrial);
             }
             return RedirectToAction(nameof(View), new { id = model.ComplaintId });
         }
+
+        private async Task<IActionResult> AnswerDispute(AnswerDisputeComplaintModel model, ComplaintStatus status)
+        {
+            var complaint = GetComplaint(model.ComplaintId);
+            if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+            {
+                complaint.AnswerDispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage, status);
+                _dbContext.SaveChanges();
+                CreateEmailOnComplaintAction(complaint);
+                return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+            }
+            return Forbid();
+        }
+
 
         private Request GetRequest(int id)
         {
@@ -253,8 +252,13 @@ namespace Tolk.Web.Controllers
                     break;
                 case ComplaintStatus.DisputePendingTrial:
                     receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject = $"Er bestridan av reklamation ogillades på avrop {orderNumber}";
-                    body = $"Bestridan av reklamation för avrop {orderNumber} har ogillats med följande meddelande:\n{complaint.ComplaintMessage}";
+                    subject = $"Ert bestridande av reklamation ogillades på avrop {orderNumber}";
+                    body = $"Bestridande av reklamation för avrop {orderNumber} har ogillats med följande meddelande:\n{complaint.AnswerDisputedMessage}";
+                    break;
+                case ComplaintStatus.TerminatedAsDisputeAccepted:
+                    receipent = complaint.Request.Ranking.Broker.EmailAddress;
+                    subject = $"Ert bestridande av reklamation har godtagits på avrop {orderNumber}";
+                    body = $"Bestridande av reklamation för avrop {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage}";
                     break;
                 default:
                     throw new NotImplementedException();

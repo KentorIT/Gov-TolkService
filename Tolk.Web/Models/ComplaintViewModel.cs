@@ -36,8 +36,8 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [ClientRequired]
-        [Display(Name = "Meddelande vid ogillande av bestridning")]
-        public string RefuteMessage { get; set; }
+        [Display(Name = "Meddelande vid svar på bestridande")]
+        public string AnswerDisputedMessage { get; set; }
 
         public bool IsBroker { get; set; }
 
@@ -83,7 +83,7 @@ namespace Tolk.Web.Models
                 Message = complaint.ComplaintMessage,
                 Status = complaint.Status,
                 DisputeMessage = complaint.AnswerMessage,
-                RefuteMessage = complaint.AnswerDisputedMessage,
+                AnswerDisputedMessage = complaint.AnswerDisputedMessage,
                 IsBroker = isBroker,
                 IsCustomer = isCustomer,
             };
