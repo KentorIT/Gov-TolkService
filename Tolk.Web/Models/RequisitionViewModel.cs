@@ -79,14 +79,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
-        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal CalculatedPrice { get; set; }
-
-        [Display(Name = "Slutgiltigt pris inklusive tidsspillan, förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal ResultingPrice { get; set; }
-
         [Display(Name = "Meddelande vid nekande")]
         public string DenyMessage { get; set; }
 

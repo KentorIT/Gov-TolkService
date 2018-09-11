@@ -88,6 +88,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
+                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
             {
@@ -97,6 +98,7 @@ namespace Tolk.Web.Controllers
                 var listType = order.CustomerOrganisation.PriceListType;
                 var model = RequisitionProcessModel.GetProcessViewModelFromRequisition(requisition);
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
+                model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 return View(model);
             }
             return Forbid();
@@ -390,7 +392,7 @@ namespace Tolk.Web.Controllers
             PriceInformationModel model = new PriceInformationModel();
             model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
             model.Header = "Beräknat pris för avropssvar";
-            model.UseDisplayHideInfo = false;
+            model.UseDisplayHideInfo = true;
             return model;
         }
 

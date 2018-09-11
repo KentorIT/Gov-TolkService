@@ -91,7 +91,10 @@
         }
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
-        <display-entry asp-for="CalculatedPrice" />
+        @if (Model.RequestPriceInformationModel != null)
+        {
+            Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+        }
         @if (Model.AllowCreation)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
@@ -99,10 +102,6 @@
         @if (Model.ResultPriceInformationModel != null)
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
-        }
-        else
-        {
-            <display-entry asp-for="ResultingPrice" />
         }
     </div>
 </div>
