@@ -1,0 +1,20 @@
+@using Tolk.BusinessLogic.Entities
+@model LoginViewModel
+@inject SignInManager<AspNetUser> SignInManager
+@{
+}
+<div class="row">
+    <h2>Logga in</h2>
+    <div class="col-md-4">
+        <section>
+            <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" asp-action="Login" asp-controller="Account" class="do-not-check-dirty">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <form-entry asp-for="Email" />
+                <form-entry asp-for="Password" />
+                <button type="submit" class="btn btn-default">Logga in</button><br />
+                <a asp-action="ForgotPassword" asp-controller="Account">Gl&ouml;mt ditt l&ouml;senord?</a>
+                <a asp-action="Register" asp-controller="Account" class="pull-right">Registrera anv&auml;ndare</a>
+            </form>
+        </section>
+    </div>
+</div>

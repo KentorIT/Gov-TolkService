@@ -1,46 +1,10 @@
 ﻿@using Tolk.BusinessLogic.Entities
 @model LoginViewModel
 @inject SignInManager<AspNetUser> SignInManager
-
 @{
     ViewData["Title"] = "Logga in";
 }
-
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="do-not-check-dirty" id="loginform">
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <form-entry asp-for="Email" />
-                <div class="collapse" id="password_entry">
-                    <form-entry asp-for="Password" />
-                    <a asp-action="ForgotPassword">Glömt ditt lösenord?</a>
-                    <a id="email_link" class="pull-right" href="#email_button" role="button">Logga in med e-post-länk</a>
-                </div>
-                <button type="submit" class="btn btn-default">Logga in</button>
-                <div class="collapse in">
-                    <a id="password_link" href="#password_entry">Logga in med lösenord</a>
-                </div>
-            </form>
-        </section>
-    </div>
-</div>
-
+@await Html.PartialAsync("_LoginPagePartial")
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-
-    <script type="text/javascript">
-
-        $('#password_link').click(function () {
-            $('#password_link').parent().collapse('hide');
-            $('#password_entry').collapse('show');
-        });
-
-        $('#email_link').click(function () {
-            $('#password_link').parent().collapse('show');
-            $('#password_entry').collapse('hide');
-        });
-
-    </script>
 }

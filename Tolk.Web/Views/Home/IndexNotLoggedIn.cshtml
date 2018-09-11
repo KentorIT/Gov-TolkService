@@ -1,4 +1,4 @@
-﻿@model RegisterViewModel
+﻿@model LoginViewModel
 @using Tolk.BusinessLogic
 @{
     ViewData["Title"] = Constants.SystemName;
@@ -18,9 +18,7 @@
             e-post-meddelande om hur du aktiverar ditt konto.
         </p>
     </div>
-    <div class="col-md-4">
-        @await Html.PartialAsync("_RegisterAccount")
-    </div>
+    @await Html.PartialAsync("_LoginPagePartial")
 </div>
 
 @section Scripts{ 

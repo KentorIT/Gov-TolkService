@@ -20,6 +20,7 @@ using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Tolk.BusinessLogic.Helpers;
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Tolk.Web
 {
@@ -48,10 +49,12 @@ namespace Tolk.Web
 
             services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
 
-            services.Configure<CookieAuthenticationOptions>(opt =>
+            services.ConfigureApplicationCookie(opt =>
             {
-                // Log in sessions last for 90 days.
-                opt.ExpireTimeSpan = TimeSpan.FromDays(90);
+                //This does not work, for some reason...
+                //opt.LoginPath = new PathString("/Home/IndexNotLoggedIn");
+                // Log in sessions last two hours, sliding.
+                opt.ExpireTimeSpan = TimeSpan.FromHours(2);
                 // If less than half of ExpireTimeSpan remains, lengthen session to ExpireTimeSpan again.
                 opt.SlidingExpiration = true;
             });
@@ -125,7 +128,6 @@ namespace Tolk.Web
                 SupportedCultures = cultureArray,
                 SupportedUICultures = cultureArray
             });
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
