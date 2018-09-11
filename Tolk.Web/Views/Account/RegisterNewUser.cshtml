@@ -1,18 +1,18 @@
 ﻿@model RegisterNewUserViewModel
 
 @{
-    ViewData["Title"] = "RegisterNewUser";
+    ViewData["Title"] = "Ny användare";
 }
 
-<h2>RegisterNewUser</h2>
-
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-8">
+        <h2>@ViewData["Title"]</h2>
         <form method="post" asp-action="RegisterNewUser" asp-controller="Account">
-            <form-entry asp-for="Password" />
-            <form-entry asp-for="PasswordRetype" />
+            <input type="hidden" asp-for="UserId" />
             <form-entry asp-for="NameFirst" />
             <form-entry asp-for="NameFamily" />
+            <form-entry asp-for="Password" />
+            <form-entry asp-for="PasswordRetype" />
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
             <button type="submit" class="btn btn-success">Skapa</button>

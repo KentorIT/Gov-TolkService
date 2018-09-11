@@ -9,12 +9,14 @@ namespace Tolk.Web.Models.AccountViewModels
 {
     public class RegisterNewUserViewModel
     {
+        public string UserId { get; set; }
+
         [ClientRequired]
-        [Display(Name = "Lösenord")]
+        [Display(Name = "Nytt lösenord")]
         public string Password { get; set; }
 
         [ClientRequired]
-        [Display(Name = "Lösenord (igen)")]
+        [Display(Name = "Bekräfta lösenord")]
         public string PasswordRetype { get; set; }
 
         [ClientRequired]

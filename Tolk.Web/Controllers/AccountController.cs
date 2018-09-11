@@ -427,7 +427,8 @@ supporten på {_options.SupportEmail}";
                 // Resetting the security stamp invalidates the code so operation cannot be redone.
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _signInManager.SignInAsync(user, true);
-                return RedirectToAction(nameof(ConfirmAccountConfirmation));
+
+                return RedirectToAction(nameof(RegisterNewUser), new { userId });
             }
 
             var model = new ConfirmAccountModel { UserId = userId };
@@ -532,8 +533,55 @@ supporten på {_options.SupportEmail}";
         }
 
         [AllowAnonymous]
-        public IActionResult RegisterNewUser(RegisterNewUserViewModel model)
+        [HttpGet]
+        public IActionResult RegisterNewUser(string userId, string code)
         {
+            var model = new RegisterNewUserViewModel { UserId = userId };
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> RegisterNewUser(RegisterNewUserViewModel model)
+        {
+            if (string.IsNullOrEmpty(model.UserId))
+            {
+                throw new ApplicationException($"No UserId provided for account creation");
+            }
+
+            if (ModelState.IsValid)
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var user = await _userManager.FindByIdAsync(model.UserId);
+
+                    if (user != null)
+                    {
+                        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                        var result = await _userManager.ResetPasswordAsync(user, code, model.Password);
+                        if (result.Succeeded)
+                        {
+                            user.NameFirst = model.NameFirst;
+                            user.NameFamily = model.NameFamily;
+                            user.PhoneNumber = model.PhoneWork;
+                            user.PhoneNumberCellphone = model.PhoneCellphone;
+
+                            result = await _userManager.UpdateAsync(user);
+                            if (result.Succeeded)
+                            {
+                                transaction.Complete();
+                                _logger.LogInformation("Successfully created new user {userId}", model.UserId);
+
+                                return RedirectToAction(nameof(ConfirmAccountConfirmation));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new ApplicationException($"Can't find user {model.UserId}");
+                    }
+                }
+            }
             return View(model);
         }
 
