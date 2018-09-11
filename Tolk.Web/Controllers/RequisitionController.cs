@@ -80,7 +80,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
-                .Include(r => r.PriceRows)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
