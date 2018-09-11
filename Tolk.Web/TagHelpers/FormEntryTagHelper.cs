@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Tolk.Web.Models;
 using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -248,7 +246,7 @@ namespace Tolk.Web.TagHelpers
                 format: null,
                 htmlAttributes: new { @class = "form-control" });
 
-            if(!string.IsNullOrEmpty(For.Metadata.Description))
+            if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
                 tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
             }
@@ -385,7 +383,7 @@ namespace Tolk.Web.TagHelpers
             WriteValidation(writer, timeModelExplorer, timeFieldName);
         }
 
-        private void WriteTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer)
+        private void WriteTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, IDictionary<string, string> extraAttributes = null)
         {
             writer.WriteLine("<div class=\"input-group time\">");
 
@@ -397,13 +395,19 @@ namespace Tolk.Web.TagHelpers
                 format: "{0:hh\\:mm}",
                 htmlAttributes: new
                 {
-                    @class = "form-control inside-time",
+                    @class = "form-control time-range-part",
                     placeholder = "HH:MM",
                     data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):?[0-5][0-9]$",
                     data_val_regex = "Ange tid som HH:MM eller HHMM",
                     data_val_required = "Tid måste anges.",
-                    data_rule_insidetime = ".inside-time",
                 });
+            if (extraAttributes != null)
+            {
+                foreach (var pair in extraAttributes)
+                {
+                    tagBuilder.Attributes.Add(pair.Key, pair.Value);
+                }
+            }
 
             RemoveRequiredIfNullable(tagBuilder);
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -427,7 +431,8 @@ namespace Tolk.Web.TagHelpers
             string dateFieldName,
             object dateValue,
             TextWriter writer,
-            string extraGroupDivClass = "")
+            string extraGroupDivClass = "",
+            IDictionary<string, string> extraAttributes = null)
         {
             writer.WriteLine("<div class=\"input-group date " + extraGroupDivClass + "\">");
 
@@ -439,13 +444,18 @@ namespace Tolk.Web.TagHelpers
                 format: "{0:yyyy-MM-dd}",
                 htmlAttributes: new
                 {
-                    @class = "form-control datepicker inside-time",
+                    @class = "form-control datepicker time-range-part",
                     placeholder = "ÅÅÅÅ-MM-DD",
                     type = "text",
                     data_val_required = "Datum måste anges.",
-                    data_rule_insidetime = ".inside-time",
                 });
-
+            if (extraAttributes != null)
+            {
+                foreach (var pair in extraAttributes)
+                {
+                    tagBuilder.Attributes.Add(pair.Key, pair.Value);
+                }
+            }
             RemoveRequiredIfNullable(tagBuilder);
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -476,11 +486,11 @@ namespace Tolk.Web.TagHelpers
             if (isHidden)
             {
                 //Make three hidden fields
-                var tagBuilder = _htmlGenerator.GenerateHidden(ViewContext, dateModelExplorer, dateFieldName, dateValue, true, null);
+                var tagBuilder = _htmlGenerator.GenerateHidden(ViewContext, dateModelExplorer, dateFieldName, ((DateTime)dateValue).ToString("yyyy-MM-dd"), false, null);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
-                var tagBuilder2 = _htmlGenerator.GenerateHidden(ViewContext, startTimeModelExplorer, startTimeFieldName, startTimeValue, true, null);
+                var tagBuilder2 = _htmlGenerator.GenerateHidden(ViewContext, startTimeModelExplorer, startTimeFieldName, ((TimeSpan)startTimeValue).ToString(@"hh\:mm"), false, null);
                 tagBuilder2.WriteTo(writer, _htmlEncoder);
-                var tagBuilder3 = _htmlGenerator.GenerateHidden(ViewContext, endTimeModelExplorer, endTimeFieldName, endTimeFieldName, true, null);
+                var tagBuilder3 = _htmlGenerator.GenerateHidden(ViewContext, endTimeModelExplorer, endTimeFieldName, ((TimeSpan)endTimeValue).ToString(@"hh\:mm"), false, null);
                 tagBuilder3.WriteTo(writer, _htmlEncoder);
 
             }
@@ -489,16 +499,27 @@ namespace Tolk.Web.TagHelpers
                 // Check if label will be displayed
                 var type = For.ModelExplorer.Metadata.ContainerType;
                 var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
-                var validateRange = !Attribute.IsDefined(property, typeof(StayWithinOriginalRangeAttribute));
+                var stayWithinAttribute = property.CustomAttributes.SingleOrDefault(c => c.AttributeType == typeof(StayWithinOriginalRangeAttribute));
+
+                IDictionary<string, string> extraAttributes = null;
+                if (stayWithinAttribute != null)
+                {
+                    extraAttributes = new Dictionary<string, string>
+                    {
+                        { "data-rule-staywithin",  ".time-range-part" },
+                        { "data-msg-staywithin",  (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value },
+                        { "data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value}
+                    };
+                }
 
                 WriteLabelWithoutFor(writer);
 
                 writer.WriteLine("<div class=\"form-inline\">");
 
-                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-                WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer);
+                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer, extraAttributes: extraAttributes);
+                WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer, extraAttributes: extraAttributes);
                 WriteRightArrowSpan(writer);
-                WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer);
+                WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer, extraAttributes: extraAttributes);
 
                 writer.WriteLine("</div>"); // form-inline.
 

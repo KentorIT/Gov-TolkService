@@ -10,9 +10,13 @@ using Tolk.Web.Models;
 namespace Tolk.Web.Helpers
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class StayWithinOriginalRangeAttribute : ValidationAttribute
+    public class StayWithinOriginalRangeAttribute : ValidationAttribute, IClientModelValidator
     {
         public string OtherRangeProperty { get; set; }
+
+        public void AddValidation(ClientModelValidationContext context)
+        {
+        }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {

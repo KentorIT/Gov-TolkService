@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class ReplaceOrderModel : OrderModel
     {
+        [Display(Name = "Det ersatta avropets datum och tid")]
         public TimeRange ReplacedTimeRange { get; set; }
 
         [Display(Name = "Datum och tid för ersättning", Description = "Datum och tid för tolkuppdraget.")]

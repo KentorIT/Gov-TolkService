@@ -1,12 +1,14 @@
 ﻿
 $(function () {
-    $.validator.addMethod("insidetime", function (value, element, options) {
+    $.validator.addMethod("staywithin", function (value, element, options) {
         var $fields = $(options, element.form),
             $fieldsFirst = $fields.eq(0),
-            validator = $fieldsFirst.data("valid_req_grp") ? $fieldsFirst.data("valid_req_grp") : $.extend({}, this),
-            isValid = test();
+            validator = $fieldsFirst.data("valid_req_grp") ? $fieldsFirst.data("valid_req_grp") : $.extend({}, this);
         if (element.id !== $fieldsFirst[0].id) {
             isValid = true;
+        } else {
+            var thisPrefix = element.id.split('_')[0];
+            isValid = test(thisPrefix, $(element).data("rule-otherproperty"));
         }
         // Store the cloned validator for future validation
         $fieldsFirst.data("valid_req_grp", validator);
@@ -22,10 +24,17 @@ $(function () {
         return isValid;
     }, $.validator.format("Ooops."));
 
-    var test = function () {
-        var dateFieldChanged = new Date($("#TimeRange_StartDate").val()).toLocaleDateString("sv-SE");
-        var startFieldChanged = $("#TimeRange_StartTime").val();
-        var endFieldChanged = $("#TimeRange_EndTime").val();
+    var test = function (thisPrefix, otherPrefix) {
+        var dateField = new Date($("#" + otherPrefix +  "_StartDate").val()).toLocaleDateString("sv-SE");
+        var startField = $("#" + otherPrefix +  "_StartTime").val();
+        var endField = $("#" + otherPrefix +  "_EndTime").val();
+        var isTwoDay = startField > endField;
+        var nextDay = new Date($("#" + otherPrefix +  "_StartDate").val());
+        nextDay.setDate(nextDay.getDate() + 1);
+        //Find the TimeRange_ part of the current input's name, to find the other inputs
+        var dateFieldChanged = new Date($("#" + thisPrefix +  "_StartDate").val()).toLocaleDateString("sv-SE");
+        var startFieldChanged = $("#" + thisPrefix +  "_StartTime").val();
+        var endFieldChanged = $("#" + thisPrefix +  "_EndTime").val();
         if ((!isTwoDay && dateField !== dateFieldChanged) || (isTwoDay && dateField !== dateFieldChanged && dateFieldChanged !== nextDay)) {
             return false;
         } else {
@@ -47,7 +56,7 @@ $(function () {
     };
 
     $('form').validate({
-        onfocusout: true,
+        //onfocusout: true,
         groups: {
             timerange: "TimeRange.StartTime TimeRange_StartTime TimeRange.EndTime"
         },
@@ -59,11 +68,4 @@ $(function () {
             }
         }
     });
-
-    var dateField = new Date($("#TimeRange_StartDate").val()).toLocaleDateString("sv-SE");
-    var startField = $("#TimeRange_StartTime").val();
-    var endField = $("#TimeRange_EndTime").val();
-    var isTwoDay = startField > endField;
-    var nextDay = new Date($("#TimeRange_StartDate").val());
-    nextDay.setDate(nextDay.getDate() + 1);
 });

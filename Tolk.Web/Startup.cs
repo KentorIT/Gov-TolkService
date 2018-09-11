@@ -75,17 +75,23 @@ namespace Tolk.Web
             services.AddScoped<PriceCalculationService>();
 
             services.RegisterTolkAuthorizationPolicies();
-
             services.AddMvc(opt =>
             {
                 opt.ModelBinderProviders.Insert(0, new DateTimeOffsetModelBinderProvider());
                 opt.ModelBinderProviders.Insert(1, new TimeSpanModelBinderProvider());
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
-            services.AddAutoMapper(cfg =>
+ 
+            Mapper.Initialize(cfg =>
             {
                 cfg.CreateMap<OrderModel, ReplaceOrderModel>();
             });
+
+           // This does not, for some reason, work. I had to initialice the map when I use it instead...
+            //services.AddAutoMapper(cfg =>
+            //{
+            //    cfg.CreateMap<OrderModel, ReplaceOrderModel>();
+            //});
 
             services.Configure<RequestLocalizationOptions>(opt =>
             {
