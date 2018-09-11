@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,15 @@ namespace Tolk.BusinessLogic.Entities
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class AspNetUser : IdentityUser<int>
     {
+        [MaxLength(255)]
+        public string NameFirst { get; set; }
+
+        [MaxLength(255)]
+        public string NameFamily { get; set; }
+
+        [MaxLength(32)]
+        public string PhoneNumberCellphone { get; set; }
+
         private AspNetUser() { }
 
         public AspNetUser(string email)

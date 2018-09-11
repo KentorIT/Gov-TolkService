@@ -153,6 +153,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd");
 
+                    b.Property<string>("NameFamily")
+                        .HasMaxLength(255);
+
+                    b.Property<string>("NameFirst")
+                        .HasMaxLength(255);
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256);
 
@@ -162,6 +168,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("PasswordHash");
 
                     b.Property<string>("PhoneNumber");
+
+                    b.Property<string>("PhoneNumberCellphone")
+                        .HasMaxLength(32);
 
                     b.Property<bool>("PhoneNumberConfirmed");
 

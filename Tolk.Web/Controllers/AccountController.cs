@@ -531,6 +531,7 @@ supporten på {_options.SupportEmail}";
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult RegisterNewUser(RegisterNewUserViewModel model)
         {
             return View(model);
