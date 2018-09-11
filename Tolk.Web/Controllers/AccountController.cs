@@ -531,6 +531,11 @@ supporten på {_options.SupportEmail}";
             return View();
         }
 
+        public IActionResult RegisterNewUser(RegisterNewUserViewModel model)
+        {
+            return View(model);
+        }
+
         #region Helpers
 
         private void AddErrors(IdentityResult result)
