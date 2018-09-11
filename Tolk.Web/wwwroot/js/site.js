@@ -92,7 +92,7 @@ $(function () {
 });
 
 $('.more-info-price').click(function () {
-    $('.detail-price-info').collapse('toggle');
+    $(this).closest('.wrap-price-info').find('.detail-price-info').collapse('toggle');
 });
 
 

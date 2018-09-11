@@ -112,7 +112,7 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel);
         }
-        else if (Model.OrderCalculatedPriceInformationModel != null)
+        @if (Model.OrderCalculatedPriceInformationModel != null)
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
         }
