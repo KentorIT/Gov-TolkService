@@ -196,7 +196,6 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
                 ReplaceOrderModel model = Mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
-#warning FLYTTA DESSA TILL REPLACE, GÖR EN EGEN GET MODEL OSV...
                 model.ReplacedTimeRange = new TimeRange
                 {
                     StartDateTime = order.StartAt,
