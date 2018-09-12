@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -250,6 +251,14 @@ namespace Tolk.Web.TagHelpers
             {
                 tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
             }
+            //The regular expressions are not added as client side valdations for some reason.
+            // Remove this code if this si fixed in future versions of .Net Core, or by some better setup of things that I have not found....
+            if (For.Metadata.ValidatorMetadata.SingleOrDefault(m => m.GetType() == typeof(RegularExpressionAttribute)) is RegularExpressionAttribute regex &&
+                !tagBuilder.Attributes.Any(a => a.Key == "data-val-regex"))
+            {
+                tagBuilder.Attributes.Add("data-val-regex", regex.ErrorMessage);
+                tagBuilder.Attributes.Add("data-val-regex-pattern", regex.Pattern);
+            }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
@@ -267,7 +276,6 @@ namespace Tolk.Web.TagHelpers
             {
                 tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
             }
-
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
