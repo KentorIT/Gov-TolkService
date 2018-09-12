@@ -78,7 +78,7 @@ namespace Tolk.Web.Models
                 OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
                 OffSiteContactInformation = request.Order.OffSiteContactInformation,
                 RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
-                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue)
+                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue)
             };
         }
 

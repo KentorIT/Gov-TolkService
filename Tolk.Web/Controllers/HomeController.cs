@@ -189,7 +189,8 @@ namespace Tolk.Web.Controllers
                 Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
                     r.Order.StartAt < _clock.SwedenNow &&
                     !r.Requisitions.Any() &&
-                    r.Ranking.BrokerId == brokerId).Count(),
+                    r.Ranking.BrokerId == brokerId &&
+                    !r.Order.ReplacingOrderId.HasValue).Count(),
                 Header = "Tolktillfällen att avrapportera",
                 Controller = "Assignment",
                 Action = "List",
@@ -275,7 +276,8 @@ namespace Tolk.Web.Controllers
                 Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
                     r.Order.StartAt < _clock.SwedenNow &&
                     !r.Requisitions.Any() &&
-                    r.InterpreterId == interpreterId).Count(),
+                    r.InterpreterId == interpreterId &&
+                    !r.Order.ReplacingOrderId.HasValue).Count(),
                 Header = "Att avrapportera",
                 Controller = "Assignment",
                 Action = "List",

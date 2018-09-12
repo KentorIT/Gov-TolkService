@@ -60,7 +60,7 @@ namespace Tolk.Web.Models
                         requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt > clock.SwedenNow);
                         break;
                     case AssignmentStatus.ToBeReported:
-                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < clock.SwedenNow);
+                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < clock.SwedenNow && !r.Order.ReplacingOrderId.HasValue);
                         break;
                     default:
                         requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
