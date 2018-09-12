@@ -17,7 +17,14 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string NameFamily { get; set; }
 
-        [MaxLength(32)]
+        public string FullName { get => $"{NameFirst} {NameFamily}"; }
+
+        public string PhoneNumbers
+        { get => string.IsNullOrWhiteSpace(PhoneNumber) ? string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? "saknas" : PhoneNumberCellphone : string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? PhoneNumber : $"{PhoneNumber}, {PhoneNumberCellphone}"; }
+
+        public string CompleteContactInformation { get => $"{FullName}\n{Email}\nTelefon: {PhoneNumbers}"; }
+
+        [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }
 
         private AspNetUser() { }
@@ -35,7 +42,7 @@ namespace Tolk.BusinessLogic.Entities
         }
 
         public AspNetUser(string email, Broker broker)
-            :this(email)
+            : this(email)
         {
             Broker = broker;
         }
@@ -44,7 +51,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
-    
+
         public int? BrokerId { get; set; }
 
         [ForeignKey(nameof(CustomerOrganisationId))]

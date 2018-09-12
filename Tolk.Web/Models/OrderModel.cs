@@ -139,9 +139,11 @@ namespace Tolk.Web.Models
         public DateTimeOffset CreatedAt { get; set; }
 
         [Display(Name = "Skapad av")]
+        [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
         [Display(Name = "Annan kontaktperson")]
+        [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 
         [Display(Name = "Kund")]
@@ -159,6 +161,7 @@ namespace Tolk.Web.Models
         public PriceInformationModel ActiveRequestPriceInformationModel { get; set; }
 
         [Display(Name = "Tillsatt tolk")]
+        [DataType(DataType.MultilineText)]
         public string InterpreterName { get; set; }
 
         [Display(Name = "Tolkens kompetensnivå")]
@@ -395,8 +398,8 @@ namespace Tolk.Web.Models
                 ReplacedByOrderNumber = order?.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
                 ReplacingOrderId = order.ReplacingOrderId,
-                CreatedBy = order.CreatedByUser.NormalizedEmail,
-                ContactPerson = order.ContactPersonUser?.NormalizedEmail,
+                CreatedBy = order.CreatedByUser.CompleteContactInformation,
+                ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",

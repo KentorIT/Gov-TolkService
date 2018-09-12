@@ -88,6 +88,7 @@ namespace Tolk.Web.Models
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]
+        [DataType(DataType.MultilineText)]
         public string Interpreter{ get; set; }
 
         [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
@@ -120,7 +121,7 @@ namespace Tolk.Web.Models
                 CancelMessage = request.CancelMessage,
                 RequestId = request.RequestId,
                 ExpiresAt = request.ExpiresAt,
-                Interpreter = request.Interpreter?.User?.UserName,
+                Interpreter = request.Interpreter?.User?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 RequisitionId = request.Requisitions?.FirstOrDefault(req => req.Status == RequisitionStatus.Created || req.Status == RequisitionStatus.Approved)?.RequisitionId,

@@ -32,13 +32,11 @@ namespace Tolk.Web.Models
                 TravelCosts = requisition.TravelCosts,
                 StoredTimeWasteBeforeStartedAt = requisition.TimeWasteBeforeStartedAt ?? requisition.SessionStartedAt,
                 StoredTimeWasteAfterEndedAt = requisition.TimeWasteAfterEndedAt ?? requisition.SessionEndedAt,
-                //TODO: Should be Name!
-                InterpreterName = requisition.Request.Interpreter.User.Email,
+                InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,
-                //TODO: Should be Name!
-                CreatedBy = requisition.CreatedByUser.Email,
+                CreatedBy = requisition.CreatedByUser.CompleteContactInformation,
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status

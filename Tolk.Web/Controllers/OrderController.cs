@@ -127,7 +127,7 @@ namespace Tolk.Web.Controllers
                     model.InterpreterName = _dbContext.Requests
                         .Include(r => r.Interpreter)
                         .ThenInclude(i => i.User)
-                        .Single(r => r.RequestId == request.RequestId).Interpreter?.User.NormalizedEmail;
+                        .Single(r => r.RequestId == request.RequestId).Interpreter?.User.CompleteContactInformation;
                     model.AllowComplaintCreation = !request.Complaints.Any() &&
                         (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
@@ -223,7 +223,7 @@ namespace Tolk.Web.Controllers
                                 $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                                 $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                                 $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                                $"\tTolk: {request.Interpreter.User.Email}\n" +
+                                $"\tTolk: {request.Interpreter.User.FullName}, e-post: {request.Interpreter.User.Email}\n" +
                                 $"\tSvara senast: {replacingRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
                                 "Detta mail går inte att svara på.",
                                 _clock.SwedenNow));

@@ -38,7 +38,7 @@ namespace Tolk.Web.Models
         public string OffSiteContactInformation { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Address")]
+        [Display(Name = "Adress")]
         public string Address { get; set; }
 
         [Display(Name = "Kund")]

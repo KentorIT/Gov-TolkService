@@ -17,6 +17,7 @@ namespace Tolk.Web.Models
         public int ComplaintId { get; set; }
 
         [Display(Name = "Registrerad av")]
+        [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
         [Display(Name = "Registrerad")]
@@ -70,14 +71,12 @@ namespace Tolk.Web.Models
                 BrokerName = complaint.Request.Ranking.Broker.Name,
                 CustomerName = complaint.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = complaint.Request.Order.CustomerReferenceNumber,
-                //TODO: Should be Name!
-                InterpreterName = complaint.Request.Interpreter.User.Email,
+                InterpreterName = complaint.Request.Interpreter.User.CompleteContactInformation,
                 LanguageName = complaint.Request.Order.OtherLanguage ?? complaint.Request.Order.Language?.Name ?? "-",
                 OrderNumber = complaint.Request.Order.OrderNumber.ToString(),
                 RegionName = complaint.Request.Ranking.Region.Name,
                 AssignmentType = complaint.Request.Order.AssignentType,
-                //TODO: Should be Name!
-                CreatedBy = complaint.CreatedByUser.Email,
+                CreatedBy = complaint.CreatedByUser.CompleteContactInformation,
                 CreatedAt = complaint.CreatedAt,
                 ComplaintType = complaint.ComplaintType,
                 Message = complaint.ComplaintMessage,

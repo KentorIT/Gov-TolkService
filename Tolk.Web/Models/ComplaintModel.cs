@@ -22,6 +22,7 @@ namespace Tolk.Web.Models
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Tolk")]
+        [DataType(DataType.MultilineText)]
         public string InterpreterName { get; set; }
 
         [Display(Name = "Förmedling")]
@@ -57,8 +58,7 @@ namespace Tolk.Web.Models
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
                 EndAt = request.Order.EndAt,
                 StartAt = request.Order.StartAt,
-                //TODO: Should be Name!
-                InterpreterName = request.Interpreter.User.Email,
+                InterpreterName = request.Interpreter.User.CompleteContactInformation,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,
