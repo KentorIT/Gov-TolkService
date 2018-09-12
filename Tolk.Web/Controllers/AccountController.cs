@@ -427,8 +427,9 @@ supporten på {_options.SupportEmail}";
                 // Resetting the security stamp invalidates the code so operation cannot be redone.
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _signInManager.SignInAsync(user, true);
+                var pToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-                return RedirectToAction(nameof(RegisterNewUser), new { userId });
+                return RedirectToAction(nameof(RegisterNewUser), new { userId, pToken });
             }
 
             var model = new ConfirmAccountModel { UserId = userId };
@@ -534,9 +535,9 @@ supporten på {_options.SupportEmail}";
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult RegisterNewUser(string userId, string code)
+        public IActionResult RegisterNewUser(string userId, string pToken)
         {
-            var model = new RegisterNewUserViewModel { UserId = userId };
+            var model = new RegisterNewUserViewModel { UserId = userId, PasswordToken = pToken };
             return View(model);
         }
 
@@ -557,10 +558,13 @@ supporten på {_options.SupportEmail}";
 
                     if (user != null)
                     {
-                        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                        var result = await _userManager.ResetPasswordAsync(user, code, model.Password);
+                        var result = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.NewPassword);
                         if (result.Succeeded)
                         {
+                            // Resetting the security stamp invalidates the password token so operation cannot be redone.
+                            await _userManager.UpdateSecurityStampAsync(user);
+                            await _signInManager.SignInAsync(user, true);
+
                             user.NameFirst = model.NameFirst;
                             user.NameFamily = model.NameFamily;
                             user.PhoneNumber = model.PhoneWork;

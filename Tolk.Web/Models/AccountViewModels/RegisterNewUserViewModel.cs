@@ -7,17 +7,11 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class RegisterNewUserViewModel
+    public class RegisterNewUserViewModel : NewPasswordModelBase
     {
         public string UserId { get; set; }
 
-        [ClientRequired]
-        [Display(Name = "Nytt lösenord")]
-        public string Password { get; set; }
-
-        [ClientRequired]
-        [Display(Name = "Bekräfta lösenord")]
-        public string PasswordRetype { get; set; }
+        public string PasswordToken { get; set; }
 
         [ClientRequired]
         [Display(Name = "Förnamn")]
