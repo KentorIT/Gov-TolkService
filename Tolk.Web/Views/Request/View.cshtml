@@ -8,6 +8,27 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderModel.OrderNumber" />
+        @if (Model.OrderModel.ReplacingOrderId.HasValue)
+        {
+            <span>
+                (Ersätter <a href="@Url.Action("View", new { id = Model.ReplacingOrderRequestId })">@Model.OrderModel.ReplacingOrderNumber</a>)<br /><br />
+            </span>
+        }
+        @if (Model.OrderModel.ReplacedByOrderId.HasValue)
+        {
+            @if (Model.ReplacedByOrderRequestStatus.HasValue && (Model.ReplacedByOrderRequestStatus.Value == RequestStatus.Received || Model.ReplacedByOrderRequestStatus.Value == RequestStatus.Created))
+            {
+                <span>
+                    (Ersatt av <a href="@Url.Action("Process", new { id = Model.ReplacedByOrderRequestId })">@Model.OrderModel.ReplacedByOrderNumber</a>)<br /><br />
+                </span>
+            }
+            else
+            {
+                <span>
+                    (Ersatt av <a href="@Url.Action("View", new { id = Model.ReplacedByOrderRequestId })">@Model.OrderModel.ReplacedByOrderNumber</a>)<br /><br />
+                </span>
+            }
+        }
         <display-entry asp-for="Status" />
         @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
         {

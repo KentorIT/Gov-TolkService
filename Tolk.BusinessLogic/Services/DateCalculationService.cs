@@ -4,16 +4,22 @@ using System.Linq;
 using System.Text;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Entities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Tolk.BusinessLogic.Services
 {
     public class DateCalculationService
     {
         private TolkDbContext _tolkDbContext;
+        private readonly IMemoryCache _cache;
+        private const string holidaysCacheKey = nameof(holidaysCacheKey);
 
-        public DateCalculationService(TolkDbContext tolkDbContext)
+
+        public DateCalculationService(TolkDbContext tolkDbContext, IMemoryCache cache = null)
         {
             _tolkDbContext = tolkDbContext;
+            _cache = cache;
         }
 
         public int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
@@ -33,7 +39,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentException($"{nameof(secondDate)} includes a time other than midnight. Use the Date property to get a pure date.", nameof(secondDate));
             }
 
-            if(firstDate.Kind != secondDate.Kind)
+            if (firstDate.Kind != secondDate.Kind)
             {
                 throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
             }
@@ -42,9 +48,9 @@ namespace Tolk.BusinessLogic.Services
 
             int rest = ((secondDate - firstDate).Days % 7);
 
-            if(secondDate.DayOfWeek < firstDate.DayOfWeek) // Wraps over a weekend.
+            if (secondDate.DayOfWeek < firstDate.DayOfWeek) // Wraps over a weekend.
             {
-                if(secondDate.DayOfWeek == DayOfWeek.Sunday)
+                if (secondDate.DayOfWeek == DayOfWeek.Sunday)
                 {
                     rest -= 1;
                 }
@@ -55,13 +61,13 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
-                if(firstDate.DayOfWeek == DayOfWeek.Sunday)
+                if (firstDate.DayOfWeek == DayOfWeek.Sunday)
                 {
                     rest -= 1;
                 }
             }
 
-            rest -= _tolkDbContext.Holidays.Where(h =>
+            rest -= Holidays.Where(h =>
             NonWorkingHolidays.Contains(h.DateType)
             && h.Date >= firstDate && h.Date < secondDate)
             .AsEnumerable()
@@ -71,14 +77,97 @@ namespace Tolk.BusinessLogic.Services
             return fullWeeks * 5 + rest;
         }
 
+        private IEnumerable<Holiday> Holidays
+        {
+            get
+            {
+                if (_cache == null)
+                { 
+                    return _tolkDbContext.Holidays.ToList().AsReadOnly();
+                }
+                if (!_cache.TryGetValue(holidaysCacheKey, out IEnumerable<Holiday> holidays))
+                {
+                    holidays = _tolkDbContext.Holidays.ToList().AsReadOnly();
+                    _cache.Set(holidaysCacheKey, holidays, DateTimeOffset.Now.AddDays(1));
+                }
+                return holidays;
+            }
+        }
+
+        public int GetNoOf24HsPeriodsWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        {
+            return ReturnWorkingPeriod(firstDate, secondDate, true);
+        }
+
+        public int GetNoOfHoursOfWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        {
+            return ReturnWorkingPeriod(firstDate, secondDate, false);
+        }
+
+        private int ReturnWorkingPeriod(DateTime firstDate, DateTime secondDate, bool returnDays)
+        {
+            if (secondDate < firstDate)
+            {
+                throw new ArgumentException("First Date must be before secondDate");
+            }
+            if (firstDate.Kind != secondDate.Kind)
+            {
+                throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
+            }
+
+            firstDate = !IsWorkingDay(firstDate.Date) ? GetFirstWorkDay(firstDate.Date) : firstDate; //get midnight if we get a new first workday
+
+            secondDate = !IsWorkingDay(secondDate.Date) ? GetLastWorkDay(secondDate.Date).AddDays(1) : secondDate; //add one day if we get a new last workday since the period should go to midnight since we back the date
+
+            if (firstDate < secondDate)
+            {
+                int noOfNonWorkDaysBetween = 0;
+
+                DateTime testDate = firstDate.Date;
+
+                //do not try secondDate since one extra day might be added (if not we know it's a non-work-day)
+                while (testDate < secondDate.Date)
+                {
+                    if (!IsWorkingDay(testDate))
+                    {
+                        noOfNonWorkDaysBetween++;
+                    }
+                    testDate = testDate.AddDays(1);
+                }
+                if (returnDays)
+                {
+                    return (int)((secondDate - firstDate).TotalSeconds - (noOfNonWorkDaysBetween * 24 * 60 * 60)) / (24 * 60 * 60);
+                }
+                return (int)((secondDate - firstDate).TotalSeconds - (noOfNonWorkDaysBetween * 24 * 60 * 60)) / (60 * 60);
+            }
+            else return 0;
+        }
+
+        public bool IsWorkingDay(DateTime testDate)
+        {
+            if (testDate.DayOfWeek == DayOfWeek.Saturday || testDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return false;
+            }
+            if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == testDate.Date))
+            {
+                return false;
+            }
+            return true;
+        }
+
         private readonly DateType[] NonWorkingHolidays = new[] { DateType.BigHolidayFullDay, DateType.Holiday };
 
-
+        /// <summary>
+        /// If date is not a workday it returns the first workday after date, else it returns date.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public DateTime GetFirstWorkDay(DateTime date)
         {
             while (true)
             {
-                switch(date.DayOfWeek)
+                switch (date.DayOfWeek)
                 {
                     case DayOfWeek.Saturday:
                         date = date.AddDays(2);
@@ -90,8 +179,7 @@ namespace Tolk.BusinessLogic.Services
                         break;
                 }
 
-                if (_tolkDbContext.Holidays
-                    .Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date))
+                if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
                 {
                     date = date.AddDays(1);
                     continue;
@@ -99,6 +187,36 @@ namespace Tolk.BusinessLogic.Services
                 break;
             }
 
+            return date;
+        }
+
+        /// <summary>
+        /// If date is not a workday it returns the last workday before date, else it returns date.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public DateTime GetLastWorkDay(DateTime date)
+        {
+            while (true)
+            {
+                switch (date.DayOfWeek)
+                {
+                    case DayOfWeek.Saturday:
+                        date = date.AddDays(-1);
+                        break;
+                    case DayOfWeek.Sunday:
+                        date = date.AddDays(-2);
+                        break;
+                    default:
+                        break;
+                }
+                if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
+                {
+                    date = date.AddDays(-1);
+                    continue;
+                }
+                break;
+            }
             return date;
         }
     }

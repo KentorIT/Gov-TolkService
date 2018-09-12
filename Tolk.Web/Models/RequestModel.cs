@@ -21,6 +21,12 @@ namespace Tolk.Web.Models
 
         public int BrokerId { get; set; }
 
+        public int? ReplacingOrderRequestId { get; set; }
+
+        public RequestStatus? ReplacedByOrderRequestStatus { get; set; }
+
+        public int? ReplacedByOrderRequestId { get; set; }
+
         public OrderModel OrderModel { get; set; }
 
         public int? OrderId
@@ -105,6 +111,8 @@ namespace Tolk.Web.Models
         public static RequestModel GetModelFromRequest(Request request)
         {
             var complaint = request.Complaints?.FirstOrDefault();
+            var replacingOrderRequest = request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
+            var replacedByOrderRequest = request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
             return new RequestModel
             {
                 Status = request.Status,
@@ -129,7 +137,10 @@ namespace Tolk.Web.Models
                 ComplaintId = complaint?.ComplaintId,
                 ComplaintMessage = complaint?.ComplaintMessage,
                 ComplaintStatus = complaint?.Status,
-                ComplaintType = complaint?.ComplaintType
+                ComplaintType = complaint?.ComplaintType,
+                ReplacingOrderRequestId = replacingOrderRequest?.RequestId,
+                ReplacedByOrderRequestStatus = replacedByOrderRequest?.Status,
+                ReplacedByOrderRequestId = replacedByOrderRequest?.RequestId
             };
         }
 

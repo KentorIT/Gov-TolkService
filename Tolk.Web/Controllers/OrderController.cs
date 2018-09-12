@@ -112,7 +112,7 @@ namespace Tolk.Web.Controllers
                     (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
                     request.Status == RequestStatus.Approved &&
-                    _dateCalculationService.GetWorkDaysBetween(now.Date, order.StartAt.Date) < 2;
+                    _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
                 model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
@@ -383,7 +383,7 @@ namespace Tolk.Web.Controllers
                 }
                 var now = _clock.SwedenNow;
                 //If this is an approved request, and the cancellation is done to late, a complete requisition will be created (full compensation).
-                bool createFullCompensationRequisition = _dateCalculationService.GetWorkDaysBetween(now.Date, request.Order.StartAt.Date) < 2;
+                bool createFullCompensationRequisition = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, request.Order.StartAt.DateTime) < 2;
                 bool isApprovedRequest = request.Status == RequestStatus.Approved;
                 request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createFullCompensationRequisition);
 

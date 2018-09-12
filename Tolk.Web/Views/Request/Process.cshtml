@@ -12,6 +12,12 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderModel.OrderNumber" />
+        @if (Model.OrderModel.ReplacingOrderId.HasValue)
+        {
+            <span>
+                (Ersätter <a href="@Url.Action("View", new { id = Model.ReplacingOrderRequestId })">@Model.OrderModel.ReplacingOrderNumber</a>)<br /><br />
+            </span>
+        }
         <display-entry asp-for="OrderModel.CreatedAt" />
         <display-entry asp-for="OrderModel.CreatedBy" />
         <display-entry asp-for="OrderModel.ContactPerson" />
@@ -75,180 +81,185 @@
             <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
             <display-entry asp-for="OrderModel.OffSiteContactInformation" />
         }
-            <form method="post" asp-action="Accept">
-                <input asp-for="RequestId" type="hidden" />
-                <display-entry asp-for="ExpiresAt" />
-                @if (Model.OrderModel.ReplacingOrderId.HasValue)
+        <form method="post" asp-action="Accept">
+            <input asp-for="RequestId" type="hidden" />
+            <display-entry asp-for="ExpiresAt" />
+            @if (Model.OrderModel.ReplacingOrderId.HasValue)
+            {
+                <display-entry asp-for="OrderModel.ReplacingOrderNumber" />
+                <display-entry asp-for="Interpreter" />
+                <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
+                @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
                 {
-                    <display-entry asp-for="OrderModel.ReplacingOrderNumber" />
-                    <display-entry asp-for="Interpreter" />
-                    <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
-                    @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
-                    {
-                        @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-                        {
-                            @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
-                            {
-                                <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
-                            }
-                            @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
-                            {
-                                <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
-                            }
-                        }
-                        else
-                        {
-                            @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
-                            {
-                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
-                            }
-                            @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
-                            {
-                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
-                            }
-                            @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
-                            {
-                                <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
-                            }
-                        }
-                    }
-                    else
-                    {
-                        <span>Inga önskemål kring kompetensnivå</span> <br /><br />
-                    }
-                }
-                else
-                {
-                    <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
-                    <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
                     @if (Model.OrderModel.SpecificCompetenceLevelRequired)
                     {
-                        <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
-                    }
-                    else
-                    {
-                        <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
-                    }
-                    @if (Model.InterpreterLocation.HasValue)
-                    {
-                        <input asp-for="InterpreterLocation" type="hidden" />
-                        <display-entry asp-for="InterpreterLocation" />
-                    }
-                    else
-                    {
-                        <label>Önskat inställelsesätt, helst överst</label>
-                        <ul>
-                            @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
-                            {
-                                <li>
-                                    @EnumHelper.GetDescription(location.InterpreterLocation)
-                                </li>
-                            }
-                        </ul>
-                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
-                    }
-                }
-                <input asp-for="Status" type="hidden" />
-                @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
-                {
-                    //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
-                    <label>Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
-                    <form-entry asp-for="ExpectedTravelCosts" />
-                }
-                else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
-                {
-                    // If it is set to Offsite it is not needed at all
-                    // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
-                    <div class="collapse" id="set-expected-travel-costs">
-                        <label> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
-
-                        <form-entry asp-for="ExpectedTravelCosts" />
-
-                    </div>
-                }
-                @if (Model.OrderModel.ReplacingOrderId.HasValue)
-                {
-                    @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
-                    {
-                        <label>Extra behov</label><br />
-                        @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
+                        @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
                         {
-                            <span class="list-group-item-heading">@req.Requirement</span>
-                            <ul>
-                                <li>
-                                    <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
-                                </li>
-                            </ul>
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
+                        }
+                        @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
+                        {
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                        }
+                    }
+                    else
+                    {
+                        @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
+                        {
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                        }
+                        @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
+                        {
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                        }
+                        @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
+                        {
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
                         }
                     }
                 }
                 else
                 {
-                    @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
-                    {
-                        <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
-                        <display-entry asp-for="RequirementAnswers[i].Requirement" />
-                        <form-entry asp-for="RequirementAnswers[i].Answer" />
-                        <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
-                        <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
-                    }
+                    <span>Inga önskemål kring kompetensnivå</span> <br /><br />
                 }
-                @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+            }
+            else
+            {
+                <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
+                <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
+                @if (Model.OrderModel.SpecificCompetenceLevelRequired)
                 {
-                    <div class="row">
-                        <div class="col-xs-4">
-                            <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Byt tolk</button>
-                        </div>
-                        <div class="col-xs-4">
-                            <a class="btn btn-warning" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt</a>
-                        </div>
-                    </div>
+                    <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
                 }
                 else
                 {
-                    <div class="row">
-                        <div class="col-xs-4">
-                            <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
-                        </div>
-                        <div class="col-xs-4">
-                            <a class="btn btn-warning" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt</a>
-                        </div>
-                        <div class="col-xs-4">
-                            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
-                        </div>
-                    </div>
+                    <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
                 }
-            </form>
+                @if (Model.InterpreterLocation.HasValue)
+                {
+                    <input asp-for="InterpreterLocation" type="hidden" />
+                    <display-entry asp-for="InterpreterLocation" />
+                }
+                else
+                {
+                    <label>Önskat inställelsesätt, helst överst</label>
+                    <ul>
+                        @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
+                        {
+                            <li>
+                                @EnumHelper.GetDescription(location.InterpreterLocation)
+                            </li>
+                        }
+                    </ul>
+                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
+                }
+            }
+            <input asp-for="Status" type="hidden" />
+            @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
+            {
+                //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
+                <label>Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
+                <form-entry asp-for="ExpectedTravelCosts" />
+            }
+            else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
+            {
+                // If it is set to Offsite it is not needed at all
+                // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
+                <div class="collapse" id="set-expected-travel-costs">
+                    <label> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</label>
+
+                    <form-entry asp-for="ExpectedTravelCosts" />
+
+                </div>
+            }
+            @if (Model.OrderModel.ReplacingOrderId.HasValue)
+            {
+                @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
+                {
+                    <label>Extra behov</label><br />
+                    @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
+                    {
+                        <span class="list-group-item-heading">@req.Requirement</span>
+                        <ul>
+                            <li>
+                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
+                            </li>
+                        </ul>
+                    }
+                }
+            }
+            else
+            {
+                @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
+                {
+                    <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
+                    <display-entry asp-for="RequirementAnswers[i].Requirement" />
+                    <form-entry asp-for="RequirementAnswers[i].Answer" />
+                    <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
+                    <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
+                }
+            }
+            @if (Model.OrderModel.ReplacingOrderId.HasValue)
+            {
+                <div class="italic">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /><br /></div>
+            }
+
+            @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+                <div class="row">
+                    <div class="col-xs-4">
+                        <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Byt tolk</button>
+                    </div>
+                    <div class="col-xs-4">
+                        <a class="btn btn-warning" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-xs-4">
+                        <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
+                    </div>
+                    <div class="col-xs-4">
+                        <a class="btn btn-warning" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt</a>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
+                    </div>
+                </div>
+            }
+        </form>
     </div>
-</div>
-<div id="denyMessageDialog" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Tacka nej till uppdrag</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post" asp-action="Decline" class="do-not-check-dirty">
-                    <input asp-for="RequestId" type="hidden" />
-                    <form-entry asp-for="DenyMessage" />
-                    <button type="submit" class="btn btn-warning">Skicka</button>
-                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
-                </form>
-            </div>
-            <div class="modal-footer">
+        </div>
+        <div id="denyMessageDialog" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Tacka nej till uppdrag</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" asp-action="Decline" class="do-not-check-dirty">
+                            <input asp-for="RequestId" type="hidden" />
+                            <form-entry asp-for="DenyMessage" />
+                            <button type="submit" class="btn btn-warning">Skicka</button>
+                            <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
             </div>
         </div>
-
-    </div>
-</div>
-@section Scripts {
-    <environment include="Development">
-        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
-    </environment>
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
+        @section Scripts {
+            <environment include="Development">
+                <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+            </environment>
+            <environment exclude="Development">
+                <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+            </environment>
+            @await Html.PartialAsync("_ValidationScriptsPartial")
+        }
