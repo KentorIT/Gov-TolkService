@@ -66,12 +66,12 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Kontaktinformation för distanstolkning")]
         [ClientRequired]
-        [MaxLength(255)]
+        [StringLength(255)]
         public string OffSiteContactInformation { get; set; }
 
         [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekter här, det görs i extra behov.")]
         [ClientRequired]
-        [MaxLength(255)]
+        [StringLength(255)]
         public string OtherLanguage { get; set; }
 
         [Display(Name = "Erbjud flera alternativ till inställelsesätt")]
