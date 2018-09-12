@@ -414,7 +414,10 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
             }
-
+            if (Status != RequestStatus.Approved)
+            {
+                throw new InvalidOperationException($"A requisition cannot be created when request is not approved.");
+            }
             Requisitions.Add(requisition);
             //Change status on order accordingly.
             Order.DeliverRequisition();

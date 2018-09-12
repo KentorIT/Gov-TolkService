@@ -84,7 +84,7 @@
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
             <display-entry asp-for="ExpiresAt" />
-            @if (Model.OrderModel.ReplacingOrderId.HasValue)
+            @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <display-entry asp-for="OrderModel.ReplacingOrderNumber" />
                 <display-entry asp-for="Interpreter" />
@@ -95,11 +95,11 @@
                     {
                         @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå " />
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Krav på kompetensnivå " />
                         }
                         @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativt krav på kompetensnivå" />
                         }
                     }
                     else
@@ -172,7 +172,7 @@
 
                 </div>
             }
-            @if (Model.OrderModel.ReplacingOrderId.HasValue)
+            @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
                 {
@@ -199,11 +199,6 @@
                     <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
                 }
             }
-            @if (Model.OrderModel.ReplacingOrderId.HasValue)
-            {
-                <div class="italic">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /><br /></div>
-            }
-
             @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <div class="row">
@@ -217,6 +212,10 @@
             }
             else
             {
+                @if (Model.OrderModel.ReplacingOrderId.HasValue)
+                {
+                    <div class="italic">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /><br /></div>
+                }
                 <div class="row">
                     <div class="col-xs-4">
                         <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
@@ -231,35 +230,35 @@
             }
         </form>
     </div>
-        </div>
-        <div id="denyMessageDialog" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Tacka nej till uppdrag</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" asp-action="Decline" class="do-not-check-dirty">
-                            <input asp-for="RequestId" type="hidden" />
-                            <form-entry asp-for="DenyMessage" />
-                            <button type="submit" class="btn btn-warning">Skicka</button>
-                            <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                    </div>
-                </div>
-
+</div>
+<div id="denyMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tacka nej till uppdrag</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-action="Decline" class="do-not-check-dirty">
+                    <input asp-for="RequestId" type="hidden" />
+                    <form-entry asp-for="DenyMessage" />
+                    <button type="submit" class="btn btn-warning">Skicka</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Avbryt</button>
+                </form>
+            </div>
+            <div class="modal-footer">
             </div>
         </div>
-        @section Scripts {
-            <environment include="Development">
-                <script src="~/js/Request/Process.js" asp-append-version="true"></script>
-            </environment>
-            <environment exclude="Development">
-                <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
-            </environment>
-            @await Html.PartialAsync("_ValidationScriptsPartial")
-        }
+
+    </div>
+</div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

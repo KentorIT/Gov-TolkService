@@ -180,7 +180,8 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    if (!request.Order.ReplacingOrderId.HasValue)
+                    //if change interpreter or else if not a replacementorder
+                    if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                     {
                         string sendExtraEmailToInterpreter = string.Empty;
                         int interpreterId = model.InterpreterId.Value;
