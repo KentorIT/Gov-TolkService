@@ -147,48 +147,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private PriceInformationModel GetPriceinformationToDisplay(Request request)
-        {
-            if (request.PriceRows == null)
-            {
-                return null;
-            }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
-            model.Header = "Beräknat pris enligt avropssvar";
-            model.UseDisplayHideInfo = true;
-            return model;
-        }
-
-        private PriceInformationModel GetPriceinformationToDisplay(Order order)
-        {
-            if (order.PriceRows == null)
-            {
-                return null;
-            }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), null);
-            model.Header = "Beräknat pris enligt ursprungligt avrop";
-            model.UseDisplayHideInfo = true;
-            return model;
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var order = _dbContext.Orders.Single(o => o.OrderId == id);
-
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
-            {
-                return View(OrderModel.GetModelFromOrder(order));
-            }
-            return Forbid();
-        }
-
-        public IActionResult Add()
-        {
-            return View("Edit");
-        }
-
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
             var order = GetOrder(replacingOrderId);
@@ -286,6 +244,11 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        public IActionResult Add()
+        {
+            return View();
+        }
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Add(OrderModel model)
@@ -307,29 +270,6 @@ namespace Tolk.Web.Controllers
                 }
             }
             return View("Edit", model);
-        }
-
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Edit(OrderModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var order = _dbContext.Orders.Single(o => o.OrderId == model.OrderId);
-
-                if (!(await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
-                {
-                    return Forbid();
-                }
-
-                model.UpdateOrder(order);
-
-                _dbContext.SaveChanges();
-
-                return RedirectToAction(nameof(View), new { id = order.OrderId });
-            }
-
-            return View(model);
         }
 
         [ValidateAntiForgeryToken]
@@ -438,6 +378,32 @@ namespace Tolk.Web.Controllers
             }
 
             return Forbid();
+        }
+
+        private PriceInformationModel GetPriceinformationToDisplay(Request request)
+        {
+            if (request.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
+            model.Header = "Beräknat pris enligt avropssvar";
+            model.UseDisplayHideInfo = true;
+            return model;
+        }
+
+        private PriceInformationModel GetPriceinformationToDisplay(Order order)
+        {
+            if (order.PriceRows == null)
+            {
+                return null;
+            }
+            PriceInformationModel model = new PriceInformationModel();
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), null);
+            model.Header = "Beräknat pris enligt ursprungligt avrop";
+            model.UseDisplayHideInfo = true;
+            return model;
         }
 
         private Order CreateNewOrder()
