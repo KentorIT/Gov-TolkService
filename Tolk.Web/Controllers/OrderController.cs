@@ -269,7 +269,7 @@ namespace Tolk.Web.Controllers
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
             }
-            return View("Edit", model);
+            return View(model);
         }
 
         [ValidateAntiForgeryToken]
