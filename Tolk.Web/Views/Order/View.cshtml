@@ -37,7 +37,8 @@
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="AssignmentType" />
-        @if (!Model.UseRankedInterpreterLocation)
+        Här behöver det komma en massa annan information om inställelsesätt...
+        @*@if (!Model.UseRankedInterpreterLocation)
         {
             <display-entry asp-for="InterpreterLocation" />
         }
@@ -65,7 +66,7 @@
         {
             <display-entry asp-for="OffSiteAssignmentType" />
             <display-entry asp-for="OffSiteContactInformation" />
-        }
+        }*@
         <display-entry asp-for="SpecificCompetenceLevelRequired" />
         @if (Model.RequestedCompetenceLevels.Count != 0)
         {

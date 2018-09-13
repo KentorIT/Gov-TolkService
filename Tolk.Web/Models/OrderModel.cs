@@ -39,19 +39,6 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string UnitName { get; set; }
 
-        [Display(Name = "Adress")]
-        [ClientRequired]
-        public string LocationStreet { get; set; }
-
-        [Display(Name = "Postnummer")]
-        [ClientRequired]
-        [RegularExpression("[0-9]{3} ?[0-9]{2}", ErrorMessage = "Ange postnummer enligt format 12345 eller 123 45")]
-        public string LocationZipCode { get; set; }
-
-        [Display(Name = "Ort")]
-        [ClientRequired]
-        public string LocationCity { get; set; }
-
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
         [Required]
         public virtual TimeRange TimeRange { get; set; }
@@ -59,15 +46,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
         public AssignmentType AssignmentType { get; set; }
-
-        [Display(Name = "Typ av distanstolkning")]
-        [ClientRequired]
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
-        [Display(Name = "Kontaktinformation för distanstolkning")]
-        [ClientRequired]
-        [StringLength(255)]
-        public string OffSiteContactInformation { get; set; }
 
         [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekter här, det görs i extra behov.")]
         [ClientRequired]
@@ -78,13 +56,23 @@ namespace Tolk.Web.Models
         public bool UseRankedInterpreterLocation { get; set; } = false;
 
         [Display(Name = "Inställelsesätt")]
-        public InterpreterLocation? InterpreterLocationSelector { get; set; }
-
-        [Display(Name = "Inställelsesätt")]
+        [ClientRequired]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
-        [Display(Name = "Önskat inställelsesätt (den som är helst överst)")]
-        public List<InterpreterLocationModel> InterpreterLocations { get; set; }
+        [Display(Name = "Inställelsesätt i första hand")]
+        [ClientRequired]
+        public InterpreterLocation? RankedInterpreterLocationFirst { get; set; }
+
+        [Display(Name = "Inställelsesätt i andra hand")]
+        public InterpreterLocation? RankedInterpreterLocationSecond { get; set; }
+
+        [Display(Name = "Inställelsesätt i tredje hand")]
+        public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
+
+        public InterpreterLocationAddressModel RequiredInterpreterLocationAddressModel { get; set; }
+        public InterpreterLocationAddressModel RankedInterpreterLocationFirstAddressModel { get; set; }
+        public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }
+        public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
 
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
@@ -267,11 +255,11 @@ namespace Tolk.Web.Models
             order.EndAt = TimeRange.EndDateTime;
             order.Description = Description;
             order.UnitName = UnitName;
-            order.Street = UseAddress ? LocationStreet : null;
-            order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
-            order.City = UseAddress ? LocationCity : null;
-            order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
-            order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
+            //order.Street = UseAddress ? LocationStreet : null;
+            //order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
+            //order.City = UseAddress ? LocationCity : null;
+            //order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
+            //order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
             order.ContactPersonId = ContactPersonId;
             if (isReplace)
             {
@@ -287,11 +275,7 @@ namespace Tolk.Web.Models
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (UseRankedInterpreterLocation)
                 {
-                    //Add one(3) rows to OrderInterpreterLocation
-                    foreach (var location in InterpreterLocations.OrderBy(l => l.Rank))
-                    {
-                        order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = location.InterpreterLocation, Rank = location.Rank });
-                    }
+#warning save the ranked here
                 }
                 else
                 {
@@ -416,11 +400,6 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
-                LocationStreet = order.Street,
-                LocationZipCode = order.ZipCode,
-                LocationCity = order.City,
-                OffSiteAssignmentType = order.OffSiteAssignmentType,
-                OffSiteContactInformation = order.OffSiteContactInformation,
                 SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
                 RequiredCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
                 RequiredCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
@@ -430,11 +409,8 @@ namespace Tolk.Web.Models
                 Status = order.Status,
                 UseRankedInterpreterLocation = useRankedInterpreterLocation,
                 InterpreterLocation = !useRankedInterpreterLocation ? (InterpreterLocation?)order.InterpreterLocations.Single().InterpreterLocation : null,
-                InterpreterLocations = order.InterpreterLocations.OrderBy(l => l.Rank).Select(l => new InterpreterLocationModel
-                {
-                    InterpreterLocation = l.InterpreterLocation,
-                    Rank = l.Rank
-                }).ToList(),
+#warning RankedInterpreterLocationFirst|Second|Third should be set here, and addresses
+                // Add the InterpreterLocation
                 OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
                 {
                     OrderRequirementId = r.OrderRequirementId,

@@ -90,21 +90,21 @@
             }
             else
             {
-                <label>Önskat inställelsesätt, helst överst</label>
-                <ul>
+                <label>Önskat inställelsesätt, helst överst FIXA!!!!</label>
+                @*<ul>
                     @foreach (var location in Model.InterpreterLocations.OrderBy(l => l.Rank))
                     {
                         <li>
                             @EnumHelper.GetDescription(location.InterpreterLocation)
                         </li>
                     }
-                </ul>
+                </ul>*@
             }
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
             <form-entry asp-for="UnitName" />
 
-            @if (Model.UseAddress)
+            @*@if (Model.UseAddress)
             {
                 <form-entry asp-for="LocationStreet" />
                 <form-entry asp-for="LocationZipCode" />
@@ -114,7 +114,7 @@
             {
                 <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
                 <form-entry asp-for="OffSiteContactInformation" />
-            }
+            }*@
             <display-entry asp-for="ReplacedTimeRange" />
             <form-entry asp-for="ReplacedTimeRange" type="hidden" />
             <form-entry asp-for="TimeRange" />

@@ -69,7 +69,7 @@
         <display-entry asp-for="OrderModel.TimeRange" />
         <display-entry asp-for="CalculatedPrice" />
         <display-entry asp-for="OrderModel.Description" />
-        @if (Model.OrderModel.UseAddress)
+        @*@if (Model.OrderModel.UseAddress)
         {
             <display-entry asp-for="OrderModel.LocationStreet" />
             <display-entry asp-for="OrderModel.LocationZipCode" />
@@ -80,7 +80,7 @@
         {
             <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
             <display-entry asp-for="OrderModel.OffSiteContactInformation" />
-        }
+        }*@
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
             <display-entry asp-for="ExpiresAt" />
@@ -142,7 +142,7 @@
                 }
                 else
                 {
-                    <label>Önskat inställelsesätt, helst överst</label>
+                    @*<label>Önskat inställelsesätt, helst överst FIXA!!!!!!</label>
                     <ul>
                         @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
                         {
@@ -150,7 +150,7 @@
                                 @EnumHelper.GetDescription(location.InterpreterLocation)
                             </li>
                         }
-                    </ul>
+                    </ul>*@
                     <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
                 }
             }

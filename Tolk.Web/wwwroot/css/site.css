@@ -172,3 +172,8 @@ li.placeholder {
 .italic {
     font-style: italic;
 }
+.group-box
+{
+    border:1px solid black;
+    background-color:aliceblue;
+}

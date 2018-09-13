@@ -78,15 +78,6 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string UnitName { get; set; }
 
-        [MaxLength(100)]
-        public string Street { get; set; }
-
-        [MaxLength(100)]
-        public string ZipCode { get; set; }
-
-        [MaxLength(100)]
-        public string City { get; set; }
-
         #endregion
 
         #region order information
@@ -100,11 +91,6 @@ namespace Tolk.BusinessLogic.Entities
         public string OtherLanguage { get; set; }
 
         public AssignmentType AssignentType { get; set; }
-
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
-        [MaxLength(255)]
-        public string OffSiteContactInformation { get; set; }
 
         public bool SpecificCompetenceLevelRequired { get; set; }
 
@@ -125,14 +111,6 @@ namespace Tolk.BusinessLogic.Entities
         #endregion
 
         #region navigation properties
-
-        public string CompactAddress
-        {
-            get
-            {
-                return $"{UnitName}\n{Street}\n{ZipCode} {City}";
-            }
-        }
 
         public List<Request> Requests { get; set; }
 

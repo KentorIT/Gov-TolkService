@@ -70,18 +70,6 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-    $("body").on("change", "#UseRankedInterpreterLocation", function (event) {
-        if ($(this).is(":checked")) {
-            $(".required-InterpreterLocation").hide();
-            $(".ranked-InterpreterLocation").show();
-            $(".address-InterpreterLocation").show();
-            $(".off-site-information").show();
-        } else {
-            $(".required-InterpreterLocation").show();
-            $(".ranked-InterpreterLocation").hide();
-            $("#InterpreterLocationSelector").trigger("change");
-        }
-    });
     $("body").on("change", "#AssignmentType", function (event) {
         if ($(this).val() === "Education") {
             $('#language-panel').collapse('hide');
@@ -91,91 +79,37 @@ $(function () {
             $('#language-panel').collapse('show');
             toggleOtherLanguage($("#LanguageId").val());
         }
-        if ($(this).val() === "OnSite" || $(this).val() === "OffSite" || $(this).val() === "OffSiteDesignatedLocation") {
-            //Uncheck (with event) the UseRankedInterpreterLocation
-            if ($("#UseRankedInterpreterLocation").is(":checked")) {
-                $("#UseRankedInterpreterLocation").trigger("click");
-            }
-            //Disable UseRankedInterpreterLocation
-            $("#UseRankedInterpreterLocation").prop("disabled", true);
-            // Set InterpreterLocation, and make it disabled
-            $("#InterpreterLocationSelector").val($(this).val());
-            $("#InterpreterLocationSelector").prop("disabled", true);
-        } else {
-            //Enable UseRankedInterpreterLocation
-            $("#UseRankedInterpreterLocation").prop("disabled", false);
-            //Enable InterpreterLocation
-            $("#InterpreterLocationSelector").val("");
-            $("#InterpreterLocationSelector").prop("disabled", false);
-        }
-        $("#InterpreterLocationSelector").trigger("change");
     });
-    $("body").on("change", "#InterpreterLocationSelector", function (event) {
-        if ($(this).val() === null || $(this).val() === "") {
-            $(".address-InterpreterLocation").hide();
-            // show offsite info
-            $(".off-site-information").hide();
-        }
-        else if ($(this).val() === "OffSite") {
-            //hide address
-            // show offsite info
-            $(".address-InterpreterLocation").hide();
-            // show offsite info
-            $(".off-site-information").show();
+   $("body").on("change", "#UseRankedInterpreterLocation", function (event) {
+        if ($(this).is(":checked")) {
+            $(".required-InterpreterLocation").hide();
+            $(".ranked-InterpreterLocation").show();
         } else {
-            //show address
-            $(".address-InterpreterLocation").show();
-            $(".off-site-information").hide();
-            // hide offsite info
+            $(".required-InterpreterLocation").show();
+            $(".ranked-InterpreterLocation").hide();
         }
-        //hidden field to propagate the value even if the select is disabled.
-        $("#InterpreterLocation").val($(this).val());
+    });
+    $("body").on("change", "#InterpreterLocation, #RankedInterpreterLocationFirst, #RankedInterpreterLocationSecond, #RankedInterpreterLocationThird", function (event) {
+        var $id = $(this)[0].id;
+        var $val = $(this).val();
+        if ($val === "") {
+            $(".address-" + $id).hide();
+            $(this).parents(".location-group").removeClass("group-box");
+        }
+        else {
+            $(this).parents(".location-group").addClass("group-box");
+            $(".address-" + $id).show();
+            if ($val === "OffSite") {
+                $(".address-" + $id + " > .address-information").hide();
+                $(".address-" + $id + " > .off-site-information").show();
+            } else {
+                $(".address-" + $id + " > .address-information").show();
+                $(".address-" + $id + " > .off-site-information").hide();
+            }
+        }
     });
     $("body").on("change", "#LanguageId", function () {
         toggleOtherLanguage($(this).val());
-    });
-
-    $("ol.drag-panel").sortable({
-        vertical: true,
-        pullPlaceholder: true,
-        group: 'draggable',
-        distance: 20,
-
-        // animation on drop
-        onDrop: function ($item, container, _super) {
-            var $clonedItem = $('<li/>').css({ width: 0, height: 0 });
-            $item.before($clonedItem);
-            $clonedItem.animate({ 'height': $item.height() });
-
-            $item.animate($clonedItem.position(), function () {
-                $clonedItem.detach();
-                _super($item, container);
-                //Rerank!
-                var i = 1;
-                $item.closest("ol").find(".order-descriptor").each(function () {
-                    $(this).val(i++);
-                });
-            });
-        },
-
-        // set $item relative to cursor position
-        onDragStart: function ($item, container, _super) {
-            var offset = $item.offset(),
-                pointer = container.rootGroup.pointer;
-
-            adjustment = {
-                left: pointer.left - offset.left,
-                top: pointer.top - offset.top
-            };
-
-            _super($item, container);
-        },
-        onDrag: function ($item, position) {
-            $item.css({
-                left: position.left - adjustment.left,
-                top: position.top - adjustment.top
-            });
-        }
     });
 
     $("body").on("change", "#SpecificCompetenceLevelRequired", function () {
@@ -201,6 +135,7 @@ $(function () {
     };
 
     // Triggers (handlers cannot be triggered before being declared)
-    $("#AssignmentType").trigger("change");
     $("#SpecificCompetenceLevelRequired").trigger("change");
+    $("#UseRankedInterpreterLocation").trigger("change");
+    $("#InterpreterLocation, #RankedInterpreterLocationFirst, #RankedInterpreterLocationSecond, #RankedInterpreterLocationThird").trigger("change");
 });
