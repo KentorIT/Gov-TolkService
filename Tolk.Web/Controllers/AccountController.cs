@@ -177,7 +177,7 @@ namespace Tolk.Web.Controllers
                     }
                     AddErrors(result);
                 }
-                return View();
+                return View(model);
             }
 
             return await SendPasswordResetLink(user);
@@ -495,6 +495,10 @@ supporten på {_options.SupportEmail}";
             if (user == null)
             {
                 throw new ApplicationException($"Can't find user {userId}");
+            }
+            if (user.EmailConfirmed)
+            {
+                return View("ConfirmAccountAlreadyDone");
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, code);
