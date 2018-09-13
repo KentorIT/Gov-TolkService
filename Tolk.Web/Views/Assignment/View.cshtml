@@ -1,15 +1,27 @@
-﻿@model Tolk.Web.Models.AssignmentModel
+﻿@using Tolk.BusinessLogic.Enums;
+@model Tolk.Web.Models.AssignmentModel
 @{
-    ViewData["Title"] = "Tilldelat uppdrag";
+    ViewData["Title"] = "Uppdrag";
 }
-
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
+        @if (!string.IsNullOrEmpty(Model.ReplacedByOrderNumber))
+        {
+            <div class="italic">Detta uppdrag är avbokat och har ersatts med uppdrag @Model.ReplacedByOrderNumber.</div>
+        }
+        @if (Model.ReplacedByOrderStatus == OrderStatus.Requested)
+        {
+            <div class="italic">Ersättningsuppdraget är ännu inte besvarat av förmedlingen.</div> <br />
+        }
+        else if (Model.ReplacedByOrderStatus == OrderStatus.RequestResponded)
+        {
+            <div class="italic">Ersättningsuppdraget är ännu inte godkänt av kund.</div> <br />
+        }
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterLocation" />
-        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSite)
+        @if (Model.InterpreterLocation == InterpreterLocation.OffSite)
         {
             <display-entry asp-for="OffSiteAssignmentType" />
             <display-entry asp-for="OffSiteContactInformation" />
@@ -30,6 +42,10 @@
         else if (Model.AllowRequisitionRegistration)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+        }
+        else if (!string.IsNullOrEmpty(Model.ReplacingOrderNumber))
+        {
+            <div class="italic">Detta är ett ersättningsuppdrag för avbokat avrop @Model.ReplacingOrderNumber. Systemet hanterar inte ersättning för ersättningsuppdrag.</div>
         }
     </div>
 </div>

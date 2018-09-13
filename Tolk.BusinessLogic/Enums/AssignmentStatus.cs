@@ -14,5 +14,7 @@ namespace Tolk.BusinessLogic.Enums
         ToBeReported = 2,
         [Description("Utförda uppdrag")]
         Executed = 3,
+        [Description("Avbokade uppdrag")]
+        Cancelled = 4
     }
 }

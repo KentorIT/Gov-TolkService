@@ -6,6 +6,7 @@ using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 using Tolk.Web.Tests.TestHelpers;
+using Tolk.BusinessLogic.Enums;
 using Xunit;
 
 namespace Tolk.Web.Tests.Filters
@@ -97,28 +98,47 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new AssignmentFilterModel
             {
-                DateRange = new DateRange { Start = new DateTime(2018,07,01), End = new DateTime(2018,09,30) }
+                DateRange = new DateRange { Start = new DateTime(2018, 07, 01), End = new DateTime(2018, 09, 30) }
             };
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
-            var actual = new[] { mockRequests[2], mockRequests[3], mockRequests[4], mockRequests[5], mockRequests[8] };
+            var actual = new[] { mockRequests[2], mockRequests[3], mockRequests[4], mockRequests[5], mockRequests[8], mockRequests[9] };
 
             list.Should().HaveCount(actual.Length);
             list.Should().Contain(actual);
         }
 
         [Fact]
-        private void AssignmentFilter_ByStatusDefault()
+        private void AssignmentFilter_ByStatusExecuted()
         {
             var filter = new AssignmentFilterModel
             {
-                Status = BusinessLogic.Enums.AssignmentStatus.Executed
+                Status = AssignmentStatus.Executed
             };
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
-            var actual = mockRequests.Where(r => r.Requisitions.Any() 
-                && r.Order.Status == BusinessLogic.Enums.OrderStatus.Delivered
-                || r.Order.Status == BusinessLogic.Enums.OrderStatus.DeliveryAccepted);
+            var actual = mockRequests.Where(r => r.Order.Status == OrderStatus.Delivered
+                || r.Order.Status == OrderStatus.DeliveryAccepted
+                || r.Order.Status == OrderStatus.ReplacementOrderDelivered);
+            list.Should().HaveCount(actual.Count());
+            list.Should().Contain(actual);
+        }
+
+        [Fact]
+        private void AssignmentFilter_ByStatusCancelled()
+        {
+            var filter = new AssignmentFilterModel
+            {
+                Status = AssignmentStatus.Cancelled
+            };
+
+            var list = filter.Apply(mockRequests.AsQueryable(), _clock);
+            var actual = mockRequests.Where(r => r.Order.Status == OrderStatus.CancelledByBroker
+                || r.Order.Status == OrderStatus.CancelledByBrokerConfirmed
+                || r.Order.Status == OrderStatus.CancelledByCreator
+                || r.Order.Status == OrderStatus.CancelledByCreatorConfirmed
+
+                );
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -129,15 +149,23 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new AssignmentFilterModel
             {
-                Status = BusinessLogic.Enums.AssignmentStatus.ToBeExecuted
+                Status = AssignmentStatus.ToBeExecuted
             };
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
             var actual = mockRequests.Where(r => !r.Requisitions.Any()
-                && r.Order.StartAt > _clock.SwedenNow);
-
-            list.Should().HaveCount(actual.Count());
-            list.Should().Contain(actual);
+                && r.Order.StartAt > _clock.SwedenNow
+                && r.Status == RequestStatus.Approved
+                && !r.Order.ReplacingOrderId.HasValue);
+            if (list.ToList().Count == 0)
+            {
+                actual.ToList().Count().Should().Be(0);
+            }
+            else
+            {
+                list.Should().HaveCount(actual.Count());
+                list.Should().Contain(actual);
+            }
         }
 
         [Fact]
@@ -145,15 +173,23 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new AssignmentFilterModel
             {
-                Status = BusinessLogic.Enums.AssignmentStatus.ToBeReported
+                Status = AssignmentStatus.ToBeReported
             };
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
             var actual = mockRequests.Where(r => !r.Requisitions.Any()
-                && r.Order.StartAt < _clock.SwedenNow);
+                && r.Order.StartAt < _clock.SwedenNow
+                && r.Status == RequestStatus.Approved);
 
-            list.Should().HaveCount(actual.Count());
-            list.Should().Contain(actual);
+            if (list.ToList().Count == 0)
+            {
+                actual.ToList().Count().Should().Be(0);
+            }
+            else
+            {
+                list.Should().HaveCount(actual.Count());
+                list.Should().Contain(actual);
+            }
         }
 
         [Fact]
@@ -163,7 +199,7 @@ namespace Tolk.Web.Tests.Filters
             var language = mockLanguages.Where(l => l.Name == "French").Single();
             var filter = new AssignmentFilterModel
             {
-                Status = BusinessLogic.Enums.AssignmentStatus.ToBeExecuted,
+                Status = AssignmentStatus.Executed,
                 RegionId = region.RegionId,
                 LanguageId = language.LanguageId,
             };
@@ -171,8 +207,10 @@ namespace Tolk.Web.Tests.Filters
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
             var actual = mockRequests.Where(r => r.Order.Region == region
                 && r.Order.Language == language
-                && (!r.Requisitions.Any()
-                    && r.Order.StartAt > _clock.SwedenNow));
+                && r.Order.StartAt < _clock.SwedenNow
+                && (r.Order.Status == OrderStatus.Delivered
+                || r.Order.Status == OrderStatus.DeliveryAccepted
+                || r.Order.Status == OrderStatus.ReplacementOrderDelivered));
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);

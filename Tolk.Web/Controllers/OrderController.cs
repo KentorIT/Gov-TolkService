@@ -112,7 +112,8 @@ namespace Tolk.Web.Controllers
                     (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
                     request.Status == RequestStatus.Approved &&
-                    _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
+                    _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2 &&
+                    !request.Order.ReplacingOrderId.HasValue;
                 model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
@@ -195,7 +196,7 @@ namespace Tolk.Web.Controllers
                         replacementOrder.Requests.Add(replacingRequest);
                         _dbContext.Add(replacementOrder);
                         request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isReplaced: true);
-                        
+
                         replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
                         {
                             Description = r.Description,
@@ -322,7 +323,7 @@ namespace Tolk.Web.Controllers
                     return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
                 }
                 var now = _clock.SwedenNow;
-                //If this is an approved request, and the cancellation is done to late, a complete requisition will be created (full compensation).
+                //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
                 bool createFullCompensationRequisition = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, request.Order.StartAt.DateTime) < 2;
                 bool isApprovedRequest = request.Status == RequestStatus.Approved;
                 request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createFullCompensationRequisition);

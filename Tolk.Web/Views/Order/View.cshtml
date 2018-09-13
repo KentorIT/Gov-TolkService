@@ -206,7 +206,7 @@
             <form method="post" class="cancel-form" asp-action="Cancel">
                 <input asp-for="OrderId" type="hidden" />
                 <input name="CancelMessage" type="hidden" />
-                <input name="AddReplacementOrder" type="hidden" value="false"/>
+                <input name="AddReplacementOrder" type="hidden" value="false" />
 
                 <button class="btn cancel-button btn-warning pull-right">Avboka uppdrag</button>
             </form>
@@ -247,6 +247,10 @@
             <div class="modal-body">
                 <form class="do-not-check-dirty">
                     <form-entry asp-for="CancelMessage" />
+                    @if (Model.ReplacingOrderId.HasValue)
+                    {
+                        <div>Det går inte att skapa ett ersättningsuppdrag för ett ersättningsuppdrag</div>
+                    }
                     @if (Model.AllowReplacementOnCancel)
                     {
                         <form-entry asp-for="AddReplacementOrder" />

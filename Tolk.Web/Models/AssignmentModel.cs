@@ -55,6 +55,12 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
+        public string ReplacedByOrderNumber { get; set; }
+
+        public OrderStatus? ReplacedByOrderStatus{ get; set; }
+
+        public string ReplacingOrderNumber { get; set; }
+
         public bool AllowRequisitionRegistration{ get; set; } = false;
 
         #region methods
@@ -62,6 +68,7 @@ namespace Tolk.Web.Models
         public static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
         {
             int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId;
+
             return new AssignmentModel
             {
                 OrderId = request.OrderId,
@@ -78,7 +85,10 @@ namespace Tolk.Web.Models
                 OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
                 OffSiteContactInformation = request.Order.OffSiteContactInformation,
                 RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
-                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue)
+                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue && request.Status == RequestStatus.Approved),
+                ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,
+                ReplacedByOrderStatus = request.Order.ReplacedByOrder?.Status,
+                ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber
             };
         }
 

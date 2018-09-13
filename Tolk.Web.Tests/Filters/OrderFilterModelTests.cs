@@ -68,8 +68,8 @@ namespace Tolk.Web.Tests.Filters
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
             var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
 
-            listFirst.Should().HaveCount(3);
-            listFirst.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2] });
+            listFirst.Should().HaveCount(4);
+            listFirst.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2], mockOrders[7] });
 
             listSecond.Should().HaveCount(4);
             listSecond.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[5], mockOrders[6] });

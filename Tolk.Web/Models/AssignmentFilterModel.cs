@@ -57,13 +57,16 @@ namespace Tolk.Web.Models
                 switch (Status)
                 {
                     case AssignmentStatus.ToBeExecuted:
-                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt > clock.SwedenNow);
+                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt > clock.SwedenNow && r.Status == RequestStatus.Approved);
                         break;
                     case AssignmentStatus.ToBeReported:
-                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < clock.SwedenNow && !r.Order.ReplacingOrderId.HasValue);
+                        requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < clock.SwedenNow && !r.Order.ReplacingOrderId.HasValue && r.Status == RequestStatus.Approved);
                         break;
-                    default:
-                        requests = requests.Where(r => r.Requisitions.Any() && r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
+                    case AssignmentStatus.Executed:
+                        requests = requests.Where(r => r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ReplacementOrderDelivered);
+                        break;
+                    case AssignmentStatus.Cancelled:
+                        requests = requests.Where(r => r.Order.Status == OrderStatus.CancelledByBroker || r.Order.Status == OrderStatus.CancelledByBrokerConfirmed || r.Order.Status == OrderStatus.CancelledByCreator || r.Order.Status == OrderStatus.CancelledByCreatorConfirmed);
                         break;
                 }
             }

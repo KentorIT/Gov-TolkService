@@ -139,15 +139,15 @@ namespace Tolk.Web.Tests.TestHelpers
                 {
                     OrderId = 7,
                     OrderNumber = "2018-000007",
-                    StartAt = new DateTimeOffset(2018,12,15,00,00,00, new TimeSpan(02,00,00)),
-                    EndAt = new DateTimeOffset(2018,12,15,19,00,00, new TimeSpan(02,00,00)),
+                    StartAt = new DateTimeOffset(2018,08,15,00,00,00, new TimeSpan(02,00,00)),
+                    EndAt = new DateTimeOffset(2018,08,15,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
                     CustomerOrganisationId = 6,
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,12,01,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00))),
                     }
                 }
             };

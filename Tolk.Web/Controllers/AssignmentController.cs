@@ -38,7 +38,14 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(AssignmentFilterModel filterModel)
         {
-            var requests = _dbContext.Requests.Include(r => r.Order).Where(r => r.Status == RequestStatus.Approved);
+            var requests = _dbContext.Requests.Include(r => r.Order)
+                .Where(r => r.Status == RequestStatus.Approved || 
+                r.Status == RequestStatus.CancelledByBroker || 
+                r.Status == RequestStatus.CancelledByBrokerConfirmed ||
+                r.Status == RequestStatus.CancelledByCreator ||
+                r.Status == RequestStatus.CancelledByCreatorConfirmed ||
+                r.Status == RequestStatus.CancelledByBrokerConfirmed
+                );
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var interpreterId = User.TryGetInterpreterId();
             var brokerId = User.TryGetBrokerId();
@@ -82,6 +89,8 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Requisitions)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Where(r => r.RequestId == id).Single();
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
