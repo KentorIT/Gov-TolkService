@@ -71,7 +71,85 @@ namespace Tolk.Web.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
+            var model = new AccountViewModel
+            {
+                NameFirst = user.NameFirst,
+                NameFamily = user.NameFamily,
+                PhoneWork = user.PhoneNumber,
+                PhoneCellphone = user.PhoneNumberCellphone,
+            };
+            
+            return View(model);
+        }
+
+        public async Task<IActionResult> Edit()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+
             var model = new ManageModel
+            {
+                HasPassword = hasPassword,
+                NameFirst = user.NameFirst,
+                NameFamily = user.NameFamily,
+                PhoneWork = user.PhoneNumber,
+                PhoneCellphone = user.PhoneNumberCellphone,
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ManageModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+
+            if (!hasPassword)
+            {
+                return await SendPasswordResetLink(user);
+            }
+
+            if (ModelState.IsValid)
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    if (user != null)
+                    {
+                        // Check if user is authorized to change account
+                        if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
+                        {
+                            return Unauthorized();
+                        }
+
+                        user.NameFirst = model.NameFirst;
+                        user.NameFamily = model.NameFamily;
+                        user.PhoneNumber = model.PhoneWork;
+                        user.PhoneNumberCellphone = model.PhoneCellphone;
+
+                        var result = await _userManager.UpdateAsync(user);
+                        if (result.Succeeded)
+                        {
+                            _logger.LogInformation("Successfully created new user {userId}", user.Id);
+                            transaction.Complete();
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                    else
+                    {
+                        throw new ApplicationException($"Can't find user {user.Id}");
+                    }
+                }
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> ChangePassword()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var model = new ChangePasswordModel
             {
                 HasPassword = await _userManager.HasPasswordAsync(user)
             };
@@ -81,7 +159,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(ManageModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordModel model)
         {
             var user = await _userManager.GetUserAsync(User);
             var hasPassword = await _userManager.HasPasswordAsync(user);
@@ -429,7 +507,7 @@ supporten på {_options.SupportEmail}";
                 await _signInManager.SignInAsync(user, true);
                 var pToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-                return RedirectToAction(nameof(RegisterNewUser), new { userId, pToken });
+                return RedirectToAction(nameof(RegisterNewAccount), new { userId, pToken });
             }
 
             var model = new ConfirmAccountModel { UserId = userId };
@@ -533,21 +611,19 @@ supporten på {_options.SupportEmail}";
             return View();
         }
 
-        [AllowAnonymous]
         [HttpGet]
-        public IActionResult RegisterNewUser(string userId, string pToken)
+        public IActionResult RegisterNewAccount(string userId, string pToken)
         {
-            var model = new RegisterNewUserViewModel { UserId = userId, PasswordToken = pToken };
+            var model = new RegisterNewAccountViewModel { UserId = userId, PasswordToken = pToken };
             return View(model);
         }
 
-        [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> RegisterNewUser(RegisterNewUserViewModel model)
+        public async Task<IActionResult> RegisterNewAccount(RegisterNewAccountViewModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
             {
-                throw new ApplicationException($"No UserId provided for account creation");
+                throw new ApplicationException($"No UserId provided for registration");
             }
 
             if (ModelState.IsValid)
@@ -573,8 +649,8 @@ supporten på {_options.SupportEmail}";
                             result = await _userManager.UpdateAsync(user);
                             if (result.Succeeded)
                             {
+                                _logger.LogInformation("Successfully created new user {userId}", user.Id);
                                 transaction.Complete();
-                                _logger.LogInformation("Successfully created new user {userId}", model.UserId);
 
                                 return RedirectToAction(nameof(ConfirmAccountConfirmation));
                             }
@@ -582,10 +658,11 @@ supporten på {_options.SupportEmail}";
                     }
                     else
                     {
-                        throw new ApplicationException($"Can't find user {model.UserId}");
+                        throw new ApplicationException($"Found no user with id {model.UserId}");
                     }
                 }
             }
+
             return View(model);
         }
 

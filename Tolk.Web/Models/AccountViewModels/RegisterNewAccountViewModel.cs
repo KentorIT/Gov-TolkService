@@ -7,9 +7,11 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class ManageModel
+    public class RegisterNewAccountViewModel : NewPasswordModelBase
     {
-        public bool HasPassword { get; set; }
+        public string UserId { get; set; }
+
+        public string PasswordToken { get; set; }
 
         [ClientRequired]
         [Display(Name = "Förnamn")]
@@ -24,10 +26,5 @@ namespace Tolk.Web.Models.AccountViewModels
 
         [Display(Name = "Telefonnummer (mobil)")]
         public string PhoneCellphone { get; set; }
-
-        [ClientRequired]
-        [DataType(DataType.Password)]
-        [Display(Name = "Bekräfta befintligt lösenord")]
-        public string CurrentPassword { get; set; }
     }
 }

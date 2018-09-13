@@ -1,35 +1,21 @@
-﻿@model ManageModel;
+﻿@model AccountViewModel
 @using System.Security.Claims
-
 @{
-    ViewData["Title"] = "Mitt Konto";
+    ViewData["Title"] = "Mitt konto";
 }
 
 <h2>@User.FindFirstValue(ClaimTypes.Name)</h2>
 
 <div class="row">
-    <div class="col-md-4">
-        <form method="post" class="do-not-check-dirty">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            @if (Model.HasPassword)
-            {
-                <form-entry asp-for="CurrentPassword" />
-                <form-entry asp-for="NewPassword" />
-                <form-entry asp-for="ConfirmPassword" />
-                <button type="submit" class="btn btn-success">Byt lösenord</button>
-            }
-            else
-            {
-                <p>
-                    Du har inget befintligt lösenord, för att sätta ett lösenord behöver du
-                    en återställningslänk som du får via e-post.
-                </p>
-                <button type="submit" class="btn btn-success">Skicka återställningslänk</button>
-            }
-        </form>
+    <div class="col-md-8">
+        <a class="btn btn-default pull-right" asp-action="Edit">Redigera</a>
+        <display-entry asp-for="NameFirst" />
+        <display-entry asp-for="NameFamily" />
+        <display-entry asp-for="PhoneWork" />
+        <display-entry asp-for="PhoneCellphone" />
     </div>
 </div>
 
-@section Scripts {
+@section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

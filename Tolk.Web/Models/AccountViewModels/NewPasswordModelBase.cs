@@ -9,7 +9,7 @@ namespace Tolk.Web.Models.AccountViewModels
 {
     public abstract class NewPasswordModelBase
     {
-        [Required]
+        [ClientRequired]
         [StringLength(100, MinimumLength = 8)]
         [DataType(DataType.Password)]
         [PasswordValidation(
@@ -18,10 +18,10 @@ namespace Tolk.Web.Models.AccountViewModels
             MustContainUpper = true, 
             MustContainNumbers = true, 
             MustContainNonAlphanumeric = true)]
-        [Display(Name = "Nytt Lösenord")]
+        [Display(Name = "Nytt lösenord")]
         public string NewPassword { get; set; }
 
-        [Required]
+        [ClientRequired]
         [DataType(DataType.Password)]
         [Display(Name = "Bekräfta lösenord")]
         [Compare(nameof(NewPassword))]

@@ -1,5 +1,4 @@
-﻿@model RegisterNewUserViewModel
-
+﻿@model RegisterNewAccountViewModel
 @{
     ViewData["Title"] = "Ny användare";
 }
@@ -8,8 +7,7 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form method="post" asp-action="RegisterNewUser" asp-controller="Account">
-            <div asp-validation-summary="All" class="text-danger"></div>
+        <form method="post">
             <input type="hidden" asp-for="UserId" />
             <input type="hidden" asp-for="PasswordToken" />
             <form-entry asp-for="NameFirst" />
@@ -18,11 +16,7 @@
             <form-entry asp-for="ConfirmPassword" />
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
-            <button type="submit" class="btn btn-success">Skapa</button>
+            <button class="btn btn-success">Skapa</button>
         </form>
     </div>
 </div>
-
-@section Scripts{
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
