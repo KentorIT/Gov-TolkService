@@ -96,7 +96,7 @@
             <form-entry asp-for="Description" />
 
             <button class="btn btn-default">Skicka</button>
-            <a class="btn btn-warning pull-right" asp-controller="Home" asp-action="Index">Avbryt</a>
+            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
         </form>
         <span id="baseRequirement" class="d-none">
             <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
@@ -118,7 +118,7 @@
                 @Html.Partial("_Requirement", new OrderRequirementModel())
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                 <button type="button" class="btn btn-default save-requirement">Spara</button>
             </div>
         </div>
