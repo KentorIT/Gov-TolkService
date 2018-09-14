@@ -73,10 +73,10 @@ namespace Tolk.Web.Controllers
 
             var model = new AccountViewModel
             {
-                NameFirst = user.NameFirst,
-                NameFamily = user.NameFamily,
-                PhoneWork = user.PhoneNumber,
-                PhoneCellphone = user.PhoneNumberCellphone,
+                NameFull = user.FullName ?? "-",
+                Email = user.Email ?? "-",
+                PhoneWork = user.PhoneNumber ?? "-",
+                PhoneCellphone = user.PhoneNumberCellphone ?? "-",
             };
             
             return View(model);

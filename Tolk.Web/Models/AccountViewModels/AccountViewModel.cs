@@ -8,11 +8,11 @@ namespace Tolk.Web.Models.AccountViewModels
 {
     public class AccountViewModel
     {
-        [Display(Name = "Förnamn")]
-        public string NameFirst { get; set; }
+        [Display(Name = "Namn")]
+        public string NameFull { get; set; }
 
-        [Display(Name = "Efternamn")]
-        public string NameFamily { get; set; }
+        [Display(Name = "E-postadress")]
+        public string Email { get; set; }
 
         [Display(Name = "Telefonnummer (arbete)")]
         public string PhoneWork { get; set; }

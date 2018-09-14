@@ -23,7 +23,7 @@ namespace Tolk.Web.Models.AccountViewModels
 
         [ClientRequired]
         [DataType(DataType.Password)]
-        [Display(Name = "Bekräfta lösenord")]
+        [Display(Name = "Bekräfta nytt lösenord")]
         [Compare(nameof(NewPassword))]
         public string ConfirmPassword { get; set; }
     }

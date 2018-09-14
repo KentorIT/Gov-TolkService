@@ -15,11 +15,11 @@
                 <input type="hidden" asp-for="HasPassword" />
                 <form-entry asp-for="NameFirst" />
                 <form-entry asp-for="NameFamily" />
-                <a class="btn btn-default" asp-action="ChangePassword">Byt lösenord</a>
                 <form-entry asp-for="PhoneWork" />
                 <form-entry asp-for="PhoneCellphone" />
                 <form-entry asp-for="CurrentPassword" />
                 <button type="submit" class="btn btn-success">Spara</button>
+                <a class="btn btn-danger pull-right" asp-action="Index">Avbryt</a>
             }
             else
             {

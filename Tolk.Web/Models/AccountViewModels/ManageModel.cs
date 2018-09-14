@@ -27,7 +27,7 @@ namespace Tolk.Web.Models.AccountViewModels
 
         [ClientRequired]
         [DataType(DataType.Password)]
-        [Display(Name = "Bekräfta befintligt lösenord")]
+        [Display(Name = "Lösenord", Description = "Bekräfta ändringarna med ditt lösenord")]
         public string CurrentPassword { get; set; }
     }
 }
