@@ -14,10 +14,6 @@ namespace Tolk.Web.Models
 {
     public class RequisitionViewModel : RequisitionModel
     {
-        [Display(Name = "Registrerad av")]
-        [DataType(DataType.MultilineText)]
-        public string CreatedBy { get; set; }
-
         [Display(Name = "Registrerad")]
         public DateTimeOffset CreatedAt { get; set; }
 
@@ -116,7 +112,7 @@ namespace Tolk.Web.Models
                 PreviousRequisition = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId),
                 ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
-                CustomerName = requisition.Request.Order.CustomerOrganisation.Name,
+                CustomerOrganizationName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,
                 Description = requisition.Request.Order.Description,
                 AssignmentType = requisition.Request.Order.AssignentType,
@@ -145,7 +141,8 @@ namespace Tolk.Web.Models
                 AllowMoreThanTwoHoursTravelTime = requisition.Request.Order.AllowMoreThanTwoHoursTravelTime,
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,
-                CreatedBy = requisition.CreatedByUser.CompleteContactInformation,
+                OrderCreatedBy = requisition.Request.Order.CreatedByUser.CompleteContactInformation,
+                RequisitionCreatedBy = requisition.CreatedByUser.CompleteContactInformation,
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,

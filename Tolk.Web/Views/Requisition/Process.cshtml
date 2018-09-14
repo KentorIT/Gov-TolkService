@@ -7,11 +7,12 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CreatedBy" />
+        <display-entry asp-for="OrderCreatedBy" />
         @if (Model.PreviousRequisition != null)
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
+        <display-entry asp-for="RequisitionCreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="Status" />
         <display-entry asp-for="ExpectedStartedAt" />

@@ -30,7 +30,15 @@ namespace Tolk.Web.Models
         public string BrokerName { get; set; }
 
         [Display(Name = "Kund")]
-        public string CustomerName { get; set; }
+        public string CustomerOrganizationName { get; set; }
+
+        [Display(Name = "Avropare hos kund")]
+        [DataType(DataType.MultilineText)]
+        public string OrderCreatedBy { get; set; }
+
+        [Display(Name = "Rekvisition registrerad av")]
+        [DataType(DataType.MultilineText)]
+        public string RequisitionCreatedBy { get; set; }
 
         [Display(Name = "Förväntad resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
@@ -102,8 +110,9 @@ namespace Tolk.Web.Models
             {
                 RequestId = request.RequestId,
                 BrokerName = request.Ranking.Broker.Name,
-                CustomerName = request.Order.CustomerOrganisation.Name,
+                CustomerOrganizationName = request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
+                OrderCreatedBy = request.Order.CreatedByUser.CompleteContactInformation,
                 ExpectedEndedAt = request.Order.EndAt,
                 ExpectedStartedAt = request.Order.StartAt,
                 SessionEndedAt = request.Order.EndAt,

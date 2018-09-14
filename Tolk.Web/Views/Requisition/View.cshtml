@@ -7,12 +7,12 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CustomerName" />
+        <display-entry asp-for="CustomerOrganizationName" />
         @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
         {
             <display-entry asp-for="CustomerReferenceNumber" />
         }
-        <display-entry asp-for="CreatedBy" />
+        <display-entry asp-for="OrderCreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="AssignmentType" />
         @if (!string.IsNullOrWhiteSpace(Model.Description))
@@ -93,6 +93,7 @@
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
+        <display-entry asp-for="RequisitionCreatedBy" />
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
         @if (Model.RequestPriceInformationModel != null)
