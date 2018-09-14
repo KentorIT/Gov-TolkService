@@ -10,6 +10,7 @@ namespace Tolk.Web.Models.AccountViewModels
     {
         [Required]
         [EmailAddress]
+        [Display(Name = "E-post")]
         public string Email { get; set; }
     }
 }
