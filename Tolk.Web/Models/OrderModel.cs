@@ -52,15 +52,8 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string OtherLanguage { get; set; }
 
-        [Display(Name = "Erbjud flera alternativ till inställelsesätt")]
-        public bool UseRankedInterpreterLocation { get; set; } = false;
-
-        [Display(Name = "Inställelsesätt")]
-        [ClientRequired]
-        public InterpreterLocation? InterpreterLocation { get; set; }
-
-        [Display(Name = "Inställelsesätt i första hand")]
-        [ClientRequired]
+        [Display(Name = "Inställelsesätt i första hand", Description = "Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller.")]
+        [Required]
         public InterpreterLocation? RankedInterpreterLocationFirst { get; set; }
 
         [Display(Name = "Inställelsesätt i andra hand")]
@@ -68,8 +61,6 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Inställelsesätt i tredje hand")]
         public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
-
-        public InterpreterLocationAddressModel RequiredInterpreterLocationAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationFirstAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
@@ -185,9 +176,6 @@ namespace Tolk.Web.Models
 
         public bool AllowDenial => ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
 
-        public bool UseAddress => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value != BusinessLogic.Enums.InterpreterLocation.OffSite);
-        public bool UseOffSiteInformation => UseRankedInterpreterLocation || (InterpreterLocation == null ? true : InterpreterLocation.Value == BusinessLogic.Enums.InterpreterLocation.OffSite);
-
         public bool AllowOrderCancellation { get; set; } = false;
         public bool AllowReplacementOnCancel { get; set; } = false;
 
@@ -246,6 +234,25 @@ namespace Tolk.Web.Models
             }
         }
 
+        public IEnumerable<InterpreterLocation> RankedInterpreterLocations
+        {
+            get
+            {
+                if (RankedInterpreterLocationFirstAddressModel?.InterpreterLocation != null)
+                {
+                    yield return RankedInterpreterLocationFirstAddressModel.InterpreterLocation.Value;
+                }
+                if (RankedInterpreterLocationSecondAddressModel?.InterpreterLocation != null)
+                {
+                    yield return RankedInterpreterLocationSecondAddressModel.InterpreterLocation.Value;
+                }
+                if (RankedInterpreterLocationThirdAddressModel?.InterpreterLocation != null)
+                {
+                    yield return RankedInterpreterLocationThirdAddressModel.InterpreterLocation.Value;
+                }
+            }
+        }
+
         #region methods
 
         public void UpdateOrder(Order order, bool isReplace = false)
@@ -255,12 +262,18 @@ namespace Tolk.Web.Models
             order.EndAt = TimeRange.EndDateTime;
             order.Description = Description;
             order.UnitName = UnitName;
-            //order.Street = UseAddress ? LocationStreet : null;
-            //order.ZipCode = UseAddress ? (!string.IsNullOrEmpty(LocationZipCode) && LocationZipCode.Length > 4) ? LocationZipCode.Replace(" ", string.Empty).Insert(3, " ") : LocationZipCode : null;
-            //order.City = UseAddress ? LocationCity : null;
-            //order.OffSiteContactInformation = UseOffSiteInformation ? OffSiteContactInformation : null;
-            //order.OffSiteAssignmentType = UseOffSiteInformation ? OffSiteAssignmentType : null;
             order.ContactPersonId = ContactPersonId;
+
+            var location = RankedInterpreterLocationFirst.Value;
+            order.InterpreterLocations.Add(GetInterpreterLocation(location, 1, RankedInterpreterLocationFirstAddressModel));
+            if (RankedInterpreterLocationSecond.HasValue)
+            {
+                order.InterpreterLocations.Add(GetInterpreterLocation(RankedInterpreterLocationSecond.Value, 2, RankedInterpreterLocationSecondAddressModel));
+                if (RankedInterpreterLocationThird.HasValue)
+                {
+                    order.InterpreterLocations.Add(GetInterpreterLocation(RankedInterpreterLocationThird.Value, 3, RankedInterpreterLocationThirdAddressModel));
+                }
+            }
             if (isReplace)
             {
                 order.ReplacingOrderId = ReplacingOrderId;
@@ -268,28 +281,16 @@ namespace Tolk.Web.Models
             else
             {
                 order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
-                order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
+                order.OtherLanguage = OtherLanguageId == LanguageId && AssignmentType != AssignmentType.Education ? OtherLanguage : null;
                 order.RegionId = RegionId;
                 order.AssignentType = AssignmentType;
-                order.AllowMoreThanTwoHoursTravelTime = UseAddress ? AllowMoreThanTwoHoursTravelTime : false;
+                order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
-                if (UseRankedInterpreterLocation)
-                {
-#warning save the ranked here
-                }
-                else
-                {
-                    //Add one(1) row to OrderInterpreterLocation
-                    // with rank 0
-                    order.InterpreterLocations.Add(new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.Value, Rank = 0 });
-                }
-
                 if (OrderRequirements != null)
                 {
                     // add all extra requirements
                     foreach (var req in OrderRequirements)
                     {
-                        //TODO: Handle deletes too!
                         OrderRequirement requirement = null;
                         if (req.OrderRequirementId.HasValue)
                         {
@@ -358,6 +359,24 @@ namespace Tolk.Web.Models
             }
         }
 
+        private static InterpreterLocationAddressModel GetInterpreterLocation(OrderInterpreterLocation location)
+        {
+            if (location == null)
+            {
+                return null;
+            }
+            return new InterpreterLocationAddressModel
+            {
+                InterpreterLocation = location.InterpreterLocation,
+                Rank = location.Rank,
+                LocationStreet = location.Street,
+                LocationZipCode = location.ZipCode,
+                LocationCity = location.City,
+                OffSiteAssignmentType = location.OffSiteAssignmentType,
+                OffSiteContactInformation = location.OffSiteContactInformation
+            };
+        }
+
         public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
 
@@ -407,9 +426,12 @@ namespace Tolk.Web.Models
                 RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
                 RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
                 Status = order.Status,
-                UseRankedInterpreterLocation = useRankedInterpreterLocation,
-                InterpreterLocation = !useRankedInterpreterLocation ? (InterpreterLocation?)order.InterpreterLocations.Single().InterpreterLocation : null,
-#warning RankedInterpreterLocationFirst|Second|Third should be set here, and addresses
+                RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
+                RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
+                RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,
+                RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
+                RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
+                RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
                 // Add the InterpreterLocation
                 OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
                 {
@@ -443,6 +465,19 @@ namespace Tolk.Web.Models
                     BrokerName = r.Ranking.Broker.Name,
                     DenyMessage = r.DenyMessage
                 }).ToList()
+            };
+        }
+        private OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
+        {
+            return new OrderInterpreterLocation
+            {
+                InterpreterLocation = location,
+                Rank = rank,
+                Street = location != InterpreterLocation.OffSite ? addressModel.LocationStreet : null,
+                ZipCode = location != InterpreterLocation.OffSite ? addressModel.LocationZipCode : null,
+                City = location != InterpreterLocation.OffSite ? addressModel.LocationCity : null,
+                OffSiteAssignmentType = location == InterpreterLocation.OffSite ? addressModel.OffSiteAssignmentType : null,
+                OffSiteContactInformation = location == InterpreterLocation.OffSite ? addressModel.OffSiteContactInformation : null,
             };
         }
 

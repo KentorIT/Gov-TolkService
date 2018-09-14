@@ -77,28 +77,22 @@
         <display-entry asp-for="CalculatedPrice" />
         <display-entry asp-for="OrderModel.Description" />
 
-        @*@if (Model.OrderModel.UseAddress)
-        {
-            <display-entry asp-for="OrderModel.LocationStreet" />
-            <display-entry asp-for="OrderModel.LocationZipCode" />
-            <display-entry asp-for="OrderModel.LocationCity" />
-            <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
-        }
-        @if (Model.OrderModel.UseOffSiteInformation)
-        {
-            <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
-            <display-entry asp-for="OrderModel.OffSiteContactInformation" />
-        }*@
-
         <display-entry asp-for="Interpreter" />
         <display-entry asp-for="InterpreterCompetenceLevel" />
+        <label>Inställelsesätt</label>
+        <display-entry asp-for="OrderModel.RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+        @if (Model.OrderModel.RankedInterpreterLocationSecondAddressModel != null)
+        {
+            <display-entry asp-for="OrderModel.RankedInterpreterLocationSecondAddressModel.CompactInformation" />
+        }
+        @if (Model.OrderModel.RankedInterpreterLocationThirdAddressModel != null)
+        {
+            <display-entry asp-for="OrderModel.RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+        }
+
         @if (Model.InterpreterLocationAnswer != null && Model.InterpreterLocation == null)
         {
             <display-entry asp-for="InterpreterLocationAnswer" />
-        }
-        else
-        {
-            <display-entry asp-for="InterpreterLocation" />
         }
         @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
         {

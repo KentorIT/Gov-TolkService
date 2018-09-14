@@ -69,18 +69,17 @@
         <display-entry asp-for="OrderModel.TimeRange" />
         <display-entry asp-for="CalculatedPrice" />
         <display-entry asp-for="OrderModel.Description" />
-        @*@if (Model.OrderModel.UseAddress)
+
+        <label>Inställelsesätt</label>
+        <display-entry asp-for="OrderModel.RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+        @if (Model.OrderModel.RankedInterpreterLocationSecondAddressModel != null)
         {
-            <display-entry asp-for="OrderModel.LocationStreet" />
-            <display-entry asp-for="OrderModel.LocationZipCode" />
-            <display-entry asp-for="OrderModel.LocationCity" />
-            <display-entry asp-for="OrderModel.AllowMoreThanTwoHoursTravelTime" />
+            <display-entry asp-for="OrderModel.RankedInterpreterLocationSecondAddressModel.CompactInformation" />
         }
-        @if (Model.OrderModel.UseOffSiteInformation)
+        @if (Model.OrderModel.RankedInterpreterLocationThirdAddressModel != null)
         {
-            <display-entry asp-for="OrderModel.OffSiteAssignmentType" />
-            <display-entry asp-for="OrderModel.OffSiteContactInformation" />
-        }*@
+            <display-entry asp-for="OrderModel.RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+        }
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
             <display-entry asp-for="ExpiresAt" />
@@ -142,16 +141,7 @@
                 }
                 else
                 {
-                    @*<label>Önskat inställelsesätt, helst överst FIXA!!!!!!</label>
-                    <ul>
-                        @foreach (var location in Model.OrderModel.InterpreterLocations.OrderBy(l => l.Rank))
-                        {
-                            <li>
-                                @EnumHelper.GetDescription(location.InterpreterLocation)
-                            </li>
-                        }
-                    </ul>*@
-                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" />
+                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
                 }
             }
             <input asp-for="Status" type="hidden" />

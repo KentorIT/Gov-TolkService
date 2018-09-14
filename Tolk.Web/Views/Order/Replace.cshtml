@@ -49,6 +49,17 @@
                 <span>Inga önskemål kring kompetensnivå</span> <br /><br />
             }
             <display-entry asp-for="AssignmentType" />
+            <label>Inställelsesätt på det ersatta avropet.</label>
+            <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+            @if (Model.RankedInterpreterLocationSecondAddressModel != null)
+            {
+                <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
+            }
+            @if (Model.RankedInterpreterLocationThirdAddressModel != null)
+            {
+                <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+            }
+
             <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
             {
@@ -84,37 +95,54 @@
                     }
                 </ul>
             }
-            @if (!Model.UseRankedInterpreterLocation)
-            {
-                <display-entry asp-for="InterpreterLocation" />
-            }
-            else
-            {
-                <label>Önskat inställelsesätt, helst överst FIXA!!!!</label>
-                @*<ul>
-                    @foreach (var location in Model.InterpreterLocations.OrderBy(l => l.Rank))
-                    {
-                        <li>
-                            @EnumHelper.GetDescription(location.InterpreterLocation)
-                        </li>
-                    }
-                </ul>*@
-            }
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
             <form-entry asp-for="UnitName" />
+            <div class="ranked-InterpreterLocation">
+                <div class="location-group">
+                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                    <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
+                        <div class="address-information">
+                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
+                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationZipCode" />
+                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
+                        </div>
+                        <div class="off-site-information">
+                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
+                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
+                        </div>
+                    </div>
+                </div>
+                <div class="interpreter-location-second location-group">
+                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                    <div class="address-RankedInterpreterLocationSecond">
+                        <div class="address-information">
+                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
+                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationZipCode" />
+                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
+                        </div>
+                        <div class="off-site-information">
+                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
+                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+                        </div>
+                    </div>
+                </div>
+                <div class="interpreter-location-third location-group">
+                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                    <div class="address-RankedInterpreterLocationThird">
+                        <div class="address-information">
+                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
+                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationZipCode" />
+                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
+                        </div>
+                        <div class="off-site-information">
+                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
+                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            @*@if (Model.UseAddress)
-            {
-                <form-entry asp-for="LocationStreet" />
-                <form-entry asp-for="LocationZipCode" />
-                <form-entry asp-for="LocationCity" />
-            }
-            @if (Model.UseOffSiteInformation)
-            {
-                <form-entry asp-for="OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
-                <form-entry asp-for="OffSiteContactInformation" />
-            }*@
             <display-entry asp-for="ReplacedTimeRange" />
             <form-entry asp-for="ReplacedTimeRange" type="hidden" />
             <form-entry asp-for="TimeRange" />
@@ -125,11 +153,13 @@
     </form>
 </div>
 @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Replace.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/Replace.min.js" asp-append-version="true"></script>
-    </environment>
+<environment include="Development">
+    <script src="~/js/Order/Replace.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/Order/Replace.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+</environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

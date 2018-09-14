@@ -87,11 +87,6 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static List<InterpreterLocationModel> RankedInterpreterLocations { get; } =
-            Enum.GetValues(typeof(InterpreterLocation)).OfType<InterpreterLocation>()
-                .Select(e => new InterpreterLocationModel { InterpreterLocation = e, Rank = (int)e })
-                .ToList();
-
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })

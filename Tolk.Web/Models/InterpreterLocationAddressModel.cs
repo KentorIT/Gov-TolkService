@@ -1,11 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
+using System.Text;
+using E = Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class InterpreterLocationAddressModel
     {
+        public E.InterpreterLocation? InterpreterLocation { get; set; }
+
+        public int? Rank { get; set; }
+
         [Display(Name = "Adress")]
         [ClientRequired]
         public string LocationStreet { get; set; }
@@ -21,11 +27,46 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Typ av distanstolkning")]
         [ClientRequired]
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
+        public E.OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
 
         [Display(Name = "Kontaktinformation för distanstolkning")]
         [ClientRequired]
         [StringLength(255)]
         public string OffSiteContactInformation { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        [NoDisplayName]
+        public string CompactInformation
+        {
+            get
+            {
+                if (!InterpreterLocation.HasValue)
+                {
+                    return string.Empty;
+                }
+                string rankHeader = string.Empty;
+                switch (Rank)
+                    {
+                    case 2:
+                        rankHeader = "I andra hand: ";
+                        break;
+                    case 3:
+                        rankHeader = "I tredje hand: ";
+                        break;
+                    default:
+                        break;
+                }
+                StringBuilder sb = new StringBuilder($"{rankHeader}{InterpreterLocation.Value.GetDescription()}");
+                if (InterpreterLocation.Value == E.InterpreterLocation.OffSite)
+                {
+                    sb.Append($"\n{OffSiteAssignmentType.Value.GetDescription()}: {OffSiteContactInformation}");
+                }
+                else
+                {
+                    sb.Append($"\n{LocationStreet}\n{LocationZipCode} {LocationCity}");
+                }
+                return sb.ToString();
+            }
+        }
     }
 }

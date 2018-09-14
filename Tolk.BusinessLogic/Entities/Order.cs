@@ -173,13 +173,7 @@ namespace Tolk.BusinessLogic.Entities
             order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
             order.AssignentType = AssignentType;
             order.CustomerOrganisation = CustomerOrganisation;
-            order.InterpreterLocations = InterpreterLocations.Select(i => new OrderInterpreterLocation
-            {
-                InterpreterLocation = i.InterpreterLocation,
-                Rank = i.Rank
-            }).ToList();
             order.Language = Language;
-            order.OffSiteAssignmentType = OffSiteAssignmentType;
             order.OtherLanguage = OtherLanguage;
             order.Region = Region;
             order.CompetenceRequirements = CompetenceRequirements.Select(r => new OrderCompetenceRequirement

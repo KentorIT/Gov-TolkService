@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -61,29 +56,29 @@ namespace Tolk.Web.Models
 
         public string ReplacingOrderNumber { get; set; }
 
-        public bool AllowRequisitionRegistration{ get; set; } = false;
+        public bool AllowRequisitionRegistration { get; set; } = false;
 
         #region methods
 
         public static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
         {
             int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId;
-
+            var location = request.Order.InterpreterLocations.Single(l => (int)l.InterpreterLocation == request.InterpreterLocation.Value);
             return new AssignmentModel
             {
                 OrderId = request.OrderId,
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value,
-                Address = request.Order.CompactAddress,
+                Address = $"{location.Street}\n{location.ZipCode} {location.City}",
+                OffSiteAssignmentType = location.OffSiteAssignmentType,
+                OffSiteContactInformation = location.OffSiteContactInformation,
                 CustomerName = request.Order.CustomerOrganisation.Name,
                 StartDateTime = request.Order.StartAt,
                 EndDateTime = request.Order.EndAt,
                 BrokerName = request.Ranking.Broker.Name,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 RequestId = request.RequestId,
-                OffSiteAssignmentType = request.Order.OffSiteAssignmentType,
-                OffSiteContactInformation = request.Order.OffSiteContactInformation,
                 RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
                 AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue && request.Status == RequestStatus.Approved),
                 ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,

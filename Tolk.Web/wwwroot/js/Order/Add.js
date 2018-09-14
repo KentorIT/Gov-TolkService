@@ -89,25 +89,6 @@ $(function () {
             $(".ranked-InterpreterLocation").hide();
         }
     });
-    $("body").on("change", "#InterpreterLocation, #RankedInterpreterLocationFirst, #RankedInterpreterLocationSecond, #RankedInterpreterLocationThird", function (event) {
-        var $id = $(this)[0].id;
-        var $val = $(this).val();
-        if ($val === "") {
-            $(".address-" + $id).hide();
-            $(this).parents(".location-group").removeClass("group-box");
-        }
-        else {
-            $(this).parents(".location-group").addClass("group-box");
-            $(".address-" + $id).show();
-            if ($val === "OffSite") {
-                $(".address-" + $id + " > .address-information").hide();
-                $(".address-" + $id + " > .off-site-information").show();
-            } else {
-                $(".address-" + $id + " > .address-information").show();
-                $(".address-" + $id + " > .off-site-information").hide();
-            }
-        }
-    });
     $("body").on("change", "#LanguageId", function () {
         toggleOtherLanguage($(this).val());
     });
@@ -137,5 +118,4 @@ $(function () {
     // Triggers (handlers cannot be triggered before being declared)
     $("#SpecificCompetenceLevelRequired").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
-    $("#InterpreterLocation, #RankedInterpreterLocationFirst, #RankedInterpreterLocationSecond, #RankedInterpreterLocationThird").trigger("change");
 });

@@ -90,6 +90,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Where(r => r.RequestId == id).Single();

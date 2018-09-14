@@ -37,36 +37,18 @@
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="AssignmentType" />
-        Här behöver det komma en massa annan information om inställelsesätt...
-        @*@if (!Model.UseRankedInterpreterLocation)
+        
+        <label>Inställelsesätt</label>
+        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+        @if (Model.RankedInterpreterLocationSecondAddressModel != null)
         {
-            <display-entry asp-for="InterpreterLocation" />
+            <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
         }
-        else
+        @if (Model.RankedInterpreterLocationThirdAddressModel != null)
         {
-            <label>Önskat inställelsesätt, helst överst</label>
-            <ul>
-                @foreach (var location in Model.InterpreterLocations.OrderBy(l => l.Rank))
-                {
-                    <li>
-                        @EnumHelper.GetDescription(location.InterpreterLocation)
-                    </li>
-                }
-            </ul>
+            <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
         }
 
-        @if (Model.UseAddress)
-        {
-            <display-entry asp-for="LocationStreet" />
-            <display-entry asp-for="LocationZipCode" />
-            <display-entry asp-for="LocationCity" />
-            <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-        }
-        @if (Model.UseOffSiteInformation)
-        {
-            <display-entry asp-for="OffSiteAssignmentType" />
-            <display-entry asp-for="OffSiteContactInformation" />
-        }*@
         <display-entry asp-for="SpecificCompetenceLevelRequired" />
         @if (Model.RequestedCompetenceLevels.Count != 0)
         {

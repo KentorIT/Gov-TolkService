@@ -52,6 +52,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.CreatedByUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)

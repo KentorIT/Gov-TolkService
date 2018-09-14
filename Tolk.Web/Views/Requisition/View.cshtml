@@ -20,9 +20,15 @@
             <display-entry asp-for="Description" />
         }
         <display-entry asp-for="UnitName" />
-        <display-entry asp-for="LocationStreet" />
-        <display-entry asp-for="LocationZipCode" />
-        <display-entry asp-for="LocationCity" />
+        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSite)
+        {
+            <display-entry asp-for="OffSiteAssignmentType" />
+            <display-entry asp-for="OffSiteContactInformation" />
+        }
+        else
+        {
+            <display-entry asp-for="Address" />
+        }
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="SpecificCompetenceLevelRequired" />
@@ -63,7 +69,6 @@
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.ReplacingRequisitionId })">Se ersättande rekvisition</a>
         }
-
         @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
         {
             <display-entry asp-for="DenyMessage" />
@@ -84,7 +89,6 @@
         <display-entry asp-for="ExpectedEndedAt" />
         <display-entry asp-for="SessionEndedAt" />
         <display-entry asp-for="TotalRegisteredWasteTime" />
-
         @if (Model.AllowMoreThanTwoHoursTravelTime)
         {
             <display-entry asp-for="ExpectedTravelCosts" />

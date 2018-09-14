@@ -29,25 +29,10 @@
             <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
             <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
             <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
-            <form-entry asp-for="UseRankedInterpreterLocation" />
-            <div class="required-InterpreterLocation location-group">
-                <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
-                <div class="address-InterpreterLocation">
-                    <div class="address-information">
-                        <form-entry asp-for="RequiredInterpreterLocationAddressModel.LocationStreet" />
-                        <form-entry asp-for="RequiredInterpreterLocationAddressModel.LocationZipCode" />
-                        <form-entry asp-for="RequiredInterpreterLocationAddressModel.LocationCity" />
-                    </div>
-                    <div class="off-site-information">
-                        <form-entry asp-for="RequiredInterpreterLocationAddressModel.OffSiteAssignmentType" type="select" asp-items="SelectListService.OffSiteAssignmentTypes" />
-                        <form-entry asp-for="RequiredInterpreterLocationAddressModel.OffSiteContactInformation" />
-                    </div>
-                </div>
-            </div>
             <div class="ranked-InterpreterLocation">
                 <div class="location-group">
-                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
-                    <div class="address-RankedInterpreterLocationFirst">
+                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                    <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
                         <div class="address-information">
                             <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
                             <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationZipCode" />
@@ -59,8 +44,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="location-group">
-                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                <div class="interpreter-location-second location-group">
+                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationSecond">
                         <div class="address-information">
                             <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
@@ -73,8 +58,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="location-group">
-                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                <div class="interpreter-location-third location-group">
+                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationThird">
                         <div class="address-information">
                             <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
@@ -141,11 +126,13 @@
     </div>
 </div>
 @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-    </environment>
+<environment include="Development">
+    <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+</environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

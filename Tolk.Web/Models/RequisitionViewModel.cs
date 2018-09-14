@@ -48,13 +48,7 @@ namespace Tolk.Web.Models
         public string OffSiteContactInformation { get; set; }
 
         [Display(Name = "Adress")]
-        public string LocationStreet { get; set; }
-
-        [Display(Name = "Postnummer")]
-        public string LocationZipCode { get; set; }
-
-        [Display(Name = "Ort")]
-        public string LocationCity { get; set; }
+        public string Address { get; set; }
 
         [Display(Name = "Krav på kompetensnivå")]
         public bool SpecificCompetenceLevelRequired { get; set; }
@@ -115,6 +109,7 @@ namespace Tolk.Web.Models
             var competenceFirst = competenceLevels.Count > 0 ? competenceLevels[0] : null;
             var competenceSecond = competenceLevels.Count > 1 ? competenceLevels[1] : null;
             var competenceThird = competenceLevels.Count > 2 ? competenceLevels[2] : null;
+            var location = requisition.Request.Order.InterpreterLocations.Single(l => (int)l.InterpreterLocation == requisition.Request.InterpreterLocation.Value);
             return new RequisitionViewModel
             {
                 RequestId = requisition.RequestId,
@@ -137,11 +132,9 @@ namespace Tolk.Web.Models
                 InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
                 InterpreterLocation = (InterpreterLocation)requisition.Request.InterpreterLocation,
                 InterpretersCompetenceLevel = (CompetenceAndSpecialistLevel?)requisition.Request.CompetenceLevel,
-                OffSiteAssignmentType = requisition.Request.Order.OffSiteAssignmentType,
-                OffSiteContactInformation = requisition.Request.Order.OffSiteContactInformation,
-                LocationStreet = requisition.Request.Order.Street,
-                LocationZipCode = requisition.Request.Order.ZipCode,
-                LocationCity = requisition.Request.Order.City,
+                Address = $"{location.Street}\n{location.ZipCode} {location.City}",
+                OffSiteAssignmentType = location.OffSiteAssignmentType,
+                OffSiteContactInformation = location.OffSiteContactInformation,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 SpecificCompetenceLevelRequired = requisition.Request.Order.SpecificCompetenceLevelRequired,
                 RequiredCompetenceLevelFirst = requisition.Request.Order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,

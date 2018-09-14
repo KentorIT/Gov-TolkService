@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
 namespace Tolk.Web.TagHelpers
@@ -51,8 +52,15 @@ namespace Tolk.Web.TagHelpers
             output.TagMode = TagMode.StartTagAndEndTag;
             output.Attributes.Add("class", "form-group");
             using (var writer = new StringWriter())
-            {
-                WriteLabel(writer);
+            {            // Check if label will be displayed
+                var type = For.ModelExplorer.Metadata.ContainerType;
+                var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
+                var isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
+
+                if (isDisplayed)
+                {
+                    WriteLabel(writer);
+                }
                 WriteDetails(writer);
                 output.Content.AppendHtml(writer.ToString());
             }
