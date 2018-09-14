@@ -54,9 +54,12 @@ namespace Tolk.Web.TagHelpers
             using (var writer = new StringWriter())
             {            // Check if label will be displayed
                 var type = For.ModelExplorer.Metadata.ContainerType;
-                var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
-                var isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
-
+                var isDisplayed = true;
+                var property = type?.GetProperty(For.ModelExplorer.Metadata.PropertyName);
+                if (property != null)
+                {
+                    isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
+                }
                 if (isDisplayed)
                 {
                     WriteLabel(writer);
