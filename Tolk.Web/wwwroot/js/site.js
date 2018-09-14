@@ -60,13 +60,23 @@ if ($('#now').length === 1) {
 }
 
 $(function () {
+    var dirty = "dirty";
+
     if (Globalize && $.validator) {
         $.validator.methods.number = function (value, element) {
             return value === "" || value === "0" || Globalize.parseFloat(value);
         };
         Globalize.culture('sv-SE');
     }
-    $("form:not(.do-not-check-dirty)").areYouSure();
+    $("form:not(.do-not-check-dirty)").areYouSure({
+        dirtyClass: dirty,
+        message: "Du har osparade ändringar!"
+    });
+
+    // For buttons and anchors that ignore dirty-checks
+    $("form > :button.do-not-check-dirty, form > a.do-not-check-dirty").on("click", function () {
+        $(this).parent("form").removeClass(dirty);
+    });
 
     $("form.filter-form").on("change", "select, input, textarea", function (event) {
         $(this).closest("form").submit();
