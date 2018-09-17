@@ -122,6 +122,7 @@ namespace Tolk.Web.Controllers
                     model.CancelMessage = request.CancelMessage;
                     model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
                     model.RequestId = request.RequestId;
+                    model.AnsweredBy = request.AnsweringUser.CompleteContactInformation;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                     model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
                     model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
@@ -449,6 +450,8 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Interpreter)
                     .ThenInclude(i => i.User)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.AnsweringUser)
                 .Single(o => o.OrderId == id);
         }
 

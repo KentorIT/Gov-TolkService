@@ -28,6 +28,7 @@
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="ContactPerson" />
         <display-entry asp-for="UnitName" />
+        <display-entry asp-for="CustomerName" />
         <display-entry asp-for="Status" />
         @if (!string.IsNullOrEmpty(Model.CancelMessage))
         {
@@ -37,7 +38,7 @@
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="AssignmentType" />
-        
+
         <label>Inställelsesätt</label>
         <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
         @if (Model.RankedInterpreterLocationSecondAddressModel != null)
@@ -86,6 +87,7 @@
         <display-entry asp-for="TimeRange" />
         <display-entry asp-for="Description" />
         <display-entry asp-for="BrokerName" />
+        <display-entry asp-for="BrokerOrganizationNumber" />
         @if (Model.AllowMoreThanTwoHoursTravelTime && Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="ExpectedTravelCosts" />
@@ -151,6 +153,7 @@
         }
         @if (Model.ActiveRequestIsAnswered)
         {
+            <display-entry asp-for="AnsweredBy" />
             <display-entry asp-for="InterpreterName" />
             <display-entry asp-for="InterpreterCompetenceLevel" />
 

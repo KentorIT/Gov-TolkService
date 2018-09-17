@@ -121,6 +121,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
+        [Display(Name = "Besvarad av")]
+        [DataType(DataType.MultilineText)]
+        public string AnsweredBy { get; set; }
+
         [Display(Name = "Annan kontaktperson")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
@@ -130,6 +134,9 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
+
+        [Display(Name = "Förmedlingens organisationsnummer")]
+        public string BrokerOrganizationNumber { get; set; }
 
         public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
@@ -463,7 +470,7 @@ namespace Tolk.Web.Models
                 {
                     Status = r.Status,
                     BrokerName = r.Ranking.Broker.Name,
-                    DenyMessage = r.DenyMessage
+                    DenyMessage = r.DenyMessage,
                 }).ToList()
             };
         }
