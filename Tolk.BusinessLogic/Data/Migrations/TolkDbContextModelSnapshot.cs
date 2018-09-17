@@ -215,6 +215,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(255);
 
+                    b.Property<string>("OrganizationNumber")
+                        .HasMaxLength(32);
+
                     b.HasKey("BrokerId");
 
                     b.ToTable("Brokers");

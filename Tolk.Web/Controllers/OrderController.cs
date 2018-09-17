@@ -117,6 +117,7 @@ namespace Tolk.Web.Controllers
                 model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
+                model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;

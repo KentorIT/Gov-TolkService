@@ -20,6 +20,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public string EmailDomain { get; set; }
 
+        [MaxLength(32)]
+        public string OrganizationNumber { get; set; }
+
         #region navigation properites
 
         public List<Ranking> Rankings { get; private set; }
