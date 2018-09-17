@@ -66,5 +66,11 @@
     "inputFiles": [
       "wwwroot/lib/jquery-globalize/cultures/globalize.culture.sv-SE.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Order/HandleInterpreterLocations.min.js",
+    "inputFiles": [
+      "wwwroot/js/Order/HandleInterpreterLocations.js"
+    ]
   }
 ]
