@@ -254,6 +254,54 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public async Task HandleExpiredNonAnsweredRespondedRequests()
+        {
+            var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
+                .Include(r => r.Order).Where(r => (r.Order.Status == OrderStatus.RequestResponded 
+                || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) 
+                && r.Order.StartAt <= _clock.SwedenNow)
+                .Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogDebug("Found {count} non answered responded requests taht expires: {requestIds}",
+                nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
+
+            foreach (var requestId in nonAnsweredRespondedRequestsId)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var request = await _tolkDbContext.Requests
+                        .Include(r => r.Order)
+                        .SingleOrDefaultAsync(r => r.Order.StartAt <= _clock.SwedenNow
+                        && (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
+                        && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        && r.RequestId == requestId);
+                        if (request == null)
+                        {
+                            _logger.LogDebug("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Set new status for non answered responded request {requestId}.",
+                                requestId);
+                            request.Status = RequestStatus.ResponseNotAnsweredByCreator;
+                            request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
+                            _tolkDbContext.SaveChanges();
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
+                    }
+                }
+            }
+        }
+
         public async Task CreateRequest(Order order)
         {
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);

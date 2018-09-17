@@ -36,6 +36,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Avbokad av tolkförmedling")]
         CancelledByBroker = 14,
         [Description("Avbokning bekräftad av avropare")]
-        CancelledByBrokerConfirmed = 15
+        CancelledByBrokerConfirmed = 15,
+        [Description("Tolktillsättning ej besvarad")]
+        ResponseNotAnsweredByCreator = 16
     }
 }
