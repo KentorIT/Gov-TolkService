@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
             _dbContext = dbContext;
         }
 
-        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent, DateTimeOffset? wasteStartAt = null, DateTimeOffset? wasteEndAt = null)
+        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent, int? timeWasteNormalTime = null, int? timeWasteIWHTime = null)
         {
             //TODO: Should get the prices from the creation date, not the start date. At least on order creation...
             var prices = _dbContext.PriceListRows
@@ -30,7 +30,7 @@ namespace Tolk.BusinessLogic.Services
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
-            var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, wasteStartAt, wasteEndAt).ToList();
+            var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
             minutesPerPriceType.AddRange(GetPriceRowsBrokerFee(startAt, endAt, prices, brokerFeePercent));
 
             var priceInformation = new PriceInformation
@@ -80,7 +80,7 @@ namespace Tolk.BusinessLogic.Services
             return priceTime;
         }
 
-        private IEnumerable<PriceRow> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, DateTimeOffset? wasteStartAt, DateTimeOffset? wasteEndAt)
+        private IEnumerable<PriceRow> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, int? timeWasteNormalTime, int? timeWasteIWHTime)
         {
             int maxMinutes = 330;
             TimeSpan span = endAt - startAt;
@@ -183,66 +183,18 @@ namespace Tolk.BusinessLogic.Services
                 start = start.AddDays(1).Date;
             }
 
-            //Get lost times, if any
-            if (wasteStartAt.HasValue)
+            //Get lost times, if any, they should not get payed for less than 30 min
+            if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
             {
-                yield return GetPriceInformation(wasteStartAt.Value, startAt, PriceRowType.LostTime, prices);
-                foreach (var row in GetIWHWasteTimePriceRows(wasteStartAt.Value, startAt, prices))
-                {
-                    yield return row;
-                }
-
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value), PriceRowType.LostTime, prices);
             }
-            if (wasteEndAt.HasValue)
+            if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value >= 30)
             {
-                yield return GetPriceInformation(endAt, wasteEndAt.Value, PriceRowType.LostTime, prices);
-                foreach (var row in GetIWHWasteTimePriceRows(endAt, wasteEndAt.Value, prices))
-                {
-                    yield return row;
-                }
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value), PriceRowType.LostTimeIWH, prices);
             }
         }
 
-        private IEnumerable<PriceRow> GetIWHWasteTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices)
-        {
-            var start = startAt.LocalDateTime;
-            var stop = endAt.LocalDateTime;
-            while (start <= stop)
-            {
-                var dateTypes = GetDateTypes(start);
-                if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
-                    dateTypes.Contains(DateType.Holiday) ||
-                    dateTypes.Contains(DateType.Weekend))
-                {
-                    yield return GetPriceInformation(start, (start.Date == stop.Date ? stop : start.Date.AddDays(1)), PriceRowType.LostTimeIWH, prices);
-                }
-                else
-                {
-                    //Find any minutes before 07:00, only on a weekday.
-                    if (start.TimeOfDay < new TimeSpan(7, 0, 0))
-                    {
-                        yield return GetPriceInformation(
-                            start,
-                            (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
-                            PriceRowType.LostTimeIWH,
-                            prices
-                        );
-                    }
 
-                    if ((start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
-                    {
-                        yield return GetPriceInformation(
-                            (start.Hour < 18 ? start.Date.AddHours(18) : start),
-                            (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
-                            PriceRowType.LostTimeIWH,
-                            prices
-                        );
-                    }
-                }
-                //Start counting from the first minute on next day
-                start = start.AddDays(1).Date;
-            }
-        }
 
         private IEnumerable<DateType> GetDateTypes(DateTime date)
         {

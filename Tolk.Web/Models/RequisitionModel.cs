@@ -55,17 +55,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Förväntad sluttid")]
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
-        [DataType(DataType.Time)]
-        [Display(Name = "Tidsspillan före uppdraget i timmar och minuter (hh:mm)", Description = "Restid, väntetider och så vidare")]
-        public TimeSpan? WasteBefore { get; set; }
+        [Display(Name = "Ev. tillkommande tid för tidsspillan totalt antal minuter", Description = "Restid, väntetider mm som infaller vardagar 07:00-18:00")]
+        public int? TimeWasteNormalTime { get; set; }
 
-        public DateTimeOffset? TimeWasteBeforeStartedAt
-        {
-            get
-            {
-                return WasteBefore.HasValue ? (DateTimeOffset?)SessionStartedAt.AddTicks(-WasteBefore.Value.Ticks) : null;
-            }
-        }
+        [Display(Name = "Ev. andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid av todal tidsspillan som inträffar utanför vardagar 07:00-18:00")]
+        public int? TimeWasteIWHTime { get; set; }
 
         [Display(Name = "Faktisk startid")]
         public DateTimeOffset SessionStartedAt { get; set; }
@@ -73,17 +67,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Faktisk sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
 
-        [DataType(DataType.Time)]
-        [Display(Name = "Tidsspillan efter uppdraget i timmar och minuter (hh:mm)", Description = "Restid och så vidare")]
-        public TimeSpan? WasteAfter { get; set; }
-
-        public DateTimeOffset? TimeWasteAfterEndedAt
-        {
-            get
-            {
-                return WasteAfter.HasValue ? (DateTimeOffset?)SessionEndedAt.AddTicks(WasteAfter.Value.Ticks) : null;
-            }
-        }
 
         [DataType(DataType.MultilineText)]
         [Required]

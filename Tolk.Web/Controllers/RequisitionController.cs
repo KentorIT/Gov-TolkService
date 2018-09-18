@@ -131,6 +131,8 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
                 var model = RequisitionViewModel.GetModelFromRequest(request);
+                Guid groupKey = Guid.NewGuid();
+
                 //Get request model from db
                 var previousRequisition = model.PreviousRequisition;
                 if (previousRequisition != null)
@@ -138,7 +140,6 @@ namespace Tolk.Web.Controllers
                     IEnumerable<FileModel> files = new List<FileModel>();
                     // Get the attachments from the previous requisition.
                     // Save a connection for all of these to Temp
-                    Guid groupKey = Guid.NewGuid();
                     foreach (var attachment in previousRequisition.Attachments)
                     {
                         _dbContext.TemporaryAttachmentGroups.Add( new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey, AttachmentId = attachment.AttachmentId, CreatedAt = _clock.SwedenNow, });
@@ -151,10 +152,9 @@ namespace Tolk.Web.Controllers
                         FileName = a.Attachment.FileName,
                         Size = a.Attachment.Blob.Length
                     }).ToList();
-                    model.FileGroupKey = groupKey;
-                    model.CombinedMaxSizeAttachments = (long)_options.CombinedMaxSizeAttachments;
                 }
-
+                model.FileGroupKey = groupKey;
+                model.CombinedMaxSizeAttachments = (long)_options.CombinedMaxSizeAttachments;
                 return View(model);
             }
             return Forbid();
@@ -251,10 +251,10 @@ namespace Tolk.Web.Controllers
                             Message = model.Message,
                             SessionStartedAt = model.SessionStartedAt,
                             SessionEndedAt = model.SessionEndedAt,
-                            TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
-                            TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
+                            TimeWasteNormalTime = model.TimeWasteNormalTime,
+                            TimeWasteIWHTime = model.TimeWasteIWHTime,
                             PriceRows = new List<RequisitionPriceRow>(),
-                            Attachments = model.Files.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
+                            Attachments = model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
                         };
                         var priceInformation = _priceCalculationService.GetPrices(
                             model.SessionStartedAt,
@@ -262,8 +262,8 @@ namespace Tolk.Web.Controllers
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
                             request.Ranking.BrokerFee,
-                            model.TimeWasteBeforeStartedAt,
-                            model.TimeWasteAfterEndedAt
+                            model.TimeWasteNormalTime,
+                            model.TimeWasteIWHTime
                         );
 
                         foreach (var row in priceInformation.PriceRows)

@@ -20,12 +20,16 @@
                 <input asp-for="RequestId" type="hidden" />
                 <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
                 <input asp-for="FileGroupKey" type="hidden" />
-                @if (Model.PreviousRequisition != null)
+                @if (Model.PreviousRequisition != null && Model.PreviousRequisition.TimeWasteNormalTime != null)
                 {
-                    var wasteBefore = (Model.SessionStartedAt - Model.PreviousRequisition.TimeWasteBeforeStartedAt);
-                    <display-entry asp-for="@wasteBefore" label-override="Tidigare angiven tidsspillan före uppdraget" />
+                    <display-entry asp-for="PreviousRequisition.TimeWasteNormalTime" label-override="Tidigare angiven tidsspillan i minuter normal tid" />
                 }
-                <form-entry asp-for="WasteBefore" />
+                <form-entry asp-for="TimeWasteNormalTime" />
+                @if (Model.PreviousRequisition != null && Model.PreviousRequisition.TimeWasteNormalTime != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.TimeWasteIWHTime" label-override="Tidigare angiven tidsspillan i minuter obekväm arbetstid" />
+                }
+                <form-entry asp-for="TimeWasteIWHTime" />
                 <display-entry asp-for="ExpectedStartedAt" />
                 @if (Model.PreviousRequisition != null)
                 {
@@ -38,12 +42,6 @@
                     <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
                 }
                 <form-entry asp-for="SessionEndedAt" />
-                @if (Model.PreviousRequisition != null)
-                {
-                    var wasteAfter = (Model.PreviousRequisition.TimeWasteAfterEndedAt - Model.SessionEndedAt);
-                    <display-entry asp-for="@wasteAfter" label-override="Tidigare angiven tidsspillan efter uppdraget" />
-                }
-                <form-entry asp-for="WasteAfter" />
                 <display-entry asp-for="ExpectedTravelCosts" />
                 @if (Model.PreviousRequisition != null)
                 {

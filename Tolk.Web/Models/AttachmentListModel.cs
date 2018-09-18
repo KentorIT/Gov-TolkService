@@ -8,7 +8,7 @@ namespace Tolk.Web.Models
 {
     public class AttachmentListModel
     {
-        public List<FileModel> Files { get; set; }
+        public List<FileModel> Files { get; set; } = new List<FileModel>();
 
         public bool AllowUpload { get; set; } = false;
 

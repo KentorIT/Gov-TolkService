@@ -28,13 +28,13 @@ namespace Tolk.BusinessLogic.Entities
 
         public RequisitionStatus Status { get; set; }
 
-        public DateTimeOffset? TimeWasteBeforeStartedAt { get; set; }
-
         public DateTimeOffset SessionStartedAt { get; set; }
 
         public DateTimeOffset SessionEndedAt { get; set; }
 
-        public DateTimeOffset? TimeWasteAfterEndedAt { get; set; }
+        public int? TimeWasteNormalTime { get; set; }
+
+        public int? TimeWasteIWHTime { get; set; }
 
         [MaxLength(1000)]
         [Required]

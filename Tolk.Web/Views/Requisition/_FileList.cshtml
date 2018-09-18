@@ -1,6 +1,6 @@
 ﻿@model AttachmentListModel
 @{
-    var visibleClass = !Model.Files.Any() ? "d-none" : string.Empty;
+    var visibleClass = Model.Files != null ? !Model.Files.Any() ? "d-none" : string.Empty : "d-none";
 }
 <fieldset>
     <legend>
@@ -20,20 +20,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < Model.Files.Count; ++i)
+                    @if (Model.Files != null)
                     {
-                        <tr data-id="@Model.Files[i].Id.ToString()" data-size="@Model.Files[i].Size.ToString()">
-                            <td class="table-full-column">
-                                <input asp-for="Files[i].Id" type="hidden" />
-                                @Model.Files[i].FileName
-                            </td>
-                            <td class="table-button-column fixed">
-                                @if (Model.AllowDelete)
-                                {
-                                    <span class="glyphicon glyphicon-trash remove-file-row"></span>
-                                }
-                            </td>
-                        </tr>
+                        @for (var i = 0; i < Model.Files.Count; ++i)
+                        {
+                            <tr data-id="@Model.Files[i].Id.ToString()" data-size="@Model.Files[i].Size.ToString()">
+                                <td class="table-full-column">
+                                    <input asp-for="Files[i].Id" type="hidden" />
+                                    @Model.Files[i].FileName
+                                </td>
+                                <td class="table-button-column fixed">
+                                    @if (Model.AllowDelete)
+                                    {
+                                        <span class="glyphicon glyphicon-trash remove-file-row"></span>
+                                    }
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
