@@ -11,6 +11,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public string SupportEmail { get; set; }
 
+        public string AllowedFileExtensions { get; set; }
+
         public SmtpSettings Smtp { get; set; }
 
         public bool EnableTimeTravel { get; set; }
@@ -18,6 +20,8 @@ namespace Tolk.BusinessLogic.Helpers
         public int MonthsToApproveComplaints { get; set; }
 
         public int HoursToApproveChangeInterpreterRequests { get; set; }
+
+        public long CombinedMaxSizeAttachments { get; set; }
 
         public SideBarBox[] SideBar { get; set; }
 

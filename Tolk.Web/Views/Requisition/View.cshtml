@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Rekvisition";
 }
-
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
@@ -100,6 +99,9 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
         }
+
+        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+
         @if (Model.AllowCreation)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
@@ -110,3 +112,11 @@
         }
     </div>
 </div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
+}

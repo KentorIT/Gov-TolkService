@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Behandla rekvisition";
 }
-
 <div class="row">
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
@@ -23,6 +22,8 @@
         <display-entry asp-for="ExpectedTravelCosts" />
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
+        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+
         @if (Model.RequestPriceInformationModel != null)
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
@@ -31,7 +32,6 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
         }
-
         <form method="post" asp-action="Approve">
             <input asp-for="RequisitionId" type="hidden" />
             <button class="btn btn-primary">Godkänn</button>
@@ -40,3 +40,11 @@
     </div>
 </div>
 @await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Neka rekvisitionen", ParentId = Model.RequisitionId })
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
+}

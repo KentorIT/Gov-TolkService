@@ -68,6 +68,9 @@
     .table-button-column.fixed {
         width: 16px;
     }
+.table-full-column {
+    width: 100%;
+}
 
 .table-description-column {
     width: 60%;
@@ -179,6 +182,7 @@ li.placeholder {
 }
 
 .group-box {
+    border-bottom: 1px solid black;
     background-color: #f1f1f1;
     margin-bottom: 10px;
 }

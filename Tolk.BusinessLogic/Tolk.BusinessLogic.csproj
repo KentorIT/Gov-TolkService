@@ -16,6 +16,7 @@
     <Compile Remove="Data\Migrations\20180831122947_AddOrderCompetenceRequirement.cs" />
     <Compile Remove="Data\Migrations\20180831135433_AddOrderCompetenceRequirement.cs" />
     <Compile Remove="Data\Migrations\20180906074415_FixedForeignKeys.cs" />
+    <Compile Remove="Data\Migrations\20180914124739_AddAttachmentsTable.cs" />
   </ItemGroup>
 
   <ItemGroup>

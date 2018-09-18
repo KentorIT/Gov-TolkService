@@ -40,7 +40,20 @@ namespace Tolk.Web.Models
                 RequisitionCreatedBy = requisition.CreatedByUser.CompleteContactInformation,
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
-                Status = requisition.Status
+                Status = requisition.Status,
+                AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Files = requisition.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                }
+
             };
         }
 

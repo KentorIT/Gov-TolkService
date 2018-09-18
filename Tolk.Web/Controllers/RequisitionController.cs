@@ -1,22 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
-using System;
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Services;
-using Tolk.Web.Helpers;
-using Tolk.Web.Authorization;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
@@ -28,6 +27,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
+        private readonly TolkOptions _options;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -35,7 +35,8 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             OrderService orderService,
             IAuthorizationService authorizationService,
-            ILogger<RequisitionController> logger
+            ILogger<RequisitionController> logger,
+            IOptions<TolkOptions> options
             )
         {
             _dbContext = dbContext;
@@ -44,6 +45,7 @@ namespace Tolk.Web.Controllers
             _orderService = orderService;
             _authorizationService = authorizationService;
             _logger = logger;
+            _options = options.Value;
         }
 
         public async Task<IActionResult> View(int id)
@@ -61,6 +63,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
@@ -92,7 +95,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
-              .Single(o => o.RequisitionId == id);
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+             .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
             {
                 var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
@@ -115,7 +119,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Create(int id)
         {
             var request = _dbContext.Requests
-                .Include(r => r.Requisitions)
+                .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
@@ -126,8 +130,32 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
+                var model = RequisitionViewModel.GetModelFromRequest(request);
                 //Get request model from db
-                return View(RequisitionViewModel.GetModelFromRequest(request));
+                var previousRequisition = model.PreviousRequisition;
+                if (previousRequisition != null)
+                {
+                    IEnumerable<FileModel> files = new List<FileModel>();
+                    // Get the attachments from the previous requisition.
+                    // Save a connection for all of these to Temp
+                    Guid groupKey = Guid.NewGuid();
+                    foreach (var attachment in previousRequisition.Attachments)
+                    {
+                        _dbContext.TemporaryAttachmentGroups.Add( new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey, AttachmentId = attachment.AttachmentId, CreatedAt = _clock.SwedenNow, });
+                    }
+                    _dbContext.SaveChanges();
+                    // Set the Files-list and the used FileGroupKey
+                    model.Files = previousRequisition.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList();
+                    model.FileGroupKey = groupKey;
+                    model.CombinedMaxSizeAttachments = (long)_options.CombinedMaxSizeAttachments;
+                }
+
+                return View(model);
             }
             return Forbid();
         }
@@ -225,7 +253,8 @@ namespace Tolk.Web.Controllers
                             SessionEndedAt = model.SessionEndedAt,
                             TimeWasteBeforeStartedAt = model.TimeWasteBeforeStartedAt,
                             TimeWasteAfterEndedAt = model.TimeWasteAfterEndedAt,
-                            PriceRows = new List<RequisitionPriceRow>()
+                            PriceRows = new List<RequisitionPriceRow>(),
+                            Attachments = model.Files.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
                         };
                         var priceInformation = _priceCalculationService.GetPrices(
                             model.SessionStartedAt,
@@ -248,7 +277,10 @@ namespace Tolk.Web.Controllers
                                 TotalPrice = row.TotalPrice
                             });
                         }
-
+                        foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == model.FileGroupKey))
+                        {
+                            _dbContext.TemporaryAttachmentGroups.Remove(tag);
+                        }
                         request.CreateRequisition(requisition);
                         _dbContext.SaveChanges();
                         var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer &&
@@ -381,7 +413,7 @@ namespace Tolk.Web.Controllers
                 return null;
             }
             PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay =_priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
+            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
             model.Header = "Fakturainformation";
             model.UseDisplayHideInfo = false;
             return model;

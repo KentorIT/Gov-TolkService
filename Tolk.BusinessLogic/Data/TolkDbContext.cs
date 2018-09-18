@@ -176,6 +176,32 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.AnswerDisputedByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Attachment>()
+                .HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Attachment>()
+                .HasOne(r => r.CreatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<TemporaryAttachmentGroup>()
+            .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
+
+            builder.Entity<RequisitionAttachment>()
+            .HasKey(ra => new { ra.RequisitionId, ra.AttachmentId });
+
+            builder.Entity<RequisitionAttachment>()
+                .HasOne(ra => ra.Requisition)
+                .WithMany(g => g.Attachments)
+                .HasForeignKey(map => map.RequisitionId);
+
+            builder.Entity<RequisitionAttachment>()
+                .HasOne(map => map.Attachment)
+                .WithMany(a => a.Requisitions)
+                .HasForeignKey(map => map.AttachmentId);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -215,6 +241,12 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Complaint> Complaints { get; set; }
 
         public DbSet<InterpreterBroker> InterpreterBrokers { get; set; }
+
+        public DbSet<Attachment> Attachments { get; set; }
+
+        public DbSet<RequisitionAttachment> RequisitionAttachments { get; set; }
+
+        public DbSet<TemporaryAttachmentGroup> TemporaryAttachmentGroups { get; set; }
 
         public static bool isUserStoreInitialized = false;
 

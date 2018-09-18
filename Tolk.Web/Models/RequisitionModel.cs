@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
@@ -97,6 +98,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Faktureringsinformation")]
         public string InvoiceInformation { get; set; }
 
+        public List<FileModel> Files { get; set; }
+
+        public Guid? FileGroupKey { get; set; }
+
+        public long? CombinedMaxSizeAttachments { get; set; }
 
         public PriceInformationModel ResultPriceInformationModel { get; set; }
 

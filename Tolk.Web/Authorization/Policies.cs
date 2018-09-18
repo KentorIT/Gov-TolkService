@@ -204,7 +204,22 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.Request.Order.CreatedBy == context.User.GetUserId() || complaint.Request.Order.ContactPersonId == context.User.GetUserId();
+                        return complaint.Request.Order.CreatedBy == user.GetUserId() || complaint.Request.Order.ContactPersonId == user.GetUserId();
+                    }
+                    return false;
+                case Attachment attachment:
+                    if (!attachment.Requisitions.Any())
+                    {
+                        return user.GetUserId() == attachment.CreatedBy;
+                    }
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return attachment.Requisitions.Any(a=> a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId());
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == user.GetUserId() ||
+                        a.Requisition.Request.Order.ContactPersonId == user.GetUserId());
                     }
                     return false;
                 default:

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Data.Migrations;
-using System.Linq;
+using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
@@ -70,6 +67,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequisitionPriceRow> PriceRows { get; set; }
 
+        public List<RequisitionAttachment> Attachments { get; set; }
+
+        #region methods
+
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (Status != RequisitionStatus.Created)
@@ -97,5 +98,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingProcessedBy = impersonatorId;
             DenyMessage = message;
         }
+
+        #endregion
     }
 }

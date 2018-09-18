@@ -86,6 +86,8 @@ namespace Tolk.Web.Models
             }
         }
 
+        public AttachmentListModel AttachmentListModel { get; set; }
+
         public bool AllowCreation {get;set;}
 
         #region methods
@@ -147,6 +149,18 @@ namespace Tolk.Web.Models
                 Message = requisition.Message,
                 Status = requisition.Status,
                 DenyMessage = requisition.DenyMessage,
+                AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Files = requisition.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                }
             };
         }
 
