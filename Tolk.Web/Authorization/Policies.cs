@@ -221,6 +221,10 @@ namespace Tolk.Web.Authorization
                         return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == user.GetUserId() ||
                         a.Requisition.Request.Order.ContactPersonId == user.GetUserId());
                     }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
+                    {
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId());
+                    }
                     return false;
                 default:
                     throw new NotImplementedException();
