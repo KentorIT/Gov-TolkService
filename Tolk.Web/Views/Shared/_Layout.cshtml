@@ -1,15 +1,15 @@
 ﻿@using Tolk.Web.Authorization
 @using Microsoft.AspNetCore.Authorization
 @using Tolk.Web.Helpers
+@using Tolk.BusinessLogic.Services
 @inject IAuthorizationService AuthorizationService
-
+@inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Tolk.Web</title>
-
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
         <link rel="stylesheet" href="~/lib/select2/dist/css/select2.css" />
@@ -73,8 +73,8 @@
                         &copy; 2018 - Kammarkollegiet
                         <small>(Version @GitHelper.Version)</small>
                     </div>
-                    <div class="col-lg-2">
-                        <a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a>
+                    <div class="col-lg-10"><a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a></div>
+                    <div class="col-lg-pull-1" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks/10000)">
                     </div>
                 </div>
             </p>
@@ -82,7 +82,6 @@
     </div>
     @*<script type="text/javascript">tolkBaseUrl = "@Url.Content("~")"</script>*@
     <script type="text/javascript">tolkBaseUrl = "/"</script>
-
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
@@ -119,7 +118,6 @@
         <script src="~/lib/datatables/datatables.min.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-
     @RenderSection("Scripts", required: false)
 </body>
 </html>

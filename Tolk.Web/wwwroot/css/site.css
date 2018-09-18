@@ -141,7 +141,12 @@ li.placeholder {
 .border {
     border: 1px solid #ccc;
     border-radius: 4px;
-    margin-bottom: 20px
+    padding: 7px;
+    margin-bottom: 10px;
+}
+
+.no-padding {
+    padding: 0px;
 }
 
 .font-size-14 {
@@ -172,14 +177,13 @@ li.placeholder {
 .italic {
     font-style: italic;
 }
-.group-box
-{
-    border-bottom:1px solid black;
-    background-color:#f1f1f1;
-    margin-bottom:10px;
+
+.group-box {
+    background-color: #f1f1f1;
+    margin-bottom: 10px;
 }
-.grouped-form-boxes .form-group
-{
-    margin-left:10px;
+
+.grouped-form-boxes .form-group {
+    margin-left: 10px;
     margin-right: 10px;
 }
