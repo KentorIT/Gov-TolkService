@@ -23,7 +23,7 @@
                 <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
             </span>
             <form-entry asp-for="CustomerReferenceNumber" />
-            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
+            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
             <form-entry asp-for="UnitName" />
             <form-entry asp-for="AssignmentType" type="select" asp-items="SelectListService.AssignmentTypes" />
             <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
