@@ -41,7 +41,8 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
         [Required]
-        [StayWithinOriginalRange(ErrorMessage = "Uppdraget får ske tidigast i morgon", OtherRangeProperty = nameof(AllowedTimeRange), ValidateEndDate = false)]
+        // Does not work properly. Will not be necessary until API-stage
+        //[StayWithinOriginalRange(ErrorMessage = "Uppdraget får ske tidigast i morgon", OtherRangeProperty = nameof(AllowedTimeRange), ValidateEndDate = false)]
         public virtual TimeRange TimeRange { get; set; }
 
         public virtual TimeRange AllowedTimeRange { get; set; }
