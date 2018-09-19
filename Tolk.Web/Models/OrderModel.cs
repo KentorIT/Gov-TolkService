@@ -41,7 +41,10 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
         [Required]
+        [StayWithinOriginalRange(ErrorMessage = "Uppdraget får ske tidigast i morgon", OtherRangeProperty = nameof(AllowedTimeRange), ValidateEndDate = false)]
         public virtual TimeRange TimeRange { get; set; }
+
+        public virtual TimeRange AllowedTimeRange { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]

@@ -6,6 +6,7 @@ var datePickerOptions = {
     calendarWeeks: true,
     todayHighlight: true,
     clearBtn: true,
+    startDate: getTomorrow(),
     format: {
         toDisplay: function (date, format, language) {
             return date.toISOString().slice(0, 10);
@@ -16,6 +17,13 @@ var datePickerOptions = {
     }
 };
 
+function getTomorrow() {
+    var tomorrow = new Date();
+    tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow;
+}
+
 // Auto-format date entered with just digits.
 function formatDate(date) {
     if (/^[0-9]{6}$/.test(date)) {
@@ -23,8 +31,8 @@ function formatDate(date) {
     }
     if (/^[0-9]{8}$/.test(date)) {
         date = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
-        return date;
     }
+    return date;
 }
 
 $('.datepicker').datepicker(datePickerOptions);

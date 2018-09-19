@@ -14,6 +14,13 @@ namespace Tolk.Web.Helpers
     {
         public string OtherRangeProperty { get; set; }
 
+        public bool ValidateEndDate { get; set; }
+
+        public StayWithinOriginalRangeAttribute()
+        {
+            ValidateEndDate = true;
+        }
+
         public void AddValidation(ClientModelValidationContext context)
         {
         }
@@ -22,7 +29,8 @@ namespace Tolk.Web.Helpers
         {
             TimeRange otherRange = GetProperty(OtherRangeProperty, validationContext) as TimeRange;
             TimeRange range = value as TimeRange;
-            if (range.StartDateTime >= otherRange.StartDateTime && range.EndDateTime <= otherRange.EndDateTime)
+            if (range.StartDateTime >= otherRange.StartDateTime
+                && (ValidateEndDate && range.EndDateTime <= otherRange.EndDateTime))
             {
                 return ValidationResult.Success;
             }

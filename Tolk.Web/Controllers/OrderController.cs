@@ -249,7 +249,14 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Add()
         {
-            return View();
+            var model = new OrderModel()
+            {
+                AllowedTimeRange = new TimeRange
+                {
+                    StartDate = _clock.SwedenNow.DateTime.AddDays(1),
+                }
+            };
+            return View(model);
         }
 
         [ValidateAntiForgeryToken]

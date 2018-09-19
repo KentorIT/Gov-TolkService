@@ -115,7 +115,21 @@ $(function () {
         }
     };
 
-    // Triggers (handlers cannot be triggered before being declared)
+    $("body").on("change", "#TimeRange_StartDate", function () {
+        var startDate = new Date($(this).val());
+        var limit = new Date($("#AllowedTimeRange_StartDate").val());
+        var errMsgTag = $("span[data-valmsg-for*=\"TimeRange.StartDate\"]");
+        var errMsg = $(this).attr("data-msg-staywithin");
+
+        if (startDate.getTime() < limit.getTime()) {
+            errMsgTag.html("<span>" + errMsg + "</span>");
+        }
+        else {
+            errMsgTag.html("");
+        }
+    });
+
     $("#SpecificCompetenceLevelRequired").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
+    $("#TimeRange_StartDate").trigger("change");
 });
