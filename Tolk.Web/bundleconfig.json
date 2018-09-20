@@ -72,5 +72,17 @@
     "inputFiles": [
       "wwwroot/js/Order/HandleInterpreterLocations.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Requisition/Create.min.js",
+    "inputFiles": [
+      "wwwroot/js/Requisition/Create.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Files.min.js",
+    "inputFiles": [
+      "wwwroot/js/Files.js"
+    ]
   }
 ]
