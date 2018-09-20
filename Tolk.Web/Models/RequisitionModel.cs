@@ -55,18 +55,25 @@ namespace Tolk.Web.Models
         [Display(Name = "Förväntad sluttid")]
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
-        [Display(Name = "Ev. tillkommande tid för tidsspillan totalt antal minuter", Description = "Restid, väntetider mm som infaller vardagar 07:00-18:00")]
+        [Range(30, 600, ErrorMessage = "Ange ett värde mellan 30 och 600 minuter")]
+        [Display(Name = "Tid för eventuell tidsspillan i minuter", Description = "Totalt antal minuter för restid, väntetider mm som infaller vardagar 07:00-18:00")]
         public int? TimeWasteNormalTime { get; set; }
 
-        [Display(Name = "Ev. andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid av todal tidsspillan som inträffar utanför vardagar 07:00-18:00")]
+        [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]
+        [Display(Name = "Andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid i munter av total tidsspillan som inträffar utanför vardagar 07:00-18:00")]
         public int? TimeWasteIWHTime { get; set; }
+
+        [Display(Name = "Angiven tidsspillan")]
+        public string TimeWasteInfo
+        {
+            get => (TimeWasteNormalTime != null && TimeWasteNormalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteNormalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
+        }
 
         [Display(Name = "Faktisk startid")]
         public DateTimeOffset SessionStartedAt { get; set; }
 
         [Display(Name = "Faktisk sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
-
 
         [DataType(DataType.MultilineText)]
         [Required]

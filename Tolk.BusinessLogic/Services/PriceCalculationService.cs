@@ -188,7 +188,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value), PriceRowType.LostTime, prices);
             }
-            if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value >= 30)
+            if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value > 0)
             {
                 yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value), PriceRowType.LostTimeIWH, prices);
             }
