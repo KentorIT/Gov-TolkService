@@ -33,6 +33,8 @@ namespace Tolk.BusinessLogic.Entities
         public TemporaryAttachmentGroup TemporaryAttachmentGroup { get; set; }
 
         public List<RequisitionAttachment> Requisitions { get; set; }
+
+        public List<RequestAttachment> Requests { get; set; }
     }
 }
 

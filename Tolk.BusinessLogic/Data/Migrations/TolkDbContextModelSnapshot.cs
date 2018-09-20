@@ -203,30 +203,30 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Attachment", b =>
-            {
-                b.Property<int>("AttachmentId")
-                    .ValueGeneratedOnAdd()
-                    .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                {
+                    b.Property<int>("AttachmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                b.Property<byte[]>("Blob")
-                    .IsRequired();
+                    b.Property<byte[]>("Blob")
+                        .IsRequired();
 
-                b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy");
 
-                b.Property<string>("FileName")
-                    .IsRequired()
-                    .HasMaxLength(255);
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255);
 
-                b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator");
 
-                b.HasKey("AttachmentId");
+                    b.HasKey("AttachmentId");
 
-                b.HasIndex("CreatedBy");
+                    b.HasIndex("CreatedBy");
 
-                b.HasIndex("ImpersonatingCreator");
+                    b.HasIndex("ImpersonatingCreator");
 
-                b.ToTable("Attachments");
-            });
+                    b.ToTable("Attachments");
+                });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Broker", b =>
                 {
@@ -797,6 +797,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Requests");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
+                {
+                    b.Property<int>("RequestId");
+
+                    b.Property<int>("AttachmentId");
+
+                    b.HasKey("RequestId", "AttachmentId");
+
+                    b.HasIndex("AttachmentId");
+
+                    b.ToTable("RequestAttachments");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
                 {
                     b.Property<int>("RequestPriceRowId")
@@ -888,17 +901,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionAttachment", b =>
-            {
-                b.Property<int>("RequisitionId");
+                {
+                    b.Property<int>("RequisitionId");
 
-                b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId");
 
-                b.HasKey("RequisitionId", "AttachmentId");
+                    b.HasKey("RequisitionId", "AttachmentId");
 
-                b.HasIndex("AttachmentId");
+                    b.HasIndex("AttachmentId");
 
-                b.ToTable("RequisitionAttachments");
-            });
+                    b.ToTable("RequisitionAttachments");
+                });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
                 {
@@ -932,20 +945,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
-            {
-                b.Property<Guid>("TemporaryAttachmentGroupKey");
+                {
+                    b.Property<Guid>("TemporaryAttachmentGroupKey");
 
-                b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId");
 
-                b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt");
 
-                b.HasKey("TemporaryAttachmentGroupKey", "AttachmentId");
+                    b.HasKey("TemporaryAttachmentGroupKey", "AttachmentId");
 
-                b.HasIndex("AttachmentId")
-                    .IsUnique();
+                    b.HasIndex("AttachmentId")
+                        .IsUnique();
 
-                b.ToTable("TemporaryAttachmentGroups");
-            });
+                    b.ToTable("TemporaryAttachmentGroups");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
@@ -1008,17 +1021,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Attachment", b =>
-            {
-                b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
-                    .WithMany()
-                    .HasForeignKey("CreatedBy")
-                    .OnDelete(DeleteBehavior.Restrict);
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
-                    .WithMany()
-                    .HasForeignKey("ImpersonatingCreator")
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreator")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Complaint", b =>
                 {
@@ -1246,6 +1259,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
+                        .WithMany("Requests")
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
+                        .WithMany("Attachments")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.PriceListRow", "PriceListRow")
@@ -1292,17 +1318,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionAttachment", b =>
-            {
-                b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
-                    .WithMany("Requisitions")
-                    .HasForeignKey("AttachmentId")
-                    .OnDelete(DeleteBehavior.Cascade);
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
+                        .WithMany("Requisitions")
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
-                    .WithMany("Attachments")
-                    .HasForeignKey("RequisitionId")
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
+                        .WithMany("Attachments")
+                        .HasForeignKey("RequisitionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
                 {
@@ -1318,12 +1344,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
-            {
-                b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
-                    .WithOne("TemporaryAttachmentGroup")
-                    .HasForeignKey("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", "AttachmentId")
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
+                        .WithOne("TemporaryAttachmentGroup")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", "AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 #pragma warning restore 612, 618
         }
     }

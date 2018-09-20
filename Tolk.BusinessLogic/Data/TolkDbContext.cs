@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Data
 {
-    public class TolkDbContext : IdentityDbContext<AspNetUser,IdentityRole<int>, int>
+    public class TolkDbContext : IdentityDbContext<AspNetUser, IdentityRole<int>, int>
     {
         public TolkDbContext(DbContextOptions<TolkDbContext> options)
             : base(options)
@@ -202,6 +202,19 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(map => map.Attachment)
                 .WithMany(a => a.Requisitions)
                 .HasForeignKey(map => map.AttachmentId);
+
+            builder.Entity<RequestAttachment>()
+            .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
+
+            builder.Entity<RequestAttachment>()
+                .HasOne(ra => ra.Request)
+                .WithMany(g => g.Attachments)
+                .HasForeignKey(map => map.RequestId);
+
+            builder.Entity<RequestAttachment>()
+                .HasOne(map => map.Attachment)
+                .WithMany(a => a.Requests)
+                .HasForeignKey(map => map.AttachmentId);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -246,6 +259,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<RequisitionAttachment> RequisitionAttachments { get; set; }
 
+        public DbSet<RequestAttachment> RequestAttachments { get; set; }
+
         public DbSet<TemporaryAttachmentGroup> TemporaryAttachmentGroups { get; set; }
 
         public static bool isUserStoreInitialized = false;
@@ -254,7 +269,7 @@ namespace Tolk.BusinessLogic.Data
         {
             get
             {
-                if(!isUserStoreInitialized)
+                if (!isUserStoreInitialized)
                 {
                     // If it is false, we want to check it for every single request.
                     isUserStoreInitialized = Users.Count() != 0 || Roles.Count() != 0;

@@ -142,6 +142,8 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string CancelMessage { get; set; }
 
+        public List<RequestAttachment> Attachments { get; set; }
+
         #region navigation
 
         public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
