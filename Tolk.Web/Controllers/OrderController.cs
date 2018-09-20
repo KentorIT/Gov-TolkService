@@ -251,10 +251,7 @@ namespace Tolk.Web.Controllers
         {
             var model = new OrderModel()
             {
-                AllowedTimeRange = new TimeRange
-                {
-                    StartDate = _clock.SwedenNow.DateTime.AddDays(1),
-                }
+                SystemTimeTomorrow = _clock.SwedenNow.DateTime.AddDays(1)
             };
             return View(model);
         }
