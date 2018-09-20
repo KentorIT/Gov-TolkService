@@ -130,14 +130,13 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
-                var model = RequisitionViewModel.GetModelFromRequest(request);
+                var model = RequisitionModel.GetModelFromRequest(request);
                 Guid groupKey = Guid.NewGuid();
 
                 //Get request model from db
                 var previousRequisition = model.PreviousRequisition;
                 if (previousRequisition != null)
                 {
-                    IEnumerable<FileModel> files = new List<FileModel>();
                     // Get the attachments from the previous requisition.
                     // Save a connection for all of these to Temp
                     foreach (var attachment in previousRequisition.Attachments)
@@ -146,15 +145,16 @@ namespace Tolk.Web.Controllers
                     }
                     _dbContext.SaveChanges();
                     // Set the Files-list and the used FileGroupKey
-                    model.Files = previousRequisition.Attachments.Select(a => new FileModel
+                    List<FileModel> files = previousRequisition.Attachments.Select(a => new FileModel
                     {
                         Id = a.Attachment.AttachmentId,
                         FileName = a.Attachment.FileName,
                         Size = a.Attachment.Blob.Length
                     }).ToList();
+                    model.Files = files.Count() > 0 ? files : null;
                 }
                 model.FileGroupKey = groupKey;
-                model.CombinedMaxSizeAttachments = (long)_options.CombinedMaxSizeAttachments;
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 return View(model);
             }
             return Forbid();
