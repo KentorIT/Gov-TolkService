@@ -20,6 +20,8 @@ namespace Tolk.Web.Models
 
         public int? ReplacingOrderId { get; set; }
 
+        public DateTimeOffset SystemTimeTomorrow { get; set; }
+
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
         public int RegionId { get; set; }
@@ -41,11 +43,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
         [Required]
-        // Does not work properly. Will not be necessary until API-stage
-        //[StayWithinOriginalRange(ErrorMessage = "Uppdraget får ske tidigast i morgon", OtherRangeProperty = nameof(AllowedTimeRange), ValidateEndDate = false)]
         public virtual TimeRange TimeRange { get; set; }
-
-        public virtual TimeRange AllowedTimeRange { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]

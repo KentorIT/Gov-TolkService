@@ -18,9 +18,13 @@ var datePickerOptions = {
 };
 
 function getTomorrow() {
-    var tomorrow = new Date();
-    tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
-    tomorrow.setHours(0, 0, 0, 0);
+    var tomorrow = $("#SystemTimeTomorrow").val();
+    // Intentional use of == instead of === to catch 'undefined' and null
+    if (tomorrow == null) { //eslint-disable-line eqeqeq
+        tomorrow = new Date();
+        tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
+        tomorrow.setHours(0, 0, 0, 0);
+    }
     return tomorrow;
 }
 

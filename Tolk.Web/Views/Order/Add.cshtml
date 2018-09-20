@@ -11,6 +11,7 @@
         <h2>@ViewData["Title"]</h2>
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="SystemTimeTomorrow" />
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
             <form-entry asp-for="SpecificCompetenceLevelRequired" />
             <span id="competence-required">
@@ -92,7 +93,6 @@
                     </div>
                 </div>
             </fieldset>
-            <form-entry type="hidden" asp-for="AllowedTimeRange" />
             <form-entry asp-for="TimeRange" />
             <form-entry asp-for="Description" />
 
