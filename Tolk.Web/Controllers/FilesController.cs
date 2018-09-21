@@ -108,6 +108,8 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Download(int id)
         {
             var attachment = _dbContext.Attachments
+                .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
+                .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
                 .SingleOrDefault(a => a.AttachmentId == id);

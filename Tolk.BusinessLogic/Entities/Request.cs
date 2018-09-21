@@ -142,9 +142,9 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string CancelMessage { get; set; }
 
-        public List<RequestAttachment> Attachments { get; set; }
-
         #region navigation
+
+        public List<RequestAttachment> Attachments { get; set; }
 
         public List<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
 
@@ -185,6 +185,7 @@ namespace Tolk.BusinessLogic.Entities
             Enums.InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation)
         {
             if (Status != RequestStatus.Received)
@@ -204,8 +205,8 @@ namespace Tolk.BusinessLogic.Entities
             ExpectedTravelCosts = expectedTravelCosts;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
-
             RequirementAnswers.AddRange(requirementAnswers);
+            Attachments = attachedFiles;
             foreach (var row in priceInformation.PriceRows)
             {
                 PriceRows.Add(new RequestPriceRow
@@ -273,6 +274,7 @@ namespace Tolk.BusinessLogic.Entities
             Enums.InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachments,
             PriceInformation priceInformation,
             bool isAutoAccepted,
             Request oldRequest)
@@ -296,6 +298,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
             PriceRows = new List<RequestPriceRow>();
             RequirementAnswers = new List<OrderRequirementRequestAnswer>(requirementAnswers);
+            Attachments = attachments;
             foreach (var row in priceInformation.PriceRows)
             {
                 PriceRows.Add(new RequestPriceRow

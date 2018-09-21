@@ -142,11 +142,21 @@ namespace Tolk.Web.Controllers
                         model.ComplaintStatus = complaint.Status;
                         model.ComplaintType = complaint.ComplaintType;
                     }
+                    model.RequestAttachmentListModel = new AttachmentListModel
+                    {
+                        AllowDelete = false,
+                        AllowDownload = true,
+                        AllowUpload = false,
+                        Files = request.Attachments.Select(a => new FileModel
+                        {
+                            Id = a.Attachment.AttachmentId,
+                            FileName = a.Attachment.FileName,
+                            Size = a.Attachment.Blob.Length
+                        }).ToList()
+                    };
                 }
-
                 return View(model);
             }
-
             return Forbid();
         }
 
@@ -457,6 +467,8 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(i => i.User)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.AnsweringUser)
+                .Include(o => o.Requests).ThenInclude(r => r.Attachments)
+                .ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);
         }
 

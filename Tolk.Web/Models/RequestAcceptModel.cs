@@ -30,6 +30,8 @@ namespace Tolk.Web.Models
 
         public RequestStatus Status { get; set; }
 
+        public List<FileModel> Files { get; set; }
+
         [ClientRequired]
         public InterpreterLocation? InterpreterLocation { get; set; }
     }

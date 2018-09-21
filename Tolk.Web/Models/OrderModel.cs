@@ -33,6 +33,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Annan kontaktperson")]
         public int? ContactPersonId { get; set; }
 
+        public AttachmentListModel RequestAttachmentListModel { get; set; }
+
         [DataType(DataType.MultilineText)]
         [Display(Name = "Beskrivning", Description = "Extra information om uppdraget i det fall det behövs")]
         public string Description { get; set; }

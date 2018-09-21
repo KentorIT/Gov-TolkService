@@ -36,6 +36,13 @@ namespace Tolk.Web.Models
                 return OrderModel?.OrderId;
             }
         }
+        public List<FileModel> Files { get; set; }
+
+        public AttachmentListModel AttachmentListModel { get; set; }
+
+        public Guid? FileGroupKey { get; set; }
+
+        public long? CombinedMaxSizeAttachments { get; set; }
 
         [Display(Name = "Orsak till avslag")]
         [DataType(DataType.MultilineText)]
@@ -114,6 +121,7 @@ namespace Tolk.Web.Models
             var complaint = request.Complaints?.FirstOrDefault();
             var replacingOrderRequest = request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
             var replacedByOrderRequest = request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
+            var attach = request.Attachments;
             return new RequestModel
             {
                 Status = request.Status,
@@ -141,7 +149,19 @@ namespace Tolk.Web.Models
                 ComplaintType = complaint?.ComplaintType,
                 ReplacingOrderRequestId = replacingOrderRequest?.RequestId,
                 ReplacedByOrderRequestStatus = replacedByOrderRequest?.Status,
-                ReplacedByOrderRequestId = replacedByOrderRequest?.RequestId
+                ReplacedByOrderRequestId = replacedByOrderRequest?.RequestId,
+                AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Files = request.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                }
             };
         }
 

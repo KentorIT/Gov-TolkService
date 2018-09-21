@@ -100,9 +100,10 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
         }
-
-        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-
+        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        {
+            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+        }
         @if (Model.AllowCreation)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>

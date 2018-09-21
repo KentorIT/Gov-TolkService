@@ -92,6 +92,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions)
                 .Include(r => r.Complaints)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
@@ -117,6 +118,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -126,7 +128,10 @@ namespace Tolk.Web.Controllers
                     request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
                 }
-                return View(GetModel(request));
+                RequestModel model = GetModel(request);
+                model.FileGroupKey = new Guid();
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                return View(model);
             }
             return Forbid();
         }
@@ -143,6 +148,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.Ranking)
                 .Include(r => r.RequirementAnswers)
                 .Single(o => o.RequestId == id);
@@ -154,6 +160,8 @@ namespace Tolk.Web.Controllers
                     model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
                     model.ExpectedTravelCosts = 0;
                 }
+                model.FileGroupKey = new Guid();
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 return View("Process", model);
             }
             return Forbid();
@@ -209,7 +217,7 @@ namespace Tolk.Web.Controllers
                                 interpreterId,
                                 model.ExpectedTravelCosts,
                                 model.InterpreterLocation,
-                            model.InterpreterCompetenceLevel,
+                                model.InterpreterCompetenceLevel,
                                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                                 {
                                     RequestId = request.RequestId,
@@ -217,7 +225,8 @@ namespace Tolk.Web.Controllers
                                     Answer = ra.Answer,
                                     CanSatisfyRequirement = ra.CanMeetRequirement
                                 }),
-                            GetPrices(request, model.InterpreterCompetenceLevel.Value)
+                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                                GetPrices(request, model.InterpreterCompetenceLevel.Value)
                             );
                         }
                         CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
@@ -290,6 +299,7 @@ namespace Tolk.Web.Controllers
                     Answer = ra.Answer,
                     CanSatisfyRequirement = ra.CanMeetRequirement
                 }),
+                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                 GetPrices(request, model.InterpreterCompetenceLevel.Value),
                 !request.Order.AllowMoreThanTwoHoursTravelTime,
                 request

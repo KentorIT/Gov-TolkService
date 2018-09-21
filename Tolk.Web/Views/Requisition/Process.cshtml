@@ -22,8 +22,10 @@
         <display-entry asp-for="ExpectedTravelCosts" />
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
-        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-
+        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        {
+            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+        }
         @if (Model.RequestPriceInformationModel != null)
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
