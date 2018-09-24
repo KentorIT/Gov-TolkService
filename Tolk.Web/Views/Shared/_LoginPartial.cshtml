@@ -6,28 +6,32 @@
 @inject Tolk.Web.Services.SelectListService SelectListService
 @if (SignInManager.IsSignedIn(User))
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li>
-            <a asp-area="" asp-controller="Account" asp-action="Index" title="Mitt Konto">
-                @(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)
-                                    ?? User.FindFirstValue(ClaimTypes.Name))
-            </a>
-        </li>
-        <li>
+<ul class="nav navbar-nav navbar-right">
+    <li>
+        <a asp-area="" asp-controller="Account" asp-action="Index" title="Mitt Konto">
+            Mitt Konto
+        </a>
+    </li>
+    @await Html.PartialAsync("_TimeTravelPartial")
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-cog"></span> <span class="caret"></span></a>
+        <ul class="dropdown-menu">
             @if (User.IsInRole(Roles.Impersonator))
             {
-                <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post" class="navbar-form navbar-right">
-                    <div class="form-group">
-                        <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control select-short" data-ays-ignore="true"></select>
-                    </div>
-                </form>
+                <li>
+                    <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post" class="navbar-form navbar-right">
+                        <div class="form-group">
+                            <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control select-short" data-ays-ignore="true"></select>
+                        </div>
+                    </form>
+                </li>
             }
-        </li>
-        <li>
-            <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
-                <button type="submit" class="btn btn-link navbar-btn navbar-link">Logga ut</button>
-            </form>
-        </li>
-        @await Html.PartialAsync("_TimeTravelPartial")
-    </ul>
+            <li>
+                <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
+                    <button type="submit" class="btn btn-default">Logga ut</button>
+                </form>
+            </li>
+        </ul>
+    </li>
+</ul>
 }
