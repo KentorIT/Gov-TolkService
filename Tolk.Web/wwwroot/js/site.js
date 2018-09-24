@@ -18,7 +18,7 @@ var datePickerOptions = {
 };
 
 function getTomorrow() {
-    var tomorrow = $("#SystemTimeTomorrow").val();
+    var tomorrow = new Date(Number($("#SystemTimeTomorrow").val()));
     // Intentional use of == instead of === to catch 'undefined' and null
     if (tomorrow == null) { //eslint-disable-line eqeqeq
         tomorrow = new Date();

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
@@ -261,7 +262,7 @@ namespace Tolk.Web.Controllers
         {
             var model = new OrderModel()
             {
-                SystemTimeTomorrow = _clock.SwedenNow.AddDays(1.0).Date
+                SystemTimeTomorrow = _clock.SwedenNow.AddDays(1.0).Date.ToUnixTimestamp()
             };
             return View(model);
         }
