@@ -6,7 +6,6 @@ var datePickerOptions = {
     calendarWeeks: true,
     todayHighlight: true,
     clearBtn: true,
-    startDate: getTomorrow(),
     format: {
         toDisplay: function (date, format, language) {
             return date.toISOString().slice(0, 10);
@@ -16,6 +15,9 @@ var datePickerOptions = {
         }
     }
 };
+
+var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
+orderDatePickerOptions.startDate = getTomorrow();
 
 function getTomorrow() {
     var tomorrow = new Date(Number($("#SystemTimeTomorrow").val()));
@@ -39,13 +41,15 @@ function formatDate(date) {
     return date;
 }
 
-$('.datepicker').datepicker(datePickerOptions);
+$('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
+$('.order-datepicker .datepicker').datepicker(orderDatePickerOptions);
 
 $('.date .input-group-addon').click(function () {
     $(this).prev().datepicker('show');
 });
 
-$('.input-daterange input').datepicker(datePickerOptions);
+$('.input-daterange input').not('.order-datepicker .input-daterange input').datepicker(datePickerOptions);
+$('.order-datepicker .input-daterange input').datepicker(orderDatePickerOptions);
 
 $('.input-daterange input').click(function () {
     $(this).datepicker('show');
