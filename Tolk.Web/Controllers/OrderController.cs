@@ -261,7 +261,7 @@ namespace Tolk.Web.Controllers
         {
             var model = new OrderModel()
             {
-                SystemTimeTomorrow = _clock.SwedenNow.DateTime.AddDays(1)
+                SystemTimeTomorrow = _clock.SwedenNow.AddDays(1.0).Date
             };
             return View(model);
         }
