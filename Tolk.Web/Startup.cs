@@ -112,7 +112,9 @@ namespace Tolk.Web
         public void Configure(
             IApplicationBuilder app,
             IHostingEnvironment env,
-            TolkDbContext dbContext)
+            TolkDbContext dbContext,
+            RoleManager<IdentityRole<int>> roleManager
+            )
         {
             if (env.IsDevelopment() && false)
             {
@@ -126,6 +128,19 @@ namespace Tolk.Web
             }
 
             dbContext.Database.Migrate();
+
+            if (!roleManager.RoleExistsAsync(Roles.Admin).Result)
+            {
+                 IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Admin)).Result;
+            }
+            if (!roleManager.RoleExistsAsync(Roles.Impersonator).Result)
+            {
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Impersonator)).Result;
+            }
+            if (!roleManager.RoleExistsAsync(Roles.SuperUser).Result)
+            {
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.SuperUser)).Result;
+            }
 
             app.UseStaticFiles();
 

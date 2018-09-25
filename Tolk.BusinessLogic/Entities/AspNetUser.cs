@@ -64,14 +64,17 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
 
+        public DateTimeOffset? LastLoginAt { get; set; }
+
         public static AspNetUser CreateInterpreter(string email)
         {
-            var user = new AspNetUser(email);
-
-            user.Interpreter = new Interpreter()
+            var user = new AspNetUser(email)
             {
-                // Add empty list because other code expects initialized entity.
-                Brokers = new List<InterpreterBroker>()
+                Interpreter = new Interpreter()
+                {
+                    // Add empty list because other code expects initialized entity.
+                    Brokers = new List<InterpreterBroker>()
+                }
             };
 
             return user;

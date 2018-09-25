@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -20,7 +17,6 @@ using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
-using Tolk.Web.Models;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.Web.Services;
 
@@ -256,6 +252,9 @@ supporten på {_options.SupportEmail}";
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                user.LastLoginAt = _clock.SwedenNow;
+                await _userManager.UpdateAsync(user);
                 _logger.LogInformation("User {userName} logged in.", model.Email);
                 return RedirectToLocal(returnUrl);
             }
@@ -426,33 +425,12 @@ supporten på {_options.SupportEmail}";
                         {
                             _logger.LogInformation("Created initial user account {0}", user.UserName);
 
-                            // Gör array av roller, loopa över, kolla result för varje.
-
-                            var roles = new IdentityRole<int>[]
-                            {
-                                new IdentityRole<int>(Roles.Admin),
-                                new IdentityRole<int>(Roles.Impersonator),
-                            };
-
-                            foreach (var role in roles)
-                            {
-                                result = await _roleManager.CreateAsync(role);
-                                if (!result.Succeeded)
-                                {
-                                    break;
-                                }
-                                _logger.LogInformation("Created role {0}.", role.Name);
-                            }
-
+                            result = await _userManager.AddToRolesAsync(user, new[] { Roles.Admin, Roles.Impersonator });
                             if (result.Succeeded)
                             {
-                                result = await _userManager.AddToRolesAsync(user, new[] { Roles.Admin, Roles.Impersonator });
-                                if (result.Succeeded)
-                                {
-                                    _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
-                                    transaction.Complete();
-                                    return RedirectToAction("Index", "Home");
-                                }
+                                _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
+                                transaction.Complete();
+                                return RedirectToAction("Index", "Home");
                             }
                         }
                         AddErrors(result);

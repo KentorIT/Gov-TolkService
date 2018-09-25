@@ -27,6 +27,7 @@ namespace Tolk.Web.Services
         private const string brokersSelectListKey = nameof(brokersSelectListKey);
         private const string impersonationTargets = nameof(impersonationTargets);
         private const string customersSelectListKey = nameof(customersSelectListKey);
+        private const string organisationsSelectListKey = nameof(organisationsSelectListKey);
 
         public SelectListService(
             IMemoryCache cache,
@@ -46,6 +47,11 @@ namespace Tolk.Web.Services
                 Text = r.Name
             })
             .ToList().AsReadOnly();
+
+        public static IEnumerable<SelectListItem> SearchableRoles { get; } =
+            EnumHelper.GetAllDescriptions<SearchableRoles>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
 
         public static IEnumerable<SelectListItem> ComplaintStatuses { get; } =
             EnumHelper.GetAllDescriptions<ComplaintStatus>()
@@ -144,6 +150,30 @@ namespace Tolk.Web.Services
             }
         }
 
+        public IEnumerable<SelectListItem> Organizations
+        {
+            get
+            { 
+                if (!_cache.TryGetValue(organisationsSelectListKey, out IEnumerable<SelectListItem> items))
+                {
+                    items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
+                        .Select(c => new SelectListItem
+                        {
+                            Text = $"{c.Name} ({OrganisationType.GovernmentBody.GetDescription()})",
+                            Value = $"{c.CustomerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}",
+                        }).Union(_dbContext.Brokers.OrderBy(c => c.Name)
+                        .Select(b => new SelectListItem
+                        {
+                            Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
+                            Value = $"{b.BrokerId.ToString()}_{OrganisationType.Broker }",
+                        })).ToList().AsReadOnly();
+
+                    _cache.Set(customersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                }
+
+                return items;
+            }
+        }
         public IEnumerable<SelectListItem> CustomerOrganizations
         {
             get

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180918140318_LastLoginAt")]
+    partial class LastLoginAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -799,19 +801,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
-                {
-                    b.Property<int>("RequestId");
-
-                    b.Property<int>("AttachmentId");
-
-                    b.HasKey("RequestId", "AttachmentId");
-
-                    b.HasIndex("AttachmentId");
-
-                    b.ToTable("RequestAttachments");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
                 {
                     b.Property<int>("RequestPriceRowId")
@@ -878,9 +867,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("Status");
 
-                    b.Property<int?>("TimeWasteIWHTime");
+                    b.Property<DateTimeOffset?>("TimeWasteAfterEndedAt");
 
-                    b.Property<int?>("TimeWasteNormalTime");
+                    b.Property<DateTimeOffset?>("TimeWasteBeforeStartedAt");
 
                     b.Property<decimal>("TravelCosts")
                         .HasColumnType("decimal(10, 2)");
@@ -1259,19 +1248,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ReceivedBy")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
-                        .WithMany("Requests")
-                        .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
-                        .WithMany("Attachments")
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
