@@ -3,13 +3,13 @@ DELETE FROM PriceListRows
 DBCC CHECKIDENT ('TolkDev.dbo.PriceListRows',RESEED, 0)
 SET IDENTITY_INSERT PriceListRows ON
 insert PriceListRows(PriceListRowId, PriceListType, StartDate, EndDate, MaxMinutes, Price, CompetenceLevel, PriceRowType)
-Select 1, 1, '20180101', '20991231', 60, 355, 1, 1
+Select 1, 1, '20180101', '20991231', 60, 352, 1, 1
 UNION ALL
 Select 2, 1, '20180101', '20991231', 60, 409, 2, 1
 UNION ALL
 Select 3, 1, '20180101', '20991231', 60, 480, 3, 1
 UNION ALL
-Select 4, 1, '20180101', '20991231', 60, 609, 4, 1
+Select 4, 1, '20180101', '20991231', 60, 606, 4, 1
 
 UNION ALL
 
@@ -29,7 +29,7 @@ Select 10, 1, '20180101', '20991231', 120, 725, 2, 1
 UNION ALL
 Select 11, 1, '20180101', '20991231', 120, 850, 3, 1
 UNION ALL
-Select 12, 1, '20180101', '20991231', 120, 1085, 4, 1
+Select 12, 1, '20180101', '20991231', 120, 1084, 4, 1
 
 UNION ALL
 
@@ -123,7 +123,7 @@ Select 48, 2, '20180101', '20991231', 90, 738, 4, 1
 
 UNION ALL
 
-Select 49, 2, '20180101', '20991231', 120, 574, 1, 1
+Select 49, 2, '20180101', '20991231', 120, 547, 1, 1
 UNION ALL
 Select 50, 2, '20180101', '20991231', 120, 644, 2, 1
 UNION ALL
