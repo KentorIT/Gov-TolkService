@@ -16,46 +16,47 @@
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
-        <form method="post">
-            <input asp-for="RequestId" type="hidden" />
-            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-            <input asp-for="FileGroupKey" type="hidden" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />
-            }
-            <form-entry asp-for="TimeWasteNormalTime" />
-            <form-entry asp-for="TimeWasteIWHTime" />
-            <div id="wasteTimeValidator" class="d-none text-danger body"></div>
-            <display-entry asp-for="ExpectedStartedAt" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
-            }
-            <form-entry asp-for="SessionStartedAt" />
-            <display-entry asp-for="ExpectedEndedAt" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
-            }
-            <form-entry asp-for="SessionEndedAt" />
-            <display-entry asp-for="ExpectedTravelCosts" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
-            }
-            <form-entry asp-for="TravelCosts" />
-            <form-entry asp-for="Message" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
-            <button id="create" type="submit" class="btn btn-default">Skapa</button>
-            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
-        </form>
+            <form method="post">
+                <input asp-for="RequestId" type="hidden" />
+                <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                <input asp-for="FileGroupKey" type="hidden" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />
+                }
+                <form-entry asp-for="TimeWasteNormalTime" />
+                <form-entry asp-for="TimeWasteIWHTime" />
+                <div id="wasteTimeValidator" class="d-none text-danger body"></div>
+                <display-entry asp-for="ExpectedStartedAt" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
+                }
+                <form-entry asp-for="SessionStartedAt" />
+                <display-entry asp-for="ExpectedEndedAt" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
+                }
+                <form-entry asp-for="SessionEndedAt" />
+                <display-entry asp-for="ExpectedTravelCosts" />
+                @if (Model.PreviousRequisition != null)
+                {
+                    <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+                }
+                <form-entry asp-for="TravelCosts" />
+                <div id="travelCostsValidator" class="d-none text-danger body"></div>
+                <form-entry asp-for="Message" />
+                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
+                <button id="create" type="submit" class="btn btn-default">Skapa</button>
+                <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
+            </form>
         <span id="basefile" class="d-none">
             <input asp-for="Files[0].Id" type="hidden" />
         </span>
     </div>
 </div>
-@Html.Partial("_UploadFileDialog");
+@Html.Partial("_UploadFileDialog")
 
 @section Scripts {
     <environment include="Development">

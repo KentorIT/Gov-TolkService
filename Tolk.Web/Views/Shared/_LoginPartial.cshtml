@@ -7,7 +7,6 @@
 @if (SignInManager.IsSignedIn(User))
 {
     string infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? "Inloggad superuser: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : "Visa mitt konto";
-    string infoTextTools = User.IsInRole(Roles.Impersonator) ? "Logga ut, byt användare" : "Logga ut";
         <ul class="nav navbar-nav navbar-right">
             <li>
                 <a asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
