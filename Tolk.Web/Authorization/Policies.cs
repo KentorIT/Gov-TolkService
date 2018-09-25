@@ -22,6 +22,7 @@ namespace Tolk.Web.Authorization
         public const string Accept = nameof(Accept);
         public const string Cancel = nameof(Cancel);
         public const string TimeTravel = nameof(TimeTravel);
+        public const string RenderMenuAndStartPageBoxes = nameof(RenderMenuAndStartPageBoxes);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
         {
@@ -36,6 +37,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
+                opt.AddPolicy(RenderMenuAndStartPageBoxes, builder => builder.RequireAssertion(RenderMenuAndStartBoxesHandler));
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
@@ -43,6 +45,11 @@ namespace Tolk.Web.Authorization
 
             services.AddSingleton<IAuthorizationHandler, TolkOptionsRequirementHandler>();
         }
+
+        private readonly static Func<AuthorizationHandlerContext, bool> RenderMenuAndStartBoxesHandler = (context) =>
+        {
+            return context.User.HasClaim(c => c.Type == TolkClaimTypes.PersonalName);
+        };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
         {

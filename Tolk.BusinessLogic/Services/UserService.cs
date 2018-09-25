@@ -67,7 +67,7 @@ $@"Hej!
 
 Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedling.
 
-För att aktivera ditt konto och se uppdrag från förmedlingen, vänligen klicka på
+För att se dina tolkuppdrag så måste du registrera ett användarkonto i systemet, vänligen klicka på
 nedanstående länk eller klistra in den i din webbläsare.
 
 {{0}}

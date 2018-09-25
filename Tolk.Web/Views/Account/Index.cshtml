@@ -1,17 +1,17 @@
 ﻿@model AccountViewModel
-@using System.Security.Claims
 @{
     ViewData["Title"] = "Mitt konto";
 }
 
-<h2>@User.FindFirstValue(ClaimTypes.Name)</h2>
+<h2>@Model.NameFull</h2>
 
 <div class="row">
     <div class="col-md-8">
+        <display-entry asp-for="Email" />
         <display-entry asp-for="NameFull" />
         <display-entry asp-for="PhoneWork" />
         <display-entry asp-for="PhoneCellphone" />
-        <span class="pull-right">
+        <span>
             <a class="btn btn-default" asp-action="ChangePassword">Byt lösenord</a>
             <a class="btn btn-default" asp-action="Edit">Ändra användaruppgifter</a>
         </span>

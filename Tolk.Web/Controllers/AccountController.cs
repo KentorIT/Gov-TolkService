@@ -78,7 +78,7 @@ namespace Tolk.Web.Controllers
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
             };
-            
+
             return View(model);
         }
 
@@ -89,6 +89,7 @@ namespace Tolk.Web.Controllers
 
             var model = new ManageModel
             {
+                Email = user.Email,
                 HasPassword = hasPassword,
                 NameFirst = user.NameFirst,
                 NameFamily = user.NameFamily,
@@ -120,9 +121,9 @@ namespace Tolk.Web.Controllers
                         // Check if user is authorized to change account
                         if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
                         {
-                            return Unauthorized();
+                            ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
+                            return View(model);
                         }
-
                         user.NameFirst = model.NameFirst;
                         user.NameFamily = model.NameFamily;
                         user.PhoneNumber = model.PhoneWork;
@@ -132,6 +133,11 @@ namespace Tolk.Web.Controllers
                         if (result.Succeeded)
                         {
                             _logger.LogInformation("Successfully created new user {userId}", user.Id);
+                            //when user is updated refresh sign in to get possible updated claims
+                            if (!User.IsInRole(Roles.Impersonator))
+                            {
+                                await _signInManager.RefreshSignInAsync(user);
+                            }
                             transaction.Complete();
                             return RedirectToAction(nameof(Index));
                         }
@@ -406,7 +412,7 @@ supporten på {_options.SupportEmail}";
                     if (_dbContext.IsUserStoreInitialized)
                     {
                         _logger.LogWarning("Tried to CreateInitialUser even though users/roles exist in the database.");
-                        ModelState.AddModelError("", "Det finns redan anävndare/roller i databasen, den här operationen är inte tillgänglig.");
+                        ModelState.AddModelError("", "Det finns redan användare/roller i databasen, den här operationen är inte tillgänglig.");
                     }
                     else
                     {
@@ -547,7 +553,7 @@ supporten på {_options.SupportEmail}";
         }
 
         [AllowAnonymous]
-        public  IActionResult Register()
+        public IActionResult Register()
         {
             return View();
         }
@@ -585,12 +591,12 @@ supporten på {_options.SupportEmail}";
                     var broker = await _dbContext.Brokers
                         .SingleOrDefaultAsync(b => b.EmailDomain == domain);
 
-                    if(broker != null)
+                    if (broker != null)
                     {
                         var user = new AspNetUser(model.Email, broker);
                         var result = await _userManager.CreateAsync(user);
 
-                        if(result.Succeeded)
+                        if (result.Succeeded)
                         {
                             await _userService.SendInviteAsync(user);
 
@@ -654,8 +660,12 @@ supporten på {_options.SupportEmail}";
                             if (result.Succeeded)
                             {
                                 _logger.LogInformation("Successfully created new user {userId}", user.Id);
+                                //when user is updated refresh sign in to get possible updated claims
+                                if (!User.IsInRole(Roles.Impersonator))
+                                {
+                                    await _signInManager.RefreshSignInAsync(user);
+                                }
                                 transaction.Complete();
-
                                 return RedirectToAction(nameof(ConfirmAccountConfirmation));
                             }
                         }

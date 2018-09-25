@@ -20,5 +20,7 @@ namespace Tolk.Web.Authorization
         public const string BrokerId = nameof(BrokerId);
 
         public const string InterpreterId = nameof(InterpreterId);
+
+        public const string PersonalName = nameof(PersonalName);
     }
 }

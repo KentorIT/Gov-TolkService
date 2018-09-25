@@ -46,6 +46,11 @@ namespace Tolk.Web.Services
                 identity.AddClaim(new Claim(TolkClaimTypes.InterpreterId, user.InterpreterId.ToString()));
             }
 
+            if (!string.IsNullOrWhiteSpace(user.FullName))
+            {
+                identity.AddClaim(new Claim(TolkClaimTypes.PersonalName, user.FullName));
+            }
+
             return identity;
         }
     }

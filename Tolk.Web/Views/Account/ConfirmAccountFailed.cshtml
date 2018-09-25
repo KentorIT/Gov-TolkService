@@ -7,9 +7,11 @@
     <div class="col-md-12">
         <h2>@ViewData["Title"]</h2>
 
-        <p>Ditt konto kunde inte skapas. Det kan bero på att
-        din verifieringskod gått ut. Du kan i så fall skicka en ny, som
-        är giltig i 24 timmar.</p>
+        <p>
+            Ditt konto kunde inte skapas. Det kan bero på att
+            din verifieringskod gått ut. Du kan i så fall genom att skicka efter en ny som
+            är giltig i 24 timmar.
+        </p>
 
         <form asp-action="ConfirmAccount" method="post" class="do-not-check-dirty">
             <input type="hidden" asp-for="UserId" />

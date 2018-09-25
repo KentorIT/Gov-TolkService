@@ -44,9 +44,26 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction("CreateInitialUser", "Account");
             }
 
-            if(!User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
             {
                 return View("IndexNotLoggedIn");
+            }
+            if (!User.IsInRole(Roles.Impersonator))
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
+                {
+                    var hasPassword = await _userManager.HasPasswordAsync(user);
+
+                    if (!hasPassword)
+                    {
+                        return RedirectToAction("RegisterNewAccount", "Account");
+                    }
+                    if (!(await _authorizationService.AuthorizeAsync(User, Policies.RenderMenuAndStartPageBoxes)).Succeeded)
+                    {
+                        return RedirectToAction("Edit", "Account");
+                    }
+                }
             }
 
             return View(new StartViewModel
@@ -151,7 +168,7 @@ namespace Tolk.Web.Controllers
                 };
             }
 
-            count = _dbContext.Orders.Where(o => o.Status == OrderStatus.CancelledByBroker && 
+            count = _dbContext.Orders.Where(o => o.Status == OrderStatus.CancelledByBroker &&
                 o.CreatedBy == User.GetUserId()).Count();
 
             if (count > 0)
