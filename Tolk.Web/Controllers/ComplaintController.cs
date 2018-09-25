@@ -137,7 +137,7 @@ namespace Tolk.Web.Controllers
                 var complaint = GetComplaint(complaintId);
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    complaint.Accept(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), null, ComplaintStatus.Confirmed);
                     _dbContext.SaveChanges();
                     return RedirectToAction(nameof(View), new { id = complaintId });
                 }
@@ -155,7 +155,7 @@ namespace Tolk.Web.Controllers
                 var complaint = GetComplaint(model.ComplaintId);
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    complaint.Dispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage);
+                    complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage, ComplaintStatus.Disputed);
                     _dbContext.SaveChanges();
                     CreateEmailOnComplaintAction(complaint);
                     return RedirectToAction(nameof(View), new { id = model.ComplaintId });

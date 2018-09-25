@@ -80,33 +80,6 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string TerminationMessage { get; set; }
 
-        public void Accept(DateTimeOffset acceptedAt, int userId, int? impersonatorId)
-        {
-            if (Status != ComplaintStatus.Created)
-            {
-                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be accepted.");
-            }
-
-            Status = ComplaintStatus.Confirmed;
-            AnswerDisputedAt = acceptedAt;
-            AnsweredAt = acceptedAt;
-            AnsweredBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
-        }
-
-        public void Dispute(DateTimeOffset disputedAt, int userId, int? impersonatorId, string message)
-        {
-            if (Status != ComplaintStatus.Created)
-            {
-                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be Disputed.");
-            }
-            Status = ComplaintStatus.Disputed;
-            AnsweredAt = disputedAt;
-            AnsweredBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
-            AnswerMessage = message;
-        }
-
         public void AnswerDispute(DateTimeOffset answerDisputedAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
         {
             if (Status != ComplaintStatus.Disputed)
@@ -120,5 +93,17 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDisputedMessage = message;
         }
 
+        public void Answer(DateTimeOffset answeredAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
+        {
+            if (Status != ComplaintStatus.Created)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be answered.");
+            }
+            AnswerMessage = message;
+            Status = status;
+            AnsweredAt = answeredAt;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+        }
     }
 }

@@ -33,13 +33,13 @@
         {
             <form method="post" asp-action="Accept">
                 <input asp-for="ComplaintId" type="hidden" />
-                <button class="btn accept-button pull-left">Godta reklamationen</button>
+                <button class="btn btn-success pull-left">Godta reklamation</button>
             </form>
             <button class="btn decline-button btn-danger pull-right">Bestrid reklamation</button>
         }
         @if (Model.AllowAnwserOnDispute)
         {
-            <button class="btn accept-button btn-success pull-left">Godta bestridande av reklamationen</button>
+            <button class="btn accept-button btn-success pull-left">Godta bestridande av reklamation</button>
             <button class="btn refute-button btn-danger pull-right">Ogilla bestridande av reklamation</button>
         }
 
