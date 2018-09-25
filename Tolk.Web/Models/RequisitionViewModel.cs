@@ -49,10 +49,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Krav på kompetensnivå")]
         public bool SpecificCompetenceLevelRequired { get; set; }
 
-        [Display(Name = "Kravad kompetensnivå")]
+        [Display(Name = "Krav på kompetensnivå")]
         public CompetenceAndSpecialistLevel? RequiredCompetenceLevelFirst { get; set; }
 
-        [Display(Name = "Alternativ kravad kompetensnivå")]
+        [Display(Name = "Alternativt krav på kompetensnivå")]
         public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
 
         [Display(Name = "Önskad kompetensnivå (förstahand)")]
@@ -64,7 +64,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Önskad kompetensnivå (tredjehand)")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
-        [Display(Name = "Tolkens faktiska kompetensnivå")]
+        [Display(Name = "Tillsatt tolks kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpretersCompetenceLevel { get; set; }
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]

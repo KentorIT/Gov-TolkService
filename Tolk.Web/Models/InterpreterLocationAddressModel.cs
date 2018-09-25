@@ -48,10 +48,10 @@ namespace Tolk.Web.Models
                 switch (Rank)
                     {
                     case 2:
-                        rankHeader = "I andra hand: ";
+                        rankHeader = "I andra hand:\n";
                         break;
                     case 3:
-                        rankHeader = "I tredje hand: ";
+                        rankHeader = "I tredje hand:\n";
                         break;
                     default:
                         break;

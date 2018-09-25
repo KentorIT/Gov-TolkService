@@ -35,12 +35,12 @@
                 @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
                 {
                     <input asp-for="OrderModel.RequiredCompetenceLevelFirst" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Kravad kompetensnivå" />
+                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" />
                 }
                 @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
                 {
                     <input asp-for="OrderModel.RequiredCompetenceLevelSecond" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativ kravad kompetensnivå" />
+                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" />
                 }
             }
             else
@@ -48,17 +48,17 @@
                 @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
                 {
                     <input asp-for="OrderModel.RequestedCompetenceLevelFirst" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" />
                 }
                 @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
                 {
                     <input asp-for="OrderModel.RequestedCompetenceLevelSecond" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" />
                 }
                 @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
                 {
                     <input asp-for="OrderModel.RequestedCompetenceLevelThird" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
+                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" />
                 }
             }
         }
@@ -94,26 +94,26 @@
                     {
                         @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" label-override="Krav på kompetensnivå " />
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" />
                         }
                         @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" label-override="Alternativt krav på kompetensnivå" />
+                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" />
                         }
                     }
                     else
                     {
                         @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" label-override="Önskad kompetensnivå (förstahand)" />
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" />
                         }
                         @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" label-override="Önskad kompetensnivå (andrahand)" />
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" />
                         }
                         @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
                         {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" label-override="Önskad kompetensnivå (tredjehand)" />
+                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" />
                         }
                     }
                 }

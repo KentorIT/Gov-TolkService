@@ -57,7 +57,7 @@ namespace Tolk.Web.Controllers
             bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
 
             var items = _dbContext.Requests.Include(r => r.Order)
-                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId())
+                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId() && r.Status != RequestStatus.InterpreterReplaced)
                         .SelectRequestListItemModel(isCustomer);
             // Filters
             if (model != null)

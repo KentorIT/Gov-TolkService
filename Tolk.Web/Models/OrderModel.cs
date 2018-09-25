@@ -76,14 +76,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Kompetensnivå är ett krav")]
         public bool SpecificCompetenceLevelRequired { get; set; }
 
-        [Display(Name = "Kravade kompetensnivåer")]
+        [Display(Name = "Krav på kompetensnivå")]
         [ClientRequired]
         public CompetenceAndSpecialistLevel? RequiredCompetenceLevelFirst { get; set; }
 
         [NoDisplayName]
         public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
 
-        [Display(Name = "Önskade kompetensnivåer")]
+        [Display(Name = "Önskade kompetensnivåer i prioritetsordning")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
         [NoDisplayName]
