@@ -159,8 +159,8 @@
 
             @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
-                <span>
-                    Observera att tolken ej matchar den beställda kompetensnivån<br /><br />
+                <span class="italic">
+                    Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå<br /><br />
                 </span>
             }
             <display-entry asp-for="InterpreterLocationAnswer" />
