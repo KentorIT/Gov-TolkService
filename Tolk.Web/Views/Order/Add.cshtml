@@ -11,7 +11,7 @@
         <h2>@ViewData["Title"]</h2>
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="SystemTimeTomorrow" />
+            <input type="hidden" asp-for="SystemTime" />
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
             <div class="border">
                 <span class="header-with-line">Kompetensnivå</span>

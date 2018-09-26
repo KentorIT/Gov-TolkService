@@ -20,8 +20,8 @@ namespace Tolk.Web.Models
 
         public int? ReplacingOrderId { get; set; }
 
-        // Must be UTC millis, Edge cannot parse locale strings
-        public double SystemTimeTomorrow { get; set; }
+        // Unix timestamp
+        public long SystemTime { get; set; }
 
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]

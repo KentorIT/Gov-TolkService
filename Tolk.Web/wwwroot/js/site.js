@@ -20,13 +20,13 @@ var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
 orderDatePickerOptions.startDate = getTomorrow();
 
 function getTomorrow() {
-    var tomorrow = new Date(Number($("#SystemTimeTomorrow").val()));
+    var tomorrow = new Date(Number($("#SystemTime").val()));
     // Intentional use of == instead of === to catch 'undefined' and null
     if (tomorrow == null) { //eslint-disable-line eqeqeq
         tomorrow = new Date();
-        tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
-        tomorrow.setHours(0, 0, 0, 0);
     }
+    tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
+    tomorrow.setHours(0, 0, 0, 0);
     return tomorrow;
 }
 
