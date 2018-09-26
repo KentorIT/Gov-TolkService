@@ -33,7 +33,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Kund")]
         public string CustomerOrganizationName { get; set; }
 
-        [Display(Name = "Avropare hos kund")]
+        [Display(Name = "Avrop skapat av")]
         [DataType(DataType.MultilineText)]
         public string OrderCreatedBy { get; set; }
 

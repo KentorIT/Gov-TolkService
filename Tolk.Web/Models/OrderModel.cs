@@ -119,14 +119,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public string LanguageName { get; set; }
 
-        [Display(Name = "Skapad")]
+        [Display(Name = "Avrop skapat")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [Display(Name = "Skapad av")]
+        [Display(Name = "Avrop skapat av")]
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
-        [Display(Name = "Besvarad av")]
+        [Display(Name = "Avrop besvarat av")]
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
