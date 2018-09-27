@@ -48,7 +48,7 @@ namespace Tolk.Web.Models
         public virtual TimeRange TimeRange { get; set; }
 
         [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i morgon, måste ni ange senaste svarstid")]
-        public DateTimeOffset LatestAnswerTime { get; set; }
+        public DateTimeOffset LatestAnswerBy { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]

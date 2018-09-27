@@ -99,14 +99,22 @@ $(function () {
     });
 
     $("body").on("change", "#TimeRange_StartDate", function () {
-        var chosenDate = new Date($(this).val());
-        var tomorrow = getTomorrow();
         var systemTime = new Date(Number($("#SystemTime").val()));
+        var chosenDate = new Date($(this).val());
+        var tomorrow = new Date(systemTime.getTime())
+            .addDays(1)
+            .zeroTime()
+            .localDateTime();
         if (chosenDate.equalsDate(tomorrow) && systemTime.getHours() >= 14) {
-            $("#LatestAnswerTime").show();
+            var today = new Date(systemTime.getTime())
+                .zeroTime()
+                .localDateTime();
+            $("#LatestAnswerBy").show();
+            $("#LatestAnswerBy_Date").datepicker("setStartDate", today);
+            $("#LatestAnswerBy_Date").datepicker("setEndDate", tomorrow);
         }
         else {
-            $("#LatestAnswerTime").hide();
+            $("#LatestAnswerBy").hide();
         }
     });
 

@@ -11,36 +11,15 @@ var datePickerOptions = {
             return date.toISOString().slice(0, 10);
         },
         toValue: function (date, format, language) {
-            return new Date(formatDate(date));
+            return new Date(Date.customFormat(date));
         }
     }
 };
 
 var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
-orderDatePickerOptions.startDate = getTomorrow();
-
-function getTomorrow() {
-    var tomorrow = new Date(Number($("#SystemTime").val()));
-    // Intentional use of == instead of === to catch 'undefined' and null
-    if (tomorrow == null) { //eslint-disable-line eqeqeq
-        tomorrow = new Date();
-    }
-    tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setTime(tomorrow.getTime() - (tomorrow.getTimezoneOffset() * 60 * 1000)); // Compensate GMT timezone offset
-    return tomorrow;
-}
-
-// Auto-format date entered with just digits.
-function formatDate(date) {
-    if (/^[0-9]{6}$/.test(date)) {
-        date = "20" + date;
-    }
-    if (/^[0-9]{8}$/.test(date)) {
-        date = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
-    }
-    return date;
-}
+orderDatePickerOptions.startDate = new Date(Number($("#SystemTime").val()))
+    .addDays(1)
+    .zeroTime();
 
 $('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
 $('.order-datepicker .datepicker').datepicker(orderDatePickerOptions);
