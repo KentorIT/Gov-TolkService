@@ -90,5 +90,11 @@
     "inputFiles": [
       "wwwroot/js/Order/Replace.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/JSDateExtensions.min.js",
+    "inputFiles": [
+      "wwwroot/js/JSDateExtensions.js"
+    ]
   }
 ]

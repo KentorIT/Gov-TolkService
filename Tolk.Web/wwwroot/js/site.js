@@ -27,6 +27,7 @@ function getTomorrow() {
     }
     tomorrow.setTime(tomorrow.getTime() + (1000 * 60 * 60 * 24));
     tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setTime(tomorrow.getTime() - (tomorrow.getTimezoneOffset() * 60 * 1000)); // Compensate GMT timezone offset
     return tomorrow;
 }
 

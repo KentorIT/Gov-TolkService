@@ -98,6 +98,18 @@ $(function () {
         }
     });
 
+    $("body").on("change", "#TimeRange_StartDate", function () {
+        var chosenDate = new Date($(this).val());
+        var tomorrow = getTomorrow();
+        var systemTime = new Date(Number($("#SystemTime").val()));
+        if (chosenDate.equalsDate(tomorrow) && systemTime.getHours() >= 14) {
+            $("#LatestAnswerTime").show();
+        }
+        else {
+            $("#LatestAnswerTime").hide();
+        }
+    });
+
     var toggleOtherLanguage = function (id) {
         if (id === $("#OtherLanguageId").val()) {
             $('#other-language').collapse('show');
@@ -108,4 +120,6 @@ $(function () {
     };
 
     $("#SpecificCompetenceLevelRequired").trigger("change");
+    $("#UseRankedInterpreterLocation").trigger("change");
+    $("#TimeRange_StartDate").trigger("change");
 });

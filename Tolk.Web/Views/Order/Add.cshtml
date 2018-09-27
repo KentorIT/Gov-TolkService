@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Helpers
 @using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Avropa tolk";
@@ -80,6 +81,7 @@
             </div>
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             <form-entry asp-for="TimeRange" class="order-datepicker" />
+            <form-entry asp-for="LatestAnswerTime" id="LatestAnswerTime" />
             <fieldset>
                 <legend>Extra behov <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
                 <div class="d-none order-requirement-list border no-padding">
