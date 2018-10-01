@@ -36,7 +36,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Adress")]
         public string Address { get; set; }
 
-        [Display(Name = "Kund")]
+        [Display(Name = "Myndighet")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Börjar")]

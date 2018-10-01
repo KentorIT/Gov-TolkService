@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Region")]
         public int? RegionId { get; set; }
 
-        [Display(Name = "Kund")]
+        [Display(Name = "Myndighet")]
         public int? CustomerOrganizationId { get; set; }
 
         [Display(Name = "Språk")]

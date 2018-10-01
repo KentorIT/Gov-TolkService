@@ -6,11 +6,7 @@
     <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CustomerOrganizationName" />
-        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
-        {
-            <display-entry asp-for="CustomerReferenceNumber" />
-        }
+        <display-entry asp-for="CustomerCompactInfo" />
         <display-entry asp-for="OrderCreatedBy" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="AssignmentType" />
@@ -18,7 +14,6 @@
         {
             <display-entry asp-for="Description" />
         }
-        <display-entry asp-for="UnitName" />
         @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSite)
         {
             <display-entry asp-for="OffSiteAssignmentType" />

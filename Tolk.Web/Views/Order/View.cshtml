@@ -27,8 +27,9 @@
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="CreatedBy" />
         <display-entry asp-for="ContactPerson" />
-        <display-entry asp-for="UnitName" />
         <display-entry asp-for="CustomerName" />
+        <display-entry asp-for="UnitName" />
+        <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="Status" />
         @if (!string.IsNullOrEmpty(Model.CancelMessage))
         {
@@ -36,7 +37,6 @@
         }
         <display-entry asp-for="RegionName" />
         <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="CustomerReferenceNumber" />
         <display-entry asp-for="AssignmentType" />
 
         <label>Inställelsesätt</label>

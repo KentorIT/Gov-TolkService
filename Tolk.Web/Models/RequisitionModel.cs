@@ -20,7 +20,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Region")]
         public string RegionName { get; set; }
 
-        [Display(Name = "Kundens referensnummer")]
+        [Display(Name = "Myndighetens referensnummer")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Tolk")]
@@ -30,8 +30,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 
-        [Display(Name = "Kund")]
+        [Display(Name = "Avropande myndighet")]
         public string CustomerOrganizationName { get; set; }
+
+        [Display(Name = "Avropande myndighet")]
+        [DataType(DataType.MultilineText)]
+        public string CustomerCompactInfo
+        { get => CustomerOrganizationName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
 
         [Display(Name = "Avrop skapat av")]
         [DataType(DataType.MultilineText)]

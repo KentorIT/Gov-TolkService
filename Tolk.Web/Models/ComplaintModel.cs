@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Region")]
         public string RegionName { get; set; }
 
-        [Display(Name = "Kundens referensnummer")]
+        [Display(Name = "Myndighetens referensnummer")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Tolk")]
@@ -28,7 +28,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 
-        [Display(Name = "Kund")]
+        [Display(Name = "Myndighet")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Startid")]

@@ -73,6 +73,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
+        [Display(Name = "Avropande myndighet")]
+        [DataType(DataType.MultilineText)]
+        public string CustomerCompactInfo
+        { get => CustomerName + "\nEnhet/avdelning: " + UnitName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
+
         [Display(Name = "Kompetensnivå är ett krav")]
         public bool SpecificCompetenceLevelRequired { get; set; }
 
@@ -134,7 +139,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 
-        [Display(Name = "Kund")]
+        [Display(Name = "Myndighet")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Förmedling")]

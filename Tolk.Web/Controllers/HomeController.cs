@@ -242,7 +242,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Avbokade förfrågningar från kund",
+                    Header = "Avbokade förfrågningar från myndighet",
                     Controller = "Request",
                     Action = "List",
                     Filters = new Dictionary<string, string> {
