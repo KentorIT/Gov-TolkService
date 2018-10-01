@@ -48,7 +48,7 @@ namespace Tolk.Web.Controllers
             {
                 return View("IndexNotLoggedIn");
             }
-            if (!User.IsInRole(Roles.Impersonator))
+            if (!User.IsImpersonated())
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)

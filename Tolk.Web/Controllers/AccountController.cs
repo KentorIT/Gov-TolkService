@@ -130,7 +130,7 @@ namespace Tolk.Web.Controllers
                         {
                             _logger.LogInformation("Successfully created new user {userId}", user.Id);
                             //when user is updated refresh sign in to get possible updated claims
-                            if (!User.IsInRole(Roles.Impersonator))
+                            if (!User.IsImpersonated())
                             {
                                 await _signInManager.RefreshSignInAsync(user);
                             }
@@ -639,7 +639,7 @@ supporten på {_options.SupportEmail}";
                             {
                                 _logger.LogInformation("Successfully created new user {userId}", user.Id);
                                 //when user is updated refresh sign in to get possible updated claims
-                                if (!User.IsInRole(Roles.Impersonator))
+                                if (!User.IsImpersonated())
                                 {
                                     await _signInManager.RefreshSignInAsync(user);
                                 }
