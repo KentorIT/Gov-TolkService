@@ -8,6 +8,10 @@
         <display-entry asp-for="OrderNumber" />
         <display-entry asp-for="CustomerCompactInfo" />
         <display-entry asp-for="OrderCreatedBy" />
+        @if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
+        {
+            <display-entry asp-for="ContactPerson" />
+        }
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="AssignmentType" />
         @if (!string.IsNullOrWhiteSpace(Model.Description))

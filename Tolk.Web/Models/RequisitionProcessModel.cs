@@ -41,6 +41,7 @@ namespace Tolk.Web.Models
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,
+                ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,
