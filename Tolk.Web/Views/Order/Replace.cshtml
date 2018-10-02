@@ -141,13 +141,14 @@
                         </div>
                     </div>
                 </div>
+                <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
 
             <display-entry asp-for="ReplacedTimeRange" />
             <form-entry asp-for="ReplacedTimeRange" type="hidden" />
             <form-entry asp-for="TimeRange" />
             <form-entry asp-for="Description" />
-            <button class="btn btn-default">Skapa ersättningsuppdrag</button>
+            <button class="btn btn-default" id="send">Skapa ersättningsuppdrag</button>
             <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
         </div>
     </form>

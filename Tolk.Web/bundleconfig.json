@@ -26,6 +26,16 @@
     }
   },
   {
+    "outputFileName": "wwwroot/js/Order/Replace.min.js",
+    "inputFiles": [
+      "wwwroot/js/Order/Replace.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
     "outputFileName": "wwwroot/js/Request/Process.min.js",
     "inputFiles": [
       "wwwroot/js/Request/Process.js"
