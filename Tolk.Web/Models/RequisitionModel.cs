@@ -66,7 +66,7 @@ namespace Tolk.Web.Models
         public int? TimeWasteNormalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]
-        [Display(Name = "Andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid i munter av total tidsspillan som inträffar utanför vardagar 07:00-18:00")]
+        [Display(Name = "Andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid i minuter av total tidsspillan som inträffar utanför vardagar 07:00-18:00")]
         public int? TimeWasteIWHTime { get; set; }
 
         [Display(Name = "Angiven tidsspillan")]
