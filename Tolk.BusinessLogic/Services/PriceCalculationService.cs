@@ -6,6 +6,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -44,14 +45,16 @@ namespace Tolk.BusinessLogic.Services
         private static IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, decimal brokerFeePercent)
         {
             int days = (endAt.Date - startAt.Date).Days + 1;
+            days -= endAt.TimeOfDay == TimeSpan.Zero ? 1 : 0; //if ends at midnight no extra day
+
             //The broker fee should be calculated from baseBrice maxMinutes 60. One broker fee per calender day.
             var brokerFee = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60);
             for (int i = 1; i <= days; i++)
             {
                 yield return new PriceRow
                 {
-                    StartAt = startAt.Date.AddDays(i - 1),
-                    EndAt = startAt.Date.AddDays(i),
+                    StartAt = startAt.Date.AddDays(i - 1).ToDateTimeOffsetSweden(),
+                    EndAt = startAt.Date.AddDays(i).ToDateTimeOffsetSweden(),
                     PriceRowType = PriceRowType.BasePrice,
                     Quantity = 1,
                     Price = brokerFee.Price * brokerFeePercent,
@@ -115,18 +118,19 @@ namespace Tolk.BusinessLogic.Services
                     Price = basePrice.Price
                 };
             }
-            var start = startAt.LocalDateTime;
-            var stop = endAt.LocalDateTime;
-            while (start <= stop)
+
+            var start = startAt;
+
+            while (start < endAt)
             {
-                var dateTypes = GetDateTypes(start);
+                var dateTypes = GetDateTypes(start.Date);
                 if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
                     dateTypes.Contains(DateType.Holiday) ||
                     (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
                 {
                     yield return GetPriceInformation(
                         start,
-                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
                         dateTypes.Contains(DateType.BigHolidayFullDay) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.WeekendIWH,
                         prices
                     );
@@ -139,7 +143,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     yield return GetPriceInformation(
                         start,
-                        (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7) : stop),
+                        start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7).ToDateTimeOffsetSweden() : endAt,
                         dateTypes.Contains(DateType.DayAfterBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
                         prices
                     );
@@ -147,11 +151,11 @@ namespace Tolk.BusinessLogic.Services
 
                 if (!dateTypes.Contains(DateType.Holiday) &&
                     dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) &&
-                    (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0)))
+                    (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
                     yield return GetPriceInformation(
-                        (start.Hour < 18 ? start.Date.AddHours(18) : start),
-                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        start.Hour < 18 ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : start,
+                        start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
                         dateTypes.Contains(DateType.DayBeforeBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
                         prices
                     );
@@ -162,39 +166,37 @@ namespace Tolk.BusinessLogic.Services
                 {
                     yield return GetPriceInformation(
                         start,
-                        (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18) : stop),
+                        start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : endAt,
                         PriceRowType.WeekendIWH,
                         prices
                      );
                 }
                 //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayAfterBigHoliday) 07:00 => 24:00
                 if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
-                    (start.Date < stop.Date || stop.TimeOfDay > new TimeSpan(7, 0, 0)))
+                    (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0)))
                 {
                     yield return GetPriceInformation(
-                        start.Date.AddHours(7),
-                        (start.Date == stop.Date ? stop : start.Date.AddDays(1)),
+                        start.Date.AddHours(7).ToDateTimeOffsetSweden(),
+                        start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
                         PriceRowType.WeekendIWH,
                         prices
                     );
                 }
 
                 //Start counting from the first minute on next day
-                start = start.AddDays(1).Date;
+                start = start.AddDays(1).Date.ToDateTimeOffsetSweden();
             }
 
             //Get lost times, if any, they should not get payed for less than 30 min
             if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
             {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value), PriceRowType.LostTime, prices);
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTime, prices);
             }
             if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value > 0)
             {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value), PriceRowType.LostTimeIWH, prices);
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTimeIWH, prices);
             }
         }
-
-
 
         private IEnumerable<DateType> GetDateTypes(DateTime date)
         {
@@ -237,7 +239,7 @@ namespace Tolk.BusinessLogic.Services
             //might be better to have different descriptions of travel costs (estimated, actual etc)
             if (travelcost != null)
             {
-                dpi.DisplayPriceRows.Add(new DisplayPriceRow {ShortDescription = "Total reskostnad", Price = travelcost.Value });
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow { ShortDescription = "Total reskostnad", Price = travelcost.Value });
             }
             return dpi;
         }
