@@ -76,6 +76,7 @@
                         </div>
                     </div>
                 </div>
+                <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             <fieldset>
@@ -99,7 +100,7 @@
             <form-entry asp-for="TimeRange" class="order-datepicker" />
             <form-entry asp-for="Description" />
 
-            <button class="btn btn-default">Skicka</button>
+            <button class="btn btn-default" id="send">Skicka</button>
             <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
         </form>
         <span id="baseRequirement" class="d-none">
