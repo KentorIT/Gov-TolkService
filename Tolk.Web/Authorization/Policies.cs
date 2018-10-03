@@ -171,10 +171,12 @@ namespace Tolk.Web.Authorization
         {
             var user = context.User;
 
+            int userId = user.GetUserId();
+
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == user.GetUserId();
+                    return order.CreatedBy == userId;
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -186,8 +188,8 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return requisition.Request.Order.CreatedBy == user.GetUserId() ||
-                            requisition.Request.Order.ContactPersonId == user.GetUserId();
+                        return requisition.Request.Order.CreatedBy == userId ||
+                            requisition.Request.Order.ContactPersonId == userId;
                     }
                     return false;
                 case Request request:
@@ -201,7 +203,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return request.Order.CreatedBy == user.GetUserId();
+                        return request.Order.CreatedBy == userId;
                     }
                     return false;
                 case Complaint complaint:
@@ -211,27 +213,27 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.Request.Order.CreatedBy == user.GetUserId() || complaint.Request.Order.ContactPersonId == user.GetUserId();
+                        return complaint.Request.Order.CreatedBy == userId || complaint.Request.Order.ContactPersonId == userId;
                     }
                     return false;
                 case Attachment attachment:
-                    if (!attachment.Requisitions.Any() && !attachment.Requests.Any())
+                    if (!attachment.Requisitions.Any() && !attachment.Requests.Any() && !attachment.Orders.Any())
                     {
-                        return user.GetUserId() == attachment.CreatedBy;
+                        return userId == attachment.CreatedBy;
                     }
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
-                        return attachment.Requisitions.Any(a=> a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId()) || attachment.Requests.Any(a => a.Request.Ranking.BrokerId == user.GetBrokerId());
+                        return attachment.Requisitions.Any(a=> a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId()) || attachment.Requests.Any(a => a.Request.Ranking.BrokerId == user.GetBrokerId()) || attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId()));
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == user.GetUserId() ||
-                        a.Requisition.Request.Order.ContactPersonId == user.GetUserId()) || attachment.Requests.Any(a => a.Request.Order.CreatedBy == user.GetUserId() ||
-                        a.Request.Order.ContactPersonId == user.GetUserId());
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == userId ||
+                        a.Requisition.Request.Order.ContactPersonId == userId) || attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
+                        a.Request.Order.ContactPersonId == userId) || attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {
-                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) || attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId());
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) || attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) || attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId()));
                     }
                     return false;
                 default:

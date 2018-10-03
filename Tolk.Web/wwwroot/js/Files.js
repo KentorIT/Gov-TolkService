@@ -22,8 +22,7 @@ $(function () {
         var $rows = $tbody.find("tr");
         currentId = 0;
         if ($rows.length === 0) {
-            //TODO: use $tbody.closest(".collapsable-list"), this will make this generic and reusable.
-            $('.file-list').addClass("d-none");
+            $tbody.closest('.file-list').addClass("d-none");
         } else {
             $rows.each(function () {
                 $(this).find("input").each(function () {
@@ -35,7 +34,7 @@ $(function () {
             });
         }
     });
-    $("body").on("click", ".file-table > tbody > tr > td:not(.table-button-column)", function () {
+    $("body").on("click", ".file-table-view > tbody > tr > td:not(.table-button-column)", function () {
         var $row = $(this).closest("tr");
         window.location.href = tolkBaseUrl + "Files/Download?id=" + $row.data("id");
     });
@@ -45,7 +44,7 @@ $(function () {
         var $form = $(this).closest("form");
         if ($form.valid()) {
             var $size = 0;
-            $('.file-table > tbody > tr').each(function () {
+            $('.file-table-add > tbody > tr').each(function () {
                 $size += $(this).data("size");
             });
 
@@ -76,7 +75,7 @@ $(function () {
                             });
                             currentId++;
                             $hidden.find("input").val(data.fileInfo[i].id);
-                            $('.file-table > tbody:last-child').append('<tr data-id="' + data.fileInfo[i].id + '" data-size="' + data.fileInfo[i].size + '">' +
+                            $('.file-table-add > tbody:last-child').append('<tr data-id="' + data.fileInfo[i].id + '" data-size="' + data.fileInfo[i].size + '">' +
                                 '<td class="table-full-column">' + $hidden.html() + data.fileInfo[i].fileName + '</td>' +
                                 '<td class="table-button-column fixed"><span class="glyphicon glyphicon-trash remove-file-row"></span></td>' +
                                 '</tr>');
@@ -91,5 +90,5 @@ $(function () {
             });
         }
     });
-    currentId = $(".file-table > tbody > tr").length;
+    currentId = $(".file-table-add > tbody > tr").length;
 });

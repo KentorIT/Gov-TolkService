@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace Tolk.Web.Controllers
         private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
+        private readonly TolkOptions _options;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -39,7 +41,9 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
-            ILogger<OrderController> logger)
+            ILogger<OrderController> logger,
+            IOptions<TolkOptions> options
+            )
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
@@ -49,6 +53,7 @@ namespace Tolk.Web.Controllers
             _dateCalculationService = dateCalculationService;
             _clock = clock;
             _logger = logger;
+            _options = options.Value;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -119,6 +124,8 @@ namespace Tolk.Web.Controllers
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
+                model.FileGroupKey = new Guid();
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
@@ -148,6 +155,7 @@ namespace Tolk.Web.Controllers
                         AllowDelete = false,
                         AllowDownload = true,
                         AllowUpload = false,
+                        Title = "Bifogade filer från förmedling",
                         Files = request.Attachments.Select(a => new FileModel
                         {
                             Id = a.Attachment.AttachmentId,
@@ -276,6 +284,7 @@ namespace Tolk.Web.Controllers
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
                     Order order = CreateNewOrder();
+
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
 
@@ -456,6 +465,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
+                .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(o => o.Requirements)
                     .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)

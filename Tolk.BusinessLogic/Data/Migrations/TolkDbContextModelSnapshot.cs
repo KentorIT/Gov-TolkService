@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.2-rtm-30932")
+                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -470,6 +470,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasFilter("[ReplacingOrderId] IS NOT NULL");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
+                {
+                    b.Property<int>("OrderId");
+
+                    b.Property<int>("AttachmentId");
+
+                    b.HasKey("OrderId", "AttachmentId");
+
+                    b.HasIndex("AttachmentId");
+
+                    b.ToTable("OrderAttachments");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
@@ -1129,6 +1142,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "ReplacingOrder")
                         .WithOne("ReplacedByOrder")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.Order", "ReplacingOrderId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
+                        .WithMany("Orders")
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("Attachments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>

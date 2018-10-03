@@ -102,6 +102,15 @@ namespace Tolk.Web.Models
 
         public PriceInformation PriceInformation { get; set; }
 
+        public AttachmentListModel AttachmentListModel { get; set; }
+
+        public List<FileModel> Files { get; set; }
+
+        public Guid? FileGroupKey { get; set; }
+
+        public long? CombinedMaxSizeAttachments { get; set; }
+
+
         #region details
 
         [Display(Name = "Status")]
@@ -280,7 +289,7 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
-
+            order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
             var location = RankedInterpreterLocationFirst.Value;
             order.InterpreterLocations.Add(GetInterpreterLocation(location, 1, RankedInterpreterLocationFirstAddressModel));
             if (RankedInterpreterLocationSecond.HasValue)
@@ -459,6 +468,19 @@ namespace Tolk.Web.Models
                     CanSatisfyRequirement = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.CanSatisfyRequirement,
                     Answer = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.Answer
                 }).ToList(),
+                AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Title = "Bifogade filer från myndighet",
+                    Files = order.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                },
                 PriceInformation = new PriceInformation
                 {
                     PriceRows = order.PriceRows.Select(r => new PriceRow

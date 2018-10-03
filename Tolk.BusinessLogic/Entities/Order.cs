@@ -63,6 +63,9 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacedByOrder))]
         public Order ReplacingOrder { get; set; }
 
+        public List<OrderAttachment> Attachments { get; set; }
+
+
         #endregion
 
         #region customer information

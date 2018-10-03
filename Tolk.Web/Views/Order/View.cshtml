@@ -85,6 +85,10 @@
             <span>Inga önskemål kring kompetensnivå</span> <br /><br />
         }
         <display-entry asp-for="TimeRange" />
+        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        {
+            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+        }
         <display-entry asp-for="Description" />
         <display-entry asp-for="BrokerName" />
         <display-entry asp-for="BrokerOrganizationNumber" />

@@ -15,5 +15,7 @@ namespace Tolk.Web.Models
         public bool AllowDelete { get; set; } = false;
 
         public bool AllowDownload { get; set; } = true;
+
+        public string Title { get; set; } = "Bifogade filer";
     }
 }

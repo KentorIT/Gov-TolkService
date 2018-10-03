@@ -79,6 +79,7 @@
                 <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+            <form-entry asp-for="TimeRange" class="order-datepicker" />
             <fieldset>
                 <legend>Extra behov <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
                 <div class="d-none order-requirement-list border no-padding">
@@ -97,7 +98,10 @@
                     </div>
                 </div>
             </fieldset>
-            <form-entry asp-for="TimeRange" class="order-datepicker" />
+            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
+            <span id="basefile" class="d-none">
+                <input asp-for="Files[0].Id" type="hidden" />
+            </span>
             <form-entry asp-for="Description" />
 
             <button class="btn btn-default" id="send">Skicka</button>
@@ -111,6 +115,7 @@
         </span>
     </div>
 </div>
+@Html.Partial("_UploadFileDialog")
 <div id="addRequirement" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
@@ -127,17 +132,18 @@
                 <button type="button" class="btn btn-default save-requirement">Spara</button>
             </div>
         </div>
-
     </div>
 </div>
 @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-        <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-        <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
-    </environment>
+<environment include="Development">
+    <script src="~/js/Files.js" asp-append-version="true"></script>
+    <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+</environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

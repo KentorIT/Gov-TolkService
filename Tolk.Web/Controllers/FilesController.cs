@@ -112,6 +112,7 @@ namespace Tolk.Web.Controllers
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
+                .Include(a => a.Orders).ThenInclude(o => o.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
                 .SingleOrDefault(a => a.AttachmentId == id);
             //Add validation...
             if (attachment == null)

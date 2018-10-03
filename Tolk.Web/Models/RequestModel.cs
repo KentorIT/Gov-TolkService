@@ -155,6 +155,7 @@ namespace Tolk.Web.Models
                     AllowDelete = false,
                     AllowDownload = true,
                     AllowUpload = false,
+                    Title = "Bifogade filer från förmedling",
                     Files = request.Attachments.Select(a => new FileModel
                     {
                         Id = a.Attachment.AttachmentId,

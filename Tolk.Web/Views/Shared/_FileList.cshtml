@@ -1,21 +1,22 @@
 ﻿@model AttachmentListModel
 @{
     var visibleClass = Model.Files != null ? !Model.Files.Any() ? "d-none" : string.Empty : "d-none";
+    var tableAddFilesClass = Model.AllowUpload ? "file-table-add" : string.Empty;
 }
 <fieldset>
     @if (Model.AllowUpload)
     {
         <legend>
             Bifoga filer
-            <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addFilesDialog">Lägg till filer</a>
+            <a href="#" class="edit-link font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addFilesDialog">Lägg till filer</a>
         </legend>
     }
     <div class="file-list border no-padding @visibleClass">
         <div class="table-responsive">
-            <table class="table table-striped table-hover file-table">
+            <table class="table table-striped table-hover file-table-view @tableAddFilesClass">
                 <thead>
                     <tr>
-                        <th>Bifogade filer</th>
+                        <th>@Model.Title</th>
                         <th></th>
                     </tr>
                 </thead>
