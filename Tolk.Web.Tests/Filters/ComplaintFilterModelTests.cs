@@ -1,8 +1,6 @@
 ﻿using FluentAssertions;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Models;
 using Xunit;
@@ -11,19 +9,19 @@ namespace Tolk.Web.Tests.Filters
 {
     public class ComplaintFilterModelTests
     {
-        private ComplaintListItemModel[] complaints;
+        private Complaint[] complaints;
 
         public ComplaintFilterModelTests()
         {
             complaints = new[]
             {
-                new ComplaintListItemModel { OrderNumber = "2018-000000", Status = ComplaintStatus.Confirmed },
-                new ComplaintListItemModel { OrderNumber = "2018-000011", Status = ComplaintStatus.Confirmed },
-                new ComplaintListItemModel { OrderNumber = "2018-000305", Status = ComplaintStatus.DisputePendingTrial },
-                new ComplaintListItemModel { OrderNumber = "2018-000104", Status = ComplaintStatus.TerminatedTrialConfirmedComplaint },
-                new ComplaintListItemModel { OrderNumber = "2018-000331", Status = ComplaintStatus.Created },
-                new ComplaintListItemModel { OrderNumber = "2018-000502", Status = ComplaintStatus.Created },
-                new ComplaintListItemModel { OrderNumber = "2018-000971", Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000000" } }, Status = ComplaintStatus.Confirmed },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000011"} }, Status = ComplaintStatus.Confirmed },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000305"} }, Status = ComplaintStatus.DisputePendingTrial },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000104"} }, Status = ComplaintStatus.TerminatedTrialConfirmedComplaint },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000331"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000502"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000971"} }, Status = ComplaintStatus.Created },
             };
         }
 
@@ -37,7 +35,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(complaints.AsQueryable());
-            var actual = complaints.Where(c => c.OrderNumber.Contains(orderNum));
+            var actual = complaints.Where(c => c.Request.Order.OrderNumber.Contains(orderNum));
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -71,7 +69,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(complaints.AsQueryable());
-            var actual = complaints.Where(c => c.OrderNumber.Contains(orderNum)
+            var actual = complaints.Where(c => c.Request.Order.OrderNumber.Contains(orderNum)
                 && c.Status == status).Single();
 
             list.Should().OnlyContain(c => c == actual);

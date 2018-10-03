@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class Request
     {
-        private Request() { }
+        public Request() { }
 
         public Request(Ranking ranking, DateTimeOffset expiry)
         {
