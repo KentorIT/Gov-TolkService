@@ -45,8 +45,8 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.RequestRespondedNewInterpreter,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00))),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
                 new Order {
@@ -60,7 +60,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.DeliveryAccepted,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
                 new Order {
@@ -74,7 +74,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.Requested,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
 
@@ -89,7 +89,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
                 new Order {
@@ -103,7 +103,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.RequestResponded,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
                 new Order {
@@ -117,8 +117,8 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00))),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
                 new Order {
@@ -132,7 +132,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.CancelledByCreatorConfirmed,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
                 new Order
@@ -147,7 +147,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Status = BusinessLogic.Enums.OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 }
             };

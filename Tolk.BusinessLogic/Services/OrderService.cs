@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Services
 
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
-                            await CreateRequest(expiredRequest.Order);
+                            await CreateRequest(expiredRequest.Order, expiredRequest);
 
                             trn.Commit();
                         }
@@ -302,12 +302,26 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task CreateRequest(Order order)
+        public async Task CreateRequest(Order order, Request expiredRequest = null)
         {
+            Request request = null;
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
             var newExpiry = CalculateExpiryForNewRequest(order.StartAt);
 
-            var request = order.CreateRequest(rankings, newExpiry);
+            if (expiredRequest != null)
+            {
+                // Check if expired request was created before assignment after 14:00
+                var newRequestTimeLimit = expiredRequest.Order.StartAt.AddDays(-1);
+                newRequestTimeLimit = newRequestTimeLimit.Date + new TimeSpan(14, 00, 00);
+                if (expiredRequest.CreatedAt < newRequestTimeLimit)
+                {
+                    request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
+                }
+            }
+            else
+            {
+                request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
+            }
 
             // Save to get ids for the log message.
             await _tolkDbContext.SaveChangesAsync();
@@ -344,6 +358,8 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
+                order.Status = OrderStatus.NoBrokerAcceptedOrder;
+
                 //There are no more brokers to ask.
                 // Send an email to tell the order creator, and possibly the other user as well...
                 var terminatedOrder = await _tolkDbContext.Orders

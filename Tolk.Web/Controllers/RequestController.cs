@@ -282,7 +282,7 @@ namespace Tolk.Web.Controllers
 
         private void CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, int interpreterId)
         {
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt);
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt, _clock.SwedenNow);
             newRequest.OrderId = request.OrderId;
             newRequest.Status = RequestStatus.AcceptedNewInterpreterAppointed;
             request.Order.Requests.Add(newRequest);
@@ -331,7 +331,7 @@ namespace Tolk.Web.Controllers
                 if (!request.Order.ReplacingOrderId.HasValue)
                 {
                     request.Order.Status = OrderStatus.Requested;
-                    await _orderService.CreateRequest(request.Order);
+                    await _orderService.CreateRequest(request.Order, request);
                     CreateEmailOnRequestAction(request, string.Empty);
                 }
                 else

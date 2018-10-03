@@ -12,17 +12,19 @@ namespace Tolk.BusinessLogic.Entities
     {
         public Request() { }
 
-        public Request(Ranking ranking, DateTimeOffset expiry)
+        public Request(Ranking ranking, DateTimeOffset expiry, DateTimeOffset creationTime)
         {
             Ranking = ranking;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
+            CreatedAt = creationTime;
         }
-        public Request(Request originalRequest, DateTimeOffset expiry)
+        public Request(Request originalRequest, DateTimeOffset expiry, DateTimeOffset creationTime)
         {
             Ranking = originalRequest.Ranking;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
+            CreatedAt = creationTime;
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
             ExpectedTravelCosts = originalRequest.ExpectedTravelCosts;
@@ -50,6 +52,8 @@ namespace Tolk.BusinessLogic.Entities
         /// The time (inclusive) when the request is expired.
         /// </summary>
         public DateTimeOffset ExpiresAt { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
 
         [MaxLength(1000)]
         public string BrokerMessage { get; set; }

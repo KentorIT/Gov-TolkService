@@ -224,7 +224,7 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
                         Order replacementOrder = CreateNewOrder();
-                        var replacingRequest = new Request(request, _orderService.CalculateExpiryForNewRequest(model.TimeRange.StartDateTime));
+                        var replacingRequest = new Request(request, _orderService.CalculateExpiryForNewRequest(model.TimeRange.StartDateTime), _clock.SwedenNow);
                         order.MakeCopy(replacementOrder);
                         model.UpdateOrder(replacementOrder, true);
                         replacementOrder.Requests.Add(replacingRequest);
@@ -412,7 +412,7 @@ namespace Tolk.Web.Controllers
 
                 request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
 
-                await _orderService.CreateRequest(order);
+                await _orderService.CreateRequest(order, request);
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });

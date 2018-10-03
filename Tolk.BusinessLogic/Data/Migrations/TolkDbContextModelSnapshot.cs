@@ -749,6 +749,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("CompetenceLevel");
 
+                    b.Property<DateTimeOffset>("CreatedAt");
+
                     b.Property<string>("DenyMessage")
                         .HasMaxLength(1000);
 
