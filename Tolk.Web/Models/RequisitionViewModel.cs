@@ -21,7 +21,8 @@ namespace Tolk.Web.Models
         public RequisitionStatus Status { get; set; }
 
         [Display(Name = "Annan kontaktperson")]
-        public int? ContactPersonId { get; set; }
+        [DataType(DataType.MultilineText)]
+        public string ContactPerson { get; set; }
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Beskrivning", Description = "Extra information om uppdraget i det fall det behövs")]
@@ -149,6 +150,7 @@ namespace Tolk.Web.Models
                 Message = requisition.Message,
                 Status = requisition.Status,
                 DenyMessage = requisition.DenyMessage,
+                ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,

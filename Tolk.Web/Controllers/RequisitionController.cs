@@ -59,6 +59,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
@@ -91,6 +92,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
@@ -141,7 +143,7 @@ namespace Tolk.Web.Controllers
                     // Save a connection for all of these to Temp
                     foreach (var attachment in previousRequisition.Attachments)
                     {
-                        _dbContext.TemporaryAttachmentGroups.Add( new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey, AttachmentId = attachment.AttachmentId, CreatedAt = _clock.SwedenNow, });
+                        _dbContext.TemporaryAttachmentGroups.Add(new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey, AttachmentId = attachment.AttachmentId, CreatedAt = _clock.SwedenNow, });
                     }
                     _dbContext.SaveChanges();
                     // Set the Files-list and the used FileGroupKey
@@ -245,7 +247,7 @@ namespace Tolk.Web.Controllers
                         {
                             Status = RequisitionStatus.Created,
                             CreatedBy = User.GetUserId(),
-                            CreatedAt = _clock.SwedenNow.DateTime,
+                            CreatedAt = _clock.SwedenNow,
                             ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
                             TravelCosts = model.TravelCosts,
                             Message = model.Message,
@@ -412,11 +414,12 @@ namespace Tolk.Web.Controllers
             {
                 return null;
             }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
-            model.Header = "Fakturainformation";
-            model.UseDisplayHideInfo = false;
-            return model;
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts),
+                Header = "Fakturainformation",
+                UseDisplayHideInfo = false
+            };
         }
 
         private PriceInformationModel GetRequisitionPriceInformation(Request request)
@@ -425,11 +428,12 @@ namespace Tolk.Web.Controllers
             {
                 return null;
             }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
-            model.Header = "Beräknat pris för avropssvar";
-            model.UseDisplayHideInfo = true;
-            return model;
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts),
+                Header = "Beräknat pris för avropssvar",
+                UseDisplayHideInfo = true
+            };
         }
 
     }

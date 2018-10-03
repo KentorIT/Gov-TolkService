@@ -404,11 +404,12 @@ namespace Tolk.Web.Controllers
             {
                 return null;
             }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts);
-            model.Header = "Beräknat pris enligt avropssvar";
-            model.UseDisplayHideInfo = true;
-            return model;
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts),
+                Header = "Beräknat pris enligt avropssvar",
+                UseDisplayHideInfo = true
+            };
         }
 
         private PriceInformationModel GetPriceinformationToDisplay(Order order)
@@ -417,11 +418,12 @@ namespace Tolk.Web.Controllers
             {
                 return null;
             }
-            PriceInformationModel model = new PriceInformationModel();
-            model.PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), null);
-            model.Header = "Beräknat pris enligt ursprungligt avrop";
-            model.UseDisplayHideInfo = true;
-            return model;
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), null),
+                Header = "Beräknat pris enligt ursprungligt avrop",
+                UseDisplayHideInfo = true
+            };
         }
 
         private Order CreateNewOrder()
@@ -430,7 +432,7 @@ namespace Tolk.Web.Controllers
             {
                 Status = OrderStatus.Requested,
                 CreatedBy = User.GetUserId(),
-                CreatedAt = _clock.SwedenNow.DateTime,
+                CreatedAt = _clock.SwedenNow,
                 CustomerOrganisationId = User.GetCustomerOrganisationId(),
                 ImpersonatingCreator = User.TryGetImpersonatorId(),
                 Requirements = new List<OrderRequirement>(),
