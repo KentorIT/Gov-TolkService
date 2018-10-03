@@ -99,14 +99,13 @@
                 </div>
             </fieldset>
             @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
-            <span id="basefile" class="d-none">
-                <input asp-for="Files[0].Id" type="hidden" />
-            </span>
             <form-entry asp-for="Description" />
-
             <button class="btn btn-default" id="send">Skicka</button>
             <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
         </form>
+        <span id="basefile" class="d-none">
+            <input asp-for="Files[0].Id" type="hidden" />
+        </span>
         <span id="baseRequirement" class="d-none">
             <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
             <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
