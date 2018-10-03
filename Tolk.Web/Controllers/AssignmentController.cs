@@ -92,6 +92,8 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder)
+                    .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(oa => oa.Attachment)
+                    .Include(r => r.Attachments).ThenInclude(ra => ra.Attachment)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Where(r => r.RequestId == id).Single();
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)

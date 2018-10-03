@@ -52,11 +52,15 @@ namespace Tolk.Web.Models
 
         public string ReplacedByOrderNumber { get; set; }
 
-        public OrderStatus? ReplacedByOrderStatus{ get; set; }
+        public OrderStatus? ReplacedByOrderStatus { get; set; }
 
         public string ReplacingOrderNumber { get; set; }
 
         public bool AllowRequisitionRegistration { get; set; } = false;
+
+        public AttachmentListModel OrderAttachmentListModel { get; set; }
+
+        public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         #region methods
 
@@ -83,10 +87,35 @@ namespace Tolk.Web.Models
                 AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue && request.Status == RequestStatus.Approved),
                 ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderStatus = request.Order.ReplacedByOrder?.Status,
-                ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber
+                ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber,
+                RequestAttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Title = "Bifogade filer från förmedling",
+                    Files = request.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                },
+                OrderAttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Title = "Bifogade filer från myndighet",
+                    Files = request.Order.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                }
             };
         }
-
         #endregion
     }
 }

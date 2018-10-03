@@ -233,7 +233,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {
-                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) || attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) || attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId()));
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) || attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) || attachment.Orders.Any(o => o.Order.Requests.Any(r => r.InterpreterId == user.GetInterpreterId()));
                     }
                     return false;
                 default:
