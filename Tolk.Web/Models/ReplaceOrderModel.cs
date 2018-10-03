@@ -10,7 +10,7 @@ namespace Tolk.Web.Models
         public TimeRange ReplacedTimeRange { get; set; }
 
         [Display(Name = "Datum och tid för ersättning", Description = "Datum och tid för tolkuppdraget.")]
-        [StayWithinOriginalRange(ErrorMessage = "Updraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange))]
+        [StayWithinOriginalRange(ErrorMessage = "Uppdraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange))]
         public override TimeRange TimeRange { get; set; }
     }
 }

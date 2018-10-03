@@ -510,30 +510,41 @@ namespace Tolk.Web.TagHelpers
                 var stayWithinAttribute = property.CustomAttributes.SingleOrDefault(c => c.AttributeType == typeof(StayWithinOriginalRangeAttribute));
 
                 IDictionary<string, string> extraAttributes = null;
-                if (stayWithinAttribute != null)
-                {
-                    extraAttributes = new Dictionary<string, string>
-                    {
-                        { "data-rule-staywithin",  ".time-range-part" },
-                        { "data-msg-staywithin",  (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value },
-                        { "data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value}
-                    };
-                }
 
                 WriteLabelWithoutFor(writer);
+                var inlineClass = "form-inline";
 
-                writer.WriteLine("<div class=\"form-inline\">");
-
-                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer, extraAttributes: extraAttributes);
-                WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer, extraAttributes: extraAttributes);
+                if (stayWithinAttribute != null)
+                {
+                    inlineClass += " staywithin-fields";
+                    extraAttributes = new Dictionary<string, string>
+                    {
+                        { "data-staywithin-validator", $"{For.Name}_validator" },
+                    };
+                }
+                writer.WriteLine($"<div class=\"{inlineClass}\">");
+                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer, extraAttributes : extraAttributes);
+                WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer, extraAttributes);
                 WriteRightArrowSpan(writer);
-                WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer, extraAttributes: extraAttributes);
+                WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer, extraAttributes);
 
                 writer.WriteLine("</div>"); // form-inline.
 
                 WriteValidation(writer, dateModelExplorer, dateFieldName);
                 WriteValidation(writer, startTimeModelExplorer, startTimeFieldName);
                 WriteValidation(writer, endTimeModelExplorer, endTimeFieldName);
+                if (stayWithinAttribute != null)
+                {
+                    var hiddenValidationField = _htmlGenerator.GenerateHidden(ViewContext, For.ModelExplorer, $"{For.Name}_validator", null, false, null);
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-staywithin", ".time-range-part"));
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value));
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value));
+                    hiddenValidationField.AddCssClass("force-validation");
+                    hiddenValidationField.Attributes.Remove("data-val-required");
+                    hiddenValidationField.WriteTo(writer, _htmlEncoder);
+
+                    WriteValidation(writer, For.ModelExplorer, $"{For.Name}_validator");
+                }
             }
         }
 
