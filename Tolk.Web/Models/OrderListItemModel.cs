@@ -18,6 +18,8 @@ namespace Tolk.Web.Models
 
         public OrderStatus Status { get; set; }
 
+        public string CreatorName { get; set; } 
+
         public string BrokerName { get; set; }
 
         public string OrderNumber { get; set; }

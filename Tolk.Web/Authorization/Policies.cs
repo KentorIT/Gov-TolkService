@@ -176,7 +176,9 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == userId;
+                    return user.IsInRole(Roles.SuperUser) ? 
+                        order.CustomerOrganisationId == user.GetCustomerOrganisationId() : 
+                        order.CreatedBy == userId || order.ContactPersonId == userId;
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -188,7 +190,9 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return requisition.Request.Order.CreatedBy == userId ||
+                        return user.IsInRole(Roles.SuperUser) ?
+                            requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
+                            requisition.Request.Order.CreatedBy == userId ||
                             requisition.Request.Order.ContactPersonId == userId;
                     }
                     return false;
@@ -203,7 +207,9 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return request.Order.CreatedBy == userId;
+                        return user.IsInRole(Roles.SuperUser) ?
+                            request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
+                            request.Order.CreatedBy == userId;
                     }
                     return false;
                 case Complaint complaint:
@@ -213,7 +219,9 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.Request.Order.CreatedBy == userId || complaint.Request.Order.ContactPersonId == userId;
+                        return user.IsInRole(Roles.SuperUser) ?
+                            complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() : 
+                            complaint.Request.Order.CreatedBy == userId || complaint.Request.Order.ContactPersonId == userId;
                     }
                     return false;
                 case Attachment attachment:
@@ -227,9 +235,16 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
+                        if (user.IsInRole(Roles.SuperUser))
+                        {
+                            var customerOrganisationId = user.GetCustomerOrganisationId();
+                            return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CustomerOrganisationId == customerOrganisationId) || 
+                                attachment.Requests.Any(a => a.Request.Order.CustomerOrganisationId == customerOrganisationId);
+                        }
+                        else
                         return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == userId ||
-                        a.Requisition.Request.Order.ContactPersonId == userId) || attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
-                        a.Request.Order.ContactPersonId == userId) || attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
+                            a.Requisition.Request.Order.ContactPersonId == userId) || attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
+                            a.Request.Order.ContactPersonId == userId);
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {

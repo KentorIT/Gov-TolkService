@@ -171,23 +171,29 @@ namespace Tolk.Web.Controllers
             var customerId = User.TryGetCustomerOrganisationId();
             var interpreterId = User.TryGetInterpreterId();
             var brokerId = User.TryGetBrokerId();
-            bool isCustomer = false;
+            var userId = User.GetUserId();
             if (customerId.HasValue)
             {
-                if (!model.FilterByContact.HasValue)
+                if (User.IsInRole(Roles.SuperUser))
                 {
-                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId() ||
-                        r.Request.Order.ContactPersonId == User.GetUserId());
-                }
-                else if (model.FilterByContact.Value)
-                {
-                    requisitions = requisitions.Where(r => r.Request.Order.ContactPersonId == User.GetUserId());
+                    requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerId);
                 }
                 else
                 {
-                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == User.GetUserId());
+                    if (!model.FilterByContact.HasValue)
+                    {
+                        requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId ||
+                            r.Request.Order.ContactPersonId == userId);
+                    }
+                    else if (model.FilterByContact.Value)
+                    {
+                        requisitions = requisitions.Where(r => r.Request.Order.ContactPersonId == userId);
+                    }
+                    else
+                    {
+                        requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId);
+                    }
                 }
-                isCustomer = true;
             }
             else if (brokerId.HasValue)
             {
@@ -208,7 +214,7 @@ namespace Tolk.Web.Controllers
                 requisitions = model.Apply(requisitions);
             }
 
-            model.IsCustomer = isCustomer;
+            model.IsCustomer = customerId.HasValue;
 
             return View(
                 new RequisitionListModel
@@ -222,7 +228,9 @@ namespace Tolk.Web.Controllers
                         Start = r.Request.Order.StartAt,
                         End = r.Request.Order.EndAt,
                         Status = r.Status,
-                        Action = isCustomer && r.Status == RequisitionStatus.Created ? nameof(Process) : nameof(View),
+                        Action = customerId.HasValue && r.Status == RequisitionStatus.Created && 
+                            (r.Request.Order.CreatedBy == userId ||
+                             r.Request.Order.ContactPersonId == userId)  ? nameof(Process) : nameof(View),
                     })
                 });
         }

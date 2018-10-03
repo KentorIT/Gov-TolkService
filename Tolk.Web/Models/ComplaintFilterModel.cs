@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
@@ -9,20 +10,24 @@ namespace Tolk.Web.Models
         [Display(Name = "Avrops-ID")]
         public string OrderNumber { get; set; }
 
+        [Display(Name = "Status")]
         public ComplaintStatus? Status { get; set; }
 
-        internal IQueryable<ComplaintListItemModel> Apply(IQueryable<ComplaintListItemModel> items)
+        [Display(Name = "Skapad av")]
+        public int? CustomerContactId { get; set; }
+
+        public bool IsCustomerSuperUser { get; set; }
+
+        internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
             // OrderNumber
-            items = !string.IsNullOrWhiteSpace(OrderNumber)
-                ? items.Where(i => i.OrderNumber.Contains(OrderNumber))
-                : items;
+            items = !string.IsNullOrWhiteSpace(OrderNumber) ? 
+                items.Where(i => i.Request.Order.OrderNumber.Contains(OrderNumber)) : 
+                items;
             // Status
-            if (Status.HasValue)
-            {
-                items = items.Where(r => r.Status == Status);
-            }
+            items = Status.HasValue ? items.Where(c => c.Status == Status) : items;
 
+            items = CustomerContactId.HasValue ? items.Where(c => c.CreatedBy == CustomerContactId) : items;
             return items;
         }
     }

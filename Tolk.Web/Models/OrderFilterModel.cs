@@ -32,16 +32,24 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public int? BrokerId { get; set; }
 
+        [Display(Name = "Skapad av")]
+        public int? CreatedBy { get; set; }
+
+        public bool IsSuperUser { get; set; }
+
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
             orders = !string.IsNullOrWhiteSpace(OrderNumber) 
                 ? orders.Where(o => o.OrderNumber.Contains(OrderNumber)) 
                 : orders;
             orders = RegionId.HasValue 
-                ? orders.Where(o => o.Region.RegionId == RegionId) 
+                ? orders.Where(o => o.RegionId == RegionId) 
                 : orders;
             orders = LanguageId.HasValue 
-                ? orders.Where(o => o.Language.LanguageId == LanguageId) 
+                ? orders.Where(o => o.LanguageId == LanguageId) 
+                : orders;
+            orders = CreatedBy.HasValue
+                ? orders.Where(o => o.CreatedBy == CreatedBy)
                 : orders;
             orders = Status.HasValue 
                 ? Status.Value == OrderStatus.ToBeProcessedByCustomer 

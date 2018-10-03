@@ -98,32 +98,46 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(ComplaintFilterModel model)
         {
-            bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
+            var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
-            var items = _dbContext.Complaints.Include(c => c.Request)
-                        .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId || 
-                            c.CreatedBy == User.GetUserId())
-                        .Select(c => new ComplaintListItemModel
-                        {
-                            ComplaintId = c.ComplaintId,
-                            BrokerName = c.Request.Ranking.Broker.Name,
-                            CustomerName = c.Request.Order.CustomerOrganisation.Name,
-                            ComplaintType = c.ComplaintType,
-                            CreatedAt = c.CreatedAt,
-                            OrderNumber = c.Request.Order.OrderNumber,
-                            RegionName = c.Request.Order.Region.Name,
-                            Status = c.Status,
-                            Action = nameof(View)
-                        });
+            var items = _dbContext.Complaints
+                .Include(c => c.Request)
+                    .ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(c => c.Request)
+                    .ThenInclude(r => r.Order).ThenInclude(o => o.Region)
+                .Include(c => c.Request)
+                    .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
+                     c.Request.Order.CustomerOrganisationId == customerId);
             // Filters
+            if (model == null)
+            {
+                model = new ComplaintFilterModel();
+            }
+            if (!User.IsInRole(Roles.SuperUser) && customerId.HasValue)
+            {
+                model.CustomerContactId = User.GetUserId();
+            }
             if (model != null)
             {
                 items = model.Apply(items);
             }
+            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser);
             return View(
                 new ComplaintListModel
                 {
-                    Items = items,
+                    Items = items.Select(c => new ComplaintListItemModel
+                    {
+                        ComplaintId = c.ComplaintId,
+                        BrokerName = c.Request.Ranking.Broker.Name,
+                        CustomerName = c.Request.Order.CustomerOrganisation.Name,
+                        ComplaintType = c.ComplaintType,
+                        CreatedAt = c.CreatedAt,
+                        OrderNumber = c.Request.Order.OrderNumber,
+                        RegionName = c.Request.Order.Region.Name,
+                        Status = c.Status,
+                        Action = nameof(View)
+                    }),
                     FilterModel = model
                 });
         }

@@ -5,12 +5,18 @@
     <h4>Filtrera</h4>
     <form method="get" class="filter-form container do-not-check-dirty">
         <div class="row">
-            <div class="col-xs-2">
+            <div class="col-xs-3">
                 <form-entry asp-for="OrderNumber" />
             </div>
             <div class="col-xs-3">
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.ComplaintStatuses" Class="allow-clear" />
             </div>
+            @if (Model.IsCustomerSuperUser)
+            {
+                <div class="col-xs-3">
+                    <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
+                </div>
+            }
         </div>
     </form>
 </div>

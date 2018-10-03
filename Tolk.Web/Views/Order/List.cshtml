@@ -16,6 +16,10 @@
                     <thead>
                         <tr>
                             <th>AvropsID</th>
+                            @if (Model.FilterModel.IsSuperUser)
+                            {
+                                <th>Skapad av</th>
+                            }
                             <th>Region</th>
                             <th>Språk</th>
                             <th>Start</th>
@@ -27,15 +31,19 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
-                                <td>@item.OrderNumber</td>
-                                <td>@item.RegionName</td>
-                                <td>@item.Language</td>
-                                <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@EnumHelper.GetDescription(item.Status)</td>
-                                <td>@item.BrokerName</td>
-                            </tr>
+                        <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
+                            <td>@item.OrderNumber</td>
+                            @if (Model.FilterModel.IsSuperUser)
+                            {
+                                <td>@item.CreatorName</td>
+                            }
+                            <td>@item.RegionName</td>
+                            <td>@item.Language</td>
+                            <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@EnumHelper.GetDescription(item.Status)</td>
+                            <td>@item.BrokerName</td>
+                        </tr>
                         }
                     </tbody>
                 </table>

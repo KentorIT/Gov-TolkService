@@ -60,17 +60,29 @@ namespace Tolk.Web.Controllers
         {
             var orders = _dbContext.Orders
                 .Include(o => o.Language)
+                .Include(o => o.CreatedByUser)
                 .Include(o => o.Region)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Ranking)
                     .ThenInclude(r => r.Broker)
-                .Where(o => o.CreatedBy == User.GetUserId());
+                .Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
+            var isSuperUser = User.IsInRole(Roles.SuperUser);
+            if (!isSuperUser)
+            {
+                orders = orders.Where(o => o.CreatedBy == User.GetUserId());
+            }
 
             // Filters
             if (model != null)
             {
                 orders = model.Apply(orders);
             }
+            else
+            {
+                model = new OrderFilterModel();
+            }
+
+            model.IsSuperUser = isSuperUser;
 
             return View(
                 new OrderListModel
@@ -85,6 +97,7 @@ namespace Tolk.Web.Controllers
                         Start = o.StartAt,
                         End = o.EndAt,
                         Status = o.Status,
+                        CreatorName = o.CreatedByUser.FullName,
                         BrokerName = o.Requests.Where(r =>
                             r.Status == RequestStatus.Created ||
                             r.Status == RequestStatus.Received ||

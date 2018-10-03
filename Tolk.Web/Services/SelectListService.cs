@@ -244,6 +244,21 @@ namespace Tolk.Web.Services
             }
         }
 
+        public IEnumerable<SelectListItem> CustomerUsers
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                return _dbContext.Users
+                    .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId())
+                    .Select(u => new SelectListItem
+                    {
+                        Text = u.UserName,
+                        Value = u.Id.ToString(),
+                    }).ToList();
+            }
+        }
+
         public const int NewInterpreterId = -1;
 
         public IEnumerable<SelectListItem> GetInterpreters(int brokerId)
