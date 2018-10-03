@@ -30,7 +30,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Uppdraget har annulerats via reklamation")]
         [Obsolete("Inte använd än")]
         OrderAnulled = 8,
-        [Description("Alla förmedlingar nekade uppdraget")]
+        [Description("Ingen förmedling kunde tillsätta uppdraget")]
         NoBrokerAcceptedOrder = 9,
         [Description("Tolktillsättning finns (Ny tolk)")]
         RequestRespondedNewInterpreter = 10,
