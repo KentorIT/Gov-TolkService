@@ -302,7 +302,7 @@ namespace Tolk.Web.Controllers
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
 
-                    await _orderService.CreateRequest(order);
+                    await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
                     _orderService.CreatePriceInformation(order);
 
                     _dbContext.SaveChanges();

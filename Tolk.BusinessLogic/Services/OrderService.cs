@@ -302,11 +302,11 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task CreateRequest(Order order, Request expiredRequest = null)
+        public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
         {
             Request request = null;
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
-            var newExpiry = CalculateExpiryForNewRequest(order.StartAt);
+            var newExpiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
 
             if (expiredRequest != null)
             {
