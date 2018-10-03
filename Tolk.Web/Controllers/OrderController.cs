@@ -139,12 +139,14 @@ namespace Tolk.Web.Controllers
                 model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
+                model.ActiveRequestIsAnswered = request?.InterpreterId != null;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
                     model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
                     model.RequestId = request.RequestId;
-                    model.AnsweredBy = request.AnsweringUser.CompleteContactInformation;
+                    model.AnsweredBy = request.AnsweringUser?.CompleteContactInformation;
                     model.ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0;
                     model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
                     model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
@@ -198,6 +200,14 @@ namespace Tolk.Web.Controllers
                 model.ReplacingOrderNumber = order.OrderNumber;
                 model.ReplacingOrderId = replacingOrderId;
                 model.CancelMessage = cancelMessage;
+                //Set the Files-list and the used FileGroupKey
+                List<FileModel> files = order.Attachments.Select(a => new FileModel
+                {
+                    Id = a.Attachment.AttachmentId,
+                    FileName = a.Attachment.FileName,
+                    Size = a.Attachment.Blob.Length
+                }).ToList();
+                model.Files = files.Count() > 0 ? files : null;
                 return View(model);
             }
             return Forbid();
@@ -260,7 +270,7 @@ namespace Tolk.Web.Controllers
                                 $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                                 $"\tTolk: {request.Interpreter.User.FullName}, e-post: {request.Interpreter.User.Email}\n" +
                                 $"\tSvara senast: {replacingRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                                "Detta mail går inte att svara på.",
+                                "Detta mejl går inte att svara på.",
                                 _clock.SwedenNow));
                         }
                         else

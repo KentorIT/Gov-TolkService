@@ -239,12 +239,12 @@ namespace Tolk.Web.Authorization
                         {
                             var customerOrganisationId = user.GetCustomerOrganisationId();
                             return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CustomerOrganisationId == customerOrganisationId) || 
-                                attachment.Requests.Any(a => a.Request.Order.CustomerOrganisationId == customerOrganisationId);
+                                attachment.Requests.Any(a => a.Request.Order.CustomerOrganisationId == customerOrganisationId) || attachment.Orders.Any(oa => oa.Order.CustomerOrganisationId == customerOrganisationId);
                         }
                         else
                         return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CreatedBy == userId ||
                             a.Requisition.Request.Order.ContactPersonId == userId) || attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
-                            a.Request.Order.ContactPersonId == userId);
+                            a.Request.Order.ContactPersonId == userId) || attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {

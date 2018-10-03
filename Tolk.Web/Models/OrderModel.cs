@@ -215,7 +215,7 @@ namespace Tolk.Web.Models
 
         public int? ComplaintId { get; set; }
 
-        public bool ActiveRequestIsAnswered => (RequestStatus != null && RequestStatus != BusinessLogic.Enums.RequestStatus.Created && RequestStatus != BusinessLogic.Enums.RequestStatus.Received);
+        public bool ActiveRequestIsAnswered { get; set; }
 
         [Display(Name = "Reklamationens status")]
         public ComplaintStatus? ComplaintStatus { get; set; }
