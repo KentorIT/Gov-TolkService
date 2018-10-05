@@ -33,31 +33,31 @@ namespace Tolk.Web.Models
 
         public RequestStatus? Status { get; set; }
 
-        internal IQueryable<RequestListItemModel> Apply(IQueryable<RequestListItemModel> items)
+        internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
             items = !string.IsNullOrWhiteSpace(OrderNumber)
-                ? items.Where(i => i.OrderNumber.Contains(OrderNumber))
+                ? items.Where(i => i.Order.OrderNumber.Contains(OrderNumber))
                 : items;
             items = RegionId.HasValue
-                ? items.Where(i => i.RegionName == Region.Regions.Single(r => r.RegionId == RegionId).Name)
+                ? items.Where(i => i.Order.RegionId == RegionId)
                 : items;
             items = CustomerOrganizationId.HasValue
-                ? items.Where(i => CustomerOrganizationId == i.CustomerId)
+                ? items.Where(i => i.Order.CustomerOrganisationId == CustomerOrganizationId)
                 : items;
             items = LanguageId.HasValue
-                ? items.Where(i => LanguageId == i.LanguageId)
+                ? items.Where(i => LanguageId == i.Order.LanguageId)
                 : items;
             items = OrderDateRange?.Start != null
-                ? items.Where(i => i.Start.Date >= OrderDateRange.Start)
+                ? items.Where(i => i.Order.StartAt.Date >= OrderDateRange.Start)
                 : items;
             items = OrderDateRange?.End != null
-                ? items.Where(i => i.Start.Date <= OrderDateRange.End)
+                ? items.Where(i => i.Order.StartAt.Date <= OrderDateRange.End)
                 : items;
             items = AnswerByDateRange?.Start != null
-                ? items.Where(i => i.ExpiresAt.Value.Date >= AnswerByDateRange.Start)
+                ? items.Where(i => i.ExpiresAt.Date >= AnswerByDateRange.Start)
                 : items;
             items = AnswerByDateRange?.End != null
-                ? items.Where(i => i.ExpiresAt.Value.Date <= AnswerByDateRange.End)
+                ? items.Where(i => i.ExpiresAt.Date <= AnswerByDateRange.End)
                 : items;
             items = Status.HasValue
                 ? Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == Status)

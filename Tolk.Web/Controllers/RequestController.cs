@@ -54,11 +54,8 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(RequestFilterModel model)
         {
-            bool isCustomer = User.TryGetCustomerOrganisationId().HasValue;
-
             var items = _dbContext.Requests.Include(r => r.Order)
-                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId() && r.Status != RequestStatus.InterpreterReplaced)
-                        .SelectRequestListItemModel(isCustomer);
+                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId() && r.Status != RequestStatus.InterpreterReplaced);
             // Filters
             if (model != null)
             {
@@ -68,7 +65,7 @@ namespace Tolk.Web.Controllers
             return View(
                 new RequestListModel
                 {
-                    Items = items,
+                    Items = items.SelectRequestListItemModel(),
                     FilterModel = model
                 });
         }

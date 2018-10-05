@@ -1,10 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Controllers;
@@ -24,7 +19,7 @@ namespace Tolk.Web.Models
         public string RegionName { get; set; }
 
         public int RegionId { get; set; }
-    
+
         public string CustomerName { get; set; }
 
         public int CustomerId { get; set; }
@@ -42,8 +37,7 @@ namespace Tolk.Web.Models
 
     public static class IQueryableOfRequestExtensions
     {
-        public static IQueryable<RequestListItemModel> SelectRequestListItemModel(
-            this IQueryable<Request> requests, bool isCustomer)
+        public static IQueryable<RequestListItemModel> SelectRequestListItemModel(this IQueryable<Request> requests)
         {
             return requests.Select(r => new RequestListItemModel
             {
@@ -59,7 +53,7 @@ namespace Tolk.Web.Models
                 End = r.Order.EndAt,
                 ExpiresAt = r.ExpiresAt,
                 Status = r.Status,
-                Action = ((!isCustomer && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) || (isCustomer && r.Status == RequestStatus.Accepted) ? nameof(RequestController.Process) : nameof(RequestController.View))
+                Action = (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) ? nameof(RequestController.Process) : nameof(RequestController.View)
             });
         }
     }
