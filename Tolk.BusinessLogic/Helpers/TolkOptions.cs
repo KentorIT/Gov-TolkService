@@ -17,6 +17,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableTimeTravel { get; set; }
 
+        public bool RoundPriceDecimals { get; set; }
+
         public int MonthsToApproveComplaints { get; set; }
 
         public int HoursToApproveChangeInterpreterRequests { get; set; }

@@ -248,6 +248,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking)
+                    .Include(r => r.PriceRows)
                     .Single(o => o.RequestId == model.RequestId);
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
@@ -271,9 +272,10 @@ namespace Tolk.Web.Controllers
                             model.SessionEndedAt,
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.BrokerFee,
+                            request.Ranking.RankingId,
                             model.TimeWasteNormalTime,
-                            model.TimeWasteIWHTime
+                            model.TimeWasteIWHTime,
+                            request.PriceRows.OfType<PriceRowBase>().Where(pr => pr.IsBrokerFee == true)
                         );
 
                         foreach (var row in priceInformation.PriceRows)

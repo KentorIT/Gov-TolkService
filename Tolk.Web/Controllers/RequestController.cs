@@ -279,9 +279,11 @@ namespace Tolk.Web.Controllers
 
         private void CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, int interpreterId)
         {
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, _clock.SwedenNow);
-            newRequest.OrderId = request.OrderId;
-            newRequest.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt, _clock.SwedenNow)
+            {
+                OrderId = request.OrderId,
+                Status = RequestStatus.AcceptedNewInterpreterAppointed
+            };
             request.Order.Requests.Add(newRequest);
             _dbContext.SaveChanges();
             newRequest.ReplaceInterpreter(_clock.SwedenNow,
@@ -373,7 +375,7 @@ namespace Tolk.Web.Controllers
                             request.Order.EndAt,
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.BrokerFee);
+                            request.Ranking.RankingId);
         }
 
         private RequestModel GetModel(Request request)

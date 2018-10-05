@@ -7,6 +7,8 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Helpers;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -14,54 +16,75 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
+        private readonly TolkOptions _options;
+        private readonly IMemoryCache _cache;
+
+        private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public PriceCalculationService(TolkDbContext dbContext,
-            ILogger<PriceCalculationService> logger)
+            ILogger<PriceCalculationService> logger,
+            IOptions<TolkOptions> options,
+            IMemoryCache cache = null
+            )
         {
             _logger = logger;
-
             _dbContext = dbContext;
+            _options = options.Value;
+            _cache = cache;
         }
 
-        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, decimal brokerFeePercent, int? timeWasteNormalTime = null, int? timeWasteIWHTime = null)
+        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, int? timeWasteNormalTime = null, int? timeWasteIWHTime = null, IEnumerable<PriceRowBase> brokerFeeToUse = null)
         {
-            //TODO: Should get the prices from the creation date, not the start date. At least on order creation...
             var prices = _dbContext.PriceListRows
                 .Where(r =>
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
             var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
-            minutesPerPriceType.AddRange(GetPriceRowsBrokerFee(startAt, endAt, prices, brokerFeePercent));
+            minutesPerPriceType.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
 
             var priceInformation = new PriceInformation
             {
                 PriceRows = minutesPerPriceType
             };
-
             return priceInformation;
         }
 
-        private static IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, decimal brokerFeePercent)
+        private IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, IEnumerable<PriceRowBase> brokerFeeToUse = null)
+        {
+            if (brokerFeeToUse != null)
+            {
+                foreach (var bf in brokerFeeToUse)
+                {
+                    yield return new PriceRow { StartAt = bf.StartAt, EndAt = bf.EndAt, PriceRowType = PriceRowType.BasePrice, Quantity = 1, Price = bf.TotalPrice, PriceListRowId = bf.PriceListRowId, IsBrokerFee = bf.IsBrokerFee };
+                }
+            }
+            else
+            {
+                int days = GetNoOfDays(startAt, endAt);
+                //One broker fee per calender day.
+                var priceRow = BrokerFeePriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate < startAt && br.EndDate > startAt).Single();
+                for (int i = 1; i <= days; i++)
+                {
+                    yield return new PriceRow
+                    {
+                        StartAt = startAt.Date.AddDays(i - 1).ToDateTimeOffsetSweden(),
+                        EndAt = startAt.Date.AddDays(i).ToDateTimeOffsetSweden(),
+                        PriceRowType = PriceRowType.BasePrice,
+                        Quantity = 1,
+                        Price = priceRow.PriceToUse,
+                        PriceListRowId = priceRow.PriceListRowId,
+                        IsBrokerFee = true
+                    };
+                }
+            }
+        }
+
+        private int GetNoOfDays(DateTimeOffset startAt, DateTimeOffset endAt)
         {
             int days = (endAt.Date - startAt.Date).Days + 1;
             days -= endAt.TimeOfDay == TimeSpan.Zero ? 1 : 0; //if ends at midnight no extra day
-
-            //The broker fee should be calculated from baseBrice maxMinutes 60. One broker fee per calender day.
-            var brokerFee = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes == 60);
-            for (int i = 1; i <= days; i++)
-            {
-                yield return new PriceRow
-                {
-                    StartAt = startAt.Date.AddDays(i - 1).ToDateTimeOffsetSweden(),
-                    EndAt = startAt.Date.AddDays(i).ToDateTimeOffsetSweden(),
-                    PriceRowType = PriceRowType.BasePrice,
-                    Quantity = 1,
-                    Price = brokerFee.Price * brokerFeePercent,
-                    PriceListRowId = brokerFee.PriceListRowId,
-                    IsBrokerFee = true
-                };
-            }
+            return days;
         }
 
         private static PriceRow GetPriceInformation(DateTimeOffset startAt, DateTimeOffset endAt, PriceRowType rowType, List<PriceListRow> prices)
@@ -255,6 +278,36 @@ namespace Tolk.BusinessLogic.Services
                 default:
                     return $"{noOfHours - 0.5}-{noOfHours}";
             }
+        }
+
+        public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
+        {
+            get
+            {
+                if (_cache == null)
+                {
+                    return GetBrokerFeePriceList();
+                }
+                if (!_cache.TryGetValue(brokerFeesCacheKey, out IEnumerable<PriceInformationBrokerFee> brokerFees))
+                {
+                    brokerFees = GetBrokerFeePriceList();
+                    _cache.Set(brokerFeesCacheKey, brokerFees);
+                }
+                return brokerFees;
+            }
+        }
+
+        private List<PriceInformationBrokerFee> GetBrokerFeePriceList()
+        {
+            List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceRowType == PriceRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
+            List<Ranking> ranks = _dbContext.Rankings.ToList();
+
+            List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
+            foreach (var item in prices)
+            {
+                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId, StartDatePriceList = item.StartDate, RoundDecimals = _options.RoundPriceDecimals }).ToList());
+            }
+            return priceListBrokerFee;
         }
     }
 }

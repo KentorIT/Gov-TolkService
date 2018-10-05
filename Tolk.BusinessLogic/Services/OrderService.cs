@@ -389,7 +389,7 @@ namespace Tolk.BusinessLogic.Services
                     r.Status == RequestStatus.Created ||
                     r.Status == RequestStatus.Accepted ||
                     r.Status == RequestStatus.Received ||
-                    r.Status == RequestStatus.Approved).Ranking.BrokerFee
+                    r.Status == RequestStatus.Approved).Ranking.RankingId
                 );
             foreach (var row in priceInformation.PriceRows)
             {
