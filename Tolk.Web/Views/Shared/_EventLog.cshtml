@@ -1,0 +1,32 @@
+﻿@model EventLogModel
+<h3>Händelselogg</h3>
+<div class="table-responsive">
+    @if (Model.Entries.Any())
+    {
+        <table class="table table-striped table-hover clickable-rows-with-action">
+            <thead>
+                <tr>
+                    <th>Tidpunkt</th>
+                    <th>Händelse</th>
+                    <th>Aktör</th>
+                    <th>Organisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.Entries)
+                {
+                    <tr data-id="@entry.EventLogEntryId">
+                        <td>@entry.Timestamp</td>
+                        <td>@entry.EventDetails</td>
+                        <td>@entry.Actor</td>
+                        <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Inga händelser registrerade på detta avrop</p>
+    }
+</div>

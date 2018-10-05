@@ -179,6 +179,21 @@ namespace Tolk.Web.Controllers
                         }).ToList()
                     };
                 }
+                model.EventLog = new EventLogModel
+                {
+                    Entries = _dbContext.EventLog
+                        .Where(e =>
+                            (e.ObjectType == ObjectType.Order && e.ObjectId == model.OrderId))
+                        .Select(e => new EventLogEntryModel
+                        {
+                            EventLogEntryId = e.EventLogEntryId,
+                            Timestamp = e.Timestamp,
+                            EventDetails = e.EventDetails,
+                            Actor = e.Actor,
+                            Organization = e.Organization,
+                        })
+                        .OrderBy(e => e.Timestamp),
+                };
                 return View(model);
             }
             return Forbid();

@@ -227,6 +227,8 @@ namespace Tolk.Web.Models
 
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
+        public EventLogModel EventLog { get; set; }
+
         public List<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {
             get
