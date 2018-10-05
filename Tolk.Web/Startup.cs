@@ -50,6 +50,7 @@ namespace Tolk.Web
             services.AddScoped<ISecurityStampValidator, TolkSecurityStampValidator>();
 
             services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
+            services.AddScoped<EventLogService>();
 
             services.ConfigureApplicationCookie(opt =>
             {

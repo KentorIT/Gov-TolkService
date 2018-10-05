@@ -32,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly EventLogService _eventLog;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -42,7 +43,8 @@ namespace Tolk.Web.Controllers
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
             ILogger<OrderController> logger,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            EventLogService eventLog
             )
         {
             _dbContext = dbContext;
@@ -54,6 +56,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _logger = logger;
             _options = options.Value;
+            _eventLog = eventLog;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -326,6 +329,14 @@ namespace Tolk.Web.Controllers
 
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
+                    _dbContext.SaveChanges(); // Save changes to get id for event log
+                    _eventLog.Push(order.OrderId, ObjectType.Order, "Avrop skapad", 
+                        _dbContext.Users
+                            .Where(u => u.Id == order.CreatedBy)
+                            .Single().FullName, 
+                        _dbContext.CustomerOrganisations
+                            .Where(o => o.CustomerOrganisationId == order.CustomerOrganisationId)
+                            .Single().Name);
 
                     await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
                     _orderService.CreatePriceInformation(order);

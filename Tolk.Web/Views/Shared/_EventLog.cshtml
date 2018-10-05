@@ -3,7 +3,7 @@
 <div class="table-responsive">
     @if (Model.Entries.Any())
     {
-        <table class="table table-striped table-hover clickable-rows-with-action">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Tidpunkt</th>
@@ -16,7 +16,7 @@
                 @foreach (var entry in Model.Entries)
                 {
                     <tr data-id="@entry.EventLogEntryId">
-                        <td>@entry.Timestamp</td>
+                        <td>@entry.Timestamp.ToString("yyyy-MM-dd hh:mm")</td>
                         <td>@entry.EventDetails</td>
                         <td>@entry.Actor</td>
                         <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
@@ -27,6 +27,6 @@
     }
     else
     {
-        <p>Inga händelser registrerade på detta avrop</p>
+        <p>Inga händelser registrerade</p>
     }
 </div>

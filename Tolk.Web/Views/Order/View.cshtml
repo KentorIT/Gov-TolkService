@@ -9,7 +9,7 @@
 }
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
         <h2>@ViewData["Title"]</h2>
         <display-entry asp-for="OrderNumber" />
         @if (Model.ReplacingOrderId.HasValue)
@@ -191,8 +191,6 @@
                 }
             }
         }
-    </div>
-    <div class="col-md-6">
         @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
 </div>
