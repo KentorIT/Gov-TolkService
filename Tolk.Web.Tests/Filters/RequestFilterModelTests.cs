@@ -12,7 +12,7 @@ namespace Tolk.Web.Tests.Filters
 {
     public class RequestFilterModelTests
     {
-        private RequestListItemModel[] requests;
+        private Request[] requests;
 
         private Language[] mockLanguages = MockEntities.MockLanguages();
 
@@ -20,7 +20,7 @@ namespace Tolk.Web.Tests.Filters
         {
             var mockRankings = MockEntities.MockRankings();
             var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
-            requests = MockEntities.MockRequestListItems(mockOrders);
+            requests = MockEntities.MockRequests(mockOrders);
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.OrderNumber.Contains(orderNum));
+            var actual = requests.Where(r => r.Order.OrderNumber.Contains(orderNum));
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -49,7 +49,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.RegionId == region.RegionId);
+            var actual = requests.Where(r => r.Order.RegionId == region.RegionId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -65,7 +65,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.CustomerId == customerId);
+            var actual = requests.Where(r => r.Order.CustomerOrganisationId == customerId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -81,7 +81,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.LanguageId == language.LanguageId);
+            var actual = requests.Where(r => r.Order.LanguageId == language.LanguageId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -144,8 +144,8 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.RegionId == region.RegionId
-                && r.LanguageId == language.LanguageId
+            var actual = requests.Where(r => r.Order.RegionId == region.RegionId
+                && r.Order.LanguageId == language.LanguageId
                 && r.Status == status);
 
             list.Should().HaveCount(actual.Count());

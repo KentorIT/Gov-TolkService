@@ -176,79 +176,43 @@ namespace Tolk.Web.Tests.TestHelpers
             return mockRequests.ToArray();
         }
 
-        internal static RequestListItemModel[] MockRequestListItems(Order[] mockOrders)
+        internal static Request[] MockRequests(Order[] mockOrders)
         {
             return new[]
             {
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[3].OrderNumber,
-                    RegionId = mockOrders[3].Region.RegionId,
-                    RegionName = mockOrders[3].Region.Name,
-                    CustomerId = mockOrders[3].CustomerOrganisationId,
-                    LanguageId = mockOrders[3].Language.LanguageId,
-                    Start = mockOrders[3].StartAt,
-                    End = mockOrders[3].EndAt,
+                    Order = mockOrders[3],
                     ExpiresAt = mockOrders[3].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.Accepted
                 },
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[0].OrderNumber,
-                    RegionId = mockOrders[0].Region.RegionId,
-                    RegionName = mockOrders[0].Region.Name,
-                    CustomerId = mockOrders[0].CustomerOrganisationId,
-                    LanguageId = mockOrders[0].Language.LanguageId,
-                    Start = mockOrders[0].StartAt,
-                    End = mockOrders[0].EndAt,
+                    Order = mockOrders[0],
                     ExpiresAt = mockOrders[0].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced
                 },
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[1].OrderNumber,
-                    RegionId = mockOrders[1].Region.RegionId,
-                    RegionName = mockOrders[1].Region.Name,
-                    CustomerId = mockOrders[1].CustomerOrganisationId,
-                    LanguageId = mockOrders[1].Language.LanguageId,
-                    Start = mockOrders[1].StartAt,
-                    End = mockOrders[1].EndAt,
+                    Order = mockOrders[1],
                     ExpiresAt = mockOrders[1].StartAt.AddDays(-3d),
                     Status = BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed
                 },
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[2].OrderNumber,
-                    RegionId = mockOrders[2].Region.RegionId,
-                    RegionName = mockOrders[2].Region.Name,
-                    CustomerId = mockOrders[2].CustomerOrganisationId,
-                    LanguageId = mockOrders[2].Language.LanguageId,
-                    Start = mockOrders[2].StartAt,
-                    End = mockOrders[2].EndAt,
+                    Order = mockOrders[2],
                     ExpiresAt = mockOrders[2].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.ToBeProcessedByBroker
                 },
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[4].OrderNumber,
-                    RegionId = mockOrders[4].Region.RegionId,
-                    RegionName = mockOrders[4].Region.Name,
-                    CustomerId = mockOrders[4].CustomerOrganisationId,
-                    LanguageId = mockOrders[4].Language.LanguageId,
-                    Start = mockOrders[4].StartAt,
-                    End = mockOrders[4].EndAt,
+                    Order = mockOrders[4],
                     ExpiresAt = mockOrders[4].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.Approved
                 },
-                new RequestListItemModel
+                new Request
                 {
-                    OrderNumber = mockOrders[5].OrderNumber,
-                    RegionId = mockOrders[5].Region.RegionId,
-                    RegionName = mockOrders[5].Region.Name,
-                    CustomerId = mockOrders[5].CustomerOrganisationId,
-                    LanguageId = mockOrders[5].Language.LanguageId,
-                    Start = mockOrders[5].StartAt,
-                    End = mockOrders[5].EndAt,
+                    Order = mockOrders[5],
                     ExpiresAt = mockOrders[5].StartAt.AddDays(-10),
                     Status = BusinessLogic.Enums.RequestStatus.Accepted
                 },
