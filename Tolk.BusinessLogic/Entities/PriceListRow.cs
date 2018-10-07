@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Entities
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 
-        public int PriceListRowId { get; set; }
+        public int? PriceListRowId { get; set; }
 
         public PriceListType PriceListType { get; set; }
 

@@ -275,7 +275,7 @@ namespace Tolk.Web.Controllers
                             request.Ranking.RankingId,
                             model.TimeWasteNormalTime,
                             model.TimeWasteIWHTime,
-                            request.PriceRows.OfType<PriceRowBase>().Where(pr => pr.IsBrokerFee == true)
+                            request.PriceRows.OfType<PriceRowBase>().Where(pr => pr.PriceRowType == PriceRowType.BrokerFee)
                         );
 
                         foreach (var row in priceInformation.PriceRows)
@@ -284,9 +284,10 @@ namespace Tolk.Web.Controllers
                             {
                                 StartAt = row.StartAt,
                                 EndAt = row.EndAt,
-                                IsBrokerFee = row.IsBrokerFee,
+                                PriceRowType = row.PriceRowType,
                                 PriceListRowId = row.PriceListRowId,
-                                TotalPrice = row.TotalPrice
+                                Price = row.Price,
+                                Quantity = row.Quantity
                             });
                         }
                         foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == model.FileGroupKey))
@@ -411,7 +412,7 @@ namespace Tolk.Web.Controllers
                 invoiceInfo += $"{priceInfo.TaxTypeAndCompetenceLevelDescription}\n\n";
                 foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
                 {
-                    invoiceInfo += $"{dpr.ShortDescription}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
+                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
                 }
                 invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
                 return invoiceInfo;

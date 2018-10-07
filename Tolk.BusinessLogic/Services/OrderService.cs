@@ -397,9 +397,10 @@ namespace Tolk.BusinessLogic.Services
                 {
                     StartAt = row.StartAt,
                     EndAt = row.EndAt,
-                    IsBrokerFee = row.IsBrokerFee,
+                    PriceRowType = row.PriceRowType,
                     PriceListRowId = row.PriceListRowId,
-                    TotalPrice = row.TotalPrice
+                    Price = row.Price, 
+                    Quantity = row.Quantity
                 });
             }
             _tolkDbContext.SaveChanges();

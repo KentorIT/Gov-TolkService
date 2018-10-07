@@ -217,9 +217,10 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     StartAt = row.StartAt,
                     EndAt = row.EndAt,
-                    IsBrokerFee = row.IsBrokerFee,
+                    PriceRowType = row.PriceRowType,
                     PriceListRowId = row.PriceListRowId,
-                    TotalPrice = row.TotalPrice
+                    Price = row.Price,
+                    Quantity = row.Quantity
                 });
             }
 
@@ -262,9 +263,10 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     StartAt = row.StartAt,
                     EndAt = row.EndAt,
-                    IsBrokerFee = row.IsBrokerFee,
+                    PriceRowType = PriceRowType.BrokerFee,
                     PriceListRowId = row.PriceListRowId,
-                    TotalPrice = row.TotalPrice
+                    Price = row.Price,
+                    Quantity = row.Quantity
                 });
             }
         }
@@ -309,9 +311,10 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     StartAt = row.StartAt,
                     EndAt = row.EndAt,
-                    IsBrokerFee = row.IsBrokerFee,
+                    PriceRowType = row.PriceRowType,
                     PriceListRowId = row.PriceListRowId,
-                    TotalPrice = row.TotalPrice
+                    Price = row.Price,
+                    Quantity = row.Quantity
                 });
             }
             //if old request already was approved by customer
@@ -382,15 +385,15 @@ namespace Tolk.BusinessLogic.Entities
         }
         private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
         {
-            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.IsBrokerFee).ToList();
+            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();
             return priceRows
                 .Select(p => new RequisitionPriceRow
                 {
                     StartAt = p.StartAt,
                     EndAt = p.EndAt,
-                    IsBrokerFee = p.IsBrokerFee,
+                    PriceRowType = p.PriceRowType,
                     PriceListRowId = p.PriceListRowId,
-                    TotalPrice = p.TotalPrice
+                    Price = p.Price
                 }).ToList();
         }
 

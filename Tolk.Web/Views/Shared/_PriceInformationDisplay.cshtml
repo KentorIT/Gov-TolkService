@@ -19,7 +19,7 @@
                     @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows)
                     {
                         <tr>
-                            <td>@item.ShortDescription</td>
+                            <td>@item.Description</td>
                             <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
                         </tr>
                     }
@@ -48,7 +48,7 @@ else
                 @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows)
                 {
                     <tr>
-                        <td>@item.ShortDescription</td>
+                        <td>@item.Description</td>
                         <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
                     </tr>
                 }

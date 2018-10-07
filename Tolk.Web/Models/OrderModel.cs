@@ -490,9 +490,9 @@ namespace Tolk.Web.Models
                     {
                         StartAt = r.StartAt,
                         EndAt = r.EndAt,
-                        IsBrokerFee = r.IsBrokerFee,
-                        Price = r.TotalPrice,
-                        Quantity = 1,
+                        PriceRowType = r.PriceRowType,
+                        Price = r.Price,
+                        Quantity = r.Quantity,
                         PriceListRowId = r.PriceListRowId,
                     }).ToList()
                 },

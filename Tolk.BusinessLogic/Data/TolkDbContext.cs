@@ -262,6 +262,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<PriceListRow> PriceListRows { get; set; }
 
+        public DbSet<PriceCalculationCharge> PriceCalculationCharges { get; set; }
+
         public DbSet<OutboundEmail> OutboundEmails { get; set; }
 
         public DbSet<Complaint> Complaints { get; set; }

@@ -28,7 +28,18 @@ namespace Tolk.BusinessLogic.Entities
         LostTime = 6,
 
         [Description("Ersättning för tidsspillan per påbörjad halvtimme under obekväm arbetstid")]
-        LostTimeIWH = 7
+        LostTimeIWH = 7,
 
+        [Description("Sociala avgifter")]
+        SocialInsuranceCharge = 8,
+
+        [Description("Förmedlingsavgift")]
+        BrokerFee = 9,
+
+        [Description("Administrativ avgift")]
+        AdministrativeCharge = 10,
+
+        [Description("Reskostnad")]
+        TravelCosts = 11,
     }
 }

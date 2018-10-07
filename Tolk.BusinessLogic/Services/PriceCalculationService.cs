@@ -41,6 +41,7 @@ namespace Tolk.BusinessLogic.Services
                     r.PriceListType == listType &&
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
             var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
+            minutesPerPriceType.Add(GetPriceRowsSocialInsuranceCharge(startAt, endAt, minutesPerPriceType));
             minutesPerPriceType.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
 
             var priceInformation = new PriceInformation
@@ -50,31 +51,38 @@ namespace Tolk.BusinessLogic.Services
             return priceInformation;
         }
 
+        private PriceRow GetPriceRowsSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> minutesPerPriceType)
+        {
+            decimal socialCharge = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == ChargeType.SocialInsuranceCharge && startAt.Date > c.StartDate && endAt.Date < c.EndDate).Charge/100;
+            //Maybe we should check that PriceRowType souldn't be TravelCosts, SocialInsuranceCharge, BrokerFee, AdminFee, but if in this order it would not happen
+            decimal totalPriceForSocialInsuranceCharge = minutesPerPriceType.Sum(m => m.Price);
+            return new PriceRow { StartAt = startAt, EndAt = endAt, Price = socialCharge * totalPriceForSocialInsuranceCharge, Quantity = 1, PriceRowType = PriceRowType.SocialInsuranceCharge };
+        }
+
         private IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, IEnumerable<PriceRowBase> brokerFeeToUse = null)
         {
             if (brokerFeeToUse != null)
             {
                 foreach (var bf in brokerFeeToUse)
                 {
-                    yield return new PriceRow { StartAt = bf.StartAt, EndAt = bf.EndAt, PriceRowType = PriceRowType.BasePrice, Quantity = 1, Price = bf.TotalPrice, PriceListRowId = bf.PriceListRowId, IsBrokerFee = bf.IsBrokerFee };
+                    yield return new PriceRow { StartAt = bf.StartAt, EndAt = bf.EndAt, PriceRowType = PriceRowType.BrokerFee, Quantity = 1, Price = bf.Price, PriceListRowId = bf.PriceListRowId.Value, };
                 }
             }
             else
             {
                 int days = GetNoOfDays(startAt, endAt);
                 //One broker fee per calender day.
-                var priceRow = BrokerFeePriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate < startAt && br.EndDate > startAt).Single();
+                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate < startAt && br.EndDate > startAt);
                 for (int i = 1; i <= days; i++)
                 {
                     yield return new PriceRow
                     {
                         StartAt = startAt.Date.AddDays(i - 1).ToDateTimeOffsetSweden(),
                         EndAt = startAt.Date.AddDays(i).ToDateTimeOffsetSweden(),
-                        PriceRowType = PriceRowType.BasePrice,
+                        PriceRowType = PriceRowType.BrokerFee,
                         Quantity = 1,
                         Price = priceRow.PriceToUse,
-                        PriceListRowId = priceRow.PriceListRowId,
-                        IsBrokerFee = true
+                        PriceListRowId = priceRow.PriceListRowId
                     };
                 }
             }
@@ -101,7 +109,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 priceTime.Quantity++;
             }
-            priceTime.PriceListRowId = priceInfo.PriceListRowId;
+            priceTime.PriceListRowId = priceInfo.PriceListRowId.Value;
             priceTime.Price = priceInfo.Price;
             return priceTime;
         }
@@ -121,7 +129,7 @@ namespace Tolk.BusinessLogic.Services
                     EndAt = extraTimeStartsAt,
                     PriceRowType = PriceRowType.BasePrice,
                     Quantity = 1,
-                    PriceListRowId = basePrice.PriceListRowId,
+                    PriceListRowId = basePrice.PriceListRowId.Value,
                     Price = basePrice.Price
                 };
                 //Calculate when the extra time starts, date wize.
@@ -137,7 +145,7 @@ namespace Tolk.BusinessLogic.Services
                     EndAt = endAt,
                     PriceRowType = PriceRowType.BasePrice,
                     Quantity = 1,
-                    PriceListRowId = basePrice.PriceListRowId,
+                    PriceListRowId = basePrice.PriceListRowId.Value,
                     Price = basePrice.Price
                 };
             }
@@ -243,26 +251,29 @@ namespace Tolk.BusinessLogic.Services
             int numberOfBrokerFees = 0;
             string extraBrokerFee = string.Empty;
             string hourTaxDescription = string.Empty;
-            foreach (PriceRowBase priceRow in priceRows.OrderByDescending(r => r.IsBrokerFee))
+            foreach (PriceRowBase priceRow in priceRows.OrderByDescending(r => r.PriceRowType))
             {
-                dpi.TaxTypeAndCompetenceLevelDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
-                if (priceRow.IsBrokerFee)
+                if (priceRow.PriceListRow != null && priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice)
+                {
+                    dpi.TaxTypeAndCompetenceLevelDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
+                }
+                if (priceRow.PriceRowType == PriceRowType.BrokerFee)
                 {
                     numberOfBrokerFees += 1;
                     extraBrokerFee = numberOfBrokerFees > 1 ? $" dag {numberOfBrokerFees}" : string.Empty;
                 }
-                else
+                else if (priceRow.PriceListRow != null)
                 {
                     hourTaxDescription = priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice ? $", taxa {GetDescriptionHourTax(priceRow.PriceListRow.MaxMinutes)} h" : string.Empty;
                 }
-                string startDescription = priceRow.IsBrokerFee ? $"Förmedlingsavgift{extraBrokerFee}" : priceRow.PriceListRow.PriceRowType.GetDescription() + hourTaxDescription;
-                dpi.DisplayPriceRows.Add(new DisplayPriceRow { DescriptionWithCompetenceLevel = $"{startDescription} för tolktyp {priceRow.PriceListRow.CompetenceLevel.GetDescription()}", ShortDescription = startDescription, Price = priceRow.TotalPrice });
+                string description = (priceRow.PriceListRow != null && priceRow.PriceRowType != PriceRowType.BrokerFee) ? priceRow.PriceListRow.PriceRowType.GetDescription() + hourTaxDescription : priceRow.PriceRowType == PriceRowType.BrokerFee ? priceRow.PriceRowType.GetDescription() + extraBrokerFee : priceRow.PriceRowType.GetDescription();
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow { Description = description, Price = priceRow.Price * priceRow.Quantity });
             }
             //do not check if zero since sometimes you want to display thet it was 0 in travelcost
             //might be better to have different descriptions of travel costs (estimated, actual etc)
             if (travelcost != null)
             {
-                dpi.DisplayPriceRows.Add(new DisplayPriceRow { ShortDescription = "Total reskostnad", Price = travelcost.Value });
+                dpi.DisplayPriceRows.Add(new DisplayPriceRow { Description = "Total reskostnad", Price = travelcost.Value });
             }
             return dpi;
         }
@@ -305,7 +316,7 @@ namespace Tolk.BusinessLogic.Services
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
             foreach (var item in prices)
             {
-                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId, StartDatePriceList = item.StartDate, RoundDecimals = _options.RoundPriceDecimals }).ToList());
+                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId.Value, StartDatePriceList = item.StartDate, RoundDecimals = _options.RoundPriceDecimals }).ToList());
             }
             return priceListBrokerFee;
         }

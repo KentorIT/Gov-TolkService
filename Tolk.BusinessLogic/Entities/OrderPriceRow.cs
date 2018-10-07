@@ -13,9 +13,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public int OrderId { get; set; }
 
-        [MaxLength(255)]
-        public string Description { get; set; }
-
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 

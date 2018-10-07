@@ -13,9 +13,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public int RequestId { get; set; }
 
-        [MaxLength(255)]
-        public string Description { get; set; }
-
         [ForeignKey(nameof(RequestId))]
         public Request Request { get; set; }
     }

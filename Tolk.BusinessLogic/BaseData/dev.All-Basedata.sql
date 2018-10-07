@@ -5,4 +5,5 @@
 :r dev.Holidays.2018.sql
 :r dev.Languages.sql
 :r dev.PriceListRows.sql
+:r dev.PriceCalculationCharges.sql
 COMMIT

@@ -537,25 +537,28 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
                     b.Property<DateTimeOffset>("EndAt");
-
-                    b.Property<bool>("IsBrokerFee");
 
                     b.Property<int>("OrderId");
 
-                    b.Property<int>("PriceListRowId");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int?>("PriceCalculationChargeId");
+
+                    b.Property<int?>("PriceListRowId");
+
+                    b.Property<int>("PriceRowType");
+
+                    b.Property<int>("Quantity");
 
                     b.Property<DateTimeOffset>("StartAt");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(10, 2)");
 
                     b.HasKey("OrderPriceRowId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("PriceCalculationChargeId");
 
                     b.HasIndex("PriceListRowId");
 
@@ -626,9 +629,29 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OutboundEmails");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceCalculationCharge", b =>
+                {
+                    b.Property<int>("PriceCalculationChargeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("Charge")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("ChargeTypeId");
+
+                    b.Property<DateTime>("EndDate");
+
+                    b.Property<DateTime>("StartDate");
+
+                    b.HasKey("PriceCalculationChargeId");
+
+                    b.ToTable("PriceCalculationCharges");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceListRow", b =>
                 {
-                    b.Property<int>("PriceListRowId")
+                    b.Property<int?>("PriceListRowId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -833,23 +856,26 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
                     b.Property<DateTimeOffset>("EndAt");
 
-                    b.Property<bool>("IsBrokerFee");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("PriceListRowId");
+                    b.Property<int?>("PriceCalculationChargeId");
+
+                    b.Property<int?>("PriceListRowId");
+
+                    b.Property<int>("PriceRowType");
+
+                    b.Property<int>("Quantity");
 
                     b.Property<int>("RequestId");
 
                     b.Property<DateTimeOffset>("StartAt");
 
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(10, 2)");
-
                     b.HasKey("RequestPriceRowId");
+
+                    b.HasIndex("PriceCalculationChargeId");
 
                     b.HasIndex("PriceListRowId");
 
@@ -936,23 +962,26 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(255);
-
                     b.Property<DateTimeOffset>("EndAt");
 
-                    b.Property<bool>("IsBrokerFee");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("PriceListRowId");
+                    b.Property<int?>("PriceCalculationChargeId");
+
+                    b.Property<int?>("PriceListRowId");
+
+                    b.Property<int>("PriceRowType");
+
+                    b.Property<int>("Quantity");
 
                     b.Property<int>("RequisitionId");
 
                     b.Property<DateTimeOffset>("StartAt");
 
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(10, 2)");
-
                     b.HasKey("RequisitionPriceRowId");
+
+                    b.HasIndex("PriceCalculationChargeId");
 
                     b.HasIndex("PriceListRowId");
 
@@ -1182,10 +1211,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Tolk.BusinessLogic.Entities.PriceCalculationCharge", "PriceCalculationCharge")
+                        .WithMany()
+                        .HasForeignKey("PriceCalculationChargeId");
+
                     b.HasOne("Tolk.BusinessLogic.Entities.PriceListRow", "PriceListRow")
                         .WithMany()
-                        .HasForeignKey("PriceListRowId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("PriceListRowId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirement", b =>
@@ -1304,10 +1336,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
                 {
+                    b.HasOne("Tolk.BusinessLogic.Entities.PriceCalculationCharge", "PriceCalculationCharge")
+                        .WithMany()
+                        .HasForeignKey("PriceCalculationChargeId");
+
                     b.HasOne("Tolk.BusinessLogic.Entities.PriceListRow", "PriceListRow")
                         .WithMany()
-                        .HasForeignKey("PriceListRowId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("PriceListRowId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("PriceRows")
@@ -1362,10 +1397,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
                 {
+                    b.HasOne("Tolk.BusinessLogic.Entities.PriceCalculationCharge", "PriceCalculationCharge")
+                        .WithMany()
+                        .HasForeignKey("PriceCalculationChargeId");
+
                     b.HasOne("Tolk.BusinessLogic.Entities.PriceListRow", "PriceListRow")
                         .WithMany()
-                        .HasForeignKey("PriceListRowId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("PriceListRowId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
                         .WithMany("PriceRows")
