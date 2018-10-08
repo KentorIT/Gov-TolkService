@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTime EndDate { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal Charge { get; set; }
+        public decimal ChargePercentage { get; set; }
 
         public ChargeType ChargeTypeId { get; set; }
 

@@ -635,7 +635,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<decimal>("Charge")
+                    b.Property<decimal>("ChargePercentage")
                         .HasColumnType("decimal(10, 2)");
 
                     b.Property<int>("ChargeTypeId");

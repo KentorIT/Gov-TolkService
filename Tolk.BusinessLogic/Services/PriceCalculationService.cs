@@ -120,7 +120,7 @@ namespace Tolk.BusinessLogic.Services
 
         private PriceRow GetPriceCalculationCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> priceListRowsPerPriceType, ChargeType chargeType)
         {
-            decimal charge = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == chargeType && startAt.Date > c.StartDate && endAt.Date < c.EndDate).Charge / 100;
+            decimal charge = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == chargeType && startAt.Date > c.StartDate && endAt.Date < c.EndDate).ChargePercentage / 100;
             return new PriceRow { StartAt = startAt, EndAt = endAt, Price = charge * priceListRowsPerPriceType.Sum(m => m.TotalPrice), Quantity = 1, PriceRowType = chargeType == ChargeType.SocialInsuranceCharge ? PriceRowType.SocialInsuranceCharge : PriceRowType.AdministrativeCharge };
         }
 
