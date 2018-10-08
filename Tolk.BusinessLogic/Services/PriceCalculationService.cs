@@ -42,9 +42,11 @@ namespace Tolk.BusinessLogic.Services
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
             //priceListRows
             var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
-            List<PriceRow> allPriceRows = new List<PriceRow>();
-            allPriceRows.Add(GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType));
-            allPriceRows.Add(GetPriceRowAdministrativeCharge(startAt, endAt, priceListRowsPerPriceType));
+            List<PriceRow> allPriceRows = new List<PriceRow>
+            {
+                GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType),
+                GetPriceRowAdministrativeCharge(startAt, endAt, priceListRowsPerPriceType)
+            };
             allPriceRows.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
             allPriceRows.AddRange(priceListRowsPerPriceType);
 
