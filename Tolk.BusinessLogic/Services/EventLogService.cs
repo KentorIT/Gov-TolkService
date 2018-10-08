@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
         }
 
-        public void Push(int objectId, ObjectType objectType, string eventDetails, string actor, string organization = null)
+        public void Push(int objectId, ObjectType objectType, string eventDetails, string actor = "Systemet", string organization = null)
         {
             _dbContext.EventLog.Add(new EventLogEntry
             {

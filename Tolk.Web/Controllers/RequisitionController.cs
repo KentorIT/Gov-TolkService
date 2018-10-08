@@ -28,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly EventLogService _eventLog;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -36,7 +37,8 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            EventLogService eventLog
             )
         {
             _dbContext = dbContext;
@@ -46,6 +48,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _logger = logger;
             _options = options.Value;
+            _eventLog = eventLog;
         }
 
         public async Task<IActionResult> View(int id)
@@ -295,9 +298,13 @@ namespace Tolk.Web.Controllers
                         {
                             replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
                             _dbContext.SaveChanges();
-                        }
+                        } 
                         transaction.Commit();
                         CreateEmailOnRequisitionAction(requisition);
+                        var user = _dbContext.Users
+                            .Include(u => u.Broker)
+                            .Single(u => u.Id == requisition.CreatedBy);
+                        _eventLog.Push(requisition.RequisitionId, ObjectType.Requisition, "Rekvisition skapad", user.FullName, user.Broker.Name);
                         return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                     }
                 }

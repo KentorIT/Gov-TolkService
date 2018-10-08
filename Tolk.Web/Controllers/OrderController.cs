@@ -186,7 +186,11 @@ namespace Tolk.Web.Controllers
                 {
                     Entries = _dbContext.EventLog
                         .Where(e =>
-                            (e.ObjectType == ObjectType.Order && e.ObjectId == model.OrderId))
+                            (e.ObjectType == ObjectType.Order && e.ObjectId == model.OrderId)
+                            || (e.ObjectType == ObjectType.Request && order.Requests.Any(r => r.RequestId == e.ObjectId))
+                            || (e.ObjectType == ObjectType.Requisition && order.Requests.Any(r => r.Requisitions.Any(req => req.RequisitionId == e.ObjectId)))
+                            || (e.ObjectType == ObjectType.Complaint && order.Requests.Any(r => r.Complaints.Any(c => c.ComplaintId == e.ObjectId)))
+                            )
                         .Select(e => new EventLogEntryModel
                         {
                             EventLogEntryId = e.EventLogEntryId,
@@ -195,7 +199,8 @@ namespace Tolk.Web.Controllers
                             Actor = e.Actor,
                             Organization = e.Organization,
                         })
-                        .OrderBy(e => e.Timestamp),
+                        .OrderBy(e => e.Timestamp)
+                        .ToList(),
                 };
                 return View(model);
             }
@@ -330,13 +335,10 @@ namespace Tolk.Web.Controllers
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
                     _dbContext.SaveChanges(); // Save changes to get id for event log
-                    _eventLog.Push(order.OrderId, ObjectType.Order, "Avrop skapad", 
-                        _dbContext.Users
-                            .Where(u => u.Id == order.CreatedBy)
-                            .Single().FullName, 
-                        _dbContext.CustomerOrganisations
-                            .Where(o => o.CustomerOrganisationId == order.CustomerOrganisationId)
-                            .Single().Name);
+                    var user = _dbContext.Users
+                        .Include(u => u.CustomerOrganisation)
+                        .Single(u => u.Id == order.CreatedBy);
+                    _eventLog.Push(order.OrderId, ObjectType.Order, "Avrop skapad", user.FullName, user.CustomerOrganisation.Name);
 
                     await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
                     _orderService.CreatePriceInformation(order);

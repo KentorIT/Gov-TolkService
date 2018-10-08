@@ -7,6 +7,6 @@ namespace Tolk.Web.Models
 {
     public class EventLogModel
     {
-        public IEnumerable<EventLogEntryModel> Entries { get; set; }
+        public List<EventLogEntryModel> Entries { get; set; }
     }
 }

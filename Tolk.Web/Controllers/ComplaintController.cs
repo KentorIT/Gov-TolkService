@@ -22,18 +22,21 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
+        private readonly EventLogService _eventLog;
 
         public ComplaintController(
             TolkDbContext dbContext,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<RequisitionController> logger
+            ILogger<RequisitionController> logger,
+            EventLogService eventLog
             )
         {
             _dbContext = dbContext;
             _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
+            _eventLog = eventLog;
         }
 
         public async Task<IActionResult> View(int id)
@@ -89,6 +92,10 @@ namespace Tolk.Web.Controllers
                     request.CreateComplaint(complaint);
                     _dbContext.SaveChanges();
                     CreateEmailOnComplaintAction(complaint);
+                    var user = _dbContext.Users
+                        .Include(u => u.CustomerOrganisation)
+                        .Single(u => u.Id == complaint.CreatedBy);
+                    _eventLog.Push(complaint.ComplaintId, ObjectType.Complaint, "Reklamation skapad", user.FullName, user.CustomerOrganisation.Name);
                     return RedirectToAction(nameof(View), new { id = complaint.ComplaintId });
                 }
                 return Forbid();

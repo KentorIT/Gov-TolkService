@@ -16,7 +16,7 @@
                 @foreach (var entry in Model.Entries)
                 {
                     <tr data-id="@entry.EventLogEntryId">
-                        <td>@entry.Timestamp.ToString("yyyy-MM-dd hh:mm")</td>
+                        <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@entry.EventDetails</td>
                         <td>@entry.Actor</td>
                         <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
