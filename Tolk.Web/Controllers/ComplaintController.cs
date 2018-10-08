@@ -22,21 +22,18 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
-        private readonly EventLogService _eventLog;
 
         public ComplaintController(
             TolkDbContext dbContext,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<RequisitionController> logger,
-            EventLogService eventLog
+            ILogger<RequisitionController> logger
             )
         {
             _dbContext = dbContext;
             _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
-            _eventLog = eventLog;
         }
 
         public async Task<IActionResult> View(int id)
@@ -44,9 +41,7 @@ namespace Tolk.Web.Controllers
             var complaint = GetComplaint(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
-                var model = ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId));
-                model.EventLog = EventLogModel.GetModel(_eventLog.GetLogs(complaint));
-                return View(model);
+                return View(ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId)));
             }
             return Forbid();
         }
@@ -97,7 +92,6 @@ namespace Tolk.Web.Controllers
                     var user = _dbContext.Users
                         .Include(u => u.CustomerOrganisation)
                         .Single(u => u.Id == complaint.CreatedBy);
-                    _eventLog.Push(complaint.ComplaintId, ObjectType.Complaint, "Reklamation skapad", user.FullName, user.CustomerOrganisation.Name);
                     return RedirectToAction(nameof(View), new { id = complaint.ComplaintId });
                 }
                 return Forbid();

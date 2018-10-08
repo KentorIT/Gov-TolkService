@@ -28,7 +28,6 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly EventLogService _eventLog;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -37,8 +36,7 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
-            IOptions<TolkOptions> options,
-            EventLogService eventLog
+            IOptions<TolkOptions> options
             )
         {
             _dbContext = dbContext;
@@ -48,7 +46,6 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _logger = logger;
             _options = options.Value;
-            _eventLog = eventLog;
         }
 
         public async Task<IActionResult> View(int id)
@@ -80,7 +77,6 @@ namespace Tolk.Web.Controllers
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
-                model.EventLog = EventLogModel.GetModel(_eventLog.GetLogs(requisition));
                 return View(model);
             }
             return Forbid();
@@ -305,7 +301,6 @@ namespace Tolk.Web.Controllers
                         var user = _dbContext.Users
                             .Include(u => u.Broker)
                             .Single(u => u.Id == requisition.CreatedBy);
-                        _eventLog.Push(requisition.RequisitionId, ObjectType.Requisition, "Rekvisition skapad", user.FullName, user.Broker.Name);
                         return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                     }
                 }

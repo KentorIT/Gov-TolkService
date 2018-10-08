@@ -23,7 +23,6 @@ namespace Tolk.BusinessLogic.Services
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
         private readonly TolkOptions _options;
-        private readonly EventLogService _eventLog;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -32,8 +31,7 @@ namespace Tolk.BusinessLogic.Services
             DateCalculationService dateCalculationService,
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
-            IOptions<TolkOptions> options,
-            EventLogService eventLog
+            IOptions<TolkOptions> options
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -43,7 +41,6 @@ namespace Tolk.BusinessLogic.Services
             _priceCalculationService = priceCalculationService;
             _logger = logger;
             _options = options.Value;
-            _eventLog = eventLog;
         }
 
         public async Task HandleExpiredRequests()
@@ -334,7 +331,6 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                     request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                 var broker = _tolkDbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId);
-                _eventLog.Push(request.RequestId, ObjectType.Request, $"Förfrågan skickad till {broker.Name}");
                 if (!string.IsNullOrEmpty(broker.EmailAddress))
                 {
                     var createdOrder = await _tolkDbContext.Orders
@@ -377,7 +373,6 @@ namespace Tolk.BusinessLogic.Services
                     _clock.SwedenNow));
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
                     order.OrderId);
-                _eventLog.Push(order.OrderId, ObjectType.Order, $"Avrop avslutat, ingen förmedling kunde tillsätta uppdraget");
             }
         }
 

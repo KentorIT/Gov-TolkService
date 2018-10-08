@@ -1,7 +1,7 @@
 ﻿@model EventLogModel
 <h3>Händelselogg</h3>
 <div class="table-responsive">
-    @if (Model.Entries.Any())
+    @if (Model != null && Model.Entries.Any())
     {
         <table class="table table-striped">
             <thead>

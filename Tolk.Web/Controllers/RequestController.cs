@@ -30,7 +30,6 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly EventLogService _eventLog;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -40,8 +39,7 @@ namespace Tolk.Web.Controllers
             InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
             ILogger<RequisitionController> logger,
-            IOptions<TolkOptions> options,
-            EventLogService eventLog
+            IOptions<TolkOptions> options
 )
         {
             _dbContext = dbContext;
@@ -52,7 +50,6 @@ namespace Tolk.Web.Controllers
             _priceCalculationService = priceCalculationService;
             _logger = logger;
             _options = options.Value;
-            _eventLog = eventLog;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -394,7 +391,6 @@ namespace Tolk.Web.Controllers
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow);
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
-            model.EventLog = EventLogModel.GetModel(_eventLog.GetLogs(request));
             return model;
         }
 
