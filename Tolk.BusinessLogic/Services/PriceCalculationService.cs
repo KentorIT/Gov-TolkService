@@ -40,23 +40,35 @@ namespace Tolk.BusinessLogic.Services
                     r.CompetenceLevel == competenceLevel &&
                     r.PriceListType == listType &&
                     r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
-            var minutesPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
-            minutesPerPriceType.Add(GetPriceRowsSocialInsuranceCharge(startAt, endAt, minutesPerPriceType));
-            minutesPerPriceType.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
+            //priceListRows
+            var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
+            List<PriceRow> allPriceRows = new List<PriceRow>();
+            allPriceRows.Add(GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType));
+            allPriceRows.Add(GetPriceRowAdministrativeCharge(startAt, endAt, priceListRowsPerPriceType));
+            allPriceRows.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
+            allPriceRows.AddRange(priceListRowsPerPriceType);
 
             var priceInformation = new PriceInformation
             {
-                PriceRows = minutesPerPriceType
+                PriceRows = allPriceRows
             };
             return priceInformation;
         }
 
-        private PriceRow GetPriceRowsSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> minutesPerPriceType)
+        private PriceRow GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> priceListRowsPerPriceType)
         {
-            decimal socialCharge = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == ChargeType.SocialInsuranceCharge && startAt.Date > c.StartDate && endAt.Date < c.EndDate).Charge/100;
-            //Maybe we should check that PriceRowType souldn't be TravelCosts, SocialInsuranceCharge, BrokerFee, AdminFee, but if in this order it would not happen
-            decimal totalPriceForSocialInsuranceCharge = minutesPerPriceType.Sum(m => m.Price);
-            return new PriceRow { StartAt = startAt, EndAt = endAt, Price = socialCharge * totalPriceForSocialInsuranceCharge, Quantity = 1, PriceRowType = PriceRowType.SocialInsuranceCharge };
+            return GetPriceCalculationCharge(startAt, endAt, priceListRowsPerPriceType, ChargeType.SocialInsuranceCharge);
+        }
+
+        private PriceRow GetPriceRowAdministrativeCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> priceListRowsPerPriceType)
+        {
+            return GetPriceCalculationCharge(startAt, endAt, priceListRowsPerPriceType, ChargeType.AdministrativeCharge);
+        }
+
+        private PriceRow GetPriceCalculationCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> priceListRowsPerPriceType, ChargeType chargeType)
+        {
+            decimal charge = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == chargeType && startAt.Date > c.StartDate && endAt.Date < c.EndDate).Charge / 100;
+            return new PriceRow { StartAt = startAt, EndAt = endAt, Price = charge * priceListRowsPerPriceType.Sum(m => m.TotalPrice), Quantity = 1, PriceRowType = chargeType == ChargeType.SocialInsuranceCharge ? PriceRowType.SocialInsuranceCharge : PriceRowType.AdministrativeCharge };
         }
 
         private IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, IEnumerable<PriceRowBase> brokerFeeToUse = null)
