@@ -52,7 +52,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ReplacedByRequisitionId))]
         public Requisition ReplacedByRequisition { get; set; }
-
+        
         public int RequestId { get; set; }
 
         [ForeignKey(nameof(RequestId))]
@@ -61,6 +61,8 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset? ProcessedAt { get; set; }
 
         public int? ProcessedBy { get; set; }
+
+        public bool UseRequestPriceRows { get; set; }
 
         [ForeignKey(nameof(ProcessedBy))]
         public AspNetUser ProcessedUser { get; set; }

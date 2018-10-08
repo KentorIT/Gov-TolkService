@@ -62,7 +62,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
         [Range(30, 600, ErrorMessage = "Ange ett värde mellan 30 och 600 minuter")]
-        [Display(Name = "Tid för eventuell tidsspillan i minuter", Description = "Totalt antal minuter för restid, väntetider mm som överstiger 30 minuter")]
+        [Display(Name = "Tid för eventuell tidsspillan i minuter (som inträffat utanför förväntad start- och sluttid)", Description = "Totalt antal minuter för restid, väntetider mm som överstiger 30 minuter")]
         public int? TimeWasteNormalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]

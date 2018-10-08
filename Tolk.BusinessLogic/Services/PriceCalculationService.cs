@@ -33,21 +33,46 @@ namespace Tolk.BusinessLogic.Services
             _cache = cache;
         }
 
-        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, int? timeWasteNormalTime = null, int? timeWasteIWHTime = null, IEnumerable<PriceRowBase> brokerFeeToUse = null)
+        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId)
         {
-            var prices = _dbContext.PriceListRows
-                .Where(r =>
-                    r.CompetenceLevel == competenceLevel &&
-                    r.PriceListType == listType &&
-                    r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
-            //priceListRows
-            var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices, timeWasteNormalTime, timeWasteIWHTime).ToList();
+            var prices = GetPriceList(startAt, endAt, competenceLevel, listType);
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, GetPriceRowsPerType(startAt, endAt, prices).ToList(), rankingId);
+        }
+
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows)
+        {
+            var prices = GetPriceList(startAt, endAt, competenceLevel, listType);
+            var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices).ToList();
+
+            //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
+            var priceRowsToCompareRequest = requestPriceRows.Where(plr =>
+                 plr.PriceListRowId > 0 && plr.PriceRowType != PriceRowType.BrokerFee &&
+                 (plr.PriceListRow.PriceRowType == PriceRowType.BasePrice ||
+                 plr.PriceListRow.PriceRowType == PriceRowType.PriceOverMaxTime ||
+                 plr.PriceListRow.PriceRowType == PriceRowType.InconvenientWorkingHours ||
+                 plr.PriceListRow.PriceRowType == PriceRowType.WeekendIWH ||
+                 plr.PriceListRow.PriceRowType == PriceRowType.BigHolidayWeekendIWH)).ToList();
+
+            useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsToCompareRequest);
+            if (useRequestPricerows)
+            {
+                priceListRowsPerPriceType = priceRowsToCompareRequest.Select(p => new PriceRow { StartAt = p.StartAt, EndAt = p.EndAt, PriceListRowId = p.PriceListRowId, Quantity = p.Quantity, Price = p.Price, PriceRowType = p.PriceRowType }).ToList();
+            }
+            //get lost time
+            priceListRowsPerPriceType.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
+
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, priceListRowsPerPriceType, rankingId, requestPriceRows.Where(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
+        }
+
+
+        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRow> priceListRowsPerPriceType, int rankingId, IEnumerable<PriceRowBase> requestBrokerFeesForRequisition = null)
+        {
             List<PriceRow> allPriceRows = new List<PriceRow>
             {
                 GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType),
                 GetPriceRowAdministrativeCharge(startAt, endAt, priceListRowsPerPriceType)
             };
-            allPriceRows.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, brokerFeeToUse));
+            allPriceRows.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, requestBrokerFeesForRequisition));
             allPriceRows.AddRange(priceListRowsPerPriceType);
 
             var priceInformation = new PriceInformation
@@ -55,6 +80,32 @@ namespace Tolk.BusinessLogic.Services
                 PriceRows = allPriceRows
             };
             return priceInformation;
+        }
+
+        private IEnumerable<PriceRow> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
+        {
+            //Get lost times, if any, they should not get payed for less than 30 min
+            if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
+            {
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTime, prices);
+            }
+            if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value > 0)
+            {
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTimeIWH, prices);
+            }
+        }
+
+        private List<PriceListRow> GetPriceList(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType)
+        {
+            return _dbContext.PriceListRows.Where(r =>
+                r.CompetenceLevel == competenceLevel &&
+                r.PriceListType == listType &&
+                r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
+        }
+
+        private bool CheckRequisitionPriceToUse(List<PriceRow> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequest)
+        {
+            return priceToCompareRequest.Sum(p => p.Price * p.Quantity) > priceToCompareRequsition.Sum(p => p.TotalPrice);
         }
 
         private PriceRow GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> priceListRowsPerPriceType)
@@ -73,7 +124,7 @@ namespace Tolk.BusinessLogic.Services
             return new PriceRow { StartAt = startAt, EndAt = endAt, Price = charge * priceListRowsPerPriceType.Sum(m => m.TotalPrice), Quantity = 1, PriceRowType = chargeType == ChargeType.SocialInsuranceCharge ? PriceRowType.SocialInsuranceCharge : PriceRowType.AdministrativeCharge };
         }
 
-        private IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, IEnumerable<PriceRowBase> brokerFeeToUse = null)
+        private IEnumerable<PriceRow> GetPriceRowsBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, IEnumerable<PriceRowBase> brokerFeeToUse)
         {
             if (brokerFeeToUse != null)
             {
@@ -128,7 +179,7 @@ namespace Tolk.BusinessLogic.Services
             return priceTime;
         }
 
-        private IEnumerable<PriceRow> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, int? timeWasteNormalTime, int? timeWasteIWHTime)
+        private IEnumerable<PriceRow> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices)
         {
             int maxMinutes = 330;
             TimeSpan span = endAt - startAt;
@@ -227,19 +278,8 @@ namespace Tolk.BusinessLogic.Services
                         prices
                     );
                 }
-
                 //Start counting from the first minute on next day
                 start = start.AddDays(1).Date.ToDateTimeOffsetSweden();
-            }
-
-            //Get lost times, if any, they should not get payed for less than 30 min
-            if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
-            {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTime, prices);
-            }
-            if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value > 0)
-            {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTimeIWH, prices);
             }
         }
 
@@ -305,7 +345,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
+        private IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
         {
             get
             {

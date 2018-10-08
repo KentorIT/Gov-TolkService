@@ -241,6 +241,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                bool useRequestRows = false;
                 using (var transaction = _dbContext.Database.BeginTransaction())
                 {
                     var request = _dbContext.Requests
@@ -267,17 +268,19 @@ namespace Tolk.Web.Controllers
                             PriceRows = new List<RequisitionPriceRow>(),
                             Attachments = model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
                         };
-                        var priceInformation = _priceCalculationService.GetPrices(
+                        var priceInformation = _priceCalculationService.GetPricesRequisition(
                             model.SessionStartedAt,
                             model.SessionEndedAt,
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
                             request.Ranking.RankingId,
+                            out useRequestRows,
                             model.TimeWasteNormalTime,
                             model.TimeWasteIWHTime,
-                            request.PriceRows.OfType<PriceRowBase>().Where(pr => pr.PriceRowType == PriceRowType.BrokerFee)
+                            request.PriceRows.OfType<PriceRowBase>()
                         );
 
+                        requisition.UseRequestPriceRows = useRequestRows;
                         foreach (var row in priceInformation.PriceRows)
                         {
                             requisition.PriceRows.Add(new RequisitionPriceRow

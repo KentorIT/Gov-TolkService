@@ -926,6 +926,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<decimal>("TravelCosts")
                         .HasColumnType("decimal(10, 2)");
 
+                    b.Property<bool>("UseRequestPriceRows");
+
                     b.HasKey("RequisitionId");
 
                     b.HasIndex("CreatedBy");
