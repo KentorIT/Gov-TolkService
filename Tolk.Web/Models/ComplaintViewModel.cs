@@ -60,6 +60,8 @@ namespace Tolk.Web.Models
             }
         }
 
+        public EventLogModel EventLog { get; set; }
+
         #region methods
 
         public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, bool isBroker, bool isCustomer)

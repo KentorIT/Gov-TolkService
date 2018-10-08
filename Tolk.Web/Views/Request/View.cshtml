@@ -184,6 +184,7 @@
             </form>
         }
     </div>
+    @await Html.PartialAsync("_EventLog", Model.EventLog)
 </div>
 @section Scripts {
 <environment include="Development">

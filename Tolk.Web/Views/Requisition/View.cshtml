@@ -111,6 +111,7 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
         }
+        @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
 </div>
 @section Scripts {

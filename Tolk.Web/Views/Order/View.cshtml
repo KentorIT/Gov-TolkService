@@ -191,7 +191,6 @@
                 }
             }
         }
-        @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
 </div>
 @if (Model.AllowOrderCancellation)
@@ -230,6 +229,8 @@
         <button class="btn btn-danger">Bekräfta avbokning</button>
     </form>
 }
+
+@await Html.PartialAsync("_EventLog", Model.EventLog)
 
 <div id="cancelMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -282,13 +283,13 @@
     </div>
 </div>
 @section Scripts {
-<environment include="Development">
-    <script src="~/js/Order/Process.js" asp-append-version="true"></script>
-    <script src="~/js/Files.js" asp-append-version="true"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
-    <script src="~/js/Files.min.js" asp-append-version="true"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/js/Order/Process.js" asp-append-version="true"></script>
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

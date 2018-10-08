@@ -92,6 +92,8 @@ namespace Tolk.Web.Models
 
         public bool AllowCancellation { get; set; } = false;
 
+        public EventLogModel EventLog { get; set; }
+
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]

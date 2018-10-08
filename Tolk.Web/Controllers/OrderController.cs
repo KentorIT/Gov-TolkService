@@ -182,26 +182,7 @@ namespace Tolk.Web.Controllers
                         }).ToList()
                     };
                 }
-                model.EventLog = new EventLogModel
-                {
-                    Entries = _dbContext.EventLog
-                        .Where(e =>
-                            (e.ObjectType == ObjectType.Order && e.ObjectId == model.OrderId)
-                            || (e.ObjectType == ObjectType.Request && order.Requests.Any(r => r.RequestId == e.ObjectId))
-                            || (e.ObjectType == ObjectType.Requisition && order.Requests.Any(r => r.Requisitions.Any(req => req.RequisitionId == e.ObjectId)))
-                            || (e.ObjectType == ObjectType.Complaint && order.Requests.Any(r => r.Complaints.Any(c => c.ComplaintId == e.ObjectId)))
-                            )
-                        .Select(e => new EventLogEntryModel
-                        {
-                            EventLogEntryId = e.EventLogEntryId,
-                            Timestamp = e.Timestamp,
-                            EventDetails = e.EventDetails,
-                            Actor = e.Actor,
-                            Organization = e.Organization,
-                        })
-                        .OrderBy(e => e.Timestamp)
-                        .ToList(),
-                };
+                model.EventLog = EventLogModel.GetModel(_eventLog.GetLogs(order));
                 return View(model);
             }
             return Forbid();

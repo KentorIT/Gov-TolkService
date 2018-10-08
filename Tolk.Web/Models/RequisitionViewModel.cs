@@ -91,6 +91,8 @@ namespace Tolk.Web.Models
 
         public bool AllowCreation {get;set;}
 
+        public EventLogModel EventLog { get; set; }
+
         #region methods
 
         public static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)

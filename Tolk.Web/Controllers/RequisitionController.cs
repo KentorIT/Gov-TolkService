@@ -80,6 +80,7 @@ namespace Tolk.Web.Controllers
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
+                model.EventLog = EventLogModel.GetModel(_eventLog.GetLogs(requisition));
                 return View(model);
             }
             return Forbid();

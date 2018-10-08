@@ -42,9 +42,9 @@
             <button class="btn accept-button btn-success pull-left">Godta bestridande av reklamation</button>
             <button class="btn refute-button btn-danger pull-right">Ogilla bestridande av reklamation</button>
         }
-
     </div>
 </div>
+@await Html.PartialAsync("_EventLog", Model.EventLog)
 <div id="disputeMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
