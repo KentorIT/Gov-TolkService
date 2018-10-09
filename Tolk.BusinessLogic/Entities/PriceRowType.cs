@@ -41,5 +41,8 @@ namespace Tolk.BusinessLogic.Entities
 
         [Description("Reskostnad")]
         TravelCosts = 11,
+
+        [Description("Öresavrundning")]
+        RoundedPrice = 12
     }
 }

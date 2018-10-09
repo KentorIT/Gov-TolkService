@@ -64,7 +64,6 @@ namespace Tolk.BusinessLogic.Services
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, priceListRowsPerPriceType, rankingId, requestPriceRows.Where(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
         }
 
-
         private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRow> priceListRowsPerPriceType, int rankingId, IEnumerable<PriceRowBase> requestBrokerFeesForRequisition = null)
         {
             List<PriceRow> allPriceRows = new List<PriceRow>
@@ -74,12 +73,22 @@ namespace Tolk.BusinessLogic.Services
             };
             allPriceRows.AddRange(GetPriceRowsBrokerFee(startAt, endAt, competenceLevel, rankingId, requestBrokerFeesForRequisition));
             allPriceRows.AddRange(priceListRowsPerPriceType);
+            allPriceRows.Add(GetRoundedPriceRow(startAt, endAt, allPriceRows));
 
             var priceInformation = new PriceInformation
             {
                 PriceRows = allPriceRows
             };
             return priceInformation;
+        }
+
+        private PriceRow GetRoundedPriceRow(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRow> allPriceRows)
+        {
+            decimal roundings = 0;
+            allPriceRows.Sum(pr => roundings += pr.Quantity * (pr.Price - Math.Floor(pr.Price)));
+            roundings = roundings - Math.Floor(roundings);
+            roundings = roundings > Convert.ToDecimal(0.5) ? 1 - roundings : -roundings;
+            return new PriceRow { StartAt = startAt, EndAt = endAt, Price = roundings, Quantity = 1, PriceRowType = PriceRowType.RoundedPrice };
         }
 
         private IEnumerable<PriceRow> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
@@ -305,7 +314,7 @@ namespace Tolk.BusinessLogic.Services
             int numberOfBrokerFees = 0;
             string extraBrokerFee = string.Empty;
             string hourTaxDescription = string.Empty;
-            foreach (PriceRowBase priceRow in priceRows.OrderByDescending(r => r.PriceRowType))
+            foreach (PriceRowBase priceRow in priceRows.OrderBy(r => r.PriceRowType))
             {
                 if (priceRow.PriceListRow != null && priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice)
                 {
