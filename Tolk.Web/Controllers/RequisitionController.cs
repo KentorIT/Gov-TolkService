@@ -51,7 +51,8 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> View(int id)
         {
             var requisition = _dbContext.Requisitions
-                .Include(r => r.CreatedByUser)
+                .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.ProcessedUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
@@ -77,6 +78,7 @@ namespace Tolk.Web.Controllers
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
+                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(requisition).OrderBy(e => e.Timestamp).ToList() };
                 return View(model);
             }
             return Forbid();

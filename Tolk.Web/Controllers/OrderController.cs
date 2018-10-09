@@ -179,6 +179,7 @@ namespace Tolk.Web.Controllers
                         }).ToList()
                     };
                 }
+                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(order).OrderBy(e => e.Timestamp).ToList(), };
                 return View(model);
             }
             return Forbid();
@@ -485,7 +486,7 @@ namespace Tolk.Web.Controllers
             return _dbContext.Orders
                 .Include(o => o.ReplacedByOrder)
                 .Include(o => o.ReplacingOrder)
-                .Include(o => o.CreatedByUser)
+                .Include(o => o.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
@@ -501,6 +502,8 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Broker)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.Requisitions)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.Complaints)
                 .Include(o => o.Requests)

@@ -500,7 +500,7 @@ namespace Tolk.Web.Models
                     Status = r.Status,
                     BrokerName = r.Ranking.Broker.Name,
                     DenyMessage = r.DenyMessage,
-                }).ToList()
+                }).ToList(),
             };
         }
         private OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)

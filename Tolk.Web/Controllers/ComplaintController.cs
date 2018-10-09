@@ -233,6 +233,9 @@ namespace Tolk.Web.Controllers
         {
             return _dbContext.Complaints
                 .Include(r => r.CreatedByUser)
+                .Include(r => r.AnsweringUser)
+                .Include(r => r.AnswerDisputingUser)
+                .Include(r => r.TerminatingUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)

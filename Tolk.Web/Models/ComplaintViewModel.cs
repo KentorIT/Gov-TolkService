@@ -87,6 +87,7 @@ namespace Tolk.Web.Models
                 AnswerDisputedMessage = complaint.AnswerDisputedMessage,
                 IsBroker = isBroker,
                 IsCustomer = isCustomer,
+                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint).OrderBy(e => e.Timestamp).ToList() },
             };
         }
 

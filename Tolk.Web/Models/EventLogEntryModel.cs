@@ -8,8 +8,6 @@ namespace Tolk.Web.Models
 {
     public class EventLogEntryModel
     {
-        public int EventLogEntryId { get; set; }
-
         public DateTimeOffset Timestamp { get; set; }
 
         public string EventDetails { get; set; }

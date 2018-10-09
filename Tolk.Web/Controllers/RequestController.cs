@@ -75,7 +75,7 @@ namespace Tolk.Web.Controllers
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
-                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
                 .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
@@ -91,11 +91,13 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Requisitions)
                 .Include(r => r.Complaints)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
+                .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                return View(GetModel(request));
+                return View(GetModel(request, true));
             }
             return Forbid();
         }
@@ -379,7 +381,7 @@ namespace Tolk.Web.Controllers
                             expectedTravelCost);
         }
 
-        private RequestModel GetModel(Request request)
+        private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
             model.CalculatedPrice = GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(model.OrderModel.RequestedCompetenceLevels), request.ExpectedTravelCosts).TotalPrice;
@@ -391,6 +393,10 @@ namespace Tolk.Web.Controllers
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow);
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
+            if (includeLog)
+            {
+                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(request).OrderBy(e => e.Timestamp).ToList() };
+            }
             return model;
         }
 

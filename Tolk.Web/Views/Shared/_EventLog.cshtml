@@ -15,7 +15,7 @@
             <tbody>
                 @foreach (var entry in Model.Entries)
                 {
-                    <tr data-id="@entry.EventLogEntryId">
+                    <tr>
                         <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@entry.EventDetails</td>
                         <td>@entry.Actor</td>
