@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Tolk.BusinessLogic.Entities
+namespace Tolk.BusinessLogic.Enums
 {
     public enum PriceListType
     {

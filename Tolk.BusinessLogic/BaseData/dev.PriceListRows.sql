@@ -2,7 +2,7 @@ use TolkDev
 DELETE FROM PriceListRows
 DBCC CHECKIDENT ('TolkDev.dbo.PriceListRows',RESEED, 0)
 SET IDENTITY_INSERT PriceListRows ON
-insert PriceListRows(PriceListRowId, PriceListType, StartDate, EndDate, MaxMinutes, Price, CompetenceLevel, PriceRowType)
+INSERT PriceListRows (PriceListRowId, PriceListType, StartDate, EndDate, MaxMinutes, Price, CompetenceLevel, PriceListRowType)
 Select 1, 1, '20180101', '20991231', 60, 352, 1, 1
 UNION ALL
 Select 2, 1, '20180101', '20991231', 60, 409, 2, 1

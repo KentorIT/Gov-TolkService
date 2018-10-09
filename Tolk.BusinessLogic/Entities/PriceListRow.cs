@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -25,6 +23,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public CompetenceLevel CompetenceLevel { get; set; }
 
-        public PriceRowType PriceRowType { get; set; }
+        public PriceListRowType PriceListRowType { get; set; }
     }
 }

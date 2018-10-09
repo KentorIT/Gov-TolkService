@@ -664,9 +664,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("PriceListType");
+                    b.Property<int>("PriceListRowType");
 
-                    b.Property<int>("PriceRowType");
+                    b.Property<int>("PriceListType");
 
                     b.Property<DateTime>("StartDate");
 

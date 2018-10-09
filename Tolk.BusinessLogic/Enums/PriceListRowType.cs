@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-
-namespace Tolk.BusinessLogic.Entities
+namespace Tolk.BusinessLogic.Enums
 {
-    public enum PriceRowType
+    public enum PriceListRowType
     {
-
         [Description("Arvode exkl. moms och sociala avgifter")]
         BasePrice = 1,
 
@@ -29,20 +24,5 @@ namespace Tolk.BusinessLogic.Entities
 
         [Description("Ersättning för tidsspillan per påbörjad halvtimme under obekväm arbetstid")]
         LostTimeIWH = 7,
-
-        [Description("Sociala avgifter")]
-        SocialInsuranceCharge = 8,
-
-        [Description("Förmedlingsavgift")]
-        BrokerFee = 9,
-
-        [Description("Administrativ avgift")]
-        AdministrativeCharge = 10,
-
-        [Description("Reskostnad")]
-        TravelCosts = 11,
-
-        [Description("Öresavrundning")]
-        RoundedPrice = 12
     }
 }

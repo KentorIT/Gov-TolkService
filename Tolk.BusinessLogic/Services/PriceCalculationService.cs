@@ -46,12 +46,12 @@ namespace Tolk.BusinessLogic.Services
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
             var priceRowsToCompareRequest = requestPriceRows.Where(plr =>
-                 plr.PriceListRowId > 0 && plr.PriceRowType != PriceRowType.BrokerFee &&
-                 (plr.PriceListRow.PriceRowType == PriceRowType.BasePrice ||
-                 plr.PriceListRow.PriceRowType == PriceRowType.PriceOverMaxTime ||
-                 plr.PriceListRow.PriceRowType == PriceRowType.InconvenientWorkingHours ||
-                 plr.PriceListRow.PriceRowType == PriceRowType.WeekendIWH ||
-                 plr.PriceListRow.PriceRowType == PriceRowType.BigHolidayWeekendIWH)).ToList();
+                 plr.PriceRowType == PriceRowType.InterpreterCompensation &&
+                 (plr.PriceListRow.PriceListRowType == PriceListRowType.BasePrice ||
+                 plr.PriceListRow.PriceListRowType == PriceListRowType.PriceOverMaxTime ||
+                 plr.PriceListRow.PriceListRowType == PriceListRowType.InconvenientWorkingHours ||
+                 plr.PriceListRow.PriceListRowType == PriceListRowType.WeekendIWH ||
+                 plr.PriceListRow.PriceListRowType == PriceListRowType.BigHolidayWeekendIWH)).ToList();
 
             useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsToCompareRequest);
             if (useRequestPricerows)
@@ -96,11 +96,11 @@ namespace Tolk.BusinessLogic.Services
             //Get lost times, if any, they should not get payed for less than 30 min
             if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
             {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTime, prices);
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceListRowType.LostTime, prices);
             }
             if (timeWasteIWHTime.HasValue && timeWasteIWHTime.Value > 0)
             {
-                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value).ToDateTimeOffsetSweden(), PriceRowType.LostTimeIWH, prices);
+                yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteIWHTime.Value).ToDateTimeOffsetSweden(), PriceListRowType.LostTimeIWH, prices);
             }
         }
 
@@ -169,14 +169,14 @@ namespace Tolk.BusinessLogic.Services
             return days;
         }
 
-        private static PriceRow GetPriceInformation(DateTimeOffset startAt, DateTimeOffset endAt, PriceRowType rowType, List<PriceListRow> prices)
+        private static PriceRow GetPriceInformation(DateTimeOffset startAt, DateTimeOffset endAt, PriceListRowType rowType, List<PriceListRow> prices)
         {
-            PriceListRow priceInfo = prices.Single(r => r.PriceRowType == rowType);
+            PriceListRow priceInfo = prices.Single(r => r.PriceListRowType == rowType);
             var priceTime = new PriceRow
             {
                 StartAt = startAt,
                 EndAt = endAt,
-                PriceRowType = rowType
+                PriceRowType = PriceRowType.InterpreterCompensation
             };
             priceTime.Quantity = priceTime.Minutes / priceInfo.MaxMinutes;
             if (priceTime.Minutes % priceInfo.MaxMinutes > 0)
@@ -196,28 +196,29 @@ namespace Tolk.BusinessLogic.Services
             if (totalMinutes > maxMinutes)
             {
                 DateTimeOffset extraTimeStartsAt = startAt.AddMinutes(maxMinutes);
-                var basePrice = prices.Single(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes >= maxMinutes);
+                var basePrice = prices.Single(r => r.PriceListRowType == PriceListRowType.BasePrice && r.MaxMinutes >= maxMinutes);
                 yield return new PriceRow
                 {
                     StartAt = startAt,
                     EndAt = extraTimeStartsAt,
-                    PriceRowType = PriceRowType.BasePrice,
+                    PriceRowType = PriceRowType.InterpreterCompensation,
                     Quantity = 1,
                     PriceListRowId = basePrice.PriceListRowId.Value,
                     Price = basePrice.Price
                 };
                 //Calculate when the extra time starts, date wize.
-                yield return GetPriceInformation(extraTimeStartsAt, endAt, PriceRowType.PriceOverMaxTime, prices);
+                yield return GetPriceInformation(extraTimeStartsAt, endAt, PriceListRowType.PriceOverMaxTime, prices);
             }
             else
             {
+                var basePriceTest = prices.OrderBy(p => p.MaxMinutes);
                 var basePrice = prices.OrderBy(p => p.MaxMinutes)
-                    .First(r => r.PriceRowType == PriceRowType.BasePrice && r.MaxMinutes >= totalMinutes);
+                    .First(r => r.PriceListRowType == PriceListRowType.BasePrice && r.MaxMinutes >= totalMinutes);
                 yield return new PriceRow
                 {
                     StartAt = startAt,
                     EndAt = endAt,
-                    PriceRowType = PriceRowType.BasePrice,
+                    PriceRowType = PriceRowType.InterpreterCompensation,
                     Quantity = 1,
                     PriceListRowId = basePrice.PriceListRowId.Value,
                     Price = basePrice.Price
@@ -236,7 +237,7 @@ namespace Tolk.BusinessLogic.Services
                     yield return GetPriceInformation(
                         start,
                         start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
-                        dateTypes.Contains(DateType.BigHolidayFullDay) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.WeekendIWH,
+                        dateTypes.Contains(DateType.BigHolidayFullDay) ? PriceListRowType.BigHolidayWeekendIWH : PriceListRowType.WeekendIWH,
                         prices
                     );
                 }
@@ -249,7 +250,7 @@ namespace Tolk.BusinessLogic.Services
                     yield return GetPriceInformation(
                         start,
                         start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7).ToDateTimeOffsetSweden() : endAt,
-                        dateTypes.Contains(DateType.DayAfterBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
+                        dateTypes.Contains(DateType.DayAfterBigHoliday) ? PriceListRowType.BigHolidayWeekendIWH : PriceListRowType.InconvenientWorkingHours,
                         prices
                     );
                 }
@@ -261,7 +262,7 @@ namespace Tolk.BusinessLogic.Services
                     yield return GetPriceInformation(
                         start.Hour < 18 ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : start,
                         start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
-                        dateTypes.Contains(DateType.DayBeforeBigHoliday) ? PriceRowType.BigHolidayWeekendIWH : PriceRowType.InconvenientWorkingHours,
+                        dateTypes.Contains(DateType.DayBeforeBigHoliday) ? PriceListRowType.BigHolidayWeekendIWH : PriceListRowType.InconvenientWorkingHours,
                         prices
                     );
                 }
@@ -272,7 +273,7 @@ namespace Tolk.BusinessLogic.Services
                     yield return GetPriceInformation(
                         start,
                         start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : endAt,
-                        PriceRowType.WeekendIWH,
+                        PriceListRowType.WeekendIWH,
                         prices
                      );
                 }
@@ -283,7 +284,7 @@ namespace Tolk.BusinessLogic.Services
                     yield return GetPriceInformation(
                         start.Date.AddHours(7).ToDateTimeOffsetSweden(),
                         start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
-                        PriceRowType.WeekendIWH,
+                        PriceListRowType.WeekendIWH,
                         prices
                     );
                 }
@@ -316,7 +317,7 @@ namespace Tolk.BusinessLogic.Services
             string hourTaxDescription = string.Empty;
             foreach (PriceRowBase priceRow in priceRows.OrderBy(r => r.PriceRowType))
             {
-                if (priceRow.PriceListRow != null && priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice)
+                if (priceRow.PriceListRow != null && priceRow.PriceListRow.PriceListRowType == PriceListRowType.BasePrice)
                 {
                     dpi.TaxTypeAndCompetenceLevelDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
                 }
@@ -327,9 +328,9 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else if (priceRow.PriceListRow != null)
                 {
-                    hourTaxDescription = priceRow.PriceListRow.PriceRowType == PriceRowType.BasePrice ? $", taxa {GetDescriptionHourTax(priceRow.PriceListRow.MaxMinutes)} h" : string.Empty;
+                    hourTaxDescription = priceRow.PriceListRow.PriceListRowType == PriceListRowType.BasePrice ? $", taxa {GetDescriptionHourTax(priceRow.PriceListRow.MaxMinutes)} h" : string.Empty;
                 }
-                string description = (priceRow.PriceListRow != null && priceRow.PriceRowType != PriceRowType.BrokerFee) ? priceRow.PriceListRow.PriceRowType.GetDescription() + hourTaxDescription : priceRow.PriceRowType == PriceRowType.BrokerFee ? priceRow.PriceRowType.GetDescription() + extraBrokerFee : priceRow.PriceRowType.GetDescription();
+                string description = (priceRow.PriceListRow != null && priceRow.PriceRowType != PriceRowType.BrokerFee) ? priceRow.PriceListRow.PriceListRowType.GetDescription() + hourTaxDescription : priceRow.PriceRowType == PriceRowType.BrokerFee ? priceRow.PriceRowType.GetDescription() + extraBrokerFee : priceRow.PriceRowType.GetDescription();
                 dpi.DisplayPriceRows.Add(new DisplayPriceRow { Description = description, Price = priceRow.Price * priceRow.Quantity });
             }
             //do not check if zero since sometimes you want to display thet it was 0 in travelcost
@@ -373,7 +374,7 @@ namespace Tolk.BusinessLogic.Services
 
         private List<PriceInformationBrokerFee> GetBrokerFeePriceList()
         {
-            List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceRowType == PriceRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
+            List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceListRowType == PriceListRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
             List<Ranking> ranks = _dbContext.Rankings.ToList();
 
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();

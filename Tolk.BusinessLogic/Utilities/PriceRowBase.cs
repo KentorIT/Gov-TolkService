@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Entities;
-
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Utilities
 {
