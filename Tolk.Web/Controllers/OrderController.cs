@@ -179,7 +179,17 @@ namespace Tolk.Web.Controllers
                         }).ToList()
                     };
                 }
-                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(order).OrderBy(e => e.Timestamp).ToList(), };
+                model.EventLog = new EventLogModel
+                {
+                    Entries = EventLogHelper.GetEventLog(order, new EventLogHelper.OrderMetaData
+                    {
+                        TerminatingRequest = order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker 
+                            || r.Status == RequestStatus.DeniedByTimeLimit)
+                            ? order.Requests.OrderBy(r => r.ExpiresAt).Last()
+                            : null,
+                    })
+                    .OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList(),
+                };
                 return View(model);
             }
             return Forbid();
@@ -511,6 +521,8 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(i => i.User)
                 .Include(o => o.Requests)
                     .ThenInclude(r => r.AnsweringUser)
+                .Include(o => o.Requests)
+                    .ThenInclude(r => r.ReceivedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments)
                 .ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);
