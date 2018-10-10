@@ -214,7 +214,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleDeliveredReplacedOrders()
         {
             var orderIds = await _tolkDbContext.Orders
-                .Where(o => o.Status == OrderStatus.ResponseAccepted && 
+                .Where(o => o.Status == OrderStatus.ResponseAccepted &&
                 o.ReplacingOrderId.HasValue && o.EndAt < _clock.SwedenNow)
                 .Select(o => o.OrderId)
                 .ToListAsync();
@@ -257,8 +257,8 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
-                .Include(r => r.Order).Where(r => (r.Order.Status == OrderStatus.RequestResponded 
-                || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) 
+                .Include(r => r.Order).Where(r => (r.Order.Status == OrderStatus.RequestResponded
+                || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
                 && r.Order.StartAt <= _clock.SwedenNow)
                 .Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                 .Select(r => r.RequestId)
@@ -391,18 +391,7 @@ namespace Tolk.BusinessLogic.Services
                     r.Status == RequestStatus.Received ||
                     r.Status == RequestStatus.Approved).Ranking.RankingId
                 );
-            foreach (var row in priceInformation.PriceRows)
-            {
-                order.PriceRows.Add(new OrderPriceRow
-                {
-                    StartAt = row.StartAt,
-                    EndAt = row.EndAt,
-                    PriceRowType = row.PriceRowType,
-                    PriceListRowId = row.PriceListRowId,
-                    Price = row.Price, 
-                    Quantity = row.Quantity
-                });
-            }
+            order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
             _tolkDbContext.SaveChanges();
         }
 

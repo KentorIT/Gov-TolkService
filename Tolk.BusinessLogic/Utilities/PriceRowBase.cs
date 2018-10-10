@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -27,5 +28,16 @@ namespace Tolk.BusinessLogic.Utilities
 
         [ForeignKey(nameof(PriceCalculationChargeId))]
         public PriceCalculationCharge PriceCalculationCharge { get; set; }
+
+        public int Minutes { get => (int)(EndAt - StartAt).TotalMinutes; }
+
+        public decimal TotalPrice { get => Price * Quantity; }
+
+        public decimal RoundedTotalPrice { get => RoundedPrice * Quantity; }
+
+        private decimal RoundedPrice { get => decimal.Round(Price, 2, MidpointRounding.AwayFromZero); }
+
+        public decimal Decimals { get => Quantity * (RoundedPrice - Math.Floor(RoundedPrice)); }
+
     }
 }

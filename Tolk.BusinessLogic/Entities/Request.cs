@@ -211,18 +211,7 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers.AddRange(requirementAnswers);
             Attachments = attachedFiles;
-            foreach (var row in priceInformation.PriceRows)
-            {
-                PriceRows.Add(new RequestPriceRow
-                {
-                    StartAt = row.StartAt,
-                    EndAt = row.EndAt,
-                    PriceRowType = row.PriceRowType,
-                    PriceListRowId = row.PriceListRowId,
-                    Price = row.Price,
-                    Quantity = row.Quantity
-                });
-            }
+            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
 
             Order.Status = OrderStatus.RequestResponded;
         }
@@ -257,18 +246,7 @@ namespace Tolk.BusinessLogic.Entities
                 Status = RequestStatus.Approved;
                 Order.Status = OrderStatus.ResponseAccepted;
             }
-            foreach (var row in priceInformation.PriceRows)
-            {
-                PriceRows.Add(new RequestPriceRow
-                {
-                    StartAt = row.StartAt,
-                    EndAt = row.EndAt,
-                    PriceRowType = PriceRowType.BrokerFee,
-                    PriceListRowId = row.PriceListRowId,
-                    Price = row.Price,
-                    Quantity = row.Quantity
-                });
-            }
+            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
         }
 
         public void ReplaceInterpreter(
@@ -305,18 +283,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows = new List<RequestPriceRow>();
             RequirementAnswers = new List<OrderRequirementRequestAnswer>(requirementAnswers);
             Attachments = attachments;
-            foreach (var row in priceInformation.PriceRows)
-            {
-                PriceRows.Add(new RequestPriceRow
-                {
-                    StartAt = row.StartAt,
-                    EndAt = row.EndAt,
-                    PriceRowType = row.PriceRowType,
-                    PriceListRowId = row.PriceListRowId,
-                    Price = row.Price,
-                    Quantity = row.Quantity
-                });
-            }
+            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             //if old request already was approved by customer
             if (oldRequest.Status == RequestStatus.Approved)
             {
@@ -393,7 +360,9 @@ namespace Tolk.BusinessLogic.Entities
                     EndAt = p.EndAt,
                     PriceRowType = p.PriceRowType,
                     PriceListRowId = p.PriceListRowId,
-                    Price = p.Price
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    PriceCalculationChargeId = p.PriceCalculationChargeId,
                 }).ToList();
         }
 

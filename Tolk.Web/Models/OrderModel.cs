@@ -486,15 +486,7 @@ namespace Tolk.Web.Models
                 },
                 PriceInformation = new PriceInformation
                 {
-                    PriceRows = order.PriceRows.Select(r => new PriceRow
-                    {
-                        StartAt = r.StartAt,
-                        EndAt = r.EndAt,
-                        PriceRowType = r.PriceRowType,
-                        Price = r.Price,
-                        Quantity = r.Quantity,
-                        PriceListRowId = r.PriceListRowId,
-                    }).ToList()
+                    PriceRows = order.PriceRows.OfType<PriceRowBase>().ToList()
                 },
 
                 PreviousRequests = order.Requests.Where(r =>

@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Utilities
 {
-
     public class PriceInformation
     {
-        public List<PriceRow> PriceRows { get; set; }
+        public List<PriceRowBase> PriceRows { get; set; }
 
-        public decimal TotalPrice
-        {
-            get
-            {
-                return PriceRows.Sum(p => p.TotalPrice);
-            }
-        }
+        public decimal TotalPrice { get => PriceRows.Sum(p => p.RoundedTotalPrice); }
     }
 }

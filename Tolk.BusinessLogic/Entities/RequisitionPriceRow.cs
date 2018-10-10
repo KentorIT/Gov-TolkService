@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Tolk.BusinessLogic.Utilities;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class RequisitionPriceRow : Utilities.PriceRowBase
+    public class RequisitionPriceRow : PriceRowBase
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequisitionPriceRowId { get; set; }

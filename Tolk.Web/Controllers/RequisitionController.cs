@@ -277,22 +277,12 @@ namespace Tolk.Web.Controllers
                             out useRequestRows,
                             model.TimeWasteNormalTime,
                             model.TimeWasteIWHTime,
-                            request.PriceRows.OfType<PriceRowBase>()
+                            request.PriceRows.OfType<PriceRowBase>(), 
+                            model.TravelCosts
                         );
 
                         requisition.UseRequestPriceRows = useRequestRows;
-                        foreach (var row in priceInformation.PriceRows)
-                        {
-                            requisition.PriceRows.Add(new RequisitionPriceRow
-                            {
-                                StartAt = row.StartAt,
-                                EndAt = row.EndAt,
-                                PriceRowType = row.PriceRowType,
-                                PriceListRowId = row.PriceListRowId,
-                                Price = row.Price,
-                                Quantity = row.Quantity
-                            });
-                        }
+                        requisition.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)));
                         foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == model.FileGroupKey))
                         {
                             _dbContext.TemporaryAttachmentGroups.Remove(tag);
@@ -410,9 +400,9 @@ namespace Tolk.Web.Controllers
             }
             else
             {
-                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts);
+                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
                 string invoiceInfo = string.Empty;
-                invoiceInfo += $"{priceInfo.TaxTypeAndCompetenceLevelDescription}\n\n";
+                invoiceInfo += $"{priceInfo.HeaderDescription}\n\n";
                 foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
                 {
                     invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
@@ -430,7 +420,7 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList(), requisition.TravelCosts),
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Fakturainformation",
                 UseDisplayHideInfo = false
             };
@@ -444,7 +434,7 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), request.ExpectedTravelCosts),
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris för avropssvar",
                 UseDisplayHideInfo = true
             };

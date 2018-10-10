@@ -148,6 +148,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking)
                 .Include(r => r.RequirementAnswers)
                 .Single(o => o.RequestId == id);
@@ -174,15 +175,14 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-		    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-		    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+		            .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+		            .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Interpreter).ThenInclude(i => i.User)
                     .Include(r => r.RequirementAnswers)
                     .Include(r => r.PriceRows)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-
                     .Single(o => o.RequestId == model.RequestId);
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -225,7 +225,7 @@ namespace Tolk.Web.Controllers
                                     CanSatisfyRequirement = ra.CanMeetRequirement
                                 }),
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                                GetPrices(request, model.InterpreterCompetenceLevel.Value)
+                                GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts)
                             );
                         }
                         CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
@@ -237,7 +237,7 @@ namespace Tolk.Web.Controllers
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
                             model.ExpectedTravelCosts,
-                            GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel)
+                            GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, model.ExpectedTravelCosts)
                         );
 
                         CreateEmailOnProcessReplacementOrder(request);
@@ -301,7 +301,7 @@ namespace Tolk.Web.Controllers
                     CanSatisfyRequirement = ra.CanMeetRequirement
                 }),
                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                GetPrices(request, model.InterpreterCompetenceLevel.Value),
+                GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts),
                 !request.Order.AllowMoreThanTwoHoursTravelTime,
                 request
                  );
@@ -368,20 +368,21 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel)
+        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal?  expectedTravelCost)
         {
             return _priceCalculationService.GetPrices(
                             request.Order.StartAt,
                             request.Order.EndAt,
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.RankingId);
+                            request.Ranking.RankingId, 
+                            expectedTravelCost);
         }
 
         private RequestModel GetModel(Request request)
         {
             var model = RequestModel.GetModelFromRequest(request);
-            model.CalculatedPrice = GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(model.OrderModel.RequestedCompetenceLevels)).TotalPrice;
+            model.CalculatedPrice = GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(model.OrderModel.RequestedCompetenceLevels), request.ExpectedTravelCosts).TotalPrice;
             if (request.InterpreterLocation != null)
             {
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
