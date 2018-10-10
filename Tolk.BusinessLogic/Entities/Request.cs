@@ -146,6 +146,12 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string CancelMessage { get; set; }
 
+        public int? ReplacingRequestId { get; set; }
+
+        [ForeignKey(nameof(ReplacingRequestId))]
+        [InverseProperty(nameof(ReplacedByRequest))]
+        public Request ReplacingRequest { get; set; }
+
         #region navigation
 
         public List<RequestAttachment> Attachments { get; set; }
@@ -157,6 +163,9 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequestPriceRow> PriceRows { get; set; }
 
         public List<Complaint> Complaints { get; set; }
+
+        [InverseProperty(nameof(ReplacingRequest))]
+        public Request ReplacedByRequest { get; set; }
 
         #endregion
 
@@ -280,6 +289,7 @@ namespace Tolk.BusinessLogic.Entities
             ReceivedBy = oldRequest.ReceivedBy;
             RecievedAt = oldRequest.RecievedAt;
             ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
+            ReplacingRequestId = oldRequest.RequestId;
             PriceRows = new List<RequestPriceRow>();
             RequirementAnswers = new List<OrderRequirementRequestAnswer>(requirementAnswers);
             Attachments = attachments;

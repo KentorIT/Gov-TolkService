@@ -806,6 +806,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTimeOffset?>("RecievedAt");
 
+                    b.Property<int?>("ReplacingRequestId");
+
                     b.Property<int>("Status");
 
                     b.HasKey("RequestId");
@@ -835,6 +837,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("RankingId");
 
                     b.HasIndex("ReceivedBy");
+
+                    b.HasIndex("ReplacingRequestId")
+                        .IsUnique()
+                        .HasFilter("[ReplacingRequestId] IS NOT NULL");
 
                     b.ToTable("Requests");
                 });
@@ -1323,6 +1329,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ReceivedBy")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "ReplacingRequest")
+                        .WithOne("ReplacedByRequest")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.Request", "ReplacingRequestId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>

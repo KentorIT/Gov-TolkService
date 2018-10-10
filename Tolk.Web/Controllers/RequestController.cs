@@ -149,10 +149,13 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking)
                 .Include(r => r.RequirementAnswers)
+                .Include(r => r.ReplacingRequest)
+                .Include(r => r.ReplacedByRequest)
                 .Single(o => o.RequestId == id);
             RequestModel model = GetModel(request);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
