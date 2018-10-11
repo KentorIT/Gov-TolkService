@@ -66,6 +66,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset? LastLoginAt { get; set; }
 
+        public bool IsActive { get; set; }
+
         public static AspNetUser CreateInterpreter(string email)
         {
             var user = new AspNetUser(email)

@@ -196,7 +196,7 @@ namespace Tolk.Web.Controllers
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
-
+            
             var body =
 $@"Hej!
 
@@ -204,6 +204,8 @@ För att återställa ditt lösenord i {Constants.SystemName}, använd följande
 
 {resetLink}
 
+{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
 supporten på {_options.SupportEmail}";
@@ -253,6 +255,14 @@ supporten på {_options.SupportEmail}";
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
+                if (!user.IsActive)
+                {
+                    //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
+                    await _signInManager.SignOutAsync();
+                    _logger.LogInformation("Inactivated User {userName} tried to log in.", model.Email);
+                    ModelState.AddModelError(string.Empty, "Användaren är inaktiverad. Kontakta din lokala administratör för mer information.");
+                    return View(model);
+                }
                 user.LastLoginAt = _clock.SwedenNow;
                 await _userManager.UpdateAsync(user);
                 _logger.LogInformation("User {userName} logged in.", model.Email);
@@ -365,7 +375,7 @@ supporten på {_options.SupportEmail}";
                 var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    if (!User.Identity.IsAuthenticated)
+                    if (!User.Identity.IsAuthenticated && user.IsActive)
                     {
                         await _signInManager.SignInAsync(user, true);
                     }
@@ -382,7 +392,6 @@ supporten på {_options.SupportEmail}";
         {
             return View();
         }
-
 
         [HttpGet]
         public IActionResult AccessDenied()
