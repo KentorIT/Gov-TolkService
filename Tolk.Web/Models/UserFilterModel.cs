@@ -26,6 +26,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Roll")]
         public SearchableRoles? Roles { get; set; }
 
+        [Display(Name = "Endast aktiva användare")]
+        public bool OnlyActive { get; set; } = false;
+
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
             users = !string.IsNullOrWhiteSpace(Name)
@@ -72,7 +75,10 @@ namespace Tolk.Web.Models
                         (u.CustomerOrganisationId != null || u.BrokerId != null) );
                 }
             }
-
+            if (OnlyActive)
+            {
+                users = users.Where(u => u.IsActive);
+            }
             return users;
         }
     }

@@ -213,7 +213,7 @@ namespace Tolk.Web.Services
                     var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.Admin).Id;
 
                     items = _dbContext.Users
-                        .Where(u => !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
+                        .Where(u => u.IsActive && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
                         .Select(u => new SelectListItem
                         {
                             Text = u.UserName,

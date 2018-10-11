@@ -21,5 +21,7 @@ namespace Tolk.Web.Models
         public string Organisation { get; set; }
 
         public string LastLoginAt { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

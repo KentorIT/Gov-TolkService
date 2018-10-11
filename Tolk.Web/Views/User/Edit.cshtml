@@ -15,6 +15,7 @@
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
             <form-entry asp-for="IsSuperUser" />
+            <form-entry asp-for="IsActive" />
             <button type="submit" class="btn btn-success">Spara</button>
             <a class="btn btn-danger pull-right do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt</a>
         </form>

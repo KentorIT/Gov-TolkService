@@ -24,7 +24,7 @@
                         @foreach (var item in Model.Items)
                         {
                         <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
-                            <td>@item.Name</td>
+                            <td>@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
                             <td>@item.Email</td>
                             <td>@item.Organisation</td>
                             <td>@item.LastLoginAt</td>

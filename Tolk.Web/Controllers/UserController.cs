@@ -10,7 +10,6 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.Web.Models.AccountViewModels;
 
 namespace Tolk.Web.Controllers
 {
@@ -42,14 +41,16 @@ namespace Tolk.Web.Controllers
             {
                 users = model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name }).ToList());
             }
-            return View(new UserListModel{
+            return View(new UserListModel
+            {
                 Items = users.Select(u => new UserListItemModel
                 {
                     UserId = u.Id,
                     Email = u.Email,
                     Name = u.FullName,
                     Organisation = u.CustomerOrganisation.Name ?? u.Broker.Name ?? "-",
-                    LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-"
+                    LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-",
+                    IsActive = u.IsActive
                 }),
                 FilterModel = model
             });
@@ -67,7 +68,9 @@ namespace Tolk.Web.Controllers
                 Email = user.Email,
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId)
+                IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
+                LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
+                IsActive = user.IsActive
             };
 
             return View(model);
@@ -98,8 +101,9 @@ namespace Tolk.Web.Controllers
             var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
             user.NameFirst = model.NameFirst;
             user.NameFamily = model.NameFamily;
-            user.PhoneNumber= model.PhoneWork;
+            user.PhoneNumber = model.PhoneWork;
             user.PhoneNumberCellphone = model.PhoneCellphone;
+            user.IsActive = model.IsActive;
             if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
             {
                 await _userManager.AddToRoleAsync(user, Roles.SuperUser);

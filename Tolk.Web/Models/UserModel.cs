@@ -33,5 +33,11 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Lokal administratör")]
         public bool IsSuperUser { get; set; }
+
+        [Display(Name = "Aktiv")]
+        public bool IsActive { get; set; }
+
+        [Display(Name = "Senaste inloggning")]
+        public string LastLoginAt { get; set; }
     }
 }
