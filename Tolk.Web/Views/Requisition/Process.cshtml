@@ -16,6 +16,7 @@
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
         <display-entry asp-for="RequisitionCreatedBy" />
+        <display-entry asp-for="InterpreterName" />
         <display-entry asp-for="CreatedAt" />
         <display-entry asp-for="Status" />
         <display-entry asp-for="ExpectedStartedAt" />
