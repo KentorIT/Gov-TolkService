@@ -609,10 +609,19 @@ supporten på {_options.SupportEmail}";
         }
 
         [HttpGet]
-        public IActionResult RegisterNewAccount(string userId, string pToken)
+        public async Task<IActionResult> RegisterNewAccount(string userId, string pToken)
         {
-            var model = new RegisterNewAccountViewModel { UserId = userId, PasswordToken = pToken };
-            return View(model);
+            //Get the user, and fill the model with the data that already exists...
+            var user = await _userManager.FindByIdAsync(userId);
+            return View(new RegisterNewAccountViewModel
+            {
+                UserId = userId,
+                PasswordToken = pToken,
+                NameFirst = user.NameFirst,
+                NameFamily = user.NameFamily,
+                PhoneCellphone = user.PhoneNumberCellphone,
+                PhoneWork = user.PhoneNumber,
+            });
         }
 
         [HttpPost]

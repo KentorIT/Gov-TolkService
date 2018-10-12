@@ -9,11 +9,12 @@ namespace Tolk.Web.Models
 {
     public class UserModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [Display(Name = "Namn")]
         public string NameFull => $"{NameFirst} {NameFamily}";
 
+        [ClientRequired]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
@@ -35,9 +36,15 @@ namespace Tolk.Web.Models
         public bool IsSuperUser { get; set; }
 
         [Display(Name = "Aktiv")]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         [Display(Name = "Senaste inloggning")]
         public string LastLoginAt { get; set; }
+
+        [Display(Name = "Organisation")]
+        public string Organisation { get; set; }
+
+        [Display(Name = "Organisation")]
+        public string OrganisationIdentifier { get; set; }
     }
 }

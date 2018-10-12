@@ -107,6 +107,9 @@
     <Content Update="Views\Contract\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\User\Create.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\User\Edit.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

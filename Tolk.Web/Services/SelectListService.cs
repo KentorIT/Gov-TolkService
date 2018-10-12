@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -153,7 +151,7 @@ namespace Tolk.Web.Services
         public IEnumerable<SelectListItem> Organizations
         {
             get
-            { 
+            {
                 if (!_cache.TryGetValue(organisationsSelectListKey, out IEnumerable<SelectListItem> items))
                 {
                     items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
@@ -166,7 +164,13 @@ namespace Tolk.Web.Services
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
                             Value = $"{b.BrokerId.ToString()}_{OrganisationType.Broker }",
-                        })).ToList().AsReadOnly();
+                        }).Union(new SelectListItem
+                        {
+                            Text = "Kammarkollegiet",
+                            Value = $"0_{OrganisationType.Owner }"
+                        }.WrapInEnumerable()
+                        ))
+                        .ToList().AsReadOnly();
 
                     _cache.Set(customersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
                 }
@@ -207,8 +211,7 @@ namespace Tolk.Web.Services
                     Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
                     Selected = impersonatedUserId == null
                 };
-                IEnumerable<SelectListItem> items;
-                if (!_cache.TryGetValue(impersonationTargets, out items))
+                if (!_cache.TryGetValue(impersonationTargets, out IEnumerable<SelectListItem> items))
                 {
                     var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.Admin).Id;
 
@@ -269,7 +272,7 @@ namespace Tolk.Web.Services
                 Text = "Ny tolk"
             };
 
-            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId && b.AcceptedByInterpreter)) 
+            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId && b.AcceptedByInterpreter))
 
             .Select(i => new SelectListItem
             {
@@ -277,7 +280,7 @@ namespace Tolk.Web.Services
                 Text = i.User.UserName
             });
 
-            foreach(var i in interpretersInDb)
+            foreach (var i in interpretersInDb)
             {
                 yield return i;
             }

@@ -47,6 +47,9 @@ namespace Tolk.Web.Models
                     case OrganisationType.Broker:
                         users = users.Where(u => u.BrokerId == id);
                         break;
+                    case OrganisationType.Owner:
+                        users = users.Where(u => !u.BrokerId.HasValue && !u.CustomerOrganisationId.HasValue && !u.InterpreterId.HasValue);
+                        break;
                     default:
                         throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when searching users.");
                 }
@@ -98,6 +101,9 @@ namespace Tolk.Web.Models
 
         [Description("Tolkförmedling")]
         Broker = 2,
+
+        [Description("Systemägare")]
+        Owner = 3,
     }
 
     [Flags]
