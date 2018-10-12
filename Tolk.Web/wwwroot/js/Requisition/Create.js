@@ -28,7 +28,7 @@ function checkTravelCost() {
     var travelCost = $('#TravelCosts').val();
 
     if (travelCost = "" || isNaN(parseInt(travelCost)) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
-        triggerValidator("Restid måste ha ett värde mellan 0 och 100 000 kr <br \><br \>", $('#travelCostsValidator'));
+        triggerValidator("Resekostnad måste ha ett värde mellan 0 och 100 000 kr <br \><br \>", $('#travelCostsValidator'));
     }
     else {
         $('#create').attr('disabled', false);
