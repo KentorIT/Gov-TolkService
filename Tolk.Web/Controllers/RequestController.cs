@@ -93,6 +93,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
+                .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)

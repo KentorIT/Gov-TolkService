@@ -34,7 +34,7 @@ namespace Tolk.Web.Helpers
             {
                 foreach (var request in order.Requests)
                 {
-                    eventLog.AddRange(GetEventLog(request, true));
+                    eventLog.AddRange(GetEventLog(request, false));
                 }
             }
             // Order replaced
@@ -70,16 +70,21 @@ namespace Tolk.Web.Helpers
             return eventLog;
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Request request, bool verbose = false)
+        public static List<EventLogEntryModel> GetEventLog(Request request, bool isRequestDetailView = true)
         {
             var eventLog = new List<EventLogEntryModel>();
+            if (isRequestDetailView && request.ReplacingRequestId.HasValue)
+            {
+                // Include event log for previous request, if this is the requests detail view
+                eventLog.AddRange(GetEventLog(request.ReplacingRequest));
+            }
             if (!request.ReplacingRequestId.HasValue)
             {
                 // Request creation
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
-                    EventDetails = verbose ? $"Förfrågan skickad till {request.Ranking.Broker.Name}" : "Förfrågan inkommen",
+                    EventDetails = isRequestDetailView ? "Förfrågan inkommen" : $"Förfrågan skickad till {request.Ranking.Broker.Name}",
                     Actor = "Systemet",
                 });
             }
@@ -141,15 +146,6 @@ namespace Tolk.Web.Helpers
                         Organization = request.ProcessingUser.CustomerOrganisation.Name,
                     });
                 }
-                else if (request.Status == RequestStatus.ResponseNotAnsweredByCreator)
-                {
-                    eventLog.Add(new EventLogEntryModel
-                    {
-                        Timestamp = request.AnswerProcessedAt.Value,
-                        EventDetails = $"Obesvarad tillsättning automatiskt nekad, tiden gick ut",
-                        Actor = "Systemet",
-                    });
-                }
                 else
                 {
                     if (request.ReplacingRequestId.HasValue)
@@ -187,6 +183,16 @@ namespace Tolk.Web.Helpers
                         });
                     }
                 }
+            }
+            else if (request.Status == RequestStatus.ResponseNotAnsweredByCreator)
+            {
+                // TODO: Check when unanswered response should expire
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.Order.StartAt.AddHours(-1.0),
+                    EventDetails = $"Obesvarad tillsättning automatiskt nekad, tiden gick ut",
+                    Actor = "Systemet",
+                });
             }
             // Request cancellation
             if (request.CancelledAt.HasValue)
