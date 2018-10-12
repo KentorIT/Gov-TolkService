@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
 using Xunit;
 using FluentAssertions;
 using Tolk.BusinessLogic.Data;
 using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 
 namespace Tolk.BusinessLogic.Tests.Services
 {
@@ -21,21 +17,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
             {
-                var holidays = new[] {
-                    new Holiday() { Date = new DateTime(2018,03,29), DateType=DateType.DayBeforeBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,03,30), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,01), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,02), DateType=DateType.BigHolidayFullDay},
-                    new Holiday() { Date = new DateTime(2018,04,03), DateType=DateType.DayAfterBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,05,01), DateType=DateType.Holiday},
-                    new Holiday() { Date = new DateTime(2018,05,10), DateType=DateType.Holiday},
-                    new Holiday() { Date = new DateTime(2018,05,18), DateType=DateType.DayBeforeBigHoliday},
-                    new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
-                };
-
-                tolkDbContext.AddRange(holidays.Where(newHoliday =>
+                tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
                 !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
-
                 tolkDbContext.SaveChanges();
             }
         }

@@ -33,6 +33,12 @@ namespace Tolk.BusinessLogic.Services
             _cache = cache;
         }
 
+        public PriceCalculationService(TolkDbContext tolkDbContext = null, IMemoryCache cache = null)
+        {
+            _dbContext = tolkDbContext;
+            _cache = cache;
+        }
+
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
         {
             var prices = GetPriceList(startAt, endAt, competenceLevel, listType);
@@ -46,12 +52,7 @@ namespace Tolk.BusinessLogic.Services
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
             var priceRowsToCompareRequest = requestPriceRows.Where(plr =>
-                 plr.PriceRowType == PriceRowType.InterpreterCompensation &&
-                 (plr.PriceListRow.PriceListRowType == PriceListRowType.BasePrice ||
-                 plr.PriceListRow.PriceListRowType == PriceListRowType.PriceOverMaxTime ||
-                 plr.PriceListRow.PriceListRowType == PriceListRowType.InconvenientWorkingHours ||
-                 plr.PriceListRow.PriceListRowType == PriceListRowType.WeekendIWH ||
-                 plr.PriceListRow.PriceListRowType == PriceListRowType.BigHolidayWeekendIWH)).ToList();
+                 plr.PriceRowType == PriceRowType.InterpreterCompensation).ToList();
 
             useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsToCompareRequest);
             if (useRequestPricerows)
@@ -90,7 +91,7 @@ namespace Tolk.BusinessLogic.Services
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = travelCost.Value, Quantity = 1, PriceRowType = PriceRowType.TravelCost };
         }
 
-        private PriceRowBase GetRoundedPriceRow(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> allPriceRows)
+        public PriceRowBase GetRoundedPriceRow(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> allPriceRows)
         {
             decimal roundings = 0;
             allPriceRows.Sum(pr => roundings += pr.Decimals);
@@ -100,7 +101,7 @@ namespace Tolk.BusinessLogic.Services
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = roundings, Quantity = 1, PriceRowType = PriceRowType.RoundedPrice };
         }
 
-        private IEnumerable<PriceRowBase> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
+        public IEnumerable<PriceRowBase> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
         {
             //Get lost times, if any, they should not get payed for less than 30 min
             if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
@@ -113,7 +114,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private List<PriceListRow> GetPriceList(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType)
+        public List<PriceListRow> GetPriceList(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType)
         {
             return _dbContext.PriceListRows.Where(r =>
                 r.CompetenceLevel == competenceLevel &&
@@ -123,15 +124,15 @@ namespace Tolk.BusinessLogic.Services
 
         private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequest)
         {
-            return priceToCompareRequest.Sum(p => p.Price * p.Quantity) > priceToCompareRequsition.Sum(p => p.TotalPrice);
+            return priceToCompareRequest.Sum(p => p.TotalPrice) > priceToCompareRequsition.Sum(p => p.TotalPrice);
         }
 
-        private PriceRowBase GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)
+        public PriceRowBase GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)
         {
             return GetPriceCalculationCharge(startAt, endAt, priceListRowsPerPriceType, ChargeType.SocialInsuranceCharge);
         }
 
-        private PriceRowBase GetPriceRowAdministrativeCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)
+        public PriceRowBase GetPriceRowAdministrativeCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)
         {
             return GetPriceCalculationCharge(startAt, endAt, priceListRowsPerPriceType, ChargeType.AdministrativeCharge);
         }
@@ -166,7 +167,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private int GetNoOfDays(DateTimeOffset startAt, DateTimeOffset endAt)
+        public int GetNoOfDays(DateTimeOffset startAt, DateTimeOffset endAt)
         {
             int days = (endAt.Date - startAt.Date).Days + 1;
             days -= endAt.TimeOfDay == TimeSpan.Zero ? 1 : 0; //if ends at midnight no extra day
@@ -297,7 +298,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private IEnumerable<DateType> GetDateTypes(DateTime date)
+        public IEnumerable<DateType> GetDateTypes(DateTime date)
         {
             yield return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday ? DateType.Weekend : DateType.WeekDay;
             var holidayDayType = GetHolidayDayTypeIfAny(date);
@@ -315,7 +316,6 @@ namespace Tolk.BusinessLogic.Services
 
         public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
         {
-
             DisplayPriceInformation dpiTotal = new DisplayPriceInformation();
             DisplayPriceInformation separateSubTotalInterpreterCompensation = new DisplayPriceInformation
             {
@@ -403,7 +403,7 @@ namespace Tolk.BusinessLogic.Services
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
             foreach (var item in prices)
             {
-                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId.Value, StartDatePriceList = item.StartDate, RoundDecimals = _options.RoundPriceDecimals }).ToList());
+                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId.Value, StartDatePriceList = item.StartDate, RoundDecimals = _options == null ? true : _options.RoundPriceDecimals }).ToList());
             }
             return priceListBrokerFee;
         }
