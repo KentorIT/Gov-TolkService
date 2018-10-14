@@ -33,6 +33,9 @@ namespace Tolk.Web.Models
 
         public RequestStatus? Status { get; set; }
 
+        [Display(Name = "Besvarad av")]
+        public int? AnsweredById { get; set; }
+
         internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
             items = !string.IsNullOrWhiteSpace(OrderNumber)
@@ -62,6 +65,9 @@ namespace Tolk.Web.Models
             items = Status.HasValue
                 ? Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == Status)
                  : items;
+            items = AnsweredById.HasValue
+                ? items.Where(i => i.AnsweredBy == AnsweredById)
+                : items;
 
             return items;
         }

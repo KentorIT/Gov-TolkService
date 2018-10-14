@@ -16,7 +16,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapad av")]
         public int? CustomerContactId { get; set; }
 
+        [Display(Name = "Besvarad av")]
+        public int? BrokerContactId { get; set; }
+
         public bool IsCustomerSuperUser { get; set; }
+
+        public bool IsBrokerUser { get; set; }
 
         internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
@@ -28,6 +33,7 @@ namespace Tolk.Web.Models
             items = Status.HasValue ? items.Where(c => c.Status == Status) : items;
 
             items = CustomerContactId.HasValue ? items.Where(c => c.CreatedBy == CustomerContactId) : items;
+            items = BrokerContactId.HasValue ? items.Where(c => c.AnsweredBy == BrokerContactId) : items;
             return items;
         }
     }

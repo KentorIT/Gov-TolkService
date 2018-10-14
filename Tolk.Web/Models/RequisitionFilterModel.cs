@@ -1,13 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -25,7 +19,13 @@ namespace Tolk.Web.Models
         public RequisitionStatus? Status { get; set; }
         [Display(Name = "Filtrera på kontaktperson")]
         public bool? FilterByContact { get; set; }
+
         public bool IsCustomer { get; set; }
+
+        public bool IsBroker { get; set; }
+
+        [Display(Name = "Skapad av")]
+        public int? CreatedById { get; set; }
 
         internal IQueryable<Requisition> Apply(IQueryable<Requisition> requisitions)
         {
@@ -43,6 +43,9 @@ namespace Tolk.Web.Models
                 : requisitions;
             requisitions = Status.HasValue
                 ? requisitions = requisitions.Where(r => r.Status == Status)
+                : requisitions;
+            requisitions = CreatedById.HasValue
+                ? requisitions = requisitions.Where(r => r.CreatedBy == CreatedById)
                 : requisitions;
 
             return requisitions;

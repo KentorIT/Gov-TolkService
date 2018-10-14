@@ -17,6 +17,12 @@
                     <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
                 </div>
             }
+            @if (Model.IsBrokerUser)
+            {
+                <div class="col-xs-3">
+                    <form-entry asp-for="BrokerContactId" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
+                </div>
+            }
         </div>
     </form>
 </div>

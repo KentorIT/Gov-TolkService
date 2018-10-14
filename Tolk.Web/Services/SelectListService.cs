@@ -262,6 +262,44 @@ namespace Tolk.Web.Services
             }
         }
 
+        public IEnumerable<SelectListItem> BrokerUsers
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                var brokerId = currentUser.TryGetBrokerId();
+                return _dbContext.Users
+                    .Where(u => u.BrokerId == brokerId)
+                    .Select(u => new SelectListItem
+                    {
+                        Text = $"{u.UserName}",
+                        Value = u.Id.ToString(),
+                    }).ToList();
+            }
+        }
+
+        public IEnumerable<SelectListItem> BrokerUsersAndInterpreters
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                var brokerId = currentUser.TryGetBrokerId();
+                return _dbContext.Users
+                    .Where(u => u.BrokerId == brokerId)
+                    .Select(u => new SelectListItem
+                    {
+                        Text = $"{u.UserName} (Handläggare)",
+                        Value = u.Id.ToString(),
+                    }).Union(_dbContext.Users.Where(u => u.Interpreter.Brokers.Any(b => b.BrokerId == brokerId))
+                        .Select(u => new SelectListItem
+                        {
+                            Text = $"{u.UserName} (Tolk)",
+                            Value = u.Id.ToString(),
+                        })
+                    ).ToList();
+            }
+        }
+
         public const int NewInterpreterId = -1;
 
         public IEnumerable<SelectListItem> GetInterpreters(int brokerId)

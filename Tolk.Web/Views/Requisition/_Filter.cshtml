@@ -9,7 +9,7 @@
                 <form-entry asp-for="OrderNumber" />
             </div>
             <div class="col-xs-4">
-                <form-entry asp-for="DateRange"/>
+                <form-entry asp-for="DateRange" />
             </div>
             <div class="col-xs-3">
                 <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
@@ -21,6 +21,12 @@
         @if (Model.IsCustomer)
         {
             <form-entry asp-for="FilterByContact" type="checkbox" />
+        }
+        @if (Model.IsBroker)
+        {
+            <div class="col-xs-3">
+                <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+            </div>
         }
     </form>
 </div>

@@ -217,6 +217,7 @@ namespace Tolk.Web.Controllers
             }
 
             model.IsCustomer = customerId.HasValue;
+            model.IsBroker = brokerId.HasValue;
 
             return View(
                 new RequisitionListModel

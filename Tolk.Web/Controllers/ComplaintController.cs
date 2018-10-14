@@ -125,7 +125,8 @@ namespace Tolk.Web.Controllers
             {
                 items = model.Apply(items);
             }
-            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser);
+            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
+            model.IsBrokerUser = brokerId.HasValue;
             return View(
                 new ComplaintListModel
                 {
