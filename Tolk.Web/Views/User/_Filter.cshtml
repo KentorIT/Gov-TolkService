@@ -8,9 +8,12 @@
             <div class="col-xs-3">
                 <form-entry asp-for="Name" />
             </div>
-            <div class="col-xs-3">
-                <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organizations" class="allow-clear" />
-            </div>
+            @if (Model.IsSystemAdministrator)
+            {
+                <div class="col-xs-3">
+                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organizations" class="allow-clear" />
+                </div>
+            }
             <div class="col-xs-3">
                 <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
             </div>

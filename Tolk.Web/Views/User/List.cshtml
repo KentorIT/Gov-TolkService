@@ -21,7 +21,10 @@
                         <tr>
                             <th>Namn</th>
                             <th>Email</th>
-                            <th>Organisation</th>
+                            @if (Model.FilterModel.IsSystemAdministrator)
+                            {
+                                <th>Organisation</th>
+                            }
                             <th>Senaste inloggning</th>
                         </tr>
                     </thead>
@@ -31,7 +34,10 @@
                             <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
                                 <td>@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
                                 <td>@item.Email</td>
-                                <td>@item.Organisation</td>
+                                @if (Model.FilterModel.IsSystemAdministrator)
+                                {
+                                    <td>@item.Organisation</td>
+                                }
                                 <td>@item.LastLoginAt</td>
                             </tr>
                         }

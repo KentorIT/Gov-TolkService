@@ -53,12 +53,23 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
         {
+            var user = context.User;
             switch (context.Resource)
             {
                 case Order order:
                     return order.CreatedBy == context.User.GetUserId();
                 case Request request:
                     return request.Ranking.BrokerId == context.User.GetBrokerId();
+                case AspNetUser editedUser:
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return user.IsInRole(Roles.SuperUser) && editedUser.BrokerId == user.GetBrokerId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return user.IsInRole(Roles.SuperUser) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                    }
+                    return user.IsInRole(Roles.Admin);
                 default:
                     throw new NotImplementedException();
             }
@@ -261,6 +272,16 @@ namespace Tolk.Web.Authorization
                             attachment.Orders.Any(o => o.Order.Requests.Any(r => r.InterpreterId == user.GetInterpreterId()));
                     }
                     return false;
+                case AspNetUser viewUser:
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    {
+                        return user.IsInRole(Roles.SuperUser) && viewUser.BrokerId == user.GetBrokerId();
+                    }
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        return user.IsInRole(Roles.SuperUser) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                    }
+                    return user.IsInRole(Roles.Admin);
                 default:
                     throw new NotImplementedException();
             }

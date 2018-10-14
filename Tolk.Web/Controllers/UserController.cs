@@ -17,7 +17,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = Roles.AdminRoles)]
     public class UserController : Controller
     {
         private readonly UserManager<AspNetUser> _userManager;
@@ -25,13 +25,15 @@ namespace Tolk.Web.Controllers
         private readonly ILogger<InterpreterController> _logger;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly UserService _userService;
+        private readonly IAuthorizationService _authorizationService;
 
         public UserController(
             UserManager<AspNetUser> userManager,
             TolkDbContext dbContext,
             ILogger<InterpreterController> logger,
             RoleManager<IdentityRole<int>> roleManager,
-            UserService userService
+            UserService userService,
+            IAuthorizationService authorizationService
 )
         {
             _userManager = userManager;
@@ -39,11 +41,28 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _roleManager = roleManager;
             _userService = userService;
+            _authorizationService = authorizationService;
         }
 
         public ActionResult List(UserFilterModel model)
         {
+            var customerId = User.TryGetCustomerOrganisationId();
+            var brokerId = User.TryGetBrokerId();
+            model.IsSystemAdministrator = User.IsInRole(Roles.Admin);
+
             var users = _dbContext.Users.Select(u => u);
+            if (customerId.HasValue)
+            {
+                users = users.Where(u => u.CustomerOrganisationId == customerId);
+            }
+            else if (brokerId.HasValue)
+            {
+                users = users.Where(u => u.BrokerId == brokerId);
+            }
+            else if (!User.IsInRole(Roles.Admin))
+            {
+                return Forbid();
+            }
             if (model != null)
             {
                 users = model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name }).ToList());
@@ -63,55 +82,56 @@ namespace Tolk.Web.Controllers
             });
         }
 
-        public ActionResult View(int id)
+        public async Task<ActionResult> View(int id)
         {
             var user = _userManager.Users
-                .Include(u => u.Roles)
-                .Include(u => u.CustomerOrganisation)
-                .Include(u => u.Broker)
-                .SingleOrDefault(u => u.Id == id);
-            int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
-            var model = new UserModel
+            .Include(u => u.Roles)
+            .Include(u => u.CustomerOrganisation)
+            .Include(u => u.Broker)
+            .SingleOrDefault(u => u.Id == id);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
-                Id = id,
-                NameFirst = user.NameFirst,
-                NameFamily = user.NameFamily,
-                Email = user.Email,
-                PhoneWork = user.PhoneNumber ?? "-",
-                PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
-                LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
-                Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
-                IsActive = user.IsActive
-            };
+                int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
+                var model = new UserModel
+                {
+                    Id = id,
+                    NameFirst = user.NameFirst,
+                    NameFamily = user.NameFamily,
+                    Email = user.Email,
+                    PhoneWork = user.PhoneNumber ?? "-",
+                    PhoneCellphone = user.PhoneNumberCellphone ?? "-",
+                    IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
+                    LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
+                    Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
+                    IsActive = user.IsActive
+                };
 
-            return View(model);
+                return View(model);
+            }
+            return Forbid();
         }
 
-        public ActionResult Create()
-        {
-            return View(new UserModel());
-        }
-
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
             int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
             var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == id);
-
-            var model = new UserModel
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
-                Id = user.Id,
-                Email = user.Email,
-                NameFirst = user.NameFirst,
-                NameFamily = user.NameFamily,
-                PhoneWork = user.PhoneNumber,
-                PhoneCellphone = user.PhoneNumberCellphone,
-                IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
-                IsActive = user.IsActive
+                var model = new UserModel
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    NameFirst = user.NameFirst,
+                    NameFamily = user.NameFamily,
+                    PhoneWork = user.PhoneNumber,
+                    PhoneCellphone = user.PhoneNumberCellphone,
+                    IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
+                    IsActive = user.IsActive
 
-            };
-
-            return View(model);
+                };
+                return View(model);
+            }
+            return Forbid();
         }
 
         [HttpPost]
@@ -119,25 +139,29 @@ namespace Tolk.Web.Controllers
         {
             int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
             var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
-            if (user is null)
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
-                user = new AspNetUser(model.Email);
+                user.NameFirst = model.NameFirst;
+                user.NameFamily = model.NameFamily;
+                user.PhoneNumber = model.PhoneWork;
+                user.PhoneNumberCellphone = model.PhoneCellphone;
+                user.IsActive = model.IsActive;
+                if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
+                {
+                    await _userManager.AddToRoleAsync(user, Roles.SuperUser);
+                }
+                else if (!model.IsSuperUser && user.Roles.Any(r => r.RoleId == superUserId))
+                {
+                    await _userManager.RemoveFromRoleAsync(user, Roles.SuperUser);
+                }
+                await _userManager.UpdateAsync(user);
             }
-            user.NameFirst = model.NameFirst;
-            user.NameFamily = model.NameFamily;
-            user.PhoneNumber = model.PhoneWork;
-            user.PhoneNumberCellphone = model.PhoneCellphone;
-            user.IsActive = model.IsActive;
-            if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.SuperUser);
-            }
-            else if (!model.IsSuperUser && user.Roles.Any(r => r.RoleId == superUserId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.SuperUser);
-            }
-            await _userManager.UpdateAsync(user);
             return RedirectToAction(nameof(View), model);
+        }
+
+        public ActionResult Create()
+        {
+            return View(new UserModel { EditorIsSystemAdministrator = User.IsInRole(Roles.Admin) });
         }
 
         [HttpPost]
@@ -145,6 +169,9 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                var customerId = User.TryGetCustomerOrganisationId();
+                var brokerId = User.TryGetBrokerId();
+
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
                     var user = new AspNetUser(model.Email)
@@ -153,33 +180,38 @@ namespace Tolk.Web.Controllers
                         NameFamily = model.NameFamily,
                         PhoneNumber = model.PhoneWork,
                         PhoneNumberCellphone = model.PhoneCellphone,
-                        IsActive = model.IsActive
+                        IsActive = true,
+                        CustomerOrganisationId = customerId,
+                        BrokerId = brokerId
                     };
                     var additionalRoles = new List<string>();
-                    if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
+                    if (User.IsInRole(Roles.Admin))
                     {
-                        var org = model.OrganisationIdentifier.Split("_");
-                        var id = int.Parse(org.First());
-                        var type = Enum.Parse<OrganisationType>(org.Last());
-                        switch (type)
+                        if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
                         {
-                            case OrganisationType.GovernmentBody:
-                                user.CustomerOrganisationId = id;
-                                break;
-                            case OrganisationType.Broker:
-                                user.BrokerId = id;
-                                break;
-                            default:
-                                throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
+                            var org = model.OrganisationIdentifier.Split("_");
+                            var id = int.Parse(org.First());
+                            var type = Enum.Parse<OrganisationType>(org.Last());
+                            switch (type)
+                            {
+                                case OrganisationType.GovernmentBody:
+                                    user.CustomerOrganisationId = id;
+                                    break;
+                                case OrganisationType.Broker:
+                                    user.BrokerId = id;
+                                    break;
+                                default:
+                                    throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
+                            }
                         }
-                        if (model.IsSuperUser)
+                        else
                         {
-                            additionalRoles.Add(Roles.SuperUser);
+                            additionalRoles.Add(Roles.Admin);
                         }
                     }
-                    else
+                    if (model.IsSuperUser)
                     {
-                        additionalRoles.Add(Roles.Admin);
+                        additionalRoles.Add(Roles.SuperUser);
                     }
                     var result = await _userManager.CreateAsync(user);
                     if (additionalRoles.Any())
@@ -194,7 +226,7 @@ namespace Tolk.Web.Controllers
 
                     if (result.Succeeded)
                     {
-                        if (model.IsSuperUser) // And was added to an org, octherwize it is an admin?
+                        if (model.IsSuperUser)
                         {
                             await _userManager.AddToRoleAsync(user, Roles.SuperUser);
                         }

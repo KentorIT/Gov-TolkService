@@ -29,6 +29,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Endast aktiva användare")]
         public bool OnlyActive { get; set; } = false;
 
+        public bool IsSystemAdministrator { get; set; }
+
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
             users = !string.IsNullOrWhiteSpace(Name)

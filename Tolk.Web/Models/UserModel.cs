@@ -46,5 +46,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
+
+        public bool EditorIsSystemAdministrator { get; set; }
     }
 }
