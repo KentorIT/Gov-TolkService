@@ -14,15 +14,16 @@ namespace Tolk.Web.Models
         [Display(Name = "Namn")]
         public string NameFull => $"{NameFirst} {NameFamily}";
 
-        [ClientRequired]
-        [Display(Name = "Email")]
+        [Required]
+        [EmailAddress]
+        [Display(Name = "E-post")]
         public string Email { get; set; }
 
-        [ClientRequired]
+        [Required]
         [Display(Name = "Förnamn")]
         public string NameFirst { get; set; }
 
-        [ClientRequired]
+        [Required]
         [Display(Name = "Efternamn")]
         public string NameFamily { get; set; }
 
@@ -36,7 +37,7 @@ namespace Tolk.Web.Models
         public bool IsSuperUser { get; set; }
 
         [Display(Name = "Aktiv")]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
         [Display(Name = "Senaste inloggning")]
         public string LastLoginAt { get; set; }
