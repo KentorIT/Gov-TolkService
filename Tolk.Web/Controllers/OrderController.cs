@@ -69,7 +69,7 @@ namespace Tolk.Web.Controllers
             var isSuperUser = User.IsInRole(Roles.SuperUser);
             if (!isSuperUser)
             {
-                orders = orders.Where(o => o.CreatedBy == User.GetUserId());
+                orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
             }
 
             // Filters
@@ -183,7 +183,7 @@ namespace Tolk.Web.Controllers
                 {
                     Entries = EventLogHelper.GetEventLog(order, new EventLogHelper.OrderMetaData
                     {
-                        TerminatingRequest = order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker 
+                        TerminatingRequest = order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker
                             || r.Status == RequestStatus.DeniedByTimeLimit)
                             ? order.Requests.OrderBy(r => r.ExpiresAt).Last()
                             : null,
@@ -231,7 +231,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order = GetOrder(model.ReplacingOrderId.Value);
-                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
@@ -304,7 +304,7 @@ namespace Tolk.Web.Controllers
         {
             var model = new OrderModel()
             {
-                SystemTime = (long) _clock.SwedenNow.DateTime.ToUnixTimestamp(),
+                SystemTime = (long)_clock.SwedenNow.DateTime.ToUnixTimestamp(),
 
             };
             return View(model);
@@ -442,7 +442,32 @@ namespace Tolk.Web.Controllers
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
+            return Forbid();
+        }
 
+        public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
+        {
+            var order = GetOrder(model.OrderId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            {
+                if (model.ContactPersonId == order.ContactPersonId)
+                {
+                    return RedirectToAction("View", new { id = order.OrderId });
+                }
+                order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
+                User.TryGetImpersonatorId(), model.ContactPersonId);
+                _dbContext.SaveChanges();
+                CreateEmailOnOrderContactPersonChange(order.OrderId);
+                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+                {
+                    return RedirectToAction("View", new { id = order.OrderId });
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för avrop {order.OrderNumber} är ändrad" });
+                }
+            }
             return Forbid();
         }
 
@@ -610,6 +635,41 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogInformation($"No email sent to broker when cancelling {orderNumber}. No email is set for broker.");
             }
+        }
+
+        private void CreateEmailOnOrderContactPersonChange(int orderId)
+        {
+            //get order again to get user for new contact (if any, both current contact and previous contact can be null)
+            Order order = _dbContext.Orders
+                .Include(o => o.ContactPersonUser)
+                .Include(o => o.ContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                .Single(o => o.OrderId == orderId);
+            AspNetUser previousContactUser = order.ContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
+            AspNetUser currentContactUser = order.ContactPersonUser;
+
+            string orderNumber = order.OrderNumber;
+
+            string subject = $"Behörighet ändrad för tolkuppdrag avrops-ID {orderNumber}";
+            string bodyPreviousContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har inte längre denna behörighet för avrop {orderNumber}. \n\nDetta mejl går inte att svara på.";
+            string bodyCurrentContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har nu behörighet att utföra detta för avrop {orderNumber}.\n\nDetta mejl går inte att svara på.";
+
+            if (!string.IsNullOrEmpty(previousContactUser?.Email))
+            {
+                _dbContext.Add(new OutboundEmail(previousContactUser.Email, subject, bodyPreviousContact, _clock.SwedenNow));
+            }
+            else if (previousContactUser != null)
+            {
+                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user PreviousContactUser {previousContactUser.Id}.");
+            }
+            if (!string.IsNullOrEmpty(currentContactUser?.Email))
+            {
+                _dbContext.Add(new OutboundEmail(currentContactUser.Email, subject, bodyCurrentContact, _clock.SwedenNow));
+            }
+            else if (currentContactUser != null)
+            {
+                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user CurrentContactUser {currentContactUser.Id}.");
+            }
+            _dbContext.SaveChanges();
         }
     }
 }

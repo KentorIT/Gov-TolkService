@@ -65,6 +65,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderAttachment> Attachments { get; set; }
 
+        public List<OrderContactPersonHistory> ContactPersonHistory { get; set; }
 
         #endregion
 
@@ -184,6 +185,15 @@ namespace Tolk.BusinessLogic.Entities
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank
             }).ToList();
+        }
+
+        public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, int? contactPersonId)
+        {
+            ContactPersonHistory = new List<OrderContactPersonHistory>
+            {
+                new OrderContactPersonHistory { ChangedAt = changedAt, PreviousContactPersonId = ContactPersonId, ChangedBy = userId, ImpersonatingChangeUserId = impersonatingUserId, OrderId = OrderId }
+            };
+            ContactPersonId = contactPersonId;
         }
 
         #endregion

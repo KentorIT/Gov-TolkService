@@ -187,6 +187,16 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OrderContactPersonHistory>()
+             .HasOne(r => r.ChangedByImpersonator)
+             .WithMany()
+             .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrderContactPersonHistory>()
+             .HasOne(r => r.ChangedByUser)
+             .WithMany()
+             .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<TemporaryAttachmentGroup>()
             .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
 

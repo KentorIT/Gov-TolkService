@@ -21,6 +21,7 @@ namespace Tolk.Web.Authorization
         public const string View = nameof(View);
         public const string Accept = nameof(Accept);
         public const string Cancel = nameof(Cancel);
+        public const string Replace = nameof(Replace);
         public const string TimeTravel = nameof(TimeTravel);
         public const string RenderMenuAndStartPageBoxes = nameof(RenderMenuAndStartPageBoxes);
 
@@ -37,6 +38,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
+                opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
                 opt.AddPolicy(RenderMenuAndStartPageBoxes, builder => builder.RequireAssertion(RenderMenuAndStartBoxesHandler));
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
@@ -57,9 +59,7 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == context.User.GetUserId();
-                case Request request:
-                    return request.Ranking.BrokerId == context.User.GetBrokerId();
+                    return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == context.User.GetUserId();
                 case AspNetUser editedUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -70,6 +70,18 @@ namespace Tolk.Web.Authorization
                         return user.IsInRole(Roles.SuperUser) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.Admin);
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> ReplaceHandler = (context) =>
+        {
+            var user = context.User;
+            switch (context.Resource)
+            {
+                case Order order:
+                    return order.CreatedBy == context.User.GetUserId();
                 default:
                     throw new NotImplementedException();
             }
@@ -187,8 +199,8 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return user.IsInRole(Roles.SuperUser) ? 
-                        order.CustomerOrganisationId == user.GetCustomerOrganisationId() : 
+                    return user.IsInRole(Roles.SuperUser) ?
+                        order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                         order.CreatedBy == userId || order.ContactPersonId == userId;
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
@@ -232,8 +244,8 @@ namespace Tolk.Web.Authorization
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
                         return user.IsInRole(Roles.SuperUser) ?
-                            complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() : 
-                            complaint.Request.Order.CreatedBy == userId || 
+                            complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
+                            complaint.Request.Order.CreatedBy == userId ||
                             complaint.Request.Order.ContactPersonId == userId;
                     }
                     return false;
@@ -244,8 +256,8 @@ namespace Tolk.Web.Authorization
                     }
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
-                        return attachment.Requisitions.Any(a=> a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId()) || 
-                            attachment.Requests.Any(a => a.Request.Ranking.BrokerId == user.GetBrokerId()) || 
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId()) ||
+                            attachment.Requests.Any(a => a.Request.Ranking.BrokerId == user.GetBrokerId()) ||
                             attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId()));
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
@@ -267,8 +279,8 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
                     {
-                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) || 
-                            attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) || 
+                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) ||
+                            attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) ||
                             attachment.Orders.Any(o => o.Order.Requests.Any(r => r.InterpreterId == user.GetInterpreterId()));
                     }
                     return false;

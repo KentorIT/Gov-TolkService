@@ -33,6 +33,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Annan kontaktperson")]
         public int? ContactPersonId { get; set; }
 
+        public int? ChangeContactPersonId { get; set; }
+
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
@@ -142,6 +144,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Avrop skapat av")]
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
+
+        public int CreatedById { get; set; }
 
         [Display(Name = "Avrop besvarat av")]
         [DataType(DataType.MultilineText)]
@@ -433,7 +437,9 @@ namespace Tolk.Web.Models
                 ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
                 ReplacingOrderId = order.ReplacingOrderId,
                 CreatedBy = order.CreatedByUser.CompleteContactInformation,
+                CreatedById = order.CreatedBy,
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
+                ChangeContactPersonId = order.ContactPersonId,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",

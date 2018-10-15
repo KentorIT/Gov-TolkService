@@ -506,6 +506,35 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OrderCompetenceRequirements");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", b =>
+                {
+                    b.Property<int>("OrderContactPersonHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("ChangedAt");
+
+                    b.Property<int>("ChangedBy");
+
+                    b.Property<int?>("ImpersonatingChangeUserId");
+
+                    b.Property<int>("OrderId");
+
+                    b.Property<int?>("PreviousContactPersonId");
+
+                    b.HasKey("OrderContactPersonHistoryId");
+
+                    b.HasIndex("ChangedBy");
+
+                    b.HasIndex("ImpersonatingChangeUserId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PreviousContactPersonId");
+
+                    b.ToTable("OrderContactPersonHistory");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
                 {
                     b.Property<int>("OrderId");
@@ -1204,6 +1233,28 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("CompetenceRequirements")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ChangedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingChangeUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("ContactPersonHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "PreviousContactPersonUser")
+                        .WithMany()
+                        .HasForeignKey("PreviousContactPersonId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
