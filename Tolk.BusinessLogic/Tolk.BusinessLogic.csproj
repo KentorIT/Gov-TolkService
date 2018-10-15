@@ -17,6 +17,8 @@
     <Compile Remove="Data\Migrations\20180831135433_AddOrderCompetenceRequirement.cs" />
     <Compile Remove="Data\Migrations\20180906074415_FixedForeignKeys.cs" />
     <Compile Remove="Data\Migrations\20180914124739_AddAttachmentsTable.cs" />
+    <Compile Remove="Data\Migrations\20181015134028_RequisitionTaxCard.cs" />
+    <Compile Remove="Data\Migrations\20181015134149_RequisitionTaxCard.cs" />
   </ItemGroup>
 
   <ItemGroup>

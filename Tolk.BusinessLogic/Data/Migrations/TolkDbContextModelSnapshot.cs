@@ -938,6 +938,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("ImpersonatingProcessedBy");
 
+                    b.Property<int>("InterpretersTaxCard");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(1000);

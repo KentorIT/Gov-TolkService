@@ -72,6 +72,8 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingProcessedBy))]
         public AspNetUser ProcessedByImpersonator { get; set; }
 
+        public TaxCard InterpretersTaxCard { get; set; }
+
         public List<RequisitionPriceRow> PriceRows { get; set; }
 
         public List<RequisitionAttachment> Attachments { get; set; }
