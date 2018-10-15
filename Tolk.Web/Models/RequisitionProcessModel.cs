@@ -33,6 +33,7 @@ namespace Tolk.Web.Models
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
+                InterpreterTaxCard = requisition.InterpretersTaxCard,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
                 RegionName = requisition.Request.Ranking.Region.Name,

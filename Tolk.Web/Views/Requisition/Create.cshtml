@@ -1,4 +1,5 @@
 ﻿@model Tolk.Web.Models.RequisitionModel
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = "Skapa rekvisition";
 }
@@ -20,6 +21,7 @@
                 <input asp-for="RequestId" type="hidden" />
                 <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
                 <input asp-for="FileGroupKey" type="hidden" />
+                <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" />
                 @if (Model.PreviousRequisition != null)
                 {
                     <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />

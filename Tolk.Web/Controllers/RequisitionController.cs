@@ -268,6 +268,7 @@ namespace Tolk.Web.Controllers
                             SessionEndedAt = model.SessionEndedAt,
                             TimeWasteNormalTime = model.TimeWasteNormalTime,
                             TimeWasteIWHTime = model.TimeWasteIWHTime,
+                            InterpretersTaxCard = model.InterpreterTaxCard.Value,
                             PriceRows = new List<RequisitionPriceRow>(),
                             Attachments = model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
                         };

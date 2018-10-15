@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -26,6 +27,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolk")]
         [DataType(DataType.MultilineText)]
         public string InterpreterName { get; set; }
+
+        [Display(Name = "Tolkens skattsedel")]
+        [Required]
+        public TaxCard? InterpreterTaxCard { get; set; }
 
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
