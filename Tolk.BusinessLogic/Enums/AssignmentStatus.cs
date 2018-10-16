@@ -8,13 +8,13 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum AssignmentStatus
     {
-        [Description("Kommande uppdrag")]
+        [Description("Tillsättning är godkänd")]
         ToBeExecuted = 1,
-        [Description("Uppdrag att avrapportera")]
+        [Description("Uppdrag väntar avrapportering")]
         ToBeReported = 2,
-        [Description("Utförda uppdrag")]
+        [Description("Uppdrag är utfört")]
         Executed = 3,
-        [Description("Avbokade uppdrag")]
+        [Description("Uppdrag är avbokad")]
         Cancelled = 4
     }
 }

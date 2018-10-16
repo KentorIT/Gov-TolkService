@@ -9,35 +9,35 @@ namespace Tolk.BusinessLogic.Enums
         /// </summary>
         [Description("Inkommen/mottagen")]
         ToBeProcessedByBroker = -1,
-        [Description("Inkommen")]
+        [Description("Bokningsförfrågan inkommen")]
         Created = 1,
-        [Description("Mottagen")]
+        [Description("Bokningsförfrågan mottagen")]
         Received = 2,
-        [Description("Avbokad av avropare")]
+        [Description("Avbokad av myndighet")]
         CancelledByCreator = 3,
-        [Description("Svar skickat")]
+        [Description("Bekräftelse är skickad")]
         Accepted = 4,
-        [Description("Tillsättning godkänd")]
+        [Description("Tillsättning är godkänd")]
         Approved = 5,
-        [Description("Nekad av förmedling")]
+        [Description("Bokningsförfrågan avböjd")]
         DeclinedByBroker = 7,
-        [Description("Nekad av avropare")]
+        [Description("Tillsättning är underkänd")]
         DeniedByCreator = 8,
-        [Description("Inget svar, tiden gick ut")]
+        [Description("Bokningsförfrågan ej besvarad")]
         DeniedByTimeLimit = 9,
-        [Description("Avbokad av avropare, att bekräfta")]
+        [Description("Uppdrag avbokad av myndighet, att bekräfta")]
         CancelledByCreatorWhenApproved = 10,
         [Description("Avbokning bekräftad av förmedling")]
         CancelledByCreatorConfirmed = 11,
-        [Description("Svar skickat - Ny tolk")]
+        [Description("Bekräftelse är skickad - Ny tolk")]
         AcceptedNewInterpreterAppointed = 12,
         [Description("Tolk har ersatts")]
         InterpreterReplaced = 13,
-        [Description("Avbokad av tolkförmedling")]
+        [Description("Uppdrag avbokad av förmedling")]
         CancelledByBroker = 14,
-        [Description("Avbokning bekräftad av avropare")]
+        [Description("Avbokning bekräftad av myndighet")]
         CancelledByBrokerConfirmed = 15,
-        [Description("Tolktillsättning ej besvarad")]
+        [Description("Tillsättning ej besvarad")]
         ResponseNotAnsweredByCreator = 16
     }
 }

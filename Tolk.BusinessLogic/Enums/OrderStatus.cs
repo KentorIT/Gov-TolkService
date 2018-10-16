@@ -15,34 +15,34 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Sparat, ej skickat")]
         [Obsolete("Inte använd än")]
         Saved = 1,
-        [Description("Uppdraget har skickats för tillsättning")]
+        [Description("Bokningsförfrågan skickad")]
         Requested = 2,
-        [Description("Tolktillsättning finns")]
+        [Description("Tolk är tillsatt")]
         RequestResponded = 3,
-        [Description("Tolktillsättning har accepterats")]
+        [Description("Tillsättning är godkänd")]
         ResponseAccepted = 4,
         [Description("Uppdraget har genomförts")]
         Delivered = 5,
-        [Description("Uppdraget har avbokats av avropare")]
+        [Description("Uppdrag avbokat av myndighet")]
         CancelledByCreator = 6,
         [Description("Leverans är bekräftad")]
         DeliveryAccepted = 7,
         [Description("Uppdraget har annulerats via reklamation")]
         [Obsolete("Inte använd än")]
         OrderAnulled = 8,
-        [Description("Ingen förmedling kunde tillsätta uppdraget")]
+        [Description("Bokningsförfrågan avböjd av samtliga förmedlingar")]
         NoBrokerAcceptedOrder = 9,
-        [Description("Tolktillsättning finns (Ny tolk)")]
+        [Description("Tillsättning är godkänd (Ersättningsuppdrag)")]
         RequestRespondedNewInterpreter = 10,
         [Description("Avbokning bekräftad av förmedling")]
         CancelledByCreatorConfirmed = 11,
-        [Description("Uppdraget har avbokats av förmedling")]
+        [Description("Uppdrag avbokat av förmedling")]
         CancelledByBroker = 12,
-        [Description("Avbokning bekräftad av avropare")]
+        [Description("Avbokning bekräftad av myndighet")]
         CancelledByBrokerConfirmed = 13,
-        [Description("Ersättningsuppdrag genomfört")]
+        [Description("Uppdraget har genomförts (Ersättningsuppdrag)")]
         ReplacementOrderDelivered = 14,
-        [Description("Tolktillsättning ej besvarad")]
-        ResponseNotAnsweredByCreator = 15
+        [Description("Bokningsbekräftelse ej besvarad")]
+        ResponseNotAnsweredByCreator = 15,
     }
 }
