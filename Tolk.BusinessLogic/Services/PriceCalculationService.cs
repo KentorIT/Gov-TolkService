@@ -103,8 +103,8 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<PriceRowBase> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
         {
-            //Get lost times, if any, they should not get payed for less than 30 min
-            if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value >= 30)
+            //Get lost times, if any, they should only get payed for timewaste more than 30 min
+            if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value > 30)
             {
                 yield return GetPriceInformation(startAt, startAt.AddMinutes(timeWasteNormalTime.Value).ToDateTimeOffsetSweden(), PriceListRowType.LostTime, prices);
             }
