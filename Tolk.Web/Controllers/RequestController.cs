@@ -235,7 +235,7 @@ namespace Tolk.Web.Controllers
                                 GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts)
                             );
                         }
-                        CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter);
+                        CreateEmailOnRequestAction(request, sendExtraEmailToInterpreter, _dbContext.Users.Single(u => u.InterpreterId == interpreterId).CompleteContactInformation);
                     }
                     else
                     {
@@ -405,7 +405,7 @@ namespace Tolk.Web.Controllers
             return model;
         }
 
-        private void CreateEmailOnRequestAction(Request request, string sendExtraMailToInterpreter)
+        private void CreateEmailOnRequestAction(Request request, string sendExtraMailToInterpreter, string interpreterInfo = null)
         {
             string receipent = request.Order.CreatedByUser.Email;
             string contactPersonEmail = request.Order.ContactPersonUser?.Email;
@@ -417,6 +417,7 @@ namespace Tolk.Web.Controllers
                 case RequestStatus.Accepted:
                     subject = $"Förmedling har accepterat avrop {orderNumber}";
                     body = $"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats.";
+                    body += $"\n\nTolk:\n{interpreterInfo}\n\n";
                     break;
                 case RequestStatus.DeclinedByBroker:
                     subject = $"Förmedling har tackat nej till avrop {orderNumber}";
@@ -425,6 +426,7 @@ namespace Tolk.Web.Controllers
                 case RequestStatus.InterpreterReplaced:
                     subject = $"Förmedling har bytt tolk på avrop {orderNumber}";
                     body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n";
+                    body += $"\nTolk:\n{interpreterInfo}\n\n";
                     body += request.Order.AllowMoreThanTwoHoursTravelTime ? $"Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt {_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : "Inga förändrade krav finns, avropet behåller sin nuvarande status.";
                     //create email to new interpreter
                     if (!string.IsNullOrEmpty(sendExtraMailToInterpreter))
