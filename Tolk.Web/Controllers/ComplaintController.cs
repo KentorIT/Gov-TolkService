@@ -265,8 +265,8 @@ namespace Tolk.Web.Controllers
                     break;
                 case ComplaintStatus.DisputePendingTrial:
                     receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject = $"Ert bestridande av reklamation ogillades på avrop {orderNumber}";
-                    body = $"Bestridande av reklamation för avrop {orderNumber} har ogillats med följande meddelande:\n{complaint.AnswerDisputedMessage}";
+                    subject = $"Ert bestridande av reklamation avslogs på avrop {orderNumber}";
+                    body = $"Bestridande av reklamation för avrop {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage}";
                     break;
                 case ComplaintStatus.TerminatedAsDisputeAccepted:
                     receipent = complaint.Request.Ranking.Broker.EmailAddress;

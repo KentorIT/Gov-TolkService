@@ -377,7 +377,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.AnswerDisputedAt.Value,
-                        EventDetails = "Reklamationens bestridande bestridd av avropare, avvaktar extern process",
+                        EventDetails = "Reklamationens bestridande avslagen av avropare, avvaktar extern process",
                         Actor = complaint.AnswerDisputingUser.FullName,
                         Organization = complaint.AnswerDisputingUser.CustomerOrganisation.Name,
                     });
