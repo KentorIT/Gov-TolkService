@@ -530,6 +530,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
+                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
                 .Include(o => o.Requirements)
                     .ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests)
@@ -642,9 +643,9 @@ namespace Tolk.Web.Controllers
             //get order again to get user for new contact (if any, both current contact and previous contact can be null)
             Order order = _dbContext.Orders
                 .Include(o => o.ContactPersonUser)
-                .Include(o => o.ContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
                 .Single(o => o.OrderId == orderId);
-            AspNetUser previousContactUser = order.ContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
+            AspNetUser previousContactUser = order.OrderContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
             AspNetUser currentContactUser = order.ContactPersonUser;
 
             string orderNumber = order.OrderNumber;

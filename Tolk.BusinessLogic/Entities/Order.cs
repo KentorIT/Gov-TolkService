@@ -35,9 +35,9 @@ namespace Tolk.BusinessLogic.Entities
             set
             {
                 if (value == OrderStatus.ResponseAccepted &&
-                    (!( Status == OrderStatus.RequestResponded || 
-                        Status == OrderStatus.RequestRespondedNewInterpreter || 
-                       (Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) || 
+                    (!(Status == OrderStatus.RequestResponded ||
+                        Status == OrderStatus.RequestRespondedNewInterpreter ||
+                       (Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
                     Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
                 {
                     throw new InvalidOperationException($"Order {OrderId} is in the wrong state to be set as accepted.");
@@ -65,7 +65,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderAttachment> Attachments { get; set; }
 
-        public List<OrderContactPersonHistory> ContactPersonHistory { get; set; }
+        public List<OrderContactPersonHistory> OrderContactPersonHistory { get; set; }
 
         #endregion
 
@@ -189,10 +189,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, int? contactPersonId)
         {
-            ContactPersonHistory = new List<OrderContactPersonHistory>
-            {
-                new OrderContactPersonHistory { ChangedAt = changedAt, PreviousContactPersonId = ContactPersonId, ChangedBy = userId, ImpersonatingChangeUserId = impersonatingUserId, OrderId = OrderId }
-            };
+            OrderContactPersonHistory.Add(new OrderContactPersonHistory {
+                ChangedAt = changedAt,
+                PreviousContactPersonId = ContactPersonId,
+                ChangedBy = userId,
+                ImpersonatingChangeUserId = impersonatingUserId, OrderId = OrderId }
+            );
             ContactPersonId = contactPersonId;
         }
 

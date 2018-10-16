@@ -24,7 +24,7 @@ namespace Tolk.Web.Helpers
                 new EventLogEntryModel
                 {
                     Timestamp = order.CreatedAt,
-                    EventDetails = order.ReplacingOrder != null ? $"Ersättningsavrop skapad (ersätter {order.ReplacingOrder.OrderNumber})" : "Avrop skapad",
+                    EventDetails = order.ReplacingOrder != null ? $"Ersättningsavrop skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Avrop skapat",
                     Actor = order.CreatedByUser.FullName,
                     Organization = order.CreatedByUser.CustomerOrganisation.Name,
                 }
@@ -48,6 +48,44 @@ namespace Tolk.Web.Helpers
                     Organization = order.ReplacedByOrder.CreatedByUser.CustomerOrganisation.Name,
                 });
             }
+            // Change of contact person  
+            if (order.OrderContactPersonHistory.Any())
+            {
+                int i = 0;
+                foreach (OrderContactPersonHistory cph in order.OrderContactPersonHistory.OrderBy(ch => ch.OrderContactPersonHistoryId))
+                {
+                    string newContactPersonName = string.Empty;
+                    string previousContactPersonName = string.Empty;
+                    //if previous contact is null, a new contact person is added - get the new contact
+                    if (cph.PreviousContactPersonId == null)
+                    {
+                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
+                        if (eventRow != null)
+                        {
+                            eventLog.Add(eventRow);
+                        }
+                    }
+                    //if previous contact person is not null, then contact person is changed or just removed
+                    else
+                    {
+                        //add a row for removed person
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = cph.ChangedAt,
+                            EventDetails = $"Kontaktperson {cph.PreviousContactPersonUser?.FullName} borttagen",
+                            Actor = cph.ChangedByUser.FullName,
+                            Organization = order.CustomerOrganisation.Name
+                        });
+                        //find if removed or changed (if removed we don't add a row else add row for new contact)
+                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
+                        if (eventRow != null)
+                        {
+                            eventLog.Add(eventRow);
+                        }
+                    }
+                    i++;
+                }
+            }
             if (orderMetaData.HasValue)
             {
                 if (orderMetaData.Value.TerminatingRequest != null)
@@ -68,6 +106,19 @@ namespace Tolk.Web.Helpers
                 }
             }
             return eventLog;
+        }
+
+        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderContactPersonHistory cphPrevious, Order order, int findElementAt)
+        {
+            //try find next row if any else take info from Order.ContactPersonUser
+            string newContactPersonName = order.OrderContactPersonHistory.Count() > findElementAt ? order.OrderContactPersonHistory.ElementAt(findElementAt).PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
+            return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
+            {
+                Timestamp = cphPrevious.ChangedAt,
+                EventDetails = $"Kontaktperson {newContactPersonName} tillagd",
+                Actor = cphPrevious.ChangedByUser.FullName,
+                Organization = order.CustomerOrganisation.Name
+            };
         }
 
         public static List<EventLogEntryModel> GetEventLog(Request request, bool isRequestDetailView = true)
