@@ -4,19 +4,19 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum ComplaintStatus
     {
-        [Description("Skapad")]
+        [Description("Reklamation är skapad av myndighet")]
         Created = 1,
-        [Description("Reklamation accepterad av förmedling")]
+        [Description("Reklamation är godtagen av förmedling")]
         Confirmed = 2,
-        [Description("Reklamation bestridd av förmedling")]
+        [Description("Reklamation är bestridd av förmedling")]
         Disputed = 3,
-        [Description("Bestridande accepterat")]
+        [Description("Reklamation är återtagen av myndighet")]
         TerminatedAsDisputeAccepted = 4,
-        [Description("Avvaktar extern process")]
+        [Description("Reklamation kvarstår")]
         DisputePendingTrial = 5,
-        [Description("Extern process bistod reklamation")]
+        [Description("Reklamation bistådd av extern process")]
         TerminatedTrialConfirmedComplaint = 6,
-        [Description("Extern process avslog reklamation")]
+        [Description("Reklamation avslagen av extern process")]
         TerminatedTrialDeniedComplaint = 7,
     }
 }

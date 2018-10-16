@@ -7,13 +7,13 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum RequisitionStatus
     {
-        [Description("Skapad")]
+        [Description("Rekvisition är skapad")]
         Created = 1,
-        [Description("Godkänd")]
+        [Description("Rekvisition är godkänd")]
         Approved = 2,
-        [Description("Underkänd")]
+        [Description("Rekvisition är underkänd")]
         DeniedByCustomer = 3,
-        [Description("Automatiskt godkänd pga sen avbokning")]
+        [Description("Rekvisition är automatiskt godkänd pga sen avbokning")]
         AutomaticApprovalFromCancelledOrder = 4,
     }
 }
