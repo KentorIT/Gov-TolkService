@@ -83,9 +83,14 @@
         {
             <display-entry asp-for="OrderModel.RankedInterpreterLocationThirdAddressModel.CompactInformation" />
         }
+        @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+        {
+            <display-entry asp-for="Interpreter" />
+        }
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
             <display-entry asp-for="ExpiresAt" />
+
             @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <display-entry asp-for="OrderModel.ReplacingOrderNumber" />

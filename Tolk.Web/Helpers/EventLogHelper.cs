@@ -299,7 +299,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.ReplacedByRequest.AnswerDate.Value,
-                    EventDetails = "Tolk ersatt av förmedling",
+                    EventDetails = $"Tolk {request.Interpreter?.User?.FullName} är ersatt av tolk {request.ReplacedByRequest.Interpreter?.User?.FullName}",
                     Actor = request.ReplacedByRequest.AnsweringUser.FullName,
                     Organization = request.ReplacedByRequest.AnsweringUser.Broker.Name,
                 });

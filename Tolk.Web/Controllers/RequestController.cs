@@ -95,6 +95,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
+                .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
@@ -153,9 +154,9 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking)
                 .Include(r => r.RequirementAnswers)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.ReplacingRequest)
                 .Include(r => r.ReplacedByRequest)
                 .Single(o => o.RequestId == id);
