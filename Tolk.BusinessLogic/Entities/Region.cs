@@ -37,7 +37,7 @@ namespace Tolk.BusinessLogic.Entities
                 new Region { RegionId = 18, Name = "Dalarna" },
                 new Region { RegionId = 19, Name = "Gävleborg" },
                 new Region { RegionId = 20, Name = "Västernorrland" },
-                new Region { RegionId = 21, Name = "Jämtland Härjedalen" },
+                new Region { RegionId = 21, Name = "Jämtland" },
                 new Region { RegionId = 22, Name = "Västerbotten" },
                 new Region { RegionId = 23, Name = "Norrbotten" }
         };

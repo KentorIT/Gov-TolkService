@@ -767,7 +767,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         new { RegionId = 18, Name = "Dalarna" },
                         new { RegionId = 19, Name = "Gävleborg" },
                         new { RegionId = 20, Name = "Västernorrland" },
-                        new { RegionId = 21, Name = "Jämtland Härjedalen" },
+                        new { RegionId = 21, Name = "Jämtland" },
                         new { RegionId = 22, Name = "Västerbotten" },
                         new { RegionId = 23, Name = "Norrbotten" }
                     );
@@ -1250,7 +1250,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("ContactPersonHistory")
+                        .WithMany("OrderContactPersonHistory")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
