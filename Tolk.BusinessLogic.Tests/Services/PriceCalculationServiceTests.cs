@@ -62,8 +62,6 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         private const double Price_LostTime_60M__Court_Comp1 = 191;
         private const double Price_IWH_LostTime_30M__Court_Comp1 = 77;
-        private const int PriceListRowId_LostTime_60M__Court_Comp1 = 1113;
-        private const int PriceListRowId_IWH_LostTime_30M__Court_Comp1 = 1121;
 
         public PriceCalculationServiceTests()
         {
@@ -421,16 +419,16 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 31, 0, 1, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//31m nwt
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 60, 0, 1, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 * 2, 90, 0, 1, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//90m nwt
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 30, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//30m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, (Price_LostTime_60M__Court_Comp1 + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 60, 60, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//60m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 3)), 90, 90, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//90m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 15, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//31m nwt 15m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + Price_IWH_LostTime_30M__Court_Comp1), 90, 20, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//90m nwt 20m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 90, 40, 2, PriceListRowId_LostTime_60M__Court_Comp1, PriceListRowId_IWH_LostTime_30M__Court_Comp1)]//90m 40iwh
-        public void LostTimeRows(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualPrice, int lostTime, int iwhLostTime, int noOfrows, int priceListRowId_NT, int priceListRowId_IWH)
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 31, 0, 1)]//31m nwt
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 60, 0, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 * 2, 90, 0, 1)]//90m nwt
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 30, 2)]//30m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, (Price_LostTime_60M__Court_Comp1 + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 60, 60, 2)]//60m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 3)), 90, 90, 2)]//90m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 15, 2)]//31m nwt 15m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + Price_IWH_LostTime_30M__Court_Comp1), 90, 20, 2)]//90m nwt 20m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 90, 40, 2)]//90m 40iwh
+        public void LostTimeRows(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualPrice, int lostTime, int iwhLostTime, int noOfrows)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
@@ -440,8 +438,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                     { GetPriceRowBaseForTest(startAt, endAt, listType, competenceLevel, rankingId, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, lostTime, iwhLostTime, requestPriceRows, actualPrice);
-                pi.PriceRows.Where(pr => pr.PriceListRowId == priceListRowId_NT || pr.PriceListRowId == priceListRowId_IWH).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-                pi.PriceRows.Count(pr => pr.PriceListRowId == priceListRowId_NT || pr.PriceListRowId == priceListRowId_IWH).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+                pi.PriceRows.Where(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Should().Be(noOfrows, "number of rows {0}", noOfrows);
                 useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
             }
         }

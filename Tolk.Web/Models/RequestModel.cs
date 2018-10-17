@@ -100,9 +100,9 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string Interpreter{ get; set; }
 
-        [Display(Name = "Beräknat pris inklusive förmedlingsavgift och ev. OB (exkl. moms)")]
-        [DataType(DataType.Currency)]
-        public decimal? CalculatedPrice { get; set; }
+        public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
+
+        public PriceInformationModel RequestCalculatedPriceInformationModel { get; set; }
 
         public int? ComplaintId { get; set; }
 

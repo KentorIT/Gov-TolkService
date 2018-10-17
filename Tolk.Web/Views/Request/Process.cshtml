@@ -70,7 +70,10 @@
         {
             @await Html.PartialAsync("_FileList", Model.OrderModel.AttachmentListModel)
         }
-        <display-entry asp-for="CalculatedPrice" />
+        @if (Model.OrderCalculatedPriceInformationModel != null)
+        {
+            Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+        }
         <display-entry asp-for="OrderModel.Description" />
 
         <label>Inställelsesätt</label>

@@ -189,7 +189,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 priceTime.Quantity++;
             }
-            priceTime.PriceListRowId = priceInfo.PriceListRowId.Value;
+            priceTime.PriceListRow = priceInfo;
             priceTime.Price = priceInfo.Price;
             return priceTime;
         }
@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Services
                     EndAt = extraTimeStartsAt,
                     PriceRowType = PriceRowType.InterpreterCompensation,
                     Quantity = 1,
-                    PriceListRowId = basePrice.PriceListRowId.Value,
+                    PriceListRow = basePrice,
                     Price = basePrice.Price
                 };
                 //Calculate when the extra time starts, date wize.
@@ -226,7 +226,7 @@ namespace Tolk.BusinessLogic.Services
                     EndAt = endAt,
                     PriceRowType = PriceRowType.InterpreterCompensation,
                     Quantity = 1,
-                    PriceListRowId = basePrice.PriceListRowId.Value,
+                    PriceListRow = basePrice,
                     Price = basePrice.Price
                 };
             }

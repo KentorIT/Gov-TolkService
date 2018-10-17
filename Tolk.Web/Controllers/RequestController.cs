@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -73,7 +74,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> View(int id)
         {
             var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
+                .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
                 .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
@@ -90,6 +91,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions)
                 .Include(r => r.Complaints)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
@@ -390,7 +392,8 @@ namespace Tolk.Web.Controllers
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
-            model.CalculatedPrice = GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(model.OrderModel.RequestedCompetenceLevels), request.ExpectedTravelCosts).TotalPrice;
+            model.RequestCalculatedPriceInformationModel = GetPriceinformationToDisplay(request);
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)
             {
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
@@ -410,6 +413,30 @@ namespace Tolk.Web.Controllers
                 };
             }
             return model;
+        }
+
+        private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
+        {
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                Header = "Beräknat pris enligt bokningsförfrågan",
+                UseDisplayHideInfo = true
+            };
+        }
+
+        private PriceInformationModel GetPriceinformationToDisplay(Request request)
+        {
+            if (request.PriceRows == null || !request.PriceRows.Any())
+            {
+                return null;
+            }
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
+                Header = "Beräknat pris enligt bokningsbekräftelse",
+                UseDisplayHideInfo = true
+            };
         }
 
         private void CreateEmailOnRequestAction(Request request, string sendExtraMailToInterpreter, string interpreterInfo = null)
