@@ -27,12 +27,12 @@ namespace Tolk.BusinessLogic.Enums
         CancelledByCreator = 6,
         [Description("Leverans är bekräftad")]
         DeliveryAccepted = 7,
-        [Description("Uppdraget har annulerats via reklamation")]
+        [Description("Uppdraget har annullerats via reklamation")]
         [Obsolete("Inte använd än")]
         OrderAnulled = 8,
         [Description("Bokningsförfrågan avböjd av samtliga förmedlingar")]
         NoBrokerAcceptedOrder = 9,
-        [Description("Tillsättning är godkänd (Ersättningsuppdrag)")]
+        [Description("Tolk är tillsatt (Ny tolk)")]
         RequestRespondedNewInterpreter = 10,
         [Description("Avbokning bekräftad av förmedling")]
         CancelledByCreatorConfirmed = 11,

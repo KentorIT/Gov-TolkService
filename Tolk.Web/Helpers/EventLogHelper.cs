@@ -99,7 +99,7 @@ namespace Tolk.Web.Helpers
                             Timestamp = orderMetaData.Value.TerminatingRequest.Status == RequestStatus.DeniedByTimeLimit 
                                 ? orderMetaData.Value.TerminatingRequest.ExpiresAt 
                                 : orderMetaData.Value.TerminatingRequest.AnswerDate.Value,
-                            EventDetails = "Avrop avslutat, ingen förmedling tillsatte uppdraget",
+                            EventDetails = "Avrop avslutat, bokningsförfrågan avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
                         });
                     }
@@ -192,7 +192,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.AnswerProcessedAt.Value,
-                        EventDetails = $"Tillsättning nekad av avropare",
+                        EventDetails = $"Tillsättning underkänd av avropare",
                         Actor = request.ProcessingUser.FullName,
                         Organization = request.ProcessingUser.CustomerOrganisation.Name,
                     });
@@ -207,7 +207,7 @@ namespace Tolk.Web.Helpers
                             {
                                 Weight = 200,
                                 Timestamp = request.AnswerDate.Value,
-                                EventDetails = $"Tolkbyte godkänd av avropare",
+                                EventDetails = $"Tolkbyte godkänt av avropare",
                                 Actor = request.ProcessingUser.FullName,
                                 Organization = request.ProcessingUser.CustomerOrganisation.Name,
                             });
@@ -218,7 +218,7 @@ namespace Tolk.Web.Helpers
                             {
                                 Weight = 200,
                                 Timestamp = request.AnswerDate.Value,
-                                EventDetails = $"Tolkbyte automatiskt godkänd",
+                                EventDetails = $"Tolkbyte automatiskt godkänt",
                                 Actor = "Systemet",
                             });
                         }
@@ -253,7 +253,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.CancelledAt.Value,
-                        EventDetails = "Avrop avbokat av avropare",
+                        EventDetails = "Avrop avbokat av myndighet",
                         Actor = request.CancelledByUser.FullName,
                         Organization = request.CancelledByUser.CustomerOrganisation.Name,
                     });
@@ -287,7 +287,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.CancelConfirmedAt.Value,
-                        EventDetails = "Avbokning bekräftad av avropare",
+                        EventDetails = "Avbokning bekräftad av myndighet",
                         Actor = request.CancelConfirmedByUser.FullName,
                         Organization = request.CancelConfirmedByUser.CustomerOrganisation.Name,
                     });
@@ -418,7 +418,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.AnswerDisputedAt.Value,
-                        EventDetails = "Reklamationens bestridande accepterad av avropare",
+                        EventDetails = "Reklamation är återtagen av myndighet",
                         Actor = complaint.AnswerDisputingUser.FullName,
                         Organization = complaint.AnswerDisputingUser.CustomerOrganisation.Name,
                     });
@@ -428,7 +428,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.AnswerDisputedAt.Value,
-                        EventDetails = "Reklamationens bestridande avslagen av avropare, avvaktar extern process",
+                        EventDetails = "Reklamation kvarstår, avvaktar extern process",
                         Actor = complaint.AnswerDisputingUser.FullName,
                         Organization = complaint.AnswerDisputingUser.CustomerOrganisation.Name,
                     });
@@ -442,7 +442,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.TerminatedAt.Value,
-                        EventDetails = "Reklamation avslutad, extern process bistod reklamation",
+                        EventDetails = "Reklamation avslutad, bistådd av extern process",
                         Actor = complaint.TerminatingUser.FullName,
                         Organization = complaint.TerminatingUser.CustomerOrganisation.Name,
                     });
@@ -452,7 +452,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.TerminatedAt.Value,
-                        EventDetails = "Reklamation avslutad, extern process avslog reklamation",
+                        EventDetails = "Reklamation avslutad, avslagen av extern process",
                         Actor = complaint.TerminatingUser.FullName,
                         Organization = complaint.TerminatingUser.CustomerOrganisation.Name,
                     });

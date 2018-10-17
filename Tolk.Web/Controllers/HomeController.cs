@@ -226,7 +226,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Nekade rekvisitioner",
+                    Header = "Underkända rekvisitioner",
                     Controller = "Requisition",
                     Action = "List",
                     Filters = new Dictionary<string, string> {
@@ -311,7 +311,7 @@ namespace Tolk.Web.Controllers
                 yield return new StartViewModel.StartPageBox
                 {
                     Count = count,
-                    Header = "Nekade rekvisitioner",
+                    Header = "Underkända rekvisitioner",
                     Controller = "Requisition",
                     Action = "List",
                     Filters = new Dictionary<string, string> {
