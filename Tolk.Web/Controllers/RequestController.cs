@@ -401,7 +401,13 @@ namespace Tolk.Web.Controllers
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             if (includeLog)
             {
-                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(request).OrderBy(e => e.Timestamp).ToList() };
+                model.EventLog = new EventLogModel
+                {
+                    Entries = EventLogHelper.GetEventLog(request, 
+                    previousRequests: _dbContext.Requests
+                        .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
+                    .OrderBy(e => e.Timestamp).ToList()
+                };
             }
             return model;
         }

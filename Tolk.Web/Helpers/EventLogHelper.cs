@@ -121,13 +121,16 @@ namespace Tolk.Web.Helpers
             };
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Request request, bool isRequestDetailView = true)
+        public static List<EventLogEntryModel> GetEventLog(Request request, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
         {
             var eventLog = new List<EventLogEntryModel>();
-            if (isRequestDetailView && request.ReplacingRequestId.HasValue)
+            if (isRequestDetailView && request.ReplacingRequestId.HasValue && previousRequests != null)
             {
-                // Include event log for previous request, if this is the requests detail view
-                eventLog.AddRange(GetEventLog(request.ReplacingRequest));
+                // Include event log for all previous requests, if this is the requests detail view
+                foreach (Request r in previousRequests)
+                {
+                    eventLog.AddRange(GetEventLog(r));
+                }
             }
             if (!request.ReplacingRequestId.HasValue)
             {
@@ -305,7 +308,7 @@ namespace Tolk.Web.Helpers
                 });
             }
             // Add all requisition logs
-            if (request.Requisitions.Any())
+            if (request.Requisitions != null && request.Requisitions.Any())
             {
                 foreach (var requisition in request.Requisitions)
                 {
@@ -313,7 +316,7 @@ namespace Tolk.Web.Helpers
                 }
             }
             // Add all complaint logs
-            if (request.Complaints.Any())
+            if (request.Complaints != null && request.Complaints.Any())
             {
                 foreach (var complaints in request.Complaints)
                 {
