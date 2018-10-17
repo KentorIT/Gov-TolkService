@@ -218,7 +218,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-
         private Request GetRequest(int id)
         {
             return _dbContext.Requests
@@ -260,7 +259,7 @@ namespace Tolk.Web.Controllers
                     break;
                 case ComplaintStatus.Disputed:
                     receipent = complaint.CreatedByUser.Email;
-                    subject = $"Reklamation kopplad till order {orderNumber} har blivit bestriden";
+                    subject = $"Reklamation kopplad till tolkuppdrag {orderNumber} har blivit bestriden";
                     body = $"Reklamation för avrop {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage}";
                     break;
                 case ComplaintStatus.DisputePendingTrial:
