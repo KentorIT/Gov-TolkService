@@ -29,6 +29,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly DateCalculationService _dateCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
 
@@ -39,6 +40,7 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
+            DateCalculationService dateCalculationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options
 )
@@ -49,6 +51,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
+            _dateCalculationService = dateCalculationService;
             _logger = logger;
             _options = options.Value;
         }
@@ -185,8 +188,8 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-		            .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-		            .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Interpreter).ThenInclude(i => i.User)
@@ -378,14 +381,14 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal?  expectedTravelCost)
+        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
         {
             return _priceCalculationService.GetPrices(
                             request.Order.StartAt,
                             request.Order.EndAt,
                             EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
                             request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.RankingId, 
+                            request.Ranking.RankingId,
                             expectedTravelCost);
         }
 
@@ -398,7 +401,10 @@ namespace Tolk.Web.Controllers
             {
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
             }
-            
+            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved || request.Status == RequestStatus.CancelledByCreatorConfirmed)
+            {
+                model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
+            }
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow);
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
@@ -406,7 +412,7 @@ namespace Tolk.Web.Controllers
             {
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(request, 
+                    Entries = EventLogHelper.GetEventLog(request,
                     previousRequests: _dbContext.Requests
                         .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
                     .OrderBy(e => e.Timestamp).ToList()

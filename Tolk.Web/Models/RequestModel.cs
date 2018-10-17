@@ -55,6 +55,8 @@ namespace Tolk.Web.Models
         [Required]
         public string CancelMessage { get; set; }
 
+        public string Info48HCancelledByCustomer { get; set; }
+
         [Required]
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }

@@ -598,7 +598,7 @@ namespace Tolk.Web.Controllers
                         $"Avbokat avrop avrops-ID {orderNumber}",
                         $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (createFullCompensationRequisition ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : "\nFörmedlingsavgift utgår som får faktureras") +
+                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
                 }
@@ -617,7 +617,7 @@ namespace Tolk.Web.Controllers
                         $"Avbokat avrop avrops-ID {orderNumber}",
                         $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (createFullCompensationRequisition ? "\nUppdraget får faktureras eftersom avbokningen skedde så nära inpå." : "\nFörmedlingsavgift utgår som får faktureras") +
+                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."  : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
                 }
