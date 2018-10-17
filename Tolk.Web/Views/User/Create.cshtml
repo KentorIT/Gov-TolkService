@@ -6,9 +6,14 @@
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="col-md-8 error-message">@Model.ErrorMessage</div>
+    }
+</div>
+<div class="row">
     <div class="col-md-8">
         <form method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
             <form-entry asp-for="Email" />
             <form-entry asp-for="NameFirst" />
             <form-entry asp-for="NameFamily" />

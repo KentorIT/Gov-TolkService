@@ -137,24 +137,27 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<ActionResult> Edit(UserModel model)
         {
-            int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
-            var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            if (ModelState.IsValid)
             {
-                user.NameFirst = model.NameFirst;
-                user.NameFamily = model.NameFamily;
-                user.PhoneNumber = model.PhoneWork;
-                user.PhoneNumberCellphone = model.PhoneCellphone;
-                user.IsActive = model.IsActive;
-                if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
+                int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
+                var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(user, Roles.SuperUser);
+                    user.NameFirst = model.NameFirst;
+                    user.NameFamily = model.NameFamily;
+                    user.PhoneNumber = model.PhoneWork;
+                    user.PhoneNumberCellphone = model.PhoneCellphone;
+                    user.IsActive = model.IsActive;
+                    if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
+                    {
+                        await _userManager.AddToRoleAsync(user, Roles.SuperUser);
+                    }
+                    else if (!model.IsSuperUser && user.Roles.Any(r => r.RoleId == superUserId))
+                    {
+                        await _userManager.RemoveFromRoleAsync(user, Roles.SuperUser);
+                    }
+                    await _userManager.UpdateAsync(user);
                 }
-                else if (!model.IsSuperUser && user.Roles.Any(r => r.RoleId == superUserId))
-                {
-                    await _userManager.RemoveFromRoleAsync(user, Roles.SuperUser);
-                }
-                await _userManager.UpdateAsync(user);
             }
             return RedirectToAction(nameof(View), model);
         }
@@ -214,31 +217,48 @@ namespace Tolk.Web.Controllers
                         additionalRoles.Add(Roles.SuperUser);
                     }
                     var result = await _userManager.CreateAsync(user);
-                    if (additionalRoles.Any())
-                    {
-                        //Make another admin user
-                        var roleResult = await _userManager.AddToRolesAsync(user, additionalRoles);
-                        if (!result.Succeeded)
-                        {
-                            throw new NotSupportedException("Failed to add user, trying to add roles.");
-                        }
-                    }
 
                     if (result.Succeeded)
                     {
-                        if (model.IsSuperUser)
+                        if (additionalRoles.Any())
                         {
-                            await _userManager.AddToRoleAsync(user, Roles.SuperUser);
+                            //Make another admin user
+                            var roleResult = await _userManager.AddToRolesAsync(user, additionalRoles);
+                            if (!roleResult.Succeeded)
+                            {
+                                throw new NotSupportedException("Failed to add user, trying to add roles.");
+                            }
                         }
                         await _userService.SendInviteAsync(user);
 
                         trn.Commit();
                         return RedirectToAction(nameof(View), new { id = user.Id });
                     }
-                    //AddErrors(result);
+                    model.ErrorMessage = GetErrors(result);
                 }
             }
+
             return View(model);
+        }
+
+        private string GetErrors(IdentityResult result)
+        {
+            string errors = string.Empty;
+            foreach (var error in result.Errors)
+            {
+                errors += error.Description + "\n";
+            }
+            return errors;
+        }
+
+        protected string GetErrorMessages()
+        {
+            string errorMessage = string.Empty;
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                errorMessage += error.ErrorMessage + "\n";
+            }
+            return errorMessage;
         }
     }
 }
