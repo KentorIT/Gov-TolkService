@@ -311,7 +311,7 @@ namespace Tolk.BusinessLogic.Services
             if (expiredRequest != null)
             {
                 // Check if expired request was created before assignment after 14:00
-                var newRequestTimeLimit = expiredRequest.Order.StartAt.AddDays(-1);
+                var newRequestTimeLimit = expiredRequest.Order.StartAt.AddDays(-1).ToDateTimeOffsetSweden();
                 newRequestTimeLimit = newRequestTimeLimit.Date + new TimeSpan(14, 00, 00);
                 if (expiredRequest.CreatedAt < newRequestTimeLimit)
                 {
