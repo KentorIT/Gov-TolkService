@@ -9,7 +9,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public List<DisplayPriceInformation> SeparateSubTotal { get; set; } = new List<DisplayPriceInformation>();
 
-        public decimal TotalPrice { get => DisplayPriceRows.Sum(p => p.Price); }
+        public decimal TotalPrice { get => DisplayPriceRows.Sum(p => p.RoundedPrice); }
 
         public string HeaderDescription { get; set; }
     }
