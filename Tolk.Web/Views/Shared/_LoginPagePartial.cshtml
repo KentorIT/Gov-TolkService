@@ -9,7 +9,7 @@
         <section>
             <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" asp-action="Login" asp-controller="Account" class="do-not-check-dirty">
                 <div asp-validation-summary="All" class="text-danger"></div>
-                <form-entry asp-for="Email" />
+                <form-entry asp-for="Email" class="autofocus" />
                 <form-entry asp-for="Password" />
                 <button type="submit" class="btn btn-default">Logga in</button><br />
                 <a asp-action="ForgotPassword" asp-controller="Account">Gl&ouml;mt ditt l&ouml;senord?</a>

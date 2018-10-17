@@ -69,6 +69,8 @@ $(function () {
         message: "Du har osparade ändringar!"
     });
 
+    $("div.autofocus > input").first().focus();
+
     // For buttons and anchors that ignore dirty-checks
     $("form > :button.do-not-check-dirty, form > a.do-not-check-dirty").on("click", function () {
         $(this).parent("form").removeClass(dirty);
