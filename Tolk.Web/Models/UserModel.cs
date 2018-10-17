@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Namn")]
         public string NameFull => $"{NameFirst} {NameFamily}";
 
-        [Required]
+        [ClientRequired]
         [EmailAddress(ErrorMessage = "Felaktig epostadress")]
         [Display(Name = "E-post")]
         public string Email { get; set; }
