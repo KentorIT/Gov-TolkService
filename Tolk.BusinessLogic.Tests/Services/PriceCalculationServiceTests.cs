@@ -133,24 +133,24 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 16)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 16)]
-        public void GetPriceListTest(string startAt, string endAt, CompetenceLevel compLevel, PriceListType priceListType, int actualNoOfRows)
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 16)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 16)]
+        public void GetPriceListTest(string startAt, CompetenceLevel compLevel, PriceListType priceListType, int actualNoOfRows)
         {
-            GetPriceList(DateTime.Parse(startAt), DateTime.Parse(endAt), compLevel, priceListType).Count().Should().Be(actualNoOfRows, "number of rows {0}", actualNoOfRows);
+            GetPriceList(DateTime.Parse(startAt), compLevel, priceListType).Count().Should().Be(actualNoOfRows, "number of rows {0}", actualNoOfRows);
         }
 
-        private List<PriceListRow> GetPriceList(DateTime startAt, DateTime endAt, CompetenceLevel compLevel, PriceListType priceListType)
+        private List<PriceListRow> GetPriceList(DateTime startAt, CompetenceLevel compLevel, PriceListType priceListType)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                return new PriceCalculationService(tolkdbContext).GetPriceList(startAt, endAt, compLevel, priceListType);
+                return new PriceCalculationService(tolkdbContext).GetPriceList(startAt, compLevel, priceListType);
             }
         }
 
@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                var prices = GetPriceList(DateTime.Parse(startAt), DateTime.Parse(endAt), compLevel, priceListType);
+                var prices = GetPriceList(DateTime.Parse(startAt), compLevel, priceListType);
                 IEnumerable<PriceRowBase> list = new PriceCalculationService(tolkdbContext).GetLostTimePriceRows(DateTime.Parse(startAt), DateTime.Parse(endAt), lostTime, lostTimeIWH, prices);
                 list.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(actual, "number of rows {0}", actual);
             }

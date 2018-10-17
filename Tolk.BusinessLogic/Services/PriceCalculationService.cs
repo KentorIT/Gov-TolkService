@@ -41,13 +41,13 @@ namespace Tolk.BusinessLogic.Services
 
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
         {
-            var prices = GetPriceList(startAt, endAt, competenceLevel, listType);
+            var prices = GetPriceList(startAt, competenceLevel, listType);
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, GetPriceRowsPerType(startAt, endAt, prices).ToList(), rankingId, travelCost);
         }
 
         public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? travelCost)
         {
-            var prices = GetPriceList(startAt, endAt, competenceLevel, listType);
+            var prices = GetPriceList(startAt, competenceLevel, listType);
             var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices).ToList();
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
@@ -114,12 +114,12 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public List<PriceListRow> GetPriceList(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType)
+        public List<PriceListRow> GetPriceList(DateTimeOffset startAt, CompetenceLevel competenceLevel, PriceListType listType)
         {
             return _dbContext.PriceListRows.Where(r =>
                 r.CompetenceLevel == competenceLevel &&
                 r.PriceListType == listType &&
-                r.StartDate <= startAt.DateTime && r.EndDate >= endAt.DateTime).ToList();
+                r.StartDate <= startAt.DateTime && r.EndDate >= startAt.DateTime).ToList();
         }
 
         private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequest)
@@ -139,7 +139,7 @@ namespace Tolk.BusinessLogic.Services
 
         private PriceRowBase GetPriceCalculationCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType, ChargeType chargeType)
         {
-            var chargeRow = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == chargeType && startAt.Date > c.StartDate && endAt.Date < c.EndDate);
+            var chargeRow = _dbContext.PriceCalculationCharges.Single(c => c.ChargeTypeId == chargeType && c.StartDate <= startAt.DateTime && c.EndDate >= startAt.DateTime);
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = chargeRow.ChargePercentage * priceListRowsPerPriceType.Sum(m => m.TotalPrice) / 100, Quantity = 1, PriceRowType = chargeType == ChargeType.SocialInsuranceCharge ? PriceRowType.SocialInsuranceCharge : PriceRowType.AdministrativeCharge, PriceCalculationChargeId = chargeRow.PriceCalculationChargeId };
         }
 
@@ -151,9 +151,10 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
+                //One broker fee per day
                 int days = GetNoOfDays(startAt, endAt);
-                //One broker fee per calender day.
-                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate < startAt && br.EndDate > startAt);
+                
+                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate <= startAt && br.EndDate >= startAt);
 
                 return new PriceRowBase
                 {
