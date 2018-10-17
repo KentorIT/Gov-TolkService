@@ -146,7 +146,7 @@ namespace Tolk.BusinessLogic.Entities
             var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
 
             var ranking = ReplacingOrderId.HasValue && brokersWithRequest.Any() ? null :
-                rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId)).OrderBy(r => r.RankingId).FirstOrDefault();
+                rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
 
             if (ranking == null)
             {
