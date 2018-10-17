@@ -224,7 +224,7 @@ namespace Tolk.Web.Services
                         .Where(u => u.IsActive && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
                         .Select(u => new SelectListItem
                         {
-                            Text = u.UserName,
+                            Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,
                             Value = u.Id.ToString(),
                             Selected = impersonatedUserId == u.Id.ToString(),
                         }).ToList();
@@ -246,7 +246,7 @@ namespace Tolk.Web.Services
                         u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId())
                     .Select(u => new SelectListItem
                     {
-                        Text = u.UserName,
+                        Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
                         Value = u.Id.ToString(),
                     }).ToList();
             }
@@ -261,7 +261,7 @@ namespace Tolk.Web.Services
                     .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId())
                     .Select(u => new SelectListItem
                     {
-                        Text = u.UserName,
+                        Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
                         Value = u.Id.ToString(),
                     }).ToList();
             }
@@ -277,7 +277,7 @@ namespace Tolk.Web.Services
                     .Where(u => u.BrokerId == brokerId)
                     .Select(u => new SelectListItem
                     {
-                        Text = $"{u.UserName}",
+                        Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
                         Value = u.Id.ToString(),
                     }).ToList();
             }
@@ -293,12 +293,12 @@ namespace Tolk.Web.Services
                     .Where(u => u.BrokerId == brokerId)
                     .Select(u => new SelectListItem
                     {
-                        Text = $"{u.UserName} (Handläggare)",
+                        Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} (Handläggare)" : $"{u.UserName} (Handläggare)",
                         Value = u.Id.ToString(),
                     }).Union(_dbContext.Users.Where(u => u.Interpreter.Brokers.Any(b => b.BrokerId == brokerId))
                         .Select(u => new SelectListItem
                         {
-                            Text = $"{u.UserName} (Tolk)",
+                            Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName}" : $"{u.UserName} (Tolk)",
                             Value = u.Id.ToString(),
                         })
                     ).ToList();
