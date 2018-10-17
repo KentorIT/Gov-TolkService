@@ -320,7 +320,7 @@ namespace Tolk.Web.Services
             .Select(i => new SelectListItem
             {
                 Value = i.InterpreterId.ToString(),
-                Text = i.User.UserName
+                Text = !string.IsNullOrWhiteSpace(i.User.FullName) ? i.User.FullName : i.User.UserName,
             });
 
             foreach (var i in interpretersInDb)
