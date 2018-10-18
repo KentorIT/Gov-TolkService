@@ -24,7 +24,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
-        public int RegionId { get; set; }
+        public int? RegionId { get; set; }
 
         [Display(Name = "Språk")]
         [ClientRequired]
@@ -55,7 +55,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
-        public AssignmentType AssignmentType { get; set; }
+        public AssignmentType? AssignmentType { get; set; }
 
         [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekter här, det görs i extra behov.")]
         [ClientRequired]
@@ -315,10 +315,10 @@ namespace Tolk.Web.Models
             }
             else
             {
-                order.LanguageId = AssignmentType != AssignmentType.Education ? LanguageId : null;
-                order.OtherLanguage = OtherLanguageId == LanguageId && AssignmentType != AssignmentType.Education ? OtherLanguage : null;
-                order.RegionId = RegionId;
-                order.AssignentType = AssignmentType;
+                order.LanguageId = AssignmentType.Value != BusinessLogic.Enums.AssignmentType.Education ? LanguageId : null;
+                order.OtherLanguage = OtherLanguageId == LanguageId && AssignmentType.Value != BusinessLogic.Enums.AssignmentType.Education ? OtherLanguage : null;
+                order.RegionId = RegionId.Value;
+                order.AssignentType = AssignmentType.Value;
                 order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (OrderRequirements != null)
