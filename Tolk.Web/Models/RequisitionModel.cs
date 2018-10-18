@@ -29,7 +29,7 @@ namespace Tolk.Web.Models
         public string InterpreterName { get; set; }
 
         [Display(Name = "Tolkens skattsedel")]
-        [Required]
+        [ClientRequired]
         public TaxCard? InterpreterTaxCard { get; set; }
 
         [Display(Name = "Förmedling")]
