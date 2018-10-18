@@ -419,6 +419,16 @@ namespace Tolk.Web.Controllers
                 {
                     Entries = EventLogHelper.GetEventLog(request,
                     previousRequests: _dbContext.Requests
+                        .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
+                        .Include(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
+                        .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.CustomerOrganisation)
+                        .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.Requisitions)
+                        .Include(r => r.Complaints)
                         .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
                     .OrderBy(e => e.Timestamp).ToList()
                 };
