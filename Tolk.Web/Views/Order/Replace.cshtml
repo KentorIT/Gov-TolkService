@@ -143,7 +143,8 @@
                 </div>
                 <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
-
+            <input asp-for="AssignmentType" type="hidden" />
+            <input asp-for="RegionId" type="hidden" />
             <display-entry asp-for="ReplacedTimeRange" />
             <form-entry asp-for="ReplacedTimeRange" type="hidden" />
             <form-entry asp-for="TimeRange" />
