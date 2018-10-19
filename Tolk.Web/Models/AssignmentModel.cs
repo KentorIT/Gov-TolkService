@@ -72,7 +72,7 @@ namespace Tolk.Web.Models
             {
                 OrderId = request.OrderId,
                 OrderNumber = request.Order.OrderNumber.ToString(),
-                ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
+                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value,
                 Address = $"{location.Street}\n{location.ZipCode} {location.City}",
                 OffSiteAssignmentType = location.OffSiteAssignmentType,

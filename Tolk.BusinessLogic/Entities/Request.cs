@@ -27,15 +27,11 @@ namespace Tolk.BusinessLogic.Entities
             CreatedAt = creationTime;
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
-            ExpectedTravelCosts = originalRequest.ExpectedTravelCosts;
             InterpreterLocation = originalRequest.InterpreterLocation;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
-
-        [Column(TypeName = "decimal(10, 2)")]
-        public decimal? ExpectedTravelCosts { get; set; }
 
         public int RankingId { get; set; }
 
@@ -194,8 +190,7 @@ namespace Tolk.BusinessLogic.Entities
             int userId,
             int? impersonatorId,
             int interperterId,
-            decimal? expectedTravelCosts,
-            Enums.InterpreterLocation? interpreterLocation,
+            InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
@@ -215,7 +210,6 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterId = interperterId;
-            ExpectedTravelCosts = expectedTravelCosts;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers.AddRange(requirementAnswers);
@@ -246,7 +240,6 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             if (Order.AllowMoreThanTwoHoursTravelTime)
             {
-                ExpectedTravelCosts = expectedTravelCosts;
                 Status = RequestStatus.Accepted;
                 Order.Status = OrderStatus.RequestResponded;
             }
@@ -263,8 +256,7 @@ namespace Tolk.BusinessLogic.Entities
             int userId,
             int? impersonatorId,
             int interperterId,
-            decimal? expectedTravelCosts,
-            Enums.InterpreterLocation? interpreterLocation,
+            InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachments,
@@ -280,7 +272,6 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterId = interperterId;
-            ExpectedTravelCosts = expectedTravelCosts;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             AnswerProcessedAt = isAutoAccepted ? oldRequest.AnswerProcessedAt : null;

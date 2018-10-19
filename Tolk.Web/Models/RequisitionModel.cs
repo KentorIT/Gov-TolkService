@@ -124,7 +124,7 @@ namespace Tolk.Web.Models
                 ExpectedStartedAt = request.Order.StartAt,
                 SessionEndedAt = request.Order.EndAt,
                 SessionStartedAt = request.Order.StartAt,
-                ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
+                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 InterpreterName = request.Interpreter.User.CompleteContactInformation,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),

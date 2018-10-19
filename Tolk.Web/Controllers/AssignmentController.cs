@@ -5,16 +5,12 @@ using Tolk.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
-using System;
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
-
 
 namespace Tolk.Web.Controllers
 {
@@ -86,6 +82,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> View(int id)
         {
             var request = _dbContext.Requests
+                    .Include(r => r.PriceRows)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)

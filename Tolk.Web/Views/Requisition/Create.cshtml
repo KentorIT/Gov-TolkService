@@ -1,5 +1,6 @@
 ﻿@model Tolk.Web.Models.RequisitionModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = "Skapa rekvisition";
 }
@@ -42,9 +43,9 @@
                 }
                 <form-entry asp-for="SessionEndedAt" />
                 <display-entry asp-for="ExpectedTravelCosts" />
-                @if (Model.PreviousRequisition != null)
+                @if (Model.PreviousRequisition != null && Model.PreviousRequisition.PriceRows.Any(pr => pr.PriceRowType == PriceRowType.TravelCost))
                 {
-                    <display-entry asp-for="PreviousRequisition.TravelCosts" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+                    <display-entry asp-for="PreviousRequisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price" label-override="Tidigare angiven resekostnad (exkl. moms)" />
                 }
                 <form-entry asp-for="TravelCosts" />
                 <div id="travelCostsValidator" class="d-none text-danger body"></div>

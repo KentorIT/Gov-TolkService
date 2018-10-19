@@ -18,17 +18,20 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly IMemoryCache _cache;
+        private readonly DateCalculationService _dateCalculationService;
 
         private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public PriceCalculationService(TolkDbContext dbContext,
             ILogger<PriceCalculationService> logger,
+            DateCalculationService dateCalculationService,
             IOptions<TolkOptions> options,
             IMemoryCache cache = null
             )
         {
             _logger = logger;
             _dbContext = dbContext;
+            _dateCalculationService = dateCalculationService;
             _options = options.Value;
             _cache = cache;
         }
@@ -42,13 +45,13 @@ namespace Tolk.BusinessLogic.Services
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, GetPriceRowsPerType(startAt, endAt, prices).ToList(), rankingId, travelCost);
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
         }
 
         public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? travelCost)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
-            var priceListRowsPerPriceType = GetPriceRowsPerType(startAt, endAt, prices).ToList();
+            var priceListRowsPerPriceType = MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList();
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
             var priceRowsToCompareRequest = requestPriceRows.Where(plr =>
@@ -62,6 +65,32 @@ namespace Tolk.BusinessLogic.Services
             //get lost time
             priceListRowsPerPriceType.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, priceListRowsPerPriceType, rankingId, travelCost, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
+        }
+
+        /// <summary>
+        /// If order passes midnight their might be two rows of same pricetype, merge these to one 
+        /// </summary>
+        public IEnumerable<PriceRowBase> MergePriceListRowsOfSameType(IEnumerable<PriceRowBase> pricePerType)
+        {
+            var hash = new HashSet<int>();
+            var duplicatesPriceListrows = pricePerType.Select(pri => pri.PriceListRow.PriceListRowId).Where(item => !hash.Add(item.Value)).Distinct();
+            if (!duplicatesPriceListrows.Any())
+            {
+                return pricePerType;
+            }
+            else
+            {
+                List<PriceRowBase> mergedList = new List<PriceRowBase>();
+                foreach (int priceListRowId in duplicatesPriceListrows)
+                {
+                    PriceRowBase newPriceRow = pricePerType.OrderBy(pr => pr.StartAt).First(pr => pr.PriceListRow.PriceListRowId == priceListRowId);
+                    newPriceRow.Quantity = pricePerType.Where(pr => pr.PriceListRow.PriceListRowId == priceListRowId).Sum(pr => pr.Quantity);
+                    newPriceRow.EndAt = pricePerType.OrderBy(pr => pr.EndAt).Last(pr => pr.PriceListRow.PriceListRowId == priceListRowId).EndAt;
+                    mergedList.Add(newPriceRow);
+                }
+                mergedList.AddRange(pricePerType.Where(pri => !duplicatesPriceListrows.Contains(pri.PriceListRow.PriceListRowId)));
+                return mergedList;
+            }
         }
 
         private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, PriceRowBase requestBrokerFeeForRequisition = null)
@@ -153,7 +182,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 //One broker fee per day
                 int days = GetNoOfDays(startAt, endAt);
-                
+
                 var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate <= startAt && br.EndDate >= startAt);
 
                 return new PriceRowBase
@@ -311,8 +340,11 @@ namespace Tolk.BusinessLogic.Services
 
         private DateType? GetHolidayDayTypeIfAny(DateTime date)
         {
-            //TODO, Cache this table...
-            return _dbContext.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
+            if (_dateCalculationService == null)
+            {
+                return _dbContext.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
+            }
+            return _dateCalculationService.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
         }
 
         public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)

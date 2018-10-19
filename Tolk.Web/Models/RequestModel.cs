@@ -135,7 +135,7 @@ namespace Tolk.Web.Models
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.User?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
-                ExpectedTravelCosts = request.ExpectedTravelCosts ?? 0,
+                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 RequisitionId = request.Requisitions?.FirstOrDefault(req => req.Status == RequisitionStatus.Created || req.Status == RequisitionStatus.Approved)?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {

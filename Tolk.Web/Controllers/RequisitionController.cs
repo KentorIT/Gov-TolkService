@@ -54,7 +54,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ProcessedUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
@@ -130,6 +130,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
+                .Include(r => r.PriceRows)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
@@ -262,7 +263,6 @@ namespace Tolk.Web.Controllers
                             CreatedBy = User.GetUserId(),
                             CreatedAt = _clock.SwedenNow,
                             ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
-                            TravelCosts = model.TravelCosts,
                             Message = model.Message,
                             SessionStartedAt = model.SessionStartedAt,
                             SessionEndedAt = model.SessionEndedAt,

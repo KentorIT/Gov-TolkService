@@ -808,9 +808,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("DenyMessage")
                         .HasMaxLength(1000);
 
-                    b.Property<decimal?>("ExpectedTravelCosts")
-                        .HasColumnType("decimal(10, 2)");
-
                     b.Property<DateTimeOffset>("ExpiresAt");
 
                     b.Property<int?>("ImpersonatingAnswerProcessedBy");
@@ -961,9 +958,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("TimeWasteIWHTime");
 
                     b.Property<int?>("TimeWasteNormalTime");
-
-                    b.Property<decimal>("TravelCosts")
-                        .HasColumnType("decimal(10, 2)");
 
                     b.Property<bool>("UseRequestPriceRows");
 

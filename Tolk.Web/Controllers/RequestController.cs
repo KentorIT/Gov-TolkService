@@ -132,6 +132,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking)
+                .Include(r => r.PriceRows)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
@@ -165,6 +166,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.Ranking)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.ReplacingRequest)
@@ -232,7 +234,6 @@ namespace Tolk.Web.Controllers
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
                                 interpreterId,
-                                model.ExpectedTravelCosts,
                                 model.InterpreterLocation,
                                 model.InterpreterCompetenceLevel,
                                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
@@ -308,7 +309,6 @@ namespace Tolk.Web.Controllers
                 User.GetUserId(),
                 User.TryGetImpersonatorId(),
                 interpreterId,
-                model.ExpectedTravelCosts,
                 model.InterpreterLocation,
                 model.InterpreterCompetenceLevel,
                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
@@ -411,7 +411,7 @@ namespace Tolk.Web.Controllers
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
             model.BrokerId = request.Ranking.BrokerId;
-            model.AllowInterpreterChange = ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow);
+            model.AllowInterpreterChange = (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             if (includeLog)
             {

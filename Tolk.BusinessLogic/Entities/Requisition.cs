@@ -23,9 +23,6 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingCreatedBy))]
         public AspNetUser CreatedByImpersonator { get; set; }
 
-        [Column(TypeName = "decimal(10, 2)")]
-        public decimal TravelCosts { get; set; } = 0;
-
         public RequisitionStatus Status { get; set; }
 
         public DateTimeOffset SessionStartedAt { get; set; }

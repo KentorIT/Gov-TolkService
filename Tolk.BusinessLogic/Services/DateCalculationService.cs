@@ -15,7 +15,6 @@ namespace Tolk.BusinessLogic.Services
         private readonly IMemoryCache _cache;
         private const string holidaysCacheKey = nameof(holidaysCacheKey);
 
-
         public DateCalculationService(TolkDbContext tolkDbContext, IMemoryCache cache = null)
         {
             _tolkDbContext = tolkDbContext;
@@ -44,27 +43,17 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
             }
 
-            int fullWeeks = ((secondDate - firstDate).Days / 7);
+            int fullWeeks = (secondDate - firstDate).Days / 7;
 
-            int rest = ((secondDate - firstDate).Days % 7);
+            int rest = (secondDate - firstDate).Days % 7;
 
             if (secondDate.DayOfWeek < firstDate.DayOfWeek) // Wraps over a weekend.
             {
-                if (secondDate.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    rest -= 1;
-                }
-                else
-                {
-                    rest -= 2;
-                }
+                rest -= secondDate.DayOfWeek == DayOfWeek.Sunday ? 1 : 2;
             }
             else
             {
-                if (firstDate.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    rest -= 1;
-                }
+                rest -= firstDate.DayOfWeek == DayOfWeek.Sunday ? 1 : 0;
             }
 
             rest -= Holidays.Where(h =>
@@ -77,7 +66,7 @@ namespace Tolk.BusinessLogic.Services
             return fullWeeks * 5 + rest;
         }
 
-        private IEnumerable<Holiday> Holidays
+        public IEnumerable<Holiday> Holidays
         {
             get
             {
