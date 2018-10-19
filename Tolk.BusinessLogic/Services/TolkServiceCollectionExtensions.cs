@@ -17,6 +17,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<InterpreterService>();
             services.AddTransient<UserService>();
             services.AddTransient<EmailService>();
+            services.AddTransient<NotificationService>();
         }
     }
 }

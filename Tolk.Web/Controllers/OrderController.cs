@@ -32,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly NotificationService _notificationService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -42,7 +43,8 @@ namespace Tolk.Web.Controllers
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
             ILogger<OrderController> logger,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            NotificationService notificationService
             )
         {
             _dbContext = dbContext;
@@ -54,6 +56,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _logger = logger;
             _options = options.Value;
+            _notificationService = notificationService;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -274,26 +277,7 @@ namespace Tolk.Web.Controllers
 
                         //Genarate new price rows from current times, might be subject to change!!!
                         _orderService.CreatePriceInformation(replacementOrder);
-                        var brokerEmail = _dbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId).EmailAddress;
-                        if (!string.IsNullOrEmpty(brokerEmail))
-                        {
-                            _dbContext.Add(new OutboundEmail(
-                                request.Ranking.Broker.EmailAddress,
-                                $"Avrop {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
-                                $"\tOrginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                                $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                                $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                                $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                                $"\tTolk: {request.Interpreter.User.FullName}, e-post: {request.Interpreter.User.Email}\n" +
-                                $"\tSvara senast: {replacingRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                                "Detta mejl går inte att svara på.",
-                                _clock.SwedenNow));
-                        }
-                        else
-                        {
-                            _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
-                               request.Ranking.BrokerId);
-                        }
+                        _notificationService.OrderReplacementCreated(order, replacementOrder, replacingRequest);
 
                         _dbContext.SaveChanges();
                         //Close the replaced order as cancelled
@@ -361,7 +345,7 @@ namespace Tolk.Web.Controllers
 
                 _dbContext.SaveChanges();
 
-                CreateEmailOnOrderRequestAction(request);
+                _notificationService.RequestAnswerAccepted(request);
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
             return Forbid();
@@ -398,7 +382,7 @@ namespace Tolk.Web.Controllers
                 bool isApprovedRequest = request.Status == RequestStatus.Approved;
                 request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createFullCompensationRequisition);
 
-                CreateEmailOnOrderCancellation(request, isApprovedRequest, createFullCompensationRequisition);
+                _notificationService.OrderCancelledByCustomer(request, isApprovedRequest, createFullCompensationRequisition);
 
                 _dbContext.SaveChanges();
                 return RedirectToAction(nameof(View), new { id = model.OrderId });
@@ -443,7 +427,7 @@ namespace Tolk.Web.Controllers
                 request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
 
                 await _orderService.CreateRequest(order, request);
-
+                _notificationService.RequestAnswerDenied(request);
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
@@ -554,90 +538,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);
-        }
-
-        private void CreateEmailOnOrderRequestAction(Request request)
-        {
-            string receipent = request.Interpreter.User.Email;
-            string subject;
-            string body;
-            string orderNumber = request.Order.OrderNumber;
-            switch (request.Status)
-            {
-                case RequestStatus.Approved:
-                    subject = $"Tilldelat tolkuppdrag avrops-ID {orderNumber}";
-                    body = $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {orderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.";
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            if (!string.IsNullOrEmpty(receipent))
-            {
-                _dbContext.Add(new OutboundEmail(
-                    receipent,
-                    subject,
-                    body +
-                    "\n\nDetta mejl går inte att svara på.",
-                    _clock.SwedenNow));
-                _dbContext.SaveChanges();
-            }
-            else
-            {
-                _logger.LogInformation($"No email sent for orderrequest action {request.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
-            }
-        }
-
-        private void CreateEmailOnOrderCancellation(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
-        {
-            string orderNumber = request.Order.OrderNumber;
-            if (requestWasApproved)
-            {
-                string interpreter = request.Interpreter?.User.Email;
-                if (!string.IsNullOrEmpty(interpreter))
-                {
-                    _dbContext.Add(new OutboundEmail(
-                        interpreter,
-                        $"Avbokat avrop avrops-ID {orderNumber}",
-                        $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
-                        "\n\nDetta mejl går inte att svara på.",
-                        _clock.SwedenNow));
-                }
-                else
-                {
-                    _logger.LogInformation($"No email sent to interpreter when cancelling {orderNumber}. No email is set for user.");
-                }
-            }
-            string broker = request.Ranking.Broker.EmailAddress;
-            if (!string.IsNullOrEmpty(broker))
-            {
-                if (requestWasApproved)
-                {
-                    _dbContext.Add(new OutboundEmail(
-                        broker,
-                        $"Avbokat avrop avrops-ID {orderNumber}",
-                        $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
-                        "\n\nDetta mejl går inte att svara på.",
-                        _clock.SwedenNow));
-                }
-                else
-                {
-                    _dbContext.Add(new OutboundEmail(
-                        broker,
-                        $"Avbokad förfrågan avrops-ID {request.Order.OrderNumber}",
-                        $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                        $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        "\n\nDetta mejl går inte att svara på.",
-                        _clock.SwedenNow));
-                }
-            }
-            else
-            {
-                _logger.LogInformation($"No email sent to broker when cancelling {orderNumber}. No email is set for broker.");
-            }
         }
 
         private void CreateEmailOnOrderContactPersonChange(int orderId)
