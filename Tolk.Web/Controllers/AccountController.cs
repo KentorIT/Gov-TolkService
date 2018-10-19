@@ -254,7 +254,7 @@ supporten på {_options.SupportEmail}";
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.FindByNameAsync(model.Email);
                 if (!user.IsActive)
                 {
                     //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
