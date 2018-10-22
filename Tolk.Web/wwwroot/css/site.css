@@ -19,6 +19,10 @@
     margin: 15px;
 }
 
+#impersonation-select {
+    width: 450px;
+}
+
 .input-group > .form-control.datepicker {
     width: 120px;
 }
