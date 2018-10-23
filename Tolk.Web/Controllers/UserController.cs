@@ -203,13 +203,12 @@ namespace Tolk.Web.Controllers
                                 case OrganisationType.Broker:
                                     user.BrokerId = id;
                                     break;
+                                case OrganisationType.Owner:
+                                    additionalRoles.Add(Roles.Admin);
+                                    break;
                                 default:
                                     throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
                             }
-                        }
-                        else
-                        {
-                            additionalRoles.Add(Roles.Admin);
                         }
                     }
                     if (model.IsSuperUser)

@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
         public string NameFull => $"{NameFirst} {NameFamily}";
 
         [ClientRequired]
-        [EmailAddress(ErrorMessage = "Felaktig epostadress")]
+        [EmailAddress(ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "E-post")]
         public string Email { get; set; }
 
@@ -45,6 +45,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Organisation")]
         public string Organisation { get; set; }
 
+        [ClientRequired]
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
 
