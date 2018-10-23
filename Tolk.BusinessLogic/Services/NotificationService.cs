@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -13,15 +12,19 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public NotificationService(
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            PriceCalculationService priceCalculationService
+        )
         {
             _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
+            _priceCalculationService = priceCalculationService;
         }
 
         public void OrderReplacementCreated(Order order, Order replacementOrder, Request replamentRequest)
@@ -155,6 +158,204 @@ namespace Tolk.BusinessLogic.Services
             else
             {
                 _logger.LogInformation($"No email sent to broker when cancelling {orderNumber}. No email is set for broker.");
+            }
+        }
+
+        public void OrderContactPersonChanged(int orderId)
+        {
+            //get order again to get user for new contact (if any, both current contact and previous contact can be null)
+            Order order = _dbContext.Orders
+                .Include(o => o.ContactPersonUser)
+                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                .Single(o => o.OrderId == orderId);
+            AspNetUser previousContactUser = order.OrderContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
+            AspNetUser currentContactUser = order.ContactPersonUser;
+
+            string orderNumber = order.OrderNumber;
+
+            string subject = $"Behörighet ändrad för tolkuppdrag avrops-ID {orderNumber}";
+            string bodyPreviousContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har inte längre denna behörighet för avrop {orderNumber}. \n\nDetta mejl går inte att svara på.";
+            string bodyCurrentContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har nu behörighet att utföra detta för avrop {orderNumber}.\n\nDetta mejl går inte att svara på.";
+
+            if (!string.IsNullOrEmpty(previousContactUser?.Email))
+            {
+                _dbContext.Add(new OutboundEmail(previousContactUser.Email, subject, bodyPreviousContact, _clock.SwedenNow));
+            }
+            else if (previousContactUser != null)
+            {
+                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user PreviousContactUser {previousContactUser.Id}.");
+            }
+            if (!string.IsNullOrEmpty(currentContactUser?.Email))
+            {
+                _dbContext.Add(new OutboundEmail(currentContactUser.Email, subject, bodyCurrentContact, _clock.SwedenNow));
+            }
+            else if (currentContactUser != null)
+            {
+                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user CurrentContactUser {currentContactUser.Id}.");
+            }
+            _dbContext.SaveChanges();
+
+#warning broker should get an order_information_updated notification
+        }
+
+        public void ComplaintCreated(Complaint complaint)
+        {
+            string orderNumber = complaint.Request.Order.OrderNumber;
+            var receipent = complaint.Request.Ranking.Broker.EmailAddress;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"En reklamation har registrerats på avrop {orderNumber}",
+                    $"Reklamation för avrop {orderNumber} har skapats med följande meddelande:\n{complaint.ComplaintType.GetDescription()}\n{complaint.ComplaintMessage}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for Complaint Created for order number {orderNumber}, no email is set for broker.");
+            }
+        }
+
+        public void ComplaintDisputed(Complaint complaint)
+        {
+            string orderNumber = complaint.Request.Order.OrderNumber;
+            var receipent = complaint.CreatedByUser.Email;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"Reklamation kopplad till tolkuppdrag {orderNumber} har blivit bestriden",
+                    $"Reklamation för avrop {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for Complaint Created for order number {orderNumber}, no email is set for user.");
+            }
+        }
+
+        public void ComplaintDisputePendingTrial(Complaint complaint)
+        {
+            string orderNumber = complaint.Request.Order.OrderNumber;
+            var receipent = complaint.Request.Ranking.Broker.EmailAddress;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"Ert bestridande av reklamation avslogs på avrop {orderNumber}",
+                    $"Bestridande av reklamation för avrop {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for Complaint Created for order number {orderNumber}, no email is set for broker.");
+            }
+        }
+
+        public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint)
+        {
+            string orderNumber = complaint.Request.Order.OrderNumber;
+            var receipent = complaint.Request.Ranking.Broker.EmailAddress;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"Ert bestridande av reklamation har godtagits på avrop {orderNumber}",
+                    $"Bestridande av reklamation för avrop {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for Complaint Created for order number {orderNumber}, no email is set for broker.");
+            }
+        }
+
+        public void RequisitionCreated(Requisition requisition)
+        {
+            string orderNumber = requisition.Request.Order.OrderNumber;
+            var receipent = requisition.Request.Order.CreatedByUser.Email;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"En rekvisition har registrerats på avrop {orderNumber}",
+                    $"En rekvisition har registrerats på avrop {orderNumber}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
+        }
+
+        public void RequisitionApproved(Requisition requisition)
+        {
+            string orderNumber = requisition.Request.Order.OrderNumber;
+            var receipent = requisition.CreatedByUser.Email;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"Rekvisition för avrop {orderNumber} har godkänts",
+                    $"Rekvisition för avrop {orderNumber} har godkänts" +
+                        "\n\nKostnader att fakturera:\n\n" + GetRequisitionPriceInformationForMail(requisition) +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
+        }
+
+        public void RequisitionDenied(Requisition requisition)
+        {
+            string orderNumber = requisition.Request.Order.OrderNumber;
+            var receipent = requisition.CreatedByUser.Email;
+            if (!string.IsNullOrEmpty(receipent))
+            {
+                _dbContext.Add(new OutboundEmail(
+                    receipent,
+                    $"Rekvisition för avrop {orderNumber} har underkänts",
+                    $"Rekvisition för avrop {orderNumber} har underkänts med följande meddelande:\n{requisition.DenyMessage}" +
+                    "\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
+            }
+        }
+
+        private string GetRequisitionPriceInformationForMail(Requisition requisition)
+        {
+            if (requisition.PriceRows == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
+                string invoiceInfo = string.Empty;
+                invoiceInfo += $"{priceInfo.HeaderDescription}\n\n";
+                foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
+                {
+                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
+                }
+                invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
+                return invoiceInfo;
             }
         }
     }

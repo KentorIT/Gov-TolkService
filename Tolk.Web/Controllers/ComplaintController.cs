@@ -23,18 +23,21 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
+        private readonly NotificationService _notificationService;
 
         public ComplaintController(
             TolkDbContext dbContext,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<RequisitionController> logger
+            ILogger<RequisitionController> logger,
+            NotificationService notificationService
             )
         {
             _dbContext = dbContext;
             _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -89,7 +92,7 @@ namespace Tolk.Web.Controllers
                     };
                     request.CreateComplaint(complaint);
                     _dbContext.SaveChanges();
-                    CreateEmailOnComplaintAction(complaint);
+                    _notificationService.ComplaintCreated(complaint);
                     var user = _dbContext.Users
                         .Include(u => u.CustomerOrganisation)
                         .Single(u => u.Id == complaint.CreatedBy);
@@ -184,7 +187,7 @@ namespace Tolk.Web.Controllers
                 {
                     complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage, ComplaintStatus.Disputed);
                     _dbContext.SaveChanges();
-                    CreateEmailOnComplaintAction(complaint);
+                    _notificationService.ComplaintDisputed(complaint);
                     return RedirectToAction(nameof(View), new { id = model.ComplaintId });
                 }
                 return Forbid();
@@ -221,7 +224,18 @@ namespace Tolk.Web.Controllers
             {
                 complaint.AnswerDispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage, status);
                 _dbContext.SaveChanges();
-                CreateEmailOnComplaintAction(complaint);
+                switch (status)
+                {
+                    case ComplaintStatus.DisputePendingTrial:
+                        _notificationService.ComplaintDisputePendingTrial(complaint);
+                        break;
+                    case ComplaintStatus.TerminatedAsDisputeAccepted:
+                        _notificationService.ComplaintTerminatedAsDisputeAccepted(complaint);
+                        break;
+                    default:
+                        throw new NotImplementedException($"Notification for the complain status {status.GetDescription()} does not exist.");
+
+                }
                 return RedirectToAction(nameof(View), new { id = model.ComplaintId });
             }
             return Forbid();
@@ -253,51 +267,5 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.ComplaintId == id);
         }
 
-        private void CreateEmailOnComplaintAction(Complaint complaint)
-        {
-            string receipent;
-            string subject;
-            string body;
-            string orderNumber = complaint.Request.Order.OrderNumber;
-            switch (complaint.Status)
-            {
-                case ComplaintStatus.Created:
-                    receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject = $"En reklamation har registrerats på avrop {orderNumber}";
-                    body = $"Reklamation för avrop {orderNumber} har skapats med följande meddelande:\n{complaint.ComplaintType.GetDescription()}\n{complaint.ComplaintMessage}";
-                    break;
-                case ComplaintStatus.Disputed:
-                    receipent = complaint.CreatedByUser.Email;
-                    subject = $"Reklamation kopplad till tolkuppdrag {orderNumber} har blivit bestriden";
-                    body = $"Reklamation för avrop {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage}";
-                    break;
-                case ComplaintStatus.DisputePendingTrial:
-                    receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject = $"Ert bestridande av reklamation avslogs på avrop {orderNumber}";
-                    body = $"Bestridande av reklamation för avrop {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage}";
-                    break;
-                case ComplaintStatus.TerminatedAsDisputeAccepted:
-                    receipent = complaint.Request.Ranking.Broker.EmailAddress;
-                    subject = $"Ert bestridande av reklamation har godtagits på avrop {orderNumber}";
-                    body = $"Bestridande av reklamation för avrop {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage}";
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            if (!string.IsNullOrEmpty(receipent))
-            {
-                _dbContext.Add(new OutboundEmail(
-                    receipent,
-                    subject,
-                    body +
-                    "\n\nDetta mejl går inte att svara på.",
-                    _clock.SwedenNow));
-                _dbContext.SaveChanges();
-            }
-            else
-            {
-                _logger.LogInformation($"No email sent for complaint action {complaint.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
-            }
-        }
     }
 }

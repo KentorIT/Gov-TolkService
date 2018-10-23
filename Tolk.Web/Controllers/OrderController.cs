@@ -447,7 +447,7 @@ namespace Tolk.Web.Controllers
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), model.ContactPersonId);
                 _dbContext.SaveChanges();
-                CreateEmailOnOrderContactPersonChange(order.OrderId);
+                _notificationService.OrderContactPersonChanged(order.OrderId);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
                     return RedirectToAction("View", new { id = order.OrderId });
@@ -538,41 +538,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);
-        }
-
-        private void CreateEmailOnOrderContactPersonChange(int orderId)
-        {
-            //get order again to get user for new contact (if any, both current contact and previous contact can be null)
-            Order order = _dbContext.Orders
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
-                .Single(o => o.OrderId == orderId);
-            AspNetUser previousContactUser = order.OrderContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
-            AspNetUser currentContactUser = order.ContactPersonUser;
-
-            string orderNumber = order.OrderNumber;
-
-            string subject = $"Behörighet ändrad för tolkuppdrag avrops-ID {orderNumber}";
-            string bodyPreviousContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har inte längre denna behörighet för avrop {orderNumber}. \n\nDetta mejl går inte att svara på.";
-            string bodyCurrentContact = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har nu behörighet att utföra detta för avrop {orderNumber}.\n\nDetta mejl går inte att svara på.";
-
-            if (!string.IsNullOrEmpty(previousContactUser?.Email))
-            {
-                _dbContext.Add(new OutboundEmail(previousContactUser.Email, subject, bodyPreviousContact, _clock.SwedenNow));
-            }
-            else if (previousContactUser != null)
-            {
-                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user PreviousContactUser {previousContactUser.Id}.");
-            }
-            if (!string.IsNullOrEmpty(currentContactUser?.Email))
-            {
-                _dbContext.Add(new OutboundEmail(currentContactUser.Email, subject, bodyCurrentContact, _clock.SwedenNow));
-            }
-            else if (currentContactUser != null)
-            {
-                _logger.LogInformation($"No email sent for ordernumber {orderNumber} on contact person change, no email is set for user CurrentContactUser {currentContactUser.Id}.");
-            }
-            _dbContext.SaveChanges();
         }
     }
 }

@@ -28,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly NotificationService _notificationService;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -36,7 +37,8 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            NotificationService notificationService
             )
         {
             _dbContext = dbContext;
@@ -46,6 +48,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _logger = logger;
             _options = options.Value;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -311,10 +314,7 @@ namespace Tolk.Web.Controllers
                             _dbContext.SaveChanges();
                         }
                         transaction.Commit();
-                        CreateEmailOnRequisitionAction(requisition);
-                        var user = _dbContext.Users
-                            .Include(u => u.Broker)
-                            .Single(u => u.Id == requisition.CreatedBy);
+                        _notificationService.RequisitionCreated(requisition);
                         return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                     }
                 }
@@ -338,7 +338,7 @@ namespace Tolk.Web.Controllers
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
-                    CreateEmailOnRequisitionAction(requisition);
+                    _notificationService.RequisitionApproved(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
@@ -360,73 +360,12 @@ namespace Tolk.Web.Controllers
                 {
                     requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
                     _dbContext.SaveChanges();
-                    CreateEmailOnRequisitionAction(requisition);
+                    _notificationService.RequisitionDenied(requisition);
                     return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
                 }
                 return Forbid();
             }
             return RedirectToAction(nameof(Process), new { id = model.ParentId });
-        }
-
-        private void CreateEmailOnRequisitionAction(Requisition requisition)
-        {
-            string receipent;
-            string subject;
-            string body;
-            string orderNumber = requisition.Request.Order.OrderNumber;
-            switch (requisition.Status)
-            {
-                case RequisitionStatus.Created:
-                    receipent = requisition.Request.Order.CreatedByUser.Email;
-                    subject = body = $"En rekvisition har registrerats på avrop {orderNumber}";
-                    break;
-                case RequisitionStatus.Approved:
-                    receipent = requisition.CreatedByUser.Email;
-                    subject = body = $"Rekvisition för avrop {orderNumber} har godkänts";
-                    body += "\n\nKostnader att fakturera:\n\n" + GetRequisitionPriceInformationForMail(requisition);
-                    break;
-                case RequisitionStatus.DeniedByCustomer:
-                    receipent = requisition.CreatedByUser.Email;
-                    subject = $"Rekvisition för avrop {orderNumber} har underkänts";
-                    body = $"Rekvisition för avrop {orderNumber} har underkänts med följande meddelande:\n{requisition.DenyMessage}";
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            if (!string.IsNullOrEmpty(receipent))
-            {
-                _dbContext.Add(new OutboundEmail(
-                    receipent,
-                    subject,
-                    body +
-                    "\n\nDetta mejl går inte att svara på.",
-                    _clock.SwedenNow));
-                _dbContext.SaveChanges();
-            }
-            else
-            {
-                _logger.LogInformation($"No email sent for requisition action {requisition.Status.GetDescription()} for ordernumber {orderNumber}, no email is set for user.");
-            }
-        }
-
-        private string GetRequisitionPriceInformationForMail(Requisition requisition)
-        {
-            if (requisition.PriceRows == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
-                string invoiceInfo = string.Empty;
-                invoiceInfo += $"{priceInfo.HeaderDescription}\n\n";
-                foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
-                {
-                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
-                }
-                invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
-                return invoiceInfo;
-            }
         }
 
         private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition)
@@ -456,6 +395,5 @@ namespace Tolk.Web.Controllers
                 UseDisplayHideInfo = true
             };
         }
-
     }
 }
