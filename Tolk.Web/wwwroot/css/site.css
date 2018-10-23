@@ -55,11 +55,23 @@
 }
 
 .form-entry-information {
-    color: blue;
+    color: #337ac7;
     display: block;
     float: right;
     cursor: help;
+    position: relative;
 }
+
+    .form-entry-information:active:before {
+        color: #777;
+        content: attr(title);
+        padding: 10px;
+        border: 2px solid #777;
+        background: #fff;
+        font-size: 11px;
+        font-family: Helvetica Neue,Helvetica, Arial, sans-serif;
+        letter-spacing: 0.6px;
+    }
 
 .d-none {
     display: none;
@@ -207,6 +219,7 @@ li.placeholder {
     border: 0;
     border-bottom: 1px solid #e5e5e5;
 }
+
 .error-message {
     background-color: #FCE5EF;
     border: 1px solid #E20076;
@@ -215,5 +228,5 @@ li.placeholder {
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
-    margin-bottom:15px;
+    margin-bottom: 15px;
 }
