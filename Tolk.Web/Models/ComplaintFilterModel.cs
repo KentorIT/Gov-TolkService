@@ -23,6 +23,11 @@ namespace Tolk.Web.Models
 
         public bool IsBrokerUser { get; set; }
 
+        public bool HasActiveFilters
+        {
+            get => CustomerContactId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || BrokerContactId.HasValue || Status.HasValue; 
+        }
+
         internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
             // OrderNumber

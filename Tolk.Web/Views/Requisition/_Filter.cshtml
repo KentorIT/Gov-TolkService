@@ -18,15 +18,20 @@
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear" />
             </div>
         </div>
-        @if (Model.IsCustomer)
-        {
-            <form-entry asp-for="FilterByContact" type="checkbox" />
-        }
-        @if (Model.IsBroker)
-        {
+        <div class="row">
             <div class="col-xs-3">
-                <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+                @if (Model.IsCustomer)
+                {
+                    <form-entry asp-for="FilterByContact" type="checkbox" />
+                }
+                @if (Model.IsBroker)
+                {
+                    <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+                }
             </div>
-        }
+            <div>
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
+            </div>
+        </div>
     </form>
 </div>

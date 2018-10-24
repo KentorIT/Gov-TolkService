@@ -58,13 +58,23 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(RequestFilterModel model)
         {
+            if (model == null)
+            {
+                model = new RequestFilterModel();
+            }
+            if (!model.HasActiveFilters)
+            {
+                return View(
+                new RequestListModel
+                {
+                    FilterModel = model,
+                    Items = new List<RequestListItemModel>()
+                });
+            }
             var items = _dbContext.Requests.Include(r => r.Order)
                         .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId() && r.Status != RequestStatus.InterpreterReplaced);
             // Filters
-            if (model != null)
-            {
-                items = model.Apply(items);
-            }
+            items = model.Apply(items);
 
             return View(
                 new RequestListModel

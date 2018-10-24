@@ -37,6 +37,11 @@ namespace Tolk.Web.Models
 
         public bool IsSuperUser { get; set; }
 
+        public bool HasActiveFilters
+        {
+            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue; 
+        }
+
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
             orders = !string.IsNullOrWhiteSpace(OrderNumber) 

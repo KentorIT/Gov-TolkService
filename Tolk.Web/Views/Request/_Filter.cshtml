@@ -32,5 +32,8 @@
                 <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
             </div>
         </div>
+        <div class="row">
+            <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
+        </div>
     </form>
 </div>

@@ -27,25 +27,25 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                        <tr data-id="@item.ComplaintId" data-click-action-url="@Url.Action(item.Action, new { id = item.ComplaintId })">
-                            <td>@item.OrderNumber</td>
-                            <td>@item.RegionName</td>
-                            <td>@item.CustomerName</td>
-                            <td>@item.BrokerName</td>
-                            <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td>@EnumHelper.GetDescription(item.ComplaintType)</td>
-                            <td>@EnumHelper.GetDescription(item.Status)</td>
-                        </tr>
+                            <tr data-id="@item.ComplaintId" data-click-action-url="@Url.Action(item.Action, new { id = item.ComplaintId })">
+                                <td>@item.OrderNumber</td>
+                                <td>@item.RegionName</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.BrokerName</td>
+                                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@EnumHelper.GetDescription(item.ComplaintType)</td>
+                                <td>@EnumHelper.GetDescription(item.Status)</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
             </div>
         }
-        else
+        else if (Model.FilterModel.HasActiveFilters)
         {
-            <p>
-                Det fanns inga rader att visa.
-            </p>
+            <span class="no-result-message">
+                Sökningen gav inget resultat.
+            </span>
         }
     </div>
 </div>

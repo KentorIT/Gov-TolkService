@@ -46,10 +46,24 @@ namespace Tolk.Web.Controllers
 
         public ActionResult List(UserFilterModel model)
         {
-            var customerId = User.TryGetCustomerOrganisationId();
-            var brokerId = User.TryGetBrokerId();
+            if (model == null)
+            {
+                model = new UserFilterModel();
+            }
+            
             model.IsSystemAdministrator = User.IsInRole(Roles.Admin);
 
+            if (!model.HasActiveFilters)
+            {
+                return View(
+                new UserListModel
+                {
+                    FilterModel = model,
+                    Items = new List<UserListItemModel>()
+                });
+            }
+            var customerId = User.TryGetCustomerOrganisationId();
+            var brokerId = User.TryGetBrokerId();
             var users = _dbContext.Users.Select(u => u);
             if (customerId.HasValue)
             {
@@ -63,10 +77,7 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            if (model != null)
-            {
-                users = model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name }).ToList());
-            }
+            users = model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name }).ToList());
             return View(new UserListModel
             {
                 Items = users.Select(u => new UserListItemModel

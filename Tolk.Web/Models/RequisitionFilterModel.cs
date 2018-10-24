@@ -17,8 +17,14 @@ namespace Tolk.Web.Models
         public DateRange DateRange { get; set; }
 
         public RequisitionStatus? Status { get; set; }
-        [Display(Name = "Filtrera på kontaktperson")]
+
+        [Display(Name = "Rekvisitioner med kontaktperson")]
         public bool? FilterByContact { get; set; }
+
+        public bool HasActiveFilters
+        {
+            get => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue|| DateRange?.Start != null || DateRange?.End != null || Status.HasValue || (FilterByContact.HasValue && FilterByContact.Value); 
+        }
 
         public bool IsCustomer { get; set; }
 

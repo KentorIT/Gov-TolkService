@@ -43,11 +43,11 @@
                 </table>
             </div>
         }
-        else
+        else if (Model.FilterModel.HasActiveFilters)
         {
-            <p>
-                Det fanns inga rader att visa.
-            </p>
+            <span class="no-result-message">
+                Sökningen gav inget resultat.
+            </span>
         }
     </div>
 </div>

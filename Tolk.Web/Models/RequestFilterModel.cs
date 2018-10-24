@@ -36,6 +36,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Besvarad av")]
         public int? AnsweredById { get; set; }
 
+        public bool HasActiveFilters
+        {
+            get => AnsweredById.HasValue || RegionId.HasValue || CustomerOrganizationId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || OrderDateRange?.Start != null || OrderDateRange?.End != null || AnswerByDateRange?.Start != null || AnswerByDateRange?.End != null || Status.HasValue; 
+        }
+
         internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
             items = !string.IsNullOrWhiteSpace(OrderNumber)

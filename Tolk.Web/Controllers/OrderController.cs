@@ -58,6 +58,21 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(OrderFilterModel model)
         {
+            if (model == null)
+            {
+                model = new OrderFilterModel();
+            }
+            var isSuperUser = User.IsInRole(Roles.SuperUser);
+            model.IsSuperUser = isSuperUser;
+            if (!model.HasActiveFilters)
+            {
+                return View(
+                new OrderListModel
+                {
+                    FilterModel = model,
+                    Items = new List<OrderListItemModel>()
+                });
+            }
             var orders = _dbContext.Orders
                 .Include(o => o.Language)
                 .Include(o => o.CreatedByUser)
@@ -66,23 +81,14 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Ranking)
                     .ThenInclude(r => r.Broker)
                 .Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
-            var isSuperUser = User.IsInRole(Roles.SuperUser);
+            
             if (!isSuperUser)
             {
                 orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
             }
 
             // Filters
-            if (model != null)
-            {
-                orders = model.Apply(orders);
-            }
-            else
-            {
-                model = new OrderFilterModel();
-            }
-
-            model.IsSuperUser = isSuperUser;
+            orders = model.Apply(orders);
 
             return View(
                 new OrderListModel
@@ -107,7 +113,6 @@ namespace Tolk.Web.Controllers
                             .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
                         Action = nameof(View)
                     })
-
                 });
         }
 
@@ -614,7 +619,7 @@ namespace Tolk.Web.Controllers
                         $"Avbokat avrop avrops-ID {orderNumber}",
                         $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                         $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."  : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
+                        (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
                         "\n\nDetta mejl går inte att svara på.",
                         _clock.SwedenNow));
                 }

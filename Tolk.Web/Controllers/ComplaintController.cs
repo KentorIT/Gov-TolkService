@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
@@ -101,8 +102,24 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(ComplaintFilterModel model)
         {
+            if (model == null)
+            {
+                model = new ComplaintFilterModel();
+            }
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
+            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
+            model.IsBrokerUser = brokerId.HasValue;
+           
+            if (!model.HasActiveFilters)
+            {
+                return View(
+                new ComplaintListModel
+                {
+                    FilterModel = model,
+                    Items = new List<ComplaintListItemModel>()
+                });
+            }
             var items = _dbContext.Complaints
                 .Include(c => c.Request)
                     .ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -113,20 +130,12 @@ namespace Tolk.Web.Controllers
                 .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
                      c.Request.Order.CustomerOrganisationId == customerId);
             // Filters
-            if (model == null)
-            {
-                model = new ComplaintFilterModel();
-            }
-            if (!User.IsInRole(Roles.SuperUser) && customerId.HasValue)
+            if (model.IsCustomerSuperUser)
             {
                 model.CustomerContactId = User.GetUserId();
             }
-            if (model != null)
-            {
-                items = model.Apply(items);
-            }
-            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
-            model.IsBrokerUser = brokerId.HasValue;
+            items = model.Apply(items);
+        
             return View(
                 new ComplaintListModel
                 {

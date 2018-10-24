@@ -26,10 +26,15 @@ namespace Tolk.Web.Models
         [Display(Name = "Roll")]
         public SearchableRoles? Roles { get; set; }
 
-        [Display(Name = "Endast aktiva användare")]
+        [Display(Name = "Aktiva användare")]
         public bool OnlyActive { get; set; } = false;
 
         public bool IsSystemAdministrator { get; set; }
+
+        public bool HasActiveFilters
+        {
+            get => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || OnlyActive;
+        }
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {

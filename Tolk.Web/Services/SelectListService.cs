@@ -177,7 +177,7 @@ namespace Tolk.Web.Services
                         ))
                         .ToList().AsReadOnly();
 
-                    _cache.Set(customersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(organisationsSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
                 }
 
                 return items;

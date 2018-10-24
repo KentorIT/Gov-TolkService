@@ -230,3 +230,16 @@ li.placeholder {
     border-radius: 4px;
     margin-bottom: 15px;
 }
+
+.no-result-message {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    margin-left: 20px;
+    font-style: italic;
+}
+
+.reset-filter-button {
+    margin-bottom: 10px;
+    margin-right: 20px;
+    float: right;
+}

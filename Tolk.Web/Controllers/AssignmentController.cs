@@ -11,6 +11,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
+using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
@@ -34,6 +35,19 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(AssignmentFilterModel filterModel)
         {
+            if (filterModel == null)
+            {
+                filterModel = new AssignmentFilterModel();
+            }
+            if (!filterModel.HasActiveFilters)
+            {
+                return View(
+                new AssignmentListModel
+                {
+                    FilterModel = filterModel,
+                    Items = new List<RequestListItemModel>()
+                });
+            }
             var requests = _dbContext.Requests.Include(r => r.Order)
                 .Where(r => r.Status == RequestStatus.Approved || 
                 r.Status == RequestStatus.CancelledByBroker || 
@@ -54,11 +68,8 @@ namespace Tolk.Web.Controllers
             {
                 requests = requests.Where(r => r.Ranking.BrokerId == brokerId);
             }
-            // Filters
-            if (filterModel != null)
-            {
-                requests = filterModel.Apply(requests, _clock);
-            }
+
+            requests = filterModel.Apply(requests, _clock);
 
             return View(
                new AssignmentListModel

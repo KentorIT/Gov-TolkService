@@ -167,14 +167,32 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List(RequisitionFilterModel model)
         {
+            if (model == null)
+            {
+                model = new RequisitionFilterModel();
+            }
+
+            var brokerId = User.TryGetBrokerId();
+            var customerId = User.TryGetCustomerOrganisationId();
+            model.IsCustomer = customerId.HasValue;
+            model.IsBroker = brokerId.HasValue;
+
+            if (!model.HasActiveFilters)
+            {
+                return View(
+                new RequisitionListModel
+                {
+                    FilterModel = model,
+                    Items = new List<RequisitionListItemModel>()
+                });
+            }
             var requisitions = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
-            var customerId = User.TryGetCustomerOrganisationId();
             var interpreterId = User.TryGetInterpreterId();
-            var brokerId = User.TryGetBrokerId();
             var userId = User.GetUserId();
+
             if (customerId.HasValue)
             {
                 if (User.IsInRole(Roles.SuperUser))
@@ -211,15 +229,7 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
 
-            // Filters
-            if (model != null)
-            {
-                requisitions = model.Apply(requisitions);
-            }
-
-            model.IsCustomer = customerId.HasValue;
-            model.IsBroker = brokerId.HasValue;
-
+            requisitions = model.Apply(requisitions);
             return View(
                 new RequisitionListModel
                 {
@@ -232,9 +242,9 @@ namespace Tolk.Web.Controllers
                         Start = r.Request.Order.StartAt,
                         End = r.Request.Order.EndAt,
                         Status = r.Status,
-                        Action = customerId.HasValue && r.Status == RequisitionStatus.Created && 
+                        Action = customerId.HasValue && r.Status == RequisitionStatus.Created &&
                             (r.Request.Order.CreatedBy == userId ||
-                             r.Request.Order.ContactPersonId == userId)  ? nameof(Process) : nameof(View),
+                             r.Request.Order.ContactPersonId == userId) ? nameof(Process) : nameof(View),
                     })
                 });
         }
@@ -281,7 +291,7 @@ namespace Tolk.Web.Controllers
                             out useRequestRows,
                             model.TimeWasteNormalTime,
                             model.TimeWasteIWHTime,
-                            request.PriceRows.OfType<PriceRowBase>(), 
+                            request.PriceRows.OfType<PriceRowBase>(),
                             model.TravelCosts
                         );
 
@@ -299,7 +309,7 @@ namespace Tolk.Web.Controllers
                         {
                             replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
                             _dbContext.SaveChanges();
-                        } 
+                        }
                         transaction.Commit();
                         CreateEmailOnRequisitionAction(requisition);
                         var user = _dbContext.Users
