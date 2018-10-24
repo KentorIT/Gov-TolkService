@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -12,18 +16,21 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
+        private readonly TolkOptions _options;
         private readonly PriceCalculationService _priceCalculationService;
 
         public NotificationService(
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
             ISwedishClock clock,
+            IOptions<TolkOptions> options,
             PriceCalculationService priceCalculationService
         )
         {
             _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
+            _options = options.Value;
             _priceCalculationService = priceCalculationService;
         }
 
@@ -339,6 +346,100 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void RequestAccepted(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            string interpreterInfo = _dbContext.Users.Single(u => u.InterpreterId == request.InterpreterId).CompleteContactInformation;
+            CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har accepterat avrop {orderNumber}",
+                $"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats." +
+                $"\n\nTolk:\n{interpreterInfo}");
+        }
+
+        public void RequestDeclinedByBroker(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har tackat nej till avrop {orderNumber}",
+                 $"Svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till avropet med följande meddelande:\n{request.DenyMessage}");
+        }
+
+        public void RequestCancelledByBroker(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har avbokat avrop {orderNumber}",
+                 $"Förmedling {request.Ranking.Broker.Name} har avbokat uppdraget för avrop {orderNumber} med meddelande:\n{request.CancelMessage}");
+            //create email to interpreter
+            CreateMail(request.Interpreter.User.Email, $"Förmedling har avbokat ditt uppdrag för avrops-ID {request.Order.OrderNumber}",
+                $"Förmedling { request.Ranking.Broker.Name} har avbokat ditt uppdrag för avrop {orderNumber} med meddelande:\n{request.CancelMessage}\n" + 
+                $"Uppdraget skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
+        }
+
+        public void RequestReplamentOrderAccepted(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            switch (request.Status)
+
+            {
+                case RequestStatus.Accepted:
+                    CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
+                         $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats." +
+                                "Eventuellt förändrade svar finns som måste beaktas.");
+                    break;
+                case RequestStatus.Approved:
+                    CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
+                        $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras." +
+                        "Inga förändrade krav finns, avropet är klart för utförande.");
+                    //send mail to interpreter about changes replaced order => order
+                    if (!string.IsNullOrEmpty(request.Interpreter.User.Email))
+                    {
+                        CreateMail(request.Interpreter.User.Email, $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
+                            $"Ditt tolkuppdrag {request.Order.ReplacingOrder.OrderNumber} hos {request.Order.CustomerOrganisation.Name} " +
+                            $"från förmedling {request.Ranking.Broker.Name} har ersatts av ett nytt uppdrag: {request.Order.OrderNumber} " +
+                            $"och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
+                    }
+                    break;
+            }
+        }
+
+        public void RequestReplamentOrderDeclinedByBroker(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+
+            CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har tackat nej till ersättningsuppdrag {orderNumber}",
+                $"Svar på ersättningsuppdrag {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} " +
+                $"har tackat nej till ersättningsuppdrag med följande meddelande:\n{request.DenyMessage}");
+            //send mail to interpreter about changes replaced order => order
+            if (!string.IsNullOrEmpty(request.Interpreter.User.Email))
+            {
+                var cancelledRequest = request.Order.ReplacingOrder.Requests.Single(r => r.Ranking.BrokerId == request.Ranking.BrokerId && (
+                    r.Status == RequestStatus.CancelledByCreator ||
+                    r.Status == RequestStatus.CancelledByCreatorConfirmed ||
+                    r.Status == RequestStatus.CancelledByCreatorWhenApproved));
+                CreateMail(request.Interpreter.User.Email, $"Avbokat avrop avrops-ID {request.Order.ReplacingOrder.OrderNumber}",
+                    $"Ditt tolkuppdrag hos {cancelledRequest.Ranking.Broker.Name} har avbokats, med detta meddelande:\n {cancelledRequest.CancelMessage}\n" +
+                    $"Uppdraget har avrops-ID {request.Order.ReplacingOrder.OrderNumber} och skulle ha startat {request.Order.ReplacingOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
+            }
+        }
+
+        public void RequestChangedInterpreterAccepted(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            CreateMail(GetOrderRecipiantsFromRequest(request), $"Förmedling har bytt tolk på avrop {orderNumber}",
+                $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n" +
+                $"\nTolk:\n{request.Interpreter.User.CompleteContactInformation}\n\n" +
+                (request.Order.AllowMoreThanTwoHoursTravelTime ? 
+                    "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt " +
+                    $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." : 
+                    "Inga förändrade krav finns, avropet behåller sin nuvarande status."));
+            if (request.ReplacingRequest.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+            {
+               //create email to new interpreter
+                 CreateMail(request.Interpreter.User.Email, $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
+                    $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. " +
+                    $"Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
+            }
+
+        }
+
         private string GetRequisitionPriceInformationForMail(Requisition requisition)
         {
             if (requisition.PriceRows == null)
@@ -358,5 +459,32 @@ namespace Tolk.BusinessLogic.Services
                 return invoiceInfo;
             }
         }
+
+        private void CreateMail(string recipient, string subject, string body)
+        {
+            CreateMail(new[] { recipient }, subject, body);
+        }
+
+        private void CreateMail(IEnumerable<string> recipients, string subject, string body)
+        {
+            foreach (string recipient in recipients)
+            {
+                _dbContext.Add(new OutboundEmail(
+                    recipient,
+                    subject,
+                    $"{body}\n\nDetta mejl går inte att svara på.",
+                    _clock.SwedenNow));
+            }
+        }
+
+        private static IEnumerable<string> GetOrderRecipiantsFromRequest(Request request)
+        {
+            yield return request.Order.CreatedByUser.Email;
+            if (request.Order.ContactPersonId.HasValue)
+            {
+                yield return request.Order.ContactPersonUser.Email;
+            }
+        }
+
     }
 }
