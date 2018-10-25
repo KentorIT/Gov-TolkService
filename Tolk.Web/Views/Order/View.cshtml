@@ -30,8 +30,11 @@
         {
             <display-entry asp-for="ContactPerson" />
         }
-        <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-warning">@editContactpersonButtonText</button>
-        <br /><br />
+        @if (Model.AllowEditContactPerson)
+        {
+            <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-warning">@editContactpersonButtonText</button>
+            <br /><br />
+        }
         <display-entry asp-for="CustomerName" />
         <display-entry asp-for="UnitName" />
         <display-entry asp-for="CustomerReferenceNumber" />
@@ -286,34 +289,36 @@
 
     </div>
 </div>
-
-<div id="EditContactPerson" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">@editContactpersonButtonText</h4>
-            </div>
-            <div class="modal-body">
-                <form class="do-not-check-dirty" method="post" asp-action="ChangeContactPerson">
-                    @if (Model.ChangeContactPersonId != null)
-                    {
-                        <span class="italic">
-                            För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson <br /><br />
-                        </span>
-                    }
-                    <input asp-for="OrderId" type="hidden" />
-                    <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-warning pull-left">@editContactpersonButtonText</button>
-                        <button type="button" class="btn btn-default do-not-check-dirty pull-right" data-dismiss="modal">Avbryt</button>
-                    </div>
-                </form>
+@if (Model.AllowEditContactPerson)
+{
+    <div id="EditContactPerson" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">@editContactpersonButtonText</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="do-not-check-dirty" method="post" asp-action="ChangeContactPerson">
+                        @if (Model.ChangeContactPersonId != null)
+                        {
+                            <span class="italic">
+                                För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson <br /><br />
+                            </span>
+                        }
+                        <input asp-for="OrderId" type="hidden" />
+                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-warning pull-left">@editContactpersonButtonText</button>
+                            <button type="button" class="btn btn-default do-not-check-dirty pull-right" data-dismiss="modal">Avbryt</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Order/Process.js" asp-append-version="true"></script>

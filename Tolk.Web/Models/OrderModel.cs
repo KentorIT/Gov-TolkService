@@ -207,7 +207,9 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public bool AllowDenial => ((AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false));
+        public bool AllowDenial => (AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false);
+
+        public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBrokerConfirmed && Status != OrderStatus.CancelledByCreatorConfirmed && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
 
         public bool AllowOrderCancellation { get; set; } = false;
         public bool AllowReplacementOnCancel { get; set; } = false;
