@@ -66,6 +66,8 @@ namespace Tolk.Web.Models
         public int? InterpreterId { get; set; }
 
         [Required]
+        [EmailAddress]
+        [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "Tolkens e-postadress")]
         public string NewInterpreterEmail { get; set; }
 
