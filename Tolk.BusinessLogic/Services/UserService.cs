@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -16,17 +14,20 @@ namespace Tolk.BusinessLogic.Services
         private readonly UserManager<AspNetUser> _userManager;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
+        private readonly NotificationService _notificationService;
 
         public UserService(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             IOptions<TolkOptions> options,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            NotificationService notificationService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _options = options.Value;
             _clock = clock;
+            _notificationService = notificationService;
         }
 
         public async Task SendInviteAsync(AspNetUser user)
@@ -34,7 +35,7 @@ namespace Tolk.BusinessLogic.Services
             string subject = null;
             string body = null;
 
-            if(user.InterpreterId.HasValue)
+            if (user.InterpreterId.HasValue)
             {
                 (subject, body) = CreateInterpreterInvite();
             }
@@ -44,18 +45,14 @@ namespace Tolk.BusinessLogic.Services
                 (subject, body) = CreateOrganizationUserActivation();
             }
 
-            if(subject == null || body == null)
+            if (subject == null || body == null)
             {
                 throw new NotImplementedException();
             }
 
             body = string.Format(body, await GenerateActivationLinkAsync(user));
 
-            _dbContext.Add(new OutboundEmail(
-                user.Email,
-                subject,
-                body,
-                _clock.SwedenNow));
+            _notificationService.CreateEmail(user.Email, subject, body);
 
             await _dbContext.SaveChangesAsync();
         }

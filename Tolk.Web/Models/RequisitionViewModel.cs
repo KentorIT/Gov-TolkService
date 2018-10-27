@@ -14,6 +14,8 @@ namespace Tolk.Web.Models
 {
     public class RequisitionViewModel : RequisitionModel
     {
+        public int RequisitionId { get; set; }
+
         [Display(Name = "Registrerad")]
         public DateTimeOffset CreatedAt { get; set; }
 
@@ -97,6 +99,10 @@ namespace Tolk.Web.Models
 
         public static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)
         {
+            if (requisition == null)
+            {
+                return null;
+            }
             var competenceLevels = requisition.Request.Order.CompetenceRequirements
                 .Select(item => new OrderCompetenceRequirement
                 {
@@ -113,8 +119,9 @@ namespace Tolk.Web.Models
             var location = requisition.Request.Order.InterpreterLocations.Single(l => (int)l.InterpreterLocation == requisition.Request.InterpreterLocation.Value);
             return new RequisitionViewModel
             {
+                RequisitionId = requisition.RequisitionId,
                 RequestId = requisition.RequestId,
-                PreviousRequisition = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId),
+                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)),
                 ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerOrganizationName = requisition.Request.Order.CustomerOrganisation.Name,

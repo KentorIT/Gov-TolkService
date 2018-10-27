@@ -142,9 +142,10 @@ namespace Tolk.Web.Controllers
                 Guid groupKey = Guid.NewGuid();
 
                 //Get request model from db
-                var previousRequisition = model.PreviousRequisition;
-                if (previousRequisition != null)
+                 
+                if (model.PreviousRequisition != null)
                 {
+                    var previousRequisition = _dbContext.Requisitions.SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
                     // Get the attachments from the previous requisition.
                     // Save a connection for all of these to Temp
                     foreach (var attachment in previousRequisition.Attachments)
@@ -331,6 +332,7 @@ namespace Tolk.Web.Controllers
             {
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.CreatedByUser)
                     .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Single(r => r.RequisitionId == requisitionId);
@@ -354,6 +356,7 @@ namespace Tolk.Web.Controllers
             {
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.CreatedByUser)
                     .Single(r => r.RequisitionId == model.ParentId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)

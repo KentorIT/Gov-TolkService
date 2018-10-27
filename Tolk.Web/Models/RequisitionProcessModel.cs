@@ -13,13 +13,11 @@ namespace Tolk.Web.Models
 {
     public class RequisitionProcessModel : RequisitionViewModel
     {
-        public int RequisitionId { get; set; }
-
         public static RequisitionProcessModel GetProcessViewModelFromRequisition(Requisition requisition)
         {
             return new RequisitionProcessModel
             {
-                PreviousRequisition = requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId),
+                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)),
                 RequisitionId = requisition.RequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 CustomerOrganizationName = requisition.Request.Order.CustomerOrganisation.Name,

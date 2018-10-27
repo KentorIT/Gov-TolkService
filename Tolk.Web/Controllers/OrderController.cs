@@ -277,7 +277,7 @@ namespace Tolk.Web.Controllers
 
                         //Genarate new price rows from current times, might be subject to change!!!
                         _orderService.CreatePriceInformation(replacementOrder);
-                        _notificationService.OrderReplacementCreated(order, replacementOrder, replacingRequest);
+                        _notificationService.OrderReplacementCreated(order);
 
                         _dbContext.SaveChanges();
                         //Close the replaced order as cancelled
@@ -340,12 +340,18 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-
+                bool isInterpreterChangeApproval = request.Status == RequestStatus.AcceptedNewInterpreterAppointed;
                 request.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
 
                 _dbContext.SaveChanges();
-
-                _notificationService.RequestAnswerAccepted(request);
+                if (isInterpreterChangeApproval)
+                {
+                    _notificationService.RequestChangedInterpreterAccepted(request, InterpereterChangeAcceptOrigin.User);
+                }
+                else
+                {
+                    _notificationService.RequestAnswerAccepted(request);
+                }
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
             return Forbid();
@@ -417,7 +423,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
             var order = await _dbContext.Orders.Include(o => o.Requests)
-                .ThenInclude(r => r.Ranking)
+                .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleAsync(o => o.OrderId == model.OrderId);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
@@ -447,7 +453,14 @@ namespace Tolk.Web.Controllers
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), model.ContactPersonId);
                 _dbContext.SaveChanges();
-                _notificationService.OrderContactPersonChanged(order.OrderId);
+                var changedOrder = _dbContext.Orders
+                    .Include(o => o.Requests
+                        ).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(o => o.ContactPersonUser)
+                    .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                    .Single(o => o.OrderId == order.OrderId);
+
+                _notificationService.OrderContactPersonChanged(changedOrder);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
                     return RedirectToAction("View", new { id = order.OrderId });

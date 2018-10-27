@@ -23,6 +23,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
         private readonly TolkOptions _options;
+        private readonly NotificationService _notificationService;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -31,7 +32,8 @@ namespace Tolk.BusinessLogic.Services
             DateCalculationService dateCalculationService,
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            NotificationService notificationService
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -41,6 +43,7 @@ namespace Tolk.BusinessLogic.Services
             _priceCalculationService = priceCalculationService;
             _logger = logger;
             _options = options.Value;
+            _notificationService = notificationService;
         }
 
         public async Task HandleExpiredRequests()
@@ -187,17 +190,7 @@ namespace Tolk.BusinessLogic.Services
                             request.AnswerProcessedAt = _clock.SwedenNow;
                             request.Order.Status = OrderStatus.ResponseAccepted;
 
-                            _tolkDbContext.Add(new OutboundEmail(
-                            request.Interpreter.User.Email,
-                            $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
-                            $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
-                            _clock.SwedenNow));
-
-                            _tolkDbContext.Add(new OutboundEmail(
-                            request.Order.CreatedByUser.Email,
-                            $"Svar på avrop med avrops-ID {request.Order.OrderNumber} har godkänts av systemet",
-                            $"Svar på avrop {request.Order.OrderNumber} där tolk har bytts ut har godkänts av systemet då uppdraget startar inom {_options.HoursToApproveChangeInterpreterRequests} timmar. Uppdraget startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.\n\nDetta mejl går inte att svara på.",
-                            _clock.SwedenNow));
+                            _notificationService.RequestChangedInterpreterAccepted(request, InterpereterChangeAcceptOrigin.SystemRule);
 
                             _tolkDbContext.SaveChanges();
                             trn.Commit();
@@ -330,31 +323,13 @@ namespace Tolk.BusinessLogic.Services
             {
                 _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                     request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
-                var broker = _tolkDbContext.Brokers.Single(b => b.BrokerId == request.Ranking.BrokerId);
-                if (!string.IsNullOrEmpty(broker.EmailAddress))
-                {
-                    var createdOrder = await _tolkDbContext.Orders
-                        .Include(o => o.CustomerOrganisation)
-                        .Include(o => o.Region)
-                        .Include(o => o.Language)
-                        .SingleAsync(o => o.OrderId == request.OrderId);
-                    _tolkDbContext.Add(new OutboundEmail(
-                        request.Ranking.Broker.EmailAddress,
-                        $"Nytt avrop registrerat: {order.OrderNumber}",
-                        $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
-                        $"\tRegion: {order.Region.Name}\n" +
-                        $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name ?? "(Tolkanvändarutbildning)"}\n" +
-                        $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                        $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                        $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n" +
-                        "Detta mail går inte att svara på.",
-                        _clock.SwedenNow));
-                }
-                else
-                {
-                    _logger.LogInformation("No mail sent to broker {brokerId}, it has no email set.",
-                       request.Ranking.BrokerId);
-                }
+                var newRequest = _tolkDbContext.Requests
+                    .Include(r => r.Order.CustomerOrganisation)
+                    .Include(r => r.Ranking.Broker)
+                    .Include(r => r.Order.Region)
+                    .Include(r => r.Order.Language)
+                    .Single(r => r.RequestId == request.RequestId);
+                _notificationService.RequestCreated(newRequest);
             }
             else
             {
@@ -364,13 +339,9 @@ namespace Tolk.BusinessLogic.Services
                 // Send an email to tell the order creator, and possibly the other user as well...
                 var terminatedOrder = await _tolkDbContext.Orders
                     .Include(o => o.CreatedByUser)
+                    .Include(o => o.ContactPersonUser)
                     .SingleAsync(o => o.OrderId == order.OrderId);
-                _tolkDbContext.Add(new OutboundEmail(
-                    terminatedOrder.CreatedByUser.Email,
-                    $"Avrop fick ingen tolk: {order.OrderNumber}",
-                    $"Ingen förmedling kunde tillsätta en tolk för detta tillfälle.\n\n" +
-                    "Detta mail går inte att svara på.",
-                    _clock.SwedenNow));
+                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
                     order.OrderId);
             }

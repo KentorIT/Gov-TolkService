@@ -189,7 +189,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            int interperterId,
+            Interpreter interperter,
             InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
-            InterpreterId = interperterId;
+            Interpreter = interperter;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers.AddRange(requirementAnswers);
@@ -255,7 +255,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            int interperterId,
+            Interpreter interperter,
             InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
@@ -271,7 +271,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
-            InterpreterId = interperterId;
+            Interpreter = interperter;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             AnswerProcessedAt = isAutoAccepted ? oldRequest.AnswerProcessedAt : null;

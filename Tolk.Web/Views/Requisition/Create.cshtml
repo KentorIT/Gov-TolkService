@@ -33,19 +33,19 @@
                 <display-entry asp-for="ExpectedStartedAt" />
                 @if (Model.PreviousRequisition != null)
                 {
-                    <display-entry asp-for="PreviousRequisition.SessionStartedAt" label-override="Tidigare angiven starttid" />
+                    <display-entry asp-for="PreviousRequisition.SessionStartedAt" />
                 }
                 <form-entry asp-for="SessionStartedAt" />
                 <display-entry asp-for="ExpectedEndedAt" />
                 @if (Model.PreviousRequisition != null)
                 {
-                    <display-entry asp-for="PreviousRequisition.SessionEndedAt" label-override="Tidigare angiven sluttid" />
+                    <display-entry asp-for="PreviousRequisition.SessionEndedAt"/>
                 }
                 <form-entry asp-for="SessionEndedAt" />
                 <display-entry asp-for="ExpectedTravelCosts" />
-                @if (Model.PreviousRequisition != null && Model.PreviousRequisition.PriceRows.Any(pr => pr.PriceRowType == PriceRowType.TravelCost))
+                @if (Model.PreviousRequisition?.TravelCosts != null)
                 {
-                    <display-entry asp-for="PreviousRequisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price" label-override="Tidigare angiven resekostnad (exkl. moms)" />
+                    <display-entry asp-for="PreviousRequisition.TravelCosts" />
                 }
                 <form-entry asp-for="TravelCosts" />
                 <div id="travelCostsValidator" class="d-none text-danger body"></div>

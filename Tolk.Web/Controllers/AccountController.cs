@@ -36,6 +36,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
         private readonly LoginLinkTokenProvider _loginLinkTokenProvider;
+        private readonly NotificationService  _notificationService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -48,7 +49,8 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
-            LoginLinkTokenProvider loginLinkTokenProvider)
+            LoginLinkTokenProvider loginLinkTokenProvider,
+            NotificationService notificationService) 
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -61,6 +63,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
             _loginLinkTokenProvider = loginLinkTokenProvider;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -210,11 +213,10 @@ Om du inte har begärt en återställning av ditt lösenord kan du radera det h�
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
 supporten på {_options.SupportEmail}";
 
-            _dbContext.Add(new OutboundEmail(
+            _notificationService.CreateEmail(
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",
-                body,
-                _clock.SwedenNow));
+                body);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",

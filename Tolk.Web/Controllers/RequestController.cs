@@ -223,7 +223,6 @@ namespace Tolk.Web.Controllers
                     //if change interpreter or else if not a replacementorder
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                     {
-                        string sendExtraEmailToInterpreter = string.Empty;
                         int interpreterId = model.InterpreterId.Value;
                         if (interpreterId == SelectListService.NewInterpreterId)
                         {
@@ -231,14 +230,18 @@ namespace Tolk.Web.Controllers
                                 request.Ranking.BrokerId,
                                 model.NewInterpreterEmail);
                         }
+                        var interpreter = GetInterpreter(interpreterId);
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         {
-                            var newRequest = CreateNewRequestForReplacedInterpreter(request, model, interpreterId);
+                            var newRequest = CreateNewRequestForReplacedInterpreter(request, model, interpreter);
                             if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
                             {
-                                sendExtraEmailToInterpreter = _dbContext.Users.Single(u => u.InterpreterId == interpreterId).Email;
+                                _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
                             }
-                            _notificationService.RequestChangedInterpreterAccepted(newRequest);
+                            else
+                            {
+                                _notificationService.RequestChangedInterpreter(newRequest);
+                            }
                             request.Status = RequestStatus.InterpreterReplaced;
                         }
                         else
@@ -247,7 +250,7 @@ namespace Tolk.Web.Controllers
                                 _clock.SwedenNow,
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
-                                interpreterId,
+                                interpreter,
                                 model.InterpreterLocation,
                                 model.InterpreterCompetenceLevel,
                                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
@@ -283,6 +286,12 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
+        private Interpreter GetInterpreter(int interpreterId)
+        {
+            return _dbContext.Interpreters.Include(i => i.User)
+                .Single(i => i.InterpreterId == interpreterId);
+        }
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Cancel(RequestCancelModel model)
@@ -310,7 +319,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.RequestId });
         }
 
-        private Request CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, int interpreterId)
+        private Request CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, Interpreter interpreter)
         {
             Request newRequest = new Request(request.Ranking, request.ExpiresAt, _clock.SwedenNow)
             {
@@ -322,7 +331,7 @@ namespace Tolk.Web.Controllers
             newRequest.ReplaceInterpreter(_clock.SwedenNow,
                 User.GetUserId(),
                 User.TryGetImpersonatorId(),
-                interpreterId,
+                interpreter,
                 model.InterpreterLocation,
                 model.InterpreterCompetenceLevel,
                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
