@@ -949,6 +949,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("RequestId");
 
+                    b.Property<bool>("RequestOrReplacingOrderPeriodUsed");
+
                     b.Property<DateTimeOffset>("SessionEndedAt");
 
                     b.Property<DateTimeOffset>("SessionStartedAt");
@@ -958,8 +960,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("TimeWasteIWHTime");
 
                     b.Property<int?>("TimeWasteNormalTime");
-
-                    b.Property<bool>("UseRequestPriceRows");
 
                     b.HasKey("RequisitionId");
 

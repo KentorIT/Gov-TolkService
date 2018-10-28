@@ -84,7 +84,7 @@ namespace Tolk.Web.Models
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 RequestId = request.RequestId,
                 RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
-                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && !request.Order.ReplacingOrderId.HasValue && request.Status == RequestStatus.Approved),
+                AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && request.Status == RequestStatus.Approved),
                 ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderStatus = request.Order.ReplacedByOrder?.Status,
                 ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber,

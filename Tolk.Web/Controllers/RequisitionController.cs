@@ -81,6 +81,7 @@ namespace Tolk.Web.Controllers
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
+                model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
                 model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(requisition).OrderBy(e => e.Timestamp).ToList() };
                 return View(model);
             }
@@ -268,6 +269,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking)
                     .Include(r => r.PriceRows)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Single(o => o.RequestId == model.RequestId);
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
@@ -296,10 +298,11 @@ namespace Tolk.Web.Controllers
                             model.TimeWasteNormalTime,
                             model.TimeWasteIWHTime,
                             request.PriceRows.OfType<PriceRowBase>(),
-                            model.TravelCosts
+                            model.TravelCosts,
+                            request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null
                         );
 
-                        requisition.UseRequestPriceRows = useRequestRows;
+                        requisition.RequestOrReplacingOrderPeriodUsed = useRequestRows;
                         requisition.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)));
                         foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == model.FileGroupKey))
                         {
@@ -321,7 +324,7 @@ namespace Tolk.Web.Controllers
                 }
                 return Forbid();
             }
-            return View("Create", model);
+            return View(nameof(Create), model);
         }
 
         [ValidateAntiForgeryToken]

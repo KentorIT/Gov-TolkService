@@ -9,15 +9,15 @@
         <display-entry asp-for="OrderNumber" />
         @if (!string.IsNullOrEmpty(Model.ReplacedByOrderNumber))
         {
-            <div class="italic">Detta uppdrag är avbokat och har ersatts med uppdrag @Model.ReplacedByOrderNumber.</div>
+            <div class="important-info">Detta uppdrag är avbokat och har ersatts med uppdrag @Model.ReplacedByOrderNumber.</div>
         }
         @if (Model.ReplacedByOrderStatus == OrderStatus.Requested)
         {
-            <div class="italic">Ersättningsuppdraget är ännu inte besvarat av förmedlingen.</div> <br />
+            <div class="important-info">Ersättningsuppdraget är ännu inte besvarat av förmedlingen.</div>
         }
         else if (Model.ReplacedByOrderStatus == OrderStatus.RequestResponded)
         {
-            <div class="italic">Ersättningsuppdraget är ännu inte godkänt av myndighet.</div> <br />
+            <div class="important-info">Ersättningsuppdraget är ännu inte godkänt av myndighet.</div>
         }
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterLocation" />
@@ -50,10 +50,6 @@
         else if (Model.AllowRequisitionRegistration)
         {
             <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
-        }
-        else if (!string.IsNullOrEmpty(Model.ReplacingOrderNumber))
-        {
-            <div class="italic">Detta är ett ersättningsuppdrag för avbokat avrop @Model.ReplacingOrderNumber. Systemet hanterar inte ersättning för ersättningsuppdrag.</div>
         }
     </div>
 </div>

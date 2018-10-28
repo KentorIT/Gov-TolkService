@@ -194,7 +194,8 @@ li.placeholder {
     font-weight: bold;
 }
 
-.italic {
+.important-info {
+    margin-bottom: 20px;
     font-style: italic;
 }
 

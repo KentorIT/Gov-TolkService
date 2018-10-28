@@ -59,7 +59,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ProcessedBy { get; set; }
 
-        public bool UseRequestPriceRows { get; set; }
+        public bool RequestOrReplacingOrderPeriodUsed { get; set; }
 
         [ForeignKey(nameof(ProcessedBy))]
         public AspNetUser ProcessedUser { get; set; }

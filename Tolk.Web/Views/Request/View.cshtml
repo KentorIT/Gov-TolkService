@@ -33,7 +33,7 @@
         <display-entry asp-for="Status" />
         @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
         {
-            <span class="italic">@Model.Info48HCancelledByCustomer<br /><br /></span>
+            <div class="important-info">@Model.Info48HCancelledByCustomer</div>
         }
         @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
         {
@@ -192,7 +192,7 @@
             }
             @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
             {
-                <span class="italic">@Model.Info48HCancelledByCustomer<br /><br /></span>
+                <div class="important-info">@Model.Info48HCancelledByCustomer</div>
             }
             <form method="post" asp-action="ConfirmCancellation">
                 <input asp-for="RequestId" type="hidden" />

@@ -45,7 +45,6 @@ namespace Tolk.Web.Services
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredReplacedInterpreterRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleDeliveredReplacedOrders(),
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredNonAnsweredRespondedRequests(),
                         serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails()
                     };

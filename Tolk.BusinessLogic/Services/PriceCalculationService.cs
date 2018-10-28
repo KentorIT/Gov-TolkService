@@ -48,20 +48,35 @@ namespace Tolk.BusinessLogic.Services
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? travelCost)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? travelCost, Order replacingOrder)
         {
+            //if replacementorder then we must check times from the replacing order (not the comp.level) 
             var prices = GetPriceList(startAt, competenceLevel, listType);
             var priceListRowsPerPriceType = MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList();
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
-            var priceRowsToCompareRequest = requestPriceRows.Where(plr =>
-                 plr.PriceRowType == PriceRowType.InterpreterCompensation).ToList();
+            var priceRowsFromRequest = requestPriceRows.Where(plr => plr.PriceRowType == PriceRowType.InterpreterCompensation).ToList();
 
-            useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsToCompareRequest);
+            useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsFromRequest);
+
             if (useRequestPricerows)
             {
-                priceListRowsPerPriceType = priceRowsToCompareRequest.Select(p => new PriceRowBase { StartAt = p.StartAt, EndAt = p.EndAt, PriceListRowId = p.PriceListRowId, Quantity = p.Quantity, Price = p.Price, PriceRowType = p.PriceRowType }).ToList();
+                priceListRowsPerPriceType = priceRowsFromRequest.Select(p => new PriceRowBase { StartAt = p.StartAt, EndAt = p.EndAt, PriceListRowId = p.PriceListRowId, Quantity = p.Quantity, Price = p.Price, PriceRowType = p.PriceRowType }).ToList();
             }
+
+            //if replacementorder then we must check start- and endtime from the replacing order (not the comp.level since that can be changed) 
+            if (replacingOrder != null)
+            { 
+                var pricesReplacingOrder = GetPriceList(replacingOrder.StartAt, competenceLevel, listType);
+                var priceListRowsReplacingOrder = MergePriceListRowsOfSameType(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, pricesReplacingOrder)).ToList();
+                bool useReplacingOrderTimes = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceListRowsReplacingOrder);
+                if (useReplacingOrderTimes)
+                {
+                    priceListRowsPerPriceType = priceListRowsReplacingOrder;
+                    useRequestPricerows = useReplacingOrderTimes;
+                }
+            }
+
             //get lost time
             priceListRowsPerPriceType.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, priceListRowsPerPriceType, rankingId, travelCost, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
@@ -151,9 +166,9 @@ namespace Tolk.BusinessLogic.Services
                 r.StartDate <= startAt.DateTime && r.EndDate >= startAt.DateTime).ToList();
         }
 
-        private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequest)
+        private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequestReplacingOrder)
         {
-            return priceToCompareRequest.Sum(p => p.TotalPrice) > priceToCompareRequsition.Sum(p => p.TotalPrice);
+            return priceToCompareRequestReplacingOrder.Sum(p => p.TotalPrice) > priceToCompareRequsition.Sum(p => p.TotalPrice);
         }
 
         public PriceRowBase GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)

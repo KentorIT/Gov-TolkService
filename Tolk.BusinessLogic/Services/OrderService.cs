@@ -204,49 +204,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleDeliveredReplacedOrders()
-        {
-            var orderIds = await _tolkDbContext.Orders
-                .Where(o => o.Status == OrderStatus.ResponseAccepted &&
-                o.ReplacingOrderId.HasValue && o.EndAt < _clock.SwedenNow)
-                .Select(o => o.OrderId)
-                .ToListAsync();
-
-            _logger.LogDebug("Found {count} replacement orders to be delivered: {orderIds}",
-                orderIds.Count, string.Join(", ", orderIds));
-
-            foreach (var orderId in orderIds)
-            {
-                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                {
-                    try
-                    {
-                        var order = await _tolkDbContext.Orders
-                        .SingleOrDefaultAsync(o => o.Status == OrderStatus.ResponseAccepted &&
-                        o.ReplacingOrderId.HasValue && o.EndAt < _clock.SwedenNow &&
-                        o.OrderId == orderId);
-                        if (order == null)
-                        {
-                            _logger.LogDebug("Replacement order {orderId} was in list to be delivered, but doesn't match criteria when re-read from database - skipping.",
-                                orderId);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Delivering replacement order {orderId}.",
-                                order.OrderId);
-                            order.Status = OrderStatus.ReplacementOrderDelivered;
-                            _tolkDbContext.SaveChanges();
-                            trn.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing {methodName} for order {orderId}", nameof(HandleDeliveredReplacedOrders), orderId);
-                    }
-                }
-            }
-        }
-
         public async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests

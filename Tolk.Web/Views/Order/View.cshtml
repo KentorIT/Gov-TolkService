@@ -171,9 +171,9 @@
 
             @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
-                <span class="italic">
-                    Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå<br /><br />
-                </span>
+                <div class="important-info">
+                    Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                </div>
             }
             <display-entry asp-for="InterpreterLocationAnswer" />
             @if (Model.RequestAttachmentListModel?.Files?.Count > 0)
@@ -303,9 +303,9 @@
                     <form class="do-not-check-dirty" method="post" asp-action="ChangeContactPerson">
                         @if (Model.ChangeContactPersonId != null)
                         {
-                            <span class="italic">
-                                För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson <br /><br />
-                            </span>
+                            <div class="important-info">
+                                För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson
+                            </div>
                         }
                         <input asp-for="OrderId" type="hidden" />
                         <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />

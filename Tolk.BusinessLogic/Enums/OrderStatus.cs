@@ -40,8 +40,6 @@ namespace Tolk.BusinessLogic.Enums
         CancelledByBroker = 12,
         [Description("Avbokning bekräftad av myndighet")]
         CancelledByBrokerConfirmed = 13,
-        [Description("Uppdraget har genomförts (Ersättningsuppdrag)")]
-        ReplacementOrderDelivered = 14,
         [Description("Bokningsbekräftelse ej besvarad")]
         ResponseNotAnsweredByCreator = 15,
     }

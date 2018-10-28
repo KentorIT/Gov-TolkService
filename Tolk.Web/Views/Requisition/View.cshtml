@@ -96,9 +96,14 @@
         <display-entry asp-for="RequisitionCreatedBy" />
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
+
         @if (Model.RequestPriceInformationModel != null)
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+        }
+        @if (Model.RequestOrReplacingOrderPricesAreUsed)
+        {
+            <div class="important-info">Tid för att beräkna tolkersättning är hämtad från ursprunglig avropad uppdragstid </div>
         }
         @if (Model.AttachmentListModel?.Files?.Count > 0)
         {

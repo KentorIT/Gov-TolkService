@@ -109,6 +109,8 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel RequestPriceInformationModel { get; set; }
 
+        public bool RequestOrReplacingOrderPricesAreUsed { get; set; }
+
         #region methods
 
         public static RequisitionModel GetModelFromRequest(Request request)
