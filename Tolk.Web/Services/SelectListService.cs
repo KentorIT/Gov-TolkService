@@ -336,5 +336,11 @@ namespace Tolk.Web.Services
                             .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                             .ToList().AsReadOnly();
         }
+
+        public IEnumerable<SelectListItem> UserStatuses
+            { get; } =
+            EnumHelper.GetAllDescriptions<UserStatus>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
     }
 }

@@ -22,18 +22,18 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
-        
+
         [Display(Name = "Roll")]
         public SearchableRoles? Roles { get; set; }
 
-        [Display(Name = "Aktiva användare")]
-        public bool OnlyActive { get; set; } = false;
+        [Display(Name = "Status")]
+        public UserStatus? Status { get; set; }
 
         public bool IsSystemAdministrator { get; set; }
 
         public bool HasActiveFilters
         {
-            get => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || OnlyActive;
+            get => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
         }
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
@@ -64,7 +64,7 @@ namespace Tolk.Web.Models
             if (Roles.HasValue)
             {
                 if ((Roles.Value & SearchableRoles.Broker) == SearchableRoles.Broker)
-                    {
+                {
                     users = users.Where(u => u.BrokerId != null);
                 }
                 if ((Roles.Value & SearchableRoles.OrderCreator) == SearchableRoles.OrderCreator)
@@ -82,12 +82,19 @@ namespace Tolk.Web.Models
                 if ((Roles.Value & SearchableRoles.OrganisationAdministrator) == SearchableRoles.OrganisationAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SuperUser).Id) &&
-                        (u.CustomerOrganisationId != null || u.BrokerId != null) );
+                        (u.CustomerOrganisationId != null || u.BrokerId != null));
                 }
             }
-            if (OnlyActive)
+            if (Status.HasValue)
             {
-                users = users.Where(u => u.IsActive);
+                if (Status.Value == UserStatus.Active)
+                {
+                    users = users.Where(u => u.IsActive);
+                }
+                else
+                {
+                    users = users.Where(u => !u.IsActive);
+                }
             }
             return users;
         }
