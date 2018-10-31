@@ -18,7 +18,7 @@
                 <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
             </div>
             <div class="col-xs-3">
-                <form-entry asp-for="OnlyActive" />
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.UserStatuses" class="allow-clear" />
             </div>
         </div>
         <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
