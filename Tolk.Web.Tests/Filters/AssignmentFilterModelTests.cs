@@ -118,8 +118,7 @@ namespace Tolk.Web.Tests.Filters
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
             var actual = mockRequests.Where(r => r.Order.Status == OrderStatus.Delivered
-                || r.Order.Status == OrderStatus.DeliveryAccepted
-                || r.Order.Status == OrderStatus.ReplacementOrderDelivered);
+                || r.Order.Status == OrderStatus.DeliveryAccepted);
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
         }
@@ -209,8 +208,7 @@ namespace Tolk.Web.Tests.Filters
                 && r.Order.Language == language
                 && r.Order.StartAt < _clock.SwedenNow
                 && (r.Order.Status == OrderStatus.Delivered
-                || r.Order.Status == OrderStatus.DeliveryAccepted
-                || r.Order.Status == OrderStatus.ReplacementOrderDelivered));
+                || r.Order.Status == OrderStatus.DeliveryAccepted));
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
