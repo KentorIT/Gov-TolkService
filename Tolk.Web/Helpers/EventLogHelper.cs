@@ -335,7 +335,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = requisition.CreatedAt,
-                    EventDetails = "Rekvisition automatiskt skapad och godkänd, sen avbokning",
+                    EventDetails = "Rekvisition automatiskt skapad och godkänd, pga avbokning",
                     Actor = "Systemet",
                 });
             }
