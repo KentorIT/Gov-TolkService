@@ -84,7 +84,7 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Creating new interpreter user for {email}", newInterpreterEmail);
 
                 user = AspNetUser.CreateInterpreter(newInterpreterEmail);
-
+                user.IsActive = true;
                 var result = await _userManager.CreateAsync(user);
 
                 if (!result.Succeeded)
