@@ -564,6 +564,7 @@ supporten på {_options.SupportEmail}";
                     if (organization != null)
                     {
                         var user = new AspNetUser(model.Email, organization);
+                        user.IsActive = true;
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -583,6 +584,7 @@ supporten på {_options.SupportEmail}";
                     if (broker != null)
                     {
                         var user = new AspNetUser(model.Email, broker);
+                        user.IsActive = true;
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -622,7 +624,7 @@ supporten på {_options.SupportEmail}";
                 NameFirst = user.NameFirst,
                 NameFamily = user.NameFamily,
                 PhoneCellphone = user.PhoneNumberCellphone,
-                PhoneWork = user.PhoneNumber,
+                PhoneWork = user.PhoneNumber, 
             });
         }
 
