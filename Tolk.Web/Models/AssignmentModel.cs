@@ -26,9 +26,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation InterpreterLocation { get; set; }
 
-        [Display(Name = "Typ av distanstolkning")]
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
         [Display(Name = "Kontaktinformation för distanstolkning")]
         public string OffSiteContactInformation { get; set; }
 
@@ -75,7 +72,6 @@ namespace Tolk.Web.Models
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value,
                 Address = $"{location.Street}\n{location.ZipCode} {location.City}",
-                OffSiteAssignmentType = location.OffSiteAssignmentType,
                 OffSiteContactInformation = location.OffSiteContactInformation,
                 CustomerName = request.Order.CustomerOrganisation.Name,
                 StartDateTime = request.Order.StartAt,

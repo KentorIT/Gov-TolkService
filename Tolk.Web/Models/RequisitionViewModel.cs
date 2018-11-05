@@ -40,9 +40,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
-        [Display(Name = "Typ av distanstolkning")]
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
         [Display(Name = "Kontaktinformation för distanstolkning")]
         public string OffSiteContactInformation { get; set; }
 
@@ -142,7 +139,6 @@ namespace Tolk.Web.Models
                 InterpretersCompetenceLevel = (CompetenceAndSpecialistLevel?)requisition.Request.CompetenceLevel,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
                 Address = $"{location.Street}\n{location.ZipCode} {location.City}",
-                OffSiteAssignmentType = location.OffSiteAssignmentType,
                 OffSiteContactInformation = location.OffSiteContactInformation,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 SpecificCompetenceLevelRequired = requisition.Request.Order.SpecificCompetenceLevelRequired,

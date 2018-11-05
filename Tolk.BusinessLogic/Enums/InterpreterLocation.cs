@@ -9,9 +9,11 @@ namespace Tolk.BusinessLogic.Enums
     {
         [Description("På plats")]
         OnSite = 1,
-        [Description("Distans")]
-        OffSite = 2,
+        [Description("Distans per telefon")]
+        OffSitePhone = 2,
+        [Description("Distans per video")]
+        OffSiteVideo = 3,
         [Description("Distans i anvisad lokal")]
-        OffSiteDesignatedLocation = 3,
+        OffSiteDesignatedLocation = 4
     }
 }

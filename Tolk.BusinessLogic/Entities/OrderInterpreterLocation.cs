@@ -27,8 +27,6 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string City { get; set; }
 
-        public OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
         [MaxLength(255)]
         public string OffSiteContactInformation { get; set; }
 

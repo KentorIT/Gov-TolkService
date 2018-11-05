@@ -18,9 +18,8 @@
         {
             <display-entry asp-for="Description" />
         }
-        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSite)
+        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSitePhone || Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSiteVideo)
         {
-            <display-entry asp-for="OffSiteAssignmentType" />
             <display-entry asp-for="OffSiteContactInformation" />
         }
         else
@@ -75,10 +74,6 @@
         <display-entry asp-for="InterpreterName" />
         <display-entry asp-for="InterpreterLocation" />
         <display-entry asp-for="InterpreterTaxCard" />
-        @if (Model.OffSiteAssignmentType.HasValue)
-        {
-            <display-entry asp-for="OffSiteAssignmentType" />
-        }
         @if (!string.IsNullOrWhiteSpace(Model.OffSiteContactInformation))
         {
             <display-entry asp-for="OffSiteContactInformation" />

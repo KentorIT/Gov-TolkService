@@ -544,8 +544,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("City")
                         .HasMaxLength(100);
 
-                    b.Property<int?>("OffSiteAssignmentType");
-
                     b.Property<string>("OffSiteContactInformation")
                         .HasMaxLength(255);
 

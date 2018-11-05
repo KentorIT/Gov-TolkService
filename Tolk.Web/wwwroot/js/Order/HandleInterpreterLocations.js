@@ -26,7 +26,7 @@ $(function () {
 
             $(this).parents(".location-group").addClass("group-box");
             $(".address-" + $id).show();
-            if ($val === "OffSite") {
+            if ($val === "OffSitePhone" || $val === "OffSiteVideo") {
                 $(".address-" + $id + " > .address-information").hide();
                 $(".address-" + $id + " > .off-site-information").show();
             } else {

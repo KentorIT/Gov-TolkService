@@ -17,7 +17,7 @@ $(function () {
     });
 
     $('#InterpreterLocation').change(function () {
-        if ($(this).val() === "OffSite") {
+        if ($(this).val() === "OffSitePhone" || $(this).val() === "OffSiteVideo") {
             $('#set-expected-travel-costs').collapse('hide');
         }
         else {

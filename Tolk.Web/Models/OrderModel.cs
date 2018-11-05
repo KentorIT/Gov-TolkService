@@ -409,7 +409,6 @@ namespace Tolk.Web.Models
                 LocationStreet = location.Street,
                 LocationZipCode = location.ZipCode,
                 LocationCity = location.City,
-                OffSiteAssignmentType = location.OffSiteAssignmentType,
                 OffSiteContactInformation = location.OffSiteContactInformation
             };
         }
@@ -517,11 +516,10 @@ namespace Tolk.Web.Models
             {
                 InterpreterLocation = location,
                 Rank = rank,
-                Street = location != InterpreterLocation.OffSite ? addressModel.LocationStreet : null,
-                ZipCode = location != InterpreterLocation.OffSite ? addressModel.LocationZipCode : null,
-                City = location != InterpreterLocation.OffSite ? addressModel.LocationCity : null,
-                OffSiteAssignmentType = location == InterpreterLocation.OffSite ? addressModel.OffSiteAssignmentType : null,
-                OffSiteContactInformation = location == InterpreterLocation.OffSite ? addressModel.OffSiteContactInformation : null,
+                Street = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationStreet : null,
+                ZipCode = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationZipCode : null,
+                City = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationCity : null,
+                OffSiteContactInformation = (location == InterpreterLocation.OffSiteVideo || location == InterpreterLocation.OffSitePhone) ? addressModel.OffSiteContactInformation : null,
             };
         }
 

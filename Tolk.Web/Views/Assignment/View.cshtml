@@ -21,9 +21,8 @@
         }
         <display-entry asp-for="LanguageName" />
         <display-entry asp-for="InterpreterLocation" />
-        @if (Model.InterpreterLocation == InterpreterLocation.OffSite)
+        @if (Model.InterpreterLocation == InterpreterLocation.OffSitePhone || Model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
         {
-            <display-entry asp-for="OffSiteAssignmentType" />
             <display-entry asp-for="OffSiteContactInformation" />
         }
         else

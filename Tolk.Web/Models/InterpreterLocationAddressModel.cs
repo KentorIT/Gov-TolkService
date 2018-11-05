@@ -25,10 +25,6 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Typ av distanstolkning")]
-        [ClientRequired]
-        public E.OffSiteAssignmentType? OffSiteAssignmentType { get; set; }
-
         [Display(Name = "Kontaktinformation för distanstolkning")]
         [ClientRequired]
         [StringLength(255)]
@@ -57,9 +53,9 @@ namespace Tolk.Web.Models
                         break;
                 }
                 StringBuilder sb = new StringBuilder($"{rankHeader}{InterpreterLocation.Value.GetDescription()}");
-                if (InterpreterLocation.Value == E.InterpreterLocation.OffSite)
+                if (InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo)
                 {
-                    sb.Append($"\n{OffSiteAssignmentType.Value.GetDescription()}: {OffSiteContactInformation}");
+                    sb.Append($"\n{OffSiteContactInformation}");
                 }
                 else
                 {
