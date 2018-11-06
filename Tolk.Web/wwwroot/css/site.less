@@ -14,8 +14,6 @@
 @btn-cancel-color-default: rgba(191,221,210,0.3);
 @temp-bgcolor: #F0F0F0;
 
-
-
 body {
     padding-top: 50px;
     padding-bottom: 20px;
@@ -115,6 +113,22 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 5px @border-shadow-color;
 }
 
+//get rid of ugly yellow autocomplete color in chrome
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    border: @border-default;
+    -webkit-text-fill-color: black;
+    -webkit-box-shadow: inset 0 0 0px 9999px white;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 .btn {
     border-radius: 0px;
     border: none;
@@ -185,6 +199,51 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
     background-color: @primary;
     background-position: 0 -15px;
     color: black;
+}
+
+input[type='checkbox'] {
+    margin-top: 3px;
+    margin-right: 1px;
+    display: block;
+    float: left;
+    position: relative;
+    cursor: pointer;
+    content: '';
+    border: none;
+}
+
+input[type='checkbox']:after {
+    content: '';
+    vertical-align: middle;
+    text-align: center;
+    line-height: 13px;
+    position: absolute;
+    cursor: pointer;
+    height: 13px;
+    width: 13px;
+    left: 0;
+    top: 0;
+    font-size: 10px;
+    border: @border-default;
+    background: white;
+}
+
+input[type='checkbox']:checked:hover:after {
+    background: @primary-darker;
+    content: '\2714';
+    color: white;
+    border: none;
+}
+
+input[type='checkbox']:hover:after {
+    border-color: black;
+}
+
+input[type='checkbox']:checked:after {
+    background: @primary;
+    content: '\2714';
+    color: white;
+    border: none;
 }
 
 .shortcut-box {
@@ -259,7 +318,6 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
 .dropdown-menu {
     padding: 15px;
 }
-
 /*Dragging stuff*/
 .draggable {
     list-style-position: outside;
