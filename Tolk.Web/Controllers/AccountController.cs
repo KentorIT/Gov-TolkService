@@ -563,8 +563,10 @@ supporten på {_options.SupportEmail}";
 
                     if (organization != null)
                     {
-                        var user = new AspNetUser(model.Email, organization);
-                        user.IsActive = true;
+                        var user = new AspNetUser(model.Email, organization)
+                        {
+                            IsActive = true
+                        };
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -583,8 +585,10 @@ supporten på {_options.SupportEmail}";
 
                     if (broker != null)
                     {
-                        var user = new AspNetUser(model.Email, broker);
-                        user.IsActive = true;
+                        var user = new AspNetUser(model.Email, broker)
+                        {
+                            IsActive = true
+                        };
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
