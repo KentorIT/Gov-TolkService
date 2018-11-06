@@ -4,6 +4,7 @@
 
 @primary: #82A7A0;
 @temp-bgcolor: #F0F0F0;
+@gray: #979797;
 
 body {
     padding-top: 50px;
@@ -34,6 +35,30 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
     padding: 10px 20px;
     float: none;
     margin: 0 auto;
+}
+
+.select2-container,
+.select2-container--default,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--multiple .select2-selection__choice,
+.select2-container--classic .select2-selection--single,
+.select2-container--classic .select2-selection--multiple,
+.select2-container--classic .select2-selection--multiple .select2-selection__choice,
+.select2-dropdown {
+    border-radius: 0;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: @gray;
+    color: white;
+}
+
+.select2-container--classic .select2-selection--single:focus,
+.select2-container--classic.select2-container--open .select2-selection--single,
+.select2-container--classic .select2-selection--multiple:focus,
+.select2-container--classic.select2-container--open .select2-selection--multiple {
+    border: 1px solid @gray;
 }
 
 .navbar-right {
