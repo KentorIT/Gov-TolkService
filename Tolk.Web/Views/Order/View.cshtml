@@ -261,8 +261,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default do-not-check-dirty pull-right" data-dismiss="modal">Avbryt</button>
-                <button type="button" class="btn btn-warning send-message pull-left">Avboka</button>
+                <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default send-message pull-right">Avboka</button>
             </div>
         </div>
     </div>
@@ -282,7 +282,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-warning do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                 <button type="button" class="btn btn-default send-message">Skicka</button>
             </div>
         </div>
@@ -310,8 +310,8 @@
                         <input asp-for="OrderId" type="hidden" />
                         <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-warning pull-left">@editContactpersonButtonText</button>
-                            <button type="button" class="btn btn-default do-not-check-dirty pull-right" data-dismiss="modal">Avbryt</button>
+                            <button type="submit" class="btn btn-default pull-right">@editContactpersonButtonText</button>
+                            <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
                         </div>
                     </form>
                 </div>

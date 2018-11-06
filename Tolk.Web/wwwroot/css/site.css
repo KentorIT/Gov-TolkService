@@ -79,11 +79,89 @@ small {
   cursor: pointer;
 }
 /*Should be in less or other*/
+.form-control {
+  height: 34px;
+  border-radius: 0px;
+  border: 1px solid #979797;
+}
+.form-control:focus {
+  border-radius: 0px;
+  border-color: #445352;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px #445352;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px #445352;
+}
+.btn {
+  border-radius: 0px;
+  border: none;
+}
+.btn-default,
+.btn-primary,
+.btn-success {
+  background-color: #95BFB7;
+  color: black;
+}
+.btn-warning {
+  border: none;
+  background-color: rgba(191, 221, 210, 0.3);
+  color: black;
+}
+.btn-danger {
+  border: none;
+  background-color: #445352;
+  color: white;
+}
+.btn-danger:hover,
+.btn-danger.hover,
+.btn-danger:focus,
+.btn-danger:active,
+.btn-danger.active,
+.btn-danger:active:focus,
+.btn-danger:active:hover {
+  background-color: #BFDDD2;
+  background-position: 0 -15px;
+  color: black;
+}
+.btn-warning:hover,
+.btn-warning.hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active,
+.btn-warning:active:focus,
+.btn-warning:active:hover {
+  background-color: #BFDDD2;
+  background-position: 0 -15px;
+  color: black;
+}
+.btn-success:hover,
+.btn-success.hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.btn-success:active:hover,
+.btn-success:active.focus,
+.btn-primary:hover,
+.btn-primary.hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:active:hover,
+.btn-primary:active.focus,
+.btn-default:hover,
+.btn-default.hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.btn-default:active:hover,
+.btn-default:active.focus {
+  background-color: #82A7A0;
+  background-position: 0 -15px;
+  color: black;
+}
 .shortcut-box {
   text-align: center;
 }
 .required-star {
-  font-size: 20px;
+  font-size: 16px;
   position: relative;
   top: 1px;
   line-height: 20px;

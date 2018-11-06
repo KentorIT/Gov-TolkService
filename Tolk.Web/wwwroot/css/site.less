@@ -1,10 +1,20 @@
-﻿ // Import Merriweather Sans
+﻿// Import Merriweather Sans
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,400,400i,700');
 @font-family: "Merriweather Sans", sans-serif;
-
-@primary: #82A7A0;
-@temp-bgcolor: #F0F0F0;
+@height-input: 34px;
 @gray: #979797;
+@primary: #82A7A0;
+@primary-lighter: #95BFB7;
+@primary-lightest: #BFDDD2;
+@primary-darker: #587573;
+@primary-darkest: #445352;
+@border-default: 1px solid @gray;
+@border-select-color: #445352;
+@border-shadow-color: #445352;
+@btn-cancel-color-default: rgba(191,221,210,0.3);
+@temp-bgcolor: #F0F0F0;
+
+
 
 body {
     padding-top: 50px;
@@ -58,7 +68,7 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
 .select2-container--classic.select2-container--open .select2-selection--single,
 .select2-container--classic .select2-selection--multiple:focus,
 .select2-container--classic.select2-container--open .select2-selection--multiple {
-    border: 1px solid @gray;
+    border: @border-default;
 }
 
 .navbar-right {
@@ -91,12 +101,98 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
 }
 /*Should be in less or other*/
 
+//override bootstrap
+.form-control {
+    height: @height-input;
+    border-radius: 0px;
+    border: @border-default;
+}
+
+.form-control:focus {
+    border-radius: 0px;
+    border-color: @border-select-color;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 5px @border-shadow-color;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 5px @border-shadow-color;
+}
+
+.btn {
+    border-radius: 0px;
+    border: none;
+}
+
+.btn-default, .btn-primary, .btn-success {
+    background-color: @primary-lighter;
+    color: black;
+}
+
+.btn-warning {
+    border: none;
+    background-color: @btn-cancel-color-default;
+    color: black;
+}
+
+.btn-danger {
+    border: none;
+    background-color: @primary-darkest;
+    color: white;
+}
+
+.btn-danger:hover,
+.btn-danger.hover,
+.btn-danger:focus,
+.btn-danger:active,
+.btn-danger.active,
+.btn-danger:active:focus,
+.btn-danger:active:hover {
+    background-color: @primary-lightest;
+    background-position: 0 -15px;
+    color: black;
+}
+
+.btn-warning:hover,
+.btn-warning.hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active,
+.btn-warning:active:focus,
+.btn-warning:active:hover {
+    background-color: @primary-lightest;
+    background-position: 0 -15px;
+    color: black;
+}
+
+.btn-success:hover,
+.btn-success.hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.btn-success:active:hover,
+.btn-success:active.focus,
+.btn-primary:hover,
+.btn-primary.hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:active:hover,
+.btn-primary:active.focus,
+.btn-default:hover,
+.btn-default.hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.btn-default:active:hover,
+.btn-default:active.focus {
+    background-color: @primary;
+    background-position: 0 -15px;
+    color: black;
+}
+
 .shortcut-box {
     text-align: center;
 }
 
 .required-star {
-    font-size: 20px;
+    font-size: 16px;
     position: relative;
     top: 1px;
     line-height: 20px; /* To prevent star from pushing form fields apart.*/

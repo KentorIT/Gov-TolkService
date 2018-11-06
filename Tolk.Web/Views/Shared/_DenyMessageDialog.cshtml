@@ -11,10 +11,11 @@
                 <form method="post" asp-action="@Model.Action" class="do-not-check-dirty">
                     <input asp-for="ParentId" type="hidden" />
                     <form-entry asp-for="Message" />
-                    <button type="submit" class="btn btn-warning">Skicka</button>
-                    <button type="button" class="btn btn-default pull-right do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-default pull-right">Skicka</button>
+                    <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                 </form>
             </div>
+            <br /><br />
             <div class="modal-footer">
             </div>
         </div>

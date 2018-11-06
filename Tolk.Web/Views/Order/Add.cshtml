@@ -99,8 +99,8 @@
             </fieldset>
             @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
             <form-entry asp-for="Description" />
-            <button class="btn btn-default" id="send">Skicka</button>
-            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
+            <a class="btn btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
+            <button class="btn pull-right btn-default" id="send">Skicka</button>
         </form>
         <span id="basefile" class="d-none">
             <input asp-for="Files[0].Id" type="hidden" />
@@ -126,8 +126,8 @@
                 @Html.Partial("_Requirement", new OrderRequirementModel())
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                <button type="button" class="btn btn-default save-requirement">Spara</button>
+                <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default pull-right save-requirement">Spara</button>
             </div>
         </div>
     </div>
