@@ -1,13 +1,14 @@
-﻿@primary: #82A7A0;
+﻿ // Import Merriweather Sans
+@import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,400,400i,700');
+@font-family: "Merriweather Sans", sans-serif;
 
-//to be changed
-@font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-
+@primary: #82A7A0;
+@temp-bgcolor: #F0F0F0;
 
 body {
     padding-top: 50px;
     padding-bottom: 20px;
-    font-family: @font-family;
+    background-image: linear-gradient(180deg, @temp-bgcolor, #fff);
 }
 
 label {
@@ -17,11 +18,22 @@ label {
     margin-bottom: 3px;
 }
 
+body, label, legend, h1, h2, h3, h4, h5, h6, small {
+    font-family: @font-family;
+}
+
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-top: 30px;
+    float: none;
+}
+
+.page {
+    background-color: white;
+    padding: 10px 20px;
+    float: none;
+    margin: 0 auto;
 }
 
 .navbar-right {

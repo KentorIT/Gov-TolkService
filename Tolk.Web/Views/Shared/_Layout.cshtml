@@ -43,7 +43,6 @@
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
-
         <div class="container">
             @if (renderMenus)
             {
@@ -100,22 +99,24 @@
             </div>
         </div>
     </nav>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>
-                <div class="row">
-                    <div class="col-lg-10">
-                        &copy; 2018 - Kammarkollegiet
-                        <small>(Version @GitHelper.Version)</small>
+    <div class="container body-content col-sm-10">
+        <div class="page">
+            @RenderBody()
+            <hr />
+            <footer>
+                <p>
+                    <div class="row">
+                        <div class="col-lg-10">
+                            &copy; 2018 - Kammarkollegiet
+                            <small>(Version @GitHelper.Version)</small>
+                        </div>
+                        <div class="col-lg-10"><a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a></div>
+                        <div class="col-lg-pull-1" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks/10000)">
+                        </div>
                     </div>
-                    <div class="col-lg-10"><a asp-area="" asp-controller="Home" asp-action="About">Om Applikationen</a></div>
-                    <div class="col-lg-pull-1" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks/10000)">
-                    </div>
-                </div>
-            </p>
-        </footer>
+                </p>
+            </footer>
+        </div>
     </div>
     @*<script type="text/javascript">tolkBaseUrl = "@Url.Content("~")"</script>*@
     <script type="text/javascript">tolkBaseUrl = "/"</script>
