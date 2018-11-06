@@ -46,9 +46,7 @@ body {
   margin-left: 1px;
 }
 .form-entry-information {
-  color: #337ac7;
-  display: block;
-  float: right;
+  color: #008577;
   cursor: help;
   position: relative;
 }

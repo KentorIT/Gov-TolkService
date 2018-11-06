@@ -196,7 +196,7 @@ namespace Tolk.Web.TagHelpers
         }
 
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
-        private const string InformationSpan = "<span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
+        private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
 
         private void WriteLabel(TextWriter writer)
         {
