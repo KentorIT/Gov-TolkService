@@ -1,8 +1,20 @@
-﻿@primary: #008577;
+﻿@primary: #82A7A0;
+
+//to be changed
+@font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+
 
 body {
     padding-top: 50px;
     padding-bottom: 20px;
+    font-family: @font-family;
+}
+
+label {
+    font-size: 16px;
+    line-height: 20px;
+    height: 20px;
+    margin-bottom: 3px;
 }
 
 /* Wrapping element */
@@ -47,12 +59,10 @@ body {
 }
 
 .required-star {
-    color: red;
-    font-weight: bolder;
     font-size: 20px;
     position: relative;
     top: 1px;
-    line-height: 10px; /* To prevent star from pushing form fields apart.*/
+    line-height: 20px; /* To prevent star from pushing form fields apart.*/
     margin-left: 1px;
 }
 
@@ -71,6 +81,14 @@ body {
     font-size: 11px;
     font-family: Helvetica Neue,Helvetica, Arial, sans-serif;
     letter-spacing: 0.6px;
+}
+
+.display-label {
+    font-weight: bold;
+}
+
+.input-label {
+    font-weight: normal;
 }
 
 .d-none {

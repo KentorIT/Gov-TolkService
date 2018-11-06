@@ -1,6 +1,13 @@
 body {
   padding-top: 50px;
   padding-bottom: 20px;
+  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+label {
+  font-size: 16px;
+  line-height: 20px;
+  height: 20px;
+  margin-bottom: 3px;
 }
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
@@ -36,17 +43,15 @@ body {
   text-align: center;
 }
 .required-star {
-  color: red;
-  font-weight: bolder;
   font-size: 20px;
   position: relative;
   top: 1px;
-  line-height: 10px;
+  line-height: 20px;
   /* To prevent star from pushing form fields apart.*/
   margin-left: 1px;
 }
 .form-entry-information {
-  color: #008577;
+  color: #82A7A0;
   cursor: help;
   position: relative;
 }
@@ -59,6 +64,12 @@ body {
   font-size: 11px;
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   letter-spacing: 0.6px;
+}
+.display-label {
+  font-weight: bold;
+}
+.input-label {
+  font-weight: normal;
 }
 .d-none {
   display: none;

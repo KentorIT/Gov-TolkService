@@ -1,7 +1,7 @@
 ﻿@model Tolk.Web.Models.PriceInformationModel
 @if (Model.UseDisplayHideInfo)
 {
-    <div class="bold">@Model.Header</div>
+    <label class="display-label">@Model.Header</label>
     <div class="wrap-price-info">
         <div>@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa/dölj</a></div>
         <br />

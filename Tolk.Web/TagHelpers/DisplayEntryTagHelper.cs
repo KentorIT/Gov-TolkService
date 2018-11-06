@@ -76,7 +76,7 @@ namespace Tolk.Web.TagHelpers
                 For.ModelExplorer,
                 For.Name,
                 labelText: LabelOverride,
-                htmlAttributes: new { @class = "control-label" });
+                htmlAttributes: new { @class = "control-label display-label" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }

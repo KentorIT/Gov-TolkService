@@ -234,7 +234,7 @@ namespace Tolk.Web.TagHelpers
                 For.ModelExplorer,
                 For.Name,
                 labelText: null,
-                htmlAttributes: new { @class = "control-label" });
+                htmlAttributes: new { @class = "control-label input-label" });
         }
 
         private void WriteInput(TextWriter writer)
