@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065")
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -658,6 +658,35 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OutboundEmails");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>
+                {
+                    b.Property<int>("OutboundWebHookCallId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<DateTimeOffset?>("DeliveredAt");
+
+                    b.Property<int>("FailedTries");
+
+                    b.Property<int>("NotificationType");
+
+                    b.Property<string>("Payload")
+                        .IsRequired();
+
+                    b.Property<string>("RecipientUrl")
+                        .IsRequired();
+
+                    b.Property<int>("RecipientUserId");
+
+                    b.HasKey("OutboundWebHookCallId");
+
+                    b.HasIndex("RecipientUserId");
+
+                    b.ToTable("OutboundWebHookCalls");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceCalculationCharge", b =>
                 {
                     b.Property<int>("PriceCalculationChargeId")
@@ -1293,6 +1322,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("RequirementAnswers")
                         .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "RecipientUser")
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 

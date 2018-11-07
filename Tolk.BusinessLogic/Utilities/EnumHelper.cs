@@ -39,13 +39,20 @@ namespace Tolk.BusinessLogic.Utilities
         /// <returns>Description string.</returns>
         public static string GetDescription<TEnum>(TEnum value) where TEnum : struct
         {
-            string description = typeof(TEnum).GetMember(value.ToString()).GetEnumDescription();
-            if (description == null)
-            {
-                description = value.ToString();
-            }
-            return description;
+            return typeof(TEnum).GetMember(value.ToString()).GetEnumDescription() ?? value.ToString();
         }
+
+        /// <summary>
+        /// Gets the custom name
+        /// </summary>
+        /// <typeparam name="TEnum">Type of the enum.</typeparam>
+        /// <param name="value">Enum value.</param>
+        /// <returns>custom name if possible, otherwize the enum as a string.</returns>
+        public static string GetCustomName<TEnum>(TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.CustomName ?? value.ToString();
+        }
+
         /// <summary>
         /// Returns the set parent of type TEnumParent
         /// </summary>

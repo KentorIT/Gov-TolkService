@@ -38,6 +38,7 @@ namespace Tolk.Web.Services
 
             try
             {
+                //would like to have a timer here, to make it possible to get tighter runs if the last ru ran for longer than 10 seconds or somethng...
                 using (var serviceScope = _services.CreateScope())
                 {
                     Task[] tasksToRun = new[] 
@@ -46,7 +47,8 @@ namespace Tolk.Web.Services
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredReplacedInterpreterRequests(),
                         serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredNonAnsweredRespondedRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails()
+                        serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
+                        serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
                     };
 
                     Task.WaitAll(tasksToRun);

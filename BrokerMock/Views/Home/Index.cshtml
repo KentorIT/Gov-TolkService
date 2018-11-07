@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="row">
+    <div class="col-md-3">
+        <h2>Broker mock</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Inkommande anrop</h4>
+            <ul id="messagesList"></ul>
+        </div>
+        <div class="col-md-6">
+            <h4>Utgående anrop</h4>
+            <ul id="callsList"></ul>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/Home/Index.js"></script>
+

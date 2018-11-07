@@ -142,6 +142,10 @@ namespace Tolk.Web
             {
                 IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.SuperUser)).Result;
             }
+            if (!roleManager.RoleExistsAsync(Roles.NotificationHandler).Result)
+            {
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.NotificationHandler)).Result;
+            }
 
             app.UseStaticFiles();
 

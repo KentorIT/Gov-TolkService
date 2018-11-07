@@ -38,5 +38,10 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return EnumHelper.GetDescription<T>(item);
         }
+
+        public static string GetCustomName<T>(this T item) where T : struct
+        {
+            return EnumHelper.GetCustomName<T>(item);
+        }
     }
 }

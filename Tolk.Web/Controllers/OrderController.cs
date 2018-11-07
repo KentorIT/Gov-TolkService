@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -88,7 +91,7 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Ranking)
                     .ThenInclude(r => r.Broker)
                 .Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
-            
+
             if (!isSuperUser)
             {
                 orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());

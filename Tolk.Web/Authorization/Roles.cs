@@ -10,6 +10,7 @@ namespace Tolk.Web.Authorization
         public const string Admin = nameof(Admin);
         public const string Impersonator = nameof(Impersonator);
         public const string SuperUser = nameof(SuperUser);
+        public const string NotificationHandler = nameof(NotificationHandler);
         public const string AdminRoles = nameof(Admin) + ", " + nameof(SuperUser);
     }
 }

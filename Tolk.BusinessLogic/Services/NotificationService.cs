@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using Tolk.Api.Payloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -18,6 +21,8 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly TolkOptions _options;
         private readonly PriceCalculationService _priceCalculationService;
+
+        private static readonly HttpClient client = new HttpClient();
 
         public NotificationService(
             TolkDbContext dbContext,
@@ -117,16 +122,46 @@ namespace Tolk.BusinessLogic.Services
 
         public void RequestCreated(Request request)
         {
+            //This makes including Broker object unecessary
+            var settings = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated);
+
             var order = request.Order;
-            CreateEmail(
-                request.Ranking.Broker.EmailAddress,
-                $"Nytt avrop registrerat: {order.OrderNumber}",
-                $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
-                $"\tRegion: {order.Region.Name}\n" +
+            if (settings.SendEmail)
+            {
+                if (string.IsNullOrWhiteSpace(settings.EmailAddress))
+                {
+                    //Temporary fix...
+                    settings.EmailAddress = request.Ranking.Broker.EmailAddress;
+                }
+                    CreateEmail(
+                    settings.EmailAddress,
+                    $"Nytt avrop registrerat: {order.OrderNumber}",
+                    $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
+                    $"\tRegion: {order.Region.Name}\n" +
                 $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}");
+                    $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}");
+            }
+            if (settings.CallWebhook)
+            {
+                CreateWebHookCall(
+                    new RequestCreatedModel
+                    {
+                        CreatedAt = request.CreatedAt,
+                        OrderNumber = order.OrderNumber,
+                        Customer = order.CustomerOrganisation.Name,
+                        Region = order.Region.Name,
+                        Language = order.OtherLanguage ?? request.Order.Language?.Name ?? "(Tolkanvändarutbildning)",
+                        ExpiresAt = request.ExpiresAt,
+                        StartAt = order.StartAt,
+                        EndAt = order.EndAt,
+                    },
+                    settings.Webhook,
+                    NotificationType.RequestCreated,
+                    settings.RecipientUserId
+                );
+            }
         }
 
         public void RequestAnswerAccepted(Request request)
@@ -392,5 +427,44 @@ namespace Tolk.BusinessLogic.Services
                 yield return order.ContactPersonUser.Email;
             }
         }
+
+
+        private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type)
+        {
+            var roleId = _dbContext.Roles.Single(r => r.Name == "NotificationHandler").Id;
+            var user = _dbContext.Users.SingleOrDefault(u => u.BrokerId == brokerId && u.Roles.Any(r => r.RoleId == roleId));
+            //This should be cached, and gotten from the settings table called NotificationSettings, GetSettings(userId, type)
+            if (user != null)
+            {
+                return new BrokerNotificationSettings
+                {
+                    EmailAddress = user.Email,
+                    SendEmail = false,
+                    CallWebhook = true,
+                    Webhook = "https://localhost:5001/Request/Created",
+                    RecipientUserId = user.Id,
+                };
+            }
+            else
+            {
+                return new BrokerNotificationSettings
+                {
+                    SendEmail = true,
+                    CallWebhook = false,
+                };
+            }
+        }
+
+        private void CreateWebHookCall(PayloadModel payload, string recipientUrl, NotificationType type, int userId)
+        {
+            _dbContext.Add(new OutboundWebHookCall(
+                recipientUrl,
+                JsonConvert.SerializeObject(payload, Formatting.Indented),
+                type,
+                _clock.SwedenNow,
+                userId));
+            _dbContext.SaveChanges();
+        }
+
     }
 }

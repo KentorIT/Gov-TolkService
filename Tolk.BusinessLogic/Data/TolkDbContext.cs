@@ -197,6 +197,11 @@ namespace Tolk.BusinessLogic.Data
              .WithMany()
              .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OutboundWebHookCall>()
+                .HasOne(c => c.RecipientUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<TemporaryAttachmentGroup>()
             .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
 
@@ -273,6 +278,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<PriceListRow> PriceListRows { get; set; }
 
         public DbSet<PriceCalculationCharge> PriceCalculationCharges { get; set; }
+
+        public DbSet<OutboundWebHookCall> OutboundWebHookCalls { get; set; }
 
         public DbSet<OutboundEmail> OutboundEmails { get; set; }
 
