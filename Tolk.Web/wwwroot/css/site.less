@@ -15,6 +15,7 @@
 @temp-bgcolor: #F0F0F0;
 
 body {
+    color: black;
     padding-top: 50px;
     padding-bottom: 20px;
     background-image: linear-gradient(180deg, @temp-bgcolor, #fff);
@@ -25,6 +26,7 @@ label {
     line-height: 20px;
     height: 20px;
     margin-bottom: 3px;
+    font-weight: normal;
 }
 
 body, label, legend, h1, h2, h3, h4, h5, h6, small {
@@ -82,6 +84,11 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
     width: 450px;
 }
 
+.input-group.time.timesplit {
+    width: 20px;
+    height: @height-input;
+}
+
 .input-group > .form-control.datepicker {
     width: 120px;
 }
@@ -92,6 +99,12 @@ body, label, legend, h1, h2, h3, h4, h5, h6, small {
 
 .input-group.time > .input-group-addon {
     width: auto;
+}
+
+.input-group-addon {
+    background-color: white;
+    border: none;
+    padding-left: 3px;
 }
 
 .clickable-rows > tbody > tr > td, .clickable-rows-with-action > tbody > tr > td {
@@ -273,14 +286,6 @@ input[type='checkbox']:checked:after {
     font-size: 11px;
     font-family: Helvetica Neue,Helvetica, Arial, sans-serif;
     letter-spacing: 0.6px;
-}
-
-.display-label {
-    font-weight: bold;
-}
-
-.input-label {
-    font-weight: normal;
 }
 
 .d-none {

@@ -45,9 +45,14 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string UnitName { get; set; }
 
-        [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget.")]
-        [Required]
+        [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
+        [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
+
+        [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
+        [ClientRequired(ErrorMessage = "Ange datum")]
+        public virtual SplitTimeRange SplitTimeRange { get; set; }
+
 
         [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker imorgon, måste ni ange senaste svarstid")]
         [ClientRequired]
@@ -295,8 +300,8 @@ namespace Tolk.Web.Models
         public void UpdateOrder(Order order, bool isReplace = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = TimeRange.StartDateTime;
-            order.EndAt = TimeRange.EndDateTime;
+            order.StartAt = SplitTimeRange?.StartAt?? TimeRange.StartDateTime;
+            order.EndAt = SplitTimeRange?.EndAt ?? TimeRange.EndDateTime;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;

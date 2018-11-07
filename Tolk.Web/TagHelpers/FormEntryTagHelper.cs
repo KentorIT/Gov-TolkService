@@ -38,6 +38,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeTime = "time";
         private const string InputTypeDateRange = "date-range";
         private const string InputTypeTimeRange = "time-range";
+        private const string InputTypeSplitTimeRange = "splittime-range";
         private const string InputTypeHiddenTimeRangeHidden = "time-range-hidden";
         private const string InputTypeRadioGroup = "radio-group";
 
@@ -82,6 +83,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeHiddenTimeRangeHidden:
                 case InputTypeTextArea:
                 case InputTypeTimeRange:
+                case InputTypeSplitTimeRange:
                     if (Items != null)
                     {
                         throw new ArgumentException("Items is only relevant if type is select or radio-group.");
@@ -126,6 +128,11 @@ namespace Tolk.Web.TagHelpers
                 if (For.ModelExplorer.ModelType == typeof(TimeRange))
                 {
                     InputType = InputTypeTimeRange;
+                    return;
+                }
+                if (For.ModelExplorer.ModelType == typeof(SplitTimeRange))
+                {
+                    InputType = InputTypeSplitTimeRange;
                     return;
                 }
                 if (For.ModelExplorer.ModelType == typeof(DateRange))
@@ -190,6 +197,9 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeTimeRange:
                         WriteTimeRangeBlock(writer);
                         break;
+                    case InputTypeSplitTimeRange:
+                        WriteSplitTimeRangeBlock(writer);
+                        break;
                     case InputTypeHiddenTimeRangeHidden:
                         WriteTimeRangeBlock(writer, true);
                         break;
@@ -244,7 +254,7 @@ namespace Tolk.Web.TagHelpers
                 For.ModelExplorer,
                 For.Name,
                 labelText: null,
-                htmlAttributes: new { @class = "control-label input-label" });
+                htmlAttributes: new { @class = "control-label" });
         }
 
         private void WriteInput(TextWriter writer)
@@ -433,6 +443,27 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
         }
 
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour, IDictionary<string, string> extraAttributes = null)
+        {
+            writer.WriteLine("<div class=\"input-group time timesplit\">");
+            WriteSelect(GetSplitTImeValues(hour), false, null, writer, timeFieldName, timeModelExplorer, hour ? "h" : "min");
+            WriteValidation(writer, timeModelExplorer, timeFieldName);
+            writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
+        }
+
+        private IEnumerable<SelectListItem> GetSplitTImeValues(bool hour)
+        {
+            List<SelectListItem> list = new List<SelectListItem>();
+            int max = hour ? 23 : 55;
+            int jump = hour ? 1 : 5;
+
+            for (int i = 0; i <= max; i += jump)
+            {
+                list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToString() : i.ToString(), Value = i.ToString() });
+            }
+            return list;
+        }
+
         private void WriteLabelWithoutFor(TextWriter writer)
         {
             writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
@@ -442,6 +473,17 @@ namespace Tolk.Web.TagHelpers
             }
             writer.WriteLine("</label>");
             WriteInfoIfDescription(writer);
+        }
+
+        private void WriteLabelWithoutFor(ModelExplorer modelExplorer, TextWriter writer)
+        {
+            writer.Write($"<label>{_htmlGenerator.Encode(modelExplorer.Metadata.DisplayName)}");
+            if (modelExplorer.Metadata.IsRequired)
+            {
+                writer.Write(RequiredStarSpan);
+            }
+            writer.WriteLine("</label>");
+            writer.WriteLine("<br \\>");
         }
 
         private void WriteDatePickerInput(
@@ -533,7 +575,7 @@ namespace Tolk.Web.TagHelpers
                     };
                 }
                 writer.WriteLine($"<div class=\"{inlineClass}\">");
-                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer, extraAttributes : extraAttributes);
+                WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer, extraAttributes: extraAttributes);
                 WriteTimePickerInput(startTimeModelExplorer, startTimeFieldName, startTimeValue, writer, extraAttributes);
                 WriteRightArrowSpan(writer);
                 WriteTimePickerInput(endTimeModelExplorer, endTimeFieldName, endTimeValue, writer, extraAttributes);
@@ -558,6 +600,61 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
+        private void WriteSplitTimeRangeBlock(TextWriter writer, bool isHidden = false)
+        {
+            var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.StartDate));
+            var dateFieldName = $"{For.Name}.{nameof(SplitTimeRange.StartDate)}";
+
+            var startTimeHourModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.StartTimeHour));
+            var startTimeHourFieldName = $"{For.Name}.{nameof(SplitTimeRange.StartTimeHour)}";
+            var startTimeMinutesModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.StartTimeMinutes));
+            var startTimeMinutesFieldName = $"{For.Name}.{nameof(SplitTimeRange.StartTimeMinutes)}";
+
+            var endTimeHourModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.EndTimeHour));
+            var endTimeHourFieldName = $"{For.Name}.{nameof(SplitTimeRange.EndTimeHour)}";
+            var endTimeMinutesModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.EndTimeMinutes));
+            var endTimeMinutesFieldName = $"{For.Name}.{nameof(SplitTimeRange.EndTimeMinutes)}";
+
+            object dateValue = null;
+            object startTimeHourValue = null;
+            object startTimeMinutesValue = null;
+            object endTimeHourValue = null;
+            object endTimeMinutesValue = null;
+
+            if (For.Model != null)
+            {
+                dateValue = dateModelExplorer.Model;
+                startTimeHourValue = startTimeHourModelExplorer.Model;
+                startTimeMinutesValue = startTimeMinutesModelExplorer.Model;
+                endTimeHourValue = endTimeHourModelExplorer.Model;
+                endTimeMinutesValue = endTimeMinutesModelExplorer.Model;
+            }
+
+            writer.WriteLine("<div class=\"form-inline\">");
+            writer.WriteLine("<div class=\"row\">");
+
+            writer.WriteLine("<div class=\"col-md-4\">");
+            WriteLabelWithoutFor(dateModelExplorer, writer);
+            WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
+            WriteValidation(writer, dateModelExplorer, dateFieldName);
+            writer.WriteLine("</div>");
+
+            writer.WriteLine("<div class=\"col-md-4\">");
+            WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
+            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
+            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
+            writer.WriteLine("</div>");
+
+            writer.WriteLine("<div class=\"col-md-4\">");
+            WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
+            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
+            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
+            writer.WriteLine("</div>");
+
+            writer.WriteLine("</div>"); //row
+            writer.WriteLine("</div>"); //form-inline.
+        }
+
         private void RemoveRequiredIfNullable(TagBuilder tagBuilder)
         {
             if (!For.Metadata.IsRequired)
@@ -578,17 +675,21 @@ namespace Tolk.Web.TagHelpers
                 expression: For.Name,
                 allowMultiple: allowMultiple);
 
+            WriteSelect(Items, allowMultiple, currentValues, writer, For.Name, For.ModelExplorer);
+        }
+
+        private void WriteSelect(IEnumerable<SelectListItem> selectList, bool allowMultiple, ICollection<string> currentValues, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
+        {
             var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
-                For.ModelExplorer,
+                modelExplorer,
                 optionLabel: null,
-                expression: For.Name,
-                selectList: Items,
+                expression: expression,
+                selectList: selectList,
                 currentValues: currentValues,
                 allowMultiple: allowMultiple,
                 htmlAttributes: new { @class = "form-control" });
-
-            tagBuilder.Attributes.Add("data-placeholder", "--- Välj ---");
+            tagBuilder.Attributes.Add("data-placeholder", placeholder);
             if (For.Model == null)
             {
                 var existingOptionsBuilder = new HtmlContentBuilder();

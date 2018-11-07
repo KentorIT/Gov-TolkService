@@ -98,7 +98,7 @@ $(function () {
         }
     });
 
-    $("body").on("change", "#TimeRange_StartDate", function () {
+    $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var systemTime = new Date(Number($("#SystemTime").val()));
         var chosenDate = new Date($(this).val());
         var tomorrow = new Date(systemTime.getTime())
@@ -129,5 +129,5 @@ $(function () {
 
     $("#SpecificCompetenceLevelRequired").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
-    $("#TimeRange_StartDate").trigger("change");
+    $("#SplitTimeRange_StartDate").trigger("change");
 });

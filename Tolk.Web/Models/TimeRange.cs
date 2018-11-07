@@ -1,10 +1,13 @@
 ﻿using System;
 using Tolk.BusinessLogic.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Web.Models
 {
     public class TimeRange
     {
+        [Display(Name = "Datum")]
+        [Required(ErrorMessage = "Ange datum")]
         public DateTime StartDate { get; set; }
 
         public TimeSpan StartTime { get; set; }
