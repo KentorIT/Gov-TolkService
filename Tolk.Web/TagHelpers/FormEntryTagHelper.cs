@@ -50,6 +50,9 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("type")]
         public string InputType { get; set; }
 
+        [HtmlAttributeName("layout-option")]
+        public string LayoutOption { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -601,11 +604,11 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteRadioGroup(TextWriter writer)
         {
-            bool isRow = false;
+            bool isRow = LayoutOption == "row";
 
             var id = $"{For.Name}_rbGroup";
 
-            writer.WriteLine($"<fieldset id=\"{id}\">");
+            writer.WriteLine($"<div id=\"{id}\">");
 
             var itArr = Items.ToArray();
             for (int i = 0; i < itArr.Length; i++)
@@ -615,11 +618,12 @@ namespace Tolk.Web.TagHelpers
                 var tagBuilder = _htmlGenerator.GenerateRadioButton(
                     ViewContext,
                     For.ModelExplorer,
-                    expression: id,
+                    expression: For.Name,
                     value: item.Value,
                     isChecked: isChecked,
                     htmlAttributes: new { });
 
+                tagBuilder.Attributes.Add("asp-for", For.Name);
                 if (isChecked)
                 {
                     tagBuilder.Attributes.Add("checked", "checked");
@@ -628,7 +632,7 @@ namespace Tolk.Web.TagHelpers
                 writer.WriteLine($" {item.Text} " + (isRow ? "" : "<br>"));
             }
 
-            writer.WriteLine($"</fieldset>");
+            writer.WriteLine($"</div>");
         }
 
         private void WriteValidation(TextWriter writer)
