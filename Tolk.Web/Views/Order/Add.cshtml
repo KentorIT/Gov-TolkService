@@ -14,6 +14,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="SystemTime" />
             <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
+            <form-entry asp-for="Sex" type="radio-group" asp-items="SelectListService.Sexes" />
             <div class="border">
                 <span class="header-with-line">Kompetensnivå</span>
                 <form-entry asp-for="SpecificCompetenceLevelRequired" />

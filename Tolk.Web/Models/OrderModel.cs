@@ -26,6 +26,10 @@ namespace Tolk.Web.Models
         [Required]
         public int? RegionId { get; set; }
 
+        [Display(Name = "Kön", Description = "Test för radioknappar")]
+        [ClientRequired]
+        public int? Sex { get; set; }
+
         [Display(Name = "Språk")]
         [ClientRequired]
         public int? LanguageId { get; set; }

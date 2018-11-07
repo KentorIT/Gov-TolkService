@@ -39,6 +39,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeDateRange = "date-range";
         private const string InputTypeTimeRange = "time-range";
         private const string InputTypeHiddenTimeRangeHidden = "time-range-hidden";
+        private const string InputTypeRadioGroup = "radio-group";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -62,9 +63,10 @@ namespace Tolk.Web.TagHelpers
             switch (InputType)
             {
                 case InputTypeSelect:
+                case InputTypeRadioGroup:
                     if (Items == null)
                     {
-                        throw new ArgumentNullException("Items", "Items must be set if type is select");
+                        throw new ArgumentNullException("Items", "Items must be set if type is select or radio-group");
                     }
                     break;
                 case null:
@@ -79,7 +81,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeTimeRange:
                     if (Items != null)
                     {
-                        throw new ArgumentException("Items is only relevant if type is select.");
+                        throw new ArgumentException("Items is only relevant if type is select or radio-group.");
                     }
                     break;
                 default:
@@ -149,6 +151,11 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeSelect:
                         WriteLabel(writer);
                         WriteSelect(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeRadioGroup:
+                        WriteLabel(writer);
+                        WriteRadioGroup(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeDateTimeOffset:
@@ -590,6 +597,38 @@ namespace Tolk.Web.TagHelpers
             }
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteRadioGroup(TextWriter writer)
+        {
+            bool isRow = false;
+
+            var id = $"{For.Name}_rbGroup";
+
+            writer.WriteLine($"<fieldset id=\"{id}\">");
+
+            var itArr = Items.ToArray();
+            for (int i = 0; i < itArr.Length; i++)
+            {
+                bool isChecked = i == 0; // Auto-check the first item
+                var item = itArr[i];
+                var tagBuilder = _htmlGenerator.GenerateRadioButton(
+                    ViewContext,
+                    For.ModelExplorer,
+                    expression: id,
+                    value: item.Value,
+                    isChecked: isChecked,
+                    htmlAttributes: new { });
+
+                if (isChecked)
+                {
+                    tagBuilder.Attributes.Add("checked", "checked");
+                }
+                tagBuilder.WriteTo(writer, _htmlEncoder);
+                writer.WriteLine($" {item.Text} " + (isRow ? "" : "<br>"));
+            }
+
+            writer.WriteLine($"</fieldset>");
         }
 
         private void WriteValidation(TextWriter writer)
