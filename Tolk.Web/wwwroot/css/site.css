@@ -67,9 +67,74 @@ small {
 #impersonation-select {
   width: 450px;
 }
-.input-group.time.timesplit {
-  width: 20px;
-  height: 34px;
+.datepicker {
+  border-radius: 0px;
+}
+.datepicker table tr td,
+.datepicker table tr th {
+  border-radius: 0px;
+  border: none;
+}
+.datepicker table tr td.active,
+.datepicker table tr td.active.highlighted {
+  color: #fff;
+  background-color: #82A7A0;
+}
+.datepicker table tr td.today,
+.datepicker table tr td.today.active,
+.datepicker table tr td.today:active,
+.datepicker table tr td.today:active:hover,
+.datepicker table tr td.today.active:hover,
+.datepicker table tr td.today:active:focus,
+.datepicker table tr td.today.active:focus,
+.datepicker table tr td.today:active.focus,
+.datepicker table tr td.today.active.focus {
+  background-color: #BFDDD2;
+}
+.datepicker table tr td.today:focus,
+.datepicker table tr td.today.focus,
+.datepicker table tr td.today:hover {
+  color: #000;
+  background-color: #95BFB7;
+}
+.datepicker table tr td.active.active.focus,
+.datepicker table tr td.active.active:focus,
+.datepicker table tr td.active.active:hover {
+  color: #fff;
+  background-color: #445352;
+}
+.datepicker table tr td.active.highlighted.active.focus,
+.datepicker table tr td.active.highlighted.active:focus,
+.datepicker table tr td.active.highlighted.active:hover,
+.datepicker table tr td.active.highlighted.focus:active,
+.datepicker table tr td.active.highlighted:focus:active,
+.datepicker table tr td.active.highlighted:hover:active,
+.datepicker table tr td.active.focus:active,
+.datepicker table tr td.active:focus:active,
+.datepicker table tr td.active:hover:active,
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.highlighted.active,
+.datepicker table tr td.active.highlighted:active,
+.datepicker table tr td.active:active {
+  color: #fff;
+  background-color: #587573;
+}
+.datepicker table tr td.today.disabled,
+.datepicker table tr td.today.disabled:active {
+  color: #777;
+  background-color: #BFDDD2;
+}
+.datepicker table tr td.today:hover,
+.datepicker table tr td.today.disabled.focus,
+.datepicker table tr td.today.disabled:focus,
+.datepicker table tr td.today.disabled:hover,
+.datepicker table tr td[disabled].today.focus,
+.datepicker table tr td[disabled].today:focus,
+.datepicker table tr td[disabled].today:hover,
+fieldset[disabled] .datepicker table tr td.today.focus,
+fieldset[disabled] .datepicker table tr td.today:focus,
+fieldset[disabled] .datepicker table tr td.today:hover {
+  background-color: #95BFB7;
 }
 .input-group > .form-control.datepicker {
   width: 120px;
@@ -89,7 +154,6 @@ small {
 .clickable-rows-with-action > tbody > tr > td {
   cursor: pointer;
 }
-/*Should be in less or other*/
 .form-control {
   height: 34px;
   border-radius: 0px;
@@ -125,7 +189,7 @@ select:-webkit-autofill:focus {
 }
 .btn-warning {
   border: none;
-  background-color: rgba(191, 221, 210, 0.3);
+  background-color: #E6F1ED;
   color: black;
 }
 .btn-danger {
