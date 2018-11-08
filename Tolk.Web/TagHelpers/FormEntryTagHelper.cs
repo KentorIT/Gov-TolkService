@@ -272,7 +272,7 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
             }
             //The regular expressions are not added as client side valdations for some reason.
-            // Remove this code if this si fixed in future versions of .Net Core, or by some better setup of things that I have not found....
+            // Remove this code if this is fixed in future versions of .Net Core, or by some better setup of things that I have not found....
             if (For.Metadata.ValidatorMetadata.SingleOrDefault(m => m.GetType() == typeof(RegularExpressionAttribute)) is RegularExpressionAttribute regex &&
                 !tagBuilder.Attributes.Any(a => a.Key == "data-val-regex"))
             {
@@ -386,29 +386,40 @@ namespace Tolk.Web.TagHelpers
 
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
-
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
             var dateFieldName = $"{For.Name}.Date";
+
+            var timeHourModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Hour");
+            var timeMinutesModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Minute");
+            var timeHourFieldName = $"{For.Name}.Hour";
+            var timeMinuteFieldName = $"{For.Name}.Minute";
+
             var timeModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "TimeOfDay");
             var timeFieldName = $"{For.Name}.TimeOfDay";
             object dateValue = null;
-            object timeValue = null;
+            object timeHourValue = null;
+            object timeMinuteValue = null;
 
             if (!Equals(For.Model, default(DateTimeOffset)))
             {
+         
+
                 dateValue = dateModelExplorer.Model;
-                timeValue = timeModelExplorer.Model;
+                timeHourValue = timeHourModelExplorer.Model;
+                timeMinuteValue = timeMinutesModelExplorer.Model;
             }
 
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
 
-            WriteTimePickerInput(timeModelExplorer, timeFieldName, timeValue, writer);
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false);
 
             writer.WriteLine("</div>"); // form-inline
 
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine();
-            WriteValidation(writer, timeModelExplorer, timeFieldName);
+            WriteValidation(writer, timeHourModelExplorer, timeHourFieldName);
+            WriteValidation(writer, timeMinutesModelExplorer , timeMinuteFieldName);
         }
 
         private void WriteTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, IDictionary<string, string> extraAttributes = null)
@@ -443,10 +454,10 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour, IDictionary<string, string> extraAttributes = null)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
         {
             writer.WriteLine("<div class=\"input-group time timesplit\">");
-            WriteSelect(GetSplitTImeValues(hour), false, null, writer, timeFieldName, timeModelExplorer, hour ? "h" : "min");
+            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "h" : "min");
             WriteValidation(writer, timeModelExplorer, timeFieldName);
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
         }
@@ -665,21 +676,21 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteSelect(TextWriter writer)
         {
-            var realModelType = For.ModelExplorer.ModelType;
+            WriteSelect(Items, writer, For.Name, For.ModelExplorer);
+        }
+
+        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
+        {
+            var realModelType = modelExplorer.ModelType;
             var allowMultiple = typeof(string) != realModelType &&
                 typeof(IEnumerable).IsAssignableFrom(realModelType);
 
             var currentValues = _htmlGenerator.GetCurrentValues(
                 ViewContext,
-                For.ModelExplorer,
-                expression: For.Name,
+                modelExplorer,
+                expression: expression,
                 allowMultiple: allowMultiple);
 
-            WriteSelect(Items, allowMultiple, currentValues, writer, For.Name, For.ModelExplorer);
-        }
-
-        private void WriteSelect(IEnumerable<SelectListItem> selectList, bool allowMultiple, ICollection<string> currentValues, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
-        {
             var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
                 modelExplorer,

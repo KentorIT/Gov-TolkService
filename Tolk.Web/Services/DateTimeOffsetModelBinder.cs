@@ -12,37 +12,46 @@ namespace Tolk.Web.Services
         {
             var dateValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Date");
             var timeValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.TimeOfDay");
+            var timeHourValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Hour");
+            var timeMinuteValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Minute");
 
-            // Date always required
-            if (dateValue == ValueProviderResult.None
-                || string.IsNullOrWhiteSpace(dateValue.FirstValue)
-                || timeValue == ValueProviderResult.None
-                || string.IsNullOrWhiteSpace(timeValue.FirstValue))
+            // Date and time always required
+            if (!ValueDefinedAndUsed(dateValue) ||(!ValueDefinedAndUsed(timeValue) && (!ValueDefinedAndUsed(timeHourValue))))
             {
                 return Task.CompletedTask;
             }
-
+            DateTime dateTime;
             string timeValueSanitized;
-
-            if (timeValue.FirstValue == "0" 
-                || timeValue.FirstValue == "00")
+            if (ValueDefinedAndUsed(timeValue))
             {
-                timeValueSanitized = "00:00";
+
+                if (timeValue.FirstValue == "0"
+                    || timeValue.FirstValue == "00")
+                {
+                    timeValueSanitized = "00:00";
+                }
+                else
+                {
+                    timeValueSanitized = timeValue.FirstValue.Contains(":")
+                        ? timeValue.FirstValue
+                        : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
+                }
             }
             else
-            {
-                timeValueSanitized = timeValue.FirstValue.Contains(":")
-                    ? timeValue.FirstValue
-                    : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
+            { 
+                timeValueSanitized = $"{timeHourValue.FirstValue}:{timeMinuteValue.FirstValue}";
             }
-
-            var dateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValueSanitized}");
-
+            dateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValueSanitized}");
             var model = dateTime.ToDateTimeOffsetSweden();
 
             bindingContext.Result = ModelBindingResult.Success(model);
 
             return Task.CompletedTask;
+        }
+
+        private bool ValueDefinedAndUsed(ValueProviderResult vpr)
+        {
+            return !(vpr == ValueProviderResult.None || string.IsNullOrWhiteSpace(vpr.FirstValue));
         }
     }
 }
