@@ -718,9 +718,9 @@ namespace Tolk.Web.TagHelpers
         {
             bool isRow = LayoutOption == "row";
 
-            var id = $"{For.Name}_rbGroup";
+            var groupId = $"{For.Name}_rbGroup";
 
-            writer.WriteLine($"<div id=\"{id}\">");
+            writer.WriteLine($"<div id=\"{groupId}\">");
 
             var itArr = Items.ToArray();
             for (int i = 0; i < itArr.Length; i++)
@@ -735,13 +735,13 @@ namespace Tolk.Web.TagHelpers
                     isChecked: isChecked,
                     htmlAttributes: new { });
 
-                tagBuilder.Attributes.Add("asp-for", For.Name);
                 if (isChecked)
                 {
                     tagBuilder.Attributes.Add("checked", "checked");
                 }
+                writer.WriteLine("<label>");
                 tagBuilder.WriteTo(writer, _htmlEncoder);
-                writer.WriteLine($" {item.Text} " + (isRow ? "" : "<br>"));
+                writer.WriteLine($" {item.Text}</label>" + (isRow ? "" : "<br>"));
             }
 
             writer.WriteLine($"</div>");

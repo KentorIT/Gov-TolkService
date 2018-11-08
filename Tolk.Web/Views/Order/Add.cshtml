@@ -30,7 +30,7 @@
             <form-entry asp-for="CustomerReferenceNumber" />
             <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
             <form-entry asp-for="UnitName" />
-            <form-entry asp-for="AssignmentType" type="radio-group" layout-option="row" asp-items="SelectListService.AssignmentTypes" />
+            <form-entry asp-for="AssignmentType" type="radio-group" asp-items="SelectListService.AssignmentTypes" />
             <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
             <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
             <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
