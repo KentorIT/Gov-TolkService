@@ -322,8 +322,8 @@ namespace Tolk.Web.Models
             }
             else
             {
-                order.LanguageId = AssignmentType.Value != BusinessLogic.Enums.AssignmentType.Education ? LanguageId : null;
-                order.OtherLanguage = OtherLanguageId == LanguageId && AssignmentType.Value != BusinessLogic.Enums.AssignmentType.Education ? OtherLanguage : null;
+                order.LanguageId = LanguageId;
+                order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = AssignmentType.Value;
                 order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;

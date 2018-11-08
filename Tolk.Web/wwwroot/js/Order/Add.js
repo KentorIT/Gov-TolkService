@@ -70,16 +70,6 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-    $("body").on("change", "#AssignmentType", function (event) {
-        if ($(this).val() === "Education") {
-            $('#language-panel').collapse('hide');
-            toggleOtherLanguage("");
-        }
-        else {
-            $('#language-panel').collapse('show');
-            toggleOtherLanguage($("#LanguageId").val());
-        }
-    });
 
     $("body").on("change", "#LanguageId", function () {
         toggleOtherLanguage($(this).val());

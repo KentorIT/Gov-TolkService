@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace Tolk.BusinessLogic.Enums
 {
@@ -9,9 +6,7 @@ namespace Tolk.BusinessLogic.Enums
     {
         [Description("Tolkning")]
         Interpretation = 1,
-        [Description("Tolkanvändarutbildning")]
-        Education = 2,
         [Description("Avista")]
-        Avista = 3,
+        Avista = 2
     }
 }
