@@ -346,7 +346,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = requisition.CreatedAt,
                     EventDetails = "Rekvisition registrerad",
                     Actor = requisition.CreatedByUser.FullName,
-                    Organization = requisition.CreatedByUser.Broker.Name,
+                    Organization = requisition.CreatedByUser.Broker?.Name, //interpreter has no org.
                 });
             }
             // Requisition processing
