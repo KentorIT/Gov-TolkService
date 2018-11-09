@@ -24,6 +24,18 @@ h6,
 small {
   font-family: "Merriweather Sans", sans-serif;
 }
+h1 {
+  line-height: 45px;
+  font-size: 36px;
+}
+h2 {
+  line-height: 31px;
+  font-size: 24px;
+}
+h3 {
+  line-height: 25px;
+  font-size: 20px;
+}
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
