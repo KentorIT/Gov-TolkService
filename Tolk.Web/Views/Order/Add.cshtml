@@ -34,8 +34,8 @@
                     <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
                 </div>
             </div>
-            <div class="ranked-InterpreterLocation">
-                <div class="border location-group">
+            <div class="row ranked-InterpreterLocation">
+                <div class="col-sm-4 location-group">
                     <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
                         <div class="address-information">
@@ -48,7 +48,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="border interpreter-location-second location-group">
+                <div class="col-sm-4 interpreter-location-second location-group">
                     <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationSecond">
                         <div class="address-information">
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="border interpreter-location-third location-group">
+                <div class="col-sm-4 interpreter-location-third location-group">
                     <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationThird">
                         <div class="address-information">

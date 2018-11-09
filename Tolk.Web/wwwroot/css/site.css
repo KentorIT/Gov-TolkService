@@ -497,7 +497,6 @@ li.placeholder::before {
   font-style: italic;
 }
 .group-box {
-  background-color: #f1f1f1;
   margin-bottom: 10px;
 }
 .grouped-form-boxes .form-group {
