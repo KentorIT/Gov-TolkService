@@ -644,19 +644,19 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"form-inline\">");
             writer.WriteLine("<div class=\"row\">");
 
-            writer.WriteLine("<div class=\"col-md-4\">");
+            writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(dateModelExplorer, writer);
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine("</div>");
 
-            writer.WriteLine("<div class=\"col-md-4\">");
+            writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
             WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
             WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
             writer.WriteLine("</div>");
 
-            writer.WriteLine("<div class=\"col-md-4\">");
+            writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
             WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
             WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);

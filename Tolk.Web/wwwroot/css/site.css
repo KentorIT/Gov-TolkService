@@ -36,17 +36,26 @@ h3 {
   line-height: 25px;
   font-size: 20px;
 }
+hr {
+  height: 1px;
+  color: #979797;
+  background-color: #979797;
+  border: none;
+  margin-top: -7px;
+}
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
   padding-top: 30px;
   float: none;
+  max-width: 1200px;
 }
 .page {
   background-color: white;
   padding: 10px 20px;
   float: none;
   margin: 0 auto;
+  box-shadow: 1px 1px 3px #888;
 }
 .select2-container,
 .select2-container--default,

@@ -8,32 +8,28 @@
 }
 
 <div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
+    <div class="col-xs-12">
+        <h2>Bokningsuppgifter</h2>
+        <hr />
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="SystemTime" />
-            <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
-            <div class="border">
-                <span class="header-with-line">Kompetensnivå</span>
-                <form-entry asp-for="SpecificCompetenceLevelRequired" />
-                <span id="competence-required">
-                    <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                </span>
-                <span id="competence-requested">
-                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                </span>
-            </div>
-            <form-entry asp-for="CustomerReferenceNumber" />
-            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
-            <form-entry asp-for="UnitName" />
             <form-entry asp-for="AssignmentType" type="radio-group" asp-items="SelectListService.AssignmentTypes" />
-            <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
-            <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
-            <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
+                    <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
+                    <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Dialect" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
+                </div>
+            </div>
+            <form-entry asp-for="SplitTimeRange" class="order-datepicker" />
+            <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
             <div class="ranked-InterpreterLocation">
                 <div class="border location-group">
                     <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
@@ -77,8 +73,21 @@
                 <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-            <form-entry asp-for="SplitTimeRange" class="order-datepicker" />
-            <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+            <div class="border">
+                <span class="header-with-line">Kompetensnivå</span>
+                <form-entry asp-for="SpecificCompetenceLevelRequired" />
+                <span id="competence-required">
+                    <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                </span>
+                <span id="competence-requested">
+                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                </span>
+            </div>
+            <form-entry asp-for="Description" />
+            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
             <fieldset>
                 <legend>Extra behov <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
                 <div class="d-none order-requirement-list border no-padding">
@@ -97,10 +106,34 @@
                     </div>
                 </div>
             </fieldset>
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
-            <form-entry asp-for="Description" />
-            <a class="btn btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
-            <button class="btn pull-right btn-default" id="send">Skicka</button>
+            <h2>Myndighetens uppgifter</h2>
+            <hr />
+            <div class="row">
+                <div class="col-sm-4">
+                    <h4>Beställare</h4>
+                    Pia Petersdotter
+                    pia@polisen.se
+                    Tel: 1121212
+                    Mob: 0701234567
+                </div>
+                <div class="col-sm-8">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <form-entry asp-for="CustomerReferenceNumber" />
+                        </div>
+                        <div class="col-sm-6">
+                            <form-entry asp-for="UnitName" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a class="btn btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="glyphicon glyphicon-remove"></span></a>
+            <button class="btn pull-right btn-default" id="send">Gå vidare <span class="glyphicon glyphicon-triangle-right"></span></button>
         </form>
         <span id="basefile" class="d-none">
             <input asp-for="Files[0].Id" type="hidden" />
@@ -127,7 +160,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                <button type="button" class="btn btn-default pull-right save-requirement">Spara</button>
+                <button type="button" class="btn btn-default pull-right save-requirement">Skicka</button>
             </div>
         </div>
     </div>

@@ -30,6 +30,9 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public int? LanguageId { get; set; }
 
+        [Display(Name = "Dialekt")]
+        public string Dialect { get; set; }
+
         [Display(Name = "Annan kontaktperson")]
         public int? ContactPersonId { get; set; }
 
