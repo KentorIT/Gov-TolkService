@@ -64,6 +64,19 @@ hr {
 .select2-container--default .select2-selection--multiple .select2-selection__choice,
 .select2-container--classic .select2-selection--single,
 .select2-container--classic .select2-selection--multiple,
+.select2-container--classic .select2-selection--multiple .select2-selection__choice {
+  height: 34px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 34px;
+}
+.select2-container,
+.select2-container--default,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--multiple .select2-selection__choice,
+.select2-container--classic .select2-selection--single,
+.select2-container--classic .select2-selection--multiple,
 .select2-container--classic .select2-selection--multiple .select2-selection__choice,
 .select2-dropdown {
   border-radius: 0;
@@ -205,9 +218,6 @@ fieldset[disabled] .datepicker table tr td.today.focus,
 fieldset[disabled] .datepicker table tr td.today:focus,
 fieldset[disabled] .datepicker table tr td.today:hover {
   background-color: #95BFB7;
-}
-.input-group > .form-control.datepicker {
-  width: 120px;
 }
 .input-group.time > .form-control {
   width: 80px;

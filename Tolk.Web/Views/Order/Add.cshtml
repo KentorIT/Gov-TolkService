@@ -29,7 +29,11 @@
                 </div>
             </div>
             <form-entry asp-for="SplitTimeRange" class="order-datepicker" />
-            <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+            <div class="row">
+                <div class="col-sm-8">
+                    <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+                </div>
+            </div>
             <div class="ranked-InterpreterLocation">
                 <div class="border location-group">
                     <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
@@ -111,9 +115,9 @@
             <div class="row">
                 <div class="col-sm-4">
                     <h4>Beställare</h4>
-                    Pia Petersdotter
-                    pia@polisen.se
-                    Tel: 1121212
+                    Pia Petersdotter<br />
+                    pia@polisen.se<br />
+                    Tel: 1121212<br />
                     Mob: 0701234567
                 </div>
                 <div class="col-sm-8">

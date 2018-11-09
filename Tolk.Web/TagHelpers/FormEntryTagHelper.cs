@@ -409,10 +409,13 @@ namespace Tolk.Web.TagHelpers
                 timeMinuteValue = timeMinutesModelExplorer.Model;
             }
 
+            writer.WriteLine("<div class=\"col-sm-6 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-
+            writer.WriteLine("</div>");
+            writer.WriteLine("<div class=\"col-sm-6\">");
             WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
             WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false);
+            writer.WriteLine("</div>");
 
             writer.WriteLine("</div>"); // form-inline
 

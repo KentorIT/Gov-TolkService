@@ -79,6 +79,21 @@ hr {
 .select2-container--default .select2-selection--multiple .select2-selection__choice,
 .select2-container--classic .select2-selection--single,
 .select2-container--classic .select2-selection--multiple,
+.select2-container--classic .select2-selection--multiple .select2-selection__choice {
+    height: @height-input;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: @height-input;
+}
+
+.select2-container,
+.select2-container--default,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--multiple .select2-selection__choice,
+.select2-container--classic .select2-selection--single,
+.select2-container--classic .select2-selection--multiple,
 .select2-container--classic .select2-selection--multiple .select2-selection__choice,
 .select2-dropdown {
     border-radius: 0;
@@ -217,10 +232,6 @@ label [type="radio"]:checked:after {
 .datepicker table tr td[disabled].today:hover, fieldset[disabled] .datepicker table tr td.today.focus,
 fieldset[disabled] .datepicker table tr td.today:focus, fieldset[disabled] .datepicker table tr td.today:hover {
     background-color: @primary-lighter;
-}
-
-.input-group > .form-control.datepicker {
-    width: 120px;
 }
 
 .input-group.time > .form-control {
