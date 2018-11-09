@@ -153,6 +153,9 @@ label [type="radio"]:checked:after {
 .datepicker {
   border-radius: 0px;
 }
+.form-control.datepicker.time-range-part.datepicker-short {
+  width: 120px;
+}
 .datepicker table tr td,
 .datepicker table tr th {
   border-radius: 0px;

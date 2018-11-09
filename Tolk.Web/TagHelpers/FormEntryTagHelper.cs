@@ -343,9 +343,9 @@ namespace Tolk.Web.TagHelpers
             object fromValue = fromModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
-            WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer);
+            WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer, isShort: true);
             WriteRightArrowSpan(writer);
-            WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer, "pull-right");
+            WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer, "pull-right", isShort: true);
 
             writer.WriteLine("</div>"); // form-inline.
             WriteValidation(writer, fromModelExplorer, fromFieldName);
@@ -506,7 +506,8 @@ namespace Tolk.Web.TagHelpers
             object dateValue,
             TextWriter writer,
             string extraGroupDivClass = "",
-            IDictionary<string, string> extraAttributes = null)
+            IDictionary<string, string> extraAttributes = null,
+            bool isShort = false)
         {
             writer.WriteLine("<div class=\"input-group date " + extraGroupDivClass + "\">");
 
@@ -518,7 +519,7 @@ namespace Tolk.Web.TagHelpers
                 format: "{0:yyyy-MM-dd}",
                 htmlAttributes: new
                 {
-                    @class = "form-control datepicker time-range-part",
+                    @class = "form-control datepicker time-range-part " + (isShort ? "datepicker-short" : ""),
                     placeholder = "ÅÅÅÅ-MM-DD",
                     type = "text",
                     data_val_required = "Datum måste anges.",
