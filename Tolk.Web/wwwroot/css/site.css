@@ -264,6 +264,11 @@ select:-webkit-autofill:focus {
   border-radius: 0px;
   border: none;
 }
+.btn-large {
+  width: 268px;
+  height: 50px;
+  font-size: 14pt;
+}
 .btn-default,
 .btn-primary,
 .btn-success {
