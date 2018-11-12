@@ -297,6 +297,9 @@ select:-webkit-autofill:focus {
   height: 50px;
   font-size: 14pt;
 }
+a.btn-large {
+  line-height: 2;
+}
 .btn-default,
 .btn-primary,
 .btn-success {
