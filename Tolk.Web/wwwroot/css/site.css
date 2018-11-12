@@ -568,3 +568,21 @@ li.placeholder::before {
   margin-right: 20px;
   float: right;
 }
+.panel {
+  border-radius: 0;
+}
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.panel-info {
+  border-color: #95BFB7;
+}
+.panel-info > .panel-heading {
+  color: white;
+  background-color: #587573;
+  border-color: #95BFB7;
+}
+.shortcut-box {
+  color: #587573;
+}

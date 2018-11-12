@@ -641,3 +641,26 @@ li.placeholder::before {
     margin-right: 20px;
     float: right;
 }
+
+.panel {
+    border-radius: 0;
+}
+
+.panel-heading {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.panel-info {
+    border-color: @primary-lighter;
+}
+
+.panel-info > .panel-heading {
+    color: white;
+    background-color: @primary-darker;
+    border-color: @primary-lighter;
+}
+
+.shortcut-box {
+    color: @primary-darker;
+}
