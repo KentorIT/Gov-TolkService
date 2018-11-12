@@ -104,7 +104,7 @@ namespace Tolk.Web.Controllers
                     Items = orders.Select(o => new OrderListItemModel
                     {
                         OrderId = o.OrderId,
-                        Language = o.OtherLanguage ?? o.Language.Name ?? "(Tolkanvändarutbildning)",
+                        Language = o.OtherLanguage ?? o.Language.Name,
                         OrderNumber = o.OrderNumber.ToString(),
                         RegionName = o.Region.Name,
                         Start = o.StartAt,

@@ -42,7 +42,7 @@ namespace Tolk.Web.Models
             return requests.Select(r => new RequestListItemModel
             {
                 RequestId = r.RequestId,
-                Language = r.Order.OtherLanguage ?? r.Order.Language.Name ?? "(Tolkanvändarutbildning)",
+                Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                 LanguageId = r.Order.LanguageId,
                 OrderNumber = r.Order.OrderNumber.ToString(),
                 CustomerName = r.Order.CustomerOrganisation.Name,
