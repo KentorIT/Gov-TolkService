@@ -2,7 +2,6 @@
 body {
   color: black;
   padding-top: 50px;
-  padding-bottom: 20px;
   background-image: linear-gradient(180deg, #F0F0F0, #fff);
 }
 label {
@@ -42,6 +41,29 @@ hr {
   background-color: #979797;
   border: none;
   margin-top: -7px;
+}
+.kamk-footer {
+  background-color: #445352;
+  color: white;
+  font-weight: 300;
+  line-height: 2;
+  margin-top: 100px;
+  padding: 50px 15px;
+}
+.kamk-footer a {
+  color: white;
+}
+.kamk-footer-logo {
+  background-color: black;
+  color: white;
+  text-align: center;
+}
+.center-content {
+  float: none;
+  margin: 0 auto;
+}
+.maxwidth {
+  max-width: 1200px;
 }
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */

@@ -93,7 +93,7 @@
             <form-entry asp-for="Description" />
             @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
             <fieldset>
-                <legend>Extra behov <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
+                <legend>Övriga önskemål/krav <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
                 <div class="d-none order-requirement-list border no-padding">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover order-requirement-table">
