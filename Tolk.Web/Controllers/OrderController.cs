@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly NotificationService _notificationService;
+        private readonly UserManager<AspNetUser> _userManager;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -44,7 +46,8 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService
+            NotificationService notificationService,
+            UserManager<AspNetUser> usermanager
             )
         {
             _dbContext = dbContext;
@@ -57,6 +60,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options.Value;
             _notificationService = notificationService;
+            _userManager = usermanager;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -289,12 +293,13 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        public IActionResult Add()
+        public async Task<IActionResult> Add()
         {
+            var user = await _userManager.GetUserAsync(User);
             var model = new OrderModel()
             {
                 SystemTime = (long)_clock.SwedenNow.DateTime.ToUnixTimestamp(),
-
+                UserInfo = $"{user.FullName}\n{user.Email}\nTel: {user.PhoneNumber ?? "-"}\nMob: {user.PhoneNumberCellphone ?? "-"}",
             };
             return View(model);
         }

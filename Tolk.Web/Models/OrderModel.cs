@@ -22,6 +22,10 @@ namespace Tolk.Web.Models
 
         public long SystemTime { get; set; }
 
+        [Display(Name = "Beställare")]
+        [DataType(DataType.MultilineText)]
+        public string UserInfo { get; set; }
+
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
         public int? RegionId { get; set; }

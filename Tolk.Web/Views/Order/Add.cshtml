@@ -114,11 +114,7 @@
             <hr />
             <div class="row">
                 <div class="col-sm-4">
-                    <h4>Beställare</h4>
-                    Pia Petersdotter<br />
-                    pia@polisen.se<br />
-                    Tel: 1121212<br />
-                    Mob: 0701234567
+                    <display-entry asp-for="UserInfo" />
                 </div>
                 <div class="col-sm-8">
                     <div class="row">
@@ -170,15 +166,15 @@
     </div>
 </div>
 @section Scripts {
-<environment include="Development">
-    <script src="~/js/Files.js" asp-append-version="true"></script>
-    <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-    <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/js/Files.min.js" asp-append-version="true"></script>
-    <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-    <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+        <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+        <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
