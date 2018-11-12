@@ -48,14 +48,14 @@
         <display-entry asp-for="AssignmentType" />
 
         <label>Inställelsesätt</label>
-        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformationWithRankHeader" />
         @if (Model.RankedInterpreterLocationSecondAddressModel != null)
         {
-            <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
+            <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformationWithRankHeader" />
         }
         @if (Model.RankedInterpreterLocationThirdAddressModel != null)
         {
-            <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+            <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformationWithRankHeader" />
         }
 
         <display-entry asp-for="SpecificCompetenceLevelRequired" />

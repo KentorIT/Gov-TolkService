@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -45,8 +46,12 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Beskrivning", Description = "Extra information om uppdraget i det fall det behövs")]
+        [Display(Name = "Extra information", Description = "Extra information om uppdraget i det fall det behövs")]
         public string Description { get; set; }
+
+        [Display(Name = "Språk och dialekt")]
+        [DataType(DataType.MultilineText)]
+        public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
         [Display(Name = "Enhet/avdelning")]
         [ClientRequired]
@@ -150,16 +155,16 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public string LanguageName { get; set; }
 
-        [Display(Name = "Avrop skapat")]
+        [Display(Name = "Bokning skapad")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [Display(Name = "Avrop skapat av")]
+        [Display(Name = "Bokning skapad av")]
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
         public int CreatedById { get; set; }
 
-        [Display(Name = "Avrop besvarat av")]
+        [Display(Name = "Bokning besvarad av")]
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
@@ -214,7 +219,7 @@ namespace Tolk.Web.Models
 
         #region extra requirements
 
-        [Display(Name = "Extra behov")]
+        [Display(Name = "Tillkommande krav och/eller önskemål")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
         #endregion
@@ -246,6 +251,25 @@ namespace Tolk.Web.Models
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
         public EventLogModel EventLog { get; set; }
+
+        private string DialectDescription
+        {
+            get
+            {
+                if (OrderRequirements != null && OrderRequirements.Any(or => or.RequirementType == RequirementType.Dialect))
+                {
+                    StringBuilder sb = new StringBuilder();
+                    List<OrderRequirementModel> reqs;
+                    reqs = OrderRequirements.Where(or => or.RequirementType == RequirementType.Dialect).ToList();
+                    foreach (OrderRequirementModel orm in reqs)
+                    {
+                        sb.Append(orm.RequirementIsRequired ? $"Krav på dialekt: {orm.RequirementDescription}" : $"Önskemål om dialekt: {orm.RequirementDescription}");
+                    }
+                    return sb.ToString();
+                }
+                return string.Empty;
+            }
+        }
 
         public List<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {

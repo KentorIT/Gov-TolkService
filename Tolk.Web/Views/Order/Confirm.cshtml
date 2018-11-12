@@ -1,0 +1,187 @@
+﻿@model Tolk.Web.Models.OrderModel
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
+@using Tolk.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "Sammanfattning av tolkbokning";
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <h2>@ViewData["Title"]</h2>
+        <hr />
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="LanguageAndDialect" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="TimeRange" />
+                @*Sista svarstid:
+                här typ?/>*@
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="RegionName" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <label>Inställelsesätt i första hand</label>
+                <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+            </div>
+            <div class="col-sm-4">
+                <label>Inställelsesätt i andra hand</label>
+                @if (Model.RankedInterpreterLocationSecondAddressModel != null)
+                {
+                    <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
+                }
+                else
+                {
+                    <div class="detail-text">Ej angivet</div>
+                }
+            </div>
+
+            <div class="col-sm-4">
+                <label>Inställelsesätt i tredje hand</label>
+                @if (Model.RankedInterpreterLocationThirdAddressModel != null)
+                {
+                    <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+                }
+                else
+                {
+                    <div class="detail-text"> Ej angivet</div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                @if (Model.RequestedCompetenceLevels.Count != 0)
+                {
+                    @if (Model.SpecificCompetenceLevelRequired)
+                    {
+                        @if (Model.RequiredCompetenceLevelFirst.HasValue)
+                        {
+                            <display-entry asp-for="RequiredCompetenceLevelFirst" />
+                        }
+                        @if (Model.RequiredCompetenceLevelSecond.HasValue)
+                        {
+                            <display-entry asp-for="RequiredCompetenceLevelSecond" />
+                        }
+                    }
+                    else
+                    {
+                        @if (Model.RequestedCompetenceLevelFirst.HasValue)
+                        {
+                            <display-entry asp-for="RequestedCompetenceLevelFirst" />
+                        }
+                        @if (Model.RequestedCompetenceLevelSecond.HasValue)
+                        {
+                            <display-entry asp-for="RequestedCompetenceLevelSecond" />
+                        }
+                        @if (Model.RequestedCompetenceLevelThird.HasValue)
+                        {
+                            <display-entry asp-for="RequestedCompetenceLevelThird" />
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="detail-text">Inga önskemål eller krav på kompetensnivå är angivna</div>
+                }
+            </div>
+            <div class="col-sm-4">
+                <label>Tillkommande krav</label>
+                @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+                {
+                    <ul>
+                        @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+                        {
+                            <li class="detail-text order-requirement-list">
+                                @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="detail-text">Inga tillkommande krav är angivna</div>
+                }
+            </div>
+            <div class="col-sm-4">
+                <label>Tillkommande önskemål</label>
+                @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+                {
+                    <ul>
+                        @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+                        {
+                            <li class="detail-text order-requirement-list">
+                                @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="detail-text">Inga tillkommande önskemål är angivna</div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="Description" />
+            </div>
+            <div class="col-sm-4">
+                @if (Model.AttachmentListModel?.Files?.Count > 0)
+                {
+                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                }
+                else
+                {
+                    <label>Bifogade filer</label>
+                    <div class="detail-text">Inga filer har bifogats</div>
+                }
+            </div>
+            <div class="col-sm-4">
+            </div>
+        </div>
+        <br />
+        <hr />
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedBy" />
+            </div>
+            <div class="col-sm-4">
+                @if (string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
+                { }
+                else
+                {
+                    <display-entry asp-for="CustomerReferenceNumber" />
+                }
+                <display-entry asp-for="ContactPerson" />
+            </div>
+
+            <div class="col-sm-4">
+                <display-entry asp-for="UnitName" />
+            </div>
+        </div>
+        @*Obs denna important-info-text ska bort snart!*@
+        <span class="important-info">OBS! Knapparna har inte rätt funktionalitet ännu. Bokningen är redan skickad så Ändra-knappen tar dig till startsidan och Skicka bokning-knappen tar dig till detaljvy för avropet.<br /><br /></span>
+        <a class="btn btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index"><span class="glyphicon glyphicon-triangle-left"></span> Ändra</a>
+        <a class="btn pull-right btn-primary" asp-action="View" asp-route-id="@Model.OrderId">Skicka bokning <span class="glyphicon glyphicon-triangle-right"></span></a>
+    </div>
+    @*
+        När ska denna synas?
+        <display-entry asp-for="AssignmentType" />
+         Model.AllowMoreThanTwoHoursTravelTime
+    *@
+</div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
+

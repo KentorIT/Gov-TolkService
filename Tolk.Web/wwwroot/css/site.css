@@ -150,6 +150,12 @@ label [type="radio"]:checked:after {
 #impersonation-select {
   width: 450px;
 }
+.row {
+  padding-bottom: 15px;
+}
+.detail-text {
+  font-weight: 300;
+}
 .datepicker {
   border-radius: 0px;
 }

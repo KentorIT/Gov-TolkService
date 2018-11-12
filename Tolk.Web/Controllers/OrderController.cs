@@ -326,10 +326,22 @@ namespace Tolk.Web.Controllers
 
                     _dbContext.SaveChanges();
                     trn.Commit();
-                    return RedirectToAction(nameof(View), new { id = order.OrderId });
+                    return RedirectToAction(nameof(Confirm), new { id = order.OrderId });
                 }
             }
             return View(model);
+        }
+
+        public async Task<IActionResult> Confirm(int id)
+        {
+            //Get order model from db
+            Order order = GetOrder(id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            {
+                return View(OrderModel.GetModelFromOrder(order));
+            }
+            return Forbid();
         }
 
         [ValidateAntiForgeryToken]

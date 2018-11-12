@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [NoDisplayName]
-        public string CompactInformation
+        public string CompactInformationWithRankHeader
         {
             get
             {
@@ -52,17 +52,26 @@ namespace Tolk.Web.Models
                     default:
                         break;
                 }
-                StringBuilder sb = new StringBuilder($"{rankHeader}{InterpreterLocation.Value.GetDescription()}");
-                if (InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo)
-                {
-                    sb.Append($"\n{OffSiteContactInformation}");
-                }
-                else
-                {
-                    sb.Append($"\n{LocationStreet}\n{LocationZipCode} {LocationCity}");
-                }
-                return sb.ToString();
+                return $"{rankHeader}{CompactInformation}";
             }
         }
+
+        [DataType(DataType.MultilineText)]
+        [NoDisplayName]
+        public string CompactInformation
+        {
+            get
+            {
+                if (!InterpreterLocation.HasValue)
+                {
+                    return string.Empty;
+                }
+                StringBuilder sb = new StringBuilder(InterpreterLocation.Value.GetDescription());
+                return sb.Append(IsOffsite ? $"\n{OffSiteContactInformation}" : $"\n{LocationStreet}\n{LocationZipCode} {LocationCity}").ToString();
+            }
+        }
+
+        private bool IsOffsite => InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo;
+
     }
 }
