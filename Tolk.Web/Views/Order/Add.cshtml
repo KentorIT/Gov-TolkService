@@ -48,7 +48,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-4 interpreter-location-second location-group">
+                <div class="col-sm-4 interpreter-location-second location-group bg-gray">
                     <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                     <div class="address-RankedInterpreterLocationSecond">
                         <div class="address-information">
@@ -79,16 +79,18 @@
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
             <div class="row">
                 <div class="col-sm-12">
-                    <span class="header-with-line">Kompetensnivå</span>
-                    <form-entry asp-for="SpecificCompetenceLevelRequired" />
-                    <span id="competence-required" class="col-sm-6">
-                        <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                        <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    </span>
-                    <span id="competence-requested" class="col-sm-6">
-                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                        <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                        <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    <span class="col-sm-6">
+                        <span class="header-with-line">Kompetensnivå</span>
+                        <p class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</p>
+                        <form-entry asp-for="SpecificCompetenceLevelRequired" />
+                        <span id="competence-required">
+                            <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                            <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                        </span>
+                        <span id="competence-requested">
+                            <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                            <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                            <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                     </span>
                 </div>
             </div>

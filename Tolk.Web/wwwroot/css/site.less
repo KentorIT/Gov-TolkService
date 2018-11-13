@@ -12,12 +12,16 @@
 @border-default: 1px solid @gray;
 @border-select-color: #445352;
 @border-shadow-color: #445352;
-@temp-bgcolor: #F0F0F0;
+@bg-gray: #F1F4F2;
+
+.bg-gray {
+    background-color: @bg-gray;
+}
 
 body {
     color: black;
     padding-top: 50px;
-    background-image: linear-gradient(180deg, @temp-bgcolor, #fff);
+    background-image: linear-gradient(180deg, @bg-gray, #fff);
 }
 
 label {

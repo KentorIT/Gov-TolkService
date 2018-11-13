@@ -1,8 +1,11 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,400,400i,700');
+.bg-gray {
+  background-color: #F1F4F2;
+}
 body {
   color: black;
   padding-top: 50px;
-  background-image: linear-gradient(180deg, #F0F0F0, #fff);
+  background-image: linear-gradient(180deg, #F1F4F2, #fff);
 }
 label {
   font-size: 16px;
