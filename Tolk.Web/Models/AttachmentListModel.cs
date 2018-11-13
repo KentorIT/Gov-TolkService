@@ -17,5 +17,7 @@ namespace Tolk.Web.Models
         public bool AllowDownload { get; set; } = true;
 
         public string Title { get; set; } = "Bifogade filer";
+
+        public string Description { get; set; } = "Möjlighet att bifoga filer som kan vara relevanta";
     }
 }

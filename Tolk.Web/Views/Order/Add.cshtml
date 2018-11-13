@@ -96,8 +96,9 @@
                 </div>
             </div>
             <form-entry asp-for="Description" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
+            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
             <fieldset>
+                <br /><br />
                 <legend>Övriga önskemål/krav <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a></legend>
                 <div class="d-none order-requirement-list border no-padding">
                     <div class="table-responsive">

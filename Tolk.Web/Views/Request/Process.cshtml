@@ -201,8 +201,9 @@
                 }
             }
             <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
-
+            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty })
+            <br />
+            <br />
             @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <div class="row">

@@ -453,6 +453,31 @@ input[type='checkbox']:checked:after {
 .table-is-required-column {
   width: 10%;
 }
+.table-attached-files table tbody tr td,
+.table-attached-files table thead tr td,
+.table-attached-files table thead tr,
+.table-attached-files tr td,
+.table-attached-files tbody tr td {
+  background-color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  border-top: 1px solid #fff;
+  padding: 4px;
+}
+.file-table-add table tbody tr td,
+.file-table-add table thead tr td,
+.file-table-add table thead tr,
+.file-table-add tr td,
+.file-table-add tbody tr td {
+  background-color: #F1F4F2;
+  font-size: 12px;
+  cursor: pointer;
+  border-top: 1px solid #fff;
+  padding: 8px;
+}
+.add-attachment {
+  width: 30%;
+}
 .edit-link {
   float: right;
 }
@@ -533,6 +558,13 @@ li.placeholder::before {
 .important-info {
   margin-bottom: 20px;
   font-style: italic;
+}
+.more-info {
+  color: #646464;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 300;
+  margin-bottom: 20px;
 }
 .group-box {
   margin-bottom: 10px;

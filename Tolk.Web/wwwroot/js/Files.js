@@ -76,8 +76,8 @@ $(function () {
                             currentId++;
                             $hidden.find("input").val(data.fileInfo[i].id);
                             $('.file-table-add > tbody:last-child').append('<tr data-id="' + data.fileInfo[i].id + '" data-size="' + data.fileInfo[i].size + '">' +
-                                '<td class="table-full-column">' + $hidden.html() + data.fileInfo[i].fileName + '</td>' +
-                                '<td class="table-button-column fixed"><span class="glyphicon glyphicon-trash remove-file-row"></span></td>' +
+                                '<td class="table-full-column"> <span class="glyphicon glyphicon-paperclip"></span>' + $hidden.html() + data.fileInfo[i].fileName + '</td>' +
+                                '<td class="table-button-column fixed"><span class="remove-file-row bold">&times;</span></td>' +
                                 '</tr>');
                             //Make the table visible, if this is the first visible row.
                             $('.file-list').removeClass("d-none");
