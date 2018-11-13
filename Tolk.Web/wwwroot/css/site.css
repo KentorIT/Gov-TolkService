@@ -588,11 +588,7 @@ li.placeholder::before {
 .shortcut-box {
   color: #587573;
 }
-.ranked-select {
-  display: inline-flex;
-}
 .competence-ranking-num {
   font-size: 14pt;
   line-height: 2;
-  padding-right: 10px;
 }

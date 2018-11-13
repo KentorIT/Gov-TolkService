@@ -740,11 +740,18 @@ namespace Tolk.Web.TagHelpers
             if (writePrefix)
             {
                 writer.Write("<div class=\"row ranked-select\">");
+                writer.Write("<div class=\"col-xs-1\">");
             }
             WritePrefix(writer, PrefixAttribute.Position.Value);
+            if (writePrefix)
+            {
+                writer.Write("</div>");
+                writer.Write("<div class=\"col-xs-11\">");
+            }
             tagBuilder.WriteTo(writer, _htmlEncoder);
             if (writePrefix)
             {
+                writer.Write("</div>");
                 writer.Write("</div>");
             }
         }
