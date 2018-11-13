@@ -1,0 +1,42 @@
+﻿@model OrderModel
+@{
+    ViewData["Title"] = "Tack för din bokning";
+}
+<div class="row">
+    <div class="col-sm-9 center-content">
+        <div class="col-sm-12 center-content">
+            <div class="col-sm-12 text-center">
+                <h2>@ViewData["Title"]</h2>
+            </div>
+            <div class="col-sm-12 text-center">
+                <h3>Avropsid: @Model.OrderNumber</h3>
+            </div>
+            @if (Model.OrderCalculatedPriceInformationModel != null)
+            {
+                Model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";
+                Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+            }
+            <br /><br /><br />
+        </div>
+        <hr />
+        <br />
+        <h4>Vad händer nu?</h4>
+        <p>
+            Systemet skickar automatiskt din förfrågan till den förmedling i angiven region som har rangordning nr 1 enligt Kammarkollegiets ramavtal.
+            <br /><br />
+            När en förmedling svarar på din förfrågan och kan tillsätta en tolk får du ett mail om detta. Mailet kommer att innehålla en klickbar länk så att du snabbt kan navigera till den inkomna bekräftelsen, där hittar du kontaktuppgifter till den tillsatta tolken.
+            <br /><br />
+            Om förfrågan avböjs av en förmedling eller svar inte inkommer i tid enligt ramavtalet, går förfrågan automatiskt vidare till nästa förmedling i rangordningen.
+            <br /><br />
+            Om förfrågan avböjs av ala förmedlingar eller om de inte svarar i tid, avbryts avropet och du måste skapa en ny bokning. Du får ett automatiskt mail om detta inträffar. Du kan återanvända information i avböjda bokningar för att snabbare skapa en ny bokning.
+        </p>
+        <br /><br />
+        <hr />
+        <br />
+        <div class="col-sm-12 center-content text-center">
+            <a class="btn btn-large btn-default" asp-controller="Home" asp-action="Index">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+        </div>
+    </div>
+</div>
+
+

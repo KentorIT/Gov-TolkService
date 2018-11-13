@@ -344,6 +344,20 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        public async Task<IActionResult> Sent(int id)
+        {
+            Order order = GetOrder(id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            {
+                var model = OrderModel.GetModelFromOrder(order);
+                model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
+                model.OrderCalculatedPriceInformationModel.CenterHeader = true;
+                return View(model);
+            }
+            return Forbid();
+        }
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Approve(ProcessRequestModel model)

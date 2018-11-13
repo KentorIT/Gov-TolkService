@@ -166,7 +166,7 @@
         @*Obs denna important-info-text ska bort snart!*@
         <span class="important-info">OBS! Knapparna har inte rätt funktionalitet ännu. Bokningen är redan skickad så Ändra-knappen tar dig till startsidan och Skicka bokning-knappen tar dig till detaljvy för avropet.<br /><br /></span>
         <a class="btn btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index"><span class="glyphicon glyphicon-triangle-left"></span> Ändra</a>
-        <a class="btn pull-right btn-primary" asp-action="View" asp-route-id="@Model.OrderId">Skicka bokning <span class="glyphicon glyphicon-triangle-right"></span></a>
+        <a class="btn pull-right btn-primary" asp-action="Sent" asp-route-id="@Model.OrderId">Skicka bokning <span class="glyphicon glyphicon-triangle-right"></span></a>
     </div>
     @*
         När ska denna synas?
