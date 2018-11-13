@@ -111,12 +111,15 @@ namespace Tolk.Web.Models
         public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
 
         [Display(Name = "Önskade kompetensnivåer i prioritetsordning")]
+        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
         [NoDisplayName]
+        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">2.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelSecond { get; set; }
 
         [NoDisplayName]
+        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
         [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]

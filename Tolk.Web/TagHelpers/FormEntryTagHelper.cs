@@ -218,12 +218,23 @@ namespace Tolk.Web.TagHelpers
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
 
+        private void WritePrefix(TextWriter writer, PrefixAttribute.Position condition)
+        {
+            var Prefix = (PrefixAttribute)AttributeHelper.GetAttribute<PrefixAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
+
+            if (Prefix != null && Prefix.Prefixes == condition)
+            {
+                writer.WriteLine(Prefix.Text);
+            }
+        }
+
         private void WriteLabel(TextWriter writer)
         {
-            // Check if label will be displayed
-            var type = For.ModelExplorer.Metadata.ContainerType;
-            var property = type.GetProperty(For.ModelExplorer.Metadata.PropertyName);
-            var IsDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
+            var IsDisplayed = !AttributeHelper.IsAttributeDefined(typeof(NoDisplayNameAttribute), 
+                For.ModelExplorer.Metadata.ContainerType, 
+                For.ModelExplorer.Metadata.PropertyName);
 
             if (IsDisplayed)
             {
@@ -233,6 +244,7 @@ namespace Tolk.Web.TagHelpers
                 {
                     tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
                 }
+                WritePrefix(writer, PrefixAttribute.Position.Label);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
 
                 WriteInfoIfDescription(writer);
@@ -279,7 +291,7 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("data-val-regex", regex.ErrorMessage);
                 tagBuilder.Attributes.Add("data-val-regex-pattern", regex.Pattern);
             }
-
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
@@ -296,6 +308,7 @@ namespace Tolk.Web.TagHelpers
             {
                 tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
             }
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
@@ -316,6 +329,7 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             htmlBuilder.WriteTo(writer, _htmlEncoder);
         }
 
@@ -328,6 +342,7 @@ namespace Tolk.Web.TagHelpers
                 value: For.Model,
                 htmlAttributes: new { @class = "form-control" });
 
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
@@ -343,6 +358,7 @@ namespace Tolk.Web.TagHelpers
             object fromValue = fromModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer, isShort: true);
             WriteRightArrowSpan(writer);
             WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer, "pull-right", isShort: true);
@@ -376,6 +392,7 @@ namespace Tolk.Web.TagHelpers
                     data_val = true
                 });
             RemoveRequiredIfNullable(tagBuilder);
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
@@ -409,6 +426,7 @@ namespace Tolk.Web.TagHelpers
                 timeMinuteValue = timeMinutesModelExplorer.Model;
             }
 
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             writer.WriteLine("<div class=\"col-sm-6 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             writer.WriteLine("</div>");
@@ -533,6 +551,7 @@ namespace Tolk.Web.TagHelpers
             }
             RemoveRequiredIfNullable(tagBuilder);
 
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
 
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-calendar\"></span></div></div>"); //input-group date
@@ -685,6 +704,10 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
         {
+            var prefixAttribute = (PrefixAttribute) AttributeHelper.GetAttribute<PrefixAttribute>(
+                For.ModelExplorer.Metadata.ContainerType, 
+                For.ModelExplorer.Metadata.PropertyName);
+            bool writePrefix = prefixAttribute != null && prefixAttribute.Prefixes == PrefixAttribute.Position.Value;
             var realModelType = modelExplorer.ModelType;
             var allowMultiple = typeof(string) != realModelType &&
                 typeof(IEnumerable).IsAssignableFrom(realModelType);
@@ -714,8 +737,16 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.InnerHtml.AppendHtml("<option value></option>");
                 tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
             }
-
+            if (writePrefix)
+            {
+                writer.Write("<div class=\"row ranked-select\">");
+            }
+            WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
+            if (writePrefix)
+            {
+                writer.Write("</div>");
+            }
         }
 
         private void WriteRadioGroup(TextWriter writer)
@@ -744,6 +775,7 @@ namespace Tolk.Web.TagHelpers
                     tagBuilder.Attributes.Add("checked", "checked");
                 }
                 writer.WriteLine("<label>");
+                WritePrefix(writer, PrefixAttribute.Position.Value);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
                 writer.WriteLine($" {item.Text}</label>" + (isRow ? "" : "<br>"));
             }

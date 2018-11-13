@@ -2,14 +2,6 @@
 $(function () {
     var currentId = 0;
 
-    {
-        // Add ranking
-        var i = 0;
-        $("#competence-requested > .competence-level").each(function () {
-            $(this).find(".select2").before("<div class=\"competence-ranking-num\">" + ++i + ".</span>");
-        });
-    }
-
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();

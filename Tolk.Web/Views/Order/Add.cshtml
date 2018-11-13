@@ -77,18 +77,20 @@
                 <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
             </div>
             <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-            <div class="border">
-                <span class="header-with-line">Kompetensnivå</span>
-                <form-entry asp-for="SpecificCompetenceLevelRequired" />
-                <span id="competence-required">
-                    <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                </span>
-                <span id="competence-requested">
-                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                    <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                </span>
+            <div class="row">
+                <div class="col-sm-12">
+                    <span class="header-with-line">Kompetensnivå</span>
+                    <form-entry asp-for="SpecificCompetenceLevelRequired" />
+                    <span id="competence-required" class="col-sm-6">
+                        <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                        <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    </span>
+                    <span id="competence-requested" class="col-sm-6">
+                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                        <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                        <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                    </span>
+                </div>
             </div>
             <form-entry asp-for="Description" />
             @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files })
