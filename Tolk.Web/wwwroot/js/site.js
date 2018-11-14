@@ -6,6 +6,7 @@ var datePickerOptions = {
     calendarWeeks: true,
     todayHighlight: true,
     clearBtn: true,
+    orientation: "bottom",
     format: {
         toDisplay: function (date, format, language) {
             return date.toISOString().slice(0, 10);
