@@ -16,6 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.BusinessLogic.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tolk.Web.Tests", "Tolk.Web.Tests\Tolk.Web.Tests.csproj", "{C8CAE458-E931-4D43-884E-60E5A54151CD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Api.Payloads", "Tolk.Api.Payloads\Tolk.Api.Payloads.csproj", "{40F08680-0360-4694-91FE-0654399A454B}"
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
