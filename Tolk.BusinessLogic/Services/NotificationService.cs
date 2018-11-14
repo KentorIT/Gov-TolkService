@@ -146,7 +146,7 @@ namespace Tolk.BusinessLogic.Services
             if (settings.CallWebhook)
             {
                 CreateWebHookCall(
-                    new RequestCreatedModel
+                    new RequestModel
                     {
                         CreatedAt = request.CreatedAt,
                         OrderNumber = order.OrderNumber,

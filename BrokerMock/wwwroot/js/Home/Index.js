@@ -12,6 +12,13 @@ connection.on("IncommingCall", function (message) {
     document.getElementById("messagesList").appendChild(li);
 });
 
+connection.on("OutgoingCall", function (message) {
+    var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    var li = document.createElement("li");
+    li.textContent = msg;
+    document.getElementById("callsList").appendChild(li);
+});
+
 connection.onclose(reconnect);
 startConnection();
 function startConnection() {

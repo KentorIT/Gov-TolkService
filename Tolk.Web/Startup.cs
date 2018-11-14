@@ -88,7 +88,7 @@ namespace Tolk.Web
                 cfg.CreateMap<OrderModel, ReplaceOrderModel>();
             });
 
-           // This does not, for some reason, work. I had to initialice the map when I use it instead...
+           // This does not, for some reason, work. I had to initialize the map when I use it instead...
             //services.AddAutoMapper(cfg =>
             //{
             //    cfg.CreateMap<OrderModel, ReplaceOrderModel>();
