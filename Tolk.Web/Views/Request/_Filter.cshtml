@@ -10,17 +10,26 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <form-entry asp-for="OrderNumber" />
             </div>
-            <div class="col-sm-3">
-                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+            <div class="col-sm-4">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequestStatuses" Class="allow-clear" />
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
             </div>
-            <div class="col-sm-3">
+
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+            </div>
+            <div class="col-sm-4">
                 <form-entry asp-for="CustomerOrganizationId" type="select" asp-items="SelectListService.CustomerOrganizations" class="allow-clear" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
             </div>
         </div>
         <div class="row">
@@ -29,12 +38,6 @@
             </div>
             <div class="col-sm-4">
                 <form-entry asp-for="AnswerByDateRange" />
-            </div>
-            <div class="col-sm-2">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequestStatuses" Class="allow-clear" />
-            </div>
-            <div class="col-sm-2">
-                <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
             </div>
         </div>
     </form>

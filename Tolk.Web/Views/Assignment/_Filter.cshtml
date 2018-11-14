@@ -15,10 +15,10 @@
                 <form-entry asp-for="OrderNumber" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" Class="allow-clear" />
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.AssignmentStatuses" Class="allow-clear" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="CustomerOrganizationId" type="select" asp-items="SelectListService.CustomerOrganizations" Class="allow-clear" />
+                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" Class="allow-clear" />
             </div>
         </div>
         <div class="row">
@@ -26,10 +26,10 @@
                 <form-entry asp-for="DateRange" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" Class="allow-clear" />
+                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" Class="allow-clear" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.AssignmentStatuses" Class="allow-clear" />
+                <form-entry asp-for="CustomerOrganizationId" type="select" asp-items="SelectListService.CustomerOrganizations" Class="allow-clear" />
             </div>
         </div>
 
