@@ -16,6 +16,13 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        public ActionResult<string> Index()
+        {
+
+            return "Home/Index";
+        }
+
+        [HttpGet]
         public ActionResult<string> Ping()
         {
             X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
