@@ -1,26 +1,36 @@
 ﻿@model UserFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<div class="col-md-4">
-    <h4>Filtrera</h4>
-    <form method="get" class="filter-form container do-not-check-dirty">
+<div class="col-sm-12">
+    
+    <form method="get" class="filter-form do-not-check-dirty">
         <div class="row">
-            <div class="col-xs-3">
-                <form-entry asp-for="Name" />
-            </div>
-            @if (Model.IsSystemAdministrator)
-            {
-                <div class="col-xs-3">
-                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organizations" class="allow-clear" />
-                </div>
-            }
-            <div class="col-xs-3">
-                <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
-            </div>
-            <div class="col-xs-3">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.UserStatuses" class="allow-clear" />
+            <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
+            <div class="col-xs-4">
+                <h4>Filtrera</h4>
             </div>
         </div>
-        <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="Name" />
+            </div>
+
+            <div class="col-sm-4">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.UserStatuses" class="allow-clear" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
+            </div>
+        </div>
+        @if (Model.IsSystemAdministrator)
+        {
+            <div class="row">
+
+                <div class="col-sm-4">
+                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organizations" class="allow-clear" />
+                </div>
+
+            </div>
+        }
     </form>
 </div>

@@ -53,15 +53,6 @@ namespace Tolk.Web.Controllers
             
             model.IsSystemAdministrator = User.IsInRole(Roles.Admin);
 
-            if (!model.HasActiveFilters)
-            {
-                return View(
-                new UserListModel
-                {
-                    FilterModel = model,
-                    Items = new List<UserListItemModel>()
-                });
-            }
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
             var users = _dbContext.Users.Select(u => u);
