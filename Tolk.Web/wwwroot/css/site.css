@@ -661,3 +661,7 @@ ul.pagination > li.paginate_button.active > a {
 .modal-content {
   border-radius: 0;
 }
+#travel-time-checkbox {
+  margin-top: -15px;
+  margin-bottom: 30px;
+}

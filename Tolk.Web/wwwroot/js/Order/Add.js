@@ -2,6 +2,8 @@
 $(function () {
     var currentId = 0;
 
+    $("#travel-time-checkbox").hide();
+
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -108,6 +110,27 @@ $(function () {
             $('#other-language').collapse('hide');
         }
     };
+
+    $("body").on("change", ".location-group", function () {
+        var isOnsiteSelected = false;
+        $("select[id^=RankedInterpreterLocation]").each(function () {
+            switch ($(this).val()) {
+                default:
+                    break;
+                case "OnSite":
+                case "OffSiteDesignatedLocation":
+                    isOnsiteSelected = true;
+                    break;
+            }
+        });
+
+        if (isOnsiteSelected) {
+            $("#travel-time-checkbox").show();
+        }
+        else {
+            $("#travel-time-checkbox").hide();
+        }
+    });
 
     $("#SpecificCompetenceLevelRequired").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
