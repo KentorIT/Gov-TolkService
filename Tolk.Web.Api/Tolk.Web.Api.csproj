@@ -13,8 +13,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Tolk.Api.Payloads\Tolk.Api.Payloads.csproj" />
-  </ItemGroup>
-
 </Project>
