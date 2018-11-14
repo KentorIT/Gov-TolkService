@@ -52,8 +52,7 @@ namespace BrokerMock.Controllers
                     Interpreter = interpreter,
                 };
                 var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("https://localhost:3140/api/Request/Assign", content);
-
+                var response = await client.PostAsync("https://localhost:5656/Request/Assign", content);
             }
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[AssignInterpreter]:: Avrops-ID: {orderNumber} skickad tolk: {interpreter}");
             return true;
