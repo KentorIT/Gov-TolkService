@@ -39,15 +39,6 @@ namespace Tolk.Web.Controllers
             {
                 filterModel = new AssignmentFilterModel();
             }
-            if (!filterModel.HasActiveFilters)
-            {
-                return View(
-                new AssignmentListModel
-                {
-                    FilterModel = filterModel,
-                    Items = new List<RequestListItemModel>()
-                });
-            }
             var requests = _dbContext.Requests.Include(r => r.Order)
                 .Where(r => r.Status == RequestStatus.Approved || 
                 r.Status == RequestStatus.CancelledByBroker || 

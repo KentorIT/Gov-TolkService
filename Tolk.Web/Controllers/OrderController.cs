@@ -74,15 +74,6 @@ namespace Tolk.Web.Controllers
             }
             var isSuperUser = User.IsInRole(Roles.SuperUser);
             model.IsSuperUser = isSuperUser;
-            if (!model.HasActiveFilters)
-            {
-                return View(
-                new OrderListModel
-                {
-                    FilterModel = model,
-                    Items = new List<OrderListItemModel>()
-                });
-            }
             var orders = _dbContext.Orders
                 .Include(o => o.Language)
                 .Include(o => o.CreatedByUser)

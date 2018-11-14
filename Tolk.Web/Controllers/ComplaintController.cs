@@ -114,15 +114,6 @@ namespace Tolk.Web.Controllers
             model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
             model.IsBrokerUser = brokerId.HasValue;
            
-            if (!model.HasActiveFilters)
-            {
-                return View(
-                new ComplaintListModel
-                {
-                    FilterModel = model,
-                    Items = new List<ComplaintListItemModel>()
-                });
-            }
             var items = _dbContext.Complaints
                 .Include(c => c.Request)
                     .ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)

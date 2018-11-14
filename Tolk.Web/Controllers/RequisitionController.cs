@@ -182,15 +182,6 @@ namespace Tolk.Web.Controllers
             model.IsCustomer = customerId.HasValue;
             model.IsBroker = brokerId.HasValue;
 
-            if (!model.HasActiveFilters)
-            {
-                return View(
-                new RequisitionListModel
-                {
-                    FilterModel = model,
-                    Items = new List<RequisitionListItemModel>()
-                });
-            }
             var requisitions = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue);
