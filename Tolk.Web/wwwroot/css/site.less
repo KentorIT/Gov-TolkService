@@ -727,3 +727,16 @@ li.placeholder::before {
 .navbar-default .navbar-brand {
     color: black;
 }
+
+ul.pagination > li.paginate_button > a {
+    color: @primary-darker;
+    border-radius: 0;
+}
+ul.pagination > li.paginate_button.disabled > a {
+    color: @gray;
+}
+ul.pagination > li.paginate_button.active > a {
+    color: white;
+    background-color: @primary;
+    border-color: @primary;
+}
