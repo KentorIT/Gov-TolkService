@@ -1,31 +1,34 @@
 ﻿@model ComplaintFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<div class="col-md-4">
-    <h4>Filtrera</h4>
-    <form method="get" class="filter-form container do-not-check-dirty">
+<div class="col-sm-12">
+    
+    <form method="get" class="filter-form do-not-check-dirty">
         <div class="row">
-            <div class="col-xs-3">
+            <a class="btn btn-primary do-not-check-dirty reset-filter-button pull-right" href="@Url.Action("List")">Rensa filter</a>
+            <div class="col-xs-4">
+                <h4>Filtrera</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
                 <form-entry asp-for="OrderNumber" />
             </div>
-            <div class="col-xs-3">
+            <div class="col-sm-4">
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.ComplaintStatuses" Class="allow-clear" />
             </div>
             @if (Model.IsCustomerSuperUser)
             {
-            <div class="col-xs-3">
-                <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
-            </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
+                </div>
             }
             @if (Model.IsBrokerUser)
             {
-            <div class="col-xs-3">
-                <form-entry asp-for="BrokerContactId" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
-            </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="BrokerContactId" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
+                </div>
             }
-            <div class="col-xs-3">
-                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
-            </div>
         </div>
     </form>
 </div>

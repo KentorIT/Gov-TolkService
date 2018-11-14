@@ -1,25 +1,30 @@
 ﻿@model RequisitionFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<div class="col-md-4">
-    <h4>Filtrera</h4>
-    <form method="get" class="filter-form container do-not-check-dirty">
+<div class="col-sm-12">
+    <form method="get" class="filter-form do-not-check-dirty">
         <div class="row">
-            <div class="col-xs-2">
+            <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
+            <div class="col-xs-4">
+                <h4>Filtrera</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">
                 <form-entry asp-for="OrderNumber" />
             </div>
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <form-entry asp-for="DateRange" />
             </div>
-            <div class="col-xs-3">
+            <div class="col-sm-3">
                 <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
             </div>
-            <div class="col-xs-3">
+            <div class="col-sm-3">
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear" />
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-3">
+            <div class="col-sm-3">
                 @if (Model.IsCustomer)
                 {
                     <form-entry asp-for="FilterByContact" type="checkbox" />
@@ -28,9 +33,6 @@
                 {
                     <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
                 }
-            </div>
-            <div>
-                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
             </div>
         </div>
     </form>
