@@ -658,3 +658,6 @@ ul.pagination > li.paginate_button.active > a {
   background-color: #82A7A0;
   border-color: #82A7A0;
 }
+.modal-content {
+  border-radius: 0;
+}
