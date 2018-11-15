@@ -52,6 +52,14 @@
                 }
             </div>
         </div>
+        @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected)
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+                </div>
+            </div>
+        }
         <div class="row">
             <div class="col-sm-4">
                 @if (Model.RequestedCompetenceLevels.Count != 0)

@@ -125,6 +125,19 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
+        public bool IsOnSiteOrOffSiteDesignatedLocationSelected
+        {
+            get
+            {
+                return (RankedInterpreterLocationFirst == InterpreterLocation.OnSite
+                    || RankedInterpreterLocationSecond == InterpreterLocation.OnSite
+                    || RankedInterpreterLocationThird == InterpreterLocation.OnSite
+                    || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
+                    || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
+                    || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation);
+            }
+        }
+
         public PriceInformation PriceInformation { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }
