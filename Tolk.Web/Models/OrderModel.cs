@@ -23,10 +23,6 @@ namespace Tolk.Web.Models
 
         public long SystemTime { get; set; }
 
-        [Display(Name = "Beställare")]
-        [DataType(DataType.MultilineText)]
-        public string UserInfo { get; set; }
-
         [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
         [Required]
         public int? RegionId { get; set; }
@@ -562,6 +558,57 @@ namespace Tolk.Web.Models
                 }).ToList(),
             };
         }
+
+        public static OrderModel GetModelFromOrderForConfirmation(Order order)
+        {
+            bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+            var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank,
+            }).ToList();
+            if (!order.SpecificCompetenceLevelRequired)
+            {
+                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+            }
+            var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+            var competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
+            return new OrderModel
+            {
+                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AssignmentType = order.AssignentType,
+                RegionId = order.RegionId,
+                CustomerReferenceNumber = order.CustomerReferenceNumber,
+                TimeRange = new TimeRange
+                {
+                    StartDateTime = order.StartAt,
+                    EndDateTime = order.EndAt
+                },
+                Description = order.Description,
+                UnitName = order.UnitName,
+                SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
+                RequiredCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
+                RequiredCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
+                RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
+                RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
+                RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
+                RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
+                RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,
+                RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
+                RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
+                RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
+                OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
+                {
+                    OrderRequirementId = r.OrderRequirementId,
+                    RequirementDescription = r.Description,
+                    RequirementIsRequired = r.IsRequired,
+                    RequirementType = r.RequirementType
+                }).ToList(),
+            };
+        }
+
         private OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
         {
             return new OrderInterpreterLocation

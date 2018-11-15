@@ -136,3 +136,32 @@ $(function () {
     $("#UseRankedInterpreterLocation").trigger("change");
     $("#SplitTimeRange_StartDate").trigger("change");
 });
+
+$(function () {
+    var $this = $(".wizard");
+    $this.tolkWizard({
+        nextHandler: function (event) {
+            var $form = $this.closest('form');
+            var currentStep = event.NextStep;
+            if (event.IsLastPage) {
+                $form.submit();
+            }
+            //post to confirm
+            else {
+                var $url = tolkBaseUrl +  "Order/Confirm";
+                $.ajax({
+                    url: $url,
+                    type: 'POST',
+                    data: $form.serialize(),
+                    dataType: 'html',
+                    success: function (data) {
+                        $(".wizard .wizard-step").eq(currentStep).html(data);
+                    },
+                    error: function (t2) {
+                        alert(t2);
+                    }
+                });
+            }
+        }
+    });
+});

@@ -287,13 +287,13 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Add()
+        public async Task<IActionResult> Create()
         {
             var user = await _userManager.GetUserAsync(User);
             var model = new OrderModel()
             {
                 SystemTime = (long)_clock.SwedenNow.DateTime.ToUnixTimestamp(),
-                UserInfo = $"{user.FullName}\n{user.Email}\nTel: {user.PhoneNumber ?? "-"}\nMob: {user.PhoneNumberCellphone ?? "-"}",
+                CreatedBy = user.CompleteContactInformation
             };
             return View(model);
         }
@@ -307,7 +307,6 @@ namespace Tolk.Web.Controllers
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
                     Order order = CreateNewOrder();
-
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
                     _dbContext.SaveChanges(); // Save changes to get id for event log
@@ -320,22 +319,46 @@ namespace Tolk.Web.Controllers
 
                     _dbContext.SaveChanges();
                     trn.Commit();
-                    return RedirectToAction(nameof(Confirm), new { id = order.OrderId });
+                    return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
             }
             return View(model);
         }
 
-        public async Task<IActionResult> Confirm(int id)
+        public ActionResult Confirm(OrderModel model)
         {
-            //Get order model from db
-            Order order = GetOrder(id);
+            Order order = CreateNewOrder();
+            model.UpdateOrder(order);
+            var updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            updatedModel.RegionName = _dbContext.Regions
+                .Single(r => r.RegionId == model.RegionId).Name;
+
+            updatedModel.LanguageName = _dbContext.Languages
+            .Single(l => l.LanguageId == model.LanguageId).Name;
+
+            if (order.Attachments?.Count() > 0)
             {
-                return View(OrderModel.GetModelFromOrder(order));
+                List<FileModel> attachments = new List<FileModel>();
+                foreach (int attId in order.Attachments.Select(a => a.AttachmentId))
+                {
+                    Attachment a = _dbContext.Attachments.Single(f => f.AttachmentId == attId);
+                    attachments.Add(new FileModel { FileName = a.FileName, Id = a.AttachmentId, Size = a.Blob.Length });
+                }
+                updatedModel.AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    Title = "Bifogade filer",
+                    Files = attachments
+                };
             }
-            return Forbid();
+
+            updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
+            updatedModel.CreatedBy = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single().CompleteContactInformation;
+
+            return PartialView("Confirm", updatedModel);
         }
 
         public async Task<IActionResult> Sent(int id)

@@ -19,10 +19,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public string FullName { get => $"{NameFirst} {NameFamily}"; }
 
-        public string PhoneNumbers
-        { get => string.IsNullOrWhiteSpace(PhoneNumber) ? string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? "saknas" : PhoneNumberCellphone : string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? PhoneNumber : $"{PhoneNumber}, {PhoneNumberCellphone}"; }
-
-        public string CompleteContactInformation { get => $"{FullName}\n{Email}\nTelefon: {PhoneNumbers}"; }
+        public string CompleteContactInformation { get => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; }
 
         [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }

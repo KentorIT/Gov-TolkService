@@ -150,5 +150,20 @@ $.fn.extend({
         return $(this).is(":checkbox")
             ? $(this).is(":checked") === value
             : $(this).val() == value; //eslint-disable-line eqeqeq
+    },
+
+    // wizard
+    tolkWizard: function (opts) {
+        var $wizard = $(".wizard");
+        var options = $.extend({}, opts);
+        opts.validationFalseHandler = function (result) { result.focusInvalid(); }
+        opts.onloadHandler = function () {
+            $wizard.find(".wizard-step:not(.wizard-step-hidden)").each(function () {
+                if (options.onloadHandler !== undefined) {
+                    options.onloadHandler();
+                }
+            });
+        };
+        $wizard.wizardFormValidation(opts);
     }
 });
