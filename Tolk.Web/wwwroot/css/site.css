@@ -38,6 +38,15 @@ h3 {
   line-height: 25px;
   font-size: 20px;
 }
+a {
+  color: #587573;
+}
+a:hover {
+  color: #445352;
+}
+a:active {
+  color: black;
+}
 hr {
   height: 1px;
   color: #979797;
