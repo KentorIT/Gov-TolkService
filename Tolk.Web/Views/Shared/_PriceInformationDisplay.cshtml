@@ -15,15 +15,15 @@
         @if (Model.CenterHeader)
         {
             <div class="row">
-                <div class="col-sm-12 text-center">@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa/dölj</a></div>
+                <div class="col-sm-12 text-center">@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa specifikation</a></div>
             </div>
         }
         else
         {
-            <div>@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa/dölj</a></div>
+            <div>@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa specifikation</a></div>
         }
         <br />
-        <div class="border body-content collapse detail-price-info">
+        <div class="body-content col-xs-12 collapse detail-price-info">
             <span class="price-header bold">@Model.Header</span>
             <display-entry asp-for="PriceInformationToDisplay.HeaderDescription" label-override="" />
             @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
@@ -77,7 +77,7 @@
 }
 else
 {
-    <div class="border body-content">
+    <div class="body-content col-xs-12">
         <span class="price-header bold">@Model.Header</span>
         <display-entry asp-for="PriceInformationToDisplay.HeaderDescription" label-override="" />
         @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)

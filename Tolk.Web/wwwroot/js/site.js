@@ -1,4 +1,4 @@
-// Write your JavaScript code.
+﻿// Write your JavaScript code.
 
 // Set up date-picker. See docs at https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html
 var datePickerOptions = {
@@ -67,7 +67,7 @@ $(function () {
     }
     $("form:not(.do-not-check-dirty)").areYouSure({
         dirtyClass: dirty,
-        message: "Du har osparade �ndringar!"
+        message: "Du har osparade ändringar!"
     });
 
     $("div.autofocus > input").first().focus();
@@ -106,6 +106,12 @@ $(function () {
 
 $('.more-info-price').click(function () {
     $(this).closest('.wrap-price-info').find('.detail-price-info').collapse('toggle');
+    if ($(this).text().indexOf("Visa") !== -1) {
+        $(this).html($(this).html().replace("Visa", "Dölj"));
+    }
+    else {
+        $(this).html($(this).html().replace("Dölj", "Visa"));
+    }
 });
 
 

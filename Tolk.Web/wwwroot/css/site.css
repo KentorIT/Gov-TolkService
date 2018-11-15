@@ -678,3 +678,6 @@ ul.pagination > li.paginate_button.active > a {
   background-color: #587573;
   border-color: #587573;
 }
+.detail-price-info {
+  background-color: #F1F4F2;
+}
