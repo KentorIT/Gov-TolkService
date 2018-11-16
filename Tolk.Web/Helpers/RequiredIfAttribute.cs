@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 using Tolk.Web.Helpers.RequiredIf;
 
@@ -13,13 +18,15 @@ namespace Tolk.Web.Helpers.RequiredIf
 
 namespace Tolk.Web.Helpers
 {
-    public class RequiredIfAttribute : ValidationAttribute
+    public class RequiredIfAttribute : ValidationAttribute, IClientModelValidator
     {
         public string OtherProperty { get; set; }
 
         public Condition CheckIf { get; set; } = Condition.ValueEquals;
 
         public object Value { get; set; }
+
+        public Type OtherPropertyType { get; set; } = typeof(string);
 
         public new string ErrorMessageString { get; set; } = null;
 
@@ -39,19 +46,32 @@ namespace Tolk.Web.Helpers
 
         protected override ValidationResult IsValid(object item, ValidationContext validationContext)
         {
-            PropertyInfo otherProperty = validationContext.ObjectInstance.GetType().GetProperty(OtherProperty);
-            object otherPropertyValue = otherProperty.GetValue(validationContext.ObjectInstance, null);
+            return ValidationResult.Success;
+        }
 
-            if (otherPropertyValue != null)
+        public void AddValidation(ClientModelValidationContext context)
+        {
+            if (context == null)
             {
-                if ((CheckIf == Condition.ValueEquals && Value != null && otherPropertyValue != null && otherPropertyValue == Value && item == null)
-                    || (CheckIf == Condition.PropertyIsNotNull && item == null))
-                {
-                    return new ValidationResult(ErrorMessageString ?? $"{validationContext.DisplayName ?? validationContext.MemberName} måste anges");
-                }
+                throw new ArgumentNullException(nameof(context));
             }
 
-            return ValidationResult.Success;
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-requiredif", $"{context.ModelMetadata.DisplayName} måste anges");
+            MergeAttribute(context.Attributes, "data-val-requiredif-otherproperty", OtherProperty);
+            MergeAttribute(context.Attributes, "data-val-requiredif-otherpropertytype", CheckIf == Condition.ValueEquals ? OtherPropertyType.ToString() : "notnull");
+            MergeAttribute(context.Attributes, "data-val-requiredif-value", Value.ToString());
+        }
+
+        private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
+        {
+            if (attributes.ContainsKey(key))
+            {
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
         }
     }
 }

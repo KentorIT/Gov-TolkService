@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,400,400i,700');
+@import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
 .bg-gray {
   background-color: #F1F4F2;
 }
@@ -684,4 +684,10 @@ ul.pagination > li.paginate_button.active > a {
 .progressbar {
   margin-top: 35px;
   margin-bottom: 30px;
+}
+.requirement-checkbox {
+  font-weight: 300;
+  font-style: italic;
+  margin: 0;
+  margin-top: -12px;
 }

@@ -232,7 +232,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteLabel(TextWriter writer)
         {
-            var IsDisplayed = !AttributeHelper.IsAttributeDefined(typeof(NoDisplayNameAttribute), 
+            var IsDisplayed = !AttributeHelper.IsAttributeDefined<NoDisplayNameAttribute>( 
                 For.ModelExplorer.Metadata.ContainerType, 
                 For.ModelExplorer.Metadata.PropertyName);
 
@@ -314,12 +314,17 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteCheckBoxInLabel(TextWriter writer)
         {
+            WriteCheckBoxInLabel(writer, For.ModelExplorer, For.Name);
+        }
+
+        private void WriteCheckBoxInLabel(TextWriter writer, ModelExplorer modelExplorer, string name)
+        {
             var labelBuilder = GenerateLabel();
 
             var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
                 ViewContext,
-                For.ModelExplorer,
-                For.Name,
+                modelExplorer,
+                name,
                 isChecked: Equals(For.Model, true),
                 htmlAttributes: null);
 

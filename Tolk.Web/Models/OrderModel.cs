@@ -33,7 +33,7 @@ namespace Tolk.Web.Models
         public int? LanguageId { get; set; }
 
         [Display(Name = "Dialekt")]
-        [RequiredIf(nameof(DialectIsRequired), true)]
+        [RequiredIf(nameof(DialectIsRequired), true, OtherPropertyType = typeof(bool))]
         public string Dialect { get; set; }
 
         [Display(Name = "Dialekt är ett krav")]
