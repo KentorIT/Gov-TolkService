@@ -98,6 +98,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> RequirementTypes { get; } =
             EnumHelper.GetAllDescriptions<RequirementType>()
+                .Where(e => e.Value != RequirementType.Dialect)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 

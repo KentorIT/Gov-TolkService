@@ -7,6 +7,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
+using Tolk.Web.Helpers.RequiredIf;
 
 namespace Tolk.Web.Models
 {
@@ -32,7 +33,11 @@ namespace Tolk.Web.Models
         public int? LanguageId { get; set; }
 
         [Display(Name = "Dialekt")]
+        [RequiredIf(nameof(DialectIsRequired), true)]
         public string Dialect { get; set; }
+
+        [Display(Name = "Dialekt är ett krav")]
+        public bool DialectIsRequired { get; set; }
 
         [Display(Name = "Annan kontaktperson")]
         public int? ContactPersonId { get; set; }
@@ -371,6 +376,15 @@ namespace Tolk.Web.Models
                 order.AssignentType = AssignmentType.Value;
                 order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+                if (Dialect != null)
+                {
+                    order.Requirements.Add(new OrderRequirement
+                    {
+                        RequirementType = RequirementType.Dialect,
+                        IsRequired = DialectIsRequired,
+                        Description = Dialect
+                    });
+                }
                 if (OrderRequirements != null)
                 {
                     // add all extra requirements
@@ -477,6 +491,7 @@ namespace Tolk.Web.Models
             var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
             var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
             var competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
+
             return new OrderModel
             {
                 OrderId = order.OrderId,
@@ -492,6 +507,7 @@ namespace Tolk.Web.Models
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
+                Dialect = order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
