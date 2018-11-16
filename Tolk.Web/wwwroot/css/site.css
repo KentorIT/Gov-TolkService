@@ -681,3 +681,7 @@ ul.pagination > li.paginate_button.active > a {
 .detail-price-info {
   background-color: #F1F4F2;
 }
+.progressbar {
+  margin-top: 35px;
+  margin-bottom: 30px;
+}
