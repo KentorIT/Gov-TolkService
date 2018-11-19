@@ -1,5 +1,4 @@
 ﻿@model Tolk.Web.Models.OrderModel
-@using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 @{
@@ -19,8 +18,10 @@
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="TimeRange" />
-                @*Sista svarstid:
-                    här typ?/>*@
+                @if (Model.LatestAnswerBy != null)
+                {
+                    <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+                }
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="RegionName" />
@@ -96,6 +97,7 @@
                 }
                 else
                 {
+                    <label>Tolkens kompetensnivå</label>
                     <div class="detail-text">Inga önskemål eller krav på kompetensnivå är angivna</div>
                 }
             </div>
@@ -169,17 +171,11 @@
                 }
                 <display-entry asp-for="ContactPerson" />
             </div>
-
             <div class="col-sm-4">
                 <display-entry asp-for="UnitName" />
             </div>
         </div>
     </div>
-    @*
-        När ska denna synas?
-        <display-entry asp-for="AssignmentType" />
-         Model.AllowMoreThanTwoHoursTravelTime
-    *@
 </div>
 
 

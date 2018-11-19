@@ -67,7 +67,7 @@ namespace Tolk.Web.Models
                     return string.Empty;
                 }
                 StringBuilder sb = new StringBuilder(InterpreterLocation.Value.GetDescription());
-                return sb.Append(IsOffsite ? $"\n{OffSiteContactInformation}" : $"\n{LocationStreet}\n{LocationZipCode} {LocationCity}").ToString();
+                return sb.Append(IsOffsite ? $"\nKontaktinformation:\n{OffSiteContactInformation}" : $"\nAdress:\n{LocationStreet}\n{LocationZipCode} {LocationCity}").ToString();
             }
         }
 

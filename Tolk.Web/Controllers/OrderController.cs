@@ -336,6 +336,7 @@ namespace Tolk.Web.Controllers
 
             updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
             .Single(l => l.LanguageId == model.LanguageId).Name;
+            updatedModel.LatestAnswerBy = model.LatestAnswerBy;
 
             if (order.Attachments?.Count() > 0)
             {

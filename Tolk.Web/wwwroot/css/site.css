@@ -288,6 +288,9 @@ fieldset[disabled] .datepicker table tr td.today:hover {
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px #445352;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px #445352;
 }
+.center-glyphicon {
+  top: 3px;
+}
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus textarea:-webkit-autofill,
@@ -485,7 +488,7 @@ input[type='checkbox']:checked:after {
   padding: 8px;
 }
 .add-attachment {
-  width: 30%;
+  width: 60%;
 }
 .edit-link {
   float: right;

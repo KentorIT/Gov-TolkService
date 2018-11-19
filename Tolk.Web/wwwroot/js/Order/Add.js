@@ -64,7 +64,7 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-
+    
     $("body").on("change", "#LanguageId", function () {
         toggleOtherLanguage($(this).val());
     });
@@ -148,7 +148,7 @@ $(function () {
             }
             //post to confirm
             else {
-                var $url = tolkBaseUrl +  "Order/Confirm";
+                var $url = tolkBaseUrl + "Order/Confirm";
                 $.ajax({
                     url: $url,
                     type: 'POST',
@@ -162,6 +162,10 @@ $(function () {
                     }
                 });
             }
-        }
+        },
+        wizardStepRendered: function () {
+            $("#send").append('<span class="center-glyphicon glyphicon glyphicon-triangle-right"></span>');
+            $("#send").blur();
+        },
     });
 });
