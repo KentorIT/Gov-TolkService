@@ -13,8 +13,8 @@ namespace Tolk.Web.Controllers
     [Authorize(Policy = Policies.Interpreter)]
     public class InterpreterController : Controller
     {
-        private TolkDbContext _dbContext;
-        private ILogger<InterpreterController> _logger;
+        private readonly TolkDbContext _dbContext;
+        private readonly ILogger<InterpreterController> _logger;
 
         public InterpreterController(
             TolkDbContext dbContext,

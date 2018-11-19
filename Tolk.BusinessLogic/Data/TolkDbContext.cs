@@ -33,6 +33,12 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(iur => iur.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<IdentityUserClaim<int>>()
+                .HasOne<AspNetUser>()
+                .WithMany(u => u.Claims)
+                .HasForeignKey(iur => iur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<AspNetUser>()
                 .HasOne(u => u.Interpreter)
                 .WithOne(i => i.User);

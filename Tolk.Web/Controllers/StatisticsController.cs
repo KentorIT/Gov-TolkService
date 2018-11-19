@@ -17,11 +17,11 @@ namespace Tolk.Web.Controllers
     public class StatisticsController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger<InterpreterController> _logger;
+        private readonly ILogger<StatisticsController> _logger;
 
         public StatisticsController(
             TolkDbContext dbContext,
-            ILogger<InterpreterController> logger)
+            ILogger<StatisticsController> logger)
         {
             _dbContext = dbContext;
             _logger = logger;

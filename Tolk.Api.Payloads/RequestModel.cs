@@ -1,11 +1,11 @@
 ﻿
 using System;
-
+using System.Collections.Generic;
 
 namespace Tolk.Api.Payloads
 {
 
-    public class RequestModel : PayloadModel
+    public class RequestModel : WebHookPayloadModel
     {
         public DateTimeOffset CreatedAt { get; set; }
         public string OrderNumber { get; set; }
@@ -15,12 +15,27 @@ namespace Tolk.Api.Payloads
         public string Language { get; set; }
         public DateTimeOffset StartAt { get; set; }
         public DateTimeOffset EndAt { get; set; }
-
+        public IEnumerable<LocationModel> Locations { get; set; }
+        public IEnumerable<string> CompetenceLevels { get; set; }
+        public bool CompetenceLevelsAreRequired { get; set; }
+        public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+        public string Description { get; set; }
+        public string AssignentType { get; set; }
     }
 
-    public class RequestAssignModel : PayloadModel
+    public class RequestAssignModel : ApiPayloadModel
     {
-        public string Handler { get; set; }
+        public string OrderNumber { get; set; }
+        public string Interpreter { get; set; }
+        public string Location { get; set; }
+        public string CompetenceLevel { get; set; }
+        public decimal? ExpectedTravelCosts { get; set; }
+        //Files
+        //RequirementAnswers
+    }
+
+    public class LocationModel
+    {
         public string OrderNumber { get; set; }
         public string Interpreter { get; set; }
         public string Location { get; set; }

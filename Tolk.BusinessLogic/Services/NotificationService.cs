@@ -455,7 +455,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreateWebHookCall(PayloadModel payload, string recipientUrl, NotificationType type, int userId)
+        private void CreateWebHookCall(WebHookPayloadModel payload, string recipientUrl, NotificationType type, int userId)
         {
             _dbContext.Add(new OutboundWebHookCall(
                 recipientUrl,

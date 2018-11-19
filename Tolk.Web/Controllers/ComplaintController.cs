@@ -29,7 +29,7 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<RequisitionController> logger,
+            ILogger<ComplaintController> logger,
             NotificationService notificationService
             )
         {

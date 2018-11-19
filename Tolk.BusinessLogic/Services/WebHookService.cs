@@ -72,8 +72,8 @@ namespace Tolk.BusinessLogic.Services
                                 else
                                 {
                                     client.DefaultRequestHeaders.Accept.Clear();
-                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterperterService-Event", call.NotificationType.GetCustomName());
-                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterperterService-Delivery", callId.ToString());
+                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
+                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
                                     //Also add cert to call
                                     _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
                                     var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");

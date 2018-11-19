@@ -46,6 +46,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<IdentityUserRole<int>> Roles { get; set; }
 
+        public List<IdentityUserClaim<int>> Claims { get; set; }
+
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
 

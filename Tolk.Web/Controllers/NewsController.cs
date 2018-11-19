@@ -17,11 +17,11 @@ namespace Tolk.Web.Controllers
     public class NewsController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger<InterpreterController> _logger;
+        private readonly ILogger<NewsController> _logger;
 
         public NewsController(
             TolkDbContext dbContext,
-            ILogger<InterpreterController> logger)
+            ILogger<NewsController> logger)
         {
             _dbContext = dbContext;
             _logger = logger;

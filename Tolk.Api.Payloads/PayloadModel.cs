@@ -3,8 +3,12 @@
 
 namespace Tolk.Api.Payloads
 {
-
-    public class PayloadModel
+    public class WebHookPayloadModel
     {
+    }
+
+    public class ApiPayloadModel
+    {
+        public string CallingUser { get; set; }
     }
 }

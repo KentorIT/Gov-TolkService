@@ -42,7 +42,7 @@ namespace Tolk.Web.Controllers
             InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
             DateCalculationService dateCalculationService,
-            ILogger<RequisitionController> logger,
+            ILogger<RequestController> logger,
             IOptions<TolkOptions> options,
             NotificationService notificationService
 )

@@ -17,11 +17,11 @@ namespace Tolk.Web.Controllers
     public class ContractController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger<InterpreterController> _logger;
+        private readonly ILogger _logger;
 
         public ContractController(
             TolkDbContext dbContext,
-            ILogger<InterpreterController> logger)
+            ILogger<ContractController> logger)
         {
             _dbContext = dbContext;
             _logger = logger;

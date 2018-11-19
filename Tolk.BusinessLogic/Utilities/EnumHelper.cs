@@ -52,6 +52,14 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.CustomName ?? value.ToString();
         }
+        public static TEnum? GetEnumByCustomName<TEnum>(string value) where TEnum : struct
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return Enum.GetValues(type).OfType<TEnum>()
+                .SingleOrDefault(v => GetAttributeProperty<CustomNameAttribute, TEnum>(v)?.CustomName == value);
+        }
 
         /// <summary>
         /// Returns the set parent of type TEnumParent
@@ -97,6 +105,18 @@ namespace Tolk.BusinessLogic.Utilities
                 .Select(v => new EnumValue<TEnum>(v, type.GetMember(v.ToString()).GetEnumDescription()));
         }
 
+        public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return Enum.GetValues(type).OfType<TEnum>()
+                .Where(t => !IsObsolete(t) && (filterValues == null || filterValues.Contains(t)))
+                .Select(v => new EnumDescription<TEnum>(v, 
+                    type.GetMember(v.ToString()).GetEnumDescription(), 
+                    type.GetMember(v.ToString()).GetEnumCustomName()));
+        }
+
         /// <summary>
         /// returns the attribute of the TAttribute typ, if the incoming field has it set.
         /// </summary>
@@ -116,6 +136,13 @@ namespace Tolk.BusinessLogic.Utilities
             var attributes = member.Single().GetCustomAttributes(false);
             var property = attributes.OfType<DescriptionAttribute>().SingleOrDefault();
             return property?.Description;
+        }
+
+        private static string GetEnumCustomName(this IEnumerable<MemberInfo> member)
+        {
+            var attributes = member.Single().GetCustomAttributes(false);
+            var property = attributes.OfType<CustomNameAttribute>().SingleOrDefault();
+            return property?.CustomName ?? string.Empty;
         }
 
         public static IEnumerable<TEnum> GetBiggerOrEqual<TEnum>(TEnum minimumLevel)
