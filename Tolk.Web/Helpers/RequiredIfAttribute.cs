@@ -60,7 +60,7 @@ namespace Tolk.Web.Helpers
             MergeAttribute(context.Attributes, "data-val-requiredif", $"{context.ModelMetadata.DisplayName} måste anges");
             MergeAttribute(context.Attributes, "data-val-requiredif-otherproperty", OtherProperty);
             MergeAttribute(context.Attributes, "data-val-requiredif-otherpropertytype", CheckIf == Condition.ValueEquals ? OtherPropertyType.ToString() : "notnull");
-            MergeAttribute(context.Attributes, "data-val-requiredif-value", Value.ToString());
+            MergeAttribute(context.Attributes, "data-val-requiredif-otherpropertyvalue", Value.ToString());
         }
 
         private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
