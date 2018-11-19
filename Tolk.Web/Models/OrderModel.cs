@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
         /// <summary>
         /// This is the id for the row in the languages select box that should show the other language box.
         /// </summary>
-        public static int OtherLanguageId { get; } = 62;
+        public static int OtherLanguageId { get; } = 1000;
 
         public int? OrderId { get; set; }
 

@@ -393,8 +393,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Active");
+
+                    b.Property<string>("ISO_639_1_Code")
+                        .HasMaxLength(2);
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.Property<string>("TellusName")
                         .HasMaxLength(100);
 
                     b.HasKey("LanguageId");

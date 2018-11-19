@@ -334,7 +334,7 @@ namespace Tolk.Web.Controllers
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
 
-            updatedModel.LanguageName = _dbContext.Languages
+            updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
             .Single(l => l.LanguageId == model.LanguageId).Name;
 
             if (order.Attachments?.Count() > 0)

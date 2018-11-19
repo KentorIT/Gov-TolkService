@@ -152,7 +152,7 @@ namespace Tolk.BusinessLogic.Services
                         OrderNumber = order.OrderNumber,
                         Customer = order.CustomerOrganisation.Name,
                         Region = order.Region.Name,
-                        Language = order.OtherLanguage ?? request.Order.Language?.Name ?? "(Tolkanvändarutbildning)",
+                        Language = order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                         ExpiresAt = request.ExpiresAt,
                         StartAt = order.StartAt,
                         EndAt = order.EndAt,
