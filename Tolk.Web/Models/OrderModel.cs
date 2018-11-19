@@ -507,7 +507,7 @@ namespace Tolk.Web.Models
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
-                Dialect = order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description,
+                Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
