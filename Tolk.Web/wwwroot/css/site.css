@@ -703,3 +703,14 @@ ul.pagination > li.paginate_button.active > a {
   margin: 0;
   margin-top: -12px;
 }
+.logo-navbar {
+  margin-top: -12px;
+  height: 40px;
+}
+.logo-footer {
+  padding-top: 10px;
+}
+.img-negative {
+  -webkit-filter: invert(1);
+  filter: invert(1);
+}
