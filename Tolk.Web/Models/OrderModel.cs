@@ -71,7 +71,7 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
-        [Display(Name = "Typ av tolkuppdrag")]
+        [Display(Name = "Uppdragstyp")]
         [Required]
         public AssignmentType? AssignmentType { get; set; }
 
@@ -80,14 +80,14 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string OtherLanguage { get; set; }
 
-        [Display(Name = "Inställelsesätt i första hand", Description = "Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller.")]
+        [Display(Name = "Första hand")]
         [Required]
         public InterpreterLocation? RankedInterpreterLocationFirst { get; set; }
 
-        [Display(Name = "Inställelsesätt i andra hand")]
+        [Display(Name = "Andra hand")]
         public InterpreterLocation? RankedInterpreterLocationSecond { get; set; }
 
-        [Display(Name = "Inställelsesätt i tredje hand")]
+        [Display(Name = "Tredje hand")]
         public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationFirstAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }

@@ -2,7 +2,7 @@
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Sammanfattning av tolkbokning";
+    ViewData["Title"] = "Sammanfattning av bokning uppdragstyp";
 }
 
 <div class="row">
@@ -10,7 +10,7 @@
         <img class="progressbar" src="~/images/Step2_Order.PNG" />
     </div>
     <div class="col-sm-12">
-        <h2>@ViewData["Title"]</h2>
+        <h2>@ViewData["Title"] @Model.AssignmentType.Value.GetDescription().ToLower()</h2>
         <hr />
         <div class="row">
             <div class="col-sm-4">

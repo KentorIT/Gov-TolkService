@@ -312,7 +312,13 @@ select:-webkit-autofill:focus {
   height: 50px;
   font-size: 14pt;
 }
+.btn-remove-times {
+  font-size: 30px;
+  vertical-align: middle;
+  line-height: normal;
+}
 a.btn-large {
+  vertical-align: middle;
   line-height: 2;
 }
 .btn-default,
@@ -430,6 +436,7 @@ input[type='checkbox']:checked:after {
   margin-left: 1px;
 }
 .form-entry-information {
+  font-size: 15px;
   color: #82A7A0;
   cursor: help;
   position: relative;
@@ -712,4 +719,8 @@ ul.pagination > li.paginate_button.active > a {
 .img-negative {
   -webkit-filter: invert(1);
   filter: invert(1);
+}
+.h3-no-padding {
+  padding: 0px;
+  margin: 0px;
 }

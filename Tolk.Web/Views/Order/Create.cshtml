@@ -1,9 +1,6 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-@using Tolk.BusinessLogic.Helpers
-@using Tolk.BusinessLogic.Utilities
-@using Tolk.BusinessLogic.Enums
 
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
 {
@@ -59,7 +56,13 @@
                                 <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3 class="h3-no-padding">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller."></span></h3>
+                            </div>
+                        </div>
                         <div class="row ranked-InterpreterLocation">
+
                             <div class="col-sm-4 location-group">
                                 <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
                                 <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
@@ -188,7 +191,7 @@
                         </div>
                     </div>
                 </div>
-                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="center-glyphicon glyphicon glyphicon-remove"></span></a>
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
 
             @*step 2 confirm*@
