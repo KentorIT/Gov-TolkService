@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -15,10 +9,10 @@ namespace Tolk.Web.Models
         public int? OrderRequirementId { get; set; }
 
         [Required]
-        [Display(Name = "Typ av behov")]
+        [NoDisplayName]
+        [Display(Name = "Typ")]
         public RequirementType? RequirementType { get; set; }
 
-        [Display(Name = "Är ett krav")]
         public bool RequirementIsRequired { get; set; }
 
         [Display(Name = "Beskrivning")]
@@ -30,28 +24,8 @@ namespace Tolk.Web.Models
 
         public bool? CanSatisfyRequirement { get; set; }
 
-        #region methods
-
-        public OrderRequirement UpdateOrderRequirement(OrderRequirement orderRequirement)
-        {
-            orderRequirement.Description = RequirementDescription;
-            orderRequirement.RequirementType = RequirementType.Value;
-            orderRequirement.IsRequired = RequirementIsRequired;
-            return orderRequirement;
-        }
-
-        public static OrderRequirementModel GetModelFromOrderRequirement(OrderRequirement orderRequirement)
-        {
-            return new OrderRequirementModel
-            {
-                OrderRequirementId = orderRequirement.OrderRequirementId,
-                RequirementDescription = orderRequirement.Description,
-                RequirementIsRequired = orderRequirement.IsRequired,
-                RequirementType = orderRequirement.RequirementType
-            };
-
-        }
-
-        #endregion
+        [ClientRequired]
+        [NoDisplayName]
+        public Gender? Gender { get; set; }
     }
 }

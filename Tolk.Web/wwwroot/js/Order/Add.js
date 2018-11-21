@@ -1,6 +1,7 @@
 ﻿
 $(function () {
     var currentId = 0;
+    var currentDesiredId = 0;
 
     $("#travel-time-checkbox").hide();
 
@@ -23,19 +24,49 @@ $(function () {
             });
         }
     });
-    $("body").on("click", ".add-requirement-button", function () {
-        $($(this).data("target")).find("input:not(:checkbox),select, textarea").val("");
-        $($(this).data("target")).find("input:checkbox").prop("checked", false);
-        var $form = $($(this).data("target")).find('form:first');
-        $($(this).data("target")).bindEnterKey('form:first input', '.btn-default');
-        $form.find(".field-validation-error")
-            .addClass("field-validation-valid")
-            .removeClass("field-validation-error").html("");
+
+    $("body").on("click", ".remove-desiredRequirement-row", function () {
+        var $tbody = $(this).closest("tbody");
+        $(this).closest("tr").remove();
+        //Reindex 0 to n
+        var $rows = $tbody.find("tr");
+        currentDesiredId = 0;
+        if ($rows.length === 0) {
+            $('.order-desiredRequirement-list').addClass("d-none");
+        } else {
+            $rows.each(function () {
+                $(this).find("input").each(function () {
+                    var $id = $(this).prop("id").match(/\d+/);
+                    $(this).prop("id", $(this).prop("id").replace($id, currentDesiredId));
+                    $(this).prop("name", $(this).prop("name").replace($id, currentDesiredId));
+                });
+                currentDesiredId++;
+            });
+        }
     });
+
+    $("body").on("click", ".add-requirement-button", function () {
+        var target = $($(this).data("target"));
+        AddRequirement(target);
+        toggleGender(target.find("#RequirementType"), target.find("#Gender_rbGroup"), target.find("#RequirementDescription").parents(".form-group"));
+    });
+
+    $("body").on("click", ".add-desiredRequirement-button", function () {
+        var target = $($(this).data("target"));
+        AddRequirement(target);
+        toggleGender(target.find("#RequirementType"), target.find("#Gender_rbGroup"), target.find("#RequirementDescription").parents(".form-group"));
+    });
+
     $("body").on("click", ".save-requirement", function (event) {
         event.preventDefault();
+        var modalContent = $(this).parents(".modal-content");
+
+        if (modalContent.find("#RequirementType option:selected").text() == "Tolkens kön") {
+            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() == "Female" ? "Kvinna" : "Man";
+            modalContent.find("#RequirementDescription").val(textToUse);
+        }
         //Before we start, validate the form!
-        if ($(this).parents(".modal-content").find("form").valid()) {
+        if (modalContent.find("form").valid()) {
             var $hidden = $("#baseRequirement").clone();
             //Change the ids for the cloned inputs
             $hidden.find("input").each(function () {
@@ -43,20 +74,17 @@ $(function () {
                 $(this).prop("name", $(this).prop("name").replace("0", currentId));
             });
             currentId++;
-            $(this).parents(".modal-content").find("input:not(:checkbox), select, textarea").each(function () {
+            modalContent.find("input:not(:checkbox), select, textarea").each(function () {
                 $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).val());
             });
-            $(this).parents(".modal-content").find("input:checkbox").each(function () {
+            modalContent.find("input:checkbox").each(function () {
                 $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).is(":checked") ? "true" : "false");
             });
-            //Add the info to the cloned hidden fields.
-            //add a row to the table
-            var isRequired = $("#RequirementIsRequired").is(":checked") ? "Ja" : "Nej";
+            //Add the info to the cloned hidden fields, add a row to the table
             $('.order-requirement-table > tbody:last-child').append('<tr>' +
                 '<td class="table-type-column">' + $hidden.html() + $("#RequirementType option:selected").text() + '</td>' +
                 '<td class="table-description-column">' + $("#RequirementDescription").val() + '</td>' +
-                '<td class="table-is-required-column">' + isRequired + '</td>' +
-                '<td class="table-button-column fixed"><span class="glyphicon glyphicon-trash remove-requirement-row"></span></td>' +
+                '<td class="table-button-column fixed"><span class="remove-requirement-row bold">&times;</span></td>' +
                 '</tr>');
             //Make the table visible, if this is the first visible row.
             $('.order-requirement-list').removeClass("d-none");
@@ -64,7 +92,55 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-    
+
+    $("body").on("click", ".save-desiredRequirement", function (event) {
+        event.preventDefault();
+        var modalContent = $(this).parents(".modal-content");
+
+        if (modalContent.find("#RequirementType option:selected").text() == "Tolkens kön") {
+            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() == "Female" ? "Kvinna" : "Man";
+            modalContent.find("#RequirementDescription").val(textToUse);
+        }
+        //Before we start, validate the form!
+        if (modalContent.find("form").valid()) {
+            var $hidden = $("#baseDesiredRequirement").clone();
+            //Change the ids for the cloned inputs
+            $hidden.find("input").each(function () {
+                $(this).prop("id", $(this).prop("id").replace("0", currentDesiredId));
+                $(this).prop("name", $(this).prop("name").replace("0", currentDesiredId));
+            });
+            currentDesiredId++;
+            modalContent.find("input:not(:checkbox), select, textarea").each(function () {
+                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).val());
+            });
+            modalContent.find("input:checkbox").each(function () {
+                $hidden.find("input[name$='" + $(this).prop("id") + "']").val($(this).is(":checked") ? "true" : "false");
+            });
+
+            //Add the info to the cloned hidden fields, add a row to the table
+            $('.order-desiredRequirement-table > tbody:last-child').append('<tr>' +
+                '<td class="table-type-column">' + $hidden.html() + $(this).parents(".modal-content").find("#RequirementType option:selected").text() + '</td>' +
+                '<td class="table-description-column">' + $(this).parents(".modal-content").find("#RequirementDescription").val() + '</td>' +
+                '<td class="table-button-column fixed"><span class="remove-desiredRequirement-row bold">&times;</span></td>' +
+                '</tr>');
+            //Make the table visible, if this is the first visible row.
+            $('.order-desiredRequirement-list').removeClass("d-none");
+            //Close dialog
+            $("#addDesiredRequirement").modal("hide");
+        }
+    });
+
+    var requiredModal = $("#req").parents(".modal-content");
+    var desiredModal = $("#des").parents(".modal-content");
+
+    requiredModal.find("#RequirementType").on("change", function () {
+        toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("#Gender_rbGroup"), requiredModal.find("#RequirementDescription").parents(".form-group"));
+    });
+
+    desiredModal.find("#RequirementType").on("change", function () {
+        toggleGender(desiredModal.find("#RequirementType"), desiredModal.find("#Gender_rbGroup"), desiredModal.find("#RequirementDescription").parents(".form-group"));
+    });
+
     $("body").on("change", "#LanguageId", function () {
         toggleOtherLanguage($(this).val());
     });
@@ -111,6 +187,18 @@ $(function () {
         }
     };
 
+    var toggleGender = function (reqType, genderRbl, description) {
+        if (reqType.val() === "Gender") {
+            genderRbl.show();
+            description.hide();
+        }
+        else {
+            genderRbl.hide();
+            description.show();
+            description.find("#RequirementDescription").val("");
+        }
+    };
+
     $("body").on("change", ".location-group", function () {
         var isOnsiteSelected = false;
         $("select[id^=RankedInterpreterLocation]").each(function () {
@@ -136,6 +224,15 @@ $(function () {
     $("#UseRankedInterpreterLocation").trigger("change");
     $("#SplitTimeRange_StartDate").trigger("change");
 });
+
+function AddRequirement(target) {
+    target.find("#RequirementDescription").val("");
+    var $form = target.find('form:first');
+    target.bindEnterKey('form:first input', '.btn-default');
+    $form.find(".field-validation-error")
+        .addClass("field-validation-valid")
+        .removeClass("field-validation-error").html("");
+}
 
 $(function () {
     var $this = $(".wizard");

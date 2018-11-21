@@ -115,7 +115,7 @@
         }
         @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
         {
-            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (krav)</label>
+            <label>Tillkommande krav</label>
             <ul>
                 @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
                 {
@@ -132,7 +132,7 @@
         }
         @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
         {
-            <label>@Html.DisplayNameFor(m => m.OrderRequirements) (önskemål)</label>
+            <label>Tillkommande önskemål</label>
             <ul>
                 @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
                 {

@@ -85,6 +85,10 @@ namespace Tolk.Web.Services
             EnumHelper.GetAllDescriptions<AssignmentType>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> Genders { get; } =
+            EnumHelper.GetAllDescriptions<Gender>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
 
         public static IEnumerable<SelectListItem> InterpreterLocations { get; } =
             EnumHelper.GetAllDescriptions<InterpreterLocation>()

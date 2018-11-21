@@ -129,32 +129,36 @@
                         </div>
                         <div class="col-sm-12">
                             <div class="row">
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
+                                </div>
+                                <div class="col-sm-4">
+                                    <label>Tillkommande krav</label>
+                                    <br />
+                                    <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
+                                    <br /><br />
+                                    <div class="d-none order-requirement-list no-padding">
+                                        <table class="table order-requirement-table">
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label>Tillkommande önskemål</label>
+                                    <br />
+                                    <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
+                                    <br /> <br />
+                                    <div class="d-none order-desiredRequirement-list no-padding">
+                                        <table class="table order-desiredRequirement-table">
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <div class="col-sm-12">
                                 <div class="row">
-                                    <div class="col-sm-6">
-                                        <label>Övriga önskemål/krav</label> <a href="#" class="edit-link add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement">Lägg till behov</a>
-                                        <div class="d-none order-requirement-list border no-padding">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-hover order-requirement-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Typ</th>
-                                                            <th>Beskrivning</th>
-                                                            <th>Är krav</th>
-                                                            <th></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody></tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -217,6 +221,13 @@
     <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
 </span>
 
+<span id="baseDesiredRequirement" class="d-none">
+    <input asp-for="OrderDesiredRequirements[0].OrderRequirementId" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementType" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
+</span>
+
 @Html.Partial("_UploadFileDialog")
 <div id="addRequirement" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -224,14 +235,33 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Lägg till behov</h4>
+                <h4 class="modal-title">Lägg till krav</h4>
             </div>
-            <div class="modal-body">
-                @Html.Partial("_Requirement", new OrderRequirementModel())
+            <div class="modal-body" id="req">
+                @Html.Partial("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                 <button type="button" class="btn btn-default pull-right save-requirement">Spara</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addDesiredRequirement" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Lägg till önskemål</h4>
+            </div>
+            <div class="modal-body" id="des">
+                @Html.Partial("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default pull-right save-desiredRequirement">Spara</button>
             </div>
         </div>
     </div>

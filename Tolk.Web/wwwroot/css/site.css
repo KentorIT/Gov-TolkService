@@ -457,13 +457,10 @@ input[type='checkbox']:checked:after {
   width: 100%;
 }
 .table-description-column {
-  width: 60%;
+  width: 50%;
 }
 .table-type-column {
-  width: 30%;
-}
-.table-is-required-column {
-  width: 10%;
+  width: 50%;
 }
 .table-attached-files table tbody tr td,
 .table-attached-files table thead tr td,
@@ -487,11 +484,20 @@ input[type='checkbox']:checked:after {
   border-top: 1px solid #fff;
   padding: 8px;
 }
-.add-attachment {
-  width: 60%;
-}
-.edit-link {
-  float: right;
+.order-requirement-table table tbody tr td,
+.order-requirement-table table thead tr td,
+.order-requirement-table table thead tr,
+.order-requirement-table tr td,
+.order-requirement-table tbody tr td,
+.order-desiredRequirement-table table tbody tr td,
+.order-desiredRequirement-table table thead tr td,
+.order-desiredRequirement-table table thead tr,
+.order-desiredRequirement-table tr td,
+.order-desiredRequirement-table tbody tr td {
+  background-color: #F1F4F2;
+  font-size: 12px;
+  border-top: 1px solid #fff;
+  padding: 8px;
 }
 .dropdown-menu {
   padding: 15px;
@@ -683,6 +689,9 @@ ul.pagination > li.paginate_button.active > a {
 }
 .detail-price-info {
   background-color: #F1F4F2;
+}
+#RequirementType {
+  width: 300px;
 }
 .progressbar {
   margin-top: 35px;

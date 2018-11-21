@@ -239,6 +239,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tillkommande krav och/eller önskemål")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
+
+        [Display(Name = "Tillkommande önskemål")]
+        public List<OrderRequirementModel> OrderDesiredRequirements { get; set; }
+
         #endregion
 
         public bool AllowDenial => (AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false);
@@ -389,6 +393,26 @@ namespace Tolk.Web.Models
                 {
                     // add all extra requirements
                     foreach (var req in OrderRequirements)
+                    {
+                        OrderRequirement requirement = null;
+                        if (req.OrderRequirementId.HasValue)
+                        {
+                            requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
+                        }
+                        else
+                        {
+                            requirement = new OrderRequirement();
+                            order.Requirements.Add(requirement);
+                        }
+                        requirement.RequirementType = req.RequirementType.Value;
+                        requirement.IsRequired = req.RequirementIsRequired;
+                        requirement.Description = req.RequirementDescription;
+                    }
+                }
+                if (OrderDesiredRequirements != null)
+                {
+                    // add all extra desired requirements
+                    foreach (var req in OrderDesiredRequirements)
                     {
                         OrderRequirement requirement = null;
                         if (req.OrderRequirementId.HasValue)
