@@ -696,6 +696,7 @@ ul.pagination > li.paginate_button.active > a {
 .progressbar {
   margin-top: 35px;
   margin-bottom: 30px;
+  max-width: 100%;
 }
 .requirement-checkbox {
   font-weight: 300;
