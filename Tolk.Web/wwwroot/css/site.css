@@ -435,14 +435,12 @@ input[type='checkbox']:checked:after {
   position: relative;
 }
 .form-entry-information:active:before {
-  color: #777;
+  color: black;
   content: attr(title);
-  padding: 10px;
-  border: 2px solid #777;
-  background: #fff;
+  margin-left: 10px;
+  background: none;
   font-size: 11px;
-  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-  letter-spacing: 0.6px;
+  font-family: "Merriweather Sans", sans-serif;
 }
 .d-none {
   display: none;
