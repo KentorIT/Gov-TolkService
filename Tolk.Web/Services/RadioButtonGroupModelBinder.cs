@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,6 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            var genericType = bindingContext.ModelType.GenericTypeArguments[0];
             var value = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
 
             if (value == ValueProviderResult.None)
@@ -21,7 +21,7 @@ namespace Tolk.Web.Services
                 return Task.CompletedTask;
             }
 
-            var model = new RadioButtonGroup<object> { SelectedItem = Enum.Parse(genericType, value.FirstValue) };
+            RadioButtonGroup model = new RadioButtonGroup { SelectedItem = new SelectListItem { Value = value.FirstValue } };
 
             bindingContext.Result = ModelBindingResult.Success(model);
 

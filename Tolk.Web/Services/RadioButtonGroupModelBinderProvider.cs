@@ -14,7 +14,7 @@ namespace Tolk.Web.Services
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            if (context.Metadata.ModelType.GetInterfaces().Contains(typeof(IRadioButtonGroup)))
+            if (context.Metadata.ModelType == typeof(RadioButtonGroup))
             {
                 return new BinderTypeModelBinder(typeof(RadioButtonGroupModelBinder));
             }

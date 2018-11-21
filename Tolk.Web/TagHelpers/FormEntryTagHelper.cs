@@ -56,6 +56,9 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("layout-option")]
         public string LayoutOption { get; set; }
 
+        [HtmlAttributeName("label-override")]
+        public string LabelOverride { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -143,12 +146,12 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeDateRange;
                     return;
                 }
-                if (For.ModelExplorer.ModelType.GetInterfaces().Contains(typeof(IRadioButtonGroup)))
+                if (For.ModelExplorer.ModelType == typeof(RadioButtonGroup))
                 {
                     InputType = InputTypeRadioButtonGroup;
                     return;
                 }
-                if (For.ModelExplorer.ModelType.GetInterfaces().Contains(typeof(ICheckboxGroup)))
+                if (For.ModelExplorer.ModelType == typeof(CheckboxGroup))
                 {
                     InputType = InputTypeCheckboxGroup;
                     return;
@@ -283,7 +286,7 @@ namespace Tolk.Web.TagHelpers
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
-                labelText: null,
+                labelText: LabelOverride,
                 htmlAttributes: new { @class = "control-label" });
         }
 

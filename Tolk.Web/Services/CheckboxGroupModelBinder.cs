@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -12,7 +14,6 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            var genericType = bindingContext.ModelType.GenericTypeArguments[0];
             var value = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
 
             if (value == ValueProviderResult.None)
@@ -20,15 +21,18 @@ namespace Tolk.Web.Services
                 return Task.CompletedTask;
             }
 
-            var selectedItems = new HashSet<object>();
+            var selectedItems = new HashSet<string>();
             foreach (var val in value)
             {
-                selectedItems.Add(Enum.Parse(genericType, val));
+                selectedItems.Add(val);
             }
 
-            var model = new CheckboxGroup<object>
+            var model = new CheckboxGroup
             {
-                SelectedItems = selectedItems
+                SelectedItems = SelectListService.CompetenceLevels
+                    .Where(item => selectedItems
+                        .Contains(item.Value)
+                    ).ToHashSet()
             };
 
             bindingContext.Result = ModelBindingResult.Success(model);

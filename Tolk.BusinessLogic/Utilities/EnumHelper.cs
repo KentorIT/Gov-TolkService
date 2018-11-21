@@ -124,5 +124,10 @@ namespace Tolk.BusinessLogic.Utilities
             type = Nullable.GetUnderlyingType(type) ?? type;
             return Enum.GetValues(type).OfType<TEnum>().Where(t => Comparer<TEnum>.Default.Compare(t, minimumLevel) >= 0);
         }
+
+        public static T Parse<T>(string value)
+        {
+            return (T)Enum.Parse(typeof(T), value);
+        }
     }
 }

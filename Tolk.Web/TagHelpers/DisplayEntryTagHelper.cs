@@ -81,13 +81,12 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText, TimeSpan, TimeRange }
+        private enum OutputType { Text, DateTimeOffset, Bool, Enum, Currency, MultilineText, TimeSpan, TimeRange, RadioButtonGroup, CheckboxGroup }
 
         private void WriteDetails(TextWriter writer)
         {
             string text = string.Empty;
             string className = "detail-text";
-            var type = GetOutputType();
             switch (GetOutputType())
             {
                 case OutputType.Enum:
@@ -115,6 +114,15 @@ namespace Tolk.Web.TagHelpers
                 case OutputType.TimeSpan:
                     var time = ((TimeSpan?)For.ModelExplorer.Model) ?? TimeSpan.Zero;
                     text = time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter";
+                    break;
+                case OutputType.RadioButtonGroup:
+                    text = ((RadioButtonGroup) For.ModelExplorer.Model).SelectedItem.Text;
+                    break;
+                case OutputType.CheckboxGroup:
+                    className += " line-break";
+                    text = ((CheckboxGroup)For.ModelExplorer.Model).SelectedItems
+                        .Select(item => item.Text)
+                        .Aggregate((current, next) => current + "\n" + next);
                     break;
                 default:
                     text = _htmlGenerator.Encode(For.ModelExplorer.Model);
@@ -154,6 +162,14 @@ namespace Tolk.Web.TagHelpers
             if(For.ModelExplorer.ModelType == typeof(TimeRange))
             {
                 return OutputType.TimeRange;
+            }
+            if (For.ModelExplorer.ModelType == typeof(RadioButtonGroup))
+            {
+                return OutputType.RadioButtonGroup;
+            }
+            if (For.ModelExplorer.ModelType == typeof(CheckboxGroup))
+            {
+                return OutputType.CheckboxGroup;
             }
             return OutputType.Text;
         }

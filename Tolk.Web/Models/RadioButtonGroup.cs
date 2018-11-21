@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Tolk.Web.Models
 {
-    /**
-     * Wrapper for polymorphistic model binding
-     */
-    public interface IRadioButtonGroup { }
-
-    public class RadioButtonGroup<T> : IRadioButtonGroup
+    public class RadioButtonGroup
     {
-        public T SelectedItem { get; set; }
+        public SelectListItem SelectedItem { get; set; }
     }
 }

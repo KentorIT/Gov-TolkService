@@ -109,80 +109,80 @@
                                     <div class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</div>
                                     <form-entry asp-for="SpecificCompetenceLevelRequired" />
                                     <span id="competence-required">
-                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" />
+                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå"/>
                                         @*<form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                        <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />*@
+                                <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />*@
                                     </span>
                                     <span id="competence-requested">
-                                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="Ange ett till tre önskemål på kompetensnivå i prioritetsordning" />
                                         <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                         <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                     </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <form-entry asp-for="Description" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Tillkommande krav</label>
+                                <br />
+                                <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
+                                <br /><br />
+                                <div class="d-none order-requirement-list no-padding">
+                                    <table class="table order-requirement-table">
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Tillkommande önskemål</label>
+                                <br />
+                                <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
+                                <br /> <br />
+                                <div class="d-none order-desiredRequirement-list no-padding">
+                                    <table class="table order-desiredRequirement-table">
+                                        <tbody></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div>
                         <div class="col-sm-12">
                             <div class="row">
-                                <div class="col-sm-6">
-                                    <form-entry asp-for="Description" />
-                                </div>
                             </div>
                         </div>
-                        <div class="col-sm-12">
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
-                                </div>
-                                <div class="col-sm-4">
-                                    <label>Tillkommande krav</label>
-                                    <br />
-                                    <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
-                                    <br /><br />
-                                    <div class="d-none order-requirement-list no-padding">
-                                        <table class="table order-requirement-table">
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <label>Tillkommande önskemål</label>
-                                    <br />
-                                    <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
-                                    <br /> <br />
-                                    <div class="d-none order-desiredRequirement-list no-padding">
-                                        <table class="table order-desiredRequirement-table">
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                    </div>
+                    <h2>Myndighetens uppgifter</h2>
+                    <hr />
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <display-entry asp-for="CreatedBy" />
                             </div>
-                        </div>
-                        <div>
-                            <div class="col-sm-12">
+                            <div class="col-sm-8">
                                 <div class="row">
-                                </div>
-                            </div>
-                        </div>
-                        <h2>Myndighetens uppgifter</h2>
-                        <hr />
-                        <div class="col-sm-12">
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <display-entry asp-for="CreatedBy" />
-                                </div>
-                                <div class="col-sm-8">
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <form-entry asp-for="CustomerReferenceNumber" />
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <form-entry asp-for="UnitName" />
-                                        </div>
+                                    <div class="col-sm-6">
+                                        <form-entry asp-for="CustomerReferenceNumber" />
                                     </div>
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
-                                        </div>
+                                    <div class="col-sm-6">
+                                        <form-entry asp-for="UnitName" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
                                     </div>
                                 </div>
                             </div>
@@ -191,23 +191,23 @@
                 </div>
                 <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
+        </div>
 
-            @*step 2 confirm*@
-            <div class="wizard-step" data-forward-button-text="Skicka bokning ">
-                <div class="row">
-                    <div class="col-sm-12">
-                    </div>
+        @*step 2 confirm*@
+        <div class="wizard-step" data-forward-button-text="Skicka bokning ">
+            <div class="row">
+                <div class="col-sm-12">
                 </div>
             </div>
-            <div class="wizard-footer">
-                <div class="wizard-back">
-                    <button type="button" class="btn btn-large btn-warning pull-left do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
-                </div>
-                <div class="wizard-forward">
-                    <button class="wizard-forward-button btn btn-primary btn-large pull-right" type="button" id="send"></button>
-                </div>
-                <div class="wizard-message-area"></div>
+        </div>
+        <div class="wizard-footer">
+            <div class="wizard-back">
+                <button type="button" class="btn btn-large btn-warning pull-left do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
             </div>
+            <div class="wizard-forward">
+                <button class="wizard-forward-button btn btn-primary btn-large pull-right" type="button" id="send"></button>
+            </div>
+            <div class="wizard-message-area"></div>
         </div>
     </div>
 }

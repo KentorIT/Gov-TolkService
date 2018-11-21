@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using Tolk.Web.Helpers.RequiredIf;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Models
 {
@@ -73,7 +74,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Uppdragstyp")]
         [Required]
-        public RadioButtonGroup<AssignmentType> AssignmentType { get; set; }
+        public RadioButtonGroup AssignmentType { get; set; }
 
         [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekt här, det görs i fältet bredvid.")]
         [ClientRequired]
@@ -104,11 +105,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Kompetensnivå är ett krav")]
         public bool SpecificCompetenceLevelRequired { get; set; }
 
-        [Display(Name = "Ange max två krav på kompetensnivå", Description = "OBS! Ingen prioritetsordning")]
+        [Display(Name = "Krav på kompetensnivå tolk", Description = "OBS! Ingen prioritetsordning")]
         [ClientRequired]
-        public CheckboxGroup<CompetenceAndSpecialistLevel> RequiredCompetenceLevels { get; set; }
+        public CheckboxGroup RequiredCompetenceLevels { get; set; }
 
-        [Display(Name = "Ange ett till tre önskemål på kompetensnivå i prioritetsordning")]
+        [Display(Name = "Önskemål kring kompetensnivå tolk")]
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
@@ -296,7 +297,9 @@ namespace Tolk.Web.Models
                 List<CompetenceAndSpecialistLevel> list = new List<CompetenceAndSpecialistLevel>();
                 if (SpecificCompetenceLevelRequired)
                 {
-                    return RequiredCompetenceLevels.SelectedItems.ToList();
+                    return RequiredCompetenceLevels.SelectedItems
+                        .Select(item => EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
+                        .ToList();
                 }
                 else
                 {
@@ -367,7 +370,7 @@ namespace Tolk.Web.Models
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
-                order.AssignentType = AssignmentType.SelectedItem;
+                order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
                 order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
@@ -429,7 +432,7 @@ namespace Tolk.Web.Models
                     {
                         order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                         {
-                            CompetenceLevel = entry
+                            CompetenceLevel = EnumHelper.Parse<CompetenceAndSpecialistLevel>(entry.Value)
                         });
                     }
                 }
@@ -528,7 +531,7 @@ namespace Tolk.Web.Models
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                AssignmentType = new RadioButtonGroup<AssignmentType> { SelectedItem = order.AssignentType },
+                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -539,7 +542,15 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
-                RequiredCompetenceLevels = new CheckboxGroup<CompetenceAndSpecialistLevel> { SelectedItems = requiredCompetenceLevels },
+                RequiredCompetenceLevels = new CheckboxGroup
+                {
+                    SelectedItems = SelectListService.CompetenceLevels
+                        .Where(item => order.CompetenceRequirements
+                            .Select(r => r.CompetenceLevel)
+                            .ToHashSet()
+                            .Contains(EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
+                        ).ToHashSet()
+                },
                 RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
                 RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
@@ -622,7 +633,7 @@ namespace Tolk.Web.Models
             return new OrderModel
             {
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                AssignmentType = new RadioButtonGroup<AssignmentType> { SelectedItem = order.AssignentType },
+                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -633,7 +644,15 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
-                RequiredCompetenceLevels = new CheckboxGroup<CompetenceAndSpecialistLevel> { SelectedItems = requiredCompetenceLevels },
+                RequiredCompetenceLevels = new CheckboxGroup
+                {
+                    SelectedItems = SelectListService.CompetenceLevels
+                        .Where(item => order.CompetenceRequirements
+                            .Select(r => r.CompetenceLevel)
+                            .ToHashSet()
+                            .Contains(EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
+                        ).ToHashSet()
+                },
                 RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
                 RequestedCompetenceLevelThird = competenceThird?.CompetenceLevel,

@@ -13,7 +13,7 @@ namespace Tolk.Web.Services
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            if (context.Metadata.ModelType.GetInterfaces().Contains(typeof(ICheckboxGroup)))
+            if (context.Metadata.ModelType == typeof(CheckboxGroup))
             {
                 return new BinderTypeModelBinder(typeof(CheckboxGroupModelBinder));
             }

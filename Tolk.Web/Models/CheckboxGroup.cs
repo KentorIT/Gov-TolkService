@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Tolk.Web.Models
 {
-    /**
-     * Wrapper for polymorphistic model binding
-     */
-    public interface ICheckboxGroup { }
-
-    public class CheckboxGroup<T> : ICheckboxGroup
+    public class CheckboxGroup
     {
-        public HashSet<T> SelectedItems { get; set; }
+        public HashSet<SelectListItem> SelectedItems { get; set; }
     }
 }
