@@ -242,8 +242,8 @@ namespace Tolk.Web.Controllers
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
                                 interpreter,
-                                model.InterpreterLocation,
-                                model.InterpreterCompetenceLevel,
+                                model.InterpreterLocation.Value,
+                                model.InterpreterCompetenceLevel.Value,
                                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                                 {
                                     RequestId = request.RequestId,
@@ -252,7 +252,7 @@ namespace Tolk.Web.Controllers
                                     CanSatisfyRequirement = ra.CanMeetRequirement
                                 }),
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                                GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts)
+                                _priceCalculationService.GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts)
                             );
                             _notificationService.RequestAccepted(request);
                         }
@@ -264,7 +264,7 @@ namespace Tolk.Web.Controllers
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
                             model.ExpectedTravelCosts,
-                            GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, model.ExpectedTravelCosts)
+                            _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, model.ExpectedTravelCosts)
                         );
 
                         _notificationService.RequestReplamentOrderAccepted(request);
@@ -333,7 +333,7 @@ namespace Tolk.Web.Controllers
                     CanSatisfyRequirement = ra.CanMeetRequirement
                 }),
                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts),
+                _priceCalculationService.GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts),
                 !request.Order.AllowMoreThanTwoHoursTravelTime,
                 request
                  );
@@ -401,17 +401,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
-        {
-            return _priceCalculationService.GetPrices(
-                            request.Order.StartAt,
-                            request.Order.EndAt,
-                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
-                            request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.RankingId,
-                            expectedTravelCost);
-        }
-
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
@@ -456,7 +445,8 @@ namespace Tolk.Web.Controllers
         {
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(
+                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Services;
 using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api
@@ -28,6 +29,8 @@ namespace Tolk.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TolkApiOptions>(Configuration);
+
+            services.AddScoped<PriceCalculationService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));

@@ -42,6 +42,17 @@ namespace Tolk.BusinessLogic.Services
             _cache = cache;
         }
 
+        public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
+        {
+            return GetPrices(
+                request.Order.StartAt,
+                request.Order.EndAt,
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
+                request.Order.CustomerOrganisation.PriceListType,
+                request.RankingId,
+                expectedTravelCost);
+        }
+
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);

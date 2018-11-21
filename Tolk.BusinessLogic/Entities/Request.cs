@@ -99,7 +99,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ImpersonatingAnswerProcessedBy { get; set; }
 
-        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId)
+        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
             if (Status != RequestStatus.Created)
             {
@@ -189,9 +189,9 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            Interpreter interperter,
-            InterpreterLocation? interpreterLocation,
-            CompetenceAndSpecialistLevel? competenceLevel,
+            Interpreter interpreter,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation)
@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
-            Interpreter = interperter;
+            Interpreter = interpreter ?? throw new InvalidOperationException($"Interpreter is not set.");
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers.AddRange(requirementAnswers);

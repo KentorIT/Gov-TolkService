@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using BrokerMock.Hubs;
 using BrokerMock.Helpers;
+using BrokerMock.Services;
 
 namespace BrokerMock
 {
@@ -29,6 +30,7 @@ namespace BrokerMock
             services.Configure<BrokerMockOptions>(Configuration);
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddScoped<ApiCallService>();
 
             services.AddSignalR();
         }

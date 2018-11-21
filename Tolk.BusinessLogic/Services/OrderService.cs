@@ -281,10 +281,12 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                     request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                 var newRequest = _tolkDbContext.Requests
-                    .Include(r => r.Order.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.Region)
+                    .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.Ranking.Broker)
-                    .Include(r => r.Order.Region)
-                    .Include(r => r.Order.Language)
                     .Single(r => r.RequestId == request.RequestId);
                 _notificationService.RequestCreated(newRequest);
             }

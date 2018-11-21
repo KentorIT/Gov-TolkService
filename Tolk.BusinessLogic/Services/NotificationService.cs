@@ -156,6 +156,21 @@ namespace Tolk.BusinessLogic.Services
                         ExpiresAt = request.ExpiresAt,
                         StartAt = order.StartAt,
                         EndAt = order.EndAt,
+                        Locations = order.InterpreterLocations.Select(l => new LocationModel
+                        {
+                            ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                            Rank = l.Rank,
+                            Key = EnumHelper.GetCustomName(l.InterpreterLocation)
+                        }),
+                        CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
+                        {
+                            Key = EnumHelper.GetCustomName(c.CompetenceLevel),
+                            Rank = c.Rank ?? 0
+                        }),
+                        AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                        AssignentType = EnumHelper.GetCustomName(order.AssignentType),
+                        Description = order.Description,
+                        CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired
                     },
                     settings.Webhook,
                     NotificationType.RequestCreated,

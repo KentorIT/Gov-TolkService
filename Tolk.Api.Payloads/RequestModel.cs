@@ -16,11 +16,12 @@ namespace Tolk.Api.Payloads
         public DateTimeOffset StartAt { get; set; }
         public DateTimeOffset EndAt { get; set; }
         public IEnumerable<LocationModel> Locations { get; set; }
-        public IEnumerable<string> CompetenceLevels { get; set; }
+        public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }
         public bool CompetenceLevelsAreRequired { get; set; }
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
         public string Description { get; set; }
         public string AssignentType { get; set; }
+        // Files should probably be handled with a flag, and a separate getter for these if needed.
     }
 
     public class RequestAssignModel : ApiPayloadModel
@@ -36,12 +37,14 @@ namespace Tolk.Api.Payloads
 
     public class LocationModel
     {
-        public string OrderNumber { get; set; }
-        public string Interpreter { get; set; }
-        public string Location { get; set; }
-        public string CompetenceLevel { get; set; }
-        public decimal? ExpectedTravelCosts { get; set; }
-        //Files
-        //RequirementAnswers
+        public string Key { get; set; }
+        public int Rank { get; set; }
+        public string ContactInformation { get; set; }
+    }
+
+    public class CompetenceModel
+    {
+        public string Key { get; set; }
+        public int Rank { get; set; }
     }
 }

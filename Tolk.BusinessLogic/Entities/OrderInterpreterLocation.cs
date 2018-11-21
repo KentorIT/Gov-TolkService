@@ -27,6 +27,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string OffSiteContactInformation { get; set; }
 
+        public string FullAddress{ get => $"{Street}\n {City}"; }
 
     }
 }

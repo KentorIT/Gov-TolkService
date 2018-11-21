@@ -1,4 +1,12 @@
 ﻿"use strict";
+$(function () {
+    $("body").on("click", ".get-lists", function () {
+        $.ajax({
+            url: "/Home/GetLists",
+            type: 'GET'
+        });
+    });
+});
 
 var connection = new signalR.HubConnectionBuilder()
     .withUrl("/webHooksHub")
