@@ -73,7 +73,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Uppdragstyp")]
         [Required]
-        public AssignmentType? AssignmentType { get; set; }
+        public RadioButtonGroup<AssignmentType> AssignmentType { get; set; }
 
         [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekt här, det görs i fältet bredvid.")]
         [ClientRequired]
@@ -104,23 +104,20 @@ namespace Tolk.Web.Models
         [Display(Name = "Kompetensnivå är ett krav")]
         public bool SpecificCompetenceLevelRequired { get; set; }
 
-        [Display(Name = "Krav på kompetensnivå")]
+        [Display(Name = "Ange max två krav på kompetensnivå", Description = "OBS! Ingen prioritetsordning")]
         [ClientRequired]
-        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelFirst { get; set; }
+        public CheckboxGroup<CompetenceAndSpecialistLevel> RequiredCompetenceLevels { get; set; }
 
-        [NoDisplayName]
-        public CompetenceAndSpecialistLevel? RequiredCompetenceLevelSecond { get; set; }
-
-        [Display(Name = "Önskade kompetensnivåer i prioritetsordning")]
-        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1.</span>")]
+        [Display(Name = "Ange ett till tre önskemål på kompetensnivå i prioritetsordning")]
+        [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
         [NoDisplayName]
-        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">2.</span>")]
+        [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">2.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelSecond { get; set; }
 
         [NoDisplayName]
-        [Prefix(Prefixes = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3.</span>")]
+        [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
         [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]
@@ -299,14 +296,7 @@ namespace Tolk.Web.Models
                 List<CompetenceAndSpecialistLevel> list = new List<CompetenceAndSpecialistLevel>();
                 if (SpecificCompetenceLevelRequired)
                 {
-                    if (RequiredCompetenceLevelFirst.HasValue)
-                    {
-                        list.Add(RequiredCompetenceLevelFirst.Value);
-                    }
-                    if (RequiredCompetenceLevelSecond.HasValue)
-                    {
-                        list.Add(RequiredCompetenceLevelSecond.Value);
-                    }
+                    return RequiredCompetenceLevels.SelectedItems.ToList();
                 }
                 else
                 {
@@ -377,7 +367,7 @@ namespace Tolk.Web.Models
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
-                order.AssignentType = AssignmentType.Value;
+                order.AssignentType = AssignmentType.SelectedItem;
                 order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
@@ -435,18 +425,11 @@ namespace Tolk.Web.Models
             {
                 if (SpecificCompetenceLevelRequired)
                 {
-                    if (RequiredCompetenceLevelFirst.HasValue)
+                    foreach (var entry in RequiredCompetenceLevels.SelectedItems)
                     {
                         order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                         {
-                            CompetenceLevel = RequiredCompetenceLevelFirst.Value,
-                        });
-                    }
-                    if (RequiredCompetenceLevelSecond.HasValue)
-                    {
-                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                        {
-                            CompetenceLevel = RequiredCompetenceLevelSecond.Value,
+                            CompetenceLevel = entry
                         });
                     }
                 }
@@ -500,20 +483,31 @@ namespace Tolk.Web.Models
 
         public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
         {
-
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+
+            OrderCompetenceRequirement competenceFirst = null;
+            OrderCompetenceRequirement competenceSecond = null;
+            OrderCompetenceRequirement competenceThird = null;
+            HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank,
             }).ToList();
-            if (!order.SpecificCompetenceLevelRequired)
+
+            if (order.SpecificCompetenceLevelRequired)
+            {
+                requiredCompetenceLevels = order.CompetenceRequirements
+                    .Select(i => i.CompetenceLevel)
+                    .ToHashSet();
+            }
+            else
             {
                 competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+                competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+                competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+                competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
             }
-            var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-            var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-            var competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
 
             return new OrderModel
             {
@@ -534,7 +528,7 @@ namespace Tolk.Web.Models
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                AssignmentType = order.AssignentType,
+                AssignmentType = new RadioButtonGroup<AssignmentType> { SelectedItem = order.AssignentType },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -545,8 +539,7 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
-                RequiredCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
-                RequiredCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
+                RequiredCompetenceLevels = new CheckboxGroup<CompetenceAndSpecialistLevel> { SelectedItems = requiredCompetenceLevels },
                 RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
                 RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
@@ -601,22 +594,35 @@ namespace Tolk.Web.Models
         public static OrderModel GetModelFromOrderForConfirmation(Order order)
         {
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+
+            OrderCompetenceRequirement competenceFirst = null;
+            OrderCompetenceRequirement competenceSecond = null;
+            OrderCompetenceRequirement competenceThird = null;
+            HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank,
             }).ToList();
-            if (!order.SpecificCompetenceLevelRequired)
+
+            if (order.SpecificCompetenceLevelRequired)
+            {
+                requiredCompetenceLevels = order.CompetenceRequirements
+                    .Select(i => i.CompetenceLevel)
+                    .ToHashSet();
+            }
+            else
             {
                 competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+                competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+                competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+                competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
             }
-            var competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-            var competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-            var competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
+
             return new OrderModel
             {
                 AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                AssignmentType = order.AssignentType,
+                AssignmentType = new RadioButtonGroup<AssignmentType> { SelectedItem = order.AssignentType },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -627,11 +633,10 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
-                RequiredCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? competenceFirst?.CompetenceLevel : null,
-                RequiredCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? competenceSecond?.CompetenceLevel : null,
-                RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
-                RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
+                RequiredCompetenceLevels = new CheckboxGroup<CompetenceAndSpecialistLevel> { SelectedItems = requiredCompetenceLevels },
+                RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
+                RequestedCompetenceLevelThird = competenceThird?.CompetenceLevel,
                 RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
                 RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
                 RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,

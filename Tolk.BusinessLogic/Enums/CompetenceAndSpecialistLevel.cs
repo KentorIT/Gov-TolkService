@@ -10,23 +10,23 @@ namespace Tolk.BusinessLogic.Enums
     public enum CompetenceAndSpecialistLevel
     {
         [Parent(CompetenceLevel.OtherInterpreter)]
-        [Description("Övrig tolk (ÖT)")]
+        [Description("Övrig tolk")]
         OtherInterpreter = 1,
 
         [Parent(CompetenceLevel.EducatedInterpreter)]
-        [Description("Utbildad tolk (UT)")]
+        [Description("Utbildad tolk")]
         EducatedInterpreter = 2,
 
         [Parent(CompetenceLevel.AuthorizedInterpreter)]
-        [Description("Auktoriserad tolk (AT)")]
+        [Description("Auktoriserad tolk")]
         AuthorizedInterpreter = 3,
 
         [Parent(CompetenceLevel.SpecializedInterpreter)]
-        [Description("Sjukvårdstolk (ST)")]
+        [Description("Sjukvårdstolk")]
         HealthCareSpecialist = 4,
 
         [Parent(CompetenceLevel.SpecializedInterpreter)]
-        [Description("Rättstolk (RT)")]
+        [Description("Rättstolk")]
         CourtSpecialist = 5,
     }
 }

@@ -19,14 +19,7 @@
             {
                 @if (Model.SpecificCompetenceLevelRequired)
                 {
-                    @if (Model.RequiredCompetenceLevelFirst.HasValue)
-                    {
-                        <display-entry asp-for="RequiredCompetenceLevelFirst" />
-                    }
-                    @if (Model.RequiredCompetenceLevelSecond.HasValue)
-                    {
-                        <display-entry asp-for="RequiredCompetenceLevelSecond" />
-                    }
+                    <display-entry asp-for="RequiredCompetenceLevels" />
                 }
                 else
                 {

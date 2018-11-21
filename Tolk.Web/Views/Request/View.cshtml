@@ -53,14 +53,7 @@
         <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
         @if (Model.OrderModel.SpecificCompetenceLevelRequired)
         {
-            @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
-            {
-                <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" />
-            }
-            @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
-            {
-                <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" />
-            }
+            <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
         }
         else
         {

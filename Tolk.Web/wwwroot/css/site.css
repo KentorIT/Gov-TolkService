@@ -404,7 +404,7 @@ a.btn-large {
 }
 input[type='checkbox'] {
   margin-top: 3px;
-  margin-right: 1px;
+  margin-right: 10px;
   display: block;
   float: left;
   position: relative;
@@ -602,6 +602,7 @@ li.placeholder::before {
 .important-info {
   margin-bottom: 20px;
   font-style: italic;
+  color: #646464;
 }
 .more-info {
   color: #646464;

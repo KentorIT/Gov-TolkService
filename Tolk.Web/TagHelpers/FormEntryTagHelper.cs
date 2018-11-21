@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
@@ -40,7 +41,8 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeTimeRange = "time-range";
         private const string InputTypeSplitTimeRange = "splittime-range";
         private const string InputTypeHiddenTimeRangeHidden = "time-range-hidden";
-        private const string InputTypeRadioGroup = "radio-group";
+        private const string InputTypeRadioButtonGroup = "radio-group";
+        private const string InputTypeCheckboxGroup = "checkbox-group";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -67,10 +69,11 @@ namespace Tolk.Web.TagHelpers
             switch (InputType)
             {
                 case InputTypeSelect:
-                case InputTypeRadioGroup:
+                case InputTypeRadioButtonGroup:
+                case InputTypeCheckboxGroup:
                     if (Items == null)
                     {
-                        throw new ArgumentNullException("Items", "Items must be set if type is select or radio-group");
+                        throw new ArgumentNullException("Items", "Items must be set if type is select, radio-group or checkbox-group.");
                     }
                     break;
                 case null:
@@ -86,7 +89,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeSplitTimeRange:
                     if (Items != null)
                     {
-                        throw new ArgumentException("Items is only relevant if type is select or radio-group.");
+                        throw new ArgumentException("Items are only relevant if type is select, radio-group or checkbox-group.");
                     }
                     break;
                 default:
@@ -140,6 +143,16 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeDateRange;
                     return;
                 }
+                if (For.ModelExplorer.ModelType.GetInterfaces().Contains(typeof(IRadioButtonGroup)))
+                {
+                    InputType = InputTypeRadioButtonGroup;
+                    return;
+                }
+                if (For.ModelExplorer.ModelType.GetInterfaces().Contains(typeof(ICheckboxGroup)))
+                {
+                    InputType = InputTypeCheckboxGroup;
+                    return;
+                }
             }
             else if (InputType == "hidden" && For.ModelExplorer.ModelType == typeof(TimeRange))
             {
@@ -163,9 +176,14 @@ namespace Tolk.Web.TagHelpers
                         WriteSelect(writer);
                         WriteValidation(writer);
                         break;
-                    case InputTypeRadioGroup:
+                    case InputTypeRadioButtonGroup:
                         WriteLabel(writer);
                         WriteRadioGroup(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeCheckboxGroup:
+                        WriteLabel(writer);
+                        WriteCheckboxGroup(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeDateTimeOffset:
@@ -224,7 +242,7 @@ namespace Tolk.Web.TagHelpers
                 For.ModelExplorer.Metadata.ContainerType,
                 For.ModelExplorer.Metadata.PropertyName);
 
-            if (Prefix != null && Prefix.Prefixes == condition)
+            if (Prefix != null && Prefix.PrefixPosition == condition)
             {
                 writer.WriteLine(Prefix.Text);
             }
@@ -721,7 +739,7 @@ namespace Tolk.Web.TagHelpers
             var prefixAttribute = (PrefixAttribute)AttributeHelper.GetAttribute<PrefixAttribute>(
                 For.ModelExplorer.Metadata.ContainerType,
                 For.ModelExplorer.Metadata.PropertyName);
-            bool writePrefix = prefixAttribute != null && prefixAttribute.Prefixes == PrefixAttribute.Position.Value;
+            bool writePrefix = prefixAttribute != null && prefixAttribute.PrefixPosition == PrefixAttribute.Position.Value;
             var realModelType = modelExplorer.ModelType;
             var allowMultiple = typeof(string) != realModelType &&
                 typeof(IEnumerable).IsAssignableFrom(realModelType);
@@ -811,7 +829,59 @@ namespace Tolk.Web.TagHelpers
                 }
             }
 
-            writer.WriteLine("</div>");
+            writer.WriteLine($"</div>"); //groupId
+        }
+
+        private void WriteCheckboxGroup(TextWriter writer)
+        {
+            var groupId = $"{For.Name}_cbGroup";
+            IDictionary model = (IDictionary)For.ModelExplorer.Model;
+
+            writer.WriteLine($"<div id=\"{groupId}\">");
+
+            //foreach (var item in Items)
+            //{
+            //    var tagBuilder = _htmlGenerator.GenerateCheckBox(
+            //        ViewContext,
+            //        For.ModelExplorer,
+            //        expression: For.Name,
+            //        isChecked: false,
+            //        htmlAttributes: new { value = item.Value });
+
+            //    tagBuilder.WriteTo(writer, _htmlEncoder);
+            //    writer.WriteLine($"<label>{item.Text}</label></br>");
+            //}
+
+            foreach (var item in Items)
+            {
+                bool isChecked = (model != null && model[item] != null) ? (bool) model[item] : false;
+
+                   var labelBuilder = _htmlGenerator.GenerateLabel(
+                    ViewContext,
+                    For.ModelExplorer,
+                    For.Name,
+                    labelText: item.Text,
+                    htmlAttributes: new { @class = "control-label detail-text" });
+
+                var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
+                    ViewContext,
+                    For.ModelExplorer,
+                    For.Name,
+                    isChecked: isChecked,
+                    htmlAttributes: new { value = item.Value, @checked = isChecked});
+
+                var htmlBuilder = new HtmlContentBuilder();
+                htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
+                htmlBuilder.AppendHtml(checkboxBuilder.RenderStartTag());
+                htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
+                htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
+
+                WritePrefix(writer, PrefixAttribute.Position.Value);
+                htmlBuilder.WriteTo(writer, _htmlEncoder);
+                writer.WriteLine("<br/>");
+            }
+
+            writer.WriteLine($"</div>"); //groupId
         }
 
         private void WriteValidation(TextWriter writer)

@@ -35,7 +35,7 @@
                         <hr />
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="SystemTime" />
-                        <form-entry asp-for="AssignmentType" type="radio-group" asp-items="SelectListService.AssignmentTypes" />
+                        <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" />
                         <div class="row">
                             <div class="col-sm-4">
                                 <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
@@ -104,13 +104,14 @@
                         <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
                         <div class="row">
                             <div class="col-sm-12">
-                                <div class="col-sm-6">
+                                <span class="col-sm-6">
                                     <label>Tolkens kompetensnivå</label>
                                     <div class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</div>
                                     <form-entry asp-for="SpecificCompetenceLevelRequired" />
                                     <span id="competence-required">
-                                        <form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                        <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" />
+                                        @*<form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                        <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />*@
                                     </span>
                                     <span id="competence-requested">
                                         <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />

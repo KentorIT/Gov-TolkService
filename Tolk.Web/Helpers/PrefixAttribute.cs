@@ -13,7 +13,7 @@ namespace Tolk.Web.Helpers
             Value
         }
 
-        public Position Prefixes { get; set; }
+        public Position PrefixPosition { get; set; }
 
         public string Text { get; set; }
     }

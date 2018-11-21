@@ -31,16 +31,8 @@
         {
             @if (Model.OrderModel.SpecificCompetenceLevelRequired)
             {
-                @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
-                {
-                    <input asp-for="OrderModel.RequiredCompetenceLevelFirst" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" />
-                }
-                @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
-                {
-                    <input asp-for="OrderModel.RequiredCompetenceLevelSecond" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" />
-                }
+                <input asp-for="OrderModel.RequiredCompetenceLevels" type="hidden" />
+                <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
             }
             else
             {
@@ -101,16 +93,10 @@
                 <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
                 @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
                 {
+
                     @if (Model.OrderModel.SpecificCompetenceLevelRequired)
                     {
-                        @if (Model.OrderModel.RequiredCompetenceLevelFirst.HasValue)
-                        {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelFirst" />
-                        }
-                        @if (Model.OrderModel.RequiredCompetenceLevelSecond.HasValue)
-                        {
-                            <display-entry asp-for="OrderModel.RequiredCompetenceLevelSecond" />
-                        }
+                        <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
                     }
                     else
                     {
