@@ -232,8 +232,8 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteLabel(TextWriter writer)
         {
-            var IsDisplayed = !AttributeHelper.IsAttributeDefined<NoDisplayNameAttribute>( 
-                For.ModelExplorer.Metadata.ContainerType, 
+            var IsDisplayed = !AttributeHelper.IsAttributeDefined<NoDisplayNameAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
                 For.ModelExplorer.Metadata.PropertyName);
 
             if (IsDisplayed)
@@ -424,7 +424,7 @@ namespace Tolk.Web.TagHelpers
 
             if (!Equals(For.Model, default(DateTimeOffset)))
             {
-         
+
 
                 dateValue = dateModelExplorer.Model;
                 timeHourValue = timeHourModelExplorer.Model;
@@ -445,7 +445,7 @@ namespace Tolk.Web.TagHelpers
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine();
             WriteValidation(writer, timeHourModelExplorer, timeHourFieldName);
-            WriteValidation(writer, timeMinutesModelExplorer , timeMinuteFieldName);
+            WriteValidation(writer, timeMinutesModelExplorer, timeMinuteFieldName);
         }
 
         private void WriteTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, IDictionary<string, string> extraAttributes = null)
@@ -709,8 +709,8 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
         {
-            var prefixAttribute = (PrefixAttribute) AttributeHelper.GetAttribute<PrefixAttribute>(
-                For.ModelExplorer.Metadata.ContainerType, 
+            var prefixAttribute = (PrefixAttribute)AttributeHelper.GetAttribute<PrefixAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
                 For.ModelExplorer.Metadata.PropertyName);
             bool writePrefix = prefixAttribute != null && prefixAttribute.Prefixes == PrefixAttribute.Position.Value;
             var realModelType = modelExplorer.ModelType;
@@ -786,13 +786,23 @@ namespace Tolk.Web.TagHelpers
                 {
                     tagBuilder.Attributes.Add("checked", "checked");
                 }
-                writer.WriteLine("<label>");
-                WritePrefix(writer, PrefixAttribute.Position.Value);
-                tagBuilder.WriteTo(writer, _htmlEncoder);
-                writer.WriteLine($" {item.Text}</label>" + (isRow ? "" : "<br>"));
+                if (isRow)
+                {
+                    writer.WriteLine("<label>");
+                    WritePrefix(writer, PrefixAttribute.Position.Value);
+                    tagBuilder.WriteTo(writer, _htmlEncoder);
+                    writer.WriteLine($"{item.Text}</label>");
+                }
+                else
+                {
+                    writer.WriteLine("<label class=\"radiocontainer\"> ");
+                    WritePrefix(writer, PrefixAttribute.Position.Value);
+                    tagBuilder.WriteTo(writer, _htmlEncoder);
+                    writer.WriteLine($"<span class=\"checkmark\"></span > <span class=\"radio-text\">{item.Text}</span ></label><br><div class=\"radiobutton-row-space\"></div>");
+                }
             }
 
-            writer.WriteLine($"</div>");
+            writer.WriteLine("</div>");
         }
 
         private void WriteValidation(TextWriter writer)
