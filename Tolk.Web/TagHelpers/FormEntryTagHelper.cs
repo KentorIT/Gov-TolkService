@@ -491,12 +491,21 @@ namespace Tolk.Web.TagHelpers
         private IEnumerable<SelectListItem> GetSplitTImeValues(bool hour)
         {
             List<SelectListItem> list = new List<SelectListItem>();
+
+            int start = hour ? 8 : 0;
             int max = hour ? 23 : 55;
             int jump = hour ? 1 : 5;
 
-            for (int i = 0; i <= max; i += jump)
+            for (int i = start; i <= max; i += jump)
             {
                 list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToString() : i.ToString(), Value = i.ToString() });
+            }
+            if (hour)
+            {
+                for (int i = 0; i <= 7; i += jump)
+                {
+                    list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToString() : i.ToString(), Value = i.ToString() });
+                }
             }
             return list;
         }

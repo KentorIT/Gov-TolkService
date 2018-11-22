@@ -158,6 +158,16 @@ $(function () {
         }
     });
 
+   $("body").on("change","#SplitTimeRange_StartTimeHour", function () {
+        var chosenStartHour = parseInt($(this).val());
+        var chosenEndHour = $("#SplitTimeRange_EndTimeHour").val();
+        //only set endhour if not selected yet
+        if (chosenEndHour == "") {
+            var nextHour = parseInt($(this).val()) == 23 ? 0 : chosenStartHour + 1;
+            $("#SplitTimeRange_EndTimeHour").val(nextHour).trigger("change");
+        }
+    });
+
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var systemTime = new Date(Number($("#SystemTime").val()));
         var chosenDate = new Date($(this).val());
