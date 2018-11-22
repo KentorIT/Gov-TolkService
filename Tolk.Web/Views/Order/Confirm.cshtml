@@ -103,12 +103,12 @@
             </div>
             <div class="col-sm-4">
                 <label>Tillkommande krav</label>
-                @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+                @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                 {
-                    <ul>
+                    <ul class="order-requiremnt-view-list">
                         @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                         {
-                            <li class="detail-text order-requirement-list">
+                            <li class="detail-text">
                                 @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
                             </li>
                         }
@@ -121,12 +121,12 @@
             </div>
             <div class="col-sm-4">
                 <label>Tillkommande önskemål</label>
-                @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+                @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                 {
-                    <ul>
+                    <ul class="order-requiremnt-view-list">
                         @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                         {
-                            <li class="detail-text order-requirement-list">
+                            <li class="detail-text">
                                 @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
                             </li>
                         }
