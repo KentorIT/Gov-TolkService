@@ -376,7 +376,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (priceRow.PriceRowType == PriceRowType.InterpreterCompensation && priceRow.PriceListRow != null && priceRow.PriceListRow.PriceListRowType == PriceListRowType.BasePrice)
                 {
-                    dpiTotal.HeaderDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
+                    dpiTotal.HeaderDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
                 }
                 //for interpreter compensation we get each row in separate subtotal
                 if (priceRow.PriceRowType == PriceRowType.InterpreterCompensation)
