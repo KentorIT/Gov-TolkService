@@ -71,7 +71,7 @@ namespace Tolk.Web.Models
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value,
-                Address = $"{location.Street}\n{location.ZipCode} {location.City}",
+                Address = $"{location.Street}, {location.City}",
                 OffSiteContactInformation = location.OffSiteContactInformation,
                 CustomerName = request.Order.CustomerOrganisation.Name,
                 StartDateTime = request.Order.StartAt,

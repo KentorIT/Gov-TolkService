@@ -560,9 +560,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("Street")
                         .HasMaxLength(100);
 
-                    b.Property<string>("ZipCode")
-                        .HasMaxLength(100);
-
                     b.HasKey("OrderId", "InterpreterLocation");
 
                     b.ToTable("OrderInterpreterLocation");

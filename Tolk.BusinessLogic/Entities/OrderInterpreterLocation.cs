@@ -22,9 +22,6 @@ namespace Tolk.BusinessLogic.Entities
         public string Street { get; set; }
 
         [MaxLength(100)]
-        public string ZipCode { get; set; }
-
-        [MaxLength(100)]
         public string City { get; set; }
 
         [MaxLength(255)]

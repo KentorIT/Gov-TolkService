@@ -138,7 +138,7 @@ namespace Tolk.Web.Models
                 InterpreterLocation = (InterpreterLocation)requisition.Request.InterpreterLocation,
                 InterpretersCompetenceLevel = (CompetenceAndSpecialistLevel?)requisition.Request.CompetenceLevel,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
-                Address = $"{location.Street}\n{location.ZipCode} {location.City}",
+                Address = $"{location.Street}, {location.City}",
                 OffSiteContactInformation = location.OffSiteContactInformation,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 SpecificCompetenceLevelRequired = requisition.Request.Order.SpecificCompetenceLevelRequired,

@@ -12,14 +12,9 @@ namespace Tolk.Web.Models
 
         public int? Rank { get; set; }
 
-        [Display(Name = "Adress")]
+        [Display(Name = "Gatuadress")]
         [ClientRequired]
         public string LocationStreet { get; set; }
-
-        [Display(Name = "Postnummer")]
-        [ClientRequired]
-        [RegularExpression("[0-9]{3} ?[0-9]{2}", ErrorMessage = "Ange postnummer enligt format 12345 eller 123 45")]
-        public string LocationZipCode { get; set; }
 
         [Display(Name = "Ort")]
         [ClientRequired]
@@ -67,7 +62,7 @@ namespace Tolk.Web.Models
                     return string.Empty;
                 }
                 StringBuilder sb = new StringBuilder(InterpreterLocation.Value.GetDescription());
-                return sb.Append(IsOffsite ? $"\nKontaktinformation:\n{OffSiteContactInformation}" : $"\nAdress:\n{LocationStreet}\n{LocationZipCode} {LocationCity}").ToString();
+                return sb.Append(IsOffsite ? $"\nKontaktinformation:\n{OffSiteContactInformation}" : $"\nAdress:\n{LocationStreet}, {LocationCity}").ToString();
             }
         }
 

@@ -493,7 +493,6 @@ namespace Tolk.Web.Models
                 InterpreterLocation = location.InterpreterLocation,
                 Rank = location.Rank,
                 LocationStreet = location.Street,
-                LocationZipCode = location.ZipCode,
                 LocationCity = location.City,
                 OffSiteContactInformation = location.OffSiteContactInformation
             };
@@ -656,7 +655,6 @@ namespace Tolk.Web.Models
                 InterpreterLocation = location,
                 Rank = rank,
                 Street = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationStreet : null,
-                ZipCode = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationZipCode : null,
                 City = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationCity : null,
                 OffSiteContactInformation = (location == InterpreterLocation.OffSiteVideo || location == InterpreterLocation.OffSitePhone) ? addressModel.OffSiteContactInformation : null,
             };
