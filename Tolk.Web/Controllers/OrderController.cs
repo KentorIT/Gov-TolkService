@@ -338,6 +338,10 @@ namespace Tolk.Web.Controllers
             .Single(l => l.LanguageId == model.LanguageId).Name;
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
 
+            //get pricelisttype for customer and get calculated price
+            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisationId).PriceListType;
+            updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel { Header = "Beräknat preliminärt pris", PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType), UseDisplayHideInfo = true };
+
             if (order.Attachments?.Count() > 0)
             {
                 List<FileModel> attachments = new List<FileModel>();

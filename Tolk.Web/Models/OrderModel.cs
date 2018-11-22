@@ -75,7 +75,7 @@ namespace Tolk.Web.Models
         [Required]
         public AssignmentType? AssignmentType { get; set; }
 
-        [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekter här, det görs i extra behov.")]
+        [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekt här, det görs i fältet bredvid.")]
         [ClientRequired]
         [StringLength(255)]
         public string OtherLanguage { get; set; }

@@ -96,22 +96,23 @@ $(function () {
         var allowClear = $(this).parent().hasClass("allow-clear");
         $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });
     });
-  
+
     $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
         var $row = $(this).closest("tr");
         window.location.href = $row.data("click-action-url");
     });
- 
-});
 
-$('.more-info-price').click(function () {
-    $(this).closest('.wrap-price-info').find('.detail-price-info').collapse('toggle');
-    if ($(this).text().indexOf("Visa") !== -1) {
-        $(this).html($(this).html().replace("Visa", "Dölj"));
-    }
-    else {
-        $(this).html($(this).html().replace("Dölj", "Visa"));
-    }
+    $("body").on("click", ".more-info-price", function () {
+        $(this).closest(".wrap-price-info").find(".detail-price-info").collapse("toggle");
+        if ($(this).text().indexOf("Visa") !== -1) {
+            $(this).html($(this).html().replace("Visa", "Dölj"));
+        }
+        else {
+            $(this).html($(this).html().replace("Dölj", "Visa"));
+        }
+    });
+
+
 });
 
 

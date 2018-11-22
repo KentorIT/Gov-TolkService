@@ -255,7 +255,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
         {
             Request request = null;
-            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);
+            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
             var newExpiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
 
             if (expiredRequest != null)
@@ -323,6 +323,13 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext.SaveChanges();
         }
 
+        public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
+        {
+            CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
+            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date).OrderBy(r => r.Rank).FirstOrDefault().RankingId;
+            return _priceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
+        }
+
         public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDateTime)
         {
             // Grab current time to not risk it flipping over during execution of the method.
@@ -351,8 +358,8 @@ namespace Tolk.BusinessLogic.Services
         {
             if (list == null || list.Count() == 0)
             {
-                // Choose the lowest if no level is specified
-                return CompetenceAndSpecialistLevel.OtherInterpreter;
+                // Choose the highest (and most expensive) if no level is specified
+                return CompetenceAndSpecialistLevel.CourtSpecialist;
             }
             if (list.Count() == 1)
             {

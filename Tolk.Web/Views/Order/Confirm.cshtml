@@ -154,6 +154,10 @@
                 }
             </div>
             <div class="col-sm-4">
+                @if (Model.OrderCalculatedPriceInformationModel != null)
+                {
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                }
             </div>
         </div>
         <br />
@@ -163,16 +167,11 @@
                 <display-entry asp-for="CreatedBy" />
             </div>
             <div class="col-sm-4">
-                @if (string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
-                { }
-                else
-                {
-                    <display-entry asp-for="CustomerReferenceNumber" />
-                }
                 <display-entry asp-for="ContactPerson" />
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="UnitName" />
+                <display-entry asp-for="CustomerReferenceNumber" />
             </div>
         </div>
     </div>

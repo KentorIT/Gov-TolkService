@@ -17,7 +17,7 @@ namespace Tolk.Web.Models
         public string Header { get; set; }
 
         [DataType(DataType.Currency)]
-        public decimal TotalPriceToDisplay { get { return PriceInformationToDisplay.TotalPrice; } }
+        public decimal TotalPriceToDisplay { get => PriceInformationToDisplay.TotalPrice; }
 
         public bool UseDisplayHideInfo { get; set; }
 
