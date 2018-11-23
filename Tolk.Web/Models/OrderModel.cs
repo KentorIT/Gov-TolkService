@@ -106,7 +106,7 @@ namespace Tolk.Web.Models
         public bool SpecificCompetenceLevelRequired { get; set; }
 
         [Display(Name = "Krav på kompetensnivå tolk", Description = "OBS! Ingen prioritetsordning")]
-        [ClientRequired]
+        [RequiredChecked(Min = 1, Max = 2)]
         public CheckboxGroup RequiredCompetenceLevels { get; set; }
 
         [Display(Name = "Önskemål kring kompetensnivå tolk")]

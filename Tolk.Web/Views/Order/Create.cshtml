@@ -27,10 +27,10 @@
             @*step 1 fill form*@
             <div class="wizard-step" data-forward-button-text="Gå vidare ">
                 <div class="row">
-                    <div class="col-sm-12 text-center">
-                        <img class="progressbar" src="~/images/Step1_Order.PNG" />
-                    </div>
-                    <div class="col-xs-12">
+                    <div class="col-sm-12">
+                        <div class="col-sm-12 text-center progressbar">
+                            <img class="progressbar" src="~/images/Step1_Order.PNG" />
+                        </div>
                         <h2>Bokningsuppgifter</h2>
                         <hr />
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -121,15 +121,11 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-12">
                         <div class="row">
                             <div class="col-sm-6">
                                 <form-entry asp-for="Description" />
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-12">
                         <div class="row">
                             <div class="col-sm-4">
                                 @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
@@ -158,33 +154,29 @@
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="col-sm-12">
-                            <div class="row">
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                    </div>
+                </div>
+                <h2>Myndighetens uppgifter</h2>
+                <hr />
+                <div class="row">
+                    <div class="col-sm-4">
+                        <display-entry asp-for="CreatedBy" />
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <form-entry asp-for="CustomerReferenceNumber" />
+                            </div>
+                            <div class="col-sm-6">
+                                <form-entry asp-for="UnitName" />
                             </div>
                         </div>
-                    </div>
-                    <h2>Myndighetens uppgifter</h2>
-                    <hr />
-                    <div class="col-sm-12">
                         <div class="row">
-                            <div class="col-sm-4">
-                                <display-entry asp-for="CreatedBy" />
-                            </div>
-                            <div class="col-sm-8">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="CustomerReferenceNumber" />
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="UnitName" />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
-                                    </div>
-                                </div>
+                            <div class="col-sm-6">
+                                <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
                             </div>
                         </div>
                     </div>

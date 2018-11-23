@@ -837,32 +837,27 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteCheckboxGroup(TextWriter writer)
         {
-            var groupId = $"{For.Name}_cbGroup";
-            IDictionary model = (IDictionary)For.ModelExplorer.Model;
+            var htmlBuilder = new HtmlContentBuilder();
 
-            writer.WriteLine($"<div id=\"{groupId}\">");
+            var checkboxGroupBuilder = new TagBuilder("div");
+            checkboxGroupBuilder.Attributes.Add("id", For.Name);
+            checkboxGroupBuilder.Attributes.Add("for", For.Name);
+            checkboxGroupBuilder.Attributes.Add("name", For.Name);
 
-            //foreach (var item in Items)
-            //{
-            //    var tagBuilder = _htmlGenerator.GenerateCheckBox(
-            //        ViewContext,
-            //        For.ModelExplorer,
-            //        expression: For.Name,
-            //        isChecked: false,
-            //        htmlAttributes: new { value = item.Value });
+            htmlBuilder.AppendHtml(checkboxGroupBuilder.RenderStartTag());
 
-            //    tagBuilder.WriteTo(writer, _htmlEncoder);
-            //    writer.WriteLine($"<label>{item.Text}</label></br>");
-            //}
+            var itemsArr = Items.ToArray();
 
-            foreach (var item in Items)
+            for (var i = 0; i < itemsArr.Count(); i++)
             {
-                bool isChecked = (model != null && model[item] != null) ? (bool) model[item] : false;
+                var item = itemsArr[i];
+                var itemName = $"{For.Name}_{i}";
+                bool isChecked = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems?.Contains(item) ?? false;
 
-                   var labelBuilder = _htmlGenerator.GenerateLabel(
+                var labelBuilder = _htmlGenerator.GenerateLabel(
                     ViewContext,
                     For.ModelExplorer,
-                    For.Name,
+                    itemName,
                     labelText: item.Text,
                     htmlAttributes: new { @class = "control-label detail-text" });
 
@@ -871,20 +866,29 @@ namespace Tolk.Web.TagHelpers
                     For.ModelExplorer,
                     For.Name,
                     isChecked: isChecked,
-                    htmlAttributes: new { value = item.Value, @checked = isChecked});
-
-                var htmlBuilder = new HtmlContentBuilder();
+                    htmlAttributes: new { value = item.Value, @checked = isChecked });
+                checkboxBuilder.Attributes.Add("data-checkbox-group", For.Name);
+                
                 htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
-                htmlBuilder.AppendHtml(checkboxBuilder.RenderStartTag());
+                htmlBuilder.AppendHtml(checkboxBuilder.RenderSelfClosingTag());
                 htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
                 htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 
-                WritePrefix(writer, PrefixAttribute.Position.Value);
-                htmlBuilder.WriteTo(writer, _htmlEncoder);
-                writer.WriteLine("<br/>");
+                htmlBuilder.AppendHtml("<br/>");
             }
 
-            writer.WriteLine($"</div>"); //groupId
+            var hiddenBuilder = _htmlGenerator.GenerateCheckBox(
+                ViewContext,
+                For.ModelExplorer,
+                $"{For.Name}_cbHidden",
+                null,
+                new { @class = "force-validation" });
+
+            htmlBuilder.AppendHtml(hiddenBuilder.RenderSelfClosingTag());
+
+            htmlBuilder.AppendHtml(checkboxGroupBuilder.RenderEndTag());
+
+            htmlBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WriteValidation(TextWriter writer)
