@@ -8,21 +8,26 @@ namespace Tolk.Web.Models
 {
     public class InterpreterLocationAddressModel
     {
+
+        [Display(Name = "Inställelsesätt")]
         public E.InterpreterLocation? InterpreterLocation { get; set; }
 
         public int? Rank { get; set; }
 
         [Display(Name = "Gatuadress")]
         [ClientRequired]
+        [SubItem]
         public string LocationStreet { get; set; }
 
         [Display(Name = "Ort")]
         [ClientRequired]
+        [SubItem]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Kontaktinformation för distanstolkning")]
+        [Display(Name = "Kontaktinformation för tolktillfället", Description = "Ex. telefonnummer eller namn relevant för tillfället")]
         [ClientRequired]
         [StringLength(255)]
+        [SubItem]
         public string OffSiteContactInformation { get; set; }
 
         [DataType(DataType.MultilineText)]
@@ -66,7 +71,11 @@ namespace Tolk.Web.Models
             }
         }
 
-        private bool IsOffsite => InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo;
+        [Display(Name = "Adress")]
+        [SubItem]
+        public string Address => InterpreterLocation.HasValue ? !IsOffsite ? $"{LocationStreet}, {LocationCity}" : string.Empty : string.Empty;
+
+        private bool IsOffsite => InterpreterLocation.HasValue ? InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo : false;
 
     }
 }

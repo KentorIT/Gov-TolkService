@@ -111,11 +111,12 @@ hr {
 
 .page {
     background-color: white;
-    padding: 10px 20px;
+    padding: 10px 40px 10px 40px;
     float: none;
     margin: 0 auto;
     box-shadow: 1px 2px 4px 0 rgba(0,0,0,0.5);
 }
+
 
 .select2-container,
 .select2-container--default,
@@ -228,6 +229,10 @@ hr {
 
 .radiobutton-row-space {
     margin-bottom: 5px;
+}
+
+.subitem {
+    font-size: 14px;
 }
 
 #AssignmentType_rbGroup {
@@ -415,6 +420,7 @@ a.btn-large {
     background-color: @primary-lightest;
     background-position: 0 -15px;
     color: black;
+    border: none;
 }
 
 .btn-warning:hover,
@@ -427,6 +433,7 @@ a.btn-large {
     background-color: @primary-lightest;
     background-position: 0 -15px;
     color: black;
+    border: none;
 }
 
 .btn-success:hover,
@@ -436,6 +443,8 @@ a.btn-large {
 .btn-success.active,
 .btn-success:active:hover,
 .btn-success:active.focus,
+.btn-success.hover:focus,
+.btn-success:focus.hover,
 .btn-primary:hover,
 .btn-primary.hover,
 .btn-primary:focus,
@@ -443,16 +452,23 @@ a.btn-large {
 .btn-primary.active,
 .btn-primary:active:hover,
 .btn-primary:active.focus,
+.btn-primary.hover:focus,
+.btn-primary:focus.hover,
 .btn-default:hover,
 .btn-default.hover,
 .btn-default:focus,
 .btn-default:active,
 .btn-default.active,
 .btn-default:active:hover,
-.btn-default:active.focus {
+.btn-default:active.focus,
+.btn-default.hover:focus,
+.btn-default:focus.hover,
+.btn-primary.disabled:hover,
+[disabled].btn-primary:hover, fieldset[disabled] .btn-primary:hover, .btn-primary.disabled:focus, [disabled].btn-primary:focus, fieldset[disabled] .btn-primary:focus, .btn-primary.disabled.focus, [disabled].btn-primary.focus, fieldset[disabled] .btn-primary.focus {
     background-color: @primary;
     background-position: 0 -15px;
     color: black;
+    border: none;
 }
 
 input[type='checkbox'] {
@@ -763,6 +779,7 @@ li.placeholder::before {
     background-color: white;
     border: none;
     box-shadow: 0 2px 4px 0 rgba(0,0,0,0.5);
+    font-size: 17px;
 }
 
 .navbar-default .navbar-nav > li > a {

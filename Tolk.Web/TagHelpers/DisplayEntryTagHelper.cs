@@ -55,28 +55,30 @@ namespace Tolk.Web.TagHelpers
             {            // Check if label will be displayed
                 var type = For.ModelExplorer.Metadata.ContainerType;
                 var isDisplayed = true;
+                var isSubItem = false;
                 var property = type?.GetProperty(For.ModelExplorer.Metadata.PropertyName);
                 if (property != null)
                 {
                     isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
+                    isSubItem = Attribute.IsDefined(property, typeof(SubItem));
                 }
                 if (isDisplayed)
                 {
-                    WriteLabel(writer);
+                    WriteLabel(writer, isSubItem);
                 }
                 WriteDetails(writer);
                 output.Content.AppendHtml(writer.ToString());
             }
         }
 
-        private void WriteLabel(TextWriter writer)
+        private void WriteLabel(TextWriter writer, bool isSubItem = false)
         {
             var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 labelText: LabelOverride,
-                htmlAttributes: new { @class = "control-label" });
+                htmlAttributes: new { @class = isSubItem ? "subitem control-label" : "control-label" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }

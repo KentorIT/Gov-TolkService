@@ -20,7 +20,7 @@
         }
         else
         {
-            <div>@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")<a class="price-column more-info-price" href="#more-info">Visa specifikation</a></div>
+            <div><span class="detail-text">@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")</span><a class="price-column more-info-price" href="#more-info">Visa specifikation</a></div>
         }
         <div class="body-content col-sm-12 collapse detail-price-info">
             <span class="price-header bold">@Model.Header</span><br />

@@ -7,8 +7,8 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
-using Tolk.Web.Helpers.RequiredIf;
 using Tolk.Web.Services;
+
 
 namespace Tolk.Web.Models
 {
@@ -25,7 +25,7 @@ namespace Tolk.Web.Models
 
         public long SystemTime { get; set; }
 
-        [Display(Name = "Region", Description = "Region där tolkningen ska utföras")]
+        [Display(Name = "Region", Description = "Det län där tolkningen ska äga rum")]
         [Required]
         public int? RegionId { get; set; }
 
@@ -48,14 +48,14 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Extra information", Description = "Extra information om uppdraget i det fall det behövs")]
+        [Display(Name = "Extra information", Description = "Exempelvis vägbeskrivning eller ärendeinformation")]
         public string Description { get; set; }
 
         [Display(Name = "Språk och dialekt")]
         [DataType(DataType.MultilineText)]
         public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
-        [Display(Name = "Enhet/avdelning")]
+        [Display(Name = "Myndighetens ennhet/avdelning")]
         [ClientRequired]
         public string UnitName { get; set; }
 
@@ -67,8 +67,7 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
-
-        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker imorgon, måste ni ange senaste svarstid")]
+        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker imorgon, måste senaste svarstid anges")]
         [ClientRequired]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
@@ -76,7 +75,7 @@ namespace Tolk.Web.Models
         [Required]
         public RadioButtonGroup AssignmentType { get; set; }
 
-        [Display(Name = "Övrigt (annat) språk", Description = "Lägg till språk här. Lägg inte till dialekt här, det görs i fältet bredvid.")]
+        [Display(Name = "Övrigt (annat) språk", Description = "Ange annat språk. Dialekt läggs till i fältet bredvid.")]
         [ClientRequired]
         [StringLength(255)]
         public string OtherLanguage { get; set; }
@@ -94,7 +93,7 @@ namespace Tolk.Web.Models
         public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
 
-        [Display(Name = "Ert referensnummer", Description = "Extra fält för att koppla till ett ärendenummer i er verksamhet")]
+        [Display(Name = "Myndighetens ärende/referensnummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Avropande myndighet")]
@@ -121,7 +120,7 @@ namespace Tolk.Web.Models
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
-        [Display(Name = "Accepterar restid över 2 tim landvägen eller avstånd över 100 km")]
+        [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
         public bool IsOnSiteOrOffSiteDesignatedLocationSelected
@@ -183,7 +182,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        [Display(Name = "Annan kontaktperson")]
+        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att handlägga rekvisitionen")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 
@@ -345,7 +344,7 @@ namespace Tolk.Web.Models
         public void UpdateOrder(Order order, bool isReplace = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = SplitTimeRange?.StartAt?? TimeRange.StartDateTime;
+            order.StartAt = SplitTimeRange?.StartAt ?? TimeRange.StartDateTime;
             order.EndAt = SplitTimeRange?.EndAt ?? TimeRange.EndDateTime;
             order.Description = Description;
             order.UnitName = UnitName;

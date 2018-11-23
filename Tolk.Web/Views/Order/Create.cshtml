@@ -28,7 +28,7 @@
             <div class="wizard-step" data-forward-button-text="Gå vidare ">
                 <div class="row">
                     <div class="col-sm-12">
-                        <div class="col-sm-12 text-center progressbar">
+                        <div class="col-sm-12 text-center">
                             <img class="progressbar" src="~/images/Step1_Order.PNG" />
                         </div>
                         <h2>Bokningsuppgifter</h2>
@@ -109,9 +109,9 @@
                                     <div class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</div>
                                     <form-entry asp-for="SpecificCompetenceLevelRequired" />
                                     <span id="competence-required">
-                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå"/>
+                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
                                         @*<form-entry asp-for="RequiredCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />*@
+                                            <form-entry asp-for="RequiredCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />*@
                                     </span>
                                     <span id="competence-requested">
                                         <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="Ange ett till tre önskemål på kompetensnivå i prioritetsordning" />
@@ -155,10 +155,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                    </div>
-                </div>
                 <h2>Myndighetens uppgifter</h2>
                 <hr />
                 <div class="row">
@@ -183,23 +179,23 @@
                 </div>
                 <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
-        </div>
 
-        @*step 2 confirm*@
-        <div class="wizard-step" data-forward-button-text="Skicka bokning ">
-            <div class="row">
-                <div class="col-sm-12">
+            @*step 2 confirm*@
+            <div class="wizard-step" data-forward-button-text="Skicka bokning ">
+                <div class="row">
+                    <div class="col-sm-12">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="wizard-footer">
-            <div class="wizard-back">
-                <button type="button" class="btn btn-large btn-warning pull-left do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
+            <div class="wizard-footer">
+                <div class="wizard-back">
+                    <button type="button" class="btn btn-large btn-warning pull-left do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
+                </div>
+                <div class="wizard-forward">
+                    <button class="wizard-forward-button btn btn-primary btn-large pull-right" type="button" id="send"></button>
+                </div>
+                <div class="wizard-message-area"></div>
             </div>
-            <div class="wizard-forward">
-                <button class="wizard-forward-button btn btn-primary btn-large pull-right" type="button" id="send"></button>
-            </div>
-            <div class="wizard-message-area"></div>
         </div>
     </div>
 }

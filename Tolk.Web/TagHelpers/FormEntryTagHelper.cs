@@ -259,7 +259,11 @@ namespace Tolk.Web.TagHelpers
 
             if (IsDisplayed)
             {
-                TagBuilder tagBuilder = GenerateLabel();
+                bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItem>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
+
+                TagBuilder tagBuilder = GenerateLabel(IsSubItem);
 
                 if (For.ModelExplorer.Metadata.IsRequired)
                 {
@@ -280,14 +284,14 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private TagBuilder GenerateLabel()
+        private TagBuilder GenerateLabel(bool isSubItem = false)
         {
             return _htmlGenerator.GenerateLabel(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 labelText: LabelOverride,
-                htmlAttributes: new { @class = "control-label" });
+                htmlAttributes: new { @class = isSubItem ? "subitem control-label" : "control-label" });
         }
 
         private void WriteInput(TextWriter writer)
