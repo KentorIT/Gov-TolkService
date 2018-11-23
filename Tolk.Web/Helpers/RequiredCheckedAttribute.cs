@@ -10,12 +10,9 @@ namespace Tolk.Web.Helpers
 {
     public class RequiredCheckedAttribute : ValidationAttribute, IClientModelValidator
     {
-        // It shouldn't be reasonable to have 1000 checkboxes in one group...
-        public const int MaxChecked = 1000;
-
         public int Min { get; set; } = 0;
 
-        public int Max { get; set; } = MaxChecked;
+        public int Max { get; set; } = int.MaxValue;
 
         public void AddValidation(ClientModelValidationContext context)
         {
@@ -27,19 +24,41 @@ namespace Tolk.Web.Helpers
             if (context.Attributes.ContainsKey("class") && context.Attributes["class"].Contains("force-validation"))
             {
                 var minText = Min != 0 ? $"minst {Min} val" : "";
-                var maxText = Max < MaxChecked ? $"max {Max} val" : "";
-                var bridge = Min != 0 && Max < MaxChecked ? ", samt " : "";
+                var maxText = Max != int.MaxValue ? $"max {Max} val" : "";
+                var bridge = Min != 0 && Max != int.MaxValue ? ", samt " : "";
 
                 MergeAttribute(context.Attributes, "data-val", "true");
                 MergeAttribute(context.Attributes, "data-val-requiredchecked", $"{context.ModelMetadata.DisplayName} får ha {minText}{bridge}{maxText} ifyllda");
                 MergeAttribute(context.Attributes, "data-val-requiredchecked-min", Min.ToString());
                 MergeAttribute(context.Attributes, "data-val-requiredchecked-max", Max.ToString());
-                MergeAttribute(context.Attributes, "data-val-requiredchecked-maxchecked", MaxChecked.ToString());
+                MergeAttribute(context.Attributes, "data-val-requiredchecked-maxchecked", int.MaxValue.ToString());
             }
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            { // Argument checks
+                if (value == null || validationContext == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (Min < 0 || Max < 0)
+                {
+                    throw new ArgumentOutOfRangeException("Arguments cannot be negative");
+                }
+                if (Min > Max)
+                {
+                    throw new ArgumentException($"{nameof(Min)} cannot be bigger than {nameof(Max)}");
+                }
+            }
+
+            var checkboxGroup = (CheckboxGroup) value;
+
+            if (checkboxGroup.SelectedItems.Count < Min || checkboxGroup.SelectedItems.Count > Max)
+            {
+                return new ValidationResult(ErrorMessageString);
+            }
+
             return ValidationResult.Success;
         }
 

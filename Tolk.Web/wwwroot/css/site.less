@@ -466,6 +466,11 @@ input[type='checkbox'] {
     border: none;
 }
 
+input[type='checkbox'][disabled]:after {
+    background: @lightgray;
+    border-color: @darkgray;
+}
+
 input[type='checkbox']:after {
     content: '';
     vertical-align: middle;

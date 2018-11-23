@@ -230,6 +230,18 @@ $(function () {
         }
     });
 
+    $("body").on("change", "#RequiredCompetenceLevels", function () {
+        var allCheckboxes = $('[data-checkbox-group="RequiredCompetenceLevels"]');
+        var checkedBoxes = allCheckboxes.filter(':checked');
+
+        if (checkedBoxes.length >= 2) {
+            allCheckboxes.filter(':not(:checked)').attr('disabled', 'disabled');
+        }
+        else {
+            allCheckboxes.filter(':not(:checked)').removeAttr('disabled');
+        }
+    });
+
     $("#SpecificCompetenceLevelRequired").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
     $("#SplitTimeRange_StartDate").trigger("change");

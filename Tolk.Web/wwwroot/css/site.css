@@ -388,6 +388,10 @@ input[type='checkbox'] {
   content: '';
   border: none;
 }
+input[type='checkbox'][disabled]:after {
+  background: #F1F4F2;
+  border-color: #646464;
+}
 input[type='checkbox']:after {
   content: '';
   vertical-align: middle;
