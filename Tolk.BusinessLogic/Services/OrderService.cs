@@ -286,6 +286,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.Ranking.Broker)
                     .Single(r => r.RequestId == request.RequestId);
                 _notificationService.RequestCreated(newRequest);

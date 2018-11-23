@@ -7,7 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Tolk.Api.Payloads;
+using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -28,26 +28,20 @@ namespace Tolk.Web.Api.Controllers
         {
             _dbContext = tolkDbContext;
             _options = options.Value;
+            // will probably be removed, and replaced by a RequestService (used by both this(api) and web)
             _priceCalculationService = priceCalculationService;
         }
 
-        [HttpPost]
-        public ActionResult<string> AssignWithText([FromBody] RequestAssignModel model)
-        {
-            X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
-            var user = GetApiUser();
-            return $"User: {user?.FullName ?? "[None found]"} Cert: {clientCertInRequest?.Subject}, Oid: {model.OrderNumber}, Inter: {model.Interpreter} Time: {GetTimeAsync().Result}";
-        }
+        #region Methods
 
         [HttpPost]
-        public JsonResult Accept([FromBody] RequestAssignModel model)
+        public JsonResult Answer([FromBody] RequestAssignModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
                 return ReturError("UNAUTHORIZED");
             }
-            var user = GetUser(model.CallingUser, apiUser.BrokerId.Value);
             //Possibly the user should be added, if not found?? 
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
@@ -59,6 +53,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("ORDER_NOT_FOUND");
             }
+            var user = GetUser(model.CallingUser, apiUser.BrokerId.Value);
             var request = order.Requests.SingleOrDefault(r =>
                 apiUser.BrokerId == r.Ranking.BrokerId &&
                 //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
@@ -67,6 +62,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("REQUEST_NOT_FOUND");
             }
+
             var interpreter = GetInterpreter(model.Interpreter);
             //Does not handle Tolk-Id
             if (interpreter == null)
@@ -76,6 +72,8 @@ namespace Tolk.Web.Api.Controllers
             }
             var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
             var now = GetTimeAsync().Result;
+            //Add RequestService that does this, and additionally calls _notificationService
+            //Add transaction here!!!
             if (request.Status == RequestStatus.Created)
             {
                 request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
@@ -91,8 +89,45 @@ namespace Tolk.Web.Api.Controllers
                 _priceCalculationService.GetPrices(request, competenceLevel, model.ExpectedTravelCosts)
             );
             _dbContext.SaveChanges();
+            //End of service
             return Json(new ResponseBase());
         }
+
+        [HttpPost]
+        public JsonResult Acknowledge([FromBody] RequestAcknowledgeModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            //Possibly the user should be added, if not found?? 
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber);
+            if (order == null)
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+            var user = GetUser(model.CallingUser, apiUser.BrokerId.Value);
+            var request = order.Requests.SingleOrDefault(r =>
+                apiUser.BrokerId == r.Ranking.BrokerId &&
+                (r.Status == RequestStatus.Created));
+            if (request == null)
+            {
+                return ReturError("REQUEST_NOT_FOUND");
+            }
+            var now = GetTimeAsync().Result;
+            //Add RequestService that does this, and additionally calls _notificationService
+            request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+            _dbContext.SaveChanges();
+            //End of service
+            return Json(new ResponseBase());
+        }
+
+        #endregion
+
+        #region private methods
 
         private JsonResult ReturError(string errorCode)
         {
@@ -146,6 +181,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
+        //Break out, or fill cache at startup?
+        // use this pattern: public const string UNAUTHORIZED = nameof(UNAUTHORIZED);
         private static IEnumerable<ErrorResponse> ErrorResponses
         {
             get
@@ -161,5 +198,7 @@ namespace Tolk.Web.Api.Controllers
                };
             }
         }
+
+        #endregion
     }
 }

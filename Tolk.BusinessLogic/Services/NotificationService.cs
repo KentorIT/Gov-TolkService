@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Tolk.Api.Payloads;
+using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -152,7 +152,13 @@ namespace Tolk.BusinessLogic.Services
                         OrderNumber = order.OrderNumber,
                         Customer = order.CustomerOrganisation.Name,
                         Region = order.Region.Name,
-                        Language = order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
+                        Language = new LanguageModel
+                        {
+                            Key = request.Order.Language?.ISO_639_1_Code,
+                            Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
+                            Dialect = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.Description,
+                            DialectIsRequired = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.IsRequired ?? false
+                        },
                         ExpiresAt = request.ExpiresAt,
                         StartAt = order.StartAt,
                         EndAt = order.EndAt,
@@ -470,7 +476,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreateWebHookCall(WebHookPayloadModel payload, string recipientUrl, NotificationType type, int userId)
+        private void CreateWebHookCall(WebHookPayloadBaseModel payload, string recipientUrl, NotificationType type, int userId)
         {
             _dbContext.Add(new OutboundWebHookCall(
                 recipientUrl,
