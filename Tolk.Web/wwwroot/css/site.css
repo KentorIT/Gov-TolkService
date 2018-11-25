@@ -671,6 +671,11 @@ li.placeholder::before {
   font-weight: 300;
   margin-bottom: 20px;
 }
+.no-value-info {
+  font-style: italic;
+  color: #646464;
+  font-weight: 300;
+}
 .group-box {
   margin-bottom: 10px;
 }

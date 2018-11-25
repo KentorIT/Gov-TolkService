@@ -55,7 +55,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
-        [Display(Name = "Myndighetens ennhet/avdelning")]
+        [Display(Name = "Myndighetens enhet/avdelning")]
         [ClientRequired]
         public string UnitName { get; set; }
 
@@ -93,7 +93,7 @@ namespace Tolk.Web.Models
         public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
 
-        [Display(Name = "Myndighetens ärende/referensnummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
+        [Display(Name = "Myndighetens ärendenummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Avropande myndighet")]
