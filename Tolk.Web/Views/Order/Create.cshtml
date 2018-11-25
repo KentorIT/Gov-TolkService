@@ -103,8 +103,7 @@
                         </div>
                         <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
                         <div class="row">
-                            <div class="col-sm-12">
-                                <span class="col-sm-6">
+                            <div class="col-sm-8">
                                     <label>Tolkens kompetensnivå</label>
                                     <div class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</div>
                                     <form-entry asp-for="SpecificCompetenceLevelRequired" />
@@ -118,7 +117,6 @@
                                         <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                         <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                     </span>
-                                </span>
                             </div>
                         </div>
                         <div class="row">

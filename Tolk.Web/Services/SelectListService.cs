@@ -97,7 +97,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
-                .OrderByDescending(e => (int) e.Value)
+                .OrderByDescending(e => (int)e.Value)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
@@ -339,14 +339,9 @@ namespace Tolk.Web.Services
         }
 
         public IEnumerable<SelectListItem> UserStatuses
-            { get; } =
+        { get; } =
             EnumHelper.GetAllDescriptions<UserStatus>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
-
-        public IEnumerable<SelectListItem> Sexes { get; } =
-            EnumHelper.GetAllDescriptions<Sex>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = ((int) e.Value).ToString() })
                 .ToList().AsReadOnly();
     }
 }
