@@ -146,7 +146,7 @@ $(function () {
     });
 
     $("body").on("change", "#CompetenceLevelDesireType", function () {
-        var items = $(this).filter('input[checked=checked]');
+        var items = $(this).filter('input:checked');
         if ($(items[0]).val() === 'Requirement') {
             // Is requirement
             $("#competence-requested").hide();

@@ -7,10 +7,10 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum DesireType
     {
-        [Description("Krav på tolkens kompetensnivå finns")]
-        Requirement = 1,
-
         [Description("Önskemål på tolkens kompetensnivå finns")]
-        Request = 2
+        Request = 1,
+
+        [Description("Krav på tolkens kompetensnivå finns")]
+        Requirement = 2,
     }
 }
