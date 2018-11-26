@@ -41,7 +41,8 @@ h3 {
 a {
   color: #587573;
 }
-a:hover {
+a:hover,
+a:focus {
   color: #445352;
 }
 a:active {
