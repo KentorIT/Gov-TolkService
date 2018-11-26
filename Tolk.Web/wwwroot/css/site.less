@@ -16,6 +16,11 @@
 @border-shadow-color: #445352;
 @bg-gray: #F1F4F2;
 
+html {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
 .bg-gray {
     background-color: @bg-gray;
 }
@@ -909,4 +914,14 @@ input.force-validation {
     position: absolute;
     left: -15px;
     pointer-events: none;
+}
+
+.navbar > .container {
+    width: 100%;
+}
+
+@media (min-width: 1200px) {
+    ul.nav.navbar-nav > li {
+        padding: 0px 10px;
+    }
 }
