@@ -231,6 +231,11 @@ $(function () {
         }
     });
 
+    $("body").on("click", ".wizard-forward-button", function () {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    });
+
     $("body").on("change", "#RequiredCompetenceLevels", function () {
         var allCheckboxes = $('[data-checkbox-group="RequiredCompetenceLevels"]');
         var checkedBoxes = allCheckboxes.filter(':checked');
