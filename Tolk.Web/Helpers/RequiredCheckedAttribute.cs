@@ -37,8 +37,18 @@ namespace Tolk.Web.Helpers
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            // Specific case for competence requirements
+            if (validationContext.ObjectInstance.GetType() == typeof(OrderModel))
+            {
+                var model = (OrderModel)validationContext.ObjectInstance;
+                if (validationContext.MemberName == nameof(model.RequiredCompetenceLevels)
+                    && !model.SpecificCompetenceLevelRequired)
+                {
+                    return ValidationResult.Success;
+                }
+            }
             { // Argument checks
-                if (value == null || validationContext == null)
+                if (validationContext == null)
                 {
                     throw new ArgumentNullException();
                 }
@@ -52,7 +62,7 @@ namespace Tolk.Web.Helpers
                 }
             }
 
-            var checkboxGroup = (CheckboxGroup) value;
+            var checkboxGroup = (CheckboxGroup)value;
 
             if (checkboxGroup.SelectedItems.Count < Min || checkboxGroup.SelectedItems.Count > Max)
             {
