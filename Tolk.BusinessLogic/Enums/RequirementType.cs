@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Specifik tolk")]
         SpecifiedInterpreter = 3,
 
-        [Description("Ej specifik tolk")]
+        [Description("Uteslut tolk")]
         DeniedInterpreter = 4,
 
         [Description("Säkerhetsprövad tolk")]
