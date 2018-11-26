@@ -101,8 +101,8 @@ namespace Tolk.Web.Models
         public string CustomerCompactInfo
         { get => CustomerName + "\nEnhet/avdelning: " + UnitName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
 
-        [Display(Name = "Kompetensnivå är ett krav")]
-        public bool SpecificCompetenceLevelRequired { get; set; }
+        [NoDisplayName]
+        public RadioButtonGroup CompetenceLevelDesireType { get; set; }
 
         [Display(Name = "Krav på kompetensnivå tolk", Description = "OBS! Ingen prioritetsordning")]
         [RequiredChecked(Min = 1, Max = 2)]
@@ -133,6 +133,15 @@ namespace Tolk.Web.Models
                     || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
                     || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
                     || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation);
+            }
+        }
+
+        [Display(Name = "Kompetensnivå är ett krav")]
+        public bool SpecificCompetenceLevelRequired
+        {
+            get
+            {
+                return EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
             }
         }
 
@@ -540,7 +549,12 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
-                SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
+                CompetenceLevelDesireType = new RadioButtonGroup
+                {
+                    SelectedItem = order.SpecificCompetenceLevelRequired
+                    ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
+                    : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
+                },
                 RequiredCompetenceLevels = new CheckboxGroup
                 {
                     SelectedItems = SelectListService.CompetenceLevels
@@ -642,7 +656,12 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
-                SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
+                CompetenceLevelDesireType = new RadioButtonGroup
+                {
+                    SelectedItem = order.SpecificCompetenceLevelRequired
+                    ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
+                    : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
+                },
                 RequiredCompetenceLevels = new CheckboxGroup
                 {
                     SelectedItems = SelectListService.CompetenceLevels

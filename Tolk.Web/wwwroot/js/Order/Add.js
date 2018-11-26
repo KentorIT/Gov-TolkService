@@ -145,8 +145,9 @@ $(function () {
         toggleOtherLanguage($(this).val());
     });
 
-    $("body").on("change", "#SpecificCompetenceLevelRequired", function () {
-        if (this.checked) {
+    $("body").on("change", "#CompetenceLevelDesireType", function () {
+        var items = $(this).filter('input[checked=checked]');
+        if ($(items[0]).val() === 'Requirement') {
             // Is requirement
             $("#competence-requested").hide();
             $("#competence-required").show();
@@ -242,7 +243,7 @@ $(function () {
         }
     });
 
-    $("#SpecificCompetenceLevelRequired").trigger("change");
+    $("#CompetenceLevelDesireType").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
     $("#SplitTimeRange_StartDate").trigger("change");
 });
