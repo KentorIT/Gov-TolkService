@@ -108,7 +108,7 @@ namespace Tolk.Web.Models
         [RequiredChecked(Min = 1, Max = 2)]
         public CheckboxGroup RequiredCompetenceLevels { get; set; }
 
-        [Display(Name = "Önskemål kring kompetensnivå tolk")]
+        [Display(Name = "Önskemål om kompetensnivå tolk")]
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
