@@ -831,3 +831,9 @@ input.force-validation {
     padding: 0px 10px;
   }
 }
+.navbar-nav > li > a {
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
