@@ -274,7 +274,8 @@ namespace Tolk.Web.Authorization
                                     a.Requisition.Request.Order.CreatedBy == userId ||
                                     a.Requisition.Request.Order.ContactPersonId == userId) ||
                                 attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
-                                    a.Request.Order.ContactPersonId == userId);
+                                    a.Request.Order.ContactPersonId == userId) ||
+                                     attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                         }
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
