@@ -1,16 +1,10 @@
-﻿using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TagHelpers;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -30,12 +24,16 @@ namespace Tolk.Web.TagHelpers
 
         private const string ForAttributeName = "asp-for";
         private const string LabelOverrideattributeName = "label-override";
+        private const string ValuePrefixAttributeName = "asp-value-prefix";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
         [HtmlAttributeName(LabelOverrideattributeName)]
         public string LabelOverride { get; set; }
+
+        [HtmlAttributeName(ValuePrefixAttributeName)]
+        public string ValuePrefix { get; set; } = "";
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -92,42 +90,42 @@ namespace Tolk.Web.TagHelpers
             switch (GetOutputType())
             {
                 case OutputType.Enum:
-                    text = EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
+                    text = ValuePrefix + EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
                     break;
                 case OutputType.Bool:
-                    text = ((bool)For.ModelExplorer.Model) ? "Ja" : "Nej";
+                    text = ValuePrefix + (((bool)For.ModelExplorer.Model) ? "Ja" : "Nej");
                     break;
                 case OutputType.DateTimeOffset:
-                    text = ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
+                    text = ValuePrefix + ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.TimeRange:
                     var timeRange = (TimeRange)For.ModelExplorer.Model;
-                    text = timeRange.StartDate.ToString("yyyy-MM-dd") + " "
+                    text = ValuePrefix + timeRange.StartDate.ToString("yyyy-MM-dd") + " "
                         + timeRange.StartTime.ToString("hh\\:mm") + "-"
                         + timeRange.EndTime.ToString("hh\\:mm");
                     break;
                 case OutputType.Currency:
-                    text = ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
+                    text = ValuePrefix + ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
                     break;
                 case OutputType.MultilineText:
                     className += " line-break";
-                    text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    text = ValuePrefix + _htmlGenerator.Encode(For.ModelExplorer.Model);
                     break;
                 case OutputType.TimeSpan:
                     var time = ((TimeSpan?)For.ModelExplorer.Model) ?? TimeSpan.Zero;
-                    text = time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter";
+                    text = ValuePrefix + (time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter");
                     break;
                 case OutputType.RadioButtonGroup:
-                    text = ((RadioButtonGroup) For.ModelExplorer.Model).SelectedItem.Text;
+                    text = ValuePrefix + ((RadioButtonGroup) For.ModelExplorer.Model).SelectedItem.Text;
                     break;
                 case OutputType.CheckboxGroup:
                     className += " line-break";
-                    text = ((CheckboxGroup)For.ModelExplorer.Model).SelectedItems
+                    text = ValuePrefix + ((CheckboxGroup)For.ModelExplorer.Model).SelectedItems
                         .Select(item => item.Text)
                         .Aggregate((current, next) => current + "\n" + next);
                     break;
                 default:
-                    text = _htmlGenerator.Encode(For.ModelExplorer.Model);
+                    text = ValuePrefix + _htmlGenerator.Encode(For.ModelExplorer.Model);
                     break;
             }
             writer.WriteLine($"<div class=\"{className}\">{text}</div>");

@@ -106,15 +106,15 @@
                     {
                         @if (Model.RequestedCompetenceLevelFirst.HasValue)
                         {
-                            <display-entry asp-for="RequestedCompetenceLevelFirst" />
+                            <display-entry asp-for="RequestedCompetenceLevelFirst" asp-value-prefix="1. "/>
                         }
                         @if (Model.RequestedCompetenceLevelSecond.HasValue)
                         {
-                            <display-entry asp-for="RequestedCompetenceLevelSecond" />
+                            <display-entry asp-for="RequestedCompetenceLevelSecond" asp-value-prefix="2. "/>
                         }
                         @if (Model.RequestedCompetenceLevelThird.HasValue)
                         {
-                            <display-entry asp-for="RequestedCompetenceLevelThird" />
+                            <display-entry asp-for="RequestedCompetenceLevelThird" asp-value-prefix="3. "/>
                         }
                     }
                 }
