@@ -15,21 +15,18 @@
       "renameLocals": true
     }
   },
-
   {
     "outputFileName": "wwwroot/js/Wizard/wizard.min.js",
     "inputFiles": [
       "wwwroot/js/Wizard/wizard.js"
     ]
   },
-
   {
     "outputFileName": "wwwroot/js/Wizard/validate.min.js",
     "inputFiles": [
       "wwwroot/js/Wizard/validate.js"
     ]
   },
-
   {
     "outputFileName": "wwwroot/js/Order/add.min.js",
     "inputFiles": [
@@ -110,6 +107,12 @@
     "outputFileName": "wwwroot/js/JSDateExtensions.min.js",
     "inputFiles": [
       "wwwroot/js/JSDateExtensions.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/validation.min.js",
+    "inputFiles": [
+      "wwwroot/js/validation.js"
     ]
   }
 ]
