@@ -38,6 +38,11 @@ $(function () {
         var $row = $(this).closest("tr");
         window.location.href = tolkBaseUrl + "Files/Download?id=" + $row.data("id");
     });
+
+    $("body").on("click", "#addFilesDialog", function () {
+        $("#choose-file").text("Välj fil");
+    });
+
     $("body").on("click", "#addFilesDialog .upload-files", function (event) {
         event.preventDefault();
         //Before we start, validate the form!
@@ -91,4 +96,16 @@ $(function () {
         }
     });
     currentId = $(".file-table-add > tbody > tr").length;
+});
+
+$("body").on("change", ".filestyle", function () {
+    var files = $(".filestyle")[0].files;
+    if (files.length > 0) {
+        var fileInfo = "";
+        $("#choose-file").text("Ändra fil");
+        for (var i = 0; i < files.length; i++) {
+            fileInfo += i > 0 ? ", " + files[i].name : " " + files[i].name;
+        }
+    }
+    $("#selected-filename").text(fileInfo);
 });

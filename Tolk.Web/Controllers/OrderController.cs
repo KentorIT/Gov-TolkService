@@ -177,7 +177,7 @@ namespace Tolk.Web.Controllers
                         AllowDownload = true,
                         AllowUpload = false,
                         Title = "Bifogade filer från förmedling",
-                        Files = request.Attachments.Select(a => new FileModel
+                        DisplayFiles = request.Attachments.Select(a => new FileModel
                         {
                             Id = a.Attachment.AttachmentId,
                             FileName = a.Attachment.FileName,
@@ -356,7 +356,7 @@ namespace Tolk.Web.Controllers
                     AllowDownload = true,
                     AllowUpload = false,
                     Title = "Bifogade filer",
-                    Files = attachments
+                    DisplayFiles = attachments
                 };
             }
 

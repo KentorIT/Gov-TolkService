@@ -34,11 +34,11 @@
         <display-entry asp-for="StartDateTime" />
         <display-entry asp-for="EndDateTime" />
         <display-entry asp-for="BrokerName" />
-        @if (Model.OrderAttachmentListModel?.Files?.Count > 0)
+        @if (Model.OrderAttachmentListModel?.DisplayFiles?.Count > 0)
         {
             @await Html.PartialAsync("_FileList", Model.OrderAttachmentListModel)
         }
-        @if (Model.RequestAttachmentListModel?.Files?.Count > 0)
+        @if (Model.RequestAttachmentListModel?.DisplayFiles?.Count > 0)
         {
             @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
         }

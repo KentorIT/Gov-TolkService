@@ -28,7 +28,7 @@
         <display-entry asp-for="ExpectedTravelCosts" />
         <display-entry asp-for="TravelCosts" />
         <display-entry asp-for="Message" />
-        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
         {
             @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
         }

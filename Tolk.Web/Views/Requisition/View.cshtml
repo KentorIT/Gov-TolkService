@@ -100,7 +100,7 @@
         {
             <div class="important-info">Tid för att beräkna tolkersättning är hämtad från ursprunglig avropad uppdragstid </div>
         }
-        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
         {
             @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
         }

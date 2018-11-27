@@ -86,7 +86,7 @@
             <span>Inga önskemål om kompetensnivå</span> <br /><br />
         }
         <display-entry asp-for="TimeRange" />
-        @if (Model.AttachmentListModel?.Files?.Count > 0)
+        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
         {
             @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
         }

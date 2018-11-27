@@ -9,9 +9,15 @@
             <div class="modal-body">
                 <form method="post" class="do-not-check-dirty" enctype="multipart/form-data" asp-controller="Files" asp-action="Upload" id="files-uploader">
                     <div class="form-group">
-                        Sök fram och välj en eller flera filer, klicka sen på Bifoga<br /><br />
-                        <input type="file" name="files" class="filestyle" title="Välj filer" data-icon="false" multiple accept=".DOC,.DOCX,.GIF,.JPG,.JPEG,.JIF,.PDF,.PNG,.PPT,.PPTX,.PPS,.RTF,.TIFF,.TIF,.TXT,.WMF,.XLS,.XLSX" />
+                        Klicka på Välj fil för att söka fram och välja en eller flera filer, klicka sen på knappen Bifoga.
+                        <br /><br />
+                              <div class="upload-btn-wrapper">
+                                  <button id="choose-file" class="btn btn-danger">Välj fil</button>
+                                  <input type="file" name="files" class="filestyle" multiple accept=".DOC,.DOCX,.GIF,.JPG,.JPEG,.JIF,.PDF,.PNG,.PPT,.PPTX,.PPS,.RTF,.TIFF,.TIF,.TXT,.WMF,.XLS,.XLSX" />
+                                  <span class="important-info" id="selected-filename">Ingen fil vald</span>
+                              </div>
                     </div>
+                    <br />
                     <input id="GroupKey" name="GroupKey" type="hidden" />
                     <button type="button" class="btn btn-default upload-files pull-right">Bifoga</button>
                     <button type="button" class="btn btn-warning pull-left" data-dismiss="modal">Avbryt</button>

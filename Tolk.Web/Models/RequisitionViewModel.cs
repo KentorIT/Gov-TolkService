@@ -162,7 +162,7 @@ namespace Tolk.Web.Models
                     AllowDelete = false,
                     AllowDownload = true,
                     AllowUpload = false,
-                    Files = requisition.Attachments.Select(a => new FileModel
+                    DisplayFiles = requisition.Attachments.Select(a => new FileModel
                     {
                         Id = a.Attachment.AttachmentId,
                         FileName = a.Attachment.FileName,
