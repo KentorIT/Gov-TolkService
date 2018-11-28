@@ -25,6 +25,7 @@ namespace Tolk.Web.TagHelpers
         private const string ForAttributeName = "asp-for";
         private const string LabelOverrideattributeName = "label-override";
         private const string ValuePrefixAttributeName = "asp-value-prefix";
+        private const string EmptyAttributeName = "asp-empty";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -34,6 +35,9 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName(ValuePrefixAttributeName)]
         public string ValuePrefix { get; set; } = "";
+
+        [HtmlAttributeName(EmptyAttributeName)]
+        public string Empty { get; set; } = "-";
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -127,6 +131,11 @@ namespace Tolk.Web.TagHelpers
                 default:
                     text = ValuePrefix + _htmlGenerator.Encode(For.ModelExplorer.Model);
                     break;
+            }
+            if (string.IsNullOrEmpty(text))
+            {
+                className += " no-value-info";
+                text = Empty;
             }
             writer.WriteLine($"<div class=\"{className}\">{text}</div>");
         }
