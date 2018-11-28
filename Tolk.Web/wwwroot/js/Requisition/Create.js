@@ -1,4 +1,4 @@
-﻿$('#TimeWasteNormalTime').change(function () { validateControls(); });
+﻿$('#TimeWasteTotalTime').change(function () { validateControls(); });
 $('#TimeWasteIWHTime').change(function () { validateControls(); });
 $('#TravelCosts').change(function () { validateControls(); });
 
@@ -8,7 +8,7 @@ function validateControls() {
 }
 
 function checkWasteTime() {
-    var nT = $('#TimeWasteNormalTime').val();
+    var nT = $('#TimeWasteTotalTime').val();
     var iwhT = $('#TimeWasteIWHTime').val();
     if ((nT != "" && isNaN(parseInt(nT)) || (iwhT != "" && isNaN(parseInt(iwhT))))) {
         triggerValidator("Spilltid måste vara ett tal, ange antal minuter <br \><br \>", $('#wasteTimeValidator'));

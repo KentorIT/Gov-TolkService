@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
 
         [Range(31, 600, ErrorMessage = "Ange ett värde mellan 31 och 600 minuter")]
         [Display(Name = "Tid för eventuell tidsspillan i minuter (som inträffat utanför förväntad start- och sluttid)", Description = "Totalt antal minuter för restid, väntetider mm som överstiger 30 minuter")]
-        public int? TimeWasteNormalTime { get; set; }
+        public int? TimeWasteTotalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]
         [Display(Name = "Andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid i minuter av total tidsspillan som inträffar utanför vardagar 07:00-18:00")]
@@ -77,7 +77,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Angiven tidsspillan")]
         public string TimeWasteInfo
         {
-            get => (TimeWasteNormalTime != null && TimeWasteNormalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteNormalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
+            get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteTotalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
         }
 
         [Display(Name = "Faktisk startid")]

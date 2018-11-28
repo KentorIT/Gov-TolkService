@@ -143,7 +143,7 @@ namespace Tolk.Web.Controllers
                 Guid groupKey = Guid.NewGuid();
 
                 //Get request model from db
-                 
+
                 if (model.PreviousRequisition != null)
                 {
                     var previousRequisition = _dbContext.Requisitions.SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
@@ -263,6 +263,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.PriceRows)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Single(o => o.RequestId == model.RequestId);
+          
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
                         var requisition = new Requisition
@@ -274,7 +275,7 @@ namespace Tolk.Web.Controllers
                             Message = model.Message,
                             SessionStartedAt = model.SessionStartedAt,
                             SessionEndedAt = model.SessionEndedAt,
-                            TimeWasteNormalTime = model.TimeWasteNormalTime,
+                            TimeWasteNormalTime = model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
                             TimeWasteIWHTime = model.TimeWasteIWHTime,
                             InterpretersTaxCard = model.InterpreterTaxCard.Value,
                             PriceRows = new List<RequisitionPriceRow>(),
@@ -287,7 +288,7 @@ namespace Tolk.Web.Controllers
                             request.Order.CustomerOrganisation.PriceListType,
                             request.Ranking.RankingId,
                             out useRequestRows,
-                            model.TimeWasteNormalTime,
+                            (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0),
                             model.TimeWasteIWHTime,
                             request.PriceRows.OfType<PriceRowBase>(),
                             model.TravelCosts,

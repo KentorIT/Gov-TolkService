@@ -29,14 +29,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset SessionEndedAt { get; set; }
 
+        public int? TimeWasteTotalTime { get => (TimeWasteNormalTime ?? 0) + (TimeWasteIWHTime ?? 0); }
+
         public int? TimeWasteNormalTime { get; set; }
 
         public int? TimeWasteIWHTime { get; set; }
-
-        public string TimeWasteInfo
-        {
-            get => (TimeWasteNormalTime != null && TimeWasteNormalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteNormalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
-        }
 
         [MaxLength(1000)]
         [Required]

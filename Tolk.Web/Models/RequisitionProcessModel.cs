@@ -28,7 +28,7 @@ namespace Tolk.Web.Models
                 SessionStartedAt = requisition.SessionStartedAt,
                 ExpectedTravelCosts = requisition.Request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                TimeWasteNormalTime = requisition.TimeWasteNormalTime,
+                TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
