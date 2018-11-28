@@ -1,0 +1,195 @@
+﻿@model OrderModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
+@using Tolk.BusinessLogic.Utilities
+
+@*<h2>@ViewData["Title"] @Model.AssignmentType.SelectedItem.Text.ToLower()</h2>*@
+<h2>Bokningssammanfattning</h2>
+<hr />
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="LanguageAndDialect" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="TimeRange" />
+        @if (Model.LatestAnswerBy != null)
+        {
+            <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+        }
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="RegionName" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        @if (Model.RankedInterpreterLocationFirstAddressModel != null)
+        {
+            <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.InterpreterLocation" label-override="Inställelsesätt i första hand" />
+            @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation))
+            {
+                <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
+            }
+            else
+            {
+                <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.Address" />
+            }
+        }
+        else
+        {
+            <label>Inställelsesätt i första hand</label>
+            <div class="no-value-info">Ej angivet</div>
+        }
+    </div>
+    <div class="col-sm-4">
+        @if (Model.RankedInterpreterLocationSecondAddressModel != null)
+        {
+            <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.InterpreterLocation" label-override="Inställelsesätt i andra hand" />
+            @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation))
+            {
+                <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+            }
+            else
+            {
+                <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.Address" />
+            }
+        }
+        else
+        {
+            <label>Inställelsesätt i andra hand</label>
+            <div class="no-value-info">Ej angivet</div>
+        }
+    </div>
+    <div class="col-sm-4">
+        @if (Model.RankedInterpreterLocationThirdAddressModel != null)
+        {
+            <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.InterpreterLocation" label-override="Inställelsesätt i tredje hand" />
+            @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation))
+            {
+                <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+            }
+            else
+            {
+                <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.Address" />
+            }
+        }
+        else
+        {
+            <label>Inställelsesätt i tredje hand</label>
+            <div class="no-value-info">Ej angivet</div>
+        }
+    </div>
+</div>
+@if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected)
+{
+    <div class="row">
+        <div class="col-sm-12">
+            <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+        </div>
+    </div>
+}
+<div class="row">
+    <div class="col-sm-4">
+        @if (Model.RequestedCompetenceLevels.Count != 0)
+        {
+            @if (Model.SpecificCompetenceLevelRequired)
+            {
+                <display-entry asp-for="RequiredCompetenceLevels" />
+            }
+            else
+            {
+                @if (Model.RequestedCompetenceLevelFirst.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelFirst" asp-value-prefix="1. " />
+                }
+                @if (Model.RequestedCompetenceLevelSecond.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelSecond" asp-value-prefix="2. " />
+                }
+                @if (Model.RequestedCompetenceLevelThird.HasValue)
+                {
+                    <display-entry asp-for="RequestedCompetenceLevelThird" asp-value-prefix="3. " />
+                }
+            }
+        }
+        else
+        {
+            <label>Tolkens kompetensnivå</label>
+            <div class="no-value-info">Inga önskemål eller krav på kompetensnivå är angivna</div>
+        }
+    </div>
+    <div class="col-sm-4">
+        <label>Tillkommande krav</label>
+        @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+        {
+            <ul class="order-requiremnt-view-list">
+                @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+                {
+                    <li class="detail-text">
+                        @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="no-value-info">Inga tillkommande krav är angivna</div>
+        }
+    </div>
+    <div class="col-sm-4">
+        <label>Tillkommande önskemål</label>
+        @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+        {
+            <ul class="order-requiremnt-view-list">
+                @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
+                {
+                    <li class="detail-text">
+                        @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="no-value-info">Inga tillkommande önskemål är angivna</div>
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="Description" />
+    </div>
+    <div class="col-sm-4">
+        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+        {
+            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+        }
+        else
+        {
+            <label>Bifogade filer</label>
+            <div class="no-value-info">Inga filer har bifogats</div>
+        }
+    </div>
+    <div class="col-sm-4">
+        @if (Model.OrderCalculatedPriceInformationModel != null)
+        {
+            @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+        }
+    </div>
+</div>
+<br />
+<h2>Myndighetens uppgifter</h2>
+<hr />
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="CreatedBy" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="ContactPerson" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="UnitName" />
+        <display-entry asp-for="CustomerReferenceNumber" />
+    </div>
+</div>
