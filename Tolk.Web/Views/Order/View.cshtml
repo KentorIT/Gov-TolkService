@@ -5,230 +5,277 @@
 @using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = "Avropsdetaljer";
+    ViewData["OrderSummary_UseFolds"] = true;
+    ViewData["OrderSummary_IsDetailView"] = true;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 }
 
 <div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        @if (Model.ReplacingOrderId.HasValue)
-        {
-            <span>
-                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
-            </span>
-        }
-        @if (Model.ReplacedByOrderId.HasValue)
-        {
-            <span>
-                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
-            </span>
-        }
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="CreatedBy" />
-        @if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
-        {
-            <display-entry asp-for="ContactPerson" />
-        }
-        @if (Model.AllowEditContactPerson)
-        {
-            <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-warning">@editContactpersonButtonText</button>
-            <br /><br />
-        }
-        <display-entry asp-for="CustomerName" />
-        <display-entry asp-for="UnitName" />
-        <display-entry asp-for="CustomerReferenceNumber" />
-        <display-entry asp-for="Status" />
+    <div class="col-sm-12">
         @if (!string.IsNullOrEmpty(Model.CancelMessage))
         {
             <display-entry asp-for="CancelMessage" />
         }
-        <display-entry asp-for="RegionName" />
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="AssignmentType" />
 
-        <label>Inställelsesätt</label>
-        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformationWithRankHeader" />
-        @if (Model.RankedInterpreterLocationSecondAddressModel != null)
-        {
-            <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformationWithRankHeader" />
-        }
-        @if (Model.RankedInterpreterLocationThirdAddressModel != null)
-        {
-            <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformationWithRankHeader" />
-        }
-
-        <display-entry asp-for="SpecificCompetenceLevelRequired" />
-        @if (Model.RequestedCompetenceLevels.Count != 0)
-        {
-            @if (Model.SpecificCompetenceLevelRequired)
-            {
-                <display-entry asp-for="RequiredCompetenceLevels" />
-            }
-            else
-            {
-                @if (Model.RequestedCompetenceLevelFirst.HasValue)
-                {
-                    <display-entry asp-for="RequestedCompetenceLevelFirst" />
-                }
-                @if (Model.RequestedCompetenceLevelSecond.HasValue)
-                {
-                    <display-entry asp-for="RequestedCompetenceLevelSecond" />
-                }
-                @if (Model.RequestedCompetenceLevelThird.HasValue)
-                {
-                    <display-entry asp-for="RequestedCompetenceLevelThird" />
-                }
-            }
-        }
-        else
-        {
-            <span>Inga önskemål om kompetensnivå</span> <br /><br />
-        }
-        <display-entry asp-for="TimeRange" />
-        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-        }
-        <display-entry asp-for="Description" />
-        <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="BrokerOrganizationNumber" />
         @if (Model.AllowMoreThanTwoHoursTravelTime && Model.ActiveRequestIsAnswered)
         {
             <display-entry asp-for="ExpectedTravelCosts" />
         }
-
-        @if (Model.ActiveRequestPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel);
-        }
-        @if (Model.OrderCalculatedPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
-        }
-        @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
-        {
-            <label>Tillkommande krav</label>
-            <ul>
-                @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
+        <div class="row">
+            <div class="col-sm-3">
+                <display-entry asp-for="AssignmentType" />
+            </div>
+            <div class="col-sm-3">
+                <display-entry asp-for="Status" />
+            </div>
+            <div class="col-sm-3">
+                <display-entry asp-for="OrderNumber" />
+                @if (Model.ReplacingOrderId.HasValue)
                 {
-                    <li>
-                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                        @if (req.CanSatisfyRequirement.HasValue)
-                        {
-                            <br />
-                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
-                        }
-                    </li>
+                    <span>
+                        (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
+                    </span>
                 }
-            </ul>
-        }
-        @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
-        {
-            <label>Tillkommande önskemål</label>
-            <ul>
-                @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
+                @if (Model.ReplacedByOrderId.HasValue)
                 {
-                    <li>
-                        @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                        @if (req.CanSatisfyRequirement.HasValue)
-                        {
-                            <br />
-                            <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
-                        }
-                    </li>
+                    <span>
+                        (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
+                    </span>
                 }
-            </ul>
-        }
-        @if (Model.PreviousRequests.Any())
+            </div>
+            <div class="col-sm-3">
+                <display-entry asp-for="CreatedAt" />
+            </div>
+        </div>
+        <h2>Bokningsdetaljer</h2>
+        <hr />
+        @if (Model.Status != OrderStatus.NoBrokerAcceptedOrder)
         {
-            <label>Tidigare förmedlingars svar</label>
-            <ul>
-                @foreach (var request in Model.PreviousRequests)
-                {
-                    <li>
-                        @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
-                        {
-                            <span> Orsak: @request.DenyMessage</span>
-                        }
-                    </li>
-                }
-            </ul>
-        }
-        @if (Model.ActiveRequestIsAnswered)
-        {
-            <display-entry asp-for="AnsweredBy" />
-            <display-entry asp-for="InterpreterName" />
-            <display-entry asp-for="InterpreterCompetenceLevel" />
-
-            @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
+            @if (Model.ActiveRequestIsAnswered)
             {
-                <div class="important-info">
-                    Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                <div class="row">
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AnsweredBy" />
+                    </div>
                 </div>
             }
-            <display-entry asp-for="InterpreterLocationAnswer" />
-            @if (Model.RequestAttachmentListModel?.Files?.Count > 0)
-            {
-                @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
-            }
-            @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
-            {
-                <form method="post" asp-action="Approve">
-                    <input asp-for="OrderId" type="hidden" />
-                    <input asp-for="RequestId" type="hidden" />
-                    <button class="btn btn-default btn-success">Godkänn tillsättning</button>
-                </form>
-                if (Model.AllowDenial)
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="InterpreterName" asp-empty="Väntar tillsättning" />
+                </div>
+                @if (Model.ActiveRequestIsAnswered)
                 {
-                    <form method="post" class="deny-form" asp-action="Deny">
-                        <input asp-for="OrderId" type="hidden" />
-                        <input asp-for="RequestId" type="hidden" />
-                        <input name="DenyMessage" type="hidden" />
-
-                        <button class="btn deny-button btn-danger pull-right">Underkänn tillsättning</button>
-                    </form>
+                    <div class="col-sm-8">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <display-entry asp-for="LanguageAndDialect" />
+                            </div>
+                            <div class="col-sm-6">
+                                <display-entry asp-for="TimeRange" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <display-entry asp-for="InterpreterCompetenceLevel" />
+                            </div>
+                            <div class="col-sm-6">
+                                <display-entry asp-for="InterpreterLocationAnswer" />
+                            </div>
+                        </div>
+                    </div>
                 }
-            }
+            </div>
+            <div class="row">
+                @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+                {
+                    <div class="col-sm-4">
+                        <label>Tillkommande krav</label>
+                        <ul>
+                            @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
+                            {
+                                <li>
+                                    @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                                    @if (req.CanSatisfyRequirement.HasValue)
+                                    {
+                                        <br />
+                                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+                @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+                {
+                    <div class="col-sm-4">
+                        <label>Tillkommande önskemål</label>
+                        <ul>
+                            @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
+                            {
+                                <li>
+                                    @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                                    @if (req.CanSatisfyRequirement.HasValue)
+                                    {
+                                        <br />
+                                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @if (Model.PreviousRequests.Any())
+                {
+                    <div class="col-sm-4">
+                        <label>Tidigare förmedlingars svar</label>
+                        <ul>
+                            @foreach (var request in Model.PreviousRequests)
+                            {
+                                <li>
+                                    @request.BrokerName (@EnumHelper.GetDescription(request.Status))
+                                    @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
+                                    {
+                                        <span> Orsak: @request.DenyMessage</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="BrokerName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="BrokerOrganizationNumber" />
+                </div>
+                <div class="col-sm-4">
+                    @if (Model.RequestAttachmentListModel?.Files?.Count > 0)
+                    {
+                        @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
+                    }
+                </div>
+            </div>
         }
+        else
+        {
+            <div class="row">
+                <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
+            </div>
+        }
+        <div class="row">
+            @if (Model.ActiveRequestPriceInformationModel != null)
+            {
+                <div class="col-sm-6">
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
+                </div>
+            }
+            @if (Model.OrderCalculatedPriceInformationModel != null)
+            {
+                <div class="col-sm-6">
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                </div>
+            }
+        </div>
+        @await Html.PartialAsync("_OrderSummary", Model, ViewData)
     </div>
 </div>
-@if (Model.AllowOrderCancellation)
-{
-    <div class="row">
-        <div class="col-md-8">
+<div class="row">
+    @if (Model.ActiveRequestIsAnswered)
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="col-sm-12">
+                    @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
+                    {
+                        <div class="important-info">
+                            Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    @if (Model.AllowOrderCancellation)
+    {
+        <div class="col-sm-4">
             <form method="post" class="cancel-form" asp-action="Cancel">
                 <input asp-for="OrderId" type="hidden" />
                 <input name="CancelMessage" type="hidden" />
                 <input name="AddReplacementOrder" type="hidden" value="false" />
-                <button class="btn cancel-button btn-warning pull-right">Avboka uppdrag</button>
+                <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
             </form>
         </div>
-    </div>
-}
-@if (Model.AllowComplaintCreation)
-{
-    <a href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
-}
-@if (Model.ComplaintId.HasValue)
-{
-    <display-entry asp-for="ComplaintStatus" />
-    <display-entry asp-for="ComplaintType" />
-    <display-entry asp-for="ComplaintMessage" />
-    <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-}
-@if (Model.Status == OrderStatus.CancelledByBroker)
-{
-    @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-    {
-        <display-entry asp-for="CancelMessage" />
     }
-    <form method="post" asp-action="ConfirmCancellation">
-        <input asp-for="RequestId" type="hidden" />
-        <button class="btn btn-danger">Bekräfta avbokning</button>
-    </form>
-}
+    @if (Model.ActiveRequestIsAnswered)
+    {
+        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
+        {
+            <div class="col-sm-4">
+                @if (Model.AllowDenial)
+                {
+                    <form method="post" class="deny-form text-align-center" asp-action="Deny">
+                        <input asp-for="OrderId" type="hidden" />
+                        <input asp-for="RequestId" type="hidden" />
+                        <input name="DenyMessage" type="hidden" />
+
+                        <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                    </form>
+                }
+            </div>
+            <div class="col-sm-4">
+                <form method="post" asp-action="Approve">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning</button>
+                </form>
+            </div>
+        }
+    }
+
+    @if (Model.AllowComplaintCreation)
+    {
+        <div class="col-sm-4">
+            <a class="btn btn-danger btn-large" href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
+        </div>
+    }
+    @if (Model.ComplaintId.HasValue)
+    {
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="ComplaintStatus" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="ComplaintType" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="ComplaintMessage" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <a class="btn btn-warning btn-large" href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+                </div>
+            </div>
+        </div>
+    }
+    @if (Model.Status == OrderStatus.CancelledByBroker)
+    {
+        @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+        {
+            <display-entry asp-for="CancelMessage" />
+        }
+        <div class="col-sm-4 pull-right">
+            <form method="post" asp-action="ConfirmCancellation">
+                <input asp-for="RequestId" type="hidden" />
+                <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+            </form>
+        </div>
+    }
+</div>
 
 @await Html.PartialAsync("_EventLog", Model.EventLog)
 

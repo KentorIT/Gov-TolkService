@@ -1,7 +1,9 @@
 ﻿@model Tolk.Web.Models.OrderModel
 
 @{
-    ViewData["Title"] = "Sammanfattning av bokning uppdragstyp";
+    ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.SelectedItem.Text.ToLower()}";
+    ViewData["OrderSummaryUseViewDataTitle"] = true;
+    ViewData["OrderSummary_UseFolds"] = false;
 }
 
 <div class="row">
@@ -9,7 +11,7 @@
         <img class="progressbar" src="~/images/Step2_Order.PNG" />
     </div>
     <div class="col-sm-12">
-        @await  Html.PartialAsync("_OrderSummary", Model)
+        @await  Html.PartialAsync("_OrderSummary", Model, ViewData)
     </div>
 </div>
 

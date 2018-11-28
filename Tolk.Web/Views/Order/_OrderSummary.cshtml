@@ -4,8 +4,21 @@
 @using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
 
-@*<h2>@ViewData["Title"] @Model.AssignmentType.SelectedItem.Text.ToLower()</h2>*@
-<h2>Bokningssammanfattning</h2>
+@{ 
+    // ViewData keys
+    const string UseViewDataTitleKey = "OrderSummary_UseViewDataTitle";
+    const string UseFoldsKey = "OrderSummary_UseFolds";
+    const string IsDetailViewKey = "OrderSummary_IsDetailView";
+
+    // ViewData values
+    bool UseViewDataTitle = ViewData.ContainsKey(UseViewDataTitleKey) ? (bool)ViewData[UseViewDataTitleKey] : false;
+    bool UseFolds = ViewData.ContainsKey(UseFoldsKey) ? (bool)ViewData[UseFoldsKey] : false;
+    bool IsDetailView = ViewData.ContainsKey(IsDetailViewKey) ? (bool)ViewData[IsDetailViewKey] : false;
+
+    string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
+}
+
+<h2>@(UseViewDataTitle ? ViewData["Title"] : "Bokningssammanfattning")</h2>
 <hr />
 <div class="row">
     <div class="col-sm-4">
@@ -187,9 +200,23 @@
     </div>
     <div class="col-sm-4">
         <display-entry asp-for="ContactPerson" />
+        @if (IsDetailView && Model.AllowEditContactPerson)
+        {
+            <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-warning">@editContactpersonButtonText</button>
+            <br /><br />
+        }
     </div>
     <div class="col-sm-4">
-        <display-entry asp-for="UnitName" />
-        <display-entry asp-for="CustomerReferenceNumber" />
+        <div class="col-sm-12">
+            <div class="row">
+                <display-entry asp-for="CustomerName" />
+            </div>
+            <div class="row">
+                <display-entry asp-for="UnitName" />
+            </div>
+            <div class="row">
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+        </div>
     </div>
 </div>

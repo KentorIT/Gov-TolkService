@@ -535,7 +535,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt avropssvar",
+                Header = "Beräknat pris svar på bokningsförfrågan",
                 UseDisplayHideInfo = true
             };
         }
@@ -549,7 +549,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt ursprungligt avrop",
+                Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
                 UseDisplayHideInfo = true
             };
         }
