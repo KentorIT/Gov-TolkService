@@ -9,11 +9,13 @@
     const string UseViewDataTitleKey = "OrderSummary_UseViewDataTitle";
     const string UseFoldsKey = "OrderSummary_UseFolds";
     const string IsDetailViewKey = "OrderSummary_IsDetailView";
+    const string ShowCalculatedPriceKey = "OrderSummary_ShowCalculatedPrice";
 
     // ViewData values
     bool UseViewDataTitle = ViewData.ContainsKey(UseViewDataTitleKey) ? (bool)ViewData[UseViewDataTitleKey] : false;
-    bool UseFolds = ViewData.ContainsKey(UseFoldsKey) ? (bool)ViewData[UseFoldsKey] : false;
+    bool UseFolds = ViewData.ContainsKey(UseFoldsKey) ? (bool)ViewData[UseFoldsKey] : true;
     bool IsDetailView = ViewData.ContainsKey(IsDetailViewKey) ? (bool)ViewData[IsDetailViewKey] : false;
+    bool ShowCalculatedPrice = ViewData.ContainsKey(ShowCalculatedPriceKey) ? (bool)ViewData[ShowCalculatedPriceKey] : false;
 
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 }
@@ -185,7 +187,7 @@
         }
     </div>
     <div class="col-sm-4">
-        @if (Model.OrderCalculatedPriceInformationModel != null)
+        @if (ShowCalculatedPrice && Model.OrderCalculatedPriceInformationModel != null)
         {
             @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
         }
