@@ -1,0 +1,34 @@
+﻿@model OrderModel
+@{ 
+    const string IsDetailViewKey = "CustomerOrganizationInfo_IsDetailView";
+    bool IsDetailView = ViewData.ContainsKey(IsDetailViewKey) ? (bool)ViewData[IsDetailViewKey] : false;
+
+    string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
+}
+
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="CreatedBy" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="ContactPerson" />
+        @if (IsDetailView && Model.AllowEditContactPerson)
+        {
+            <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-warning">@editContactpersonButtonText</button>
+            <br /><br />
+        }
+    </div>
+    <div class="col-sm-4">
+        <div class="col-sm-12">
+            <div class="row">
+                <display-entry asp-for="CustomerName" />
+            </div>
+            <div class="row">
+                <display-entry asp-for="UnitName" />
+            </div>
+            <div class="row">
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+        </div>
+    </div>
+</div>

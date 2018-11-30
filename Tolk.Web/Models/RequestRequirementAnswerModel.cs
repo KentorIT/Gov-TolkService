@@ -14,7 +14,10 @@ namespace Tolk.Web.Models
     {
         public int OrderRequirementId { get; set; }
         [Display(Name = "Beställt behov")]
-        public string Requirement { get; set; }
+        public string Description { get; set; }
+
+        [Display(Name = "Typ av behov")]
+        public RequirementType RequirementType { get; set; }
 
         [Display(Name = "Är ett krav")]
         public bool IsRequired{ get; set; }

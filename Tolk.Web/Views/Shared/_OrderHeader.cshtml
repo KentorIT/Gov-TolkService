@@ -1,0 +1,25 @@
+﻿@model OrderModel
+
+<div class="row">
+    <div class="col-sm-3">
+        <display-entry asp-for="AssignmentType" />
+    </div>
+    <div class="col-sm-3">
+        <display-entry asp-for="OrderNumber" />
+        @if (Model.ReplacingOrderId.HasValue)
+        {
+            <span>
+                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
+            </span>
+        }
+        @if (Model.ReplacedByOrderId.HasValue)
+        {
+            <span>
+                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
+            </span>
+        }
+    </div>
+    <div class="col-sm-3">
+        <display-entry asp-for="CreatedAt" />
+    </div>
+</div>

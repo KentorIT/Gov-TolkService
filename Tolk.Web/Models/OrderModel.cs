@@ -225,6 +225,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
         public int? RequestId { get; set; }
+        public RequestModel ActiveRequest { get; set; }
 
         public List<BrokerListModel> PreviousRequests { get; set; }
 

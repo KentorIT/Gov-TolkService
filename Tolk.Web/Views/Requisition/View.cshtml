@@ -112,6 +112,8 @@
         {
             Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
         }
+        <h3>Rekvisitionshändelser</h3>
+        <hr />
         @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
 </div>

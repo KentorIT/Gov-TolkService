@@ -1,160 +1,84 @@
 ﻿@model Tolk.Web.Models.RequestModel
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Avropsförfrågan";
+    ViewData["Title"] = "Bokningsförfrågan - " + Model.OrderModel.OrderNumber;
 }
 
 <div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderModel.OrderNumber" />
-        @if (Model.OrderModel.ReplacingOrderId.HasValue)
-        {
-            <span>
-                (Ersätter <a href="@Url.Action("View", new { id = Model.ReplacingOrderRequestId })">@Model.OrderModel.ReplacingOrderNumber</a>)<br /><br />
-            </span>
-        }
-        @if (Model.OrderModel.ReplacedByOrderId.HasValue)
-        {
-            @if (Model.ReplacedByOrderRequestStatus.HasValue && (Model.ReplacedByOrderRequestStatus.Value == RequestStatus.Received || Model.ReplacedByOrderRequestStatus.Value == RequestStatus.Created))
+    <div class="col-sm-12">
+        @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
+        <h2>Bokningsförfrågan</h2>
+        <hr />
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="Status" />
+            </div>
+        </div>
+        @await Html.PartialAsync("_RequestSummary", Model)
+        <div class="row">
+            @if (Model.RequestCalculatedPriceInformationModel != null)
             {
-                <span>
-                    (Ersatt av <a href="@Url.Action("Process", new { id = Model.ReplacedByOrderRequestId })">@Model.OrderModel.ReplacedByOrderNumber</a>)<br /><br />
-                </span>
+                <div class="col-sm-6">
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.RequestCalculatedPriceInformationModel)
+                </div>
             }
-            else
+            @if (Model.OrderCalculatedPriceInformationModel != null)
             {
-                <span>
-                    (Ersatt av <a href="@Url.Action("View", new { id = Model.ReplacedByOrderRequestId })">@Model.OrderModel.ReplacedByOrderNumber</a>)<br /><br />
-                </span>
+                <div class="col-sm-6">
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                </div>
             }
-        }
-
-        <display-entry asp-for="Status" />
+        </div>
+        <h2>Bokningssammanfattning</h2>
+        <hr />
+        @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
+        <h2>Myndighetens uppgifter</h2>
+        <hr />
+        @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
         @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
         {
             <div class="important-info">@Model.Info48HCancelledByCustomer</div>
         }
-        @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
-        {
-            <display-entry asp-for="DenyMessage" />
-        }
-        @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-        {
-            <display-entry asp-for="CancelMessage" />
-        }
-        <display-entry asp-for="OrderModel.CustomerCompactInfo" />
-        <display-entry asp-for="OrderModel.CreatedAt" />
-        <display-entry asp-for="OrderModel.CreatedBy" />
-        <display-entry asp-for="OrderModel.ContactPerson" />
-        <display-entry asp-for="OrderModel.RegionName" />
-        <display-entry asp-for="OrderModel.LanguageName" />
-        <display-entry asp-for="OrderModel.AssignmentType" />
-        <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
-        @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-        {
-            <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
-        }
-        else
-        {
-            @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
-            {
-                <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" />
-            }
-            @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
-            {
-                <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" />
-            }
-            @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
-            {
-                <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" />
-            }
-        }
-        <display-entry asp-for="OrderModel.TimeRange" />
-        @if (Model.OrderModel.AttachmentListModel?.Files?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.OrderModel.AttachmentListModel)
-        }
-        @if (Model.OrderCalculatedPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
-        }
-        @if (Model.RequestCalculatedPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.RequestCalculatedPriceInformationModel);
-        }
-        <display-entry asp-for="OrderModel.Description" />
 
-        <display-entry asp-for="Interpreter" />
-        <display-entry asp-for="InterpreterCompetenceLevel" />
-        <label>Inställelsesätt</label>
-        <display-entry asp-for="OrderModel.RankedInterpreterLocationFirstAddressModel.CompactInformation" />
-        @if (Model.OrderModel.RankedInterpreterLocationSecondAddressModel != null)
-        {
-            <display-entry asp-for="OrderModel.RankedInterpreterLocationSecondAddressModel.CompactInformation" />
-        }
-        @if (Model.OrderModel.RankedInterpreterLocationThirdAddressModel != null)
-        {
-            <display-entry asp-for="OrderModel.RankedInterpreterLocationThirdAddressModel.CompactInformation" />
-        }
-
-        @if (Model.InterpreterLocationAnswer != null && Model.InterpreterLocation == null)
-        {
-            <display-entry asp-for="InterpreterLocationAnswer" />
-        }
         @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
         {
             //This should be visible if a specified  InterpreterLocation is set and not being OffSite, and allow more than 2 h travel time is set
             <display-entry asp-for="ExpectedTravelCosts" />
         }
 
-        @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
-        {
-            <label>Extra behov</label><br />
-            @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
-            {
-                <span class="list-group-item-heading">@req.Requirement</span>
-                <ul>
-                    <li>
-                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
-                    </li>
-                </ul>
-            }
-        }
-        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-        }
-        @if (Model.ComplaintId.HasValue)
-        {
-            <display-entry asp-for="ComplaintStatus" />
-            <display-entry asp-for="ComplaintType" />
-            <display-entry asp-for="ComplaintMessage" />
-            <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-            <br />
-        }
-        @if (Model.RequisitionId.HasValue)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
-            <br />
-
-        }
-        @if (Model.AllowInterpreterChange)
-        {
-            <a href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
-        }
-        @if (Model.AllowCancellation)
-        {
             <div class="row">
-                <div class="col-md-8">
-                    <form method="post" class="cancel-form" asp-action="Cancel">
-                        <input asp-for="RequestId" type="hidden" />
-                        <input name="CancelMessage" type="hidden" />
-                        <button class="btn cancel-button btn-warning pull-right">Avboka uppdrag</button>
-                    </form>
+                @if (Model.ComplaintId.HasValue)
+                {
+                <div class="col-sm-12">
+                    @await Html.PartialAsync("_ComplaintSummary", Model)
                 </div>
+                    <div class="col-sm-4">
+                        <a class="btn btn-warning btn-large" href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+                    </div>
+                }
+                @if (Model.RequisitionId.HasValue)
+                {
+                    <div class="col-sm-4">
+                        <a class="btn btn-warning btn-large" href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+                    </div>
+                }
+                @if (Model.AllowCancellation)
+                {
+                    <div class="col-sm-4">
+                        <form method="post" class="cancel-form" asp-action="Cancel">
+                            <input asp-for="RequestId" type="hidden" />
+                            <input name="CancelMessage" type="hidden" />
+                            <button class="btn cancel-button btn-warning">Avboka uppdrag</button>
+                        </form>
+                    </div>
+                }
+                @if (Model.AllowInterpreterChange)
+                {
+                    <div class="col-sm-4">
+                        <a class="btn btn-danger btn-large" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                    </div>
+                }
             </div>
-        }
         <div id="cancelMessageDialog" class="modal fade" role="dialog">
             <div class="modal-dialog">
                 <!-- Modal content-->
@@ -192,8 +116,10 @@
                 <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
             </form>
         }
+        <h3>Förfråganshändelser</h3>
+        <hr />
+        @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
-    @await Html.PartialAsync("_EventLog", Model.EventLog)
 </div>
 @section Scripts {
     <environment include="Development">

@@ -165,7 +165,7 @@
                     <label>Extra behov</label><br />
                     @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
                     {
-                        <span class="list-group-item-heading">@req.Requirement</span>
+                        <span class="list-group-item-heading">@req.Description</span>
                         <ul>
                             <li>
                                 <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
@@ -179,7 +179,7 @@
                 @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
                 {
                     <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
-                    <display-entry asp-for="RequirementAnswers[i].Requirement" />
+                    <display-entry asp-for="RequirementAnswers[i].Description" />
                     <form-entry asp-for="RequirementAnswers[i].Answer" />
                     <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
                     <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />

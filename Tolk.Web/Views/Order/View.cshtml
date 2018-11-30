@@ -4,43 +4,21 @@
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Avropsdetaljer";
-    ViewData["OrderSummary_UseFolds"] = true;
-    ViewData["OrderSummary_IsDetailView"] = true;
+    ViewData["Title"] = "Bokning - " + Model.OrderNumber;
+    ViewData["CustomerOrganizationInfo_IsDetailView"] = true;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 }
 
 <div class="row">
     <div class="col-sm-12">
-
+        @await  Html.PartialAsync("_OrderHeader", Model)
+        <h2>Bokning</h2>
+        <hr />
         <div class="row">
-            <div class="col-sm-3">
-                <display-entry asp-for="AssignmentType" />
-            </div>
             <div class="col-sm-3">
                 <display-entry asp-for="Status" />
             </div>
-            <div class="col-sm-3">
-                <display-entry asp-for="OrderNumber" />
-                @if (Model.ReplacingOrderId.HasValue)
-                {
-                    <span>
-                        (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
-                    </span>
-                }
-                @if (Model.ReplacedByOrderId.HasValue)
-                {
-                    <span>
-                        (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
-                    </span>
-                }
-            </div>
-            <div class="col-sm-3">
-                <display-entry asp-for="CreatedAt" />
-            </div>
         </div>
-        <h2>Bokningsdetaljer</h2>
-        <hr />
         @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
         {
             <div class="row">
@@ -51,128 +29,7 @@
         }
         else
         {
-            if (Model.Status == OrderStatus.CancelledByCreator
-                || Model.Status == OrderStatus.CancelledByCreatorConfirmed)
-            {
-                <div class="row">
-                    <div class="col-sm-12">
-                        <span>@EnumHelper.GetDescription(typeof(OrderStatus), OrderStatus.CancelledByCreator)</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.CancelMessage))
-                    {
-                        <div class="col-sm-12">
-                            <display-entry asp-for="CancelMessage" />
-                        </div>
-                    }
-                </div>
-            }
-            else if (Model.Status == OrderStatus.CancelledByBroker
-            || Model.Status == OrderStatus.CancelledByBrokerConfirmed)
-            {
-                <div class="row">
-                    <div class="col-sm-12">
-                        <span>@EnumHelper.GetDescription(typeof(OrderStatus), OrderStatus.CancelledByBroker)</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.CancelMessage))
-                    {
-                        <div class="col-sm-12">
-                            <display-entry asp-for="CancelMessage" />
-                        </div>
-                    }
-                </div>
-            }
-            <div class="row">
-                <div class="col-sm-4">
-                    <display-entry asp-for="InterpreterName" asp-empty="Tolk ej tillsatt" />
-                </div>
-                @if (Model.ActiveRequestIsAnswered)
-                {
-                    <div class="col-sm-8">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <display-entry asp-for="LanguageAndDialect" />
-                            </div>
-                            <div class="col-sm-6">
-                                <display-entry asp-for="TimeRange" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <display-entry asp-for="InterpreterCompetenceLevel" />
-                            </div>
-                            <div class="col-sm-6">
-                                <display-entry asp-for="InterpreterLocationAnswer" />
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-            <div class="row">
-                @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
-                {
-                    <div class="col-sm-4">
-                        <label>Tillkommande krav</label>
-                        <ul>
-                            @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
-                            {
-                                <li class="detail-text">
-                                    @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
-                                    @if (req.CanSatisfyRequirement.HasValue)
-                                    {
-                                        <br />
-                                        <span class="requirement-answer">- Svar: @req.Answer</span>
-                                    }
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                }
-                @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
-                {
-                    <div class="col-sm-4">
-                        <label>Tillkommande önskemål</label>
-                        <ul>
-                            @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
-                            {
-                                <li class="detail-text">
-                                    @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))
-                                    @if (req.CanSatisfyRequirement.HasValue)
-                                    {
-                                        <br />
-                                        <span class="requirement-answer">- Svar: @req.Answer</span>
-                                    }
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                }
-                @if (Model.AllowMoreThanTwoHoursTravelTime && Model.ActiveRequestIsAnswered)
-                {
-                    <div class="col-sm-4">
-                        <display-entry asp-for="ExpectedTravelCosts" />
-                    </div>
-                }
-            </div>
-            <div class="row">
-                @if (Model.ActiveRequestIsAnswered)
-                {
-                    <div class="col-sm-4">
-                        <display-entry asp-for="AnsweredBy" />
-                    </div>
-                }
-                <div class="col-sm-4">
-                    <display-entry asp-for="BrokerName" />
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="BrokerOrganizationNumber" />
-                </div>
-                <div class="col-sm-4">
-                    @if (Model.RequestAttachmentListModel?.Files?.Count > 0)
-                    {
-                        @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
-                    }
-                </div>
-            </div>
+            @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest)
         }
         @if (Model.PreviousRequests.Any())
         {
@@ -208,21 +65,23 @@
                 </div>
             }
         </div>
+        <h2>Bokningssammanfattning</h2>
+        <hr />
         @await Html.PartialAsync("_OrderSummary", Model, ViewData)
+        <h2>Myndighetens uppgifter</h2>
+        <hr />
+        @await Html.PartialAsync("_CustomerOrganizationInfo", Model, ViewData)
     </div>
 </div>
 <div class="row">
-    @if (Model.ActiveRequestIsAnswered)
+    @if (Model.ActiveRequestIsAnswered && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
     {
         <div class="row">
             <div class="col-sm-12">
                 <div class="col-sm-12">
-                    @if (!Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
-                    {
-                        <div class="important-info">
-                            Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
-                        </div>
-                    }
+                    <div class="important-info">
+                        Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,17 +132,7 @@
     @if (Model.ComplaintId.HasValue)
     {
         <div class="col-sm-12">
-            <div class="row">
-                <div class="col-sm-4">
-                    <display-entry asp-for="ComplaintStatus" />
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="ComplaintType" />
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="ComplaintMessage" />
-                </div>
-            </div>
+            @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
             <div class="row">
                 <div class="col-sm-4">
                     <a class="btn btn-warning btn-large" href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
@@ -305,7 +154,8 @@
         </div>
     }
 </div>
-
+<h3>Bokningshändelser</h3>
+<hr />
 @await Html.PartialAsync("_EventLog", Model.EventLog)
 
 <div id="cancelMessageDialog" class="modal fade" role="dialog">

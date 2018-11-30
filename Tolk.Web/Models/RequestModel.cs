@@ -16,7 +16,7 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
-        [Display(Name = "Avropets status")]
+        [Display(Name = "Status på förfrågan")]
         public RequestStatus Status { get; set; }
 
         public int BrokerId { get; set; }
@@ -43,6 +43,16 @@ namespace Tolk.Web.Models
         public Guid? FileGroupKey { get; set; }
 
         public long? CombinedMaxSizeAttachments { get; set; }
+
+        [Display(Name = "Förfrågan besvarad av")]
+        [DataType(DataType.MultilineText)]
+        public string AnsweredBy { get; set; }
+
+        [Display(Name = "Förmedling")]
+        public string BrokerName { get; set; }
+
+        [Display(Name = "Förmedlings organisationsnummer")]
+        public string BrokerOrganizationNumber { get; set; }
 
         [Display(Name = "Orsak till avslag")]
         [DataType(DataType.MultilineText)]
@@ -131,6 +141,9 @@ namespace Tolk.Web.Models
             return new RequestModel
             {
                 Status = request.Status,
+                AnsweredBy = request.AnsweringUser?.CompleteContactInformation,
+                BrokerName = request.Ranking?.Broker?.Name,
+                BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
                 RequestId = request.RequestId,
@@ -143,11 +156,12 @@ namespace Tolk.Web.Models
                 {
                     OrderRequirementId = r.OrderRequirementId,
                     IsRequired = r.IsRequired,
-                    Requirement = $"{(r.IsRequired ? "Krav: " : "Önskemål: ")}{EnumHelper.GetDescription(r.RequirementType)} - {r.Description}",
+                    Description = r.Description,
+                    RequirementType =  r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
-                InterpreterLocation = request.Order.InterpreterLocations.Count() == 1 ? request.Order.InterpreterLocations.Single()?.InterpreterLocation : null,
+                InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
                 ComplaintId = complaint?.ComplaintId,
                 ComplaintMessage = complaint?.ComplaintMessage,
