@@ -1,25 +1,47 @@
-﻿@model OrderModel
+﻿@model RequestModel
+
+@{ 
+    string isOrderDetailViewKey = "OrderHeader_IsOrderDetailViewKey";
+    bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
+}
 
 <div class="row">
     <div class="col-sm-3">
-        <display-entry asp-for="AssignmentType" />
-    </div>
-    <div class="col-sm-3">
-        <display-entry asp-for="OrderNumber" />
-        @if (Model.ReplacingOrderId.HasValue)
+        @if (isOrderDetailView)
         {
-            <span>
-                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
-            </span>
+            <display-entry asp-for="OrderModel.Status" />
         }
-        @if (Model.ReplacedByOrderId.HasValue)
+        else
         {
-            <span>
-                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
-            </span>
+            <display-entry asp-for="Status" />
         }
     </div>
     <div class="col-sm-3">
-        <display-entry asp-for="CreatedAt" />
+        <display-entry asp-for="OrderModel.AssignmentType" />
+    </div>
+    <div class="col-sm-3">
+        <display-entry asp-for="OrderModel.OrderNumber" />
+        @if (Model.OrderModel.ReplacingOrderId.HasValue)
+        {
+            <span>
+                (Ersätter <a href="@Url.Action("View",new { id = Model.OrderModel.ReplacingOrderId })">@Model.OrderModel.ReplacingOrderNumber</a>)
+            </span>
+        }
+        @if (Model.OrderModel.ReplacedByOrderId.HasValue)
+        {
+            <span>
+                (Ersatt av <a href="@Url.Action("View",new { id = Model.OrderModel.ReplacedByOrderId })">@Model.OrderModel.ReplacedByOrderNumber</a>)
+            </span>
+        }
+    </div>
+    <div class="col-sm-3">
+        @if (isOrderDetailView)
+        {
+            <display-entry asp-for="OrderModel.CreatedAt" />
+        }
+        else
+        {
+            <display-entry asp-for="CreatedAt" />
+        }
     </div>
 </div>

@@ -3,48 +3,59 @@
 @using Tolk.BusinessLogic.Utilities
 
 @{
-    bool requestIsAnswered = (Model.Status != RequestStatus.DeclinedByBroker
-         && Model.Status != RequestStatus.InterpreterReplaced
+    bool showRequestStatus = (bool?)ViewData["showRequestStatus"] ?? true;
+    bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
          && Model.Status != RequestStatus.ToBeProcessedByBroker
          && Model.Status != RequestStatus.Received);
+    bool requestIsDeclinedByBroker = (Model.Status == RequestStatus.DeclinedByBroker
+        || Model.Status == RequestStatus.DeniedByTimeLimit);
+    bool cancelledByBroker = Model.OrderModel.Status == OrderStatus.CancelledByBroker
+                || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed;
 }
-
-@if (Model.OrderModel.Status == OrderStatus.CancelledByCreator
-  || Model.OrderModel.Status == OrderStatus.CancelledByCreatorConfirmed)
-{
+<div class="row">
     <div class="row">
         <div class="col-sm-12">
-            <span>@EnumHelper.GetDescription(typeof(OrderStatus), OrderStatus.CancelledByCreator)</span>
+            @if (Model.RequisitionId.HasValue)
+            {
+                <div class="col-sm-4">
+                    <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+                </div>
+            }
+            @if (Model.ComplaintId.HasValue)
+            {
+                <div class="col-sm-4">
+                    <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+                </div>
+            }
+        </div>
+    </div>
+    @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator
+    || Model.OrderModel.Status == OrderStatus.CancelledByCreatorConfirmed
+    || Model.OrderModel.Status == OrderStatus.CancelledByBroker
+    || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
+    {
+        <div class="col-sm-4">
+            <span>@EnumHelper.GetDescription(typeof(OrderStatus), 
+                 cancelledByBroker ? OrderStatus.CancelledByBroker : OrderStatus.CancelledByCreator)</span>
         </div>
         @if (!string.IsNullOrEmpty(Model.CancelMessage))
         {
-            <div class="col-sm-12">
+            <div class="col-sm-4">
                 <display-entry asp-for="CancelMessage" />
             </div>
         }
+    }
+    else if (Model.Status == RequestStatus.DeclinedByBroker
+        || Model.Status == RequestStatus.DeniedByCreator)
+    {
         @if (!string.IsNullOrEmpty(Model.DenyMessage))
         {
-            <div class="col-sm-12">
-                <display-entry asp-for="CancelMessage" />
+            <div class="col-sm-4">
+                <display-entry asp-for="DenyMessage" />
             </div>
         }
-    </div>
-}
-else if (Model.OrderModel.Status == OrderStatus.CancelledByBroker
-    || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
-{
-    <div class="row">
-        <div class="col-sm-12">
-            <span>@EnumHelper.GetDescription(typeof(OrderStatus), OrderStatus.CancelledByBroker)</span>
-        </div>
-        @if (!string.IsNullOrEmpty(Model.CancelMessage))
-        {
-            <div class="col-sm-12">
-                <display-entry asp-for="CancelMessage" />
-            </div>
-        }
-    </div>
-}
+    }
+</div>
 <div class="row">
     <div class="col-sm-4">
         <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
@@ -58,7 +69,7 @@ else if (Model.OrderModel.Status == OrderStatus.CancelledByBroker
                 <display-entry asp-for="OrderModel.TimeRange" />
             </div>
         </div>
-        @if (requestIsAnswered)
+        @if (requestIsAnswered && !requestIsDeclinedByBroker)
         {
             <div class="row">
                 <div class="col-sm-6">
@@ -71,70 +82,72 @@ else if (Model.OrderModel.Status == OrderStatus.CancelledByBroker
         }
     </div>
 </div>
-<div class="row">
-    @if (Model.RequirementAnswers.Any(r => r.IsRequired))
-    {
-        <div class="col-sm-4">
-            <label>Tillkommande krav</label>
-            <ul>
-                @foreach (var req in Model.RequirementAnswers.Where(r => r.IsRequired))
-                {
-                    <li class="detail-text">
-                        @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                        @if (!string.IsNullOrEmpty(req.Answer))
+@if (requestIsAnswered && !requestIsDeclinedByBroker)
+{
+    <div class="row">
+        @if (Model.RequirementAnswers.Any(r => r.IsRequired))
+        {
+            <div class="col-sm-4">
+                <label>Tillkommande krav</label>
+                <ul>
+                    @foreach (var req in Model.RequirementAnswers.Where(r => r.IsRequired))
+                    {
+                        <li class="detail-text">
+                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                            @if (!string.IsNullOrEmpty(req.Answer))
+                            {
+                                <br />
+                                <span class="requirement-answer">- Svar: @req.Answer</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        @if (Model.RequirementAnswers.Any(r => !r.IsRequired))
+        {
+            @if (Model.RequirementAnswers.Any(r => !r.IsRequired && r.CanMeetRequirement))
+            {
+                <div class="col-sm-4">
+                    <label>Uppfyllda tillkommande önskemål</label>
+                    <ul>
+                        @foreach (var req in Model.RequirementAnswers.Where(r => !r.IsRequired && r.CanMeetRequirement))
                         {
-                            <br />
-                            <span class="requirement-answer">- Svar: @req.Answer</span>
+                            <li class="detail-text">
+                                @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                @if (!string.IsNullOrEmpty(req.Answer))
+                                {
+                                    <br />
+                                    <span class="requirement-answer">- Svar: @req.Answer</span>
+                                }
+                            </li>
                         }
-                    </li>
-                }
-            </ul>
-        </div>
-    }
-    @if (Model.RequirementAnswers.Any(r => !r.IsRequired))
-    {
-        @if (Model.RequirementAnswers.Any(r => !r.IsRequired && r.CanMeetRequirement))
-        {
-            <div class="col-sm-4">
-                <label>Uppfyllda tillkommande önskemål</label>
-                <ul>
-                    @foreach (var req in Model.RequirementAnswers.Where(r => !r.IsRequired && r.CanMeetRequirement))
-                    {
-                        <li class="detail-text">
-                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                            @if (!string.IsNullOrEmpty(req.Answer))
-                            {
-                                <br />
-                                <span class="requirement-answer">- Svar: @req.Answer</span>
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
+                    </ul>
+                </div>
+            }
+            @if (Model.RequirementAnswers.Any(r => !r.IsRequired && !r.CanMeetRequirement))
+            {
+                <div class="col-sm-4">
+                    <label>Ej uppfyllda tillkommande önskemål</label>
+                    <ul>
+                        @foreach (var req in Model.RequirementAnswers.Where(r => !r.IsRequired && !r.CanMeetRequirement))
+                        {
+                            <li class="detail-text">
+                                @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                @if (!string.IsNullOrEmpty(req.Answer))
+                                {
+                                    <br />
+                                    <span class="requirement-answer">- Svar: @req.Answer</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
         }
-        @if (Model.RequirementAnswers.Any(r => !r.IsRequired && !r.CanMeetRequirement))
-        {
-            <div class="col-sm-4">
-                <label>Ej uppfyllda tillkommande önskemål</label>
-                <ul>
-                    @foreach (var req in Model.RequirementAnswers.Where(r => !r.IsRequired && !r.CanMeetRequirement))
-                    {
-                        <li class="detail-text">
-                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                            @if (!string.IsNullOrEmpty(req.Answer))
-                            {
-                                <br />
-                                <span class="requirement-answer">- Svar: @req.Answer</span>
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
-        }
-    }
-
-</div>
-@if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime && requestIsAnswered)
+    </div>
+}
+@if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime && requestIsAnswered && !requestIsDeclinedByBroker)
 {
     <div class="row">
         <div class="col-sm-4">

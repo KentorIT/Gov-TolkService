@@ -6,14 +6,9 @@
 
 <div class="row">
     <div class="col-sm-12">
-        @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
+        @await Html.PartialAsync("_OrderHeader", Model)
         <h2>Bokningsförfrågan</h2>
         <hr />
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="Status" />
-            </div>
-        </div>
         @await Html.PartialAsync("_RequestSummary", Model)
         <div class="row">
             @if (Model.RequestCalculatedPriceInformationModel != null)
@@ -52,15 +47,6 @@
                 <div class="col-sm-12">
                     @await Html.PartialAsync("_ComplaintSummary", Model)
                 </div>
-                    <div class="col-sm-4">
-                        <a class="btn btn-warning btn-large" href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-                    </div>
-                }
-                @if (Model.RequisitionId.HasValue)
-                {
-                    <div class="col-sm-4">
-                        <a class="btn btn-warning btn-large" href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
-                    </div>
                 }
                 @if (Model.AllowCancellation)
                 {
@@ -102,7 +88,6 @@
         </div>
         @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
         {
-
             @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
             {
                 <display-entry asp-for="CancelMessage" />

@@ -6,19 +6,15 @@
 @{
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
     ViewData["CustomerOrganizationInfo_IsDetailView"] = true;
+    ViewData["OrderHeader_IsOrderDetailViewKey"] = true;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 }
 
 <div class="row">
     <div class="col-sm-12">
-        @await  Html.PartialAsync("_OrderHeader", Model)
+        @await  Html.PartialAsync("_OrderHeader", Model.ActiveRequest)
         <h2>Bokning</h2>
         <hr />
-        <div class="row">
-            <div class="col-sm-3">
-                <display-entry asp-for="Status" />
-            </div>
-        </div>
         @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
         {
             <div class="row">
@@ -133,11 +129,6 @@
     {
         <div class="col-sm-12">
             @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
-            <div class="row">
-                <div class="col-sm-4">
-                    <a class="btn btn-warning btn-large" href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-                </div>
-            </div>
         </div>
     }
     @if (Model.Status == OrderStatus.CancelledByBroker)

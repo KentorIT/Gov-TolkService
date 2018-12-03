@@ -158,7 +158,7 @@ namespace Tolk.Web.Models
 
         #region details
 
-        [Display(Name = "Status")]
+        [Display(Name = "Status på bokningen")]
         public OrderStatus Status { get; set; }
 
         [Display(Name = "AvropsID")]

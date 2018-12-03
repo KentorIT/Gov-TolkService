@@ -99,6 +99,9 @@ namespace Tolk.Web.Models
             get; set;
         }
 
+        [Display(Name = "Inkommen")]
+        public DateTimeOffset CreatedAt { get; set; }
+
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
@@ -147,6 +150,7 @@ namespace Tolk.Web.Models
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
                 RequestId = request.RequestId,
+                CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.User?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
