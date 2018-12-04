@@ -51,17 +51,19 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("UNAUTHORIZED");
             }
-            //Possibly the user should be added, if not found?? 
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                 .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                 .Include(o => o.CustomerOrganisation)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber);
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber && 
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
                 return ReturError("ORDER_NOT_FOUND");
             }
+            //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
             var request = order.Requests.SingleOrDefault(r =>
                 apiUser.BrokerId == r.Ranking.BrokerId &&
@@ -112,7 +114,9 @@ namespace Tolk.Web.Api.Controllers
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber);
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
                 return ReturError("ORDER_NOT_FOUND");
@@ -132,6 +136,37 @@ namespace Tolk.Web.Api.Controllers
             _dbContext.SaveChanges();
             //End of service
             return Json(new ResponseBase());
+        }
+
+        [HttpGet]
+        public JsonResult File(string orderNumber, int attachmentId)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .SingleOrDefault(o => o.OrderNumber == orderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+            if (order == null)
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+
+            var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
+            if (attachment == null)
+            {
+                return ReturError("ATTACHMENT_NOT_FOUND");
+            }
+
+            return Json(new FileResponse
+            {
+                FileBase64 = Convert.ToBase64String(attachment.Blob) 
+            });
         }
 
         #endregion
@@ -167,6 +202,7 @@ namespace Tolk.Web.Api.Controllers
                     new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_FOUND", ErrorMessage = "The provided order number has no request in the correct state for the call." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_NOT_FOUND", ErrorMessage = "The provided interpreter was not found." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
                };
             }
         }

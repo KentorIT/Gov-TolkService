@@ -178,7 +178,11 @@ namespace Tolk.BusinessLogic.Services
                         AssignentType = EnumHelper.GetCustomName(order.AssignentType),
                         Description = order.Description,
                         CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
-                        HasFiles = order.Attachments.Any(),
+                        Attachments = order.Attachments.Select(a => new AttachmentInformation
+                        {
+                            AttachmentId = a.AttachmentId,
+                            FileName = a.Attachment.FileName
+                        }),
                         //Need to aggregate the price list types
                         PriceInformation = new PriceInformationModel
                         {

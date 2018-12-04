@@ -65,6 +65,11 @@ namespace BrokerMock.Controllers
                 //Get the headers:
                 //X-Kammarkollegiet-InterpreterService-Delivery
             }
+
+            if (extraInstructions.Contains("GETFILE"))
+            {
+                await GetFile(payload.OrderNumber, payload.Attachments.First().AttachmentId);
+            }
             return new JsonResult("Success");
         }
 
@@ -135,6 +140,31 @@ namespace BrokerMock.Controllers
                 else
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Acknowledge]:: Avrops-ID: {orderNumber} accat mottagande");
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> GetFile(string orderNumber, int attachmentId)
+        {
+            //Need app settings: UseCertFile, Cert.FilePath, CertPublicKey
+            using (var client = new HttpClient(GetCertHandler()))
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                if (_options.UseSecret)
+                {
+                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-CallerSecret", _options.Secret);
+                }
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/File?OrderNumber={orderNumber}&AttachmentId={ attachmentId}");
+                var file = response.Content.ReadAsAsync<FileResponse>().Result;
+                if (file.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Avrops-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/File]:: Avrops-ID: {orderNumber} accat mottagande");
                 }
             }
 
