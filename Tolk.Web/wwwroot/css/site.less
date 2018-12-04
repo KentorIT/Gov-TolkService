@@ -828,6 +828,11 @@ li.placeholder::before {
     border-color: @primary-lighter;
 }
 
+.info-message {
+    font-size: 18px;
+    padding-left: 10px;
+}
+
 .shortcut-box {
     color: @primary-darker;
 }
@@ -1034,9 +1039,18 @@ input.force-validation {
     text-align: center;
 }
 
+.table > thead > tr > th {
+    border: none;
+}
+
 .startlist-row > tbody > tr, .clickable-rows-with-action > tbody > tr {
     font-weight: 300;
     height: 70px;
+}
+
+.startlist-table {
+    border-collapse: separate;
+    border-spacing: 0px 5px;
 }
 
 .startlist-status {

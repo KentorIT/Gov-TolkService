@@ -10,10 +10,12 @@
     <div class="row">
         <div class="col-xs-12">
             <br />
-
             <div class="panel panel-primary">
                 <div class="panel-heading">
-                    @Model.Message
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span class="info-message">
+                        @Model.Message
+                    </span>
                 </div>
             </div>
         </div>
@@ -47,30 +49,30 @@
                             @foreach (var item in startlist.StartListObjects)
                             {
                                 <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId })">
-                                    <td class="@item.ColorClassName">
+                                    <td class="gray-border-bottom @item.ColorClassName">
                                         <br />
                                         <span class="startlist-status">
                                             @EnumHelper.GetDescription(item.Status)
                                         </span><br /><br />
                                         <span class="startlist-subrow">ID: @item.OrderNumber</span>
                                     </td>
-                                    <td>
+                                    <td class="gray-border-bottom">
                                         <br />
                                         @EnumHelper.GetDescription(item.CompetenceLevel)<br /><br />
                                         <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate.ToString("yyyy-MM-dd HH:mm")</span>
                                     </td>
-                                    <td>
+                                    <td class="gray-border-bottom">
                                         <br />
                                         @item.Language<br /><br />
                                     </td>
                                     @if (startlist.HasReviewAction)
                                     {
-                                        <td><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
-                                        <td class="gray-border-right"><br /><a class="btn btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
+                                        <td class="gray-border-bottom"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                        <td class="gray-border-bottom gray-border-right"><br /><a class="btn btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
                                     }
                                     else
                                     {
-                                        <td class="gray-border-right"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                        <td class="gray-border-bottom gray-border-right"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
                                     }
                                 </tr>
                             }
@@ -83,7 +85,6 @@
             {
                 <div class="list-empty">@startlist.EmptyMessage</div>
             }
-            <br />
         </div>
     </div>
 }
