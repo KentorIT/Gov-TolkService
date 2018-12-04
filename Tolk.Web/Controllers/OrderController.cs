@@ -200,9 +200,13 @@ namespace Tolk.Web.Controllers
                 {
                     model.ActiveRequest = RequestModel.GetModelFromRequest(request);
                     model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
-                    model.ActiveRequest.OrderModel = model;
-                    model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
                 }
+                else
+                {
+                    model.ActiveRequest = new RequestModel();
+                }                
+                model.ActiveRequest.OrderModel = model;
+                model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
                 return View(model);
             }
             return Forbid();
