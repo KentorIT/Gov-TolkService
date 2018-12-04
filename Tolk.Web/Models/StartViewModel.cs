@@ -8,6 +8,12 @@ namespace Tolk.Web.Models
 {
     public class StartViewModel
     {
+
+        public IEnumerable<StartList> StartLists { get; set; }
+
+        public string PageTitle { get; set; } = "Aktiva bokningsförfrågningar";
+
+
         public string Message { get; set; }
         public IEnumerable<StartPageBox> Boxes { get; set; }
 
@@ -22,6 +28,17 @@ namespace Tolk.Web.Models
             public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
         }
 
+        public class StartList
+        {
+            public string Header { get; set; }
+
+            public string EmptyMessage { get; set; }
+
+            public IEnumerable<StartListItemModel> StartListObjects { get; set; }
+
+            public bool HasReviewAction { get; set; } = false;
+        }
+
         public class ConfirmationMessage
         {
             public string Header { get; set; }
@@ -34,5 +51,8 @@ namespace Tolk.Web.Models
 
             public int Id { get; set; }
         }
+
     }
+
+
 }

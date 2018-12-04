@@ -2,9 +2,11 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
 @font-family: "Merriweather Sans", sans-serif;
 @height-input: 34px;
-@darkgray: #646464;
-@lightgray: #F1F4F2;
+@darkestgray: #646464;
+@darkgray: #767676;
 @gray: #979797;
+@lightgray: #DDD;
+@lightestgray: #F1F4F2;
 @primary: #82A7A0;
 @primary-lighter: #95BFB7;
 @primary-lightest: #BFDDD2;
@@ -14,7 +16,10 @@
 @border-default: 1px solid @gray;
 @border-select-color: #445352;
 @border-shadow-color: #445352;
-@bg-gray: #F1F4F2;
+@green: #77CB7F;
+@blue: #6BA3E4;
+@red: #E45C5C;
+@yellow: #EFE875;
 
 html {
     overflow-y: scroll;
@@ -22,13 +27,13 @@ html {
 }
 
 .bg-gray {
-    background-color: @bg-gray;
+    background-color: @lightestgray;
 }
 
 body {
     color: black;
     padding-top: 50px;
-    background-image: linear-gradient(180deg, @bg-gray, #fff);
+    background-image: linear-gradient(180deg, @lightestgray, #fff);
 }
 
 label {
@@ -121,12 +126,12 @@ hr {
     margin: 0 auto;
     box-shadow: 1px 2px 4px 0 rgba(0,0,0,0.5);
 }
+
 @media(min-width: 768px) {
     .page {
         padding: 10px 40px;
     }
 }
-
 
 .select2-container,
 .select2-container--default,
@@ -148,7 +153,6 @@ hr {
     border: 1px;
     border-radius: 0px;
     border-color: black;
-    /*-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 3px @border-shadow-color;*/
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 3px @border-shadow-color;
     height: @height-input;
 }
@@ -432,7 +436,7 @@ a.btn-large {
 }
 
 .btn-default, .btn-primary, .btn-success {
-    background-color: @primary-lighter;
+    background-color: @primary-lightest;
     color: black;
 }
 
@@ -503,7 +507,7 @@ a.btn-large {
 .btn-default:focus.hover,
 .btn-primary.disabled:hover,
 [disabled].btn-primary:hover, fieldset[disabled] .btn-primary:hover, .btn-primary.disabled:focus, [disabled].btn-primary:focus, fieldset[disabled] .btn-primary:focus, .btn-primary.disabled.focus, [disabled].btn-primary.focus, fieldset[disabled] .btn-primary.focus {
-    background-color: @primary;
+    background-color: @primary-lighter;
     background-position: 0 -15px;
     color: black;
     border: none;
@@ -521,8 +525,8 @@ input[type='checkbox'] {
 }
 
 input[type='checkbox'][disabled]:after {
-    background: @lightgray;
-    border-color: @darkgray;
+    background: @lightestgray;
+    border-color: @darkestgray;
 }
 
 input[type='checkbox']:after {
@@ -620,7 +624,7 @@ input[type='checkbox']:checked:after {
 }
 
 .file-table-add table tbody tr td, .file-table-add table thead tr td, .file-table-add table thead tr, .file-table-add tr td, .file-table-add tbody tr td {
-    background-color: @lightgray;
+    background-color: @lightestgray;
     font-size: 12px;
     cursor: pointer;
     border-top: 1px solid #fff;
@@ -629,7 +633,7 @@ input[type='checkbox']:checked:after {
 
 .order-requirement-table table tbody tr td, .order-requirement-table table thead tr td, .order-requirement-table table thead tr, .order-requirement-table tr td, .order-requirement-table tbody tr td,
 .order-desiredRequirement-table table tbody tr td, .order-desiredRequirement-table table thead tr td, .order-desiredRequirement-table table thead tr, .order-desiredRequirement-table tr td, .order-desiredRequirement-table tbody tr td {
-    background-color: @lightgray;
+    background-color: @lightestgray;
     font-size: 12px;
     border-top: 1px solid #fff;
     padding: 8px;
@@ -729,11 +733,11 @@ li.placeholder::before {
 .important-info {
     margin-bottom: 20px;
     font-style: italic;
-    color: @darkgray;
+    color: @darkestgray;
 }
 
 .more-info {
-    color: @darkgray;
+    color: @darkestgray;
     font-size: 14px;
     font-style: italic;
     font-weight: 300;
@@ -743,7 +747,7 @@ li.placeholder::before {
 
 .no-value-info {
     font-style: italic;
-    color: @darkgray;
+    color: @darkestgray;
     font-weight: 300;
 }
 
@@ -876,7 +880,7 @@ ul.pagination > li.paginate_button.active > a {
 }
 
 .detail-price-info {
-    background-color: @lightgray;
+    background-color: @lightestgray;
 }
 
 #RequirementType {
@@ -910,7 +914,7 @@ ul.pagination > li.paginate_button.active > a {
     filter: invert(1);
 }
 
-.h3-no-padding {
+.no-padding-margin {
     padding: 0px;
     margin: 0px;
 }
@@ -955,4 +959,125 @@ input.force-validation {
 
 .text-align-center {
     text-align: center;
+}
+
+.btn-logout {
+    line-height: 50px;
+    font-size: 17px;
+    color: black;
+    background-color: white;
+    border: none;
+    outline: none;
+    padding: 0px;
+}
+
+.btn-logout:hover {
+    color: @primary;
+    box-shadow: inset 0 -3px 0 @primary;
+}
+
+.list-header {
+    font-size: 20px;
+    font-weight: 300;
+    color: @darkgray;
+}
+
+.list-line {
+    margin-top: 30px;
+    overflow: hidden;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.list-line span {
+    position: relative;
+}
+
+.list-line span:before,
+.list-line span:after {
+    line-height: 2px;
+    content: "";
+    position: absolute;
+    border-bottom: 1px solid @darkgray;
+    border-top: 1px solid @darkgray;
+    width: 1200px;
+    height: 2px;
+    top: 50%;
+}
+
+.list-line span:before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.list-line span:after {
+    left: 100%;
+    margin-left: 15px;
+}
+
+.list-empty {
+    font-size: 14px;
+    font-weight: 300;
+    text-align: center;
+}
+
+.startlist-row > tbody > tr, .clickable-rows-with-action > tbody > tr {
+    font-weight: 300;
+    height: 70px;
+}
+
+.startlist-status {
+    font-weight: normal;
+}
+
+.startlist-subrow {
+    font-size: 11px;
+    vertical-align: bottom;
+}
+
+.blue-border-left {
+    border-left: 3px solid @blue;
+}
+
+.red-border-left {
+    border-left: 3px solid @red;
+}
+
+.green-border-left {
+    border-left: 3px solid @green;
+}
+
+.yellow-border-left {
+    border-left: 3px solid @yellow;
+}
+
+.gray-border-left {
+    border-left: 3px solid @darkestgray;
+}
+
+.gray-border-right {
+    border-right: 1px solid @lightgray;
+}
+
+.gray-border-bottom {
+    border-bottom: 1px solid @lightgray;
+}
+
+.sorting {
+    color: @darkgray;
+    font-weight: normal;
+}
+
+.sorting_asc, .sorting_desc {
+    color: @darkgray;
+}
+
+.sorting:after {
+    opacity: 1 !important;
+    color: @primary;
+}
+
+.sorting_asc:after, .sorting_desc:after {
+    opacity: 1 !important;
+    color: @primary-darker;
 }

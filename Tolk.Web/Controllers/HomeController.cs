@@ -65,34 +65,19 @@ namespace Tolk.Web.Controllers
                     }
                 }
             }
-
             return View(new StartViewModel
             {
+                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningsförfrågningar",
                 Message = message,
-                Boxes = (await GetStartPageBoxes())
-                // Uncomment this block to get a bunch of extra boxes for layout testing.
-                //.Union(
-                //    Enumerable.Range(1, 10)
-                //    .Select(i => new StartViewModel.StartPageBox
-                //    {
-                //        Header = $"H{i}",
-                //        Count = i,
-                //        Action = "Index",
-                //        Controller = "Home"
-                //    })),
-                , // Yes, a single , on a line by itself is intentional.
-                ConfirmationMessages = await GetConfirmationMessages()
+                Boxes = await GetStartPageBoxes(),
+                ConfirmationMessages = await GetConfirmationMessages(),
+                StartLists = await GetStartLists()
             });
         }
 
         private async Task<IEnumerable<StartViewModel.StartPageBox>> GetStartPageBoxes()
         {
             var result = Enumerable.Empty<StartViewModel.StartPageBox>();
-
-            if ((await _authorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
-            {
-                result = result.Union(GetCustomerStartPageBoxes());
-            }
 
             if ((await _authorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
             {
@@ -107,81 +92,15 @@ namespace Tolk.Web.Controllers
             return result;
         }
 
-        private IEnumerable<StartViewModel.StartPageBox> GetCustomerStartPageBoxes()
+        private async Task<IEnumerable<StartViewModel.StartList>> GetStartLists()
         {
-            yield return new StartViewModel.StartPageBox
-            {
-                Count = _dbContext.Orders.Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter) && o.CreatedBy == User.GetUserId()).Count(),
-                Header = "Tillsatt tolk",
-                Controller = "Order",
-                Action = "List",
-                Filters = new Dictionary<string, string> { { "Status", OrderStatus.ToBeProcessedByCustomer.ToString() } }
-            };
+            var result = Enumerable.Empty<StartViewModel.StartList>();
 
-            yield return new StartViewModel.StartPageBox
+            if ((await _authorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
             {
-                Count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
-                    r.Request.Order.Status == OrderStatus.Delivered &&
-                    r.Request.Order.CreatedBy == User.GetUserId()).Count(),
-                Header = "Rekvisitioner att kontrollera",
-                Controller = "Requisition",
-                Action = "List",
-                Filters = new Dictionary<string, string> {
-                        { "Status", RequisitionStatus.Created.ToString() },
-                        { "FilterByContact", "false"}
-                    }
-            };
-
-            int count = _dbContext.Requisitions.Where(r => r.Status == RequisitionStatus.Created &&
-                    r.Request.Order.Status == OrderStatus.Delivered &&
-                    r.Request.Order.ContactPersonId == User.GetUserId()).Count();
-
-            if (count > 0)
-            {
-                yield return new StartViewModel.StartPageBox
-                {
-                    Count = count,
-                    Header = "Rekvisitioner att kontrollera som kontakt",
-                    Controller = "Requisition",
-                    Action = "List",
-                    Filters = new Dictionary<string, string> {
-                        { "Status", RequisitionStatus.Created.ToString() },
-                        { "FilterByContact", "true"}
-                    }
-                };
+                result = result.Union(GetCustomerStartLists());
             }
-
-            count = _dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Disputed &&
-                    c.CreatedBy == User.GetUserId()).Count();
-
-            if (count > 0)
-            {
-                yield return new StartViewModel.StartPageBox
-                {
-                    Count = count,
-                    Header = "Bestridda reklamationer",
-                    Controller = "Complaint",
-                    Action = "List",
-                    Filters = new Dictionary<string, string> {
-                        { "Status", ComplaintStatus.Disputed.ToString() }
-                    }
-                };
-            }
-
-            count = _dbContext.Orders.Where(o => o.Status == OrderStatus.CancelledByBroker &&
-                o.CreatedBy == User.GetUserId()).Count();
-
-            if (count > 0)
-            {
-                yield return new StartViewModel.StartPageBox
-                {
-                    Count = count,
-                    Header = "Avbokade avrop från förmedling",
-                    Controller = "Order",
-                    Action = "List",
-                    Filters = new Dictionary<string, string> { { "Status", OrderStatus.CancelledByBroker.ToString() } }
-                };
-            }
+            return result;
         }
 
         private IEnumerable<StartViewModel.StartPageBox> GetBrokerStartPageBoxes()
@@ -318,6 +237,93 @@ namespace Tolk.Web.Controllers
 
                 };
             }
+        }
+
+        private IEnumerable<StartViewModel.StartList> GetCustomerStartLists()
+        {
+
+            var listToAddAll = new List<StartListItemModel>();
+
+            //tillsatt tolk för godkännade
+            listToAddAll.AddRange(_dbContext.Orders.Include(o => o.Requests)
+                .Include(o => o.Language).Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter) && o.CreatedBy == User.GetUserId())
+                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.Any() ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime : _clock.SwedenNow.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, ButtonItemId = o.OrderId, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderAcceptedForApproval, ButtonAction = "View", ButtonController = "Order" }).ToList());
+
+            //Requisitions to review att kontrollera (for user and where user is contact person)
+            listToAddAll.AddRange(_dbContext.Requisitions
+                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
+                .Where(r => r.Status == RequisitionStatus.Created && r.Request.Order.Status == OrderStatus.Delivered &&
+                (r.Request.Order.CreatedBy == User.GetUserId() || r.Request.Order.ContactPersonId == User.GetUserId()))
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt.DateTime, EndDateTime = r.Request.Order.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = r.Request.Order.OrderId, InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, ButtonItemId = r.RequisitionId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitonArrived, ButtonAction = "Process", ButtonController = "Requisition" }).ToList()); ;
+
+            //Disputed complaints
+            listToAddAll.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Disputed &&
+                c.CreatedBy == User.GetUserId()).Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                .Select(c => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt.DateTime, EndDateTime = c.Request.Order.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = c.Request.Order.OrderId, InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, ButtonItemId = c.ComplaintId, Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, OrderNumber = c.Request.Order.OrderNumber, Status = StartListItemStatus.ComplaintEvent, ButtonAction = "View", ButtonController = "Complaint" }).ToList()); ;
+
+            //Non-answered-requests, is this correct with arrivaldate and check on orderstatus?
+            listToAddAll.AddRange(_dbContext.Orders.Include(o => o.Requests)
+                .Include(o => o.Language).Where(o => o.Status == OrderStatus.NoBrokerAcceptedOrder && o.CreatedBy == User.GetUserId())
+                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().ExpiresAt.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, ButtonItemId = o.OrderId, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderNotAnswered, ButtonAction = "View", ButtonController = "Order" }).ToList());
+
+            //Cancelled by broker
+            listToAddAll.AddRange(_dbContext.Orders.Include(o => o.Requests)
+                .Include(o => o.Language).Where(o => o.Status == OrderStatus.CancelledByBroker && o.CreatedBy == User.GetUserId())
+                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, ButtonItemId = o.OrderId, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCancelled, ButtonAction = "View", ButtonController = "Order" }).ToList());
+
+            var count = listToAddAll.Any() ? listToAddAll.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Kräver handling av myndighet ({count} st)" : "Kräver handling av myndighet",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som kräver handling av myndigheten",
+                StartListObjects = listToAddAll,
+                HasReviewAction = true
+            };
+
+            //Sent orders
+            var sentOrders = _dbContext.Orders
+                .Include(o => o.Language).
+                Where(o => o.Status == OrderStatus.Requested &&
+            o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow).Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.CreatedAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCreated }).ToList();
+
+            count = sentOrders.Any() ? sentOrders.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Skickade bokningar ({count} st)" : "Skickade bokningar",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är skickade",
+                StartListObjects = sentOrders
+            };
+
+            //Approved orders 
+            var approvedOrders = _dbContext.Orders.Include(o => o.Requests)
+            .Include(o => o.Language).Where(o => o.Status == OrderStatus.ResponseAccepted &&
+            o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow).Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderApproved }).ToList();
+
+            count = approvedOrders.Any() ? approvedOrders.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är tillsatta",
+                StartListObjects = approvedOrders
+            };
+
+            // Awaiting requisition
+            var awaitRequisition = _dbContext.Orders.Include(o => o.Requests)
+            .Include(o => o.Language).Where(o => o.Status == OrderStatus.ResponseAccepted &&
+            o.CreatedBy == User.GetUserId() && o.EndAt < _clock.SwedenNow && !(o.Requests.Any(r => r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder || req.Status == RequisitionStatus.Created)))).Select
+            (o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt}, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.EndAt.DateTime, InfoDateDescription = "Utfört: ", CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = string.Empty, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.RequisitionAwaited }).ToList();
+
+            count = awaitRequisition.Any() ? awaitRequisition.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Inväntar rekvisition ({count} st)" : "Inväntar rekvisition",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som inväntar rekvisition",
+                StartListObjects = awaitRequisition
+            };
         }
 
         private async Task<IEnumerable<StartViewModel.ConfirmationMessage>> GetConfirmationMessages()

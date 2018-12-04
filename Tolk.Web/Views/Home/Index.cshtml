@@ -1,24 +1,92 @@
 ﻿@model Tolk.Web.Models.StartViewModel
-@using Tolk.BusinessLogic
 @using Microsoft.Extensions.Options;
+@using Tolk.BusinessLogic.Utilities
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @{
-    ViewData["Title"] = Constants.SystemName;
+    ViewData["Title"] = Model.PageTitle;
 }
+@if (!string.IsNullOrEmpty(@Model.Message))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <br />
 
-<div class="row">
-    <div class="col-md-12">
-        <br />
-        @if (!string.IsNullOrEmpty(@Model.Message))
-        {
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     @Model.Message
                 </div>
             </div>
-        }
+        </div>
     </div>
-</div>
+}
+
+<h2 class="bold">@ViewData["Title"]</h2>
+@foreach (var startlist in Model.StartLists)
+{
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="list-header list-line"><span>@startlist.Header</span></div>
+            @if (startlist.StartListObjects.Any())
+            {
+                <div class="table-responsive table-datatable">
+                    <table class="table startlist-table table-hover clickable-rows-with-action">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Tolkens kompetens</th>
+                                <th>Språk</th>
+                                <th>Datum för uppdrag</th>
+                                @if (startlist.HasReviewAction)
+                                {
+                                    <th></th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in startlist.StartListObjects)
+                            {
+                                <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId })">
+                                    <td class="@item.ColorClassName">
+                                        <br />
+                                        <span class="startlist-status">
+                                            @EnumHelper.GetDescription(item.Status)
+                                        </span><br /><br />
+                                        <span class="startlist-subrow">ID: @item.OrderNumber</span>
+                                    </td>
+                                    <td>
+                                        <br />
+                                        @EnumHelper.GetDescription(item.CompetenceLevel)<br /><br />
+                                        <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate.ToString("yyyy-MM-dd HH:mm")</span>
+                                    </td>
+                                    <td>
+                                        <br />
+                                        @item.Language<br /><br />
+                                    </td>
+                                    @if (startlist.HasReviewAction)
+                                    {
+                                        <td><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                        <td class="gray-border-right"><br /><a class="btn btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
+                                    }
+                                    else
+                                    {
+                                        <td class="gray-border-right"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot><tr class="gray-border-bottom"><td style="border-bottom: 1px solid gray" colspan="5"></td></tr></tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="list-empty">@startlist.EmptyMessage</div>
+            }
+            <br />
+        </div>
+    </div>
+}
 <div class="row">
     <div class="col-md-8">
         <div class="row">
@@ -55,17 +123,5 @@
 
         }
     </div>
-    <div class="col-md-4">
-        @foreach(var b in Options.Value.SideBar)
-        {
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3>@b.Title</h3>
-                </div>
-                <p class="panel-body">
-                    @b.Message
-                </p>
-            </div>
-        }
-    </div>
+
 </div>

@@ -46,6 +46,8 @@ $('#timeTravelDatePicker').on('changeDate', function () {
     );
 });
 
+
+
 function updateTime() {
     var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
     $('#now').text(date.toLocaleString("sv-SE"));
@@ -85,7 +87,15 @@ $(function () {
         $(this).closest("form").submit();
     });
 
-    $(".table-datatable table").DataTable({
+    $(".table-paging table").DataTable({
+        searching: false,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+        }
+    });
+
+    $(".startlist-table").DataTable({
+        paging: false,
         searching: false,
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"

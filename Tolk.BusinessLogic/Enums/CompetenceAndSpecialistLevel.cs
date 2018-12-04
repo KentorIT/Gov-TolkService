@@ -9,6 +9,9 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum CompetenceAndSpecialistLevel
     {
+        [Description("Tolk ej tillsatt")]
+        NoInterpreter = 0,
+
         [Parent(CompetenceLevel.OtherInterpreter)]
         [Description("Övrig tolk")]
         OtherInterpreter = 1,
