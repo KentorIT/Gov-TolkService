@@ -196,10 +196,13 @@ namespace Tolk.Web.Controllers
                     })
                     .OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList(),
                 };
-                model.ActiveRequest = RequestModel.GetModelFromRequest(request);
-                model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?) request.InterpreterLocation.Value : null;
-                model.ActiveRequest.OrderModel = model;
-                model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
+                if (request != null)
+                {
+                    model.ActiveRequest = RequestModel.GetModelFromRequest(request);
+                    model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
+                    model.ActiveRequest.OrderModel = model;
+                    model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
+                }
                 return View(model);
             }
             return Forbid();

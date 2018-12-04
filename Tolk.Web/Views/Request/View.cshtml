@@ -6,7 +6,7 @@
 
 <div class="row">
     <div class="col-sm-12">
-        @await Html.PartialAsync("_OrderHeader", Model)
+        @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
         @await Html.PartialAsync("_RequestSummary", Model)
         <div class="row">
             @if (Model.RequestCalculatedPriceInformationModel != null)

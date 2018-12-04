@@ -1,7 +1,7 @@
-﻿@model RequestModel
+﻿@model OrderModel
 
 @{ 
-    string isOrderDetailViewKey = "IsOrderDetailViewKey";
+    string isOrderDetailViewKey = "IsOrderDetailView";
     bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
 }
 
@@ -9,39 +9,39 @@
     <div class="col-sm-3">
         @if (isOrderDetailView)
         {
-            <display-entry asp-for="OrderModel.Status" />
+            <display-entry asp-for="Status" />
         }
         else
         {
-            <display-entry asp-for="Status" />
+            <display-entry asp-for="ActiveRequest.Status" />
         }
     </div>
     <div class="col-sm-3">
-        <display-entry asp-for="OrderModel.AssignmentType" />
+        <display-entry asp-for="AssignmentType" />
     </div>
     <div class="col-sm-3">
-        <display-entry asp-for="OrderModel.OrderNumber" />
-        @if (Model.OrderModel.ReplacingOrderId.HasValue)
+        <display-entry asp-for="OrderNumber" />
+        @if (Model.ReplacingOrderId.HasValue)
         {
             <span>
-                (Ersätter <a href="@Url.Action("View",new { id = Model.OrderModel.ReplacingOrderId })">@Model.OrderModel.ReplacingOrderNumber</a>)
+                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
             </span>
         }
-        @if (Model.OrderModel.ReplacedByOrderId.HasValue)
+        @if (Model.ReplacedByOrderId.HasValue)
         {
             <span>
-                (Ersatt av <a href="@Url.Action("View",new { id = Model.OrderModel.ReplacedByOrderId })">@Model.OrderModel.ReplacedByOrderNumber</a>)
+                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
             </span>
         }
     </div>
     <div class="col-sm-3">
         @if (isOrderDetailView)
         {
-            <display-entry asp-for="OrderModel.CreatedAt" />
+            <display-entry asp-for="CreatedAt" />
         }
         else
         {
-            <display-entry asp-for="CreatedAt" />
+            <display-entry asp-for="ActiveRequest.CreatedAt" />
         }
     </div>
 </div>
