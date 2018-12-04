@@ -326,7 +326,6 @@ namespace Tolk.Web.Controllers
                         .Single(u => u.Id == order.CreatedBy);
 
                     await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
-                    _orderService.CreatePriceInformation(order);
 
                     _dbContext.SaveChanges();
                     trn.Commit();

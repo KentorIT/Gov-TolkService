@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Api.Helpers;
+using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api
 {
@@ -31,6 +32,8 @@ namespace Tolk.Web.Api
             services.Configure<TolkApiOptions>(Configuration);
 
             services.AddScoped<PriceCalculationService>();
+            services.AddScoped<ApiUserService>();
+            services.AddScoped<TimeService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));

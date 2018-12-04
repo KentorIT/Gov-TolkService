@@ -271,6 +271,9 @@ namespace Tolk.BusinessLogic.Services
             else
             {
                 request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
+                //This is the first time a request is created on this order, add the priceinformation too...
+                await _tolkDbContext.SaveChangesAsync();
+                CreatePriceInformation(order);
             }
 
             // Save to get ids for the log message.
@@ -287,6 +290,9 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.Attachments)
+                    .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
+                    .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Include(r => r.Ranking.Broker)
                     .Single(r => r.RequestId == request.RequestId);
                 _notificationService.RequestCreated(newRequest);
@@ -320,7 +326,7 @@ namespace Tolk.BusinessLogic.Services
                     r.Status == RequestStatus.Created ||
                     r.Status == RequestStatus.Accepted ||
                     r.Status == RequestStatus.Received ||
-                    r.Status == RequestStatus.Approved).Ranking.RankingId
+                    r.Status == RequestStatus.Approved).RankingId
                 );
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
             _tolkDbContext.SaveChanges();

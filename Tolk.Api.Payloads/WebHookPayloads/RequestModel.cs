@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Tolk.Api.Payloads.WebHookPayloads
 {
@@ -21,6 +21,6 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public string Description { get; set; }
         public string AssignentType { get; set; }
         public bool HasFiles { get; set; }
-        // Files should probably be handled with a flag, and a separate getter for these if needed.
+        public PriceInformationModel PriceInformation { get; set; }
     }
 }

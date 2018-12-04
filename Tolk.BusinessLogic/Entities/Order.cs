@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -128,6 +129,24 @@ namespace Tolk.BusinessLogic.Entities
 
         [InverseProperty(nameof(ReplacingOrder))]
         public Order ReplacedByOrder { get; set; }
+
+        public CompetenceLevel PriceCalculatedFromCompetenceLevel
+        {
+            get
+            {
+                CompetenceAndSpecialistLevel level = CompetenceAndSpecialistLevel.CourtSpecialist;
+                if (CompetenceRequirements != null && CompetenceRequirements.Any())
+                {
+                    if (CompetenceRequirements.Count() == 1)
+                    {
+                        level = CompetenceRequirements.Single().CompetenceLevel;
+                    }
+                    // Otherwise, base estimation on the highest (and most expensive) competence level
+                    level = CompetenceRequirements.OrderByDescending(r => (int)r.CompetenceLevel).First().CompetenceLevel;
+                }
+                return EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(level);
+            }
+        }
 
         #endregion
 

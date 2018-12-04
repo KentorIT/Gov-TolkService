@@ -58,7 +58,7 @@ namespace Tolk.Web.Api.Controllers
             return Json(_dbContext.Regions
                 .OrderBy(r => r.Name).Select(r => new
                 {
-                    Key = r.RegionId,
+                    Key = r.RegionId.ToString("D2"),
                     Desciption = r.Name
                 }));
         }
@@ -82,6 +82,17 @@ namespace Tolk.Web.Api.Controllers
         public JsonResult PriceListTypes()
         {
             return Json(EnumHelper.GetAllFullDescriptions<PriceListType>().Select(d =>
+            new
+            {
+                Key = d.CustomName,
+                d.Description
+            }));
+        }
+
+        [HttpGet]
+        public JsonResult PriceRowTypes()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<PriceRowType>().Select(d =>
             new
             {
                 Key = d.CustomName,

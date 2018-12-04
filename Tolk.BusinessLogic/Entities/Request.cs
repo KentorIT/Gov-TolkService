@@ -162,6 +162,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
+        public static object HttpContext { get; set; }
 
         #endregion
 

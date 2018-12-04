@@ -151,7 +151,8 @@ namespace Tolk.BusinessLogic.Services
                         CreatedAt = request.CreatedAt,
                         OrderNumber = order.OrderNumber,
                         Customer = order.CustomerOrganisation.Name,
-                        Region = order.Region.Name,
+                        //D2 pads any single digit with a zero 1 -> "01"
+                        Region = order.Region.RegionId.ToString("D2"),
                         Language = new LanguageModel
                         {
                             Key = request.Order.Language?.ISO_639_1_Code,
@@ -176,7 +177,29 @@ namespace Tolk.BusinessLogic.Services
                         AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
                         AssignentType = EnumHelper.GetCustomName(order.AssignentType),
                         Description = order.Description,
-                        CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired
+                        CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
+                        HasFiles = order.Attachments.Any(),
+                        //Need to aggregate the price list types
+                        PriceInformation = new PriceInformationModel
+                        {
+                            PriceCalculatedFromCompetenceLevel = order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
+                            PriceRows = order.PriceRows.GroupBy(r => r.PriceRowType)
+                            .Select(p => new PriceRowModel
+                            {
+                                Description = p.Key.GetDescription(),
+                                PriceRowType = p.Key.GetCustomName(),
+                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice ) : 0,
+                                CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                                CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                                PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                                {
+                                    PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                                    Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                                    Price = l.Price,
+                                    Quantity = l.Quantity
+                                })
+                            })
+                        }
                     },
                     settings.Webhook,
                     NotificationType.RequestCreated,
