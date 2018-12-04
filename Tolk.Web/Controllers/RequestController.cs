@@ -415,6 +415,7 @@ namespace Tolk.Web.Controllers
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
+            model.OrderModel.ActiveRequest = model; //We're only interested in the request we have access to
             model.RequestCalculatedPriceInformationModel = GetPriceinformationToDisplay(request);
             model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)

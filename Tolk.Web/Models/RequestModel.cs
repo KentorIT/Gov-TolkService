@@ -100,7 +100,7 @@ namespace Tolk.Web.Models
         }
 
         [Display(Name = "Inkommen")]
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? CreatedAt { get; set; }
 
         [Display(Name = "Svar senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
