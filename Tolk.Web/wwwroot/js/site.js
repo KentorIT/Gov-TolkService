@@ -122,7 +122,33 @@ $(function () {
         }
     });
 
+    $("body").on("click", ".collapsible-section", function () {
+        var element = $(this);
+        if (!element.hasClass("disabled")) {
+            if ($(element.attr("data-target")).hasClass("in")) {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+            else {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+        }
+    });
 
+    $(".collapsible-section").each(function () {
+        var element = $(this);
+        if (!element.hasClass("disabled")) {
+            if ($(element.attr("data-target")).hasClass("in")) {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+            else {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+        }
+    });
 });
 
 

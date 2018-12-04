@@ -10,12 +10,8 @@
         <img class="progressbar" src="~/images/Step2_Order.PNG" />
     </div>
     <div class="col-sm-12">
-        <h2>@ViewData["Title"]</h2>
-        <hr />
-        @await  Html.PartialAsync("_OrderSummary", Model, ViewData)
-        <h2>Myndighetens uppgifter</h2>
-        <hr />
-        @await  Html.PartialAsync("_CustomerOrganizationInfo", Model, ViewData)
+        @await  Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] } })
+        @await  Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false } })
     </div>
 </div>
 

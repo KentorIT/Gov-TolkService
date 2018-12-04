@@ -1,32 +1,47 @@
 ﻿@model EventLogModel
 
-<div class="table-responsive">
-    @if (Model != null && Model.Entries.Any())
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Tidpunkt</th>
-                    <th>Händelse</th>
-                    <th>Aktör</th>
-                    <th>Organisation</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var entry in Model.Entries)
-                {
+@{
+    string header = (string)ViewData["header"] ?? "Händelser";
+
+    bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
+    var aClass = isCollapsible ? "collapsible-section" : "collapsible-section disabled";
+    var divClass = isCollapsible ? "collapse" : "";
+    var divId = isCollapsible ? "EventLog" : "";
+}
+
+<a class="@aClass" data-toggle="@divClass" data-target="@("#" + divId)">
+    <h2>@header</h2>
+</a>
+<hr />
+<div id="@divId" class="@divClass">
+    <div class="table-responsive">
+        @if (Model != null && Model.Entries.Any())
+        {
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@entry.EventDetails</td>
-                        <td>@entry.Actor</td>
-                        <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
+                        <th>Tidpunkt</th>
+                        <th>Händelse</th>
+                        <th>Aktör</th>
+                        <th>Organisation</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p>Inga händelser registrerade</p>
-    }
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr>
+                            <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@entry.EventDetails</td>
+                            <td>@entry.Actor</td>
+                            <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Inga händelser registrerade</p>
+        }
+    </div>
 </div>

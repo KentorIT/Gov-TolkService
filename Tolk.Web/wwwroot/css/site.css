@@ -52,6 +52,20 @@ a:focus {
 a:active {
   color: black;
 }
+a.collapsible-section,
+a.collapsible-section {
+  color: black;
+}
+a.collapsible-section:hover,
+a.collapsible-section:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+a.collapsible-section.disabled:hover,
+a.collapsible-section.disabled:focus {
+  cursor: default;
+}
 hr {
   height: 1px;
   color: #979797;

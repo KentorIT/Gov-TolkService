@@ -5,18 +5,16 @@
 @using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
-    ViewData["CustomerOrganizationInfo_IsDetailView"] = true;
-    ViewData["OrderHeader_IsOrderDetailViewKey"] = true;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 }
 
 <div class="row">
     <div class="col-sm-12">
-        @await  Html.PartialAsync("_OrderHeader", Model.ActiveRequest)
-        <h2>Bokning</h2>
-        <hr />
+        @await Html.PartialAsync("_OrderHeader", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
         @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
         {
+            <h2>Bokning</h2>
+            <hr />
             <div class="row">
                 <div class="col-sm-12">
                     <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
@@ -25,7 +23,7 @@
         }
         else
         {
-            @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest)
+            @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "header", "Bokning" } })
         }
         @if (Model.PreviousRequests.Any())
         {
@@ -61,12 +59,16 @@
                 </div>
             }
         </div>
-        <h2>Bokningssammanfattning</h2>
-        <hr />
-        @await Html.PartialAsync("_OrderSummary", Model, ViewData)
-        <h2>Myndighetens uppgifter</h2>
-        <hr />
-        @await Html.PartialAsync("_CustomerOrganizationInfo", Model, ViewData)
+        <div class="row">
+            <div class="col-sm-12">
+                @await Html.PartialAsync("_OrderSummary", Model, ViewData)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                @await Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
+            </div>
+        </div>
     </div>
 </div>
 <div class="row">
@@ -145,9 +147,7 @@
         </div>
     }
 </div>
-<h3>Bokningshändelser</h3>
-<hr />
-@await Html.PartialAsync("_EventLog", Model.EventLog)
+@await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" } })
 
 <div id="cancelMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">

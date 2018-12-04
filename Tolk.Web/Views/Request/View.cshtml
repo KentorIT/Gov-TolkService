@@ -7,8 +7,6 @@
 <div class="row">
     <div class="col-sm-12">
         @await Html.PartialAsync("_OrderHeader", Model)
-        <h2>Bokningsförfrågan</h2>
-        <hr />
         @await Html.PartialAsync("_RequestSummary", Model)
         <div class="row">
             @if (Model.RequestCalculatedPriceInformationModel != null)
@@ -24,11 +22,7 @@
                 </div>
             }
         </div>
-        <h2>Bokningssammanfattning</h2>
-        <hr />
         @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
-        <h2>Myndighetens uppgifter</h2>
-        <hr />
         @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
         @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
         {
@@ -101,9 +95,7 @@
                 <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
             </form>
         }
-        <h3>Förfråganshändelser</h3>
-        <hr />
-        @await Html.PartialAsync("_EventLog", Model.EventLog)
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" } })
     </div>
 </div>
 @section Scripts {
