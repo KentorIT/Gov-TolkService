@@ -64,6 +64,10 @@
                                     <td class="gray-border-bottom">
                                         <br />
                                         @item.Language<br /><br />
+                                        @if (item.LatestDate != null)
+                                        {
+                                            <span class="startlist-subrow-red">Svara innan: @item.LatestDate?.ToString("yyyy-MM-dd HH:mm")</span>
+                                        }
                                     </td>
                                     @if (startlist.HasReviewAction)
                                     {
@@ -77,7 +81,6 @@
                                 </tr>
                             }
                         </tbody>
-                        <tfoot><tr class="gray-border-bottom"><td style="border-bottom: 1px solid gray" colspan="5"></td></tr></tfoot>
                     </table>
                 </div>
             }

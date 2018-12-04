@@ -939,8 +939,13 @@ input.force-validation {
 .startlist-status {
   font-weight: normal;
 }
+.startlist-subrow-red {
+  color: #E45C5C;
+  font-size: 12px;
+  vertical-align: bottom;
+}
 .startlist-subrow {
-  font-size: 11px;
+  font-size: 12px;
   vertical-align: bottom;
 }
 .blue-border-left {
