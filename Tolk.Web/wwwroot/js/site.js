@@ -58,6 +58,24 @@ if ($('#now').length === 1) {
     setInterval(updateTime, 1000);
 }
 
+function changeTab(path, tabPaneSelector) {
+    // Load only if tab is empty
+    if ($(tabPaneSelector).html().trim().length === 0) {
+        $(tabPaneSelector).html('<div class="text-align-center"><span class="loading-text">Laddar...</span></div>');
+        $.ajax({
+            url: tolkBaseUrl + path,
+            type: 'GET',
+            dataType: 'html',
+            success: function (data) {
+                $(tabPaneSelector).html(data);
+            },
+            error: function (t2) {
+                alert(t2);
+            }
+        });
+    }
+}
+
 $(function () {
     var dirty = "dirty";
 

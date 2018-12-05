@@ -986,3 +986,24 @@ input.force-validation {
   opacity: 1 !important;
   color: #587573;
 }
+.loading-text {
+  font-size: 24px;
+  color: #979797;
+}
+.nav.nav-tabs.nav-justified {
+  padding-top: 7px;
+  background-color: #F1F4F2;
+}
+.nav.nav-tabs.nav-justified > li > a {
+  text-align: center;
+  font-size: 24px;
+  color: black;
+  background-color: #F1F4F2;
+  border: none;
+  border-radius: 0;
+  padding-top: 20px;
+}
+.nav.nav-tabs.nav-justified > .active > a {
+  background-color: white;
+  border: none;
+}

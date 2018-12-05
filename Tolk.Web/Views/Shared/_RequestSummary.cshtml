@@ -3,8 +3,10 @@
 @using Tolk.BusinessLogic.Utilities
 
 @{
-    string header = (string)ViewData["Header"] ?? "Bokningsförfrågan";
+    string header = (string)ViewData["header"] ?? "Bokningsförfrågan";
+    bool showHeader = (bool?)ViewData["showHeader"] ?? false;
     bool showRequestStatus = (bool?)ViewData["showRequestStatus"] ?? true;
+    bool showLinks = (bool?)ViewData["showLinks"] ?? false;
     bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
          && Model.Status != RequestStatus.ToBeProcessedByBroker
          && Model.Status != RequestStatus.Received);
@@ -14,29 +16,35 @@
                 || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed;
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
-    var aClass = isCollapsible ? "collapsible-section" : "collapsible-section disabled";
-    var divClass = isCollapsible ? "collapse" : "";
-    var divId = isCollapsible ? "RequestSummary" : "";
+    var aClass = showHeader && isCollapsible ? "collapsible-section" : "collapsible-section disabled";
+    var divClass = showHeader && isCollapsible ? "collapse" : "";
+    var divId = showHeader && isCollapsible ? "RequestSummary" : "";
 }
-<a class="@aClass" data-toggle="@divClass" data-target="@("#" + divId)">
-    <h2>@header</h2>
-</a>
-<hr />
+@if (showHeader)
+{
+    <a class="@aClass" data-toggle="@divClass" data-target="@("#" + divId)">
+        <h2>@header</h2>
+    </a>
+    <hr />
+}
 <div id="@divId" class="@divClass">
     <div class="row">
         <div class="row">
             <div class="col-sm-12">
-                @if (Model.RequisitionId.HasValue)
-                {
-                    <div class="col-sm-4">
-                        <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
-                    </div>
-                }
-                @if (Model.ComplaintId.HasValue)
-                {
-                    <div class="col-sm-4">
-                        <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-                    </div>
+                @if (showLinks)
+                { 
+                    @if (Model.RequisitionId.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+                        </div>
+                    }
+                    @if (Model.ComplaintId.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
+                        </div>
+                    }
                 }
             </div>
         </div>

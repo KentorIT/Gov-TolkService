@@ -6,148 +6,162 @@
 @{
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
+
+    string requisitionPath = "Requisition/View/" + Model.ActiveRequest.RequisitionId ?? "#";
+    string complaintPath = "Complaint/View/" + Model.ActiveRequest.ComplaintId ?? "#";
 }
 
-<div class="row">
-    <div class="col-sm-12">
-        @await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
-        @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
-        {
-            <h2>Bokning</h2>
-            <hr />
-            <div class="row">
-                <div class="col-sm-12">
-                    <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
-                </div>
-            </div>
-        }
-        else
-        {
-            @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "header", "Bokning" } })
-        }
-        @if (Model.PreviousRequests.Any())
-        {
-            <div class="row">
-                <div class="col-sm-12">
-                    <label>Tidigare förmedlingars svar</label>
-                    <ul>
-                        @foreach (var request in Model.PreviousRequests)
-                        {
-                            <li class="detail-text">
-                                @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                                @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
+@await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
+<ul class="nav nav-tabs nav-justified">
+    <li class="active"><a data-toggle="tab" href="#order">Bokning</a></li>
+    <li><a data-toggle="tab" href="#requisition" onclick="changeTab('@requisitionPath', '#requisition')">Rekvisition</a></li>
+    <li><a data-toggle="tab" href="#complaint" onclick="changeTab('@complaintPath', '#complaint')">Reklamation</a></li>
+</ul>
+<div class="tab-content">
+    <div id="order" class="tab-pane fade in active">
+        <div class="row">
+            <div class="col-sm-12">
+                @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
+                {
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest)
+                }
+                @if (Model.PreviousRequests.Any())
+                {
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>Tidigare förmedlingars svar</label>
+                            <ul>
+                                @foreach (var request in Model.PreviousRequests)
                                 {
-                                    <span> Orsak: @request.DenyMessage</span>
+                                    <li class="detail-text">
+                                        @request.BrokerName (@EnumHelper.GetDescription(request.Status))
+                                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
+                                        {
+                                            <span> Orsak: @request.DenyMessage</span>
+                                        }
+                                    </li>
                                 }
-                            </li>
-                        }
-                    </ul>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                <div class="row">
+                    @if (Model.ActiveRequestPriceInformationModel != null)
+                    {
+                        <div class="col-sm-6">
+                            @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
+                        </div>
+                    }
+                    @if (Model.OrderCalculatedPriceInformationModel != null)
+                    {
+                        <div class="col-sm-6">
+                            @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                        </div>
+                    }
                 </div>
-            </div>
-        }
-        <div class="row">
-            @if (Model.ActiveRequestPriceInformationModel != null)
-            {
-                <div class="col-sm-6">
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
+                <div class="row">
+                    <div class="col-sm-12">
+                        @await Html.PartialAsync("_OrderSummary", Model, ViewData)
+                    </div>
                 </div>
-            }
-            @if (Model.OrderCalculatedPriceInformationModel != null)
-            {
-                <div class="col-sm-6">
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
-                </div>
-            }
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                @await Html.PartialAsync("_OrderSummary", Model, ViewData)
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                @await Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    @if (Model.ActiveRequestIsAnswered && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
-    {
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="col-sm-12">
-                    <div class="important-info">
-                        Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                <div class="row">
+                    <div class="col-sm-12">
+                        @await Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
                     </div>
                 </div>
             </div>
         </div>
-    }
-    @if (Model.AllowOrderCancellation)
-    {
-        <div class="col-sm-4">
-            <form method="post" class="cancel-form" asp-action="Cancel">
-                <input asp-for="OrderId" type="hidden" />
-                <input name="CancelMessage" type="hidden" />
-                <input name="AddReplacementOrder" type="hidden" value="false" />
-                <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
-            </form>
-        </div>
-    }
-    @if (Model.ActiveRequestIsAnswered)
-    {
-        @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
-        {
-            <div class="col-sm-4">
-                @if (Model.AllowDenial)
-                {
-                    <form method="post" class="deny-form text-align-center" asp-action="Deny">
+        <div class="row">
+            @if (Model.ActiveRequestIsAnswered && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
+            {
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-sm-12">
+                            <div class="important-info">
+                                Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Model.AllowOrderCancellation)
+            {
+                <div class="col-sm-4">
+                    <form method="post" class="cancel-form" asp-action="Cancel">
                         <input asp-for="OrderId" type="hidden" />
-                        <input asp-for="RequestId" type="hidden" />
-                        <input name="DenyMessage" type="hidden" />
-
-                        <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                        <input name="CancelMessage" type="hidden" />
+                        <input name="AddReplacementOrder" type="hidden" value="false" />
+                        <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
                     </form>
-                }
-            </div>
-            <div class="col-sm-4">
-                <form method="post" asp-action="Approve">
-                    <input asp-for="OrderId" type="hidden" />
-                    <input asp-for="RequestId" type="hidden" />
-                    <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning</button>
-                </form>
-            </div>
-        }
-    }
+                </div>
+            }
+            @if (Model.ActiveRequestIsAnswered)
+            {
+                @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
+                {
+                    <div class="col-sm-4">
+                        @if (Model.AllowDenial)
+                        {
+                            <form method="post" class="deny-form text-align-center" asp-action="Deny">
+                                <input asp-for="OrderId" type="hidden" />
+                                <input asp-for="RequestId" type="hidden" />
+                                <input name="DenyMessage" type="hidden" />
 
-    @if (Model.AllowComplaintCreation)
-    {
-        <div class="col-sm-4">
-            <a class="btn btn-danger btn-large" href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
+                                <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                            </form>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        <form method="post" asp-action="Approve">
+                            <input asp-for="OrderId" type="hidden" />
+                            <input asp-for="RequestId" type="hidden" />
+                            <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning</button>
+                        </form>
+                    </div>
+                }
+            }
+
+            @if (Model.AllowComplaintCreation)
+            {
+                <div class="col-sm-4">
+                    <a class="btn btn-danger btn-large" href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
+                </div>
+            }
+            @if (Model.ComplaintId.HasValue)
+            {
+                <div class="col-sm-12">
+                    @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
+                </div>
+            }
+            @if (Model.Status == OrderStatus.CancelledByBroker)
+            {
+                @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+                {
+                    <display-entry asp-for="CancelMessage" />
+                }
+                <div class="col-sm-4 pull-right">
+                    <form method="post" asp-action="ConfirmCancellation">
+                        <input asp-for="RequestId" type="hidden" />
+                        <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+                    </form>
+                </div>
+            }
         </div>
-    }
-    @if (Model.ComplaintId.HasValue)
-    {
-        <div class="col-sm-12">
-            @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
-        </div>
-    }
-    @if (Model.Status == OrderStatus.CancelledByBroker)
-    {
-        @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-        {
-            <display-entry asp-for="CancelMessage" />
-        }
-        <div class="col-sm-4 pull-right">
-            <form method="post" asp-action="ConfirmCancellation">
-                <input asp-for="RequestId" type="hidden" />
-                <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
-            </form>
-        </div>
-    }
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" } })
+    </div>
+    <div id="requisition" class="tab-pane fade">
+    </div>
+    <div id="complaint" class="tab-pane fade">
+    </div>
 </div>
-@await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" } })
 
 <div id="cancelMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
