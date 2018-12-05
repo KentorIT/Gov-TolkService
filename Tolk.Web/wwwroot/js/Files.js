@@ -36,7 +36,7 @@ $(function () {
     });
     $("body").on("click", ".file-table-view > tbody > tr > td:not(.table-button-column)", function () {
         var $row = $(this).closest("tr");
-        window.location.href = tolkBaseUrl + "Files/Download?id=" + $row.data("id");
+        window.open(tolkBaseUrl + "Files/Download?id=" + $row.data("id"));
     });
 
     $("body").on("click", "#addFilesDialog", function () {
