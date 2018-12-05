@@ -169,14 +169,13 @@ $(function () {
         }
     });
 
-    $(".nav-tabs a[data-toggle=tab]").on("click", function (e) {
+    $("body").on("click", ".nav-tabs a[data-toggle=tab]", function (e) {
         if ($(this).hasClass("disabled")) {
             e.preventDefault();
             return false;
         }
     });
 });
-
 
 $.fn.extend({
     bindEnterKey: function (input, button, context) {
