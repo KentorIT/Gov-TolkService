@@ -220,12 +220,33 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.RequestResponded;
         }
 
-        public void AcceptReplacementOrder(
-            DateTimeOffset acceptTime,
+        public void Decline(
+            DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
-            decimal? expectedTravelCosts,
-            PriceInformation priceInformation)
+            string message)
+        {
+            Status = RequestStatus.DeclinedByBroker;
+            AnswerDate = declinedAt;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            DenyMessage = message;
+            if (!Order.ReplacingOrderId.HasValue)
+            {
+                Order.Status = OrderStatus.Requested;
+            }
+            else
+            {
+                Order.Status = OrderStatus.NoBrokerAcceptedOrder;
+            }
+        }
+
+        public void AcceptReplacementOrder(
+        DateTimeOffset acceptTime,
+        int userId,
+        int? impersonatorId,
+        decimal? expectedTravelCosts,
+        PriceInformation priceInformation)
         {
             if (Status != RequestStatus.Received)
             {

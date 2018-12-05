@@ -53,13 +53,17 @@ namespace BrokerMock.Controllers
                 {
                     await Acknowledge(payload.OrderNumber);
                 }
+                if (extraInstructions.Contains("DECLINE"))
+                {
+                    await Decline(payload.OrderNumber, "Vill inte, kan inte bör inte...");
+                }
                 if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                 {
                     await AssignInterpreter(
                     payload.OrderNumber,
                     "ara@tolk.se",
                     payload.Locations.First().Key,
-                    payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First().Key
+                    payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key
                 );
                 }
                 //Get the headers:
@@ -140,6 +144,37 @@ namespace BrokerMock.Controllers
                 else
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Acknowledge]:: Avrops-ID: {orderNumber} accat mottagande");
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> Decline(string orderNumber, string message)
+        {
+            //Need app settings: UseCertFile, Cert.FilePath, CertPublicKey
+            using (var client = new HttpClient(GetCertHandler()))
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                if (_options.UseSecret)
+                {
+                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-CallerSecret", _options.Secret);
+                }
+                var payload = new RequestDeclineModel
+                {
+                    OrderNumber = orderNumber,
+                    CallingUser = "regular-user@formedling1.se",
+                    Message = message
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Decline", content);
+                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline]:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Decline]:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
                 }
             }
 

@@ -72,7 +72,6 @@ namespace Tolk.Web
 
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
-            services.AddScoped<PriceCalculationService>();
 
             services.RegisterTolkAuthorizationPolicies();
             services.AddMvc(opt =>

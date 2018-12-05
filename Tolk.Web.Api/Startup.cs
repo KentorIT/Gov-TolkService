@@ -31,8 +31,14 @@ namespace Tolk.Web.Api
         {
             services.Configure<TolkApiOptions>(Configuration);
 
+            services.AddScoped<DateCalculationService>();
+            services.AddScoped<RankingService>();
+            services.AddScoped<NotificationService>();
             services.AddScoped<PriceCalculationService>();
+            services.AddScoped<OrderService>();
+            services.AddScoped<RequestService>();
             services.AddScoped<ApiUserService>();
+            services.AddSingleton<ISwedishClock,TimeService>();
             services.AddScoped<TimeService>();
 
             services.AddDbContext<TolkDbContext>(options =>

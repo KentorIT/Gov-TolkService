@@ -22,23 +22,22 @@ namespace Tolk.Web.Api.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly TolkApiOptions _options;
-        private readonly PriceCalculationService _priceCalculationService;
+        private readonly RequestService _requestService;
         private readonly ApiUserService _apiUserService;
-        private readonly TimeService _timeService;
+        private readonly ISwedishClock _timeService;
 
         public RequestController(
             TolkDbContext tolkDbContext, 
-            IOptions<TolkApiOptions> options, 
-            PriceCalculationService priceCalculationService, 
-            ApiUserService apiUserService, 
-            TimeService timeService)
+            IOptions<TolkApiOptions> options,
+            RequestService requestService, 
+            ApiUserService apiUserService,
+            ISwedishClock timeService)
         {
             _dbContext = tolkDbContext;
             _options = options.Value;
             _apiUserService = apiUserService;
             _timeService = timeService;
-            // will probably be removed, and replaced by a RequestService (used by both this(api) and web)
-            _priceCalculationService = priceCalculationService;
+            _requestService = requestService;
         }
 
         #region Methods
@@ -52,10 +51,12 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("UNAUTHORIZED");
             }
             var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                 .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
                 .SingleOrDefault(o => o.OrderNumber == model.OrderNumber && 
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
@@ -82,22 +83,26 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("INTERPRETER_NOT_FOUND");
             }
             var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
-            var now = _timeService.GetTimeAsync().Result;
+            var now = _timeService.SwedenNow;
             //Add RequestService that does this, and additionally calls _notificationService
             //Add transaction here!!!
             if (request.Status == RequestStatus.Created)
             {
                 request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
             }
-            request.Accept(_timeService.GetTimeAsync().Result, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), interpreter,
+            _requestService.Accept(
+                request,
+                now, 
+                user?.Id ?? apiUser.Id, 
+                (user != null ? (int?)apiUser.Id : null), 
+                interpreter,
                 EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                 competenceLevel,
                 //Does not handle reqmts yet
                 new OrderRequirementRequestAnswer[] { },
                 //Does not handle attachments yet.
                 new List<RequestAttachment>(),
-                //Does not handle price info yet, either...
-                _priceCalculationService.GetPrices(request, competenceLevel, model.ExpectedTravelCosts)
+                model.ExpectedTravelCosts
             );
             _dbContext.SaveChanges();
             //End of service
@@ -130,9 +135,49 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("REQUEST_NOT_FOUND");
             }
-            var now = _timeService.GetTimeAsync().Result;
             //Add RequestService that does this, and additionally calls _notificationService
-            request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+            request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+            _dbContext.SaveChanges();
+            //End of service
+            return Json(new ResponseBase());
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> Decline([FromBody] RequestDeclineModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+            if (order == null)
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+            //Possibly the user should be added, if not found?? 
+            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+            var request = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order.CreatedByUser)
+                .Include(r => r.Order.ContactPersonUser)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
+                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    r.Ranking.BrokerId == apiUser.BrokerId &&
+                    //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
+                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+            if (request == null)
+            {
+                return ReturError("REQUEST_NOT_FOUND");
+            }
+            await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
             _dbContext.SaveChanges();
             //End of service
             return Json(new ResponseBase());

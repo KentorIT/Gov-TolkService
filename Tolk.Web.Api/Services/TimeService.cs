@@ -14,10 +14,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Tolk.Web.Api.Helpers;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Api.Services
 {
-    public class TimeService
+    public class TimeService : ISwedishClock
+
     {
         private readonly TolkApiOptions _options;
 
@@ -26,7 +28,9 @@ namespace Tolk.Web.Api.Services
             _options = options.Value;
         }
 
-        public async Task<DateTimeOffset> GetTimeAsync()
+        public DateTimeOffset SwedenNow => GetTimeAsync().Result;
+
+        private async Task<DateTimeOffset> GetTimeAsync()
         {
             //Also add cert to call
             using (var client = new HttpClient())

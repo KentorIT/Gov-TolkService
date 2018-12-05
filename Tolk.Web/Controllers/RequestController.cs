@@ -33,6 +33,7 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly NotificationService _notificationService;
+        private readonly RequestService _requestService;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -44,8 +45,9 @@ namespace Tolk.Web.Controllers
             DateCalculationService dateCalculationService,
             ILogger<RequestController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService
-)
+            NotificationService notificationService,
+            RequestService requestService
+        )
         {
             _dbContext = dbContext;
             _clock = clock;
@@ -57,6 +59,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options.Value;
             _notificationService = notificationService;
+            _requestService = requestService;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -237,7 +240,8 @@ namespace Tolk.Web.Controllers
                         }
                         else
                         {
-                            request.Accept(
+                            _requestService.Accept(
+                                request,
                                 _clock.SwedenNow,
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
@@ -252,9 +256,8 @@ namespace Tolk.Web.Controllers
                                     CanSatisfyRequirement = ra.CanMeetRequirement
                                 }),
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                                _priceCalculationService.GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts)
+                                model.ExpectedTravelCosts
                             );
-                            _notificationService.RequestAccepted(request);
                         }
                     }
                     else
@@ -355,22 +358,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                request.Status = RequestStatus.DeclinedByBroker;
-                request.AnswerDate = _clock.SwedenNow;
-                request.AnsweredBy = User.GetUserId();
-                request.ImpersonatingAnsweredBy = User.TryGetImpersonatorId();
-                request.DenyMessage = model.DenyMessage;
-                if (!request.Order.ReplacingOrderId.HasValue)
-                {
-                    request.Order.Status = OrderStatus.Requested;
-                    await _orderService.CreateRequest(request.Order, request);
-                    _notificationService.RequestDeclinedByBroker(request);
-                }
-                else
-                {
-                    request.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
-                    _notificationService.RequestReplamentOrderDeclinedByBroker(request);
-                }
+                await _requestService.Decline(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
