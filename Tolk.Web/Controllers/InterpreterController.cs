@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
@@ -39,7 +36,7 @@ namespace Tolk.Web.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { message = "Du har nu accepterat att få uppdrag från förmedlingen!" });
         }
     }
 }

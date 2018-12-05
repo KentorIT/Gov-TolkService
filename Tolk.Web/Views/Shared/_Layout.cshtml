@@ -5,7 +5,7 @@
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
-    bool renderMenus = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.RenderMenuAndStartPageBoxes)).Succeeded) || User.IsInRole(Roles.Impersonator);
+    bool renderMenus = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded) || User.IsInRole(Roles.Impersonator);
 }
 <!DOCTYPE html>
 <html>

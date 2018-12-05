@@ -9,20 +9,9 @@ namespace Tolk.Web.Models
 
         public string PageTitle { get; set; } = "Aktiva bokningsförfrågningar";
 
-
         public string Message { get; set; }
-        public IEnumerable<StartPageBox> Boxes { get; set; }
 
         public IEnumerable<ConfirmationMessage> ConfirmationMessages { get; set; }
-
-        public class StartPageBox
-        {
-            public string Header { get; set; }
-            public int Count { get; set; }
-            public string Controller { get; set; }
-            public string Action { get; set; }
-            public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
-        }
 
         public class StartList
         {
@@ -39,6 +28,8 @@ namespace Tolk.Web.Models
         {
             public string Header { get; set; }
 
+            public string BrokerName { get; set; }
+
             public string Message { get; set; }
 
             public string Controller { get; set; }
@@ -49,6 +40,5 @@ namespace Tolk.Web.Models
         }
 
     }
-
 
 }

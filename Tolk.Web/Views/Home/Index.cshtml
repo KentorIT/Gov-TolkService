@@ -21,13 +21,55 @@
         </div>
     </div>
 }
+@if (Model.ConfirmationMessages.Any())
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="list-header list-line"><span>@Model.ConfirmationMessages.First().Header</span></div>
+            <div class="table-responsive table-datatable">
+                <table class="table startlist-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Meddelande</th>
+                            <th>Förmedling</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var confirmMessage in Model.ConfirmationMessages)
+                        {
+                            <tr class="startlist-row">
+                                <td class="gray-border-bottom blue-border-left">
+                                    <br />
+                                    <span class="startlist-status">
+                                        @confirmMessage.Message
+                                    </span><br /><br />
+                                </td>
+                                <td class="gray-border-bottom">
+                                    <br />
+                                    @confirmMessage.BrokerName<br /><br />
+                                </td>
+                                <td class="gray-border-bottom gray-border-right">
+                                    <br />
+                                    <form method="post" asp-action="@confirmMessage.Action" asp-controller="@confirmMessage.Controller">
+                                        <input type="hidden" name="Id" value="@confirmMessage.Id" />
+                                        <button type="submit" class="btn btn-primary">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button><br /><br />
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
+        </div>
+    </div>
+}
 <h2 class="bold">@ViewData["Title"]</h2>
 @foreach (var startlist in Model.StartLists)
 {
     <div class="row">
         <div class="col-xs-12">
-
             <div class="list-header list-line"><span>@startlist.Header</span></div>
             @if (startlist.StartListObjects.Any())
             {
@@ -91,41 +133,3 @@
         </div>
     </div>
 }
-<div class="row">
-    <div class="col-md-8">
-        <div class="row">
-            @foreach (var box in Model.Boxes)
-            {
-                <a asp-action="@box.Action" asp-controller="@box.Controller" asp-all-route-data="box.Filters">
-                    <div class="col-md-4">
-                        <div class="panel panel-info center-block">
-                            <div class="panel-heading">
-                                <h4>@box.Header</h4>
-                            </div>
-                            <h1 class="shortcut-box">@box.Count.ToString()</h1>
-                        </div>
-                    </div>
-                </a>
-            }
-        </div>
-        @foreach (var message in Model.ConfirmationMessages)
-        {
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h4>@message.Header</h4>
-                </div>
-                <div class="panel-body">
-                    <p>@message.Message</p>
-                </div>
-                <div class="panel-footer">
-                    <form method="post" asp-action="@message.Action" asp-controller="@message.Controller">
-                        <input type="hidden" name="Id" value="@message.Id" />
-                        <button type="submit" class="btn btn-primary">Ok</button>
-                    </form>
-                </div>
-            </div>
-
-        }
-    </div>
-
-</div>

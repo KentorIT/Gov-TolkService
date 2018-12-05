@@ -59,7 +59,7 @@ namespace Tolk.Web.Controllers
                     {
                         return RedirectToAction("RegisterNewAccount", "Account");
                     }
-                    if (!(await _authorizationService.AuthorizeAsync(User, Policies.RenderMenuAndStartPageBoxes)).Succeeded)
+                    if (!(await _authorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded)
                     {
                         return RedirectToAction("Edit", "Account");
                     }
@@ -69,22 +69,9 @@ namespace Tolk.Web.Controllers
             {
                 PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningsförfrågningar",
                 Message = message,
-                Boxes = await GetStartPageBoxes(),
                 ConfirmationMessages = await GetConfirmationMessages(),
                 StartLists = await GetStartLists()
             });
-        }
-
-        private async Task<IEnumerable<StartViewModel.StartPageBox>> GetStartPageBoxes()
-        {
-            var result = Enumerable.Empty<StartViewModel.StartPageBox>();
-
-            if ((await _authorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
-            {
-                result = result.Union(GetInterpreterStartPageBoxes());
-            }
-
-            return result;
         }
 
         private async Task<IEnumerable<StartViewModel.StartList>> GetStartLists()
@@ -99,60 +86,14 @@ namespace Tolk.Web.Controllers
             {
                 result = result.Union(GetBrokerStartLists());
             }
+            if ((await _authorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
+            {
+                result = result.Union(GetInterpreterStartLists());
+            }
+
             return result;
         }
-
-        private IEnumerable<StartViewModel.StartPageBox> GetInterpreterStartPageBoxes()
-        {
-            var interpreterId = User.GetInterpreterId();
-
-            yield return new StartViewModel.StartPageBox
-            {
-                //TODO: Here we need to check the order too! 
-                Count = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
-                    r.Order.StartAt > _clock.SwedenNow &&
-                    !r.Requisitions.Any() &&
-                    r.InterpreterId == interpreterId).Count(),
-                Header = "Kommande uppdrag",
-                Controller = "Assignment",
-                Action = "List",
-                Filters = new Dictionary<string, string> {
-                        { "Status", AssignmentStatus.ToBeExecuted.ToString() }
-                    }
-            };
-            yield return new StartViewModel.StartPageBox
-            {
-                Count = _dbContext.Requests.Where(r => r.Status == RequestStatus.Approved &&
-                    r.Order.StartAt < _clock.SwedenNow &&
-                    !r.Requisitions.Any() &&
-                    r.InterpreterId == interpreterId).Count(),
-                Header = "Att avrapportera",
-                Controller = "Assignment",
-                Action = "List",
-                Filters = new Dictionary<string, string> {
-                        { "Status", AssignmentStatus.ToBeReported.ToString() }
-                    }
-            };
-            int count = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue &&
-                r.Status == RequisitionStatus.DeniedByCustomer &&
-                   !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) &&
-                  r.Request.InterpreterId == interpreterId).Count();
-            if (count > 0)
-            {
-                yield return new StartViewModel.StartPageBox
-                {
-                    Count = count,
-                    Header = "Underkända rekvisitioner",
-                    Controller = "Requisition",
-                    Action = "List",
-                    Filters = new Dictionary<string, string> {
-                        { "Status", RequisitionStatus.DeniedByCustomer.ToString() }
-                    }
-
-                };
-            }
-        }
-
+        
         private IEnumerable<StartViewModel.StartList> GetCustomerStartLists()
         {
 
@@ -251,7 +192,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.CancelledByCreatorWhenApproved) &&
                 r.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = r.Status == RequestStatus.Received ? StartListItemStatus.RequestReceived : r.Status == RequestStatus.Created ? StartListItemStatus.RequestArrived : StartListItemStatus.OrderCancelled , ButtonAction = r.Status == RequestStatus.CancelledByCreatorWhenApproved ? "View" : "Process", ButtonController = "Request", LatestDate = r.Status != RequestStatus.CancelledByCreatorWhenApproved ? (DateTime?)r.ExpiresAt.DateTime : null }).ToList());
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = r.Status == RequestStatus.Received ? StartListItemStatus.RequestReceived : r.Status == RequestStatus.Created ? StartListItemStatus.RequestArrived : StartListItemStatus.OrderCancelled, ButtonAction = r.Status == RequestStatus.CancelledByCreatorWhenApproved ? "View" : "Process", ButtonController = "Request", LatestDate = r.Status != RequestStatus.CancelledByCreatorWhenApproved ? (DateTime?)r.ExpiresAt.DateTime : null }).ToList());
 
             //Complaints
             actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
@@ -270,10 +211,10 @@ namespace Tolk.Web.Controllers
             actionList.AddRange(_dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.DeniedByCustomer && 
+                .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.DeniedByCustomer &&
                 !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) && r.Request.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.ProcessedAt.Value.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, ButtonItemId = r.RequisitionId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionDenied, ButtonAction = "View", ButtonController = "Requisition" }).ToList());
-            
+
             //TODO? få veta om myndighet ej besvarat alls (det syns i och för sig)? 
 
             var count = actionList.Any() ? actionList.Count() : 0;
@@ -307,7 +248,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Created && r.Request.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.Request.Order.EndAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionCreated}).ToList();
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.Request.Order.EndAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionCreated }).ToList();
 
             count = sentRequisitions.Any() ? sentRequisitions.Count() : 0;
 
@@ -319,6 +260,53 @@ namespace Tolk.Web.Controllers
             };
         }
 
+        private IEnumerable<StartViewModel.StartList> GetInterpreterStartLists()
+        {
+            var interpreterId = User.GetInterpreterId();
+            var actionList = new List<StartListItemModel>();
+
+            //To be reported
+            actionList.AddRange(_dbContext.Requests
+                .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt < _clock.SwedenNow && !r.Requisitions.Any() && r.InterpreterId == interpreterId)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                 .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.Order.EndAt.DateTime, InfoDateDescription = "Utfört: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = StartListItemStatus.RequisitionToBeCreated, ButtonAction = "Create", ButtonController = "Requisition" }).ToList());
+
+            //Denied requisitions
+            actionList.AddRange(_dbContext.Requisitions
+                .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.DeniedByCustomer &&
+                !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) && r.Request.InterpreterId == interpreterId)
+                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.ProcessedAt.Value.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, ButtonItemId = r.RequisitionId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionDenied, ButtonAction = "View", ButtonController = "Requisition" }).ToList());
+
+            var count = actionList.Any() ? actionList.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Lista med aktiva bokningsförfrågningar att hantera ({count} st)" : "Lista med aktiva bokningsförfrågningar att hantera",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar att hantera",
+                StartListObjects = actionList,
+                HasReviewAction = true
+            };
+
+            //kommande uppdrag
+            var assignments = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
+                r.Order.StartAt > _clock.SwedenNow && !r.Requisitions.Any() && r.InterpreterId == interpreterId)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.AnswerProcessedAt.Value.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = StartListItemStatus.OrderApproved }).ToList();
+
+            count = assignments.Any() ? assignments.Count() : 0;
+
+            yield return new StartViewModel.StartList
+            {
+                Header = count > 0 ? $"Kommande bokningsförfrågningar ({count} st)" : "Kommande bokningsförfrågningar",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga kommande bokningsförfrågningar",
+                StartListObjects = assignments
+            };
+        }
+
         private async Task<IEnumerable<StartViewModel.ConfirmationMessage>> GetConfirmationMessages()
         {
             if ((await _authorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
@@ -327,8 +315,9 @@ namespace Tolk.Web.Controllers
                     .Where(ib => ib.InterpreterId == User.GetInterpreterId() && !ib.AcceptedByInterpreter)
                     .Select(ib => new StartViewModel.ConfirmationMessage
                     {
-                        Header = $"Ny förmedling {ib.Broker.Name}",
-                        Message = $"Förmedling {ib.Broker.Name} har lagt till dig som tolk för att kunna skicka uppdrag till dig.",
+                        Header = "Förmedlingar som vill skicka uppdrag till dig som tolk",
+                        BrokerName = ib.Broker.Name,
+                        Message = "Förmedling som vill lägga till dig",
                         Controller = "Interpreter",
                         Action = "AcceptBroker",
                         Id = ib.BrokerId
