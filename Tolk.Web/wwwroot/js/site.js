@@ -59,8 +59,8 @@ if ($('#now').length === 1) {
 }
 
 function changeTab(path, tabPaneSelector) {
-    // Load only if tab is empty
-    if ($(tabPaneSelector).html().trim().length === 0) {
+    // Load only if tab is empty and enabled
+    if (tabPaneSelector !== "#" && $(tabPaneSelector).html().trim().length === 0) {
         $(tabPaneSelector).html('<div class="text-align-center"><span class="loading-text">Laddar...</span></div>');
         $.ajax({
             url: tolkBaseUrl + path,
@@ -166,6 +166,13 @@ $(function () {
                 element.children("h2").children("i").remove();
                 $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
             }
+        }
+    });
+
+    $(".nav-tabs a[data-toggle=tab]").on("click", function (e) {
+        if ($(this).hasClass("disabled")) {
+            e.preventDefault();
+            return false;
         }
     });
 });

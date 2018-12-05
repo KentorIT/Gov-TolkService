@@ -1007,3 +1007,6 @@ input.force-validation {
   background-color: white;
   border: none;
 }
+.nav.nav-tabs.nav-justified > .disabled > a {
+  color: #979797;
+}

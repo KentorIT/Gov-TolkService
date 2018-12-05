@@ -7,15 +7,18 @@
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till kontaktperson" : "Ändra kontaktperson";
 
-    string requisitionPath = "Requisition/View/" + Model.ActiveRequest.RequisitionId ?? "#";
-    string complaintPath = "Complaint/View/" + Model.ActiveRequest.ComplaintId ?? "#";
+    bool isRequisitionAvailable = (bool?)Model.ActiveRequest.RequisitionId.HasValue ?? false;
+    bool isComplaintAvailable = (bool?)Model.ActiveRequest.ComplaintId.HasValue ?? false;
+
+    string requisitionPath = isRequisitionAvailable ? "Requisition/View/" + Model.ActiveRequest.RequisitionId ?? "#" : "#";
+    string complaintPath = isComplaintAvailable ? "Complaint/View/" + Model.ActiveRequest.ComplaintId ?? "#" : "#";
 }
 
 @await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
 <ul class="nav nav-tabs nav-justified">
     <li class="active"><a data-toggle="tab" href="#order">Bokning</a></li>
-    <li><a data-toggle="tab" href="#requisition" onclick="changeTab('@requisitionPath', '#requisition')">Rekvisition</a></li>
-    <li><a data-toggle="tab" href="#complaint" onclick="changeTab('@complaintPath', '#complaint')">Reklamation</a></li>
+    <li class='@(isRequisitionAvailable ? "" : "disabled")'><a data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab('@requisitionPath', '#requisition')">Rekvisition</a></li>
+    <li class='@(isComplaintAvailable ? "" : "disabled")'><a data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab('@complaintPath', '#complaint')">Reklamation</a></li>
 </ul>
 <div class="tab-content">
     <div id="order" class="tab-pane fade in active">
