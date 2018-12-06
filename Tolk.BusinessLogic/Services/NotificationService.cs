@@ -476,7 +476,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-
         private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type)
         {
             var roleId = _dbContext.Roles.Single(r => r.Name == "NotificationHandler").Id;
@@ -513,6 +512,5 @@ namespace Tolk.BusinessLogic.Services
                 userId));
             _dbContext.SaveChanges();
         }
-
     }
 }

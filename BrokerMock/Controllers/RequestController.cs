@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
@@ -60,11 +61,21 @@ namespace BrokerMock.Controllers
                 if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                 {
                     await AssignInterpreter(
-                    payload.OrderNumber,
-                    "ara@tolk.se",
-                    payload.Locations.First().Key,
-                    payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key
-                );
+                        payload.OrderNumber,
+                        "ara@tolk.se",
+                        payload.Locations.First().Key,
+                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key
+                    );
+                }
+                if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
+                {
+                    Thread.Sleep(3000);
+                    await ChangeInterpreter(
+                        payload.OrderNumber,
+                        "bo@tolk.se",
+                        payload.Locations.Last().Key,
+                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key
+                    );
                 }
                 //Get the headers:
                 //X-Kammarkollegiet-InterpreterService-Delivery
@@ -200,6 +211,39 @@ namespace BrokerMock.Controllers
                 else
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/File]:: Avrops-ID: {orderNumber} accat mottagande");
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> ChangeInterpreter(string orderNumber, string interpreter, string location, string competenceLevel)
+        {
+            using (var client = new HttpClient(GetCertHandler()))
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                if (_options.UseSecret)
+                {
+                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-CallerSecret", _options.Secret);
+                }
+                var payload = new RequestAssignModel
+                {
+                    OrderNumber = orderNumber,
+                    Interpreter = interpreter,
+                    Location = location,
+                    CompetenceLevel = competenceLevel,
+                    ExpectedTravelCosts = 0,
+                    CallingUser = "regular-user@formedling1.se"
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ChangeInterpreter", content);
+                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/ChangeInterpreter]:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
                 }
             }
 

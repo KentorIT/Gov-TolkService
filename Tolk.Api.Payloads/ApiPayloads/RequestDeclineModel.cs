@@ -6,6 +6,7 @@ namespace Tolk.Api.Payloads.ApiPayloads
     {
         [Required]
         public string OrderNumber { get; set; }
+        [Required]
         public string Message { get; set; }
     }
 }

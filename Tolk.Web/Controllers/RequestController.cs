@@ -217,26 +217,27 @@ namespace Tolk.Web.Controllers
                     //if change interpreter or else if not a replacementorder
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                     {
-                        int interpreterId = model.InterpreterId.Value;
-                        if (interpreterId == SelectListService.NewInterpreterId)
-                        {
-                            interpreterId = await _interpreterService.GetInterpreterId(
-                                request.Ranking.BrokerId,
-                                model.NewInterpreterEmail);
-                        }
-                        var interpreter = GetInterpreter(interpreterId);
+                        var interpreter = await GetInterpreter(model.InterpreterId.Value, model.NewInterpreterEmail, request.Ranking.BrokerId);
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         {
-                            var newRequest = CreateNewRequestForReplacedInterpreter(request, model, interpreter);
-                            if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
-                            {
-                                _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
-                            }
-                            else
-                            {
-                                _notificationService.RequestChangedInterpreter(newRequest);
-                            }
-                            request.Status = RequestStatus.InterpreterReplaced;
+                            _requestService.ChangeInterpreter(
+                                request,
+                                _clock.SwedenNow,
+                                User.GetUserId(),
+                                User.TryGetImpersonatorId(),
+                                interpreter,
+                                model.InterpreterLocation.Value,
+                                model.InterpreterCompetenceLevel.Value,
+                                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                                {
+                                    RequestId = request.RequestId,
+                                    OrderRequirementId = ra.OrderRequirementId,
+                                    Answer = ra.Answer,
+                                    CanSatisfyRequirement = ra.CanMeetRequirement
+                                }),
+                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
+                                model.ExpectedTravelCosts
+                            );
                         }
                         else
                         {
@@ -280,8 +281,12 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
-        private Interpreter GetInterpreter(int interpreterId)
+        private async Task<Interpreter> GetInterpreter(int interpreterId, string interpreterEmail, int brokerId)
         {
+            if (interpreterId == SelectListService.NewInterpreterId)
+            {
+                interpreterId = await _interpreterService.GetInterpreterId(brokerId, interpreterEmail);
+            }
             return _dbContext.Interpreters.Include(i => i.User)
                 .Single(i => i.InterpreterId == interpreterId);
         }
@@ -298,49 +303,16 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order.ContactPersonUser)
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Requisitions)
-                .Include(r => r.PriceRows)
                 .Single(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
                 {
-                    request.CancelByBroker(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
-                    _notificationService.RequestCancelledByBroker(request);
+                    _requestService.CancelByBroker(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                     _dbContext.SaveChanges();
                     return RedirectToAction("Index", "Home", new { message = "Avbokning har genomförts" });
                 }
                 return Forbid();
             }
             return RedirectToAction(nameof(View), new { id = model.RequestId });
-        }
-
-        private Request CreateNewRequestForReplacedInterpreter(Request request, RequestAcceptModel model, Interpreter interpreter)
-        {
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, _clock.SwedenNow)
-            {
-                OrderId = request.OrderId,
-                Status = RequestStatus.AcceptedNewInterpreterAppointed
-            };
-            request.Order.Requests.Add(newRequest);
-            _dbContext.SaveChanges();
-            newRequest.ReplaceInterpreter(_clock.SwedenNow,
-                User.GetUserId(),
-                User.TryGetImpersonatorId(),
-                interpreter,
-                model.InterpreterLocation,
-                model.InterpreterCompetenceLevel,
-                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                {
-                    RequestId = newRequest.RequestId,
-                    OrderRequirementId = ra.OrderRequirementId,
-                    Answer = ra.Answer,
-                    CanSatisfyRequirement = ra.CanMeetRequirement
-                }),
-                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                _priceCalculationService.GetPrices(request, model.InterpreterCompetenceLevel.Value, model.ExpectedTravelCosts),
-                !request.Order.AllowMoreThanTwoHoursTravelTime,
-                request
-                 );
-            return newRequest;
         }
 
         [ValidateAntiForgeryToken]

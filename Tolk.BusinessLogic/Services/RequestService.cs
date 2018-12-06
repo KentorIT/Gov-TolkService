@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -68,6 +69,54 @@ namespace Tolk.BusinessLogic.Services
             {
                 _notificationService.RequestReplamentOrderDeclinedByBroker(request);
             }
+        }
+
+        public void CancelByBroker(Request request, DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
+        {
+            request.CancelByBroker(cancelledAt, userId, impersonatorId, message);
+            _notificationService.RequestCancelledByBroker(request);
+        }
+
+        public void ChangeInterpreter(
+            Request request,
+            DateTimeOffset changedAt,
+            int userId,
+            int? impersonatorId,
+            Interpreter interpreter,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel competenceLevel,
+            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            IEnumerable<RequestAttachment> attachedFiles,
+            decimal? expectedTravelCosts
+        )
+        {
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt)
+            {
+                Order = request.Order,
+                Status = RequestStatus.AcceptedNewInterpreterAppointed
+            };
+            request.Order.Requests.Add(newRequest);
+            newRequest.ReplaceInterpreter(changedAt,
+                userId,
+                impersonatorId,
+                interpreter,
+                interpreterLocation,
+                competenceLevel,
+                requirementAnswers,
+                attachedFiles.Select(f => new RequestAttachment { AttachmentId = f.AttachmentId }),
+                _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
+                !request.Order.AllowMoreThanTwoHoursTravelTime,
+                request
+                 );
+            if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+            {
+                _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
+            }
+            else
+            {
+                _notificationService.RequestChangedInterpreter(newRequest);
+            }
+            request.Status = RequestStatus.InterpreterReplaced;
 
         }
     }

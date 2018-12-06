@@ -242,36 +242,36 @@ namespace Tolk.BusinessLogic.Entities
         }
 
         public void AcceptReplacementOrder(
-        DateTimeOffset acceptTime,
-        int userId,
-        int? impersonatorId,
-        decimal? expectedTravelCosts,
-        PriceInformation priceInformation)
-        {
-            if (Status != RequestStatus.Received)
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            decimal? expectedTravelCosts,
+            PriceInformation priceInformation)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
-            }
-            if (!Order.ReplacingOrderId.HasValue)
-            {
-                throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
-            }
+                if (Status != RequestStatus.Received)
+                {
+                    throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
+                }
+                if (!Order.ReplacingOrderId.HasValue)
+                {
+                    throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
+                }
 
-            AnswerDate = acceptTime;
-            AnsweredBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
-            if (Order.AllowMoreThanTwoHoursTravelTime)
-            {
-                Status = RequestStatus.Accepted;
-                Order.Status = OrderStatus.RequestResponded;
+                AnswerDate = acceptTime;
+                AnsweredBy = userId;
+                ImpersonatingAnsweredBy = impersonatorId;
+                if (Order.AllowMoreThanTwoHoursTravelTime)
+                {
+                    Status = RequestStatus.Accepted;
+                    Order.Status = OrderStatus.RequestResponded;
+                }
+                else
+                {
+                    Status = RequestStatus.Approved;
+                    Order.Status = OrderStatus.ResponseAccepted;
+                }
+                PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             }
-            else
-            {
-                Status = RequestStatus.Approved;
-                Order.Status = OrderStatus.ResponseAccepted;
-            }
-            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
-        }
 
         public void ReplaceInterpreter(
             DateTimeOffset acceptTime,
@@ -281,7 +281,7 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
-            List<RequestAttachment> attachments,
+            IEnumerable<RequestAttachment> attachments,
             PriceInformation priceInformation,
             bool isAutoAccepted,
             Request oldRequest)
@@ -304,8 +304,8 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
             ReplacingRequestId = oldRequest.RequestId;
             PriceRows = new List<RequestPriceRow>();
-            RequirementAnswers = new List<OrderRequirementRequestAnswer>(requirementAnswers);
-            Attachments = attachments;
+            RequirementAnswers = requirementAnswers.ToList();
+            Attachments = attachments.ToList();
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             //if old request already was approved by customer
             if (oldRequest.Status == RequestStatus.Approved)
@@ -373,6 +373,7 @@ namespace Tolk.BusinessLogic.Entities
             CancelMessage = message;
             Order.Status = OrderStatus.CancelledByCreator;
         }
+
         private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
         {
             var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();

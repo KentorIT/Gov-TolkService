@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
@@ -27,9 +26,9 @@ namespace Tolk.Web.Api.Controllers
         private readonly ISwedishClock _timeService;
 
         public RequestController(
-            TolkDbContext tolkDbContext, 
+            TolkDbContext tolkDbContext,
             IOptions<TolkApiOptions> options,
-            RequestService requestService, 
+            RequestService requestService,
             ApiUserService apiUserService,
             ISwedishClock timeService)
         {
@@ -57,7 +56,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber && 
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
@@ -92,9 +91,9 @@ namespace Tolk.Web.Api.Controllers
             }
             _requestService.Accept(
                 request,
-                now, 
-                user?.Id ?? apiUser.Id, 
-                (user != null ? (int?)apiUser.Id : null), 
+                now,
+                user?.Id ?? apiUser.Id,
+                (user != null ? (int?)apiUser.Id : null),
                 interpreter,
                 EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                 competenceLevel,
@@ -183,6 +182,54 @@ namespace Tolk.Web.Api.Controllers
             return Json(new ResponseBase());
         }
 
+        [HttpPost]
+        public JsonResult Cancel([FromBody] RequestCancelModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            if (!_dbContext.Orders
+                .Any(o => o.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+            //Possibly the user should be added, if not found?? 
+            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+            var request = _dbContext.Requests
+            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Include(r => r.Order.CreatedByUser)
+            .Include(r => r.Order.ContactPersonUser)
+            .Include(r => r.Interpreter).ThenInclude(i => i.User)
+            .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+            .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
+                //Must have a request connected to the order for the broker, any status...
+                r.Ranking.BrokerId == apiUser.BrokerId &&
+                //TODO: Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
+                (r.Status == RequestStatus.Approved));
+            if (request == null)
+            {
+                return ReturError("REQUEST_NOT_FOUND");
+            }
+            try
+            {
+                _requestService.CancelByBroker(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                _dbContext.SaveChanges();
+
+            }
+            catch (InvalidOperationException)
+            {
+                //TODO: Should log the acctual exception here!!
+                return ReturError("REQUEST_NOT_IN_CORRECT_STATE");
+            }
+
+            //End of service
+            return Json(new ResponseBase());
+        }
+
         [HttpGet]
         public JsonResult File(string orderNumber, int attachmentId)
         {
@@ -210,8 +257,111 @@ namespace Tolk.Web.Api.Controllers
 
             return Json(new FileResponse
             {
-                FileBase64 = Convert.ToBase64String(attachment.Blob) 
+                FileBase64 = Convert.ToBase64String(attachment.Blob)
             });
+        }
+
+        [HttpPost]
+        public JsonResult ChangeInterpreter([FromBody] RequestAssignModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            if (!_dbContext.Orders
+                .Any(o => o.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+            //Possibly the user should be added, if not found?? 
+            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+            var request = _dbContext.Requests
+            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Include(r => r.Order.CreatedByUser)
+            .Include(r => r.Order.ContactPersonUser)
+            .Include(r => r.Interpreter).ThenInclude(i => i.User)
+            .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+            .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
+                //Must have a request connected to the order for the broker, any status...
+                r.Ranking.BrokerId == apiUser.BrokerId &&
+                (r.Status == RequestStatus.Approved || 
+                r.Status == RequestStatus.Created || 
+                r.Status == RequestStatus.Received || 
+                r.Status == RequestStatus.InterpreterReplaced || 
+                r.Status == RequestStatus.Accepted));
+            if (request == null)
+            {
+                return ReturError("REQUEST_NOT_FOUND");
+            }
+            var interpreter = _apiUserService.GetInterpreter(model.Interpreter);
+            //Does not handle Tolk-Id
+            if (interpreter == null)
+            {
+                //Possibly the interpreter should be added, if not found?? 
+                return ReturError("INTERPRETER_NOT_FOUND");
+            }
+            var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
+
+            try
+            {
+                //TODO: ADD REQ ANSWERS HERE AND ON ANSWER.
+                //requirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                //{
+                //    RequestId = newRequest.RequestId,
+                //    OrderRequirementId = ra.OrderRequirementId,
+                //    Answer = ra.Answer,
+                //    CanSatisfyRequirement = ra.CanSatisfyRequirement
+                //}),
+
+                //TODO: ADD FILES HERE AND ON ANSWER.
+
+                _requestService.ChangeInterpreter(
+                    request,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null),
+                    interpreter,
+                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                    competenceLevel,
+                    //Does not handle reqmts yet
+                    new List<OrderRequirementRequestAnswer>(),
+                    //Does not handle attachments yet.
+                    new List<RequestAttachment>(),
+                    model.ExpectedTravelCosts);
+                _dbContext.SaveChanges();
+
+            }
+            catch (InvalidOperationException)
+            {
+                //TODO: Should log the acctual exception here!!
+                return ReturError("REQUEST_NOT_IN_CORRECT_STATE");
+            }
+            return Json(new ResponseBase());
+        }
+
+        [HttpPost]
+        public JsonResult AcceptReplacement([FromBody] ApiPayloadBaseModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            return Json(new ResponseBase());
+        }
+
+        [HttpPost]
+        public JsonResult DeclineReplacement([FromBody] RequestDeclineModel model)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            return Json(new ResponseBase());
         }
 
         #endregion
@@ -248,6 +398,7 @@ namespace Tolk.Web.Api.Controllers
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_FOUND", ErrorMessage = "The provided order number has no request in the correct state for the call." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_NOT_FOUND", ErrorMessage = "The provided interpreter was not found." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
                };
             }
         }
