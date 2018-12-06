@@ -110,5 +110,16 @@ namespace Tolk.Web.Api.Controllers
                 d.Description
             }));
         }
+
+        [HttpGet]
+        public JsonResult RequirementTypes()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<RequirementType>().Select(d =>
+            new
+            {
+                Key = d.CustomName,
+                d.Description
+            }));
+        }
     }
 }

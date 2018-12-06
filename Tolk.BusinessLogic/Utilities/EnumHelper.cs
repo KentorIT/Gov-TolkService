@@ -90,6 +90,11 @@ namespace Tolk.BusinessLogic.Utilities
             return (value == null ? true : GetAttributeProperty<ObsoleteAttribute, TEnum>(value) != null);
         }
 
+        public static bool UseInApi<TEnum>(TEnum value)
+        {
+            return (value == null ? false : GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.UseInApi ?? false);
+        }
+
         /// <summary>
         /// Get all description values for an enum.
         /// </summary>
@@ -111,7 +116,8 @@ namespace Tolk.BusinessLogic.Utilities
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             return Enum.GetValues(type).OfType<TEnum>()
-                .Where(t => !IsObsolete(t) && (filterValues == null || filterValues.Contains(t)))
+                .Where(t => !IsObsolete(t) && UseInApi(t) && 
+                    (filterValues == null || filterValues.Contains(t)))
                 .Select(v => new EnumDescription<TEnum>(v, 
                     type.GetMember(v.ToString()).GetEnumDescription(), 
                     type.GetMember(v.ToString()).GetEnumCustomName()));

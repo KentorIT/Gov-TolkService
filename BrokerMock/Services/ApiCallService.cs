@@ -69,6 +69,11 @@ namespace BrokerMock.Services
                 items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get customers: {items.Count}");
                 _cache.Set("Customers", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/RequirementTypes/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get requirement types: {items.Count}");
+                _cache.Set("RequirementTypes", items);
             }
         }
     }

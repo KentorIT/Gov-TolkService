@@ -178,7 +178,14 @@ namespace Tolk.BusinessLogic.Services
                         AssignentType = EnumHelper.GetCustomName(order.AssignentType),
                         Description = order.Description,
                         CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
-                        Attachments = order.Attachments.Select(a => new AttachmentInformation
+                        Requirements = order.Requirements.Where(r => r.RequirementType != RequirementType.Dialect).Select(r => new RequirementModel
+                        {
+                            Description = r.Description,
+                            IsRequired = r.IsRequired,
+                            RequirementId = r.OrderRequirementId,
+                            RequirementType = EnumHelper.GetCustomName(r.RequirementType)
+                        }),
+                        Attachments = order.Attachments.Select(a => new AttachmentInformationModel
                         {
                             AttachmentId = a.AttachmentId,
                             FileName = a.Attachment.FileName

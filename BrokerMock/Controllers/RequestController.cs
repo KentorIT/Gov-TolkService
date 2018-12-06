@@ -64,7 +64,13 @@ namespace BrokerMock.Controllers
                         payload.OrderNumber,
                         "ara@tolk.se",
                         payload.Locations.First().Key,
-                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key
+                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                        payload.Requirements.Select(r => new RequirementAnswerModel
+                        {
+                            Answer = "Japp",
+                            CanMeetRequirement = true,
+                            RequirementId = r.RequirementId
+                        })
                     );
                 }
                 if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
@@ -97,7 +103,7 @@ namespace BrokerMock.Controllers
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
-        private async Task<bool> AssignInterpreter(string orderNumber, string interpreter, string location, string competenceLevel)
+        private async Task<bool> AssignInterpreter(string orderNumber, string interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
         {
             //Need app settings: UseCertFile, Cert.FilePath, CertPublicKey
             using (var client = new HttpClient(GetCertHandler()))
@@ -114,7 +120,8 @@ namespace BrokerMock.Controllers
                     Location = location,
                     CompetenceLevel = competenceLevel,
                     ExpectedTravelCosts = 0,
-                    CallingUser = "regular-user@formedling1.se"
+                    CallingUser = "regular-user@formedling1.se",
+                    RequirementAnswers = requirementAnswers
                 };
                 var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Answer", content);

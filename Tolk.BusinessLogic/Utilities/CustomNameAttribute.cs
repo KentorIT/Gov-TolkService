@@ -15,14 +15,17 @@ namespace Tolk.BusinessLogic.Utilities
         /// <summary>
         /// ctor
         /// </summary>
-        public CustomNameAttribute(string customName)
+        public CustomNameAttribute(string customName, bool useInApi = true)
         {
             CustomName = customName;
+            UseInApi = useInApi;
         }
 
         /// <summary>
         /// The parent
         /// </summary>
         public string CustomName { get; private set; }
+
+        public bool UseInApi { get; private set; }
     }
 }

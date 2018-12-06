@@ -205,6 +205,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is connected to a replacement order. use the {nameof(AcceptReplacementOrder)} method instead.");
             }
+            //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
 
             Status = RequestStatus.Accepted;
             AnswerDate = acceptTime;
@@ -286,6 +287,7 @@ namespace Tolk.BusinessLogic.Entities
             bool isAutoAccepted,
             Request oldRequest)
         {
+            //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only AcceptedNewInterpreter requests can be replaced by new interpreter.");

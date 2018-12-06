@@ -19,7 +19,8 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
         public string Description { get; set; }
         public string AssignentType { get; set; }
-        public IEnumerable<AttachmentInformation> Attachments { get; set; }
+        public IEnumerable<AttachmentInformationModel> Attachments { get; set; }
+        public IEnumerable<RequirementModel> Requirements { get; set; }
         public PriceInformationModel PriceInformation { get; set; }
     }
 }

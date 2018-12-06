@@ -81,9 +81,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the interpreter should be added, if not found?? 
                 return ReturError("INTERPRETER_NOT_FOUND");
             }
-            var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
             var now = _timeService.SwedenNow;
-            //Add RequestService that does this, and additionally calls _notificationService
             //Add transaction here!!!
             if (request.Status == RequestStatus.Created)
             {
@@ -96,9 +94,13 @@ namespace Tolk.Web.Api.Controllers
                 (user != null ? (int?)apiUser.Id : null),
                 interpreter,
                 EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                competenceLevel,
-                //Does not handle reqmts yet
-                new OrderRequirementRequestAnswer[] { },
+                EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                {
+                    Answer = ra.Answer,
+                    CanSatisfyRequirement = ra.CanMeetRequirement, 
+                    OrderRequirementId = ra.RequirementId,
+                }),
                 //Does not handle attachments yet.
                 new List<RequestAttachment>(),
                 model.ExpectedTravelCosts
