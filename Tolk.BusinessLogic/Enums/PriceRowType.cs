@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Administrativ avgift")]
         AdministrativeCharge = 4,
 
-        [Description("Reskostnad")]
+        [Description("Resekostnad")]
         TravelCost = 5,
 
         [Description("Öresavrundning")]

@@ -145,7 +145,7 @@
             @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
             {
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
-                <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</div>
+                <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                 <form-entry asp-for="ExpectedTravelCosts" />
             }
             else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
@@ -153,7 +153,7 @@
                 // If it is set to Offsite it is not needed at all
                 // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
                 <div class="collapse" id="set-expected-travel-costs">
-                    <div class="important-info"> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i reskostnad nedan, annars lämna 0 i fältet.</div>
+                    <div class="important-info"> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                     <form-entry asp-for="ExpectedTravelCosts" />
 
                 </div>
