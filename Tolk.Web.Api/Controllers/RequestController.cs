@@ -309,17 +309,6 @@ namespace Tolk.Web.Api.Controllers
 
             try
             {
-                //TODO: ADD REQ ANSWERS HERE AND ON ANSWER.
-                //requirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                //{
-                //    RequestId = newRequest.RequestId,
-                //    OrderRequirementId = ra.OrderRequirementId,
-                //    Answer = ra.Answer,
-                //    CanSatisfyRequirement = ra.CanSatisfyRequirement
-                //}),
-
-                //TODO: ADD FILES HERE AND ON ANSWER.
-
                 _requestService.ChangeInterpreter(
                     request,
                     _timeService.SwedenNow,
@@ -328,13 +317,16 @@ namespace Tolk.Web.Api.Controllers
                     interpreter,
                     EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                     competenceLevel,
-                    //Does not handle reqmts yet
-                    new List<OrderRequirementRequestAnswer>(),
+                    model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement,
+                        OrderRequirementId = ra.RequirementId,
+                    }),
                     //Does not handle attachments yet.
                     new List<RequestAttachment>(),
                     model.ExpectedTravelCosts);
                 _dbContext.SaveChanges();
-
             }
             catch (InvalidOperationException)
             {
