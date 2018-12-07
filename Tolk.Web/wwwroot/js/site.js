@@ -46,8 +46,6 @@ $('#timeTravelDatePicker').on('changeDate', function () {
     );
 });
 
-
-
 function updateTime() {
     var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
     $('#now').text(date.toLocaleString("sv-SE"));
@@ -143,31 +141,19 @@ $(function () {
 
     $("body").on("click", ".collapsible-section", function () {
         var element = $(this);
-        if (!element.hasClass("disabled")) {
-            if ($(element.attr("data-target")).hasClass("in")) {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
-            }
-            else {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
-            }
+
+        if ($(element.attr("data-target")).hasClass("in")) {
+            $(element.attr("data-target")).collapse("hide");
+            element.children("h3").children("span").removeClass("glyphicon-triangle-bottom");
+            element.children("h3").children("span").addClass("glyphicon-triangle-right");
+        }
+        else {
+            $(element.attr("data-target")).collapse("show");
+            element.children("h3").children("span").removeClass("glyphicon-triangle-right");
+            element.children("h3").children("span").addClass("glyphicon-triangle-bottom");
         }
     });
 
-    $(".collapsible-section").each(function () {
-        var element = $(this);
-        if (!element.hasClass("disabled")) {
-            if ($(element.attr("data-target")).hasClass("in")) {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
-            }
-            else {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
-            }
-        }
-    });
 
     $("body").on("click", ".nav-tabs a[data-toggle=tab]", function (e) {
         if ($(this).hasClass("disabled")) {

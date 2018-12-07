@@ -135,11 +135,11 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static RequestModel GetModelFromRequest(Request request)
+        public static RequestModel GetModelFromRequest(Request request, bool requestSummaryOnly = false)
         {
             var complaint = request.Complaints?.FirstOrDefault();
-            var replacingOrderRequest = request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
-            var replacedByOrderRequest = request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
+            var replacingOrderRequest = requestSummaryOnly ? null : request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
+            var replacedByOrderRequest = requestSummaryOnly ? null : request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
             var attach = request.Attachments;
             return new RequestModel
             {
@@ -171,9 +171,9 @@ namespace Tolk.Web.Models
                 ComplaintMessage = complaint?.ComplaintMessage,
                 ComplaintStatus = complaint?.Status,
                 ComplaintType = complaint?.ComplaintType,
-                ReplacingOrderRequestId = replacingOrderRequest?.RequestId,
-                ReplacedByOrderRequestStatus = replacedByOrderRequest?.Status,
-                ReplacedByOrderRequestId = replacedByOrderRequest?.RequestId,
+                ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
+                ReplacedByOrderRequestStatus = requestSummaryOnly ? null : replacedByOrderRequest?.Status,
+                ReplacedByOrderRequestId = requestSummaryOnly ? null : replacedByOrderRequest?.RequestId,
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,

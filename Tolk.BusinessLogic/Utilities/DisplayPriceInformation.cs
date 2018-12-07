@@ -11,6 +11,11 @@ namespace Tolk.BusinessLogic.Utilities
 
         public decimal TotalPrice { get => DisplayPriceRows.Sum(p => p.RoundedPrice); }
 
-        public string HeaderDescription { get; set; }
+        public string PriceListTypeDescription { get; set; }
+
+        public string CompetencePriceDescription { get; set; }
+
+        public string SubPriceHeader { get; set; }
+        
     }
 }

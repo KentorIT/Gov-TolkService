@@ -378,7 +378,7 @@ namespace Tolk.BusinessLogic.Services
             DisplayPriceInformation dpiTotal = new DisplayPriceInformation();
             DisplayPriceInformation separateSubTotalInterpreterCompensation = new DisplayPriceInformation
             {
-                HeaderDescription = PriceRowType.InterpreterCompensation.GetDescription()
+                SubPriceHeader = PriceRowType.InterpreterCompensation.GetDescription()
             };
 
             decimal interpreterCompensation = priceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice);
@@ -387,7 +387,8 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (priceRow.PriceRowType == PriceRowType.InterpreterCompensation && priceRow.PriceListRow != null && priceRow.PriceListRow.PriceListRowType == PriceListRowType.BasePrice)
                 {
-                    dpiTotal.HeaderDescription = $"Använd tolktaxa {priceRow.PriceListRow.PriceListType.GetDescription()}, typ av tolk {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
+                    dpiTotal.PriceListTypeDescription = $"Taxa för {priceRow.PriceListRow.PriceListType.GetDescription()}";
+                    dpiTotal.CompetencePriceDescription = $"Typ av tolk: {priceRow.PriceListRow.CompetenceLevel.GetDescription()}";
                 }
                 //for interpreter compensation we get each row in separate subtotal
                 if (priceRow.PriceRowType == PriceRowType.InterpreterCompensation)

@@ -198,7 +198,7 @@ namespace Tolk.Web.Controllers
                 };
                 if (request != null)
                 {
-                    model.ActiveRequest = RequestModel.GetModelFromRequest(request);
+                    model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
                     model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
                 }
                 else

@@ -13,12 +13,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Tidigare angiven tidsspillan")]
         public string TimeWasteInfo
         {
-            get => (TimeWasteNormalTime != null && TimeWasteNormalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteNormalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
+            get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"{TimeWasteTotalTime} min varav {TimeWasteIWHTime ?? 0} min obekväm tid" : "Ingen tidsspillan har angivits";
         }
 
         public int? TimeWasteIWHTime { get; set; }
 
         public int? TimeWasteNormalTime { get; set; }
+
+        public int? TimeWasteTotalTime { get => (TimeWasteNormalTime ?? 0) + (TimeWasteIWHTime ?? 0); }
 
         [Display(Name = "Tidigare angiven starttid")]
         public DateTimeOffset SessionStartedAt { get; set; }

@@ -60,10 +60,6 @@ a.collapsible-section:focus {
   text-decoration: none;
   cursor: pointer;
 }
-a.collapsible-section.disabled:hover,
-a.collapsible-section.disabled:focus {
-  cursor: default;
-}
 hr {
   height: 1px;
   color: #979797;
@@ -1009,4 +1005,29 @@ input.force-validation {
 }
 .nav.nav-tabs.nav-justified > .disabled > a {
   color: #979797;
+}
+.invoice-line {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  background-color: black;
+  height: 2px;
+}
+.small-invoice-line {
+  margin-top: 7px;
+  margin-bottom: 7px;
+  background-color: black;
+}
+.right-padding {
+  padding-right: 8px;
+}
+.left-padding {
+  padding-left: 8px;
+}
+.align-top {
+  vertical-align: top;
+}
+.invoice-table {
+  vertical-align: top;
+  font-weight: 300;
+  width: 100%;
 }

@@ -16,23 +16,29 @@
                 || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed;
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
-    var aClass = showHeader && isCollapsible ? "collapsible-section" : "collapsible-section disabled";
-    var divClass = showHeader && isCollapsible ? "collapse" : "";
-    var divId = showHeader && isCollapsible ? "RequestSummary" : "";
+    var divClass = isCollapsible ? "collapse" : "";
 }
+
 @if (showHeader)
 {
-    <a class="@aClass" data-toggle="@divClass" data-target="@("#" + divId)">
+    @if (isCollapsible)
+    {
+        <a class="collapsible-section" data-toggle="collapse" data-target="#RequestSummary">
+            <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
+        </a>
+    }
+    else
+    {
         <h2>@header</h2>
-    </a>
+    }
     <hr />
 }
-<div id="@divId" class="@divClass">
+<div id="RequestSummary" class="@divClass">
     <div class="row">
         <div class="row">
             <div class="col-sm-12">
                 @if (showLinks)
-                { 
+                {
                     @if (Model.RequisitionId.HasValue)
                     {
                         <div class="col-sm-4">
@@ -49,9 +55,9 @@
             </div>
         </div>
         @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator
-       || Model.OrderModel.Status == OrderStatus.CancelledByCreatorConfirmed
-       || Model.OrderModel.Status == OrderStatus.CancelledByBroker
-       || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
+      || Model.OrderModel.Status == OrderStatus.CancelledByCreatorConfirmed
+      || Model.OrderModel.Status == OrderStatus.CancelledByBroker
+      || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
         {
             <div class="col-sm-4">
                 <span>

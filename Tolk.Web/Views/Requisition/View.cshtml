@@ -1,120 +1,27 @@
 ﻿@model Tolk.Web.Models.RequisitionViewModel
-@{
-    ViewData["Title"] = "Rekvisition";
-}
+
+@await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Fakturaunderlag" } })
 <div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CustomerCompactInfo" />
-        <display-entry asp-for="OrderCreatedBy" />
-        @if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
-        {
-            <display-entry asp-for="ContactPerson" />
-        }
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="AssignmentType" />
-        @if (!string.IsNullOrWhiteSpace(Model.Description))
-        {
-            <display-entry asp-for="Description" />
-        }
-        @if (Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSitePhone || Model.InterpreterLocation == Tolk.BusinessLogic.Enums.InterpreterLocation.OffSiteVideo)
-        {
-            <display-entry asp-for="OffSiteContactInformation" />
-        }
-        else
-        {
-            <display-entry asp-for="Address" />
-        }
-        <display-entry asp-for="RegionName" />
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="SpecificCompetenceLevelRequired" />
-        @if (Model.SpecificCompetenceLevelRequired)
-        {
-            @if (Model.RequiredCompetenceLevelFirst.HasValue)
-            {
-                <display-entry asp-for="RequiredCompetenceLevelFirst" />
-            }
-            @if (Model.RequiredCompetenceLevelSecond.HasValue)
-            {
-                <display-entry asp-for="RequiredCompetenceLevelSecond" />
-            }
-        }
-        else
-        {
-            @if (Model.RequestedCompetenceLevelFirst.HasValue)
-            {
-                <display-entry asp-for="RequestedCompetenceLevelFirst" />
-            }
-            @if (Model.RequestedCompetenceLevelSecond.HasValue)
-            {
-                <display-entry asp-for="RequestedCompetenceLevelSecond" />
-            }
-            @if (Model.RequestedCompetenceLevelThird.HasValue)
-            {
-                <display-entry asp-for="RequestedCompetenceLevelThird" />
-            }
-        }
-        <display-entry asp-for="InterpretersCompetenceLevel" />
-        <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-        <display-entry asp-for="Status" />
-        @if (Model.PreviousRequisition != null)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
-        }
-        @if (Model.ReplacingRequisitionId.HasValue)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.ReplacingRequisitionId })">Se ersättande rekvisition</a>
-        }
-        @if (Model.Status == Tolk.BusinessLogic.Enums.RequisitionStatus.DeniedByCustomer)
-        {
-            <display-entry asp-for="DenyMessage" />
-        }
-        <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="InterpreterLocation" />
-        <display-entry asp-for="InterpreterTaxCard" />
-        @if (!string.IsNullOrWhiteSpace(Model.OffSiteContactInformation))
-        {
-            <display-entry asp-for="OffSiteContactInformation" />
-        }
-        <display-entry asp-for="ExpectedStartedAt" />
-        <display-entry asp-for="SessionStartedAt" />
-        <display-entry asp-for="ExpectedEndedAt" />
-        <display-entry asp-for="SessionEndedAt" />
-
-        <display-entry asp-for="TimeWasteInfo" />
-        @if (Model.AllowMoreThanTwoHoursTravelTime)
-        {
-            <display-entry asp-for="ExpectedTravelCosts" />
-        }
-        <display-entry asp-for="RequisitionCreatedBy" />
-        <display-entry asp-for="TravelCosts" />
-        <display-entry asp-for="Message" />
-
-        @if (Model.RequestPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
-        }
-        @if (Model.RequestOrReplacingOrderPricesAreUsed)
-        {
-            <div class="important-info">Tid för att beräkna tolkersättning är hämtad från ursprunglig avropad uppdragstid </div>
-        }
-        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-        }
+    <div class="col-sm-12">
         @if (Model.AllowCreation)
         {
-            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+            <a href="@Url.Action("Create", "Requisition" , new { id=Model.RequestId })">Ersätt rekvisition</a>
+
         }
-        @if (Model.ResultPriceInformationModel != null)
+        @if (Model.AllowProcessing)
         {
-            Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
+            <form method="post" asp-action="Approve">
+                <input asp-for="RequisitionId" type="hidden" />
+                <button class="btn btn-default btn-success btn-large pull-right">Godkänn  <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn deny-button btn-warning btn-large pull-left left">Underkänn</button>
+            </form>
         }
-        <h3>Rekvisitionshändelser</h3>
-        <hr />
-        @await Html.PartialAsync("_EventLog", Model.EventLog)
+        @await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Underkänn rekvisitionen", ParentId = Model.RequisitionId })
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" } })
     </div>
 </div>
 @section Scripts {

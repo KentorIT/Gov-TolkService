@@ -44,9 +44,7 @@
         }
     </div>
 </div>
-<h3>Reklamationshändelser</h3>
-<hr />
-@await Html.PartialAsync("_EventLog", Model.EventLog)
+@await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Reklamationshändelser" } })
 <div id="disputeMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->

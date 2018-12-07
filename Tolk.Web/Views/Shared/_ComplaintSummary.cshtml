@@ -4,16 +4,21 @@
     string header = (string)ViewData["header"] ?? "Reklamationssammanfattning";
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
-    var aClass = isCollapsible ? "collapsible-section" : "collapsible-section disabled";
     var divClass = isCollapsible ? "collapse" : "";
-    var divId = isCollapsible ? "ComplaintSummary" : "";
-}
 
-<a class="@aClass" data-toggle="@divClass" data-target="@("#" + divId)">
+}
+@if (isCollapsible)
+{
+    <a class="collapsible-section" data-toggle="collapse" data-target="#ComplaintSummary">
+        <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
+    </a>
+}
+else
+{
     <h2>@header</h2>
-</a>
+}
 <hr />
-<div id="@divId" class="@divClass">
+<div id="ComplaintSummary" class="@divClass">
     <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="ComplaintStatus" />

@@ -3,47 +3,25 @@
     ViewData["Title"] = "Behandla rekvisition";
 }
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="OrderCreatedBy" />
-        @if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
-        {
-            <display-entry asp-for="ContactPerson" />
-        }
+    </div>
+    <div class="col-sm-12">
+        @await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Fakturaunderlag" } })
+        @*bör vi visa upp kontaktperson tydligare här?*@
+        @*@if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
+            {
+                <display-entry asp-for="ContactPerson" />
+            }*@
         @if (Model.PreviousRequisition != null)
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
         }
-        <display-entry asp-for="RequisitionCreatedBy" />
-        <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="InterpreterTaxCard" />
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="Status" />
-        <display-entry asp-for="ExpectedStartedAt" />
-        <display-entry asp-for="SessionStartedAt" />
-        <display-entry asp-for="ExpectedEndedAt" />
-        <display-entry asp-for="SessionEndedAt" />
-        <display-entry asp-for="TimeWasteInfo" />
-        <display-entry asp-for="ExpectedTravelCosts" />
-        <display-entry asp-for="TravelCosts" />
-        <display-entry asp-for="Message" />
-        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-        }
-        @if (Model.RequestPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
-        }
-        @if (Model.ResultPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
-        }
+
         <form method="post" asp-action="Approve">
             <input asp-for="RequisitionId" type="hidden" />
-            <button class="btn btn-primary btn-success pull-right">Godkänn</button>
-            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger pull-left">Underkänn</button>
+            <button class="btn btn-default btn-success btn-large pull-right">Godkänn  <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn deny-button btn-warning btn-large pull-left left">Underkänn</button>
         </form>
     </div>
 </div>

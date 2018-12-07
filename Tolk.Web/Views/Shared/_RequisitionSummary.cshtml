@@ -1,0 +1,117 @@
+﻿@model RequisitionViewModel
+@{
+    string header = (string)ViewData["header"] ?? "Rekvisitionssammanfattning";
+    bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
+    var divClass = isCollapsible ? "collapse" : "";
+}
+
+@if (isCollapsible)
+{
+    <a class="collapsible-section" data-toggle="collapse" data-target="#RequisitionSummary">
+        <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
+    </a>
+    <hr />
+}
+else
+{
+    <h2>@header</h2>
+}
+
+<div id="RequisitionSummary" class="@divClass">
+    <div class="row">
+        <div class="col-sm-4">
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="TotalPrice" />
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="BrokerName" />
+            <hr class="small-invoice-line" />
+        </div>
+        <div class="col-sm-4">
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="CreatedAt" />
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="BrokerOrganizationnumber" />
+            <hr class="small-invoice-line" />
+        </div>
+        <div class="col-sm-4">
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="RequisitionCreatedBy" />
+            <hr class="small-invoice-line" />
+            <display-entry asp-for="InterpreterTaxCard" />
+            <hr class="small-invoice-line" />
+        </div>
+    </div>
+    <br /><br />
+    <div class="row">
+        <div class="col-sm-8">
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th style="width:52%" class="bold left-padding">Typ</th>
+                        <th style="width:24%" class="bold">Förväntad </th>
+                        <th style="width:24%" class="bold">Faktisk</th>
+                    </tr>
+                    <tr><td colspan="3"><hr class="invoice-line" /></td></tr>
+                </thead>
+                <tr class="align-top">
+                    <td class="left-padding">Startid</td>
+                    <td>@Model.ExpectedStartedAt.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@Model.SessionStartedAt.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+                <tr class="align-top">
+                    <td class="left-padding">Sluttid</td>
+                    <td>@Model.ExpectedEndedAt.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@Model.SessionEndedAt.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+                <tr class="align-top">
+                    <td class="left-padding">Reskostnad</td>
+                    <td>@Model.ExpectedTravelCosts SEK</td>
+                    <td>@Model.TravelCosts SEK</td>
+                </tr>
+                <tr><td colspan="3"><hr class="invoice-line" /></td></tr>
+                <tr class="align-top">
+                    <td class="left-padding">Tidsspillan</td>
+                    <td colspan="2">@Model.TimeWasteInfo</td>
+                </tr>
+                <tr class="align-top">
+                    <td class="left-padding">Specifikation</td>
+                    <td colspan="2">@Model.Message</td>
+                </tr>
+                <tr><td colspan="3"><hr class="invoice-line" /></td></tr>
+            </table>
+        </div>
+    </div>
+    <br /><br />
+    <div class="row">
+        <div class="col-sm-12">
+            @if (Model.RequestOrReplacingOrderPricesAreUsed)
+            {
+                <div class="important-info">Tid för att beräkna tolkersättning är hämtad från ursprunglig avropad uppdragstid </div>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            @if (Model.ResultPriceInformationModel != null)
+            {
+                Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
+            }
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <hr />
+        <div class="col-sm-8">
+            @if (Model.RequestPriceInformationModel != null)
+            {
+                Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+            }
+        </div>
+        <div class="col-sm-4">
+            @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+            {
+                @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+            }
+        </div>
+    </div>
+</div>

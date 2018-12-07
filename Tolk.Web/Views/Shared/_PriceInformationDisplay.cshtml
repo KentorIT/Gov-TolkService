@@ -24,26 +24,26 @@
         }
         <div class="body-content col-sm-12 collapse detail-price-info">
             <span class="price-header bold">@Model.Header</span><br />
-            <span class="important-info">@Model.PriceInformationToDisplay.HeaderDescription</span><br /><br />
+            <span class="important-info">Följande tolktaxa har använts för beräkning: @Model.PriceInformationToDisplay.PriceListTypeDescription @Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
             @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
             {
                 <table>
                     <thead>
                         <tr>
-                            <th>@dpi.HeaderDescription</th>
+                            <th>@dpi.SubPriceHeader</th>
                             <th class="price-column">Pris, SEK</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in dpi.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
                         {
-                        <tr>
-                            <td>@item.DescriptionToUse</td>
-                            <td class="price-column">@item.Price.ToString("#,0.00")</td>
-                        </tr>
+                            <tr>
+                                <td>@item.DescriptionToUse</td>
+                                <td class="price-column">@item.Price.ToString("#,0.00")</td>
+                            </tr>
                         }
                         <tr>
-                            <td class="bold">Summa @dpi.HeaderDescription.ToLower():</td>
+                            <td class="bold">Summa @dpi.SubPriceHeader.ToLower():</td>
                             <td class="price-column bold">@dpi.TotalPrice.ToString("#,0.00")</td>
                         </tr>
                     </tbody>
@@ -60,10 +60,10 @@
                 <tbody>
                     @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
                     {
-                    <tr>
-                        <td>@item.DescriptionToUse</td>
-                        <td class="price-column">@item.Price.ToString("#,0.00")</td>
-                    </tr>
+                        <tr>
+                            <td>@item.DescriptionToUse</td>
+                            <td class="price-column">@item.Price.ToString("#,0.00")</td>
+                        </tr>
                     }
                     <tr>
                         <td class="bold">Total summa:</td>
@@ -78,56 +78,63 @@
 }
 else
 {
-    <div class="body-content detail-price-info col-sm-12">
-        <span class="price-header bold">@Model.Header</span><br />
-        <span class="important-info">@Model.PriceInformationToDisplay.HeaderDescription</span><br /><br />
-        @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
-        {
-            <table>
+    <div class="row">
+        <div class="col-sm-4">
+            <br />
+            Följande tolktaxa används för beräkning: <br /><span class="left-padding detail-text"> @Model.PriceInformationToDisplay.PriceListTypeDescription<br /></span> <span class="left-padding detail-text">@Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
+        </div>
+        <div class="col-sm-8">
+            @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
+            {
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th class="bold left-padding">@dpi.SubPriceHeader</th>
+                            <th style="min-width:100px" class="bold right-padding price-column">Pris, SEK </th>
+                        </tr>
+                        <tr><td colspan="2"><hr class="invoice-line" /></td></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in dpi.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
+                        {
+                            <tr>
+                                <td class="left-padding">@item.DescriptionToUse</td>
+                                <td class="right-padding price-column">@item.Price</td>
+                            </tr>
+                        }
+                        <tr><td colspan="2"><hr class="invoice-line" /></td></tr>
+                        <tr>
+                            <td class="left-padding bold">Summa @dpi.SubPriceHeader.ToLower():</td>
+                            <td class="right-padding bold price-column">@dpi.TotalPrice</td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            <br />
+            <br />
+            <table class="invoice-table">
                 <thead>
                     <tr>
-                        <th>@dpi.HeaderDescription</th>
-                        <th class="price-column">Pris, SEK</th>
+                        <th class=" bold left-padding">Total kostnad</th>
+                        <th class="bold right-padding price-column">Pris, SEK</th>
                     </tr>
+                    <tr><td colspan="2"><hr class="invoice-line" /></td></tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in dpi.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
+                    @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
                     {
                         <tr>
-                            <td>@item.DescriptionToUse</td>
-                            <td class="price-column">@item.Price</td>
+                            <td class="left-padding">@item.DescriptionToUse</td>
+                            <td class="right-padding price-column">@item.Price</td>
                         </tr>
                     }
+                    <tr><td colspan="2"><hr class="invoice-line" /></td></tr>
                     <tr>
-                        <td class="bold">Summa @dpi.HeaderDescription.ToLower():</td>
-                        <td class="price-column bold">@dpi.TotalPrice</td>
+                        <td class="bold left-padding">Total summa:</td>
+                        <td class="right-padding bold price-column">@Model.TotalPriceToDisplay</td>
                     </tr>
                 </tbody>
             </table>
-        }
-        <br />
-        <table>
-            <thead>
-                <tr>
-                    <th>Total kostnad</th>
-                    <th class="price-column">Pris, SEK</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
-                {
-                    <tr>
-                        <td>@item.DescriptionToUse</td>
-                        <td class="price-column">@item.Price</td>
-                    </tr>
-                }
-                <tr>
-                    <td class="bold">Total summa:</td>
-                    <td class="price-column bold">@Model.TotalPriceToDisplay</td>
-                </tr>
-                <tr><td colspan="2"><br /></td></tr>
-            </tbody>
-        </table>
+        </div>
     </div>
-    <br />
 }

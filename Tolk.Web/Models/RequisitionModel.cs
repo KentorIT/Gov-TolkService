@@ -32,8 +32,11 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public TaxCard? InterpreterTaxCard { get; set; }
 
-        [Display(Name = "Förmedling")]
+        [Display(Name = "Tolkförmedling")]
         public string BrokerName { get; set; }
+
+        [Display(Name = "Tolkförmedlingens organisationsnummer")]
+        public string BrokerOrganizationnumber { get; set; }
 
         [Display(Name = "Avropande myndighet")]
         public string CustomerOrganizationName { get; set; }
@@ -77,7 +80,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Angiven tidsspillan")]
         public string TimeWasteInfo
         {
-            get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"Totalt angiven tidsspillan {TimeWasteTotalTime} minuter varav {TimeWasteIWHTime ?? 0} minuter under obekväm arbetstid" : "Ingen tidsspillan har angivits";
+            get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"{TimeWasteTotalTime} min varav {TimeWasteIWHTime ?? 0} min obekväm tid" : "Ingen tidsspillan har angivits";
         }
 
         [Display(Name = "Faktisk startid")]

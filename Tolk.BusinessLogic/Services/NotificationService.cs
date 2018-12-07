@@ -465,7 +465,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 DisplayPriceInformation priceInfo = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
                 string invoiceInfo = string.Empty;
-                invoiceInfo += $"{priceInfo.HeaderDescription}\n\n";
+                invoiceInfo += $"Följande tolktaxa har använts för beräkning: {priceInfo.PriceListTypeDescription} {priceInfo.CompetencePriceDescription}\n\n";
                 foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
                 {
                     invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
