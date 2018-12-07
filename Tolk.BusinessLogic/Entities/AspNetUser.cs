@@ -80,5 +80,11 @@ namespace Tolk.BusinessLogic.Entities
 
             return user;
         }
+
+        #region Navigation properties
+
+        public List<UserNotificationSetting> NotificationSettings { get; set; }
+
+        #endregion
     }
 }

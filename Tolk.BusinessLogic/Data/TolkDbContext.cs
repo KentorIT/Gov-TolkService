@@ -49,6 +49,9 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(r => r.RankingId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<UserNotificationSetting>()
+                .HasKey(uns => new { uns.UserId, uns.NotificationChannel, uns.NotificationType });
+
             builder.Entity<InterpreterBroker>()
                 .HasKey(ib => new { ib.BrokerId, ib.InterpreterId });
 
@@ -302,6 +305,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<OrderAttachment> OrderAttachments { get; set; }
 
         public DbSet<TemporaryAttachmentGroup> TemporaryAttachmentGroups { get; set; }
+
+        public DbSet<UserNotificationSetting> UserNotificationSettings { get; set; }
 
         public static bool isUserStoreInitialized = false;
 

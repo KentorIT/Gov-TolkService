@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -21,6 +23,8 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly TolkOptions _options;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly IMemoryCache _cache;
+        private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
         private static readonly HttpClient client = new HttpClient();
 
@@ -29,7 +33,8 @@ namespace Tolk.BusinessLogic.Services
             ILogger<NotificationService> logger,
             ISwedishClock clock,
             IOptions<TolkOptions> options,
-            PriceCalculationService priceCalculationService
+            PriceCalculationService priceCalculationService,
+            IMemoryCache cache
         )
         {
             _dbContext = dbContext;
@@ -37,6 +42,7 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
             _options = options.Value;
             _priceCalculationService = priceCalculationService;
+            _cache = cache;
         }
 
         public void OrderCancelledByCustomer(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
@@ -122,28 +128,23 @@ namespace Tolk.BusinessLogic.Services
 
         public void RequestCreated(Request request)
         {
-            //This makes including Broker object unecessary
-            var settings = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated);
-
             var order = request.Order;
-            if (settings.SendEmail)
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
+            if (email != null)
             {
-                if (string.IsNullOrWhiteSpace(settings.EmailAddress))
-                {
-                    //Temporary fix...
-                    settings.EmailAddress = request.Ranking.Broker.EmailAddress;
-                }
-                    CreateEmail(
-                    settings.EmailAddress,
+                CreateEmail(
+                    email.ContactInformation,
                     $"Nytt avrop registrerat: {order.OrderNumber}",
                     $"Ett nytt avrop har kommit in från {order.CustomerOrganisation.Name}.\n" +
                     $"\tRegion: {order.Region.Name}\n" +
-                $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}");
+                    $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}"
+                );
             }
-            if (settings.CallWebhook)
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Webhook);
+            if (webhook != null)
             {
                 CreateWebHookCall(
                     new RequestModel
@@ -199,7 +200,7 @@ namespace Tolk.BusinessLogic.Services
                             {
                                 Description = p.Key.GetDescription(),
                                 PriceRowType = p.Key.GetCustomName(),
-                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice ) : 0,
+                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
                                 CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
                                 CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
                                 PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
@@ -212,9 +213,9 @@ namespace Tolk.BusinessLogic.Services
                             })
                         }
                     },
-                    settings.Webhook,
+                    webhook.ContactInformation,
                     NotificationType.RequestCreated,
-                    settings.RecipientUserId
+                    webhook.RecipientUserId
                 );
             }
         }
@@ -483,29 +484,41 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type)
+        private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type, NotificationChannel channel)
         {
-            var roleId = _dbContext.Roles.Single(r => r.Name == "NotificationHandler").Id;
-            var user = _dbContext.Users.SingleOrDefault(u => u.BrokerId == brokerId && u.Roles.Any(r => r.RoleId == roleId));
-            //This should be cached, and gotten from the settings table called NotificationSettings, GetSettings(userId, type)
-            if (user != null)
+            if (!BrokerNotificationSettings.Any(b => b.BrokerId == brokerId) && channel == NotificationChannel.Email)
             {
+                //Temporary, needs to create a NotificationHandler user for all brokers!!
                 return new BrokerNotificationSettings
                 {
-                    EmailAddress = user.Email,
-                    SendEmail = false,
-                    CallWebhook = true,
-                    Webhook = "https://localhost:5001/Request/Created",
-                    RecipientUserId = user.Id,
+                    ContactInformation = _dbContext.Brokers.Single(b => b.BrokerId == brokerId).EmailAddress,
                 };
             }
-            else
+
+            return BrokerNotificationSettings.SingleOrDefault(b => b.BrokerId == brokerId && b.NotificationType == type && b.NotificationChannel == channel);
+        }
+
+        public IEnumerable<BrokerNotificationSettings> BrokerNotificationSettings
+        {
+            get
             {
-                return new BrokerNotificationSettings
+                if (!_cache.TryGetValue(brokerSettingsCacheKey, out IEnumerable<BrokerNotificationSettings> brokerNotificationSettings))
                 {
-                    SendEmail = true,
-                    CallWebhook = false,
-                };
+                    var roleId = _dbContext.Roles.Single(r => r.Name == "NotificationHandler").Id;
+                    brokerNotificationSettings = _dbContext.Users.Include(u => u.NotificationSettings)
+                        .Where(u => u.BrokerId != null && u.Roles.Any(r => r.RoleId == roleId))
+                        .SelectMany(u => u.NotificationSettings)
+                        .Select(n => new BrokerNotificationSettings
+                        {
+                            BrokerId = n.User.BrokerId.Value,
+                            ContactInformation = n.ConnectionInformation,
+                            NotificationChannel = n.NotificationChannel,
+                            NotificationType = n.NotificationType,
+                            RecipientUserId = n.UserId
+                        }).ToList().AsReadOnly();
+                    _cache.Set(brokerSettingsCacheKey, brokerNotificationSettings, DateTimeOffset.Now.AddDays(1));
+                }
+                return brokerNotificationSettings;
             }
         }
 
