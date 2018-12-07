@@ -3,6 +3,8 @@
 @{ 
     string isOrderDetailViewKey = "IsOrderDetailView";
     bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
+    int? actionReplacingId = isOrderDetailView ? Model.ReplacingOrderId : Model.ActiveRequest.ReplacingOrderRequestId;
+    int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId;
 }
 
 <div class="row">
@@ -24,13 +26,13 @@
         @if (Model.ReplacingOrderId.HasValue)
         {
             <span>
-                (Ersätter <a href="@Url.Action("View",new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
+                (Ersätter <a href="@Url.Action("View",new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
             </span>
         }
         @if (Model.ReplacedByOrderId.HasValue)
         {
             <span>
-                (Ersatt av <a href="@Url.Action("View",new { id = Model.ReplacedByOrderId })">@Model.ReplacedByOrderNumber</a>)
+                (Ersatt av <a href="@Url.Action("View",new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
             </span>
         }
     </div>

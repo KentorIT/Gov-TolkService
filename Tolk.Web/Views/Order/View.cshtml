@@ -26,48 +26,48 @@
             <div class="col-sm-12">
                 @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
                 {
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <span>Samtliga tolkförmedlingar har avböjt förfrågan</span>
                     </div>
+                </div>
                 }
                 else
                 {
-                    @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest)
+                @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "showHeader", false } })
                 }
                 @if (Model.PreviousRequests.Any())
                 {
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <label>Tidigare förmedlingars svar</label>
-                            <ul>
-                                @foreach (var request in Model.PreviousRequests)
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label>Tidigare förmedlingars svar</label>
+                        <ul>
+                            @foreach (var request in Model.PreviousRequests)
+                            {
+                            <li class="detail-text">
+                                @request.BrokerName (@EnumHelper.GetDescription(request.Status))
+                                @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
                                 {
-                                    <li class="detail-text">
-                                        @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
-                                        {
-                                            <span> Orsak: @request.DenyMessage</span>
-                                        }
-                                    </li>
+                                <span> Orsak: @request.DenyMessage</span>
                                 }
-                            </ul>
-                        </div>
+                            </li>
+                            }
+                        </ul>
                     </div>
+                </div>
                 }
                 <div class="row">
                     @if (Model.ActiveRequestPriceInformationModel != null)
                     {
-                        <div class="col-sm-6">
-                            @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
-                        </div>
+                    <div class="col-sm-6">
+                        @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
+                    </div>
                     }
                     @if (Model.OrderCalculatedPriceInformationModel != null)
                     {
-                        <div class="col-sm-6">
-                            @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
-                        </div>
+                    <div class="col-sm-6">
+                        @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                    </div>
                     }
                 </div>
                 <div class="row">
@@ -85,75 +85,75 @@
         <div class="row">
             @if (Model.ActiveRequestIsAnswered && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="important-info">
-                            Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
-                        </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="important-info">
+                        Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
                     </div>
                 </div>
+            </div>
             }
             @if (Model.AllowOrderCancellation)
             {
-                <div class="col-sm-4">
-                    <form method="post" class="cancel-form" asp-action="Cancel">
-                        <input asp-for="OrderId" type="hidden" />
-                        <input name="CancelMessage" type="hidden" />
-                        <input name="AddReplacementOrder" type="hidden" value="false" />
-                        <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
-                    </form>
-                </div>
+            <div class="col-sm-4">
+                <form method="post" class="cancel-form" asp-action="Cancel">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input name="CancelMessage" type="hidden" />
+                    <input name="AddReplacementOrder" type="hidden" value="false" />
+                    <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
+                </form>
+            </div>
             }
             @if (Model.ActiveRequestIsAnswered)
             {
-                @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
+            @if (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+            <div class="col-sm-4">
+                @if (Model.AllowDenial)
                 {
-                    <div class="col-sm-4">
-                        @if (Model.AllowDenial)
-                        {
-                            <form method="post" class="deny-form text-align-center" asp-action="Deny">
-                                <input asp-for="OrderId" type="hidden" />
-                                <input asp-for="RequestId" type="hidden" />
-                                <input name="DenyMessage" type="hidden" />
+                <form method="post" class="deny-form text-align-center" asp-action="Deny">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <input name="DenyMessage" type="hidden" />
 
-                                <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
-                            </form>
-                        }
-                    </div>
-                    <div class="col-sm-4">
-                        <form method="post" asp-action="Approve">
-                            <input asp-for="OrderId" type="hidden" />
-                            <input asp-for="RequestId" type="hidden" />
-                            <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning</button>
-                        </form>
-                    </div>
+                    <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                </form>
                 }
+            </div>
+            <div class="col-sm-4">
+                <form method="post" asp-action="Approve">
+                    <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning</button>
+                </form>
+            </div>
+            }
             }
 
             @if (Model.AllowComplaintCreation)
             {
-                <div class="col-sm-4">
-                    <a class="btn btn-danger btn-large" href="@Url.Action("Create", "Complaint", new { id = Model.RequestId })">Registrera reklamation</a>
-                </div>
+            <div class="col-sm-4">
+                <a class="btn btn-danger btn-large" href="@Url.Action(" Create", "Complaint" , new { id=Model.RequestId })">Registrera reklamation</a>
+            </div>
             }
             @if (Model.ComplaintId.HasValue)
             {
-                <div class="col-sm-12">
-                    @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
-                </div>
+            <div class="col-sm-12">
+                @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
+            </div>
             }
             @if (Model.Status == OrderStatus.CancelledByBroker)
             {
-                @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-                {
-                    <display-entry asp-for="CancelMessage" />
-                }
-                <div class="col-sm-4 pull-right">
-                    <form method="post" asp-action="ConfirmCancellation">
-                        <input asp-for="RequestId" type="hidden" />
-                        <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
-                    </form>
-                </div>
+            @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+            {
+            <display-entry asp-for="CancelMessage" />
+            }
+            <div class="col-sm-4 pull-right">
+                <form method="post" asp-action="ConfirmCancellation">
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+                </form>
+            </div>
             }
         </div>
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" } })
@@ -177,11 +177,11 @@
                     <form-entry asp-for="CancelMessage" />
                     @if (Model.ReplacingOrderId.HasValue)
                     {
-                        <div>Det går inte att skapa ett ersättningsuppdrag för ett ersättningsuppdrag</div>
+                    <div>Det går inte att skapa ett ersättningsuppdrag för ett ersättningsuppdrag</div>
                     }
                     @if (Model.AllowReplacementOnCancel)
                     {
-                        <form-entry asp-for="AddReplacementOrder" />
+                    <form-entry asp-for="AddReplacementOrder" />
                     }
                 </form>
             </div>
@@ -216,42 +216,42 @@
 </div>
 @if (Model.AllowEditContactPerson)
 {
-    <div id="EditContactPerson" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">@editContactpersonButtonText</h4>
-                </div>
-                <div class="modal-body">
-                    <form class="do-not-check-dirty" method="post" asp-action="ChangeContactPerson">
-                        @if (Model.ChangeContactPersonId != null)
-                        {
-                            <div class="important-info">
-                                För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson
-                            </div>
-                        }
-                        <input asp-for="OrderId" type="hidden" />
-                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-default pull-right">@editContactpersonButtonText</button>
-                            <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
-                        </div>
-                    </form>
-                </div>
+<div id="EditContactPerson" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">@editContactpersonButtonText</h4>
+            </div>
+            <div class="modal-body">
+                <form class="do-not-check-dirty" method="post" asp-action="ChangeContactPerson">
+                    @if (Model.ChangeContactPersonId != null)
+                    {
+                    <div class="important-info">
+                        För att ta bort kontaktperson så lämna valet --Välj-- och klicka på Ändra kontaktperson
+                    </div>
+                    }
+                    <input asp-for="OrderId" type="hidden" />
+                    <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-default pull-right">@editContactpersonButtonText</button>
+                        <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 }
 @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Order/Process.js" asp-append-version="true"></script>
-        <script src="~/js/Files.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
-        <script src="~/js/Files.min.js" asp-append-version="true"></script>
-    </environment>
+<environment include="Development">
+    <script src="~/js/Order/Process.js" asp-append-version="true"></script>
+    <script src="~/js/Files.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
+    <script src="~/js/Files.min.js" asp-append-version="true"></script>
+</environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

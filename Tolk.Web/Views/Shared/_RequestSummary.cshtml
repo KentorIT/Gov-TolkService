@@ -4,12 +4,12 @@
 
 @{
     string header = (string)ViewData["header"] ?? "Bokningsförfrågan";
-    bool showHeader = (bool?)ViewData["showHeader"] ?? false;
+    bool showHeader = (bool?)ViewData["showHeader"] ?? true;
     bool showRequestStatus = (bool?)ViewData["showRequestStatus"] ?? true;
     bool showLinks = (bool?)ViewData["showLinks"] ?? false;
     bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
          && Model.Status != RequestStatus.ToBeProcessedByBroker
-         && Model.Status != RequestStatus.Received);
+         && Model.Status != RequestStatus.Received) &&  Model.RequestId > 0;
     bool requestIsDeclinedByBroker = (Model.Status == RequestStatus.DeclinedByBroker
         || Model.Status == RequestStatus.DeniedByTimeLimit);
     bool cancelledByBroker = Model.OrderModel.Status == OrderStatus.CancelledByBroker
