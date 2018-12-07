@@ -1,37 +1,41 @@
-Use TolkDev
-declare @increment bit
-declare @reseed int
+--Reset data in dev/test-environments
 
-truncate table OrderPriceRows
-truncate table RequestPriceRows
-truncate table RequisitionPriceRows
-truncate table OrderInterpreterLocation
-truncate table OrderRequirementRequestAnswer 
+--ROLLBACK INCLUDED!
 
-select @increment = IsNull(Max(RequestId), 1)
-from Requests 
-set @reseed = 1 - @increment
+--DELETE all orders, requests etc
 
-delete Requests --
-DBCC CHECKIDENT (Requests, reseed, @reseed)
+USE TolkDev --change if running in test
 
-select @increment = IsNull(Max(OrderRequirementId), 1)
-from OrderRequirements 
-set @reseed = 1 - @increment
+BEGIN TRAN
 
-delete OrderRequirements --
-DBCC CHECKIDENT (OrderRequirements, reseed, @reseed)
+DELETE FROM OrderInterpreterLocation
+DELETE FROM OrderPriceRows
+DELETE FROM OrderRequirementRequestAnswer
+DELETE FROM RequestPriceRows
+DELETE FROM RequisitionPriceRows
+DELETE FROM Orders
+DELETE FROM Requests
+DELETE FROM OrderRequirements
+DELETE FROM Requisitions
+DELETE FROM Complaints
+DELETE FROM OrderCompetenceRequirements
+DELETE FROM OrderAttachments
+DELETE FROM RequestAttachments
+DELETE FROM RequisitionAttachments
+DELETE FROM OrderContactPersonHistory 
+DELETE FROM Attachments
+DELETE FROM TemporaryAttachmentGroups
 
-select @increment = IsNull(Max(OrderId), 1)
-from Orders 
-set @reseed = 1 - @increment
+TRUNCATE TABLE OrderInterpreterLocation
+TRUNCATE TABLE OrderPriceRows
+TRUNCATE TABLE OrderRequirementRequestAnswer
+TRUNCATE TABLE RequestPriceRows
+TRUNCATE TABLE RequisitionPriceRows
 
-delete Orders --
-DBCC CHECKIDENT (Orders, reseed, @reseed)--
+DBCC CHECKIDENT('Orders', RESEED, 0)
+DBCC CHECKIDENT('Requests', RESEED, 0)
+DBCC CHECKIDENT('OrderRequirements', RESEED, 0)
+DBCC CHECKIDENT('Requisitions', RESEED, 0)
+DBCC CHECKIDENT('Complaints', RESEED, 0)
 
-select @increment = IsNull(Max(RequisitionId), 1)
-from Requisitions 
-set @reseed = 1 - @increment
-
-delete Requisitions --
-DBCC CHECKIDENT (Requisitions, reseed, @reseed)--
+ROLLBACK TRAN
