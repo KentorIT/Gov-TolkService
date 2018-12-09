@@ -56,7 +56,6 @@ namespace Tolk.Web.Models
         public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
         [Display(Name = "Myndighetens enhet/avdelning")]
-        [ClientRequired]
         public string UnitName { get; set; }
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
