@@ -148,6 +148,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public List<OrderStatusConfirmation> OrderStatusConfirmations { get; set; }
+
         #endregion
 
         #region methods

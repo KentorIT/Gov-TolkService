@@ -263,6 +263,8 @@ namespace Tolk.Web.Models
 
         public bool AllowComplaintCreation { get; set; } = false;
 
+        public bool AllowNoAnswerConfirmation { get; set; } = false;
+
         public int? ComplaintId { get; set; }
 
         public bool ActiveRequestIsAnswered { get; set; }

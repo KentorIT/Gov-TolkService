@@ -262,6 +262,16 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.ImpersonatingConfirmedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrderStatusConfirmation>()
+                .HasOne(o => o.ConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrderStatusConfirmation>()
+                .HasOne(o => o.ImpersonatingConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

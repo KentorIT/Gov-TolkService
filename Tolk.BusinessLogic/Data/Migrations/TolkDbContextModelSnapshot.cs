@@ -639,6 +639,33 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OrderRequirementRequestAnswer");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderStatusConfirmation", b =>
+                {
+                    b.Property<int>("OrderStatusConfirmationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt");
+
+                    b.Property<int?>("ConfirmedBy");
+
+                    b.Property<int?>("ImpersonatingConfirmedBy");
+
+                    b.Property<int>("OrderId");
+
+                    b.Property<int>("OrderStatus");
+
+                    b.HasKey("OrderStatusConfirmationId");
+
+                    b.HasIndex("ConfirmedBy");
+
+                    b.HasIndex("ImpersonatingConfirmedBy");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStatusConfirmation");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundEmail", b =>
                 {
                     b.Property<int>("OutboundEmailId")
@@ -1370,6 +1397,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("RequirementAnswers")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderStatusConfirmation", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
+                        .WithMany()
+                        .HasForeignKey("ConfirmedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingConfirmedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("OrderStatusConfirmations")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>

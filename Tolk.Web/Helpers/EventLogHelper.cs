@@ -96,12 +96,22 @@ namespace Tolk.Web.Helpers
                         eventLog.Add(new EventLogEntryModel
                         {
                             Weight = 200,
-                            Timestamp = orderMetaData.Value.TerminatingRequest.Status == RequestStatus.DeniedByTimeLimit 
-                                ? orderMetaData.Value.TerminatingRequest.ExpiresAt 
+                            Timestamp = orderMetaData.Value.TerminatingRequest.Status == RequestStatus.DeniedByTimeLimit
+                                ? orderMetaData.Value.TerminatingRequest.ExpiresAt
                                 : orderMetaData.Value.TerminatingRequest.AnswerDate.Value,
-                            EventDetails = "Bokning avslutad, bokningsförfrågan avböjd av samtliga förmedlingar",
+                            EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
                         });
+                        if (order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
+                        {
+                            eventLog.Add(new EventLogEntryModel
+                            {
+                                Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt.Value,
+                                EventDetails = $"Bekräftat bokningsförfrågan avslutad",
+                                Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
+                                Organization = order.CustomerOrganisation.Name,
+                            });
+                        }
                     }
                 }
             }

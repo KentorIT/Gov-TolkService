@@ -139,6 +139,7 @@ namespace Tolk.Web.Controllers
                     request.Status == RequestStatus.Approved &&
                     _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2 &&
                     !request.Order.ReplacingOrderId.HasValue;
+                model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
                 model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
@@ -163,6 +164,7 @@ namespace Tolk.Web.Controllers
                     model.AllowComplaintCreation = !request.Complaints.Any() &&
                         (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
+                    
                     var complaint = request.Complaints.FirstOrDefault();
                     if (complaint != null)
                     {
@@ -204,7 +206,7 @@ namespace Tolk.Web.Controllers
                 else
                 {
                     model.ActiveRequest = new RequestModel();
-                }                
+                }
                 model.ActiveRequest.OrderModel = model;
                 model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
                 return View(model);
@@ -483,6 +485,21 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        public async Task<IActionResult> ConfirmNoAnswer(int orderId)
+        {
+            var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded && order.Status == OrderStatus.NoBrokerAcceptedOrder)
+            {
+                    _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
+                    _dbContext.SaveChanges();
+                    return RedirectToAction("Index", "Home", new { message = "Bekräftat att bokningsförfrågan är avslutad pga avböjd av samtliga förmedlingar" });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
             var order = await _dbContext.Orders.Include(o => o.Requests)
@@ -594,6 +611,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Language)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
+                .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
                 .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)

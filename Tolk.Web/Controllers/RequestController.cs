@@ -356,7 +356,7 @@ namespace Tolk.Web.Controllers
                 request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
                 request.Order.Status = OrderStatus.CancelledByCreatorConfirmed;
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad!" });
+                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
             }
 
             return Forbid();
@@ -376,7 +376,7 @@ namespace Tolk.Web.Controllers
             {
                 _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Avböjande är bekräftat!" });
+                return RedirectToAction("Index", "Home", new { message = "Avböjande är bekräftat" });
             }
             return Forbid();
         }
