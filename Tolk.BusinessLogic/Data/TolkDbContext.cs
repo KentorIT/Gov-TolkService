@@ -252,6 +252,16 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(map => map.Attachment)
                 .WithMany(a => a.Orders)
                 .HasForeignKey(map => map.AttachmentId);
+
+            builder.Entity<RequestStatusConfirmation>()
+                .HasOne(r => r.ConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestStatusConfirmation>()
+                .HasOne(r => r.ImpersonatingConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

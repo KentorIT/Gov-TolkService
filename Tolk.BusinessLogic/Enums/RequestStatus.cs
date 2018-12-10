@@ -21,7 +21,7 @@ namespace Tolk.BusinessLogic.Enums
         Approved = 5,
         [Description("Bokningsförfrågan avböjd")]
         DeclinedByBroker = 7,
-        [Description("Tillsättning är underkänd")]
+        [Description("Tillsättning är avböjd")]
         DeniedByCreator = 8,
         [Description("Bokningsförfrågan ej besvarad")]
         DeniedByTimeLimit = 9,

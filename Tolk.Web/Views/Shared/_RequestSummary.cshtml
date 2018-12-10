@@ -59,12 +59,6 @@
       || Model.OrderModel.Status == OrderStatus.CancelledByBroker
       || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
         {
-            <div class="col-sm-4">
-                <span>
-                    @EnumHelper.GetDescription(typeof(OrderStatus),
-                cancelledByBroker ? OrderStatus.CancelledByBroker : OrderStatus.CancelledByCreator)
-                </span>
-            </div>
             @if (!string.IsNullOrEmpty(Model.CancelMessage))
             {
                 <div class="col-sm-4">

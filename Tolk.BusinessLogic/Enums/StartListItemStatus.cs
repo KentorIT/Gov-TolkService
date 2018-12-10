@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Bokningsförfrågan avbokad")]
         OrderCancelled = 1,
 
-        [Description("Bokningsförfrågan avböjd")]
+        [Description("Bokningsförfrågan ej besvarad")]
         OrderNotAnswered = 2,
 
         [Description("Reklamationshändelse")]
@@ -43,6 +43,9 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Rekvistion skickad")]
         RequisitionCreated = 13,
+
+        [Description("Tillsättning avböjd")]
+        RequestDenied = 14,
 
     }
 }

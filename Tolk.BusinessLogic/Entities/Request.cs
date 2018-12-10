@@ -160,6 +160,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<Complaint> Complaints { get; set; }
 
+        public List<RequestStatusConfirmation> RequestStatusConfirmations { get; set; }
+
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
         public static object HttpContext { get; set; }

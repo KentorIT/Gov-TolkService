@@ -24,6 +24,21 @@
             </form>
             <br /><br />
         }
+        @if (Model.Status == RequestStatus.DeniedByCreator)
+        {
+            @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
+            {
+                <display-entry asp-for="DenyMessage" />
+            }
+            @if (Model.AllowConfirmationDenial)
+            {
+                <form method="post" asp-action="ConfirmDenial">
+                    <input asp-for="RequestId" type="hidden" />
+                    <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                </form>
+                <br /><br />
+            }
+        }
         @await Html.PartialAsync("_RequestSummary", Model)
         <div class="row">
             @if (Model.RequestCalculatedPriceInformationModel != null)

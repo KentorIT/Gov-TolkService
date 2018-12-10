@@ -93,7 +93,7 @@ namespace Tolk.Web.Controllers
 
             return result;
         }
-        
+
         private IEnumerable<StartViewModel.StartList> GetCustomerStartLists()
         {
 
@@ -186,13 +186,14 @@ namespace Tolk.Web.Controllers
             var brokerId = User.GetBrokerId();
             var actionList = new List<StartListItemModel>();
 
-            //requests with status received, created, cancelled by customer
+            //requests with status received, created, denied, cancelled by customer
             actionList.AddRange(_dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.CancelledByCreatorWhenApproved) &&
-                r.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = r.Status == RequestStatus.Received ? StartListItemStatus.RequestReceived : r.Status == RequestStatus.Created ? StartListItemStatus.RequestArrived : StartListItemStatus.OrderCancelled, ButtonAction = r.Status == RequestStatus.CancelledByCreatorWhenApproved ? "View" : "Process", ButtonController = "Request", LatestDate = r.Status != RequestStatus.CancelledByCreatorWhenApproved ? (DateTime?)r.ExpiresAt.DateTime : null }).ToList());
+                .Include(r => r.RequestStatusConfirmations)
+                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.CancelledByCreatorWhenApproved || r.Status == RequestStatus.DeniedByCreator) &&
+                r.Ranking.BrokerId == brokerId && !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = GetInfoDateForBroker(r).Value, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = GetStartListStatusForBroker(r.Status), ButtonAction = r.Status == RequestStatus.Created || r.Status == RequestStatus.Received ? "Process" : "View", ButtonController = "Request", LatestDate = r.Status == RequestStatus.Created || r.Status == RequestStatus.Received ? (DateTime?)r.ExpiresAt.DateTime : null }).ToList());
 
             //Complaints
             actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
@@ -246,7 +247,7 @@ namespace Tolk.Web.Controllers
             //sent requisitions
             var sentRequisitions = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Created && r.Request.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = r.Request.Order.EndAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionCreated }).ToList();
 
@@ -258,6 +259,16 @@ namespace Tolk.Web.Controllers
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar med skickad rekvisition",
                 StartListObjects = sentRequisitions
             };
+        }
+
+        private DateTime? GetInfoDateForBroker(Request r)
+        {
+            return r.Status == RequestStatus.CancelledByCreator ? r.CancelledAt?.DateTime : r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
+        }
+
+        private StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus)
+        {
+            return requestStatus == RequestStatus.Received ? StartListItemStatus.RequestReceived : requestStatus == RequestStatus.Created ? StartListItemStatus.RequestArrived : requestStatus == RequestStatus.DeniedByCreator ? StartListItemStatus.RequestDenied : StartListItemStatus.OrderCancelled;
         }
 
         private IEnumerable<StartViewModel.StartList> GetInterpreterStartLists()

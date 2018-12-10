@@ -945,19 +945,19 @@ input.force-validation {
   vertical-align: bottom;
 }
 .blue-border-left {
-  border-left: 3px solid #6BA3E4;
+  border-left: 4px solid #6BA3E4;
 }
 .red-border-left {
-  border-left: 3px solid #E45C5C;
+  border-left: 4px solid #E45C5C;
 }
 .green-border-left {
-  border-left: 3px solid #77CB7F;
+  border-left: 4px solid #77CB7F;
 }
 .yellow-border-left {
-  border-left: 3px solid #EFE875;
+  border-left: 4px solid #EFE875;
 }
 .gray-border-left {
-  border-left: 3px solid #646464;
+  border-left: 4px solid #646464;
 }
 .gray-border-right {
   border-right: 1px solid #DDD;

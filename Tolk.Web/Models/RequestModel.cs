@@ -54,7 +54,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedlings organisationsnummer")]
         public string BrokerOrganizationNumber { get; set; }
 
-        [Display(Name = "Orsak till avslag")]
+        [Display(Name = "Orsak till avböjande")]
         [DataType(DataType.MultilineText)]
         [Required]
         public string DenyMessage { get; set; }
@@ -107,7 +107,9 @@ namespace Tolk.Web.Models
 
         public bool AllowInterpreterChange { get; set; } = false;
 
-        public bool AllowCancellation { get; set; } = false;
+        public bool AllowCancellation { get; set; } = true;
+
+        public bool AllowConfirmationDenial { get; set; } = false;
 
         public EventLogModel EventLog { get; set; }
 

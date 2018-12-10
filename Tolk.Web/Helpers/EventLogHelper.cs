@@ -43,7 +43,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = order.ReplacedByOrder.CreatedAt,
-                    EventDetails = $"Avrop ersatt av {order.ReplacedByOrder.OrderNumber}",
+                    EventDetails = $"Bokning ersatt av {order.ReplacedByOrder.OrderNumber}",
                     Actor = order.ReplacedByOrder.CreatedByUser.FullName,
                     Organization = order.ReplacedByOrder.CreatedByUser.CustomerOrganisation.Name,
                 });
@@ -99,7 +99,7 @@ namespace Tolk.Web.Helpers
                             Timestamp = orderMetaData.Value.TerminatingRequest.Status == RequestStatus.DeniedByTimeLimit 
                                 ? orderMetaData.Value.TerminatingRequest.ExpiresAt 
                                 : orderMetaData.Value.TerminatingRequest.AnswerDate.Value,
-                            EventDetails = "Avrop avslutat, bokningsförfrågan avböjd av samtliga förmedlingar",
+                            EventDetails = "Bokning avslutad, bokningsförfrågan avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
                         });
                     }
@@ -195,10 +195,18 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.AnswerProcessedAt.Value,
-                        EventDetails = $"Tillsättning underkänd av avropare",
+                        EventDetails = $"Tillsättning avböjd av myndighet",
                         Actor = request.ProcessingUser.FullName,
                         Organization = request.ProcessingUser.CustomerOrganisation.Name,
                     });
+                    if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedAt.Value,
+                            EventDetails = $"Avböjande bekräftat",
+                            Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser.FullName,
+                            Organization = request.AnsweringUser.Broker.Name,
+                        });
                 }
                 else
                 {
@@ -210,7 +218,7 @@ namespace Tolk.Web.Helpers
                             {
                                 Weight = 200,
                                 Timestamp = request.AnswerDate.Value,
-                                EventDetails = $"Tolkbyte godkänt av avropare",
+                                EventDetails = $"Tolkbyte godkänt av myndighet",
                                 Actor = request.ProcessingUser.FullName,
                                 Organization = request.ProcessingUser.CustomerOrganisation.Name,
                             });
@@ -231,7 +239,7 @@ namespace Tolk.Web.Helpers
                         eventLog.Add(new EventLogEntryModel
                         {
                             Timestamp = request.AnswerProcessedAt.Value,
-                            EventDetails = $"Tillsättning godkänd av avropare",
+                            EventDetails = $"Tillsättning godkänd av myndighet",
                             Actor = request.ProcessingUser.FullName,
                             Organization = request.ProcessingUser.CustomerOrganisation.Name,
                         });
@@ -256,7 +264,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.CancelledAt.Value,
-                        EventDetails = "Avrop avbokat av myndighet",
+                        EventDetails = "Uppdrag avbokat av myndighet",
                         Actor = request.CancelledByUser.FullName,
                         Organization = request.CancelledByUser.CustomerOrganisation.Name,
                     });
@@ -266,7 +274,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.CancelledAt.Value,
-                        EventDetails = "Avrop avbokat av förmedling",
+                        EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
                         Organization = request.CancelledByUser.Broker.Name,
                     });

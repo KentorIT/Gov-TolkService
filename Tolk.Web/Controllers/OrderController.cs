@@ -612,6 +612,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);
         }

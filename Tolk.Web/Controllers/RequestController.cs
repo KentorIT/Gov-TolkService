@@ -113,6 +113,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.RequestStatusConfirmations)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
@@ -355,9 +356,28 @@ namespace Tolk.Web.Controllers
                 request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
                 request.Order.Status = OrderStatus.CancelledByCreatorConfirmed;
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad!" });
             }
 
+            return Forbid();
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmDenial(int requestId)
+        {
+            var request = _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order)
+                .Single(r => r.RequestId == requestId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded && request.Status == RequestStatus.DeniedByCreator)
+            {
+                _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
+                _dbContext.SaveChanges();
+                return RedirectToAction("Index", "Home", new { message = "Avböjande är bekräftat!" });
+            }
             return Forbid();
         }
 
@@ -378,6 +398,7 @@ namespace Tolk.Web.Controllers
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
+            model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
             if (includeLog)
             {
                 model.EventLog = new EventLogModel
@@ -392,6 +413,7 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.CustomerOrganisation)
                         .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                         .Include(r => r.Requisitions)
                         .Include(r => r.Complaints)
                         .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
