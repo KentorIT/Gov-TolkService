@@ -100,7 +100,7 @@ namespace Tolk.Web.Api.Controllers
                     Answer = ra.Answer,
                     CanSatisfyRequirement = ra.CanMeetRequirement, 
                     OrderRequirementId = ra.RequirementId,
-                }),
+                }).ToList(),
                 //Does not handle attachments yet.
                 new List<RequestAttachment>(),
                 model.ExpectedTravelCosts
@@ -322,7 +322,7 @@ namespace Tolk.Web.Api.Controllers
                         Answer = ra.Answer,
                         CanSatisfyRequirement = ra.CanMeetRequirement,
                         OrderRequirementId = ra.RequirementId,
-                    }),
+                    }).ToList(),
                     //Does not handle attachments yet.
                     new List<RequestAttachment>(),
                     model.ExpectedTravelCosts);

@@ -3,143 +3,67 @@
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
-@using Tolk.BusinessLogic.Services
 @{
-    ViewData["Title"] = "Svara på avrop";
+    ViewData["Title"] = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Byt ut tolk" : "Svara på bokningsförfrågan";
 }
-
 <div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderModel.OrderNumber" />
-        @if (Model.OrderModel.ReplacingOrderId.HasValue)
-        {
-            <span>
-                (Ersätter <a href="@Url.Action("View", new { id = Model.ReplacingOrderRequestId })">@Model.OrderModel.ReplacingOrderNumber</a>)<br /><br />
-            </span>
-        }
-        <display-entry asp-for="OrderModel.CustomerCompactInfo" />
-        <display-entry asp-for="OrderModel.CreatedAt" />
-        <display-entry asp-for="OrderModel.CreatedBy" />
-        <display-entry asp-for="OrderModel.ContactPerson" />
-        <display-entry asp-for="OrderModel.RegionName" />
-        <display-entry asp-for="OrderModel.LanguageName" />
-        <display-entry asp-for="OrderModel.AssignmentType" />
-        <input asp-for="OrderModel.SpecificCompetenceLevelRequired" type="hidden" />
-        <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
-        @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
-        {
-            @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-            {
-                <input asp-for="OrderModel.RequiredCompetenceLevels" type="hidden" />
-                <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
-            }
-            else
-            {
-                @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
-                {
-                    <input asp-for="OrderModel.RequestedCompetenceLevelFirst" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" />
-                }
-                @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
-                {
-                    <input asp-for="OrderModel.RequestedCompetenceLevelSecond" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" />
-                }
-                @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
-                {
-                    <input asp-for="OrderModel.RequestedCompetenceLevelThird" type="hidden" />
-                    <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" />
-                }
-            }
-        }
-        else
-        {
-            <span>Inga önskemål kring kompetensnivå</span> <br /><br />
-        }
-        <display-entry asp-for="OrderModel.TimeRange" />
-        @if (Model.OrderModel.AttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.OrderModel.AttachmentListModel)
-        }
-        @if (Model.OrderCalculatedPriceInformationModel != null)
-        {
-            Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
-        }
-        <display-entry asp-for="OrderModel.Description" />
+    <div class="col-sm-12">
+        @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
 
-        <label>Inställelsesätt</label>
-        <display-entry asp-for="OrderModel.RankedInterpreterLocationFirstAddressModel.CompactInformation" />
-        @if (Model.OrderModel.RankedInterpreterLocationSecondAddressModel != null)
-        {
-            <display-entry asp-for="OrderModel.RankedInterpreterLocationSecondAddressModel.CompactInformation" />
-        }
-        @if (Model.OrderModel.RankedInterpreterLocationThirdAddressModel != null)
-        {
-            <display-entry asp-for="OrderModel.RankedInterpreterLocationThirdAddressModel.CompactInformation" />
-        }
-        @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-        {
-            <display-entry asp-for="Interpreter" />
-        }
+        @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] } })
+
+        <div class="row">
+            <div class="col-sm-4">
+                @if (Model.OrderCalculatedPriceInformationModel != null)
+                {
+                    Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                }
+            </div>
+            <div class="col-sm-4">
+                @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                {
+                    <display-entry asp-for="Interpreter" />
+                }
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="ExpiresAt" />
+            </div>
+        </div>
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
-            <display-entry asp-for="ExpiresAt" />
 
             @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
-                <display-entry asp-for="OrderModel.ReplacingOrderNumber" />
-                <display-entry asp-for="Interpreter" />
-                <display-entry asp-for="OrderModel.SpecificCompetenceLevelRequired" />
-                @if (Model.OrderModel.RequestedCompetenceLevels.Count != 0)
-                {
-
-                    @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-                    {
-                        <display-entry asp-for="OrderModel.RequiredCompetenceLevels" />
-                    }
-                    else
-                    {
-                        @if (Model.OrderModel.RequestedCompetenceLevelFirst.HasValue)
-                        {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelFirst" />
-                        }
-                        @if (Model.OrderModel.RequestedCompetenceLevelSecond.HasValue)
-                        {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelSecond" />
-                        }
-                        @if (Model.OrderModel.RequestedCompetenceLevelThird.HasValue)
-                        {
-                            <display-entry asp-for="OrderModel.RequestedCompetenceLevelThird" />
-                        }
-                    }
-                }
-                else
-                {
-                    <span>Inga önskemål kring kompetensnivå</span> <br /><br />
-                }
+                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" } })
             }
             else
             {
-                <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
-                <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
-                @if (Model.OrderModel.SpecificCompetenceLevelRequired)
-                {
-                    <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
-                }
-                else
-                {
-                    <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
-                }
-                @if (Model.InterpreterLocation.HasValue)
-                {
-                    <input asp-for="InterpreterLocation" type="hidden" />
-                    <display-entry asp-for="InterpreterLocation" />
-                }
-                else
-                {
-                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
-                }
+                <div class="row">
+                    <div class="col-sm-4">
+                        <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId)" />
+                        <form-entry asp-for="NewInterpreterEmail" class="collapse" id="new-interpreter" />
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.OrderModel.SpecificCompetenceLevelRequired)
+                        {
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                        }
+                        else
+                        {
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.InterpreterLocation.HasValue)
+                        {
+                            <input asp-for="InterpreterLocation" type="hidden" />
+                        }
+                        else
+                        {
+                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                        }
+                    </div>
+                </div>
             }
             <input asp-for="Status" type="hidden" />
             @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
@@ -153,50 +77,75 @@
                 // If it is set to Offsite it is not needed at all
                 // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
                 <div class="collapse" id="set-expected-travel-costs">
-                    <div class="important-info"> Om bedömd restid och / eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
+                    <div class="important-info"> Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                     <form-entry asp-for="ExpectedTravelCosts" />
 
                 </div>
             }
-            @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
-            {
-                @if (Model.RequirementAnswers != null && Model.RequirementAnswers.Any())
+            <div class="row">
+                @if (!Model.OrderModel.ReplacingOrderId.HasValue)
                 {
-                    <label>Extra behov</label><br />
-                    @foreach (var req in Model.RequirementAnswers.OrderByDescending(ra => ra.IsRequired))
-                    {
-                        <span class="list-group-item-heading">@req.Description</span>
-                        <ul>
-                            <li>
-                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanMeetRequirement ? "uppfyller" : "uppfyller inte"))</span>
-                            </li>
-                        </ul>
-                    }
+
+                    <div class="col-sm-4">
+                        <label>Tillkommande krav</label><br />
+                        @if (Model.RequiredRequirementAnswers.Any())
+                        {
+                            @for (var i = 0; i < Model.RequiredRequirementAnswers.Count(); ++i)
+                            {
+                                <div class="border detail-text">
+                                    <span class="detail-text">@Model.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.RequiredRequirementAnswers[i].Description</span>
+                                    <input asp-for="RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                    <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet"/>
+                                    <form-entry asp-for="RequiredRequirementAnswers[i].Answer" />
+                                    <input asp-for="RequiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span class="no-value-info">Inga tillkomande krav är angivna</span>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        <label>Tillkommande önskemål</label><br />
+                        @if (Model.DesiredRequirementAnswers.Any())
+                        {
+                            @for (var i = 0; i < Model.DesiredRequirementAnswers.Count(); ++i)
+                            {
+                                <div class="border">
+                                    <span class="detail-text">@Model.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.DesiredRequirementAnswers[i].Description</span>
+                                    <input asp-for="DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                    <form-entry asp-for="DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
+                                    <form-entry asp-for="DesiredRequirementAnswers[i].Answer" />
+                                    <input asp-for="DesiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                </div>
+
+                            }
+                        }
+                        else
+                        {
+                            <span class="no-value-info">Inga tillkomande önskemål är angivna</span>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty })
+                        <br />
+                        <br />
+                    </div>
+
                 }
-            }
-            else
-            {
-                @for (var i = 0; i < Model.RequirementAnswers.Count(); ++i)
-                {
-                    <input asp-for="RequirementAnswers[i].OrderRequirementId" type="hidden" />
-                    <display-entry asp-for="RequirementAnswers[i].Description" />
-                    <form-entry asp-for="RequirementAnswers[i].Answer" />
-                    <input asp-for="RequirementAnswers[i].IsRequired" type="hidden" />
-                    <form-entry asp-for="RequirementAnswers[i].CanMeetRequirement" />
-                }
-            }
-            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty })
-            <br />
-            <br />
+            </div>
+
+            @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
             @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 <div class="row">
-                    <div class="col-xs-4">
-                        <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Byt tolk</button>
+                    <div class="col-sm-6">
+                        <a class="btn btn-large btn-warning do-not-check-dirty pull-left" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt <span class="btn-remove-times">&times;</span></a>
                     </div>
-                    <div class="col-xs-4">
-                        <a class="btn btn-warning do-not-check-dirty" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt</a>
+                    <div class="col-sm-6">
+                        <button id="Accept" class="btn btn-large btn-primary btn-success pull-right" data-set-status="Accepted">Byt tolk</button>
                     </div>
                 </div>
             }
@@ -208,13 +157,13 @@
                 }
                 <div class="row">
                     <div class="col-xs-4">
-                        <button id="Accept" class="btn btn-primary btn-success" data-set-status="Accepted">Acceptera</button>
+                        <a class="btn btn-large btn-warning do-not-check-dirty pull-left" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    </div>
+                    <div class="col-xs-4 text-align-center">
+                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger">Tacka nej till bokning</button>
                     </div>
                     <div class="col-xs-4">
-                        <a class="btn btn-warning do-not-check-dirty" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt</a>
-                    </div>
-                    <div class="col-xs-4">
-                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-danger">Tacka nej</button>
+                        <button id="Accept" class="btn btn-large btn-primary btn-success pull-right" data-set-status="Accepted">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </div>
                 </div>
             }
@@ -223,25 +172,27 @@
             <input asp-for="Files[0].Id" type="hidden" />
         </span>
     </div>
-</div>
-@Html.Partial("_UploadFileDialog")
-<div id="denyMessageDialog" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Tacka nej till uppdrag</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post" asp-action="Decline" class="do-not-check-dirty">
-                    <input asp-for="RequestId" type="hidden" />
-                    <form-entry asp-for="DenyMessage" />
-                    <button type="submit" class="btn btn-default pull-right">Skicka</button>
-                    <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                </form>
-            </div>
-            <div class="modal-footer">
+
+    @Html.Partial("_UploadFileDialog")
+    <div id="denyMessageDialog" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Tacka nej till bokning</h4>
+                </div>
+                <div class="modal-body">
+                    <form method="post" asp-action="Decline" class="do-not-check-dirty">
+                        <input asp-for="RequestId" type="hidden" />
+                        <form-entry asp-for="DenyMessage" />
+                        <button type="submit" class="btn btn-default pull-right">Tacka nej</button>
+                        <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                        <br /><br />
+                    </form>
+                </div>
+                <div class="modal-footer">
+                </div>
             </div>
         </div>
     </div>

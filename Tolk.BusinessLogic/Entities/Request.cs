@@ -195,7 +195,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter interpreter,
             InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
-            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation)
         {
@@ -283,7 +283,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter interperter,
             InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
-            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachments,
             PriceInformation priceInformation,
             bool isAutoAccepted,
@@ -308,7 +308,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
             ReplacingRequestId = oldRequest.RequestId;
             PriceRows = new List<RequestPriceRow>();
-            RequirementAnswers = requirementAnswers.ToList();
+            RequirementAnswers = requirementAnswers;
             Attachments = attachments.ToList();
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             //if old request already was approved by customer

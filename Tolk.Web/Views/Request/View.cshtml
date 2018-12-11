@@ -74,22 +74,24 @@
                     @await Html.PartialAsync("_ComplaintSummary", Model)
                 </div>
             }
-            @if (Model.AllowCancellation)
-            {
-                <div class="col-sm-4">
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                @if (Model.AllowCancellation)
+                {
                     <form method="post" class="cancel-form" asp-action="Cancel">
                         <input asp-for="RequestId" type="hidden" />
                         <input name="CancelMessage" type="hidden" />
-                        <button class="btn cancel-button btn-warning">Avboka uppdrag</button>
+                        <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
                     </form>
-                </div>
-            }
-            @if (Model.AllowInterpreterChange)
-            {
-                <div class="col-sm-4">
-                    <a class="btn btn-danger btn-large" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
-                </div>
-            }
+                }
+            </div>
+            <div class="col-sm-6">
+                @if (Model.AllowInterpreterChange)
+                {
+                    <a class="btn btn-danger btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                }
+            </div>
         </div>
         <div id="cancelMessageDialog" class="modal fade" role="dialog">
             <div class="modal-dialog">

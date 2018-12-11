@@ -9,11 +9,12 @@
     bool showLinks = (bool?)ViewData["showLinks"] ?? false;
     bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
          && Model.Status != RequestStatus.ToBeProcessedByBroker
-         && Model.Status != RequestStatus.Received) &&  Model.RequestId > 0;
+         && Model.Status != RequestStatus.Received) && Model.RequestId > 0;
     bool requestIsDeclinedByBroker = (Model.Status == RequestStatus.DeclinedByBroker
         || Model.Status == RequestStatus.DeniedByTimeLimit);
     bool cancelledByBroker = Model.OrderModel.Status == OrderStatus.CancelledByBroker
                 || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed;
+    bool isReplacedRequest = Model.Status == RequestStatus.Received && Model.ReplacingOrderRequestId > 0;
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
     var divClass = isCollapsible ? "collapse" : "";
@@ -90,7 +91,7 @@
                     <display-entry asp-for="OrderModel.TimeRange" />
                 </div>
             </div>
-            @if (requestIsAnswered && !requestIsDeclinedByBroker)
+            @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)
             {
                 <div class="row">
                     <div class="col-sm-6">
@@ -100,10 +101,10 @@
                         <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt enligt svar" />
                     </div>
                 </div>
-            }
+            }  
         </div>
     </div>
-    @if (requestIsAnswered && !requestIsDeclinedByBroker)
+    @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)
     {
         <div class="row">
             @if (Model.RequirementAnswers.Any(r => r.IsRequired))
@@ -168,7 +169,7 @@
             }
         </div>
     }
-    @if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime && requestIsAnswered && !requestIsDeclinedByBroker)
+    @if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
     {
         <div class="row">
             <div class="col-sm-4">

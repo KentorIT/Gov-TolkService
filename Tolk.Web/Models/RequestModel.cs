@@ -83,6 +83,10 @@ namespace Tolk.Web.Models
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
+        public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
+
+        public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
+
         public int? RequisitionId { get; set; }
 
         [Display(Name = "Förväntad resekostnad (exkl. restid och moms)")]
@@ -102,7 +106,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Inkommen")]
         public DateTimeOffset? CreatedAt { get; set; }
 
-        [Display(Name = "Svar senast")]
+        [Display(Name = "Svara senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
         public bool AllowInterpreterChange { get; set; } = false;
@@ -164,6 +168,24 @@ namespace Tolk.Web.Models
                     IsRequired = r.IsRequired,
                     Description = r.Description,
                     RequirementType =  r.RequirementType,
+                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                }).ToList(),
+                RequiredRequirementAnswers = request.Order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderRequirementId,
+                    IsRequired = true,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
+                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                }).ToList(),
+                DesiredRequirementAnswers = request.Order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderRequirementId,
+                    IsRequired = false,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),

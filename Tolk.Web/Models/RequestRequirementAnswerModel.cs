@@ -1,31 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class RequestRequirementAnswerModel
     {
         public int OrderRequirementId { get; set; }
-        [Display(Name = "Beställt behov")]
+
+        [NoDisplayName]
         public string Description { get; set; }
 
-        [Display(Name = "Typ av behov")]
+        [Display(Name = "Typ")]
         public RequirementType RequirementType { get; set; }
 
         [Display(Name = "Är ett krav")]
         public bool IsRequired{ get; set; }
 
         [Display(Name = "Svar")]
+        [ClientRequired]
+        [SubItem]
         public string Answer { get; set; }
 
-        [Display(Name = "Kan uppfylla behovet")]
+        [NoDisplayName]
         public bool CanMeetRequirement { get; set; }
     }
 }

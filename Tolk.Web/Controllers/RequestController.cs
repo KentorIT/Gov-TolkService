@@ -141,6 +141,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .Include(r => r.Ranking)
                 .Include(r => r.PriceRows)
+                .Include(r => r.RequirementAnswers)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
@@ -215,10 +216,26 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
+
+                    var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList();
+                    requirementAnswers.AddRange(model.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList());
                     //if change interpreter or else if not a replacementorder
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                     {
                         var interpreter = await GetInterpreter(model.InterpreterId.Value, model.NewInterpreterEmail, request.Ranking.BrokerId);
+
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         {
                             _requestService.ChangeInterpreter(
@@ -229,13 +246,7 @@ namespace Tolk.Web.Controllers
                                 interpreter,
                                 model.InterpreterLocation.Value,
                                 model.InterpreterCompetenceLevel.Value,
-                                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                                {
-                                    RequestId = request.RequestId,
-                                    OrderRequirementId = ra.OrderRequirementId,
-                                    Answer = ra.Answer,
-                                    CanSatisfyRequirement = ra.CanMeetRequirement
-                                }),
+                                requirementAnswers,
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
                                 model.ExpectedTravelCosts
                             );
@@ -250,13 +261,7 @@ namespace Tolk.Web.Controllers
                                 interpreter,
                                 model.InterpreterLocation.Value,
                                 model.InterpreterCompetenceLevel.Value,
-                                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                                {
-                                    RequestId = request.RequestId,
-                                    OrderRequirementId = ra.OrderRequirementId,
-                                    Answer = ra.Answer,
-                                    CanSatisfyRequirement = ra.CanMeetRequirement
-                                }),
+                                requirementAnswers,
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                                 model.ExpectedTravelCosts
                             );

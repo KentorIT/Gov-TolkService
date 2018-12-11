@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Services
             Interpreter interpreter,
             InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
-            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts
         )
@@ -85,7 +85,7 @@ namespace Tolk.BusinessLogic.Services
             Interpreter interpreter,
             InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
-            IEnumerable<OrderRequirementRequestAnswer> requirementAnswers,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts
         )
