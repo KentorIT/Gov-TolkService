@@ -5,147 +5,208 @@
 @{
     ViewData["Title"] = "Ersätt avbokat avrop";
 }
-
 <div class="row">
     <form method="post">
-        <div class="col-md-8">
+        <div class="col-sm-12">
             <h2>@ViewData["Title"]</h2>
-            <display-entry asp-for="ReplacingOrderNumber" />
-            <display-entry asp-for="RegionName" />
-            <display-entry asp-for="BrokerName" />
-            <display-entry asp-for="LanguageName" />
-            <display-entry asp-for="SpecificCompetenceLevelRequired" />
-            @if (Model.RequestedCompetenceLevels.Count != 0)
-            {
-                @if (Model.SpecificCompetenceLevelRequired)
-                {
-                    <display-entry asp-for="RequiredCompetenceLevels" />
-                }
-                else
-                {
-                    @if (Model.RequestedCompetenceLevelFirst.HasValue)
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="ReplacingOrderNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="RegionName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="BrokerName" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="LanguageName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="SpecificCompetenceLevelRequired" />
+                </div>
+                <div class="col-sm-4">
+                    @if (Model.RequestedCompetenceLevels.Count != 0)
                     {
-                        <display-entry asp-for="RequestedCompetenceLevelFirst" />
-                    }
-                    @if (Model.RequestedCompetenceLevelSecond.HasValue)
-                    {
-                        <display-entry asp-for="RequestedCompetenceLevelSecond" />
-                    }
-                    @if (Model.RequestedCompetenceLevelThird.HasValue)
-                    {
-                        <display-entry asp-for="RequestedCompetenceLevelThird" />
-                    }
-                }
-            }
-            else
-            {
-                <span>Inga önskemål om kompetensnivå</span> <br /><br />
-            }
-            <display-entry asp-for="AssignmentType" />
-            <label>Inställelsesätt på det ersatta avropet.</label>
-            <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
-            @if (Model.RankedInterpreterLocationSecondAddressModel != null)
-            {
-                <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
-            }
-            @if (Model.RankedInterpreterLocationThirdAddressModel != null)
-            {
-                <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
-            }
-
-            <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-            @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
-            {
-                <label>Tillkommande krav</label>
-                <ul>
-                    @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
-                    {
-                        <li>
-                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                            @if (req.CanSatisfyRequirement.HasValue)
+                        @if (Model.SpecificCompetenceLevelRequired)
+                        {
+                            <display-entry asp-for="RequiredCompetenceLevels" />
+                        }
+                        else
+                        {
+                            @if (Model.RequestedCompetenceLevelFirst.HasValue)
                             {
-                                <br />
-                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                <display-entry asp-for="RequestedCompetenceLevelFirst" />
                             }
-                        </li>
-                    }
-                </ul>
-            }
-            @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
-            {
-                <label>Tillkommande önskemål</label>
-                <ul>
-                    @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
-                    {
-                        <li>
-                            @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
-                            @if (req.CanSatisfyRequirement.HasValue)
+                            @if (Model.RequestedCompetenceLevelSecond.HasValue)
                             {
-                                <br />
-                                <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                <display-entry asp-for="RequestedCompetenceLevelSecond" />
                             }
-                        </li>
+                            @if (Model.RequestedCompetenceLevelThird.HasValue)
+                            {
+                                <display-entry asp-for="RequestedCompetenceLevelThird" />
+                            }
+                        }
                     }
-                </ul>
-            }
-            <form-entry asp-for="CustomerReferenceNumber" />
-            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
-            <form-entry asp-for="UnitName" />
+                    else
+                    {
+                        <span>Inga önskemål om kompetensnivå</span> <br /><br />
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="AssignmentType" />
+                </div>
+                <div class="col-sm-4">
+                    <label>Inställelsesätt på det ersatta avropet</label>
+                    <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
+                    @if (Model.RankedInterpreterLocationSecondAddressModel != null)
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.CompactInformation" />
+                    }
+                    @if (Model.RankedInterpreterLocationThirdAddressModel != null)
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
+                    }
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired))
+                    {
+                        <label>Tillkommande krav</label>
+                        <ul>
+                            @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired))
+                            {
+                                <li>
+                                    @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                                    @if (req.CanSatisfyRequirement.HasValue)
+                                    {
+                                        <br />
+                                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="col-sm-4">
+                    @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired))
+                    {
+                        <label>Tillkommande önskemål</label>
+                        <ul>
+                            @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired))
+                            {
+                                <li>
+                                    @req.RequirementDescription (@EnumHelper.GetDescription(req.RequirementType))
+                                    @if (req.CanSatisfyRequirement.HasValue)
+                                    {
+                                        <br />
+                                        <span class="requirement-answer">Svar: @req.Answer (@(req.CanSatisfyRequirement.Value ? "uppfyller" : "uppfyller inte"))</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="UnitName" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerReferenceNumber" />
+                </div>
+            </div>
             <div class="row">
                 <div class="col-sm-12">
                     <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller."></span></h3>
                 </div>
             </div>
-            <div class="ranked-InterpreterLocation">
-                <div class="border location-group">
-                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                    <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
-                        <div class="address-information">
-                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
-                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
-                        </div>
-                        <div class="off-site-information">
-                            <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
-                        </div>
-                    </div>
-                </div>
-                <div class="border interpreter-location-second location-group">
-                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                    <div class="address-RankedInterpreterLocationSecond">
-                        <div class="address-information">
-                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
-                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
-                        </div>
-                        <div class="off-site-information">
-                            <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="ranked-InterpreterLocation">
+                        <div class="location-group">
+                            <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                            <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
+                                <div class="address-information">
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
+                                </div>
+                                <div class="off-site-information">
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="border interpreter-location-third location-group">
-                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                    <div class="address-RankedInterpreterLocationThird">
-                        <div class="address-information">
-                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
-                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
-                        </div>
-                        <div class="off-site-information">
-                            <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+                <div class="col-sm-4">
+                    <div class="interpreter-location-second location-group">
+                        <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                        <div class="address-RankedInterpreterLocationSecond">
+                            <div class="address-information">
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
+                            </div>
+                            <div class="off-site-information">
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
+                <div class="col-sm-4">
+                    <div class="interpreter-location-third location-group">
+                        <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                        <div class="address-RankedInterpreterLocationThird">
+                            <div class="address-information">
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
+                            </div>
+                            <div class="off-site-information">
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
+                </div>
             </div>
+
             <input asp-for="AssignmentType" type="hidden" />
             <input asp-for="RegionId" type="hidden" />
-            <display-entry asp-for="ReplacedTimeRange" />
-            <form-entry asp-for="ReplacedTimeRange" type="hidden" />
-            <form-entry asp-for="TimeRange" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
-            <br />
-            <br />
-            <form-entry asp-for="Description" />
-            <button class="btn btn-default" id="send">Skapa ersättningsuppdrag</button>
-            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt</a>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="ReplacedTimeRange" />
+                    <form-entry asp-for="ReplacedTimeRange" type="hidden" />
+                </div>
+                <div class="col-sm-8">
+                    <form-entry asp-for="TimeRange" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
+                </div>
+                <div class="col-sm-8">
+                    <form-entry asp-for="Description" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button class="btn btn-default btn-large pull-right" id="send">Skapa ersättningsuppdrag</button>
+                    <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
+            </div>
         </div>
     </form>
     <span id="basefile" class="d-none">
@@ -153,6 +214,7 @@
     </span>
 </div>
 @Html.Partial("_UploadFileDialog")
+
 
 @section Scripts {
     <environment include="Development">
