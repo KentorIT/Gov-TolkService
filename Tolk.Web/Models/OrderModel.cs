@@ -95,7 +95,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens ärendenummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
         public string CustomerReferenceNumber { get; set; }
 
-        [Display(Name = "Avropande myndighet")]
+        [Display(Name = "Myndighet")]
         [DataType(DataType.MultilineText)]
         public string CustomerCompactInfo
         { get => CustomerName + "\nEnhet/avdelning: " + UnitName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
@@ -140,7 +140,7 @@ namespace Tolk.Web.Models
         {
             get
             {
-                return EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
+                return CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
             }
         }
 
@@ -160,15 +160,15 @@ namespace Tolk.Web.Models
         [Display(Name = "Status på bokningen")]
         public OrderStatus Status { get; set; }
 
-        [Display(Name = "AvropsID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         public int? ReplacedByOrderId { get; set; }
 
-        [Display(Name = "Ersatt av AvropsID")]
+        [Display(Name = "Ersatt av BokningsID")]
         public string ReplacedByOrderNumber { get; set; }
 
-        [Display(Name = "Ersätter AvropsID")]
+        [Display(Name = "Ersätter BokningsID")]
         public string ReplacingOrderNumber { get; set; }
 
         [Display(Name = "Region")]
@@ -233,7 +233,7 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string DenyMessage { get; set; }
 
-        [Display(Name = "Anledning till att avropet avbokas")]
+        [Display(Name = "Anledning till att bokningen avbokas")]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         public string CancelMessage { get; set; }
