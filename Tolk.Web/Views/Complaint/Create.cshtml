@@ -5,23 +5,48 @@
     ViewData["Title"] = "Skapa reklamation";
 }
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="CustomerName" />
-        <display-entry asp-for="CustomerReferenceNumber" />
-        <display-entry asp-for="RegionName" />
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="StartAt" />
-        <display-entry asp-for="EndAt" />
+        <div class="row">
+            <div class="col-sm-4">
+                <input asp-for="OrderId" type="hidden" />
+                <display-entry asp-for="OrderNumber" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="BrokerName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerName" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="RegionName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="LanguageName" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="InterpreterName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="StartAt" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="EndAt" />
+            </div>
+        </div>
         <form method="post">
             <input asp-for="RequestId" type="hidden" />
             <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypes" />
             <form-entry asp-for="Message" />
-            <button class="btn btn-default">Registera reklamation</button>
-            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
+            <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Order" asp-action="View" asp-route-Id="@Model.OrderId">Avbryt <span class="btn-remove-times">&times;</span></a>
+            <button class="btn btn-large btn-default pull-right">Registera reklamation <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
         </form>
     </div>
 </div>

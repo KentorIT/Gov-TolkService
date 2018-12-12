@@ -9,7 +9,9 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
-        [Display(Name = "AvropsID")]
+        public int OrderId { get; set; }
+
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Språk")]
@@ -52,6 +54,7 @@ namespace Tolk.Web.Models
         {
             return new ComplaintModel
             {
+                OrderId = request.OrderId,
                 RequestId = request.RequestId,
                 BrokerName = request.Ranking.Broker.Name,
                 CustomerName = request.Order.CustomerOrganisation.Name,

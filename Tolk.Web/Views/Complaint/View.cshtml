@@ -3,44 +3,61 @@
     ViewData["Title"] = "Reklamation";
 }
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="CustomerName" />
-        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
-        {
-            <display-entry asp-for="CustomerReferenceNumber" />
-        }
-        <display-entry asp-for="CreatedBy" />
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="AssignmentType" />
-        <display-entry asp-for="RegionName" />
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="InterpreterName" />
-        <display-entry asp-for="Status" />
-        <display-entry asp-for="ComplaintType" />
-        <display-entry asp-for="Message" />
-        @if (!string.IsNullOrEmpty(Model.DisputeMessage))
-        {
-            <display-entry asp-for="DisputeMessage" />
-        }
-        @if (!string.IsNullOrEmpty(Model.AnswerDisputedMessage))
-        {
-            <display-entry asp-for="AnswerDisputedMessage" />
-        }
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="Status" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedBy" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedAt" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="ComplaintType" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="Message" />
+            </div>
+            <div class="col-sm-4">
+                @if (!string.IsNullOrEmpty(Model.DisputeMessage))
+                {
+                    <display-entry asp-for="DisputeMessage" />
+                }
+                @if (!string.IsNullOrEmpty(Model.AnswerDisputedMessage))
+                {
+                    <display-entry asp-for="AnswerDisputedMessage" />
+                }
+            </div>
+        </div>
         @if (Model.AllowAnwser)
         {
-            <form method="post" asp-action="Accept">
-                <input asp-for="ComplaintId" type="hidden" />
-                <button class="btn btn-success pull-left">Godta reklamation</button>
-            </form>
-            <button class="btn decline-button btn-danger pull-right">Bestrid reklamation</button>
+            <div class="row">
+                <div class="col-sm-6">
+                    <button class="btn btn-large decline-button btn-danger pull-left">Bestrid reklamation</button>
+                </div>
+                <div class="col-sm-6">
+                    <form method="post" asp-action="Accept">
+                        <input asp-for="ComplaintId" type="hidden" />
+                        <button class="btn btn-large btn-success pull-right">Godta reklamation <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    </form>
+                </div>
+            </div>
         }
         @if (Model.AllowAnwserOnDispute)
         {
-            <button class="btn accept-button btn-success pull-left">Godta bestridande av reklamation</button>
-            <button class="btn refute-button btn-danger pull-right">Avslå bestridande av reklamation</button>
+            <div class="row">
+                <div class="col-sm-6">
+                    <button class="btn btn-large refute-button btn-danger pull-left">Avslå bestridande</button>
+                </div>
+                <div class="col-sm-6">
+                    <button class="btn btn-large accept-button btn-success pull-right">Godta bestridande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                </div>
+            </div>
         }
     </div>
 </div>
@@ -57,8 +74,8 @@
                 <form method="post" asp-action="Dispute" class="do-not-check-dirty">
                     <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
                     <form-entry asp-for="DisputeMessage" />
-                    <button type="submit" class="btn btn-default pull-right">Skicka</button>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-default pull-right">Bestrid</button>
                     <br /><br />
                 </form>
             </div>
@@ -80,8 +97,8 @@
                 <form method="post" asp-action="AcceptDispute" class="do-not-check-dirty">
                     <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
                     <form-entry asp-for="AnswerDisputedMessage" />
-                    <button type="submit" class="btn btn-default pull-right">Skicka</button>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-default pull-right">Godta</button>
                     <br /><br />
                 </form>
             </div>
@@ -103,8 +120,8 @@
                 <form method="post" asp-action="Refute" class="do-not-check-dirty">
                     <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
                     <form-entry asp-for="AnswerDisputedMessage" />
-                    <button type="submit" class="btn btn-default pull-right">Skicka</button>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-default pull-right">Avslå</button>
                     <br /><br />
                 </form>
             </div>
