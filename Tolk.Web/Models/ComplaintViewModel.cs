@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Reklamation registrerad")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [Display(Name = "tatus")]
+        [Display(Name = "Reklamationens status")]
         public ComplaintStatus Status { get; set; }
 
         [Display(Name = "Typ av tolkuppdrag")]
