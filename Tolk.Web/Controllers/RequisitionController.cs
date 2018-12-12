@@ -83,7 +83,7 @@ namespace Tolk.Web.Controllers
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
                 model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(requisition).OrderBy(e => e.Timestamp).ToList() };
-                return View(model);
+                return PartialView(model);
             }
             return Forbid();
         }

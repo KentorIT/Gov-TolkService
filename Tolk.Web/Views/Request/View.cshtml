@@ -1,7 +1,11 @@
 ﻿@model Tolk.Web.Models.RequestModel
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Bokningsförfrågan";
+    ViewData["Title"] = "Bokningsförfrågan - " + Model.OrderModel.OrderNumber;
+    bool isRequisitionAvailable = (bool?)Model.RequisitionId.HasValue ?? false;
+    bool isComplaintAvailable = (bool?)Model.ComplaintId.HasValue ?? false;
+    string requisitionPath = isRequisitionAvailable ? "Requisition/View/" + Model.RequisitionId ?? "#" : "#";
+    string complaintPath = isComplaintAvailable ? "Complaint/View/" + Model.ComplaintId ?? "#" : "#";
 }
 
 <div class="row">
@@ -60,13 +64,6 @@
         {
             <div class="important-info">@Model.Info48HCancelledByCustomer</div>
         }
-
-        @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
-        {
-            //This should be visible if a specified  InterpreterLocation is set and not being OffSite, and allow more than 2 h travel time is set
-            <display-entry asp-for="ExpectedTravelCosts" />
-        }
-
         <div class="row">
             @if (Model.ComplaintId.HasValue)
             {
@@ -112,10 +109,30 @@
                         <button type="button" class="btn btn-default send-message pull-right">Skicka</button>
                     </div>
                 </div>
+                @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                {
+                    @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+                    {
+                        <display-entry asp-for="CancelMessage" />
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
+                    {
+                        <div class="important-info">@Model.Info48HCancelledByCustomer</div>
+                    }
+                    <form method="post" asp-action="ConfirmCancellation">
+                        <input asp-for="RequestId" type="hidden" />
+                        <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+                    </form>
+                }
             </div>
         </div>
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" }, { "id", "EventLog_Request" } })
+    </div>
+    <div id="requisition" class="tab-pane fade">
 
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" } })
+    </div>
+    <div id="complaint" class="tab-pane fade">
+
     </div>
 </div>
 @section Scripts {

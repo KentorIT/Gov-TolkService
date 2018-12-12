@@ -21,7 +21,7 @@
 </div>
 <div class="row">
     <div class="col-sm-12">
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" } })
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" }, { "id", "EventLog_Requisition" } })
     </div>
 </div>
 @section Scripts {

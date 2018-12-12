@@ -60,6 +60,13 @@ a.collapsible-section:focus {
   text-decoration: none;
   cursor: pointer;
 }
+a.collapsible-section.disabled:hover,
+a.collapsible-section.disabled:focus {
+  cursor: default;
+}
+.collapsible-div {
+  height: auto;
+}
 hr {
   height: 1px;
   color: #979797;

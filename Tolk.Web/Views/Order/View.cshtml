@@ -168,7 +168,7 @@
                 </div>
             }
         </div>
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" } })
+        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" } })
     </div>
     <div id="requisition" class="tab-pane fade">
     </div>

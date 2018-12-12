@@ -4,10 +4,11 @@
     string header = (string)ViewData["header"] ?? "Händelser";
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
+    var divId = (string)ViewData["id"] ?? "EventLog";
 }
 @if (isCollapsible)
 {
-    <a class="collapsible-section" data-toggle="collapse" data-target="#EventLog">
+    <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
         <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
     </a>
 }
@@ -16,7 +17,7 @@ else
     <h2>@header</h2>
 }
 <hr />
-<div id="EventLog" class="@divClass">
+<div id="@divId" class="@divClass collapsible-div">
     <div class="table-responsive">
         @if (Model != null && Model.Entries.Any())
         {

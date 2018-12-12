@@ -56,6 +56,22 @@ if ($('#now').length === 1) {
     setInterval(updateTime, 1000);
 }
 
+function refreshCollapsibles() {
+    $(".collapsible-section").each(function () {
+        var element = $(this);
+        if (!element.hasClass("disabled")) {
+            if ($(element.attr("data-target")).hasClass("in")) {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+            else {
+                element.children("h2").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+            }
+        }
+    });
+}
+
 function changeTab(path, tabPaneSelector) {
     // Load only if tab is empty and enabled
     if (tabPaneSelector !== "#" && $(tabPaneSelector).html().trim().length === 0) {
@@ -66,6 +82,7 @@ function changeTab(path, tabPaneSelector) {
             dataType: 'html',
             success: function (data) {
                 $(tabPaneSelector).html(data);
+                refreshCollapsibles();
             },
             error: function (t2) {
                 alert(t2);
@@ -154,6 +171,7 @@ $(function () {
         }
     });
 
+    refreshCollapsibles();
 
     $("body").on("click", ".nav-tabs a[data-toggle=tab]", function (e) {
         if ($(this).hasClass("disabled")) {

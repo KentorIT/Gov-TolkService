@@ -45,7 +45,7 @@ namespace Tolk.Web.Controllers
             var complaint = GetComplaint(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
-                return View(ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId)));
+                return PartialView(ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId)));
             }
             return Forbid();
         }
