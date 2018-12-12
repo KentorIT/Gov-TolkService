@@ -7,108 +7,16 @@
     string requisitionPath = isRequisitionAvailable ? "Requisition/View/" + Model.RequisitionId ?? "#" : "#";
     string complaintPath = isComplaintAvailable ? "Complaint/View/" + Model.ComplaintId ?? "#" : "#";
 }
-
-<div class="row">
-    <div class="col-sm-12">
-        @await Html.PartialAsync("_OrderHeader", Model.OrderModel, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
-
-        @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
-        {
-            @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-            {
-                <display-entry asp-for="CancelMessage" />
-            }
-            @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
-            {
-                <div class="important-info">@Model.Info48HCancelledByCustomer</div>
-            }
-            <form method="post" asp-action="ConfirmCancellation">
-                <input asp-for="RequestId" type="hidden" />
-                <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-            </form>
-            <br /><br />
-        }
-        @if (Model.Status == RequestStatus.DeniedByCreator)
-        {
-            @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
-            {
-                <display-entry asp-for="DenyMessage" />
-            }
-            @if (Model.AllowConfirmationDenial)
-            {
-                <form method="post" asp-action="ConfirmDenial">
-                    <input asp-for="RequestId" type="hidden" />
-                    <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-                </form>
-                <br /><br />
-            }
-        }
-        @await Html.PartialAsync("_RequestSummary", Model)
+@await Html.PartialAsync("_OrderHeader", Model.OrderModel, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
+<ul class="nav nav-tabs nav-justified">
+    <li class="active"><a data-toggle="tab" href="#request">Förfrågan</a></li>
+    <li class='@(isRequisitionAvailable ? "" : "disabled")'><a data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab('@requisitionPath', '#requisition')">Rekvisition</a></li>
+    <li class='@(isComplaintAvailable ? "" : "disabled")'><a data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab('@complaintPath', '#complaint')">Reklamation</a></li>
+</ul>
+<div class="tab-content">
+    <div id="request" class="tab-pane fade in active">
         <div class="row">
-            @if (Model.RequestCalculatedPriceInformationModel != null)
-            {
-                <div class="col-sm-6">
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.RequestCalculatedPriceInformationModel)
-                </div>
-            }
-            @if (Model.OrderCalculatedPriceInformationModel != null)
-            {
-                <div class="col-sm-6">
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
-                </div>
-            }
-        </div>
-        @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
-        @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
-        @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
-        {
-            <div class="important-info">@Model.Info48HCancelledByCustomer</div>
-        }
-        <div class="row">
-            @if (Model.ComplaintId.HasValue)
-            {
-                <div class="col-sm-12">
-                    @await Html.PartialAsync("_ComplaintSummary", Model)
-                </div>
-            }
-        </div>
-        <div class="row">
-            <div class="col-sm-6">
-                @if (Model.AllowCancellation)
-                {
-                    <form method="post" class="cancel-form" asp-action="Cancel">
-                        <input asp-for="RequestId" type="hidden" />
-                        <input name="CancelMessage" type="hidden" />
-                        <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
-                    </form>
-                }
-            </div>
-            <div class="col-sm-6">
-                @if (Model.AllowInterpreterChange)
-                {
-                    <a class="btn btn-danger btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
-                }
-            </div>
-        </div>
-        <div id="cancelMessageDialog" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Meddelande vid avbokning</h4>
-                        <h6>Du måste ange en orsak till avbokningen. Observera att avbokning, beroende på omständighet, kan vara förknippad med vite.</h6>
-                    </div>
-                    <div class="modal-body">
-                        <form class="do-not-check-dirty">
-                            <form-entry asp-for="CancelMessage" />
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
-                        <button type="button" class="btn btn-default send-message pull-right">Skicka</button>
-                    </div>
-                </div>
+            <div class="col-sm-12">
                 @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
                 {
                     @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
@@ -121,12 +29,111 @@
                     }
                     <form method="post" asp-action="ConfirmCancellation">
                         <input asp-for="RequestId" type="hidden" />
-                        <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+                        <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
+                    <br /><br />
                 }
+                @if (Model.Status == RequestStatus.DeniedByCreator)
+                {
+                    @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
+                    {
+                        <display-entry asp-for="DenyMessage" />
+                    }
+                    @if (Model.AllowConfirmationDenial)
+                    {
+                        <form method="post" asp-action="ConfirmDenial">
+                            <input asp-for="RequestId" type="hidden" />
+                            <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                        </form>
+                        <br /><br />
+                    }
+                }
+                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false } })
+                <div class="row">
+                    @if (Model.RequestCalculatedPriceInformationModel != null)
+                    {
+                        <div class="col-sm-6">
+                            @await Html.PartialAsync("_PriceInformationDisplay", Model.RequestCalculatedPriceInformationModel)
+                        </div>
+                    }
+                    @if (Model.OrderCalculatedPriceInformationModel != null)
+                    {
+                        <div class="col-sm-6">
+                            @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                        </div>
+                    }
+                </div>
+                @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
+                @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
+                @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
+                {
+                    <div class="important-info">@Model.Info48HCancelledByCustomer</div>
+                }
+                <div class="row">
+                    @if (Model.ComplaintId.HasValue)
+                    {
+                        <div class="col-sm-12">
+                            @await Html.PartialAsync("_ComplaintSummary", Model)
+                        </div>
+                    }
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        @if (Model.AllowCancellation)
+                        {
+                            <form method="post" class="cancel-form" asp-action="Cancel">
+                                <input asp-for="RequestId" type="hidden" />
+                                <input name="CancelMessage" type="hidden" />
+                                <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
+                            </form>
+                        }
+                    </div>
+                    <div class="col-sm-6">
+                        @if (Model.AllowInterpreterChange)
+                        {
+                            <a class="btn btn-danger btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                        }
+                    </div>
+                </div>
+                <div id="cancelMessageDialog" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Meddelande vid avbokning</h4>
+                                <h6>Du måste ange en orsak till avbokningen. Observera att avbokning, beroende på omständighet, kan vara förknippad med vite.</h6>
+                            </div>
+                            <div class="modal-body">
+                                <form class="do-not-check-dirty">
+                                    <form-entry asp-for="CancelMessage" />
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
+                                <button type="button" class="btn btn-default send-message pull-right">Skicka</button>
+                            </div>
+                        </div>
+                        @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                        {
+                            @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
+                            {
+                                <display-entry asp-for="CancelMessage" />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
+                            {
+                                <div class="important-info">@Model.Info48HCancelledByCustomer</div>
+                            }
+                            <form method="post" asp-action="ConfirmCancellation">
+                                <input asp-for="RequestId" type="hidden" />
+                                <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+                @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" }, { "id", "EventLog_Request" } })
             </div>
         </div>
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" }, { "id", "EventLog_Request" } })
     </div>
     <div id="requisition" class="tab-pane fade">
 
