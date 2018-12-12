@@ -5,11 +5,12 @@
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
+    var divId = (string)ViewData["id"] ?? "ComplaintSummary";
 
 }
 @if (isCollapsible)
 {
-    <a class="collapsible-section" data-toggle="collapse" data-target="#ComplaintSummary">
+    <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
         <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
     </a>
 }
@@ -18,7 +19,7 @@ else
     <h2>@header</h2>
 }
 <hr />
-<div id="ComplaintSummary" class="@divClass">
+<div id="@divId" class="@divClass">
     <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="ComplaintStatus" />

@@ -3,11 +3,12 @@
     string header = (string)ViewData["header"] ?? "Rekvisitionssammanfattning";
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
     var divClass = isCollapsible ? "collapse" : "";
+    var divId = (string)ViewData["id"] ?? "RequisitionSummary";
 }
 
 @if (isCollapsible)
 {
-    <a class="collapsible-section" data-toggle="collapse" data-target="#RequisitionSummary">
+    <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
         <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
     </a>
     <hr />
@@ -17,7 +18,7 @@ else
     <h2>@header</h2>
 }
 
-<div id="RequisitionSummary" class="@divClass">
+<div id="@divId" class="@divClass">
     <div class="row">
         <div class="col-sm-4">
             <hr class="small-invoice-line" />
