@@ -72,9 +72,10 @@ function refreshCollapsibles() {
     });
 }
 
-function changeTab(path, tabPaneSelector) {
+function changeTab(element, path, tabPaneSelector) {
     // Load only if tab is empty and enabled
-    if (tabPaneSelector !== "#" && $(tabPaneSelector).html().trim().length === 0) {
+    var isDisabled = element.parentElement.className.indexOf("disabled") !== -1;
+    if (!isDisabled && tabPaneSelector !== "#" && $(tabPaneSelector).html().trim().length === 0) {
         $(tabPaneSelector).html('<div class="text-align-center"><span class="loading-text">Laddar...</span></div>');
         $.ajax({
             url: tolkBaseUrl + path,
@@ -172,13 +173,6 @@ $(function () {
     });
 
     refreshCollapsibles();
-
-    $("body").on("click", ".nav-tabs a[data-toggle=tab]", function (e) {
-        if ($(this).hasClass("disabled")) {
-            e.preventDefault();
-            return false;
-        }
-    });
 });
 
 $.fn.extend({
