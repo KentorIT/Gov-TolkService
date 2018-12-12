@@ -6,16 +6,32 @@
     <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
     </div>
+
     <div class="col-sm-12">
+        <div class="row">
+            <div class="col-sm-4">
+                <br />
+                <display-entry asp-for="Status" />
+            </div>
+            <div class="col-sm-4">
+                <br />
+                <display-entry asp-for="CustomerOrganizationName" />
+            </div>
+            <div class="col-sm-4">
+                <br />
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+        </div>
         @await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Fakturaunderlag" } })
         @*bör vi visa upp kontaktperson tydligare här?*@
         @*@if (!string.IsNullOrWhiteSpace(Model.ContactPerson))
-            {
-                <display-entry asp-for="ContactPerson" />
-            }*@
+        {
+            <display-entry asp-for="ContactPerson" />
+        }*@
         @if (Model.PreviousRequisition != null)
         {
             <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
+            <br /><br />
         }
 
         <form method="post" asp-action="Approve">

@@ -28,8 +28,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Tidigare angiven sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
 
-        [Display(Name = "Tidigare angiven resekostnad (exkl. moms)")]
+        [Display(Name = "Tidigare angiven resekostnad")]
+        [DataType(DataType.Currency)]
         public decimal? TravelCosts { get; set; }
+
+        public PriceInformationModel ResultPriceInformationModel { get; set; }
 
         public static PreviousRequisitionViewModel GetViewModelFromPreviousRequisition(Requisition requisition)
         {
@@ -44,7 +47,7 @@ namespace Tolk.Web.Models
                 SessionStartedAt = requisition.SessionStartedAt,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
-                TravelCosts = requisition.Request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price
+                TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price
             };
         }
     }

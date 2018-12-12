@@ -4,8 +4,8 @@
     ViewData["Title"] = "Bokningsförfrågan - " + Model.OrderModel.OrderNumber;
     bool isRequisitionAvailable = (bool?)Model.RequisitionId.HasValue ?? false;
     bool isComplaintAvailable = (bool?)Model.ComplaintId.HasValue ?? false;
-    string requisitionPath = isRequisitionAvailable ? "Requisition/View/" + Model.RequisitionId ?? "#" : "#";
-    string complaintPath = isComplaintAvailable ? "Complaint/View/" + Model.ComplaintId ?? "#" : "#";
+    string requisitionPath = isRequisitionAvailable ? "Requisition/View?Id=" + Model.RequisitionId + "&returnPartial=true" : "#";
+    string complaintPath = isComplaintAvailable ? "Complaint/View?Id=" + Model.ComplaintId + "&returnPartial=true" : "#";
 }
 @await Html.PartialAsync("_OrderHeader", Model.OrderModel, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
 <ul class="nav nav-tabs nav-justified">
@@ -86,6 +86,10 @@
                                 <input name="CancelMessage" type="hidden" />
                                 <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
                             </form>
+                        }
+                        @if (Model.AllowRequisitionRegistration)
+                        {
+                            <a class="btn btn-danger btn-large pull-left" href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
                         }
                     </div>
                     <div class="col-sm-6">

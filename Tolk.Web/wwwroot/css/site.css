@@ -802,6 +802,11 @@ ul.pagination > li.paginate_button.active > a {
   margin-top: -15px;
   margin-bottom: 30px;
 }
+#TravelCosts,
+#TimeWasteTotalTime,
+#TimeWasteIWHTime {
+  width: 30%;
+}
 .panel-heading {
   background-color: #587573;
   border-color: #587573;

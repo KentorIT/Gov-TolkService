@@ -58,8 +58,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Önskad kompetensnivå (tredjehand)")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
-        [Display(Name = "Tillsatt tolks kompetensnivå")]
-        public CompetenceAndSpecialistLevel? InterpretersCompetenceLevel { get; set; }
+
 
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -122,9 +121,8 @@ namespace Tolk.Web.Models
                 TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price?? 0,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
-                InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
+                Interpreter = requisition.Request.Interpreter.User.CompleteContactInformation,
                 InterpreterLocation = (InterpreterLocation)requisition.Request.InterpreterLocation,
-                InterpretersCompetenceLevel = (CompetenceAndSpecialistLevel?)requisition.Request.CompetenceLevel,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
                 Address = $"{location.Street}, {location.City}",
                 OffSiteContactInformation = location.OffSiteContactInformation,

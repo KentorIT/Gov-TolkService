@@ -12,7 +12,7 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
-        [Display(Name = "AvropsID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Språk")]
@@ -26,7 +26,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Tolk")]
         [DataType(DataType.MultilineText)]
-        public string InterpreterName { get; set; }
+        public string Interpreter { get; set; }
 
         [Display(Name = "Tolkens skattsedel")]
         [ClientRequired]
@@ -38,15 +38,15 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkförmedlingens organisationsnummer")]
         public string BrokerOrganizationnumber { get; set; }
 
-        [Display(Name = "Avropande myndighet")]
+        [Display(Name = "Myndighet")]
         public string CustomerOrganizationName { get; set; }
 
-        [Display(Name = "Avropande myndighet")]
+        [Display(Name = "Myndighet")]
         [DataType(DataType.MultilineText)]
         public string CustomerCompactInfo
         { get => CustomerOrganizationName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
 
-        [Display(Name = "Avrop skapat av")]
+        [Display(Name = "Bokning skapad av")]
         [DataType(DataType.MultilineText)]
         public string OrderCreatedBy { get; set; }
 
@@ -70,11 +70,11 @@ namespace Tolk.Web.Models
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
         [Range(31, 600, ErrorMessage = "Ange ett värde mellan 31 och 600 minuter")]
-        [Display(Name = "Tid för eventuell tidsspillan i minuter (som inträffat utanför förväntad start- och sluttid)", Description = "Totalt antal minuter för restid, väntetider mm som överstiger 30 minuter")]
+        [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
         public int? TimeWasteTotalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]
-        [Display(Name = "Andel av tidsspillan ovan som inträffat under obekväm arbetstid i minuter", Description = "Avser tid i minuter av total tidsspillan som inträffar utanför vardagar 07:00-18:00")]
+        [Display(Name = "Andel av total tidsspillan som inträffat under obekväm arbetstid", Description = "Avser tid i minuter av den totala tidsspillan som angetts och som inträffat utanför vardagar 07:00-18:00")]
         public int? TimeWasteIWHTime { get; set; }
 
         [Display(Name = "Angiven tidsspillan")]
@@ -82,6 +82,9 @@ namespace Tolk.Web.Models
         {
             get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"{TimeWasteTotalTime} min varav {TimeWasteIWHTime ?? 0} min obekväm tid" : "Ingen tidsspillan har angivits";
         }
+
+        [Display(Name = "Tolkens kompetensnivå")]
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Display(Name = "Faktisk startid")]
         public DateTimeOffset SessionStartedAt { get; set; }
@@ -130,7 +133,8 @@ namespace Tolk.Web.Models
                 SessionEndedAt = request.Order.EndAt,
                 SessionStartedAt = request.Order.StartAt,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                InterpreterName = request.Interpreter.User.CompleteContactInformation,
+                Interpreter = request.Interpreter.User.CompleteContactInformation,
+                InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,

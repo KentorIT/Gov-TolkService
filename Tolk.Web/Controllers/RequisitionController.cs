@@ -51,7 +51,7 @@ namespace Tolk.Web.Controllers
             _notificationService = notificationService;
         }
 
-        public async Task<IActionResult> View(int id)
+        public async Task<IActionResult> View(int id, bool returnPartial = false)
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
@@ -79,11 +79,13 @@ namespace Tolk.Web.Controllers
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
+                model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created;
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
                 model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(requisition).OrderBy(e => e.Timestamp).ToList() };
-                return PartialView(model);
+                if (returnPartial) { return PartialView(model); }
+                return View(model);
             }
             return Forbid();
         }
@@ -93,7 +95,7 @@ namespace Tolk.Web.Controllers
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(p => p.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
@@ -128,6 +130,7 @@ namespace Tolk.Web.Controllers
         {
             var request = _dbContext.Requests
                 .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
@@ -135,6 +138,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.PriceRows)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
@@ -143,10 +147,10 @@ namespace Tolk.Web.Controllers
                 Guid groupKey = Guid.NewGuid();
 
                 //Get request model from db
-
                 if (model.PreviousRequisition != null)
                 {
-                    var previousRequisition = _dbContext.Requisitions.SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
+                    var previousRequisition = _dbContext.Requisitions.Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
                     // Get the attachments from the previous requisition.
                     // Save a connection for all of these to Temp
                     foreach (var attachment in previousRequisition.Attachments)
@@ -162,9 +166,11 @@ namespace Tolk.Web.Controllers
                         Size = a.Attachment.Blob.Length
                     }).ToList();
                     model.Files = files.Count() > 0 ? files : null;
+                    model.PreviousRequisition.ResultPriceInformationModel = GetRequisitionPriceInformation(previousRequisition, true);
                 }
                 model.FileGroupKey = groupKey;
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                model.RequestPriceInformationModel = GetRequisitionPriceInformation(request);
                 return View(model);
             }
             return Forbid();
@@ -263,7 +269,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.PriceRows)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Single(o => o.RequestId == model.RequestId);
-          
+
                     if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                     {
                         var requisition = new Requisition
@@ -367,7 +373,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.ParentId });
         }
 
-        private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition)
+        private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)
         {
             if (requisition.PriceRows == null)
             {
@@ -376,8 +382,8 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Fakturainformation",
-                UseDisplayHideInfo = false
+                Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : "Fakturainformation",
+                UseDisplayHideInfo = useDisplayHideInfo
             };
         }
 

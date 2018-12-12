@@ -111,6 +111,8 @@ namespace Tolk.Web.Models
 
         public bool AllowInterpreterChange { get; set; } = false;
 
+        public bool AllowRequisitionRegistration { get; set; } = false;
+
         public bool AllowCancellation { get; set; } = true;
 
         public bool AllowConfirmationDenial { get; set; } = false;

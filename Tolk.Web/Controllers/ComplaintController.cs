@@ -40,12 +40,14 @@ namespace Tolk.Web.Controllers
             _notificationService = notificationService;
         }
 
-        public async Task<IActionResult> View(int id)
+        public async Task<IActionResult> View(int id, bool returnPartial = false)
         {
             var complaint = GetComplaint(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
-                return PartialView(ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId)));
+                ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint, User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId), User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId));
+                if (returnPartial) { return PartialView(model); }
+                return View(model);
             }
             return Forbid();
         }

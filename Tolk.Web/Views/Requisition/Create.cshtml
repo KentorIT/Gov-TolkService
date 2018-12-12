@@ -1,60 +1,160 @@
 ﻿@model Tolk.Web.Models.RequisitionModel
 @using Tolk.Web.Services
-@using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Skapa rekvisition";
+    ViewData["Title"] = "Registrera rekvisition";
 }
+
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        <display-entry asp-for="BrokerName" />
-        <display-entry asp-for="OrderCreatedBy" />
-        <display-entry asp-for="RegionName" />
-        <display-entry asp-for="CustomerReferenceNumber" />
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="InterpreterName" />
-        @if (Model.PreviousRequisition != null)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
-        }
         <form method="post">
-            <input asp-for="RequestId" type="hidden" />
-            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-            <input asp-for="FileGroupKey" type="hidden" />
-            <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />
-            }
-            <form-entry asp-for="TimeWasteTotalTime" />
-            <form-entry asp-for="TimeWasteIWHTime" />
-            <div id="wasteTimeValidator" class="d-none text-danger body"></div>
-            <display-entry asp-for="ExpectedStartedAt" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.SessionStartedAt" />
-            }
-            <form-entry asp-for="SessionStartedAt" />
-            <display-entry asp-for="ExpectedEndedAt" />
-            @if (Model.PreviousRequisition != null)
-            {
-                <display-entry asp-for="PreviousRequisition.SessionEndedAt" />
-            }
-            <form-entry asp-for="SessionEndedAt" />
-            <display-entry asp-for="ExpectedTravelCosts" />
-            @if (Model.PreviousRequisition?.TravelCosts != null)
-            {
-                <display-entry asp-for="PreviousRequisition.TravelCosts" />
-            }
-            <form-entry asp-for="TravelCosts" />
-            <div id="travelCostsValidator" class="d-none text-danger body"></div>
-            <form-entry asp-for="Message" />
-            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty })
-            <br />
-            <br />
-            <button id="create" type="submit" class="btn btn-default">Skapa</button>
-            <a class="btn btn-warning pull-right do-not-check-dirty" asp-controller="Assignment" asp-action="List" asp-route-Status="ToBeReported">Avbryt</a>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="OrderNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="OrderCreatedBy" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerCompactInfo" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="LanguageName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="RegionName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="BrokerName" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="Interpreter" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="InterpreterCompetenceLevel" />
+                </div>
+                <div class="col-sm-4">
+                    <input asp-for="RequestId" type="hidden" />
+                    <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                    <input asp-for="FileGroupKey" type="hidden" />
+                    <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    @if (Model.RequestPriceInformationModel != null)
+                    {
+                        Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+                    }
+                </div>
+                <div class="col-sm-6">
+                    @if (Model.PreviousRequisition != null && Model.PreviousRequisition.ResultPriceInformationModel != null)
+                    {
+                        Html.RenderPartial("_PriceInformationDisplay", Model.PreviousRequisition.ResultPriceInformationModel);
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    @if (Model.PreviousRequisition != null)
+                    {
+                        <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a><br /><br />
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <display-entry asp-for="ExpectedStartedAt" />
+                        </div>
+                        <div class="col-sm-6">
+                            @if (Model.PreviousRequisition != null)
+                            {
+                                <display-entry asp-for="PreviousRequisition.SessionStartedAt" />
+                            }
+                        </div>
+                        <div class="col-sm-12">
+                            <form-entry asp-for="SessionStartedAt" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <display-entry asp-for="ExpectedEndedAt" />
+                        </div>
+                        <div class="col-sm-6">
+                            @if (Model.PreviousRequisition != null)
+                            {
+                                <display-entry asp-for="PreviousRequisition.SessionEndedAt" />
+                            }
+                        </div>
+                        <div class="col-sm-12">
+                            <form-entry asp-for="SessionEndedAt" />
+                            <br /><br />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <form-entry asp-for="TimeWasteTotalTime" />
+                    @if (Model.PreviousRequisition != null)
+                    {
+                        <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />
+                    }
+                    <div id="wasteTimeValidator" class="d-none text-danger body"></div>
+                    <br />
+                </div>
+                <div class="test-class col-sm-6">
+                    <form-entry asp-for="TimeWasteIWHTime" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    @if (Model.PreviousRequisition?.TravelCosts != null)
+                    {
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <display-entry asp-for="ExpectedTravelCosts" />
+                            </div>
+                            <div class="col-sm-6">
+                                <display-entry asp-for="PreviousRequisition.TravelCosts" />
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <display-entry asp-for="ExpectedTravelCosts" />
+                    }
+                </div>
+                <div class="col-sm-6">
+                    <form-entry asp-for="TravelCosts" />
+                    <div id="travelCostsValidator" class="d-none text-danger body"></div>
+                    <br />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <form-entry asp-for="Message" />
+                </div>
+                <div class="col-sm-6">
+                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
+                <div class="col-sm-6">
+                    <button id="create" type="submit" class="btn btn-large btn-default pull-right">Registrera rekvisition <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+                </div>
+            </div>
         </form>
         <span id="basefile" class="d-none">
             <input asp-for="Files[0].Id" type="hidden" />

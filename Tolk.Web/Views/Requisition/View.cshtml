@@ -1,13 +1,38 @@
 ﻿@model Tolk.Web.Models.RequisitionViewModel
-
+<div class="row">
+    <div class="col-sm-4">
+        <br />
+        <display-entry asp-for="Status" />
+    </div>
+    <div class="col-sm-4">
+        <br />
+        <display-entry asp-for="CustomerOrganizationName" />
+    </div>
+    <div class="col-sm-4">
+        <br />
+        <display-entry asp-for="CustomerReferenceNumber" />
+    </div>
+</div>
+@if (Model.AllowCreation)
+{
+    <div class="row">
+        <div class="col-sm-6">
+            <display-entry asp-for="DenyMessage"></display-entry>
+        </div>
+        <div class="col-sm-6">
+            <a class="btn btn-large btn-danger pull-right" href="@Url.Action("Create", "Requisition" , new { id=Model.RequestId })">Ersätt rekvisition</a>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
+{
+    <div class="col-sm-12">
+        <display-entry asp-for="DenyMessage"></display-entry>
+    </div>
+}
 @await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Fakturaunderlag" } })
 <div class="row">
     <div class="col-sm-12">
-        @if (Model.AllowCreation)
-        {
-            <a href="@Url.Action("Create", "Requisition" , new { id=Model.RequestId })">Ersätt rekvisition</a>
-
-        }
         @if (Model.AllowProcessing)
         {
             <form method="post" asp-action="Approve">

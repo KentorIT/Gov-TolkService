@@ -30,7 +30,7 @@ namespace Tolk.Web.Models
                 TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
-                InterpreterName = requisition.Request.Interpreter.User.CompleteContactInformation,
+                Interpreter = requisition.Request.Interpreter.User.CompleteContactInformation,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
                 LanguageName = requisition.Request.Order.OtherLanguage ?? requisition.Request.Order.Language?.Name ?? "-",
                 OrderNumber = requisition.Request.Order.OrderNumber.ToString(),
@@ -53,7 +53,6 @@ namespace Tolk.Web.Models
                         Size = a.Attachment.Blob.Length
                     }).ToList()
                 }
-
             };
         }
 
