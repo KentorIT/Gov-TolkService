@@ -17,8 +17,8 @@
     @await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })
 <ul class="nav nav-tabs nav-justified">
     <li class="active"><a data-toggle="tab" href="#order">Bokning</a></li>
-    <li class='@(isRequisitionAvailable ? "" : "disabled")'><a data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab(this, '@requisitionPath', '#requisition')">Rekvisition</a></li>
-    <li class='@(isComplaintAvailable ? "" : "disabled")'><a data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab(this, '@complaintPath', '#complaint')">Reklamation</a></li>
+    <li class='@(isRequisitionAvailable ? "" : "disabled")'><a id="requisitionTab" data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab(this, '@requisitionPath', '#requisition')">Rekvisition</a></li>
+    <li class='@(isComplaintAvailable ? "" : "disabled")'><a id="complaintTab" data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab(this, '@complaintPath', '#complaint')">Reklamation</a></li>
 </ul>
 <div class="tab-content">
     <div id="order" class="tab-pane fade in active">

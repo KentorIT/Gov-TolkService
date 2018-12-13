@@ -1,5 +1,7 @@
 ﻿// Write your JavaScript code.
 
+var urlParams = undefined;
+
 // Set up date-picker. See docs at https://bootstrap-datepicker.readthedocs.io/en/latest/markup.html
 var datePickerOptions = {
     language: 'sv',
@@ -76,6 +78,21 @@ function changeTab(element, path, tabPaneSelector) {
 
 $(function () {
     var dirty = "dirty";
+    urlParams = new URLSearchParams(window.location.search);
+    switch (urlParams.get('tab')) {
+        case 'requisition':
+            if ($('#requisitionTab').length) {
+                $('#requisitionTab').click();
+            }
+            break;
+        case 'complaint':
+            if ($('#complaintTab').length) {
+                $('#complaintTab').click();
+            }
+            break;
+        default:
+            break;
+    }
 
     var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
     orderDatePickerOptions.startDate = new Date($('#now').val()).zeroTime();
