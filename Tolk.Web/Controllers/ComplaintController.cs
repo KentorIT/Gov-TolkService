@@ -98,7 +98,7 @@ namespace Tolk.Web.Controllers
                     var user = _dbContext.Users
                         .Include(u => u.CustomerOrganisation)
                         .Single(u => u.Id == complaint.CreatedBy);
-                    return RedirectToAction(nameof(View), new { id = complaint.ComplaintId });
+                    return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
                 return Forbid();
             }
@@ -155,59 +155,61 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Accept(int complaintId)
         {
+            var complaint = GetComplaint(complaintId);
             if (ModelState.IsValid)
             {
-                var complaint = GetComplaint(complaintId);
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
                     complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), null, ComplaintStatus.Confirmed);
                     _dbContext.SaveChanges();
-                    return RedirectToAction(nameof(View), new { id = complaintId });
+                    return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id = complaintId });
+            return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Dispute(DisputeComplaintModel model)
         {
+            var complaint = GetComplaint(model.ComplaintId);
             if (ModelState.IsValid)
             {
-                var complaint = GetComplaint(model.ComplaintId);
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
                     complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage, ComplaintStatus.Disputed);
                     _dbContext.SaveChanges();
                     _notificationService.ComplaintDisputed(complaint);
-                    return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+                    return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+            return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> AcceptDispute(AnswerDisputeComplaintModel model)
         {
+            var complaint = GetComplaint(model.ComplaintId);
             if (ModelState.IsValid)
             {
                 return await AnswerDispute(model, ComplaintStatus.TerminatedAsDisputeAccepted);
             }
-            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+            return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Refute(AnswerDisputeComplaintModel model)
         {
+            var complaint = GetComplaint(model.ComplaintId);
             if (ModelState.IsValid)
             {
                 return await AnswerDispute(model, ComplaintStatus.DisputePendingTrial);
             }
-            return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+            return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
         }
 
         private async Task<IActionResult> AnswerDispute(AnswerDisputeComplaintModel model, ComplaintStatus status)
@@ -229,7 +231,7 @@ namespace Tolk.Web.Controllers
                         throw new NotImplementedException($"Notification for the complain status {status.GetDescription()} does not exist.");
 
                 }
-                return RedirectToAction(nameof(View), new { id = model.ComplaintId });
+                return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
             }
             return Forbid();
         }

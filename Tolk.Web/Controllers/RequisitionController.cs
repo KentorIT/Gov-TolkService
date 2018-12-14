@@ -318,7 +318,7 @@ namespace Tolk.Web.Controllers
                         }
                         transaction.Commit();
                         _notificationService.RequisitionCreated(requisition);
-                        return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                        return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                     }
                 }
                 return Forbid();
@@ -330,24 +330,24 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Approve(int requisitionId)
         {
+            var requisition = _dbContext.Requisitions
+                .Include(r => r.Request).ThenInclude(r => r.Order)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Single(r => r.RequisitionId == requisitionId);
             if (ModelState.IsValid)
             {
-                var requisition = _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Order)
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.CreatedByUser)
-                    .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .Single(r => r.RequisitionId == requisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.SaveChanges();
                     _notificationService.RequisitionApproved(requisition);
-                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                    return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id = requisitionId });
+            return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
         }
 
         [ValidateAntiForgeryToken]
@@ -366,7 +366,7 @@ namespace Tolk.Web.Controllers
                     requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
                     _dbContext.SaveChanges();
                     _notificationService.RequisitionDenied(requisition);
-                    return RedirectToAction(nameof(View), new { id = requisition.RequisitionId });
+                    return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
             }
