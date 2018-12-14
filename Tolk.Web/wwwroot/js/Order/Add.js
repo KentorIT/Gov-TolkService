@@ -61,8 +61,8 @@ $(function () {
         event.preventDefault();
         var modalContent = $(this).parents(".modal-content");
 
-        if (modalContent.find("#RequirementType option:selected").text() == "Tolkens kön") {
-            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() == "Female" ? "Kvinna" : "Man";
+        if (modalContent.find("#RequirementType option:selected").text() === "Tolkens kön") {
+            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() === "Female" ? "Kvinna" : "Man";
             modalContent.find("#RequirementDescription").val(textToUse);
         }
         //Before we start, validate the form!
@@ -97,8 +97,8 @@ $(function () {
         event.preventDefault();
         var modalContent = $(this).parents(".modal-content");
 
-        if (modalContent.find("#RequirementType option:selected").text() == "Tolkens kön") {
-            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() == "Female" ? "Kvinna" : "Man";
+        if (modalContent.find("#RequirementType option:selected").text() === "Tolkens kön") {
+            var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() === "Female" ? "Kvinna" : "Man";
             modalContent.find("#RequirementDescription").val(textToUse);
         }
         //Before we start, validate the form!
@@ -159,30 +159,32 @@ $(function () {
         }
     });
 
-   $("body").on("change","#SplitTimeRange_StartTimeHour", function () {
+    $("body").on("change", "#SplitTimeRange_StartTimeHour", function () {
         var chosenStartHour = parseInt($(this).val());
         var chosenEndHour = $("#SplitTimeRange_EndTimeHour").val();
         //only set endhour if not selected yet
-        if (chosenEndHour == "") {
-            var nextHour = parseInt($(this).val()) == 23 ? 0 : chosenStartHour + 1;
+        if (chosenEndHour === "") {
+            var nextHour = parseInt($(this).val()) === 23 ? 0 : chosenStartHour + 1;
             $("#SplitTimeRange_EndTimeHour").val(nextHour).trigger("change");
         }
     });
 
+    var hasToggledLastTimeForRequiringLatestAnswerBy = false;
+
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
-        var systemTime = new Date(Number($("#SystemTime").val()));
+        var now = new Date($("#now").val());
+        if (!hasToggledLastTimeForRequiringLatestAnswerBy && (now.getHours() === 14 || now.getHours() === 0) ) {
+            $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
+            hasToggledLastTimeForRequiringLatestAnswerBy = true;
+        }
+        var lastTimeForRequiringLatestAnswerBy = new Date($("#LastTimeForRequiringLatestAnswerBy").val());
         var chosenDate = new Date($(this).val());
-        var tomorrow = new Date(systemTime.getTime())
-            .addDays(1)
-            .zeroTime()
-            .localDateTime();
-        if (chosenDate.equalsDate(tomorrow) && systemTime.getHours() >= 14) {
-            var today = new Date(systemTime.getTime())
-                .zeroTime()
-                .localDateTime();
+        if (chosenDate <= lastTimeForRequiringLatestAnswerBy) {
             $("#LatestAnswerBy").show();
-            $("#LatestAnswerBy_Date").datepicker("setStartDate", today);
-            $("#LatestAnswerBy_Date").datepicker("setEndDate", tomorrow);
+            $("#LatestAnswerBy_Date").datepicker("setStartDate", now.zeroTime());
+            $("#LatestAnswerBy_Date").datepicker("setEndDate", chosenDate);
+            //If LastAnswerBy_Date === chosenDate, check the time-fields as well
+            // Check both on change of LastAnswerBy_* and SplitTimeRange_*
         }
         else {
             $("#LatestAnswerBy").hide();
@@ -248,8 +250,14 @@ $(function () {
         }
     });
 
+    var checkTimeAtStart = function () {
+        var now = new Date($("#now").val());
+        hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13 || now.getHours() === 23);
+    };
+
     $("#CompetenceLevelDesireType").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
+    checkTimeAtStart();
     $("#SplitTimeRange_StartDate").trigger("change");
 });
 
@@ -263,12 +271,92 @@ function AddRequirement(target) {
 }
 
 $(function () {
+    var validateLastAnswerBy = function () {
+        if (!$("#LatestAnswerBy_Date").is("visible")) {
+            return true;
+        }
+        var date = new Date($("#LatestAnswerBy_Date").val());
+        var hour = $("#LatestAnswerBy_Hour").val();
+        var minute = $("#LatestAnswerBy_Minute").val();
+        if (date !== "" && hour !== "" && minute !== "") {
+            var now = new Date($("#now").val());
+            if (date.equalsDate(now)) {
+                var hours = now.getHours();
+                if (hours > Number(hour)) {
+                    return false;
+                } else if (hours === Number(hour)) {
+                    return !(now.getMinutes() > Number(minute));
+                }
+            }
+        }
+
+        return true;
+    };
+
+    var validateLastAnswerByAgainstStartTime = function () {
+        if (!$("#LatestAnswerBy_Date").is("visible")) {
+            return true;
+        }
+       var date = new Date($("#LatestAnswerBy_Date").val());
+        var hour = $("#LatestAnswerBy_Hour").val();
+        var minute = $("#LatestAnswerBy_Minute").val();
+        if (date !== "" && hour !== "" && minute !== "") {
+            var startdate = new Date($("#SplitTimeRange_StartDate").val());
+            var starthour = $("#SplitTimeRange_StartTimeHour").val();
+            var startminute = $("#SplitTimeRange_StartTimeMinutes").val();
+            if (date.equalsDate(new Date(startdate))) {
+                if (Number(hour) > Number(starthour)) {
+                    return false;
+                } else if (Number(hour) === Number(starthour)) {
+                    return !(Number(startminute) > Number(minute));
+                }
+            }
+        }
+
+        return true;
+    };
+
+    var validateStartTime = function () {
+        var date = new Date($("#SplitTimeRange_StartDate").val());
+        var hour = $("#SplitTimeRange_StartTimeHour").val();
+        var minute = $("#SplitTimeRange_StartTimeMinutes").val();
+        if (date !== "" && hour !== "" && minute !== "") {
+            var now = new Date($("#now").val());
+            if (date.equalsDate(now)) {
+                var hours = now.getHours();
+                if (hours > Number(hour)) {
+                    return false;
+                } else if (hours === Number(hour)) {
+                    return !(now.getMinutes() > Number(minute));
+                }
+            }
+        }
+
+        return true;
+    };
+
     var $this = $(".wizard");
     $this.tolkWizard({
         nextHandler: function (event) {
+            if (!validateStartTime()) {
+                alert("Uppdradet kan inte starta tidigare än nu.");
+                return false;
+            }
+            if (!validateLastAnswerBy()) {
+                alert("Svar kan inte avkrävas tidigare än nu.");
+                return false;
+            }
+            if (!validateLastAnswerByAgainstStartTime()) {
+                alert("Svar kan inte avkrävas efter start på uppdraget.");
+                return false;
+            }
             var $form = $this.closest('form');
             var currentStep = event.NextStep;
             if (event.IsLastPage) {
+                if (!$("#LatestAnswerBy_Date").is("visible")) {
+                    $("#LatestAnswerBy_Date").val("");
+                }
+
                 $form.submit();
             }
             //post to confirm
@@ -291,6 +379,6 @@ $(function () {
         wizardStepRendered: function () {
             $("#send").append('<span class="center-glyphicon glyphicon glyphicon-triangle-right"></span>');
             $("#send").blur();
-        },
+        }
     });
 });

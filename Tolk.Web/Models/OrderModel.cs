@@ -23,7 +23,9 @@ namespace Tolk.Web.Models
 
         public int? ReplacingOrderId { get; set; }
 
-        public long SystemTime { get; set; }
+        public string LastTimeForRequiringLatestAnswerBy { get; set; }
+
+        public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
         [Display(Name = "Region", Description = "Det län där tolkningen ska äga rum")]
         [Required]

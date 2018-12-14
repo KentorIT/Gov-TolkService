@@ -302,10 +302,20 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
+            var now = _clock.SwedenNow.DateTime;
+            var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
+            var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay.AddDays(1)).Date;
+            if (now.Hour >= 14)
+            {
+                //Add day if after 14...
+                panicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
+            }
+            DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
             var user = await _userManager.GetUserAsync(User);
             var model = new OrderModel()
             {
-                SystemTime = (long)_clock.SwedenNow.DateTime.ToUnixTimestamp(),
+                LastTimeForRequiringLatestAnswerBy = panicTime.ToString("yyyy-MM-dd"),
+                NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToString("yyyy-MM-dd"),
                 CreatedBy = user.CompleteContactInformation
             };
             return View(model);

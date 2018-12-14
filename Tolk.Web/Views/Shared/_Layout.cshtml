@@ -2,6 +2,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using Tolk.Web.Helpers
 @using Tolk.BusinessLogic.Services
+@using Microsoft.Extensions.Options;
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
@@ -47,7 +49,7 @@
                             <img class="logo-navbar" src="~/images/KamK_Logo_x.png" alt="@ViewData["Title"]" />
                         </span>
                         <span class="visible-xs hidden-sm hidden-md hidden-lg">
-                            <img class="logo-navbar" src="~/images/KamK_Logo_Crown.png" alt="@ViewData["Title"]"/>
+                            <img class="logo-navbar" src="~/images/KamK_Logo_Crown.png" alt="@ViewData["Title"]" />
                         </span>
                     </a>
                 </div>
@@ -102,52 +104,56 @@
         <br />
     </div>
     <footer>
-            <div class="row kamk-footer">
-                <div class="col-sm-10 center-content maxwidth">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <h4>Tolkavropstjänsten</h4>
-                            <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
-                            <a asp-area="" asp-controller="Home" asp-action="FAQ">Frågor &amp; svar</a><br />
-                        </div>
-                        <div class="col-md-3">
-                            <h4>Om oss</h4>
-                            <a href="https://www.kammarkollegiet.se/statens-inkopscentral" target="_blank">Statens inköpscentral</a><br />
-                            <a href="https://www.kammarkollegiet.se/dokument/god-tolksed" target="_blank">God tolksed</a><br />
-                            <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
-                        </div>
-                        <div class="col-md-3">
-                            <h4>Service Desk</h4>
-                            <a href="#">Telefonnummer</a><br />
-                            <a href="#">Mail</a><br />
-                            Öppettider<br />
-                            08-17
-                        </div>
-                        <div class="col-md-3">
-                            <h4>Adress</h4>
-                            Kammarkollegiet<br />
-                            Statens inköpscentral<br />
-                            Birger Jarlsgatan 16<br />
-                            Box 2218<br />
-                            103 15 Stockholm<br />
-                            Växel: 08-700 08 00<br />
-                        </div>
+        <div class="row kamk-footer">
+            <div class="col-sm-10 center-content maxwidth">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h4>Tolkavropstjänsten</h4>
+                        <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
+                        <a asp-area="" asp-controller="Home" asp-action="FAQ">Frågor &amp; svar</a><br />
                     </div>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            &copy; 2018 - Kammarkollegiet
-                            <small>(Version @GitHelper.Version)</small>
-                            <div class="col-sm-pull-1" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks/10000)">
+                    <div class="col-md-3">
+                        <h4>Om oss</h4>
+                        <a href="https://www.kammarkollegiet.se/statens-inkopscentral" target="_blank">Statens inköpscentral</a><br />
+                        <a href="https://www.kammarkollegiet.se/dokument/god-tolksed" target="_blank">God tolksed</a><br />
+                        <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
+                    </div>
+                    <div class="col-md-3">
+                        <h4>Service Desk</h4>
+                        <a href="#">Telefonnummer</a><br />
+                        <a href="#">Mail</a><br />
+                        Öppettider<br />
+                        08-17
+                    </div>
+                    <div class="col-md-3">
+                        <h4>Adress</h4>
+                        Kammarkollegiet<br />
+                        Statens inköpscentral<br />
+                        Birger Jarlsgatan 16<br />
+                        Box 2218<br />
+                        103 15 Stockholm<br />
+                        Växel: 08-700 08 00<br />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        &copy; 2018 - Kammarkollegiet
+                        <small>(Version @GitHelper.Version)</small>
+                        @if (Options.Value.EnableTimeTravel)
+                        {
+                            <div class="col-sm-pull-1" id="now_display">
                             </div>
-                        </div>
+                        }
+                        <input type="hidden" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks / 10000)" />
                     </div>
                 </div>
             </div>
-            <div class="row kamk-footer-logo">
-                <div class="center-content">
-                    <img class="logo-footer img-negative" src="~/images/KamK_Logo.png" alt="Kammarkollegiet" />
-                </div>
+        </div>
+        <div class="row kamk-footer-logo">
+            <div class="center-content">
+                <img class="logo-footer img-negative" src="~/images/KamK_Logo.png" alt="Kammarkollegiet" />
             </div>
+        </div>
     </footer>
     @*<script type="text/javascript">tolkBaseUrl = "@Url.Content("~")"</script>*@
     <script type="text/javascript">tolkBaseUrl = "/"</script>

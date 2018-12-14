@@ -17,25 +17,6 @@ var datePickerOptions = {
     }
 };
 
-var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
-orderDatePickerOptions.startDate = new Date(Number($("#SystemTime").val()))
-    .addDays(1)
-    .zeroTime();
-
-$('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
-$('.order-datepicker .datepicker').datepicker(orderDatePickerOptions);
-
-$('.date .input-group-addon').click(function () {
-    $(this).prev().datepicker('show');
-});
-
-$('.input-daterange input').not('.order-datepicker .input-daterange input').datepicker(datePickerOptions);
-$('.order-datepicker .input-daterange input').datepicker(orderDatePickerOptions);
-
-$('.input-daterange input').click(function () {
-    $(this).datepicker('show');
-});
-
 $('#impersonation-select').change(function () {
     $("#impersonation-form").submit();
 });
@@ -48,7 +29,8 @@ $('#timeTravelDatePicker').on('changeDate', function () {
 
 function updateTime() {
     var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
-    $('#now').text(date.toLocaleString("sv-SE"));
+    $('#now').val(date);
+    $('#now_display').text(date.toLocaleString("sv-SE"));
 }
 
 if ($('#now').length === 1) {
@@ -95,6 +77,18 @@ function changeTab(element, path, tabPaneSelector) {
 $(function () {
     var dirty = "dirty";
 
+    var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
+    orderDatePickerOptions.startDate = new Date($('#now').val()).zeroTime();
+    $('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
+    $('.order-datepicker .datepicker').datepicker(orderDatePickerOptions);
+
+    $('.date .input-group-addon').click(function () {
+        $(this).prev().datepicker('show');
+    });
+
+    $('.input-daterange input').click(function () {
+        $(this).datepicker('show');
+    });
     if (Globalize && $.validator) {
         $.validator.methods.number = function (value, element) {
             return value === "" || value === "0" || Globalize.parseFloat(value);
