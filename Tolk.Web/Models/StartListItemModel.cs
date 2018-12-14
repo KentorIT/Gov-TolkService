@@ -18,6 +18,8 @@ namespace Tolk.Web.Models
 
         public int ButtonItemId { get; set; }
 
+        public string ButtonItemTab { get; set; }
+
         public StartListItemStatus Status { get; set; }
 
         public string CustomerName { get; set; }
