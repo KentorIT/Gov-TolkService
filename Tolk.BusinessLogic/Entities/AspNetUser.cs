@@ -67,6 +67,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsActive { get; set; }
 
+        public bool IsApiUser { get; set; }
+
         public static AspNetUser CreateInterpreter(string email)
         {
             var user = new AspNetUser(email)

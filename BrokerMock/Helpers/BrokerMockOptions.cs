@@ -9,7 +9,8 @@ namespace BrokerMock.Helpers
     {
         public string TolkApiBaseUrl { get; set; }
 
-        public bool UseSecret { get; set; }
-        public string Secret { get; set; }
+        public bool UseApiKey { get; set; }
+        public string ApiUserName { get; set; }
+        public string ApiKey { get; set; }
     }
 }

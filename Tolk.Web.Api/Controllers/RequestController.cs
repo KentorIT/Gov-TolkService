@@ -362,6 +362,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region private methods
 
+        //Break out to error generator service...
         private JsonResult ReturError(string errorCode)
         {
             //TODO: Add to log, information...
@@ -370,11 +371,13 @@ namespace Tolk.Web.Api.Controllers
             return Json(message);
         }
 
-        //Break out to a Api User Service
+        //Break out to a auth pipline
         private AspNetUser GetApiUser()
         {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-CallerSecret", out var secret);
-            return _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, secret);
+            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
+            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
+            return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
+                _apiUserService.GetApiUserByApiKey(userName, key);
         }
 
         //Break out, or fill cache at startup?

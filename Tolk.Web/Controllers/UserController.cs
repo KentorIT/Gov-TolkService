@@ -55,7 +55,7 @@ namespace Tolk.Web.Controllers
 
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
-            var users = _dbContext.Users.Select(u => u);
+            var users = _dbContext.Users.Where(u => !u.IsApiUser).Select(u => u);
             if (customerId.HasValue)
             {
                 users = users.Where(u => u.CustomerOrganisationId == customerId);

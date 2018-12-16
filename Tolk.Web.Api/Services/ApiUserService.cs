@@ -1,16 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Helpers;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.EntityFrameworkCore;
 
 namespace Tolk.Web.Api.Services
 {
@@ -35,19 +31,21 @@ namespace Tolk.Web.Api.Services
             _cache = cache;
         }
 
-        public AspNetUser GetApiUser(X509Certificate2 clientCertInRequest, string secret)
+        public AspNetUser GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
         {
-            if (!string.IsNullOrEmpty(secret))
+            if (clientCertInRequest == null)
             {
-                _logger.LogInformation("User retrieved using secret");
-                //Need a lot more security here
-                return _dbContext.Users.SingleOrDefault(u => u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == secret));
+                return null;
             }
-            else
-            {
-                _logger.LogInformation("User retrieved using certificate");
-                return _dbContext.Users.SingleOrDefault(u => u.Claims.Any(c => c.ClaimType == "CertSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
-            }
+            _logger.LogInformation("User retrieved using certificate");
+            return _dbContext.Users.SingleOrDefault(u => u.Claims.Any(c => c.ClaimType == "CertSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
+        }
+
+        public AspNetUser GetApiUserByApiKey(string userName, string key)
+        {
+            _logger.LogInformation("User retrieved using use/apiKey");
+            //Need a lot more security here
+            return _dbContext.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpper() && u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == key));
         }
 
         public AspNetUser GetBrokerUser(string caller, int? brokerId)
