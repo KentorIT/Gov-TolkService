@@ -76,10 +76,17 @@ function changeTab(element, path, tabPaneSelector) {
     }
 }
 
+$.urlParam = function (name) {
+    var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
+    if (results != null) { //eslint-disable-line eqeqeq
+        return decodeURI(results[1]) || 0;
+    }
+    return null;
+};
+
 $(function () {
     var dirty = "dirty";
-    urlParams = new URLSearchParams(window.location.search);
-    switch (urlParams.get('tab')) {
+    switch ($.urlParam('tab')) {
         case 'requisition':
             if ($('#requisitionTab').length) {
                 $('#requisitionTab').click();
