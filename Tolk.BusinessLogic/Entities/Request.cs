@@ -12,12 +12,13 @@ namespace Tolk.BusinessLogic.Entities
     {
         public Request() { }
 
-        public Request(Ranking ranking, DateTimeOffset expiry, DateTimeOffset creationTime)
+        public Request(Ranking ranking, DateTimeOffset expiry, DateTimeOffset creationTime, bool isTerminalRequest = false)
         {
             Ranking = ranking;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;
             CreatedAt = creationTime;
+            IsTerminalRequest = isTerminalRequest;
         }
         public Request(Request originalRequest, DateTimeOffset expiry, DateTimeOffset creationTime)
         {
@@ -147,6 +148,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ReplacingRequestId))]
         [InverseProperty(nameof(ReplacedByRequest))]
         public Request ReplacingRequest { get; set; }
+
+        /// <summary>
+        /// If true, this Request wil not be followed by another to the next broker.
+        /// </summary>
+        public bool IsTerminalRequest { get; set; }
 
         #region navigation
 

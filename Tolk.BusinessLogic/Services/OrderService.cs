@@ -261,16 +261,14 @@ namespace Tolk.BusinessLogic.Services
             if (expiredRequest != null)
             {
                 // Check if expired request was created before assignment after 14:00
-                var newRequestTimeLimit = expiredRequest.Order.StartAt.AddDays(-1).ToDateTimeOffsetSweden();
-                newRequestTimeLimit = newRequestTimeLimit.Date + new TimeSpan(14, 00, 00);
-                if (expiredRequest.CreatedAt < newRequestTimeLimit)
+                if (expiredRequest.IsTerminalRequest)
                 {
                     request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
                 }
             }
             else
             {
-                request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
+                request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow, latestAnswerBy.HasValue);
                 //This is the first time a request is created on this order, add the priceinformation too...
                 await _tolkDbContext.SaveChangesAsync();
                 CreatePriceInformation(order);

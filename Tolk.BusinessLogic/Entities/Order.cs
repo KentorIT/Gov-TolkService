@@ -154,7 +154,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region methods
 
-        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry, DateTimeOffset newRequestCreationTime)
+        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             // TODO Need to get/understand rules for how close to assignment a request can be allowed.
             if (newRequestExpiry.AddHours(1) > StartAt)
@@ -176,7 +176,7 @@ namespace Tolk.BusinessLogic.Entities
                 return null;
             }
 
-            var request = new Request(ranking, newRequestExpiry, newRequestCreationTime);
+            var request = new Request(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
 
             Requests.Add(request);
 
