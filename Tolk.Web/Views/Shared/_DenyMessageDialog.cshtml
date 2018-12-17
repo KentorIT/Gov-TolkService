@@ -1,5 +1,5 @@
 ﻿@model Tolk.Web.Models.DenyMessageDialogModel
-<div id="denyMessageDialog" class="modal fade" role="dialog">
+<div id="@(Model.DialogId ?? "denyMessageDialog")" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">

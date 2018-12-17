@@ -13,6 +13,8 @@ namespace Tolk.Web.Models
 {
     public class DenyMessageDialogModel
     {
+        public string DialogId { get; set; }
+
         public string DialogHeader{ get; set; }
 
         public string Action { get; set; }

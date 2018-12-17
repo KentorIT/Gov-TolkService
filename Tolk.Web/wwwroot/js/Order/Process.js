@@ -1,6 +1,5 @@
 ﻿$(function () {
-    var currentId = 0;
-    $("body").on("click", ".deny-button", function () {
+    $("body").on("click", "#denyMessageDialog", function () {
         event.preventDefault();
         $("#denyMessageDialog").openDialog();
     });
@@ -19,7 +18,7 @@
         $("#cancelMessageDialog").openDialog();
     });
 
-    $("body").on("click", "#cancelMessageDialog .send-message", function (event) {
+    $("body").on("click", "#denyMessageDialog .send-message", function (event) {
         event.preventDefault();
         //Before we start, validate the form!
         var $form = $(this).parents(".modal-content").find("form");
@@ -27,7 +26,7 @@
             $('.cancel-form [name="CancelMessage"]').val($form.find("#CancelMessage").val());
             $('.cancel-form [name="AddReplacementOrder"]').val($form.find("#AddReplacementOrder").is(":checked"));
             $(".cancel-form").submit();
-            $("#denyMessageDialog").modal("hide");
+            $("#cancelMessageDialog").modal("hide");
         }
     });
 });
