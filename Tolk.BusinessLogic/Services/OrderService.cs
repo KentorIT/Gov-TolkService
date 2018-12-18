@@ -261,7 +261,7 @@ namespace Tolk.BusinessLogic.Services
             if (expiredRequest != null)
             {
                 // Check if expired request was created before assignment after 14:00
-                if (expiredRequest.IsTerminalRequest)
+                if (!expiredRequest.IsTerminalRequest)
                 {
                     request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
                 }
