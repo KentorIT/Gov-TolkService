@@ -18,7 +18,7 @@
         $("#cancelMessageDialog").openDialog();
     });
 
-    $("body").on("click", "#denyMessageDialog .send-message", function (event) {
+    $("body").on("click", "#cancelMessageDialog .send-message", function (event) {
         event.preventDefault();
         //Before we start, validate the form!
         var $form = $(this).parents(".modal-content").find("form");
