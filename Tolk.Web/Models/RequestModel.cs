@@ -163,7 +163,7 @@ namespace Tolk.Web.Models
                 Interpreter = request.Interpreter?.User?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                RequisitionId = request.Requisitions?.OrderBy(r => r.CreatedAt).FirstOrDefault()?.RequisitionId,
+                RequisitionId = request.Requisitions?.OrderByDescending(r => r.RequisitionId).FirstOrDefault()?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
