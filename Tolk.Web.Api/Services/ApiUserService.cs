@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -46,6 +45,10 @@ namespace Tolk.Web.Api.Services
 
         public AspNetUser GetApiUserByApiKey(string userName, string key)
         {
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(key))
+            {
+                return null;
+            }
             _logger.LogInformation("User retrieved using use/apiKey");
             //Need a lot more security here
             return _dbContext.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpper() && u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == key));
@@ -58,20 +61,56 @@ namespace Tolk.Web.Api.Services
                 null;
         }
 
-        public InterpreterBroker GetInterpreter(InterpreterModel interpreter, int brokerId)
+        public InterpreterBroker GetInterpreter(InterpreterModel interpreterModel, int brokerId, bool updateInformation = true)
         {
-            switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreter.InterpreterInformationType))
+            InterpreterBroker interpreter = null;
+            switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreterModel.InterpreterInformationType))
             {
                 case InterpreterInformationType.ExistingInterpreter:
-                    return _dbContext.InterpreterBrokers.SingleOrDefault(i => i.InterpreterBrokerId == interpreter.InterpreterId);
+                    interpreter = _dbContext.InterpreterBrokers
+                        .SingleOrDefault(i => i.InterpreterBrokerId == interpreterModel.InterpreterId && i.BrokerId == brokerId);
+                    break;
                 case InterpreterInformationType.AuthorizedInterpreterId:
-                    return _dbContext.InterpreterBrokers.SingleOrDefault(i => i.OfficialInterpreterId == interpreter.OfficialInterpreterId);
+                    interpreter = _dbContext.InterpreterBrokers
+                        .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
+                    break;
                 case InterpreterInformationType.NewInterpreter:
                     //Create the new interpreter, connected to the provided broker
-                    return null;
+                    return new InterpreterBroker(
+                        interpreterModel.FirstName,
+                        interpreterModel.LastName,
+                        brokerId,
+                        interpreterModel.Email,
+                        interpreterModel.PhoneNumber,
+                        interpreterModel.OfficialInterpreterId
+                    );
                 default:
                     return null;
             }
+            if (updateInformation)
+            {
+                if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
+                {
+                    interpreter.FirstName = interpreterModel.FirstName;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
+                {
+                    interpreter.LastName = interpreterModel.LastName;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.Email))
+                {
+                    interpreter.Email = interpreterModel.Email;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
+                {
+                    interpreter.PhoneNumber = interpreterModel.PhoneNumber;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
+                {
+                    interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
+                }
+            }
+            return interpreter;
         }
     }
 }
