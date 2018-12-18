@@ -121,7 +121,7 @@ namespace Tolk.Web.Models
                 TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price?? 0,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
-                Interpreter = requisition.Request.Interpreter.User.CompleteContactInformation,
+                Interpreter = requisition.Request.Interpreter.CompleteContactInformation,
                 InterpreterLocation = (InterpreterLocation)requisition.Request.InterpreterLocation,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
                 Address = $"{location.Street}, {location.City}",

@@ -27,7 +27,6 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
-        private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly DateCalculationService _dateCalculationService;
         private readonly ILogger _logger;
@@ -40,7 +39,6 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             OrderService orderService,
             IAuthorizationService authorizationService,
-            InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
             DateCalculationService dateCalculationService,
             ILogger<RequestController> logger,
@@ -53,7 +51,6 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _orderService = orderService;
             _authorizationService = authorizationService;
-            _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
             _dateCalculationService = dateCalculationService;
             _logger = logger;
@@ -97,7 +94,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions)
                 .Include(r => r.Complaints)
@@ -112,7 +109,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
-                .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
                 .Include(r => r.ReplacedByRequest)
                 .Include(r => r.RequestStatusConfirmations)
                 .Single(o => o.RequestId == id);
@@ -139,7 +136,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.Ranking)
                 .Include(r => r.PriceRows)
                 .Include(r => r.RequirementAnswers)
@@ -178,7 +175,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.RequirementAnswers)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.ReplacingRequest)
                 .Include(r => r.ReplacedByRequest)
                 .Single(o => o.RequestId == id);
@@ -209,7 +206,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
-                    .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                    .Include(r => r.Interpreter)
                     .Include(r => r.RequirementAnswers)
                     .Include(r => r.PriceRows)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -235,7 +232,7 @@ namespace Tolk.Web.Controllers
                     //if change interpreter or else if not a replacementorder
                     if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                     {
-                        var interpreter = await GetInterpreter(model.InterpreterId.Value, model.NewInterpreterEmail, request.Ranking.BrokerId);
+                        var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
 
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         {
@@ -288,14 +285,22 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
-        private async Task<Interpreter> GetInterpreter(int interpreterId, string interpreterEmail, int brokerId)
+        private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
         {
-            if (interpreterId == SelectListService.NewInterpreterId)
+            if (interpreterBrokerId == SelectListService.NewInterpreterId)
             {
-                interpreterId = await _interpreterService.GetInterpreterId(brokerId, interpreterEmail);
+                var interpreter = new InterpreterBroker(
+                    interpreterInformation.FirstName,
+                    interpreterInformation.LastName,
+                    brokerId,
+                    interpreterInformation.Email,
+                    interpreterInformation.PhoneNumber,
+                    interpreterInformation.OfficialInterpreterId
+                );
+                _dbContext.Add(interpreter);
+                return interpreter;
             }
-            return _dbContext.Interpreters.Include(i => i.User)
-                .Single(i => i.InterpreterId == interpreterId);
+            return _dbContext.InterpreterBrokers.Single(i => i.InterpreterBrokerId == interpreterBrokerId);
         }
 
         [ValidateAntiForgeryToken]
@@ -308,7 +313,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Single(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
@@ -332,7 +337,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order.ContactPersonUser)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Single(r => r.RequestId == model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
@@ -367,7 +372,6 @@ namespace Tolk.Web.Controllers
 
             return Forbid();
         }
-
 
         [ValidateAntiForgeryToken]
         [HttpPost]

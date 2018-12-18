@@ -69,20 +69,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsApiUser { get; set; }
 
-        public static AspNetUser CreateInterpreter(string email)
-        {
-            var user = new AspNetUser(email)
-            {
-                Interpreter = new Interpreter()
-                {
-                    // Add empty list because other code expects initialized entity.
-                    Brokers = new List<InterpreterBroker>()
-                }
-            };
-
-            return user;
-        }
-
         #region Navigation properties
 
         public List<UserNotificationSetting> NotificationSettings { get; set; }

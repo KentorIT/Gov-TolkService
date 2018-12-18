@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Api.Payloads", "Tolk.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Web.Api", "Tolk.Web.Api\Tolk.Web.Api.csproj", "{A09F5DAD-6D1C-4F1E-A22C-6973B95FD582}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tolk.BusinessLogic.Utilities", "Tolk.BusinessLogic.Utilities\Tolk.BusinessLogic.Utilities.csproj", "{29F3A5C8-5E13-450A-9683-2904E74A4446}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{A09F5DAD-6D1C-4F1E-A22C-6973B95FD582}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A09F5DAD-6D1C-4F1E-A22C-6973B95FD582}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A09F5DAD-6D1C-4F1E-A22C-6973B95FD582}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29F3A5C8-5E13-450A-9683-2904E74A4446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29F3A5C8-5E13-450A-9683-2904E74A4446}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29F3A5C8-5E13-450A-9683-2904E74A4446}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29F3A5C8-5E13-450A-9683-2904E74A4446}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

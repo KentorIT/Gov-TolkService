@@ -55,12 +55,12 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string BrokerMessage { get; set; }
 
-        public int? InterpreterId { get; set; }
+        public int? InterpreterBrokerId { get; set; }
 
         public int? CompetenceLevel { get; set; }
 
-        [ForeignKey(nameof(InterpreterId))]
-        public Interpreter Interpreter { get; set; }
+        [ForeignKey(nameof(InterpreterBrokerId))]
+        public InterpreterBroker Interpreter { get; set; }
 
         [MaxLength(1000)]
         public string DenyMessage { get; set; }
@@ -198,7 +198,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            Interpreter interpreter,
+            InterpreterBroker interpreter,
             InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
@@ -286,7 +286,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            Interpreter interperter,
+            InterpreterBroker interperter,
             InterpreterLocation? interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,

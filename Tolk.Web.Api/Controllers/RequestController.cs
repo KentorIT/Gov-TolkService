@@ -74,7 +74,7 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("REQUEST_NOT_FOUND");
             }
 
-            var interpreter = _apiUserService.GetInterpreter(model.Interpreter);
+            var interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
             //Does not handle Tolk-Id
             if (interpreter == null)
             {
@@ -168,7 +168,6 @@ namespace Tolk.Web.Api.Controllers
                 .Include(r => r.Order.ContactPersonUser)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
                 .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     r.Ranking.BrokerId == apiUser.BrokerId &&
@@ -205,7 +204,7 @@ namespace Tolk.Web.Api.Controllers
             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
             .Include(r => r.Order.CreatedByUser)
             .Include(r => r.Order.ContactPersonUser)
-            .Include(r => r.Interpreter).ThenInclude(i => i.User)
+            .Include(r => r.Interpreter)
             .Include(r => r.Ranking).ThenInclude(r => r.Broker)
             .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
                 //Must have a request connected to the order for the broker, any status...
@@ -284,7 +283,7 @@ namespace Tolk.Web.Api.Controllers
             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
             .Include(r => r.Order.CreatedByUser)
             .Include(r => r.Order.ContactPersonUser)
-            .Include(r => r.Interpreter).ThenInclude(i => i.User)
+            .Include(r => r.Interpreter)
             .Include(r => r.Ranking).ThenInclude(r => r.Broker)
             .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
                 //Must have a request connected to the order for the broker, any status...
@@ -298,8 +297,8 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("REQUEST_NOT_FOUND");
             }
-            var interpreter = _apiUserService.GetInterpreter(model.Interpreter);
-            //Does not handle Tolk-Id
+            //TODO:Replace with call to interpreterService!!!
+            var interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
             if (interpreter == null)
             {
                 //Possibly the interpreter should be added, if not found?? 

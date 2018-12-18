@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
 
 namespace BrokerMock.Services
@@ -74,7 +75,46 @@ namespace BrokerMock.Services
                 items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get requirement types: {items.Count}");
                 _cache.Set("RequirementTypes", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/InterpreterInformationTypes/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get interpreter information types: {items.Count}");
+                _cache.Set("InterpreterInformationTypes", items);
+            }
+            using (var client = GetHttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/BrokerInterpreters/");
+                var items = JsonConvert.DeserializeObject<List<InterpreterModel>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters: {items.Count}");
+                _cache.Set("BrokerInterpreters", items);
             }
         }
+
+        #region SAME AS REQUESTCONTROLLER, SHOULD BE MOVED
+
+        private HttpClient GetHttpClient()
+        {
+            var client = new HttpClient(GetCertHandler());
+            client.DefaultRequestHeaders.Accept.Clear();
+            if (_options.UseApiKey)
+            {
+                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
+                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
+            }
+            return client;
+        }
+        private static HttpClientHandler GetCertHandler()
+        {
+            var handler = new HttpClientHandler
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                SslProtocols = SslProtocols.Tls12
+            };
+            handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
+            return handler;
+        }
+
+        #endregion
     }
 }

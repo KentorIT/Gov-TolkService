@@ -133,7 +133,7 @@ namespace Tolk.Web.Models
                 SessionEndedAt = request.Order.EndAt,
                 SessionStartedAt = request.Order.StartAt,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                Interpreter = request.Interpreter.User.CompleteContactInformation,
+                Interpreter = request.Interpreter.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),

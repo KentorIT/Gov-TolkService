@@ -163,7 +163,6 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Ranking)
                             .ThenInclude(r => r.Broker)
                             .Include(r => r.Interpreter)
-                            .ThenInclude(i => i.User)
                             .Include(r => r.Order)
                             .ThenInclude(o => o.Requests)
                             .Include(r => r.Order)

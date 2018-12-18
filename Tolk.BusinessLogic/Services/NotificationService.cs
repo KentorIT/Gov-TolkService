@@ -51,13 +51,6 @@ namespace Tolk.BusinessLogic.Services
             string broker = request.Ranking.Broker.EmailAddress;
             if (requestWasApproved)
             {
-                CreateEmail(
-                    request.Interpreter.User.Email,
-                    $"Avbokat avrop avrops-ID {orderNumber}",
-                    $"Ditt tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                    $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                    (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.")
-                );
                 CreateEmail(broker, $"Avbokat avrop avrops-ID {orderNumber}",
                      $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                      $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
@@ -113,7 +106,7 @@ namespace Tolk.BusinessLogic.Services
                 $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                 $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                 $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tTolk: {replamentRequest.Interpreter.User.FullName}, e-post: {replamentRequest.Interpreter.User.Email}\n" +
+                $"\tTolk: {replamentRequest.Interpreter.FullName}, e-post: {replamentRequest.Interpreter.Email}\n" +
                 $"\tSvara senast: {replamentRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n"
             );
         }
@@ -223,12 +216,10 @@ namespace Tolk.BusinessLogic.Services
         public void RequestAnswerAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            //Interpreter part
-            NotifyInterpreterOnAssignenment(request);
 
             //Broker part
             CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med avrops-ID {orderNumber} verifierat",
-                $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.User.FullName}."
+                $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName}."
             );
         }
 
@@ -320,7 +311,7 @@ namespace Tolk.BusinessLogic.Services
             string orderNumber = request.Order.OrderNumber;
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat avrop {orderNumber}",
                 $"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats." +
-                $"\n\nTolk:\n{request.Interpreter.User.CompleteContactInformation}");
+                $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}");
         }
 
         public void RequestDeclinedByBroker(Request request)
@@ -335,10 +326,6 @@ namespace Tolk.BusinessLogic.Services
             string orderNumber = request.Order.OrderNumber;
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har avbokat avrop {orderNumber}",
                  $"Förmedling {request.Ranking.Broker.Name} har avbokat uppdraget för avrop {orderNumber} med meddelande:\n{request.CancelMessage}");
-            //create email to interpreter
-            CreateEmail(request.Interpreter.User.Email, $"Förmedling har avbokat ditt uppdrag för avrops-ID {request.Order.OrderNumber}",
-                $"Förmedling { request.Ranking.Broker.Name} har avbokat ditt uppdrag för avrop {orderNumber} med meddelande:\n{request.CancelMessage}\n" +
-                $"Uppdraget skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
         }
 
         public void RequestReplamentOrderAccepted(Request request)
@@ -355,11 +342,6 @@ namespace Tolk.BusinessLogic.Services
                     CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras." +
                         "Inga förändrade krav finns, avropet är klart för utförande.");
-                    //send mail to interpreter about changes replaced order => order
-                    CreateEmail(request.Interpreter.User.Email, $"Tilldelat tolkuppdrag avrops-ID {orderNumber}",
-                        $"Ditt tolkuppdrag {request.Order.ReplacingOrder.OrderNumber} hos {request.Order.CustomerOrganisation.Name} " +
-                        $"från förmedling {request.Ranking.Broker.Name} har ersatts av ett nytt uppdrag: {orderNumber} " +
-                        $"och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
                     break;
                 default:
                     throw new NotImplementedException($"{nameof(RequestReplamentOrderAccepted)} cannot send notifications on requests with status: {request.Status.ToString()}");
@@ -378,9 +360,6 @@ namespace Tolk.BusinessLogic.Services
                 r.Status == RequestStatus.CancelledByCreator ||
                 r.Status == RequestStatus.CancelledByCreatorConfirmed ||
                 r.Status == RequestStatus.CancelledByCreatorWhenApproved));
-            CreateEmail(request.Interpreter.User.Email, $"Avbokat avrop avrops-ID {request.Order.ReplacingOrder.OrderNumber}",
-                $"Ditt tolkuppdrag hos {cancelledRequest.Ranking.Broker.Name} har avbokats, med detta meddelande:\n {cancelledRequest.CancelMessage}\n" +
-                $"Uppdraget har avrops-ID {request.Order.ReplacingOrder.OrderNumber} och skulle ha startat {request.Order.ReplacingOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
         }
 
         public void RequestChangedInterpreter(Request request)
@@ -388,7 +367,7 @@ namespace Tolk.BusinessLogic.Services
             string orderNumber = request.Order.OrderNumber;
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har bytt tolk på avrop {orderNumber}",
                 $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n" +
-                $"\nTolk:\n{request.Interpreter.User.CompleteContactInformation}\n\n" +
+                $"\nTolk:\n{request.Interpreter.CompleteContactInformation}\n\n" +
                 (request.Order.AllowMoreThanTwoHoursTravelTime ?
                     "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt " +
                     $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att avropet tidigare haft status godkänt." :
@@ -398,8 +377,6 @@ namespace Tolk.BusinessLogic.Services
         public void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User)
         {
             string orderNumber = request.Order.OrderNumber;
-            //Interpreter
-            NotifyInterpreterOnAssignenment(request);
             //Broker
             CreateEmail(request.Ranking.Broker.EmailAddress, $"Byte av tolk godkänt på Avrops-id {orderNumber}",
                 $"Bytet av tolk har godkänts på order Avrops-id {orderNumber}"
@@ -418,7 +395,7 @@ namespace Tolk.BusinessLogic.Services
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
                     CreateEmail(request.Order.CreatedByUser.Email, $"Förmedling har bytt tolk på avrop {orderNumber}",
                         $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n" +
-                        $"\nTolk:\n{request.Interpreter.User.CompleteContactInformation}\n\n" +
+                        $"\nTolk:\n{request.Interpreter.CompleteContactInformation}\n\n" +
                         "Inga förändrade krav finns, avropet behåller sin nuvarande status."
                     );
                     break;
@@ -428,13 +405,6 @@ namespace Tolk.BusinessLogic.Services
                 default:
                     throw new NotImplementedException($"{nameof(RequestChangedInterpreterAccepted)} faild to send mail to customer. {changeOrigin.ToString()} is not a handled {nameof(InterpereterChangeAcceptOrigin)}");
             }
-        }
-
-        public void NotifyInterpreterOnAssignenment(Request request)
-        {
-            CreateEmail(request.Interpreter.User.Email, $"Tilldelat tolkuppdrag avrops-ID {request.Order.OrderNumber}",
-               $"Du har fått ett tolkuppdrag hos {request.Order.CustomerOrganisation.Name} från förmedling {request.Ranking.Broker.Name}. " +
-               $"Uppdraget har avrops-ID {request.Order.OrderNumber} och startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.");
         }
 
         public void CreateEmail(string recipient, string subject, string body)

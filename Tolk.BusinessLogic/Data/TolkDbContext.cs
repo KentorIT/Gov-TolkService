@@ -52,9 +52,6 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<UserNotificationSetting>()
                 .HasKey(uns => new { uns.UserId, uns.NotificationChannel, uns.NotificationType });
 
-            builder.Entity<InterpreterBroker>()
-                .HasKey(ib => new { ib.BrokerId, ib.InterpreterId });
-
             builder.Entity<OrderRequirementRequestAnswer>()
                 .HasKey(ra => new { ra.RequestId, ra.OrderRequirementId });
 

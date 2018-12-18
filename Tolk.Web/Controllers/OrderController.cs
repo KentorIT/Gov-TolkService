@@ -147,7 +147,7 @@ namespace Tolk.Web.Controllers
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
-                model.ActiveRequestIsAnswered = request?.InterpreterId != null;
+                model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
@@ -159,8 +159,7 @@ namespace Tolk.Web.Controllers
                     model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
                     model.InterpreterName = _dbContext.Requests
                         .Include(r => r.Interpreter)
-                        .ThenInclude(i => i.User)
-                        .Single(r => r.RequestId == request.RequestId).Interpreter?.User.CompleteContactInformation;
+                        .Single(r => r.RequestId == request.RequestId).Interpreter?.CompleteContactInformation;
                     model.AllowComplaintCreation = !request.Complaints.Any() &&
                         (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
@@ -407,7 +406,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
             var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
                 .Include(o => o.CustomerOrganisation)
                 .Single(o => o.OrderId == model.OrderId);
@@ -438,7 +437,7 @@ namespace Tolk.Web.Controllers
         {
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Requisitions)
                 .Include(r => r.PriceRows)
@@ -629,7 +628,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
                 .Include(o => o.Requests).ThenInclude(r => r.Complaints)
-                .Include(o => o.Requests).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Requests).ThenInclude(r => r.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
@@ -639,7 +638,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.OrderId == id);

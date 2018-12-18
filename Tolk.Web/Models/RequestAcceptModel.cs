@@ -22,6 +22,10 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public int? InterpreterId { get; set; }
 
+        public string NewInterpreterFirstName { get; set; }
+        public string NewInterpreterLastName { get; set; }
+        public string NewInterpreterOfficialInterpreterId { get; set; }
+        public string NewInterpreterPhoneNumber { get; set; }
         public string NewInterpreterEmail { get; set; }
 
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
@@ -36,5 +40,17 @@ namespace Tolk.Web.Models
 
         [ClientRequired]
         public InterpreterLocation? InterpreterLocation { get; set; }
+
+        public InterpreterInformation GetNewInterpreterInformation()
+        {
+            return new InterpreterInformation
+            {
+                FirstName = NewInterpreterFirstName,
+                LastName = NewInterpreterLastName,
+                Email = NewInterpreterEmail,
+                PhoneNumber = NewInterpreterPhoneNumber,
+                OfficialInterpreterId = NewInterpreterOfficialInterpreterId
+            };
+        }
     }
 }

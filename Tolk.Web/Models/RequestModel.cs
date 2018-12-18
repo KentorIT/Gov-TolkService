@@ -81,6 +81,21 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens e-postadress")]
         public string NewInterpreterEmail { get; set; }
 
+        [Required]
+        [Display(Name = "Tolkens förnamn")]
+        public string NewInterpreterFirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Tolkens efternamn")]
+        public string NewInterpreterLastName { get; set; }
+
+        [Display(Name = "Tolk-ID")]
+        public string NewInterpreterOfficialInterpreterId { get; set; }
+
+        [Required]
+        [Display(Name = "Tolkens telefonnummer")]
+        public string NewInterpreterPhoneNumber { get; set; }
+
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
@@ -160,7 +175,7 @@ namespace Tolk.Web.Models
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
-                Interpreter = request.Interpreter?.User?.CompleteContactInformation,
+                Interpreter = request.Interpreter?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 RequisitionId = request.Requisitions?.OrderByDescending(r => r.RequisitionId).FirstOrDefault()?.RequisitionId,

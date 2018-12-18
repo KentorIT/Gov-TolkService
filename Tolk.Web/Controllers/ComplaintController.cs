@@ -241,7 +241,7 @@ namespace Tolk.Web.Controllers
             return _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Single(o => o.RequestId == id);
@@ -256,7 +256,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.TerminatingUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
                 .Single(o => o.ComplaintId == id);

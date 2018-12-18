@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Tolk.Api.Payloads.ApiPayloads;
+using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Api.Services
 {
@@ -55,11 +58,20 @@ namespace Tolk.Web.Api.Services
                 null;
         }
 
-        public Interpreter GetInterpreter(string interpreter)
+        public InterpreterBroker GetInterpreter(InterpreterModel interpreter, int brokerId)
         {
-            return !string.IsNullOrWhiteSpace(interpreter) ?
-                _dbContext.Users.Include(u => u.Interpreter).SingleOrDefault(u => u.NormalizedEmail == interpreter.ToUpper())?.Interpreter :
-                null;
+            switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreter.InterpreterInformationType))
+            {
+                case InterpreterInformationType.ExistingInterpreter:
+                    return _dbContext.InterpreterBrokers.SingleOrDefault(i => i.InterpreterBrokerId == interpreter.InterpreterId);
+                case InterpreterInformationType.AuthorizedInterpreterId:
+                    return _dbContext.InterpreterBrokers.SingleOrDefault(i => i.OfficialInterpreterId == interpreter.OfficialInterpreterId);
+                case InterpreterInformationType.NewInterpreter:
+                    //Create the new interpreter, connected to the provided broker
+                    return null;
+                default:
+                    return null;
+            }
         }
     }
 }

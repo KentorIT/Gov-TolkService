@@ -53,7 +53,7 @@ namespace Tolk.Web.Controllers
 
             if (interpreterId.HasValue)
             {
-                requests = requests.Where(r => r.InterpreterId == interpreterId);
+                requests = requests.Where(r => r.InterpreterBrokerId == interpreterId);
             }
             if (brokerId.HasValue)
             {

@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
                 BrokerName = complaint.Request.Ranking.Broker.Name,
                 CustomerName = complaint.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = complaint.Request.Order.CustomerReferenceNumber,
-                InterpreterName = complaint.Request.Interpreter.User.CompleteContactInformation,
+                InterpreterName = complaint.Request.Interpreter.CompleteContactInformation,
                 LanguageName = complaint.Request.Order.OtherLanguage ?? complaint.Request.Order.Language?.Name ?? "-",
                 OrderNumber = complaint.Request.Order.OrderNumber.ToString(),
                 RegionName = complaint.Request.Ranking.Region.Name,

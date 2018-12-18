@@ -322,12 +322,11 @@ namespace Tolk.Web.Services
                 Text = "Ny tolk"
             };
 
-            var interpretersInDb = _dbContext.Interpreters.Where(i => i.Brokers.Any(b => b.BrokerId == brokerId && b.AcceptedByInterpreter))
-
+            var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId)
             .Select(i => new SelectListItem
             {
-                Value = i.InterpreterId.ToString(),
-                Text = !string.IsNullOrWhiteSpace(i.User.FullName) ? i.User.FullName : i.User.UserName,
+                Value = i.InterpreterBrokerId.ToString(),
+                Text = i.FullName,
             });
 
             foreach (var i in interpretersInDb)

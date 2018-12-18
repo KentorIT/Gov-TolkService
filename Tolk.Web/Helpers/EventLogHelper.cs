@@ -320,7 +320,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.ReplacedByRequest.AnswerDate.Value,
-                    EventDetails = $"Tolk {request.Interpreter?.User?.FullName} är ersatt av tolk {request.ReplacedByRequest.Interpreter?.User?.FullName}",
+                    EventDetails = $"Tolk {request.Interpreter?.FullName} är ersatt av tolk {request.ReplacedByRequest.Interpreter?.FullName}",
                     Actor = request.ReplacedByRequest.AnsweringUser.FullName,
                     Organization = request.ReplacedByRequest.AnsweringUser.Broker.Name,
                 });

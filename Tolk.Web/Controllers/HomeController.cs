@@ -69,7 +69,7 @@ namespace Tolk.Web.Controllers
             {
                 PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningsförfrågningar",
                 Message = message,
-                ConfirmationMessages = await GetConfirmationMessages(),
+                ConfirmationMessages = GetConfirmationMessages(),
                 StartLists = await GetStartLists()
             });
         }
@@ -273,68 +273,11 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<StartViewModel.StartList> GetInterpreterStartLists()
         {
-            var interpreterId = User.GetInterpreterId();
-            var actionList = new List<StartListItemModel>();
-
-            //To be reported
-            actionList.AddRange(_dbContext.Requests
-                .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt < _clock.SwedenNow && !r.Requisitions.Any() && r.InterpreterId == interpreterId)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                 .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.Order.EndAt.DateTime, InfoDateDescription = "Utfört: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = StartListItemStatus.RequisitionToBeCreated, ButtonAction = "Create", ButtonController = "Requisition" }).ToList());
-
-            //Denied requisitions
-            actionList.AddRange(_dbContext.Requisitions
-                .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.DeniedByCustomer &&
-                !r.Request.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.Created) && r.Request.InterpreterId == interpreterId)
-                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(req => req.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.ProcessedAt.Value.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Request.Order.CustomerOrganisation.Name, ButtonItemId = r.RequisitionId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitionDenied, ButtonAction = "View", ButtonController = "Requisition" }).ToList());
-
-            var count = actionList.Any() ? actionList.Count() : 0;
-
-            yield return new StartViewModel.StartList
-            {
-                Header = count > 0 ? $"Lista med aktiva bokningsförfrågningar att hantera ({count} st)" : "Lista med aktiva bokningsförfrågningar att hantera",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar att hantera",
-                StartListObjects = actionList,
-                HasReviewAction = true
-            };
-
-            //kommande uppdrag
-            var assignments = _dbContext.Requests.Where(r => (r.Status == RequestStatus.Approved) &&
-                r.Order.StartAt > _clock.SwedenNow && !r.Requisitions.Any() && r.InterpreterId == interpreterId)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Assignment", DefaultItemId = r.RequestId, InfoDate = r.AnswerProcessedAt.Value.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = StartListItemStatus.OrderApproved }).ToList();
-
-            count = assignments.Any() ? assignments.Count() : 0;
-
-            yield return new StartViewModel.StartList
-            {
-                Header = count > 0 ? $"Kommande bokningsförfrågningar ({count} st)" : "Kommande bokningsförfrågningar",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga kommande bokningsförfrågningar",
-                StartListObjects = assignments
-            };
+            return new List<StartViewModel.StartList>();
         }
 
-        private async Task<IEnumerable<StartViewModel.ConfirmationMessage>> GetConfirmationMessages()
+        private IEnumerable<StartViewModel.ConfirmationMessage> GetConfirmationMessages()
         {
-            if ((await _authorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
-            {
-                return await _dbContext.InterpreterBrokers
-                    .Where(ib => ib.InterpreterId == User.GetInterpreterId() && !ib.AcceptedByInterpreter)
-                    .Select(ib => new StartViewModel.ConfirmationMessage
-                    {
-                        Header = "Förmedlingar som vill skicka uppdrag till dig som tolk",
-                        BrokerName = ib.Broker.Name,
-                        Message = "Förmedling som vill lägga till dig",
-                        Controller = "Interpreter",
-                        Action = "AcceptBroker",
-                        Id = ib.BrokerId
-                    }).ToListAsync();
-            }
-
             return Enumerable.Empty<StartViewModel.ConfirmationMessage>();
         }
 

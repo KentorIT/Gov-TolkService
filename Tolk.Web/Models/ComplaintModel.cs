@@ -61,7 +61,7 @@ namespace Tolk.Web.Models
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
                 EndAt = request.Order.EndAt,
                 StartAt = request.Order.StartAt,
-                InterpreterName = request.Interpreter.User.CompleteContactInformation,
+                InterpreterName = request.Interpreter.CompleteContactInformation,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,

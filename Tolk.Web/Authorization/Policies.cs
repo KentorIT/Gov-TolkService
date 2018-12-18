@@ -117,10 +117,6 @@ namespace Tolk.Web.Authorization
                     {
                         return request.Ranking.BrokerId == context.User.GetBrokerId();
                     }
-                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
-                    {
-                        return request.InterpreterId == context.User.GetInterpreterId();
-                    }
                     return false;
                 default:
                     throw new NotImplementedException();
@@ -207,10 +203,6 @@ namespace Tolk.Web.Authorization
                     {
                         return requisition.Request.Ranking.BrokerId == user.GetBrokerId();
                     }
-                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
-                    {
-                        return requisition.Request.InterpreterId == user.GetInterpreterId();
-                    }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
                         return user.IsInRole(Roles.SuperUser) ?
@@ -223,10 +215,6 @@ namespace Tolk.Web.Authorization
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
                         return request.Ranking.BrokerId == user.GetBrokerId();
-                    }
-                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
-                    {
-                        return request.InterpreterId == user.GetInterpreterId();
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
@@ -277,12 +265,6 @@ namespace Tolk.Web.Authorization
                                     a.Request.Order.ContactPersonId == userId) ||
                                      attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                         }
-                    }
-                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId))
-                    {
-                        return attachment.Requisitions.Any(a => a.Requisition.Request.InterpreterId == user.GetInterpreterId()) ||
-                            attachment.Requests.Any(a => a.Request.InterpreterId == user.GetInterpreterId()) ||
-                            attachment.Orders.Any(o => o.Order.Requests.Any(r => r.InterpreterId == user.GetInterpreterId()));
                     }
                     return false;
                 case AspNetUser viewUser:

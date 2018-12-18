@@ -64,7 +64,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
@@ -101,7 +101,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
@@ -134,7 +134,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Interpreter).ThenInclude(i => i.User)
+                .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.PriceRows)
@@ -192,7 +192,6 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
-            var interpreterId = User.TryGetInterpreterId();
             var userId = User.GetUserId();
 
             if (customerId.HasValue)
@@ -221,10 +220,6 @@ namespace Tolk.Web.Controllers
             else if (brokerId.HasValue)
             {
                 requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == brokerId);
-            }
-            else if (interpreterId.HasValue)
-            {
-                requisitions = requisitions.Where(r => r.Request.InterpreterId == interpreterId);
             }
             else
             {

@@ -16,8 +16,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
+using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.Api.Payloads.WebHookPayloads;
+using Tolk.BusinessLogic.Utilities;
 
 namespace BrokerMock.Controllers
 {
@@ -62,7 +64,7 @@ namespace BrokerMock.Controllers
                 {
                     await AssignInterpreter(
                         payload.OrderNumber,
-                        "ara@tolk.se",
+                        _cache.Get<List<InterpreterModel>>("BrokerInterpreters").First(),
                         payload.Locations.First().Key,
                         payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                         payload.Requirements.Select(r => new RequirementAnswerModel
@@ -75,10 +77,11 @@ namespace BrokerMock.Controllers
                 }
                 if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
                 {
+
                     Thread.Sleep(3000);
                     await ChangeInterpreter(
                         payload.OrderNumber,
-                        "bo@tolk.se",
+                        _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
                         payload.Locations.Last().Key,
                         payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                         payload.Requirements.Select(r => new RequirementAnswerModel
@@ -109,7 +112,7 @@ namespace BrokerMock.Controllers
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
-        private async Task<bool> AssignInterpreter(string orderNumber, string interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
         {
             using (var client = GetHttpClient())
             {
@@ -206,7 +209,7 @@ namespace BrokerMock.Controllers
             return true;
         }
 
-        private async Task<bool> ChangeInterpreter(string orderNumber, string interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> ChangeInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
         {
             using (var client = GetHttpClient())
             {
@@ -246,7 +249,6 @@ namespace BrokerMock.Controllers
             }
             return client;
         }
-
 
         private static HttpClientHandler GetCertHandler()
         {

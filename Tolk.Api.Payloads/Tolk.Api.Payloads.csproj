@@ -7,4 +7,8 @@
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tolk.BusinessLogic.Utilities\Tolk.BusinessLogic.Utilities.csproj" />
+  </ItemGroup>
 </Project>
