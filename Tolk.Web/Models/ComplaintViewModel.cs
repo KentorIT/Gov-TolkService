@@ -18,8 +18,15 @@ namespace Tolk.Web.Models
         [Display(Name = "Reklamation registrerad")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [Display(Name = "Reklamationens status")]
+        [Display(Name = "Status")]
         public ComplaintStatus Status { get; set; }
+
+        public string ColorClassName
+        {
+            get => 
+            (Status == ComplaintStatus.Disputed || Status == ComplaintStatus.DisputePendingTrial) ? "red-border-left" :
+            (Status == ComplaintStatus.Confirmed || Status == ComplaintStatus.TerminatedAsDisputeAccepted) ? "green-border-left" : "blue-border-left";
+        }
 
         [Display(Name = "Typ av tolkuppdrag")]
         [Required]
