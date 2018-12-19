@@ -13,23 +13,21 @@
         <display-entry asp-for="CustomerReferenceNumber" />
     </div>
 </div>
-@if (Model.AllowCreation)
+@if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
 {
     <div class="row">
         <div class="col-sm-6">
             <display-entry asp-for="DenyMessage"></display-entry>
         </div>
-        <div class="col-sm-6">
-            <a class="btn btn-large btn-danger pull-right" href="@Url.Action("Create", "Requisition" , new { id=Model.RequestId })">Ersätt rekvisition</a>
-        </div>
+        @if (Model.AllowCreation)
+        {
+            <div class="col-sm-6">
+                <a class="btn btn-large btn-danger pull-right" href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Ersätt rekvisition</a>
+            </div>
+        }
     </div>
 }
-else if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
-{
-    <div class="col-sm-12">
-        <display-entry asp-for="DenyMessage"></display-entry>
-    </div>
-}
+
 @await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Fakturaunderlag" } })
 <div class="row">
     <div class="col-sm-12">
@@ -48,7 +46,7 @@ else if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" }, { "id", "EventLog_Requisition" } })
     </div>
 </div>
-@await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Underkänn rekvisitionen", ParentId = Model.RequisitionId, DialogId = "requisitionDenyMessageDialog"})
+@await Html.PartialAsync("_DenyMessageDialog", new DenyMessageDialogModel { Action = "Deny", DialogHeader = "Underkänn rekvisitionen", ParentId = Model.RequisitionId, DialogId = "requisitionDenyMessageDialog" })
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Files.js" asp-append-version="true"></script>

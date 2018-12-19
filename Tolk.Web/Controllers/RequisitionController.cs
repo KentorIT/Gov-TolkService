@@ -90,37 +90,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public async Task<IActionResult> Process(int id)
-        {
-            var requisition = _dbContext.Requisitions
-                .Include(r => r.CreatedByUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(p => p.PriceRows)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
-                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-             .Single(o => o.RequisitionId == id);
-            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
-            {
-                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
-                var request = requisition.Request;
-                var order = request.Order;
-                var listType = order.CustomerOrganisation.PriceListType;
-                var model = RequisitionProcessModel.GetProcessViewModelFromRequisition(requisition);
-                model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
-                model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
-                return View(model);
-            }
-            return Forbid();
-        }
-
         /// <summary>
         /// Create a requisition
         /// </summary>
@@ -363,7 +332,7 @@ namespace Tolk.Web.Controllers
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(Process), new { id = model.ParentId });
+            return RedirectToAction(nameof(View), new { id = model.ParentId });
         }
 
         private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)
