@@ -192,7 +192,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att handlägga rekvisitionen")]
+        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att godkänna rekvisitionen")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 
