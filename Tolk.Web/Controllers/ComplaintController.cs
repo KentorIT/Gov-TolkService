@@ -113,6 +113,7 @@ namespace Tolk.Web.Controllers
             }
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
+            var userId = User.GetUserId();
             model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
             model.IsBrokerUser = brokerId.HasValue;
            
@@ -125,11 +126,12 @@ namespace Tolk.Web.Controllers
                     .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
                      c.Request.Order.CustomerOrganisationId == customerId);
-            // Filters
-            if (model.IsCustomerSuperUser)
+
+            if (customerId.HasValue && !model.IsCustomerSuperUser)
             {
-                model.CustomerContactId = User.GetUserId();
+                items = items.Where(c => c.Request.Order.CreatedBy == userId || c.Request.Order.ContactPersonId == userId);
             }
+
             items = model.Apply(items);
         
             return View(
