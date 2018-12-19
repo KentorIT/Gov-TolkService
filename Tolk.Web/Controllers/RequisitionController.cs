@@ -233,15 +233,13 @@ namespace Tolk.Web.Controllers
                     FilterModel = model,
                     Items = requisitions.Select(r => new RequisitionListItemModel
                     {
-                        RequisitionId = r.RequisitionId,
+                        OrderRequestId = customerId.HasValue ? r.Request.OrderId : r.RequestId,
                         Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                         OrderNumber = r.Request.Order.OrderNumber.ToString(),
                         Start = r.Request.Order.StartAt,
                         End = r.Request.Order.EndAt,
                         Status = r.Status,
-                        Action = customerId.HasValue && r.Status == RequisitionStatus.Created &&
-                            (r.Request.Order.CreatedBy == userId ||
-                             r.Request.Order.ContactPersonId == userId) ? nameof(Process) : nameof(View),
+                        Controller = customerId.HasValue ? "Order" : "Request",
                     })
                 });
         }

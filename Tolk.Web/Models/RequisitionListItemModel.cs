@@ -12,7 +12,7 @@ namespace Tolk.Web.Models
 {
     public class RequisitionListItemModel
     {
-        public int RequisitionId { get; set; }
+        public int OrderRequestId { get; set; }
 
         public RequisitionStatus Status { get; set; }
 
@@ -23,7 +23,8 @@ namespace Tolk.Web.Models
         public DateTimeOffset Start { get; set; }
 
         public DateTimeOffset End { get; set; }
-        public string Action { get; set; }
+
+        public string Controller { get; set; }
 
     }
 }
