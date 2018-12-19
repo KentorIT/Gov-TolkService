@@ -8,12 +8,12 @@ USE TolkDev --change if running in test
 
 BEGIN TRAN
 
+DELETE FROM Orders
 DELETE FROM OrderInterpreterLocation
 DELETE FROM OrderPriceRows
 DELETE FROM OrderRequirementRequestAnswer
 DELETE FROM RequestPriceRows
 DELETE FROM RequisitionPriceRows
-DELETE FROM Orders
 DELETE FROM Requests
 DELETE FROM OrderRequirements
 DELETE FROM Requisitions
@@ -25,6 +25,10 @@ DELETE FROM RequisitionAttachments
 DELETE FROM OrderContactPersonHistory 
 DELETE FROM Attachments
 DELETE FROM TemporaryAttachmentGroups
+
+delete from OutboundEmails
+delete from OutboundWebHookCalls
+
 
 TRUNCATE TABLE OrderInterpreterLocation
 TRUNCATE TABLE OrderPriceRows
@@ -38,4 +42,4 @@ DBCC CHECKIDENT('OrderRequirements', RESEED, 0)
 DBCC CHECKIDENT('Requisitions', RESEED, 0)
 DBCC CHECKIDENT('Complaints', RESEED, 0)
 
-ROLLBACK TRAN
+Commit TRAN
