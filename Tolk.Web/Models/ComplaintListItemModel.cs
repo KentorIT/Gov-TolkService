@@ -12,9 +12,9 @@ namespace Tolk.Web.Models
 {
     public class ComplaintListItemModel
     {
-        public string Action { get; set; }
+        public string Controller { get; set; }
 
-        public int ComplaintId { get; set; }
+        public int OrderRequestId { get; set; }
 
         public ComplaintStatus Status { get; set; }
 

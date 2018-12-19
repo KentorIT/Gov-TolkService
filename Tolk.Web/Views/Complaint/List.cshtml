@@ -27,7 +27,7 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.ComplaintId" data-click-action-url="@Url.Action(item.Action, new { id = item.ComplaintId })">
+                            <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "complaint"})">
                                 <td>@item.OrderNumber</td>
                                 <td>@item.RegionName</td>
                                 <td>@item.CustomerName</td>

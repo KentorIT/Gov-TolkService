@@ -139,7 +139,7 @@ namespace Tolk.Web.Controllers
                 {
                     Items = items.Select(c => new ComplaintListItemModel
                     {
-                        ComplaintId = c.ComplaintId,
+                        OrderRequestId =  customerId.HasValue ?  c.Request.OrderId : c.RequestId,
                         BrokerName = c.Request.Ranking.Broker.Name,
                         CustomerName = c.Request.Order.CustomerOrganisation.Name,
                         ComplaintType = c.ComplaintType,
@@ -147,7 +147,7 @@ namespace Tolk.Web.Controllers
                         OrderNumber = c.Request.Order.OrderNumber,
                         RegionName = c.Request.Order.Region.Name,
                         Status = c.Status,
-                        Action = nameof(View)
+                        Controller = customerId.HasValue ? "Order" : "Request",
                     }),
                     FilterModel = model
                 });
