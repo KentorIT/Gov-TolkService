@@ -174,7 +174,7 @@ namespace Tolk.BusinessLogic.Services
             return _dbContext.PriceListRows.Where(r =>
                 r.CompetenceLevel == competenceLevel &&
                 r.PriceListType == listType &&
-                r.StartDate <= startAt.DateTime && r.EndDate >= startAt.DateTime).ToList();
+                r.StartDate.Date <= startAt.Date && r.EndDate.Date >= startAt.Date).ToList();
         }
 
         private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequestReplacingOrder)
@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Services
                 //One broker fee per day
                 int days = GetNoOfDays(startAt, endAt);
 
-                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate <= startAt && br.EndDate >= startAt);
+                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date);
 
                 return new PriceRowBase
                 {
