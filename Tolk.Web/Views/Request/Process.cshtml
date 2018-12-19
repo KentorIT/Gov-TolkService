@@ -26,7 +26,9 @@
                 }
             </div>
             <div class="col-sm-4">
-                <display-entry asp-for="ExpiresAt" />
+                <div class="red-border-left">
+                    <display-entry asp-for="ExpiresAt" />
+                </div>
             </div>
         </div>
         <form method="post" asp-action="Accept">
@@ -101,7 +103,7 @@
                                 <div class="border detail-text">
                                     <span class="detail-text">@Model.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.RequiredRequirementAnswers[i].Description</span>
                                     <input asp-for="RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
-                                    <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet"/>
+                                    <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
                                     <form-entry asp-for="RequiredRequirementAnswers[i].Answer" />
                                     <input asp-for="RequiredRequirementAnswers[i].IsRequired" type="hidden" />
                                 </div>
