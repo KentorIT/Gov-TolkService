@@ -2,7 +2,9 @@
 <div class="row">
     <div class="col-sm-4">
         <br />
-        <display-entry asp-for="Status" />
+        <div class="@Model.ColorClassName">
+            <display-entry asp-for="Status" />
+        </div>
     </div>
     <div class="col-sm-4">
         <br />

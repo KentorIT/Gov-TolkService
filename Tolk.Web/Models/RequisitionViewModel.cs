@@ -58,8 +58,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Önskad kompetensnivå (tredjehand)")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
-
-
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
@@ -77,6 +75,13 @@ namespace Tolk.Web.Models
         public decimal TotalPrice { get => ResultPriceInformationModel.TotalPriceToDisplay; }
 
         public EventLogModel EventLog { get; set; }
+
+        public string ColorClassName
+        {
+            get =>
+            (Status == RequisitionStatus.DeniedByCustomer) ? "red-border-left" :
+            (Status == RequisitionStatus.Approved || Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder) ? "green-border-left" : "blue-border-left";
+        }
 
         #region methods
 

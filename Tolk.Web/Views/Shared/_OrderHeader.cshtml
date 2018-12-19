@@ -11,11 +11,15 @@
     <div class="col-sm-3">
         @if (isOrderDetailView)
         {
-            <display-entry asp-for="Status" />
+            <div class="@Model.OrderColorClassName">
+                <display-entry asp-for="Status" />
+            </div>
         }
         else
         {
-            <display-entry asp-for="ActiveRequest.Status" />
+            <div class="@Model.ActiveRequest.ColorClassName">
+                <display-entry asp-for="ActiveRequest.Status" />
+            </div>
         }
     </div>
     <div class="col-sm-3">

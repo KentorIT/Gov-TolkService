@@ -162,6 +162,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Status på bokningen")]
         public OrderStatus Status { get; set; }
 
+        public string OrderColorClassName
+        {
+            get =>
+            (Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByBroker || Status == OrderStatus.CancelledByBrokerConfirmed || Status == OrderStatus.CancelledByCreatorConfirmed || Status == OrderStatus.ResponseNotAnsweredByCreator)  ? "red-border-left" :
+            (Status == OrderStatus.Delivered || Status == OrderStatus.DeliveryAccepted || Status == OrderStatus.ResponseAccepted) ? "green-border-left" :
+                (Status == OrderStatus.RequestResponded || Status == OrderStatus.RequestRespondedNewInterpreter) ? "yellow-border-left" : "blue-border-left";
+        }
+
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
@@ -225,7 +233,9 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
+
         public int? RequestId { get; set; }
+
         public RequestModel ActiveRequest { get; set; }
 
         public List<BrokerListModel> PreviousRequests { get; set; }

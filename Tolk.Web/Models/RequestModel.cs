@@ -134,6 +134,13 @@ namespace Tolk.Web.Models
 
         public EventLogModel EventLog { get; set; }
 
+        public string ColorClassName
+        {
+            get =>
+            (Status == RequestStatus.CancelledByBroker || Status == RequestStatus.CancelledByBrokerConfirmed || Status == RequestStatus.CancelledByCreator || Status == RequestStatus.CancelledByCreatorConfirmed || Status == RequestStatus.DeniedByCreator || Status == RequestStatus.DeniedByTimeLimit || Status == RequestStatus.ResponseNotAnsweredByCreator || Status == RequestStatus.DeclinedByBroker) ? "red-border-left" :
+            (Status == RequestStatus.Approved) ? "green-border-left" : (Status == RequestStatus.Accepted ||Status == RequestStatus.AcceptedNewInterpreterAppointed) ? "yellow-border-left" : "blue-border-left";
+        }
+
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]
