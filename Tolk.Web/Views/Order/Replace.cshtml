@@ -9,6 +9,7 @@
     <form method="post">
         <div class="col-sm-12">
             <h2>@ViewData["Title"]</h2>
+            <hr />
             <div class="row">
                 <div class="col-sm-4">
                     <display-entry asp-for="ReplacingOrderNumber" />
@@ -119,17 +120,6 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-4">
-                    <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="UnitName" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="CustomerReferenceNumber" />
-                </div>
-            </div>
-            <div class="row">
                 <div class="col-sm-12">
                     <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller."></span></h3>
                 </div>
@@ -181,7 +171,6 @@
                     <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                 </div>
             </div>
-
             <input asp-for="AssignmentType" type="hidden" />
             <input asp-for="RegionId" type="hidden" />
             <div class="row">
@@ -199,6 +188,19 @@
                 </div>
                 <div class="col-sm-8">
                     <form-entry asp-for="Description" />
+                </div>
+            </div>
+            <h2>Myndighetens uppgifter</h2>
+            <hr />
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="UnitName" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerReferenceNumber" />
                 </div>
             </div>
             <div class="row">

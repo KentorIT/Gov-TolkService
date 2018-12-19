@@ -1,6 +1,6 @@
 ﻿@model OrderModel
 
-@{ 
+@{
     string isOrderDetailViewKey = "IsOrderDetailView";
     bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
     int? actionReplacingId = isOrderDetailView ? Model.ReplacingOrderId : Model.ActiveRequest.ReplacingOrderRequestId;
@@ -23,16 +23,16 @@
     </div>
     <div class="col-sm-3">
         <display-entry asp-for="OrderNumber" />
-        @if (Model.ReplacingOrderId.HasValue)
+        @if (actionReplacingId.HasValue)
         {
             <span>
-                (Ersätter <a href="@Url.Action("View",new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
+                (Ersätter <a href="@Url.Action("View", new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
             </span>
         }
-        @if (Model.ReplacedByOrderId.HasValue)
+        @if (actionReplacedById.HasValue)
         {
             <span>
-                (Ersatt av <a href="@Url.Action("View",new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
+                (Ersatt av <a href="@Url.Action("View", new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
             </span>
         }
     </div>
