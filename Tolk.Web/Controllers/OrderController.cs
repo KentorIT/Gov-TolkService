@@ -380,10 +380,10 @@ namespace Tolk.Web.Controllers
                     DisplayFiles = attachments
                 };
             }
-
+            var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
-            updatedModel.CreatedBy = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single().CompleteContactInformation;
-
+            updatedModel.CreatedBy = user.CompleteContactInformation;
+            updatedModel.CustomerName = user.CustomerOrganisation.Name;
             return PartialView("Confirm", updatedModel);
         }
 
