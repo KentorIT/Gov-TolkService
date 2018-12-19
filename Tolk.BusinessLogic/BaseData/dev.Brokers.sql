@@ -4,12 +4,13 @@ CREATE TABLE #Brokers(
 	[BrokerId] [int] NOT NULL,
 	[Name] [nvarchar](255) NOT NULL,
 	[EmailDomain] [nvarchar](max) NULL,
-	[EmailAddress] [nvarchar](255) NULL
+	[EmailAddress] [nvarchar](255) NULL,
+	[OrganizationNumber] [nvarchar](32) NULL
 )
 GO
 
 
-insert #Brokers(BrokerId, Name, EmailDomain, EmailAddress)
+insert #Brokers(BrokerId, Name, EmailDomain, EmailAddress, OrganizationNumber)
 Values(1, 'Första förmedlingen', 'formedling1.se', 'avrop@formedling1.se', '550122-1525'),
 (2, 'Andra förmedlingen', 'formedling2.se', 'avrop@formedling2.se', '560417-2896'),
 (3, 'Tredje förmedlingen', 'formedling3.se', 'avrop@formedling3.se', '520901-4528'),
@@ -20,10 +21,10 @@ MERGE Brokers dst
 USING #Brokers src
 ON (src.BrokerId = dst.BrokerId)
 WHEN MATCHED THEN
-UPDATE SET dst.Name = src.Name, dst.EmailDomain = src.EmailDomain, dst.EmailAddress = src.EmailAddress
+UPDATE SET dst.Name = src.Name, dst.EmailDomain = src.EmailDomain, dst.EmailAddress = src.EmailAddress, dst.OrganizationNumber = src.OrganizationNumber
 WHEN NOT MATCHED THEN
-INSERT (BrokerId, Name, EmailDomain, EmailAddress)
-VALUES (src.BrokerId, src.Name, src.EmailDomain, src.EmailAddress);
+INSERT (BrokerId, Name, EmailDomain, EmailAddress, OrganizationNumber)
+VALUES (src.BrokerId, src.Name, src.EmailDomain, src.EmailAddress, src.OrganizationNumber);
 
 drop table #Brokers
 
