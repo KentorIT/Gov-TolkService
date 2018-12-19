@@ -131,8 +131,8 @@ $(function () {
     $("textarea").addClass("data-hj-whitelist");
 
     // For buttons and anchors that ignore dirty-checks
-    $("form > :button.do-not-check-dirty, form > a.do-not-check-dirty").on("click", function () {
-        $(this).parent("form").removeClass(dirty);
+    $(":button.do-not-check-dirty, a.do-not-check-dirty").on("click", function () {
+        $("form").removeClass(dirty);
     });
 
     $("form.filter-form").on("change", "select, input, textarea", function (event) {
