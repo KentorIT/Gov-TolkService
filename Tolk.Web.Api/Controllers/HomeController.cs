@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tolk.Api.Payloads;
 using Tolk.BusinessLogic.Data;
@@ -15,6 +16,7 @@ namespace Tolk.Web.Api.Controllers
         {
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult Index()
         {
