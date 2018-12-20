@@ -40,7 +40,9 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             _logger.LogInformation("User retrieved using certificate");
-            return _dbContext.Users.SingleOrDefault(u => u.Claims.Any(c => c.ClaimType == "CertSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
+            return _dbContext.Users.SingleOrDefault(u => 
+                u.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication") && 
+                u.Claims.Any(c => c.ClaimType == "CertSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
         }
 
         public AspNetUser GetApiUserByApiKey(string userName, string key)
@@ -51,7 +53,10 @@ namespace Tolk.Web.Api.Services
             }
             _logger.LogInformation("User retrieved using use/apiKey");
             //Need a lot more security here
-            return _dbContext.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpper() && u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == key));
+            return _dbContext.Users.SingleOrDefault(u => 
+                u.NormalizedUserName == userName.ToUpper() &&
+                u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication") && 
+                u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == key));
         }
 
         public AspNetUser GetBrokerUser(string caller, int? brokerId)

@@ -151,20 +151,21 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("UNAUTHORIZED");
             }
 
-            return Json(_dbContext.InterpreterBrokers
-                .Where(i => i.BrokerId == apiUser.BrokerId)
-                .Select(i =>
-                   new InterpreterModel
-                   {
-                       InterpreterId = i.InterpreterId,
-                       Email = i.Email,
-                       FirstName = i.FirstName,
-                       LastName = i.LastName,
-                       OfficialInterpreterId = i.OfficialInterpreterId,
-                       PhoneNumber = i.PhoneNumber,
-                       InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
-                    }
-                ));
+            return Json(new BrokerInterpretersResponse
+            {
+                Interpreters = _dbContext.InterpreterBrokers
+                    .Where(i => i.BrokerId == apiUser.BrokerId)
+                    .Select(i => new InterpreterModel
+                    {
+                        InterpreterId = i.InterpreterId,
+                        Email = i.Email,
+                        FirstName = i.FirstName,
+                        LastName = i.LastName,
+                        OfficialInterpreterId = i.OfficialInterpreterId,
+                        PhoneNumber = i.PhoneNumber,
+                        InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
+                    }).ToList()
+            });
         }
 
         #region SAME AS IN REQUEST, SHOULD BE MOVED

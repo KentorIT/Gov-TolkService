@@ -1,19 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
-using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = Roles.AdminRoles)]
     public class StatisticsController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -27,6 +23,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = Roles.Admin)]
         public ActionResult List()
         {
             return View();

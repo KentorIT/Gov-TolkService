@@ -1,0 +1,30 @@
+﻿@model IEnumerable<LanguageListItem>
+@{
+    ViewData["Title"] = "Språk";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive table-datatable">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Namn</th>
+                        <th>ISO-kod</th>
+                        <th>Tellusnamn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.ISO_639_1_Code</td>
+                            <td>@item.TellusName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

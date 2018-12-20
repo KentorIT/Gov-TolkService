@@ -85,9 +85,18 @@ namespace BrokerMock.Services
             {
                 client.DefaultRequestHeaders.Accept.Clear();
                 var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/BrokerInterpreters/");
-                var items = JsonConvert.DeserializeObject<List<InterpreterModel>>(await response.Content.ReadAsStringAsync());
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters: {items.Count}");
-                _cache.Set("BrokerInterpreters", items);
+                var responseString = await response.Content.ReadAsStringAsync();
+                if (JsonConvert.DeserializeObject<ResponseBase>(responseString).Success)
+                {
+                    var interpreterResponse = JsonConvert.DeserializeObject<BrokerInterpretersResponse>(responseString);
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters: {interpreterResponse.Interpreters.Count}");
+                    _cache.Set("BrokerInterpreters", interpreterResponse.Interpreters);
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseString);
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters FAILED:: ErrorMessage: {errorResponse.ErrorMessage}");
+                }
             }
         }
 

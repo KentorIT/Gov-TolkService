@@ -59,38 +59,55 @@ namespace BrokerMock.Controllers
                 if (extraInstructions.Contains("DECLINE"))
                 {
                     await Decline(payload.OrderNumber, "Vill inte, kan inte bör inte...");
-                }
-                if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
-                {
-                    await AssignInterpreter(
-                        payload.OrderNumber,
-                        _cache.Get<List<InterpreterModel>>("BrokerInterpreters").First(),
-                        payload.Locations.First().Key,
-                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                        payload.Requirements.Select(r => new RequirementAnswerModel
-                        {
-                            Answer = "Japp",
-                            CanMeetRequirement = true,
-                            RequirementId = r.RequirementId
-                        })
-                    );
-                }
-                if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
-                {
 
-                    Thread.Sleep(3000);
-                    await ChangeInterpreter(
-                        payload.OrderNumber,
-                        _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
-                        payload.Locations.Last().Key,
-                        payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                        payload.Requirements.Select(r => new RequirementAnswerModel
+                }
+                else
+                {
+                    if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    {
+                        var interpreter = _cache.Get<List<InterpreterModel>>("BrokerInterpreters")?.FirstOrDefault();
+
+                        if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
-                            Answer = "Japp",
-                            CanMeetRequirement = true,
-                            RequirementId = r.RequirementId
-                        })
-                    );
+                            interpreter = new InterpreterModel
+                            {
+                                Email = "newguy@new.guy",
+                                FirstName = "New",
+                                LastName = "Goy",
+                                PhoneNumber = "12121345",
+                                InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
+                            };
+                        }
+                        await AssignInterpreter(
+                            payload.OrderNumber,
+                            interpreter,
+                            payload.Locations.First().Key,
+                            payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            })
+                        );
+                    }
+                    if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
+                    {
+
+                        Thread.Sleep(3000);
+                        await ChangeInterpreter(
+                            payload.OrderNumber,
+                            _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
+                            payload.Locations.Last().Key,
+                            payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            })
+                        );
+                    }
                 }
                 //Get the headers:
                 //X-Kammarkollegiet-InterpreterService-Delivery
@@ -128,13 +145,14 @@ namespace BrokerMock.Controllers
                 };
                 var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Answer", content);
-                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Avrops-ID: {orderNumber} skickad tolk: {interpreter}");
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Accept]:: Avrops-ID: {orderNumber} skickad tolk: {interpreter}");
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Avrops-ID: {orderNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
                 }
             }
 
@@ -158,7 +176,7 @@ namespace BrokerMock.Controllers
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Acknowledge]:: Avrops-ID: {orderNumber} accat mottagande");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED:: Avrops-ID: {orderNumber} accat mottagande");
                 }
             }
 
@@ -183,7 +201,7 @@ namespace BrokerMock.Controllers
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/Decline]:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline] FAILED:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
                 }
             }
 
@@ -202,7 +220,7 @@ namespace BrokerMock.Controllers
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/File]:: Avrops-ID: {orderNumber} accat mottagande");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Avrops-ID: {orderNumber} accat mottagande");
                 }
             }
 
@@ -231,7 +249,7 @@ namespace BrokerMock.Controllers
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall FAILED", $"[Request/ChangeInterpreter]:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
                 }
             }
 

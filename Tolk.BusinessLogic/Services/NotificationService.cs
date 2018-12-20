@@ -458,7 +458,6 @@ namespace Tolk.BusinessLogic.Services
         {
             if (!BrokerNotificationSettings.Any(b => b.BrokerId == brokerId) && channel == NotificationChannel.Email)
             {
-                //Temporary, needs to create a NotificationHandler user for all brokers!!
                 return new BrokerNotificationSettings
                 {
                     ContactInformation = _dbContext.Brokers.Single(b => b.BrokerId == brokerId).EmailAddress,
@@ -474,9 +473,8 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (!_cache.TryGetValue(brokerSettingsCacheKey, out IEnumerable<BrokerNotificationSettings> brokerNotificationSettings))
                 {
-                    var roleId = _dbContext.Roles.Single(r => r.Name == "NotificationHandler").Id;
                     brokerNotificationSettings = _dbContext.Users.Include(u => u.NotificationSettings)
-                        .Where(u => u.BrokerId != null && u.Roles.Any(r => r.RoleId == roleId))
+                        .Where(u => u.BrokerId != null && u.IsApiUser)
                         .SelectMany(u => u.NotificationSettings)
                         .Select(n => new BrokerNotificationSettings
                         {

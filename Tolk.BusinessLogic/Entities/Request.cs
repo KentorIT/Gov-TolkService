@@ -213,8 +213,13 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is connected to a replacement order. use the {nameof(AcceptReplacementOrder)} method instead.");
             }
-            //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
-
+            ////TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
+            ////Add validation for interperter location
+            //if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
+            //{
+            //    throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
+            //}
+            ////Add Validation for competencelevel, if required
             Status = RequestStatus.Accepted;
             AnswerDate = acceptTime;
             AnsweredBy = userId;

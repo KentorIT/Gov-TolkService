@@ -6,9 +6,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
@@ -50,7 +52,7 @@ namespace Tolk.Web.Controllers
             {
                 model = new UserFilterModel();
             }
-            
+
             model.IsSystemAdministrator = User.IsInRole(Roles.Admin);
 
             var customerId = User.TryGetCustomerOrganisationId();
@@ -240,6 +242,103 @@ namespace Tolk.Web.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize(Roles = Roles.SuperUser)]
+        public ActionResult EditOrganisationSettings()
+        {
+            var brokerId = User.TryGetBrokerId();
+            if (brokerId != null)
+            {
+                var apiUser = _dbContext.Users
+                    .Include(u => u.Claims)
+                    .Include(u => u.NotificationSettings)
+                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                if (apiUser != null)
+                {
+                    return View(new OrganisationSettingsModel
+                    {
+                        UserName = apiUser.UserName,
+                        Email = apiUser.Email,
+                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertSerialNumber")?.ClaimValue,
+                        ApiKey = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue,
+                        UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
+                        UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
+                        UseWebHook = apiUser.NotificationSettings.Any(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated),
+                        RequestCreatedWebHook = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated)?.ConnectionInformation
+                    });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Roles = Roles.SuperUser)]
+        public async Task<ActionResult> EditOrganisationSettings(OrganisationSettingsModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                //Save all Claims and Notification settings and stuff here...
+                var brokerId = User.TryGetBrokerId();
+                if (brokerId != null)
+                {
+                    var apiUser = _dbContext.Users.Include(u => u.NotificationSettings).SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                    if (apiUser != null)
+                    {
+                        var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
+                        //Clear all Claims, and resave them...
+                        await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
+                        if (brokerUser.NormalizedEmail != model.Email.ToUpper())
+                        {
+                            var code = await _userManager.GenerateChangeEmailTokenAsync(brokerUser, model.Email);
+                            var result = await _userManager.ChangeEmailAsync(brokerUser, model.Email, code);
+                        }
+                        if (model.UseApiKeyAuthentication)
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim("UseApiKeyAuthentication", DateTime.Now.ToShortDateString()));
+                        }
+                        if (model.UseCertificateAuthentication)
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim("UseCertificateAuthentication", DateTime.Now.ToShortDateString()));
+                        }
+                        if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim("CertSerialNumber", model.CertificateSerialNumber));
+                        }
+                        if (!string.IsNullOrWhiteSpace(model.ApiKey))
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim("Secret", model.ApiKey));
+                        }
+                        var hookInfo = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated);
+                        if (model.UseWebHook)
+                        {
+                            if (hookInfo != null)
+                            {
+                                hookInfo.ConnectionInformation = model.RequestCreatedWebHook;
+                            }
+                            else
+                            {
+                                apiUser.NotificationSettings.Add(new UserNotificationSetting
+                                {
+                                    NotificationType = NotificationType.RequestCreated,
+                                    NotificationChannel = NotificationChannel.Webhook,
+                                    ConnectionInformation = model.RequestCreatedWebHook
+                                });
+                            }
+                        }
+                        else if (hookInfo != null)
+                        {
+                            apiUser.NotificationSettings.Remove(hookInfo);
+                        }
+
+                        _dbContext.SaveChanges();
+                        return RedirectToAction(nameof(HomeController.Index), "Home", new { message = "Ändringarna sparades"});
+                    }
+                }
+            }
+            return View(model);
+
         }
 
         private string GetErrors(IdentityResult result)
