@@ -359,7 +359,8 @@ namespace Tolk.Web.Controllers
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris för avropssvar",
-                UseDisplayHideInfo = true
+                UseDisplayHideInfo = true,
+                Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
             };
         }
     }

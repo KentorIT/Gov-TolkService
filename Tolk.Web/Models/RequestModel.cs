@@ -72,7 +72,7 @@ namespace Tolk.Web.Models
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Required]
-        [Display(Name = "Tolk")]
+        [Display(Name = "Tolk", Description = "I de fall tillsatt tolk har skyddad identitet skall inte tolkens namn eller kontaktuppgifter finnas i bekräftelsen. Använd i dessa fall valet ”Tolk med skyddade personuppgifter”. Överlämna tolkens uppgifter på annat sätt i enlighet med era säkerhetsrutiner")]
         public int? InterpreterId { get; set; }
 
         [Required]

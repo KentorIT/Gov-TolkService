@@ -357,6 +357,10 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
             htmlBuilder.AppendHtml(checkboxBuilder.RenderStartTag());
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
+            if (!string.IsNullOrEmpty(For.Metadata.Description))
+            {
+                htmlBuilder.AppendHtml(For.Metadata.Description);
+            }
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 
             WritePrefix(writer, PrefixAttribute.Position.Value);

@@ -22,5 +22,7 @@ namespace Tolk.Web.Models
         public bool UseDisplayHideInfo { get; set; }
 
         public bool CenterHeader { get; set; } = false;
+
+        public string Description { get; set; }
     }
 }

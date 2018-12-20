@@ -4,12 +4,24 @@
     @if (Model.CenterHeader)
     {
         <div class="col-sm-12 text-center">
-            <label class="display-label">@Model.Header</label>
+            <label class="display-label">
+                @Model.Header
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span>
+                }
+            </label>
         </div>
     }
     else
     {
-        <label class="display-label">@Model.Header</label>
+        <label class="display-label">
+            @Model.Header
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span>
+            }
+        </label>
     }
     <div class="wrap-price-info">
         @if (Model.CenterHeader)
