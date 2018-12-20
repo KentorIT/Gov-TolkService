@@ -479,7 +479,7 @@ namespace Tolk.BusinessLogic.Services
                         .Select(n => new BrokerNotificationSettings
                         {
                             BrokerId = n.User.BrokerId.Value,
-                            ContactInformation = n.ConnectionInformation,
+                            ContactInformation = n.ConnectionInformation ?? (n.NotificationChannel == NotificationChannel.Email ? n.User.Email : null),
                             NotificationChannel = n.NotificationChannel,
                             NotificationType = n.NotificationType,
                             RecipientUserId = n.UserId
