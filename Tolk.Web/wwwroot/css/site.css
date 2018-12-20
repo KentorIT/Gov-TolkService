@@ -552,6 +552,13 @@ input[type='checkbox']:checked:after {
   font-size: 11px;
   font-family: "Merriweather Sans", sans-serif;
 }
+.tooltip .tooltip-inner {
+  background-color: #587573;
+  border-radius: 0;
+}
+.tooltip.top .tooltip-arrow {
+  border-top-color: #587573;
+}
 .d-none {
   display: none;
 }
