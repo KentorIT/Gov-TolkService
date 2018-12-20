@@ -9,7 +9,7 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum CompetenceAndSpecialistLevel
     {
-    	[CustomName("no_interpreter")]
+    	[CustomName("no_interpreter", useInApi: false)]
         [Description("Tolk ej tillsatt")]
         NoInterpreter = 0,
 
