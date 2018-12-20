@@ -5,9 +5,7 @@
 @if (Model.AllowUpload)
 {
     <label>Bifoga filer</label>
-    <span class="form-entry-information glyphicon glyphicon-info-sign" title="För att bifoga en fil klicka på knappen Bifoga filer och följ sedan instruktionerna"></span>
-    <br />
-    <span class="more-info">@Model.Description</span>
+    <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span>
     <br />
     <br />
     <a href="#" class="btn btn-warning" data-target="#addFilesDialog" data-toggle="modal" data-backdrop="static"><span class="glyphicon glyphicon-paperclip"></span> Bifoga filer</a>

@@ -27,22 +27,22 @@ namespace Tolk.Web.Models
 
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
-        [Display(Name = "Region", Description = "Det län där tolkningen ska äga rum")]
+        [Display(Name = "Län", Description = "Län för den plats där tolkbehovet finns. I det fall tolkning sker på distans anges länet där myndigheten som använder den aktuella tolktjänsten är placerad. Om tolkning ska genomföras vid en myndighets lokalkontor anges det län där lokalkontoret är placerat")]
         [Required]
         public int? RegionId { get; set; }
 
-        [Display(Name = "Språk")]
+        [Display(Name = "Språk", Description = "Om önskat språk inte finns i listan, välj Övrigt språk och ange själv språk i textfältet som visas")]
         [ClientRequired]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Dialekt")]
+        [Display(Name = "Dialekt", Description = "Om Dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet")]
         [RequiredIf(nameof(DialectIsRequired), true, OtherPropertyType = typeof(bool))]
         public string Dialect { get; set; }
 
         [Display(Name = "Dialekt är ett krav")]
         public bool DialectIsRequired { get; set; }
 
-        [Display(Name = "Annan kontaktperson")]
+        [Display(Name = "Rätt att godkänna rekvisition", Description = "Välj vid behov en annan person som skall ges rätt att godkänna rekvisition, t ex person som deltar vid tolktillfället. Denna uppgift kan du även komplettera eller ändra senare")]
         public int? ContactPersonId { get; set; }
 
         public int? ChangeContactPersonId { get; set; }
@@ -50,7 +50,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Extra information", Description = "Exempelvis vägbeskrivning eller ärendeinformation")]
+        [Display(Name = "Övrig uppdragsinformation", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Beakta eventuell sekretess avseende informationen")]
         public string Description { get; set; }
 
         [Display(Name = "Språk och dialekt")]
@@ -64,7 +64,7 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
 
-        [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
+        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
@@ -72,7 +72,7 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
-        [Display(Name = "Uppdragstyp")]
+        [Display(Name = "Uppdragstyp", Description = "Avistatolkning sker genom en kombination av tal och skrift, till exempel uppläsning av dokument")]
         [Required]
         public RadioButtonGroup AssignmentType { get; set; }
 
@@ -121,7 +121,7 @@ namespace Tolk.Web.Models
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3.</span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
-        [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
+        [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt Påplats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett mail när bekräftelsen kommit.Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen. Förfrågan ser då likadan ut. Om bedömd resekostnad är 0 kr godkänns bekräftelsen automatiskt")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
         public bool IsOnSiteOrOffSiteDesignatedLocationSelected
@@ -181,7 +181,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Ersätter BokningsID")]
         public string ReplacingOrderNumber { get; set; }
 
-        [Display(Name = "Region")]
+        [Display(Name = "Län")]
         public string RegionName { get; set; }
 
         [Display(Name = "Språk")]
@@ -225,7 +225,9 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string InterpreterName { get; set; }
 
-        [Display(Name = "Tolkens kompetensnivå")]
+        [Display(Name = "Tolkens kompetensnivå", Description = "- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två." +
+            "\n- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen " +
+            "\n- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Display(Name = "Inställelsesätt enl. svar")]
@@ -254,11 +256,11 @@ namespace Tolk.Web.Models
 
         #region extra requirements
 
-        [Display(Name = "Tillkommande krav och/eller önskemål")]
+        [Display(Name = "Tillkommande krav och/eller önskemål", Description = "Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål.")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
 
-        [Display(Name = "Tillkommande önskemål")]
+        [Display(Name = "Tillkommande önskemål", Description = "Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen")]
         public List<OrderRequirementModel> OrderDesiredRequirements { get; set; }
 
         #endregion

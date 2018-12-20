@@ -508,7 +508,7 @@ namespace Tolk.Web.TagHelpers
         private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
         {
             writer.WriteLine("<div class=\"input-group time timesplit\">");
-            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "h" : "min");
+            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min");
             writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
             WriteValidation(writer, timeModelExplorer, timeFieldName);
         }

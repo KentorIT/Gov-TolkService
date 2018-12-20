@@ -59,7 +59,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller."></span></h3>
+                                <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken.Om endast ett förstahandsval anges, betraktas detta som ett tvingande krav för förmedlingen. Om andrahands- och tredjehandsval anges betraktas alla alternativ som önskemål, och förmedlingen har rätt att tillsätta tolk enligt något av alternativen"></span></h3>
                             </div>
                         </div>
                         <div class="row ranked-InterpreterLocation">
@@ -103,10 +103,13 @@
                         </div>
                         <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
                         <div class="row">
-                            <div class="col-sm-8">
-                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet."></span></h3>
-                                <div class="important-info">I de fall inget krav eller önskemål om kompetensnivå har angetts ska förmedlingen tillsätta tolk med högsta möjliga kompetens enligt principen för kompetensprioritering i ramavtalet.</div>
+                            <div class="col-sm-12">
+                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två.\n- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen \n- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
                                 <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
                                 <span id="competence-required">
                                     <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
                                 </span>
@@ -116,6 +119,12 @@
                                     <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                 </span>
                             </div>
+                            <div class="col-sm-4 important-info">
+                                - Rättstolk/sjukvårdstolk (nivå 4): Auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk <br />
+                                - Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar <br />
+                                - Utbildad tolk (nivå 2): Finns i Kammarkollegiets register över utbildade tolkar <br />
+                                - Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
@@ -124,10 +133,10 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4">
-                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
+                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty })
                             </div>
                             <div class="col-sm-4">
-                                <label>Tillkommande krav</label>
+                                <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span></label>
                                 <br />
                                 <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
                                 <br /><br />
@@ -138,7 +147,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-4">
-                                <label>Tillkommande önskemål</label>
+                                <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen"></span></label>
                                 <br />
                                 <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
                                 <br /> <br />

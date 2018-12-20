@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public string LanguageName { get; set; }
 
-        [Display(Name = "Region")]
+        [Display(Name = "Län")]
         public string RegionName { get; set; }
 
         [Display(Name = "Myndighetens referensnummer")]

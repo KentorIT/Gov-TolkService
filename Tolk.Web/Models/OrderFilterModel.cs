@@ -23,7 +23,7 @@ namespace Tolk.Web.Models
 
         public OrderStatus? Status { get; set; }
 
-        [Display(Name = "Region")]
+        [Display(Name = "Län")]
         public int? RegionId { get; set; }
 
         [Display(Name = "Språk")]
