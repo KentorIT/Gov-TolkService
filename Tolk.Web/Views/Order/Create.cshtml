@@ -104,7 +104,7 @@
                         <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
                         <div class="row">
                             <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två.\n- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen \n- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
+                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två.<br />- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen <br />- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
                                 <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
                             </div>
                         </div>
@@ -120,10 +120,12 @@
                                 </span>
                             </div>
                             <div class="col-sm-4 important-info">
-                                - Rättstolk/sjukvårdstolk (nivå 4): Auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk <br />
-                                - Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar <br />
-                                - Utbildad tolk (nivå 2): Finns i Kammarkollegiets register över utbildade tolkar <br />
-                                - Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register
+                                <ul>
+                                    <li>Rättstolk/sjukvårdstolk (nivå 4): Auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
+                                    <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
+                                    <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets register över utbildade tolkar</li>
+                                    <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
+                                </ul>
                             </div>
                         </div>
                         <div class="row">

@@ -226,8 +226,8 @@ namespace Tolk.Web.Models
         public string InterpreterName { get; set; }
 
         [Display(Name = "Tolkens kompetensnivå", Description = "- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två." +
-            "\n- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen " +
-            "\n- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet")]
+            "- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen " +
+            "- Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Display(Name = "Inställelsesätt enl. svar")]
