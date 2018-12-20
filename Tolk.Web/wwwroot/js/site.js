@@ -101,6 +101,8 @@ $(function () {
             break;
     }
 
+    $('.form-entry-information').tooltip();
+
     var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
     orderDatePickerOptions.startDate = new Date($('#now').val()).zeroTime();
     $('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
