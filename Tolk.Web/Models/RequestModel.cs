@@ -104,7 +104,8 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        [Display(Name = "Förväntad resekostnad (exkl. restid och moms)")]
+        [Display(Name = "Förväntad resekostnad (exkl. restid och moms) i SEK")]
+        [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 SEK")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
         

@@ -1,5 +1,12 @@
+function validateControls() {
+    if (checkTravelCost()) { $('#Accept').attr('disabled', false); }
+    else { $('#Accept').attr('disabled', true); }
+}
+
 $(function () {
     checkRequirements();
+
+    $('#ExpectedTravelCosts').change(function () { validateControls(); });
 
     $('#InterpreterId').change(function () {
         if ($(this).val() === "-1") {
@@ -52,6 +59,25 @@ $(function () {
         }
     });
 });
+
+function checkTravelCost() {
+    var travelCost = $('#ExpectedTravelCosts').val();
+
+    if (travelCost = "" || isNaN(parseInt(travelCost)) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
+        triggerValidator("Resekostnad måste ha ett värde mellan 0 och 100 000 kr <br \><br \>", $('#ExpectedTravelCosts-error'));
+        return false;
+    }
+    else {
+        $('#ExpectedTravelCosts-error').hide();
+        return true;
+    }
+}
+
+function triggerValidator(message, validatorId) {
+    validatorId.empty();
+    validatorId.append(message);
+    validatorId.show();
+}
 
 $.fn.extend({
     openDialog: function () {

@@ -54,12 +54,12 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string RequisitionCreatedBy { get; set; }
 
-        [Display(Name = "Förväntad resekostnad (exkl. moms)")]
+        [Display(Name = "Förväntad resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
-        [Display(Name = "Faktisk resekostnad (exkl. moms)")]
-        [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 kronor")]
+        [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK")]
+        [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 SEK")]
         [DataType(DataType.Currency)]
         public decimal TravelCosts { get; set; }
 

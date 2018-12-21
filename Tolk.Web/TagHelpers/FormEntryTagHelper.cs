@@ -359,7 +359,7 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
-                htmlBuilder.AppendHtml(For.Metadata.Description);
+                htmlBuilder.AppendHtml(string.Format(InformationSpan, For.Metadata.Description));
             }
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 

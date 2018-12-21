@@ -79,6 +79,7 @@
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
                 <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                 <form-entry asp-for="ExpectedTravelCosts" />
+                <div id="ExpectedTravelCosts-error" class="d-none text-danger body"></div>
             }
             else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime)
             {
@@ -87,7 +88,7 @@
                 <div class="collapse" id="set-expected-travel-costs">
                     <div class="important-info"> Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                     <form-entry asp-for="ExpectedTravelCosts" />
-
+                    <div id="ExpectedTravelCosts-error" class="d-none text-danger body"></div>
                 </div>
             }
             <div class="row">
