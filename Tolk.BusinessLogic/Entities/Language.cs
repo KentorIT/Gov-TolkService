@@ -15,8 +15,8 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string Name { get; set; }
 
-        [MaxLength(2)]
-        public string ISO_639_1_Code { get; set; }
+        [MaxLength(3)]
+        public string ISO_639_Code { get; set; }
 
         [MaxLength(100)]
         public string TellusName { get; set; }

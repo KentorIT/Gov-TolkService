@@ -149,7 +149,7 @@ namespace Tolk.BusinessLogic.Services
                         Region = order.Region.RegionId.ToString("D2"),
                         Language = new LanguageModel
                         {
-                            Key = request.Order.Language?.ISO_639_1_Code,
+                            Key = request.Order.Language?.ISO_639_Code,
                             Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
                             Dialect = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.Description,
                             DialectIsRequired = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.IsRequired ?? false

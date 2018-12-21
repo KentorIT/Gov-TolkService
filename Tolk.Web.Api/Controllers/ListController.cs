@@ -55,7 +55,7 @@ namespace Tolk.Web.Api.Controllers
             return Json(_dbContext.Languages.Where(l => l.Active == true)
                 .OrderBy(l => l.Name).Select(l => new
                 {
-                    Key = l.ISO_639_1_Code,
+                    Key = l.ISO_639_Code,
                     Desciption = l.Name
                 }));
         }
