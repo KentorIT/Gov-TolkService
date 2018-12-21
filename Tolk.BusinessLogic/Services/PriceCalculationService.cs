@@ -304,7 +304,7 @@ namespace Tolk.BusinessLogic.Services
                 }
 
                 //Find any minutes before 07:00
-                if (!dateTypes.Contains(DateType.Holiday) &&
+                if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
                     dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) &&
                     start.TimeOfDay < new TimeSpan(7, 0, 0))
                 {
@@ -316,7 +316,7 @@ namespace Tolk.BusinessLogic.Services
                     );
                 }
 
-                if (!dateTypes.Contains(DateType.Holiday) &&
+                if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
                     dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) &&
                     (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
