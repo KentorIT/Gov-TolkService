@@ -3,11 +3,11 @@ CREATE TABLE #Languages(
 	[LanguageId] [int] NOT NULL,
 	[Name] [nvarchar](100) NOT NULL,
 	[Active] [bit] NOT NULL DEFAULT ((0)),
-	[ISO_639_1_Code] [nvarchar](3) NULL,
+	[ISO_639_Code] [nvarchar](3) NULL,
 	[TellusName] [nvarchar](100) NULL
 	)
 
-INSERT #Languages (LanguageId, Name, ISO_639_1_Code, TellusName, Active)
+INSERT #Languages (LanguageId, Name, ISO_639_Code, TellusName, Active)
 	VALUES 
 (1, 'Abchaziska', 'abk', '', 1),
 (2, 'Oromo', 'orm', '', 1),
@@ -166,11 +166,12 @@ MERGE Languages dst
 USING #Languages src
 ON (src.LanguageId = dst.LanguageId)
 WHEN MATCHED THEN
-UPDATE SET dst.Name = src.Name, dst.Active = src.Active, dst.TellusName = src.Tellusname, dst.ISO_639_1_Code = src.ISO_639_1_Code
+UPDATE SET dst.Name = src.Name, dst.Active = src.Active, dst.TellusName = src.Tellusname, dst.ISO_639_Code = src.ISO_639_Code
 WHEN NOT MATCHED THEN
-INSERT (LanguageId, Name, ISO_639_1_Code, TellusName, Active)
-VALUES (src.LanguageId, src.Name, src.ISO_639_1_Code, src.TellusName, src.Active);
+INSERT (LanguageId, Name, ISO_639_Code, TellusName, Active)
+VALUES (src.LanguageId, src.Name, src.ISO_639_Code, src.TellusName, src.Active);
 
 SET IDENTITY_INSERT Languages OFF
 
 DROP TABLE #Languages
+

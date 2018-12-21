@@ -9,7 +9,7 @@ namespace Tolk.Web.Models
     {
         public string Name { get; set; }
 
-        public string ISO_639_1_Code { get; set; }
+        public string ISO_639_Code { get; set; }
 
         public string TellusName { get; set; }
     }

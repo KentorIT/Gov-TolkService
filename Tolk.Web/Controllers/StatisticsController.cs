@@ -28,5 +28,18 @@ namespace Tolk.Web.Controllers
         {
             return View();
         }
+
+        [Authorize(Roles = Roles.SuperUser)]
+        public ActionResult ListLanguages()
+        {
+            return View(
+                _dbContext.Languages.Where(l => l.Active == true)
+                .OrderBy(l => l.Name).Select(l => new LanguageListItem
+                {
+                    ISO_639_Code = l.ISO_639_Code,
+                    Name = l.Name,
+                    TellusName = l.TellusName
+                }));
+        }
     }
 }
