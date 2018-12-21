@@ -25,7 +25,6 @@ namespace Tolk.Web.Api.Controllers
             _dbContext = tolkDbContext;
             _options = options.Value;
             _apiUserService = apiUserService;
-
         }
 
         [HttpGet]

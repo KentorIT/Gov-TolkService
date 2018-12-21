@@ -9,17 +9,16 @@ using Tolk.BusinessLogic.Data;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class HomeController : ControllerBase
+    public class HomeController : Controller
     {
         public HomeController()
         {
         }
 
         [HttpGet]
-        public ActionResult<string> Index()
+        public ActionResult Index()
         {
-
-            return "Home/Index";
+            return View();
         }
 
         [HttpGet]
