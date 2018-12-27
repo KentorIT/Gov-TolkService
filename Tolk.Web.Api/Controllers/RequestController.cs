@@ -42,7 +42,7 @@ namespace Tolk.Web.Api.Controllers
         #region Methods
 
         [HttpPost]
-        public JsonResult Answer([FromBody] RequestAssignModel model)
+        public JsonResult Answer([FromBody] RequestAnswerModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)
@@ -263,7 +263,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        public JsonResult ChangeInterpreter([FromBody] RequestAssignModel model)
+        public JsonResult ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)

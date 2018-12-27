@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
 
 namespace BrokerMock.Services

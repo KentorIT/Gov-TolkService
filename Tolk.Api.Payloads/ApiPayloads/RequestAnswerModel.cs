@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Tolk.Api.Payloads.ApiPayloads
 {
-    public class RequestAssignModel : ApiPayloadBaseModel
+    public class RequestAnswerModel : ApiPayloadBaseModel
     {
         public string OrderNumber { get; set; }
         public InterpreterModel Interpreter { get; set; }

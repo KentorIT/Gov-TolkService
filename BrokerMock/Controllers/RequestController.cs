@@ -133,7 +133,7 @@ namespace BrokerMock.Controllers
         {
             using (var client = GetHttpClient())
             {
-                var payload = new RequestAssignModel
+                var payload = new RequestAnswerModel
                 {
                     OrderNumber = orderNumber,
                     Interpreter = interpreter,
@@ -231,7 +231,7 @@ namespace BrokerMock.Controllers
         {
             using (var client = GetHttpClient())
             {
-                var payload = new RequestAssignModel
+                var payload = new RequestAnswerModel
                 {
                     OrderNumber = orderNumber,
                     Interpreter = interpreter,

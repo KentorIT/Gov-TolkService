@@ -151,8 +151,6 @@ namespace Tolk.BusinessLogic.Services
                         {
                             Key = request.Order.Language?.ISO_639_Code,
                             Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
-                            Dialect = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.Description,
-                            DialectIsRequired = request.Order.Requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.IsRequired ?? false
                         },
                         ExpiresAt = request.ExpiresAt,
                         StartAt = order.StartAt,
@@ -172,7 +170,7 @@ namespace Tolk.BusinessLogic.Services
                         AssignentType = EnumHelper.GetCustomName(order.AssignentType),
                         Description = order.Description,
                         CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
-                        Requirements = order.Requirements.Where(r => r.RequirementType != RequirementType.Dialect).Select(r => new RequirementModel
+                        Requirements = order.Requirements.Select(r => new RequirementModel
                         {
                             Description = r.Description,
                             IsRequired = r.IsRequired,
