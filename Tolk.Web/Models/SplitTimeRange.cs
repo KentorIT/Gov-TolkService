@@ -36,20 +36,19 @@ namespace Tolk.Web.Models
             }
         }
 
-        private DateTime GetEndDate(int endHour)
+        private DateTime GetEndDate(int endHour, int endMinute)
         {
-            return StartDate.AddDays(
-                endHour < StartTimeHour ? 1 : 0);
+            return StartDate.AddDays((endHour < StartTimeHour) || (endHour == StartTimeHour && endMinute < StartTimeMinutes) ? 1 : 0);
         }
 
         public DateTimeOffset EndAt
         {
-            get => GetEndDate(EndTimeHour).AddHours(EndTimeHour).AddMinutes(EndTimeMinutes).ToDateTimeOffsetSweden();
+            get => GetEndDate(EndTimeHour, EndTimeMinutes).AddHours(EndTimeHour).AddMinutes(EndTimeMinutes).ToDateTimeOffsetSweden();
             set
             {
                 var valueSweden = value.ToDateTimeOffsetSweden();
 
-                var endDateFromTime = GetEndDate(valueSweden.Hour);
+                var endDateFromTime = GetEndDate(valueSweden.Hour, valueSweden.Minute);
 
                 if (endDateFromTime != valueSweden.Date)
                 {
