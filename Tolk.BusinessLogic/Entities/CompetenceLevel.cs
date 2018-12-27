@@ -21,7 +21,7 @@ namespace Tolk.BusinessLogic.Entities
         AuthorizedInterpreter = 3,
 
         [CustomName("specialist_interpreter")]
-        [Description("Rättsttolk (RT), Sjukvårdstolk (ST)")]
+        [Description("Rättstolk (RT), Sjukvårdstolk (ST)")]
         SpecializedInterpreter = 4
     }
 }
