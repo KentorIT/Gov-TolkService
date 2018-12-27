@@ -1,16 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Helpers;
-using Microsoft.Extensions.Caching.Memory;
+﻿using System;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Tolk.Web.Api.Helpers;
