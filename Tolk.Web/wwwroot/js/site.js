@@ -158,7 +158,7 @@ $(function () {
     });
 
     $("select").each(function () {
-        var allowClear = $(this).parent().hasClass("allow-clear");
+        var allowClear = $(this).parents().hasClass("allow-clear");
         $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });
     });
 

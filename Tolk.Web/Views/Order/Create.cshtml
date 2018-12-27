@@ -1,7 +1,6 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
 {
     @section Scripts {
@@ -11,7 +10,6 @@
             <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
             <script src="~/js/Order/Add.js" asp-append-version="true"></script>
             <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-
         </environment>
         <environment exclude="Development">
             <script src="~/js/Files.min.js" asp-append-version="true"></script>
@@ -108,6 +106,11 @@
                         <div class="row">
                             <div class="col-sm-12">
                                 <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två. - Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen - Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
                                 <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
                             </div>
                         </div>
@@ -117,7 +120,8 @@
                                     <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
                                 </span>
                                 <span id="competence-requested">
-                                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="Ange ett till tre önskemål om kompetensnivå i prioritetsordning" />
+                                    <label>Ange ett till tre önskemål om kompetensnivå i prioritetsordning</label><br />
+                                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
                                     <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                     <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                 </span>
@@ -208,7 +212,6 @@
         </div>
     </div>
 }
-
 <span id="basefile" class="d-none">
     <input asp-for="Files[0].Id" type="hidden" />
 </span>
@@ -218,14 +221,12 @@
     <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
     <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
 </span>
-
 <span id="baseDesiredRequirement" class="d-none">
     <input asp-for="OrderDesiredRequirements[0].OrderRequirementId" type="hidden" />
     <input asp-for="OrderDesiredRequirements[0].RequirementType" type="hidden" />
     <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
     <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
 </span>
-
 @Html.Partial("_UploadFileDialog")
 <div id="addRequirement" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -245,7 +246,6 @@
         </div>
     </div>
 </div>
-
 <div id="addDesiredRequirement" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
@@ -264,5 +264,4 @@
         </div>
     </div>
 </div>
-
 
