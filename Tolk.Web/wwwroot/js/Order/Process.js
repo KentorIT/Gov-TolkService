@@ -1,5 +1,5 @@
 ﻿$(function () {
-    $("body").on("click", "#denyMessageDialog", function () {
+    $("body").on("click", ".deny-button", function () {
         event.preventDefault();
         $("#denyMessageDialog").openDialog();
     });

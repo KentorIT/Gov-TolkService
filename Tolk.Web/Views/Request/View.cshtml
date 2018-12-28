@@ -19,6 +19,7 @@
             <div class="col-sm-12">
                 @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
                 {
+                    <br />
                     @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
                     {
                         <display-entry asp-for="CancelMessage" />
@@ -35,10 +36,7 @@
                 }
                 @if (Model.Status == RequestStatus.DeniedByCreator)
                 {
-                    @if (!string.IsNullOrWhiteSpace(Model.DenyMessage))
-                    {
-                        <display-entry asp-for="DenyMessage" />
-                    }
+                    <br />
                     @if (Model.AllowConfirmationDenial)
                     {
                         <form method="post" asp-action="ConfirmDenial">
