@@ -364,8 +364,8 @@ namespace Tolk.BusinessLogic.Services
         {
             if (list == null || list.Count() == 0)
             {
-                // Choose the highest (and most expensive) if no level is specified
-                return CompetenceAndSpecialistLevel.CourtSpecialist;
+                // If no level is specified, AuthorizedInterpreter should be returned
+                return CompetenceAndSpecialistLevel.AuthorizedInterpreter;
             }
             if (list.Count() == 1)
             {
