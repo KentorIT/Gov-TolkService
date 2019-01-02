@@ -17,7 +17,7 @@
             @if (Model.OrderCalculatedPriceInformationModel != null)
             {
                 Model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";
-                Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
             }
             <br /><br /><br />
         </div>

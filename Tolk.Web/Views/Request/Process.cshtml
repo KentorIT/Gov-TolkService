@@ -16,7 +16,7 @@
             <div class="col-sm-4">
                 @if (Model.OrderCalculatedPriceInformationModel != null)
                 {
-                    Html.RenderPartial("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                    await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
                 }
             </div>
             <div class="col-sm-4">
@@ -182,7 +182,7 @@
         </span>
     </div>
 
-    @Html.Partial("_UploadFileDialog")
+    @await Html.PartialAsync("_UploadFileDialog")
     <div id="denyMessageDialog" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->

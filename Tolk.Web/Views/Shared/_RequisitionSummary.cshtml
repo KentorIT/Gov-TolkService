@@ -95,7 +95,7 @@ else
         <div class="col-sm-12">
             @if (Model.ResultPriceInformationModel != null)
             {
-                Html.RenderPartial("_PriceInformationDisplay", Model.ResultPriceInformationModel);
+                await Html.RenderPartialAsync("_PriceInformationDisplay", Model.ResultPriceInformationModel);
             }
         </div>
     </div>
@@ -105,7 +105,7 @@ else
         <div class="col-sm-8">
             @if (Model.RequestPriceInformationModel != null)
             {
-                Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+                await Html.RenderPartialAsync("_PriceInformationDisplay", Model.RequestPriceInformationModel);
             }
         </div>
         <div class="col-sm-4">

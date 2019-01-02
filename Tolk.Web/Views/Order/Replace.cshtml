@@ -215,8 +215,7 @@
         <input asp-for="Files[0].Id" type="hidden" />
     </span>
 </div>
-@Html.Partial("_UploadFileDialog")
-
+@await Html.PartialAsync("_UploadFileDialog")
 
 @section Scripts {
     <environment include="Development">

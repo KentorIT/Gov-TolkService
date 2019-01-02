@@ -48,13 +48,13 @@
                 <div class="col-sm-6">
                     @if (Model.RequestPriceInformationModel != null)
                     {
-                        Html.RenderPartial("_PriceInformationDisplay", Model.RequestPriceInformationModel);
+                        await Html.RenderPartialAsync("_PriceInformationDisplay", Model.RequestPriceInformationModel);
                     }
                 </div>
                 <div class="col-sm-6">
                     @if (Model.PreviousRequisition != null && Model.PreviousRequisition.ResultPriceInformationModel != null)
                     {
-                        Html.RenderPartial("_PriceInformationDisplay", Model.PreviousRequisition.ResultPriceInformationModel);
+                        await Html.RenderPartialAsync("_PriceInformationDisplay", Model.PreviousRequisition.ResultPriceInformationModel);
                     }
                 </div>
             </div>
@@ -161,7 +161,7 @@
         </span>
     </div>
 </div>
-@Html.Partial("_UploadFileDialog")
+@await Html.PartialAsync("_UploadFileDialog")
 
 @section Scripts {
     <environment include="Development">

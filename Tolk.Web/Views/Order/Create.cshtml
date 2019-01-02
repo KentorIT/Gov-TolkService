@@ -227,7 +227,7 @@
     <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
     <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
 </span>
-@Html.Partial("_UploadFileDialog")
+@await Html.PartialAsync("_UploadFileDialog")
 <div id="addRequirement" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
@@ -237,7 +237,7 @@
                 <h4 class="modal-title">Lägg till krav</h4>
             </div>
             <div class="modal-body" id="req">
-                @Html.Partial("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
+                @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
@@ -255,7 +255,7 @@
                 <h4 class="modal-title">Lägg till önskemål</h4>
             </div>
             <div class="modal-body" id="des">
-                @Html.Partial("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
+                @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
