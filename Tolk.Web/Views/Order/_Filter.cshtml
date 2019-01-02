@@ -4,22 +4,22 @@
 <div class="col-sm-12">
     <form method="get" class="filter-form do-not-check-dirty">
         <div class="row">
-            <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter</a>
             <div class="col-xs-4">
                 <h4>Filtrera</h4>
             </div>
+            <div class="col-xs-8">
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
+            </div>
         </div>
         <div class="row">
-            <div class="col-sm-12">
-                <div class="col-sm-4">
-                    <form-entry asp-for="OrderNumber" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" class="allow-clear" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
-                </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OrderNumber" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" class="allow-clear" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
             </div>
         </div>
         <div class="row">

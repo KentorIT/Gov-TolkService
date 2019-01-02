@@ -7,7 +7,7 @@ namespace Tolk.Web.Models
 {
     public class ComplaintFilterModel
     {
-        [Display(Name = "Avrops-ID")]
+        [Display(Name = "Boknings-ID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Status")]
