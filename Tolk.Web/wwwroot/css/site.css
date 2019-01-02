@@ -8,7 +8,6 @@ html {
 }
 body {
   color: black;
-  padding-top: 50px;
   background-image: linear-gradient(180deg, #F1F4F2, #fff);
 }
 label {
@@ -104,7 +103,7 @@ hr {
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-  padding-top: 30px;
+  padding-top: 80px;
   float: none;
   max-width: 1200px;
 }
@@ -871,12 +870,34 @@ ul.pagination > li.paginate_button.active > a {
   margin: 0;
   margin-top: -12px;
 }
+.login {
+  background-color: #82A7A0;
+  padding-bottom: 80px;
+}
+.login-page {
+  background-color: white;
+  padding: 30px 20px 45px 20px;
+}
+.login-container {
+  vertical-align: middle;
+}
+.padding-bottom-30px {
+  padding-bottom: 30px;
+}
+.welcome-info {
+  color: white;
+  background-color: #587573;
+  padding: 30px 20px 45px 20px;
+}
 .logo-navbar {
   margin-top: -12px;
   height: 40px;
 }
 .logo-footer {
   padding-top: 10px;
+}
+.logo-login {
+  padding-bottom: 80px;
 }
 .img-negative {
   -webkit-filter: invert(1);

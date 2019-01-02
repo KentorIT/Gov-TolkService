@@ -4,21 +4,13 @@
     ViewData["Title"] = Constants.SystemName;
 }
 
-<div class="row">
-    <div class="col-md-8">
-        <h2>Välkommen till @Constants.SystemName</h2>
-        <p>
-            I Kammarkollegiets tolktjänst kan anslutna myndigheter avropa tolktjänster,
-            och anslutna förmedlingar och tolkar kan hantera avrop.
-        </p>
-        <p>
-            Som användare på en ansluten myndighet eller tolkförmedling kan du själv
-            registrera ett användarkonto. Som tolk får du automatiskt ett användar-konto
-            när den första förmedlingen tilldelar dig ett uppdrag. Du får då ett
-            e-post-meddelande om hur du aktiverar ditt konto.
-        </p>
+<div class="row login-container">
+    <div class="col-md-4 login-page">
+        @await Html.PartialAsync("_LoginPagePartial")
     </div>
-    @await Html.PartialAsync("_LoginPagePartial")
+    <div class="col-md-8 welcome-info">
+        @await Html.PartialAsync("_WelcomeText")
+    </div>
 </div>
 
 @section Scripts{ 
