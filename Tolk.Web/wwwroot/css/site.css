@@ -404,10 +404,13 @@ a.btn-large {
   vertical-align: middle;
   line-height: 2;
 }
-.btn-default,
-.btn-primary,
-.btn-success {
+.btn-primary {
   background-color: #BFDDD2;
+  color: black;
+}
+.btn-default,
+.btn-success {
+  background-color: #95BFB7;
   color: black;
 }
 .btn-warning {
@@ -444,15 +447,6 @@ a.btn-large {
   color: black;
   border: none;
 }
-.btn-success:hover,
-.btn-success.hover,
-.btn-success:focus,
-.btn-success:active,
-.btn-success.active,
-.btn-success:active:hover,
-.btn-success:active.focus,
-.btn-success.hover:focus,
-.btn-success:focus.hover,
 .btn-primary:hover,
 .btn-primary.hover,
 .btn-primary:focus,
@@ -462,15 +456,6 @@ a.btn-large {
 .btn-primary:active.focus,
 .btn-primary.hover:focus,
 .btn-primary:focus.hover,
-.btn-default:hover,
-.btn-default.hover,
-.btn-default:focus,
-.btn-default:active,
-.btn-default.active,
-.btn-default:active:hover,
-.btn-default:active.focus,
-.btn-default.hover:focus,
-.btn-default:focus.hover,
 .btn-primary.disabled:hover,
 [disabled].btn-primary:hover,
 fieldset[disabled] .btn-primary:hover,
@@ -481,6 +466,29 @@ fieldset[disabled] .btn-primary:focus,
 [disabled].btn-primary.focus,
 fieldset[disabled] .btn-primary.focus {
   background-color: #95BFB7;
+  background-position: 0 -15px;
+  color: black;
+  border: none;
+}
+.btn-success:hover,
+.btn-success.hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.btn-success:active:hover,
+.btn-success:active.focus,
+.btn-success.hover:focus,
+.btn-success:focus.hover,
+.btn-default:hover,
+.btn-default.hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.btn-default:active:hover,
+.btn-default:active.focus,
+.btn-default.hover:focus,
+.btn-default:focus.hover {
+  background-color: #82A7A0;
   background-position: 0 -15px;
   color: black;
   border: none;

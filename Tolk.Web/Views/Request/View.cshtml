@@ -30,7 +30,7 @@
                     }
                     <form method="post" asp-action="ConfirmCancellation">
                         <input asp-for="RequestId" type="hidden" />
-                        <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                        <button class="btn btn-primary btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
                 }
@@ -41,7 +41,7 @@
                     {
                         <form method="post" asp-action="ConfirmDenial">
                             <input asp-for="RequestId" type="hidden" />
-                            <button class="btn btn-default btn-success btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                            <button class="btn btn-primary btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                         </form>
                         <br /><br />
                     }
@@ -93,7 +93,7 @@
                     <div class="col-sm-6">
                         @if (Model.AllowInterpreterChange)
                         {
-                            <a class="btn btn-danger btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                            <a class="btn btn-primary btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
                         }
                     </div>
                 </div>
@@ -116,21 +116,6 @@
                                 <button type="button" class="btn btn-default send-message pull-right">Skicka</button>
                             </div>
                         </div>
-                        @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
-                        {
-                            @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-                            {
-                                <display-entry asp-for="CancelMessage" />
-                            }
-                            @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
-                            {
-                                <div class="important-info">@Model.Info48HCancelledByCustomer</div>
-                            }
-                            <form method="post" asp-action="ConfirmCancellation">
-                                <input asp-for="RequestId" type="hidden" />
-                                <button class="btn btn-danger pull-right">Bekräfta avbokning</button>
-                            </form>
-                        }
                     </div>
                 </div>
                 @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" }, { "id", "EventLog_Request" } })
