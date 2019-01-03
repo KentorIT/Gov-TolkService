@@ -1,12 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
+﻿using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -20,11 +13,11 @@ namespace Tolk.Web.Models
 
         public string Language { get; set; }
 
-        public DateTimeOffset Start { get; set; }
-
-        public DateTimeOffset End { get; set; }
+        [NoDisplayName]
+        public virtual TimeRange OrderDateAndTime { get; set; }
 
         public string Controller { get; set; }
 
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
     }
 }

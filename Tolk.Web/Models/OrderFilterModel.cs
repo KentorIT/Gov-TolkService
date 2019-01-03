@@ -7,10 +7,10 @@ namespace Tolk.Web.Models
 {
     public class OrderFilterModel
     {
-        [Display(Name = "Startdatum för tolkning")]
+        [Display(Name = "Datum för uppdrag")]
         public DateRange DateRange { get; set; }
 
-        [Display(Name = "Boknings-ID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         public OrderStatus? Status { get; set; }

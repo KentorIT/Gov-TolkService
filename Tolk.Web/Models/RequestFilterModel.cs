@@ -7,7 +7,7 @@ namespace Tolk.Web.Models
 {
     public class RequestFilterModel
     {
-        [Display(Name = "Boknings-ID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Län")]
@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Startdatum för tolkning")]
+        [Display(Name = "Datum för uppdrag")]
         public DateRange OrderDateRange { get; set; }
 
         [Display(Name = "Svarsdatum")]

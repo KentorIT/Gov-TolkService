@@ -39,13 +39,7 @@ namespace Tolk.Web.Models
 
         public string InfoDateDescription { get; set; } = "Inkommen: ";
 
-        public string ColorClassName
-        {
-            get => (Status == StartListItemStatus.ComplaintEvent || Status == StartListItemStatus.RequestArrived || Status == StartListItemStatus.RequestReceived || Status == StartListItemStatus.RequisitonArrived) ? "blue-border-left" :
-            (Status == StartListItemStatus.RequisitionDenied || Status == StartListItemStatus.OrderCancelled || Status == StartListItemStatus.OrderNotAnswered || Status == StartListItemStatus.RequestDenied) ? "red-border-left" :
-            (Status == StartListItemStatus.OrderApproved || Status == StartListItemStatus.RequisitionToBeCreated) ? "green-border-left" :
-            (Status == StartListItemStatus.RequisitionAwaited || Status == StartListItemStatus.OrderCreated || Status == StartListItemStatus.RequisitionCreated) ? "gray-border-left" : "yellow-border-left";
-        }
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForStartListItem(Status); }
     }
 
 }

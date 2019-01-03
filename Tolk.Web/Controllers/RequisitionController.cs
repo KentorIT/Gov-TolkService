@@ -205,8 +205,11 @@ namespace Tolk.Web.Controllers
                         OrderRequestId = customerId.HasValue ? r.Request.OrderId : r.RequestId,
                         Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                         OrderNumber = r.Request.Order.OrderNumber.ToString(),
-                        Start = r.Request.Order.StartAt,
-                        End = r.Request.Order.EndAt,
+                        OrderDateAndTime = new TimeRange
+                        {
+                            StartDateTime = r.Request.Order.StartAt,
+                            EndDateTime = r.Request.Order.EndAt,
+                        },
                         Status = r.Status,
                         Controller = customerId.HasValue ? "Order" : "Request",
                     })

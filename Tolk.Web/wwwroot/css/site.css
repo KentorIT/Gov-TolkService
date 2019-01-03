@@ -980,7 +980,8 @@ input.force-validation {
   font-weight: 300;
   height: 70px;
 }
-.startlist-table {
+.startlist-table,
+.search-table {
   border-collapse: separate;
   border-spacing: 0px 5px;
 }
