@@ -151,10 +151,10 @@
             {
                 <div class="row">
                     <div class="col-sm-6">
-                        <a class="btn btn-large btn-warning do-not-check-dirty pull-left" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt <span class="btn-remove-times">&times;</span></a>
+                        <a class="btn btn-large btn-warning do-not-check-dirty left-md-button" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt <span class="btn-remove-times">&times;</span></a>
                     </div>
                     <div class="col-sm-6">
-                        <button id="Accept" class="btn btn-large btn-primary pull-right" data-set-status="Accepted">Byt tolk</button>
+                        <button id="Accept" class="btn btn-large btn-primary right-md-button" data-set-status="Accepted">Byt tolk</button>
                     </div>
                 </div>
             }
@@ -165,14 +165,14 @@
                     <div class="important-info">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /></div>
                 }
                 <div class="row">
-                    <div class="col-xs-4">
-                        <a class="btn btn-large btn-warning do-not-check-dirty pull-left" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    <div class="col-lg-4">
+                        <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" asp-action="List" asp-route-Status="ToBeProcessedByBroker">Avbryt <span class="btn-remove-times">&times;</span></a>
                     </div>
-                    <div class="col-xs-4 text-align-center">
-                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger">Tacka nej till bokning</button>
+                    <div class="col-lg-4 center-lg-button">
+                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger ">Tacka nej till bokning</button>
                     </div>
-                    <div class="col-xs-4">
-                        <button id="Accept" class="btn btn-large btn-success pull-right" data-set-status="Accepted">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    <div class="col-lg-4">
+                        <button id="Accept" class="btn btn-large btn-success right-lg-button" data-set-status="Accepted">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </div>
                 </div>
             }
@@ -195,8 +195,8 @@
                     <form method="post" asp-action="Decline" class="do-not-check-dirty">
                         <input asp-for="RequestId" type="hidden" />
                         <form-entry asp-for="DenyMessage" />
-                        <button type="submit" class="btn btn-default pull-right do-not-check-dirty">Tacka nej</button>
-                        <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                        <button type="submit" class="btn btn-default right-md-button do-not-check-dirty">Tacka nej</button>
+                        <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                         <br /><br />
                     </form>
                 </div>
