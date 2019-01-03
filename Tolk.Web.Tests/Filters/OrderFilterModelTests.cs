@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using System.Linq;
 using Tolk.Web.Models;
@@ -26,7 +24,7 @@ namespace Tolk.Web.Tests.Filters
 
             // Modify request statuses
             mockOrders[0].Requests[0].Status = RequestStatus.DeniedByCreator;
-            mockOrders[5].Requests[0].Status = RequestStatus.CancelledByBrokerConfirmed;
+            mockOrders[5].Requests[0].Status = RequestStatus.CancelledByBroker;
         }
 
         [Fact]
@@ -84,7 +82,7 @@ namespace Tolk.Web.Tests.Filters
             };
             var filterSecond = new OrderFilterModel
             {
-                Status = OrderStatus.CancelledByCreatorConfirmed
+                Status = OrderStatus.CancelledByCreator
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());

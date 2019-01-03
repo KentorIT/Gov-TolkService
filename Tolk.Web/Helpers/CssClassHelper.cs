@@ -6,14 +6,14 @@ namespace Tolk.Web.Helpers
     {
         public static string GetColorClassNameForOrderStatus(OrderStatus status)
         {
-            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.CancelledByBrokerConfirmed || status == OrderStatus.CancelledByCreatorConfirmed || status == OrderStatus.ResponseNotAnsweredByCreator) ? "red-border-left" :
+            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator) ? "red-border-left" :
             (status == OrderStatus.Delivered || status == OrderStatus.DeliveryAccepted || status == OrderStatus.ResponseAccepted) ? "green-border-left" :
             (status == OrderStatus.RequestResponded || status == OrderStatus.RequestRespondedNewInterpreter) ? "yellow-border-left" : "blue-border-left";
         }
 
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
         {
-            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByBrokerConfirmed || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorConfirmed || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker) ? "red-border-left" :
+            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker) ? "red-border-left" :
             (status == RequestStatus.Approved) ? "green-border-left" : (status == RequestStatus.Accepted || status == RequestStatus.AcceptedNewInterpreterAppointed) ? "yellow-border-left" : "blue-border-left";
         }
 

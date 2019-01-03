@@ -12,8 +12,6 @@
          && Model.Status != RequestStatus.Received) && Model.RequestId > 0;
     bool requestIsDeclinedByBroker = (Model.Status == RequestStatus.DeclinedByBroker
         || Model.Status == RequestStatus.DeniedByTimeLimit);
-    bool cancelledByBroker = Model.OrderModel.Status == OrderStatus.CancelledByBroker
-                || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed;
     bool isReplacedRequest = Model.Status == RequestStatus.Received && Model.ReplacingOrderRequestId > 0;
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
@@ -56,10 +54,7 @@
                 }
             </div>
         </div>
-        @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator
-      || Model.OrderModel.Status == OrderStatus.CancelledByCreatorConfirmed
-      || Model.OrderModel.Status == OrderStatus.CancelledByBroker
-      || Model.OrderModel.Status == OrderStatus.CancelledByBrokerConfirmed)
+        @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator || Model.OrderModel.Status == OrderStatus.CancelledByBroker)
         {
             @if (!string.IsNullOrEmpty(Model.CancelMessage))
             {
@@ -68,8 +63,7 @@
                 </div>
             }
         }
-        else if (Model.Status == RequestStatus.DeclinedByBroker
-            || Model.Status == RequestStatus.DeniedByCreator)
+        else if (Model.Status == RequestStatus.DeclinedByBroker || Model.Status == RequestStatus.DeniedByCreator)
         {
             @if (!string.IsNullOrEmpty(Model.DenyMessage))
             {
@@ -102,7 +96,7 @@
                         <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt enligt svar" />
                     </div>
                 </div>
-            }  
+            }
         </div>
     </div>
     @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)

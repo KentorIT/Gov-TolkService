@@ -17,13 +17,9 @@
     <div id="request" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
-                @if (Model.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                @if (Model.AllowConfirmCancellation)
                 {
                     <br />
-                    @if (!string.IsNullOrWhiteSpace(Model.CancelMessage))
-                    {
-                        <display-entry asp-for="CancelMessage" />
-                    }
                     @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
                     {
                         <div class="important-info">@Model.Info48HCancelledByCustomer</div>
@@ -34,17 +30,14 @@
                     </form>
                     <br /><br />
                 }
-                @if (Model.Status == RequestStatus.DeniedByCreator)
+                @if (Model.AllowConfirmationDenial)
                 {
                     <br />
-                    @if (Model.AllowConfirmationDenial)
-                    {
                         <form method="post" asp-action="ConfirmDenial">
                             <input asp-for="RequestId" type="hidden" />
                             <button class="btn btn-primary btn-large pull-right">Bekräfta avböjande <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                         </form>
                         <br /><br />
-                    }
                 }
                 @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false } })
                 <div class="row">
@@ -63,7 +56,7 @@
                 </div>
                 @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
                 @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
-                @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && Model.Status == RequestStatus.CancelledByCreatorConfirmed)
+                @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && (Model.Status == RequestStatus.CancelledByCreatorWhenApproved && !Model.AllowConfirmCancellation))
                 {
                     <div class="important-info">@Model.Info48HCancelledByCustomer</div>
                 }

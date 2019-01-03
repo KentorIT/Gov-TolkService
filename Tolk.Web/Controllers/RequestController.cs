@@ -105,13 +105,11 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.CustomerOrganisation)
-                .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
                 .Include(r => r.ReplacedByRequest)
-                .Include(r => r.RequestStatusConfirmations)
+                .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Single(o => o.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
@@ -354,42 +352,32 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
-            var request = _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order)
-                .Single(r => r.RequestId == requestId);
-
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
-            {
-                request.Status = RequestStatus.CancelledByCreatorConfirmed;
-                request.CancelConfirmedAt = _clock.SwedenNow;
-                request.CancelConfirmedBy = User.GetUserId();
-                request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
-                request.Order.Status = OrderStatus.CancelledByCreatorConfirmed;
-                _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
-            }
-
-            return Forbid();
+            return await ConfirmNewRequestStatus(requestId, RequestStatus.CancelledByCreatorWhenApproved, "Avbokning är bekräftad");
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestId)
         {
+            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Avböjande är bekräftat");
+        }
+
+        private async Task<IActionResult> ConfirmNewRequestStatus(int requestId, RequestStatus expectedStatus, string infoMessage)
+        {
             var request = _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order)
                 .Single(r => r.RequestId == requestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded && request.Status == RequestStatus.DeniedByCreator)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded && request.Status == expectedStatus)
             {
                 _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Avböjande är bekräftat" });
+                return RedirectToAction("Index", "Home", new { message = infoMessage });
             }
             return Forbid();
         }
+
 
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
@@ -401,7 +389,7 @@ namespace Tolk.Web.Controllers
             {
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
             }
-            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved || request.Status == RequestStatus.CancelledByCreatorConfirmed)
+            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
@@ -410,6 +398,7 @@ namespace Tolk.Web.Controllers
             model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
+            model.AllowConfirmCancellation = request.Status == RequestStatus.CancelledByCreatorWhenApproved && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
             if (includeLog)
             {
                 model.EventLog = new EventLogModel
@@ -421,8 +410,6 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
                         .Include(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
                         .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                        .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.CustomerOrganisation)
-                        .Include(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser).ThenInclude(u => u.Broker)
                         .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                         .Include(r => r.Requisitions)

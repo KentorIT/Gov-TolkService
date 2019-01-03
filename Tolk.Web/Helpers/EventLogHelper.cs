@@ -102,18 +102,18 @@ namespace Tolk.Web.Helpers
                             EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
                         });
-                        if (order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
-                        {
-                            eventLog.Add(new EventLogEntryModel
-                            {
-                                Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt.Value,
-                                EventDetails = $"Bekräftat bokningsförfrågan avslutad",
-                                Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
-                                Organization = order.CustomerOrganisation.Name,
-                            });
-                        }
                     }
                 }
+            }
+            if (order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt.Value,
+                    EventDetails = $"Bekräftat bokningsförfrågan avslutad",
+                    Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
+                    Organization = order.CustomerOrganisation.Name,
+                });
             }
             return eventLog;
         }
@@ -269,7 +269,7 @@ namespace Tolk.Web.Helpers
             // Request cancellation
             if (request.CancelledAt.HasValue)
             {
-                if (request.Status == RequestStatus.CancelledByCreator || request.Status == RequestStatus.CancelledByCreatorConfirmed)
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved || request.Status == RequestStatus.CancelledByCreator)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
@@ -279,7 +279,7 @@ namespace Tolk.Web.Helpers
                         Organization = request.CancelledByUser.CustomerOrganisation.Name,
                     });
                 }
-                else if (request.Status == RequestStatus.CancelledByBroker || request.Status == RequestStatus.CancelledByBrokerConfirmed)
+                else if (request.Status == RequestStatus.CancelledByBroker)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
@@ -291,28 +291,27 @@ namespace Tolk.Web.Helpers
                 }
             }
             // Request cancellation confirmation
-            if (request.CancelConfirmedAt.HasValue)
+            if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved))
             {
-                if (request.Status == RequestStatus.CancelledByCreatorConfirmed)
+                RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
+                eventLog.Add(new EventLogEntryModel
                 {
-                    eventLog.Add(new EventLogEntryModel
-                    {
-                        Timestamp = request.CancelConfirmedAt.Value,
-                        EventDetails = "Avbokning bekräftad av förmedling",
-                        Actor = request.CancelConfirmedByUser.FullName,
-                        Organization = request.CancelConfirmedByUser.Broker.Name,
-                    });
-                }
-                else if (request.Status == RequestStatus.CancelledByBrokerConfirmed)
+                    Timestamp = rsc.ConfirmedAt.Value,
+                    EventDetails = $"Avbokning bekräftad av förmedling",
+                    Actor = rsc.ConfirmedByUser.FullName,
+                    Organization = rsc.ConfirmedByUser.Broker.Name,
+                });
+            }
+            else if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))
+            {
+                RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByBroker);
+                eventLog.Add(new EventLogEntryModel
                 {
-                    eventLog.Add(new EventLogEntryModel
-                    {
-                        Timestamp = request.CancelConfirmedAt.Value,
-                        EventDetails = "Avbokning bekräftad av myndighet",
-                        Actor = request.CancelConfirmedByUser.FullName,
-                        Organization = request.CancelConfirmedByUser.CustomerOrganisation.Name,
-                    });
-                }
+                    Timestamp = rsc.ConfirmedAt.Value,
+                    EventDetails = $"Avbokning bekräftad av myndighet",
+                    Actor = rsc.ConfirmedByUser.FullName,
+                    Organization = rsc.ConfirmedByUser.CustomerOrganisation.Name,
+                });
             }
             // Interpreter replacement
             if (request.Status == RequestStatus.InterpreterReplaced)

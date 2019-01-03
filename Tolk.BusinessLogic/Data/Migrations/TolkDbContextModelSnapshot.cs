@@ -872,10 +872,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("BrokerMessage")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("CancelConfirmedAt");
-
-                    b.Property<int?>("CancelConfirmedBy");
-
                     b.Property<string>("CancelMessage")
                         .HasMaxLength(1000);
 
@@ -895,8 +891,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("ImpersonatingAnswerProcessedBy");
 
                     b.Property<int?>("ImpersonatingAnsweredBy");
-
-                    b.Property<int?>("ImpersonatingCancelConfirmer");
 
                     b.Property<int?>("ImpersonatingCanceller");
 
@@ -926,15 +920,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AnsweredBy");
 
-                    b.HasIndex("CancelConfirmedBy");
-
                     b.HasIndex("CancelledBy");
 
                     b.HasIndex("ImpersonatingAnswerProcessedBy");
 
                     b.HasIndex("ImpersonatingAnsweredBy");
-
-                    b.HasIndex("ImpersonatingCancelConfirmer");
 
                     b.HasIndex("ImpersonatingCanceller");
 
@@ -1474,11 +1464,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("AnsweredBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelConfirmedByUser")
-                        .WithMany()
-                        .HasForeignKey("CancelConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelledByUser")
                         .WithMany()
                         .HasForeignKey("CancelledBy")
@@ -1492,11 +1477,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "AnsweredByImpersonator")
                         .WithMany()
                         .HasForeignKey("ImpersonatingAnsweredBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelConfirmedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCancelConfirmer")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CancelledByImpersonator")

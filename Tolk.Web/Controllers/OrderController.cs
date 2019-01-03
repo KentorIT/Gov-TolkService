@@ -5,12 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -143,6 +140,7 @@ namespace Tolk.Web.Controllers
                     _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2 &&
                     !request.Order.ReplacingOrderId.HasValue;
                 model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
+                model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker);
                 model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
@@ -482,13 +480,9 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order)
                 .Single(r => r.RequestId == requestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded && request.Status == RequestStatus.CancelledByBroker)
             {
-                request.Status = RequestStatus.CancelledByBrokerConfirmed;
-                request.CancelConfirmedAt = _clock.SwedenNow;
-                request.CancelConfirmedBy = User.GetUserId();
-                request.ImpersonatingCancelConfirmer = User.TryGetImpersonatorId();
-                request.Order.Status = OrderStatus.CancelledByBrokerConfirmed;
+                _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
             }
@@ -637,8 +631,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.CancelConfirmedByUser).ThenInclude(u => u.CustomerOrganisation)
-                .Include(o => o.Requests).ThenInclude(r => r.CancelConfirmedByUser).ThenInclude(u => u.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)

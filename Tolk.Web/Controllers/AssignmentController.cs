@@ -42,11 +42,8 @@ namespace Tolk.Web.Controllers
             var requests = _dbContext.Requests.Include(r => r.Order)
                 .Where(r => r.Status == RequestStatus.Approved || 
                 r.Status == RequestStatus.CancelledByBroker || 
-                r.Status == RequestStatus.CancelledByBrokerConfirmed ||
                 r.Status == RequestStatus.CancelledByCreator ||
-                r.Status == RequestStatus.CancelledByCreatorConfirmed ||
-                r.Status == RequestStatus.CancelledByBrokerConfirmed
-                );
+                r.Status == RequestStatus.CancelledByCreatorWhenApproved);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var interpreterId = User.TryGetInterpreterId();
             var brokerId = User.TryGetBrokerId();

@@ -25,18 +25,14 @@ namespace Tolk.BusinessLogic.Enums
         DeniedByCreator = 8,
         [Description("Bokningsförfrågan ej besvarad")]
         DeniedByTimeLimit = 9,
-        [Description("Uppdrag avbokat av myndighet, att bekräfta")]
+        [Description("Uppdrag avbokat av myndighet")]
         CancelledByCreatorWhenApproved = 10,
-        [Description("Avbokning bekräftad av förmedling")]
-        CancelledByCreatorConfirmed = 11,
         [Description("Bekräftelse är skickad - Ny tolk")]
         AcceptedNewInterpreterAppointed = 12,
         [Description("Tolk har ersatts")]
         InterpreterReplaced = 13,
         [Description("Uppdrag avbokat av förmedling")]
         CancelledByBroker = 14,
-        [Description("Avbokning bekräftad av myndighet")]
-        CancelledByBrokerConfirmed = 15,
         [Description("Tillsättning ej besvarad")]
         ResponseNotAnsweredByCreator = 16
     }

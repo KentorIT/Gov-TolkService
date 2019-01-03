@@ -128,18 +128,6 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingCanceller))]
         public AspNetUser CancelledByImpersonator { get; set; }
 
-        public DateTimeOffset? CancelConfirmedAt { get; set; }
-
-        public int? CancelConfirmedBy { get; set; }
-
-        [ForeignKey(nameof(CancelConfirmedBy))]
-        public AspNetUser CancelConfirmedByUser { get; set; }
-
-        public int? ImpersonatingCancelConfirmer { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingCancelConfirmer))]
-        public AspNetUser CancelConfirmedByImpersonator { get; set; }
-
         [MaxLength(1000)]
         public string CancelMessage { get; set; }
 

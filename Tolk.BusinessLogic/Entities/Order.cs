@@ -210,7 +210,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, int? contactPersonId)
         {
-            if (Status == OrderStatus.CancelledByBrokerConfirmed || Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByCreatorConfirmed || Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.ResponseNotAnsweredByCreator)
+            if (Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByBroker || Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.ResponseNotAnsweredByCreator)
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change contact person for orders with this status.");
             }

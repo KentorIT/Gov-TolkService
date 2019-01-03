@@ -356,7 +356,6 @@ namespace Tolk.BusinessLogic.Services
             //send mail to interpreter about changes replaced order => order
             var cancelledRequest = request.Order.ReplacingOrder.Requests.Single(r => r.Ranking.BrokerId == request.Ranking.BrokerId && (
                 r.Status == RequestStatus.CancelledByCreator ||
-                r.Status == RequestStatus.CancelledByCreatorConfirmed ||
                 r.Status == RequestStatus.CancelledByCreatorWhenApproved));
         }
 

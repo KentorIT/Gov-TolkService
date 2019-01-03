@@ -1105,3 +1105,38 @@ input.force-validation {
   background-color: white;
   text-decoration: underline;
 }
+@media (min-width: 1200px) {
+  .right-lg-button {
+    float: right !important;
+  }
+}
+@media (min-width: 1200px) {
+  .left-lg-button {
+    float: left !important;
+  }
+}
+@media (min-width: 1200px) {
+  .center-lg-button {
+    text-align: center;
+  }
+}
+@media (min-width: 604px) and (max-width: 767px) {
+  .right-md-button {
+    float: right !important;
+  }
+}
+@media (min-width: 793px) {
+  .right-md-button {
+    float: right !important;
+  }
+}
+@media (min-width: 604px) {
+  .left-md-button {
+    float: left !important;
+  }
+}
+@media (min-width: 604px) {
+  .center-md-button {
+    text-align: center;
+  }
+}

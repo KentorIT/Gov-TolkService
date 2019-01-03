@@ -259,9 +259,10 @@ namespace Tolk.Web.Models
 
         public bool AllowDenial => (AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false);
 
-        public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBrokerConfirmed && Status != OrderStatus.CancelledByCreatorConfirmed && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
+        public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
 
         public bool AllowOrderCancellation { get; set; } = false;
+
         public bool AllowReplacementOnCancel { get; set; } = false;
 
         [Display(Name = "Skapa ersättningsuppdrag")]
@@ -270,6 +271,8 @@ namespace Tolk.Web.Models
         public bool AllowComplaintCreation { get; set; } = false;
 
         public bool AllowNoAnswerConfirmation { get; set; } = false;
+
+        public bool AllowConfirmCancellation { get; set; } = false;
 
         public int? ComplaintId { get; set; }
 

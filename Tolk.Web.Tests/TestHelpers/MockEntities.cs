@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Models;
 
 namespace Tolk.Web.Tests.TestHelpers
 {
@@ -129,7 +127,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "Chinese").Single(),
                     CustomerOrganisationId = 6,
-                    Status = BusinessLogic.Enums.OrderStatus.CancelledByCreatorConfirmed,
+                    Status = BusinessLogic.Enums.OrderStatus.CancelledByCreator,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),

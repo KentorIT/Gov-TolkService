@@ -133,9 +133,7 @@ namespace Tolk.Web.Tests.Filters
 
             var list = filter.Apply(mockRequests.AsQueryable(), _clock);
             var actual = mockRequests.Where(r => r.Order.Status == OrderStatus.CancelledByBroker
-                || r.Order.Status == OrderStatus.CancelledByBrokerConfirmed
                 || r.Order.Status == OrderStatus.CancelledByCreator
-                || r.Order.Status == OrderStatus.CancelledByCreatorConfirmed
 
                 );
 

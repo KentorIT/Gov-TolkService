@@ -131,6 +131,8 @@ namespace Tolk.Web.Models
 
         public bool AllowCancellation { get; set; } = true;
 
+        public bool AllowConfirmCancellation { get; set; } = false;
+
         public bool AllowConfirmationDenial { get; set; } = false;
 
         public EventLogModel EventLog { get; set; }
