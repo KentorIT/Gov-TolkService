@@ -67,7 +67,7 @@ namespace Tolk.Web.Controllers
             }
             return View(new StartViewModel
             {
-                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningsförfrågningar",
+                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ? "Aktiva bokningar" : "Aktiva bokningsförfrågningar",
                 Message = message,
                 ConfirmationMessages = GetConfirmationMessages(),
                 StartLists = await GetStartLists()

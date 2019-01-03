@@ -1090,3 +1090,18 @@ input.force-validation {
   font-weight: 300;
   width: 100%;
 }
+.submenu {
+  font-size: 16px;
+  text-decoration: none;
+  padding: 0px;
+}
+.dropdown-menu > li > a,
+.dropdown-menu > li > a:hover {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.dropdown-menu > li > a:hover {
+  color: #82A7A0;
+  background-color: white;
+  text-decoration: underline;
+}
