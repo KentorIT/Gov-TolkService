@@ -572,6 +572,10 @@ input[type='checkbox']:checked:after {
 .tooltip .tooltip-inner {
   background-color: #587573;
   border-radius: 0;
+  text-align: left;
+}
+.tooltip.in {
+  opacity: 1;
 }
 .tooltip.top .tooltip-arrow {
   border-top-color: #587573;
