@@ -7,13 +7,13 @@ namespace Tolk.Web.Models
 {
     public class RequisitionFilterModel
     {
-        [Display(Name = "Avrops-ID")]
+        [Display(Name = "Boknings-ID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Startdatum")]
+        [Display(Name = "Startdatum för tolkning")]
         public DateRange DateRange { get; set; }
 
         public RequisitionStatus? Status { get; set; }

@@ -41,7 +41,7 @@
                             <tr class="startlist-row">
                                 <td class="gray-border-bottom blue-border-left">
                                     <br />
-                                    <span class="startlist-status">
+                                    <span class="normal-weight">
                                         @confirmMessage.Message
                                     </span><br /><br />
                                 </td>
@@ -65,7 +65,7 @@
         </div>
     </div>
 }
-<h2 class="bold">@ViewData["Title"]</h2>
+<h2>@ViewData["Title"]</h2>
 @foreach (var startlist in Model.StartLists)
 {
     <div class="row">
@@ -93,7 +93,7 @@
                                 <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId })">
                                     <td class="gray-border-bottom @item.ColorClassName">
                                         <br />
-                                        <span class="startlist-status">
+                                        <span class="normal-weight">
                                             @EnumHelper.GetDescription(item.Status)
                                         </span><br /><br />
                                         <span class="startlist-subrow">ID: @item.OrderNumber</span>

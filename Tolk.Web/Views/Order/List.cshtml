@@ -1,7 +1,7 @@
 ﻿@model OrderListModel
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Avrop";
+    ViewData["Title"] = "Bokningar";
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
@@ -15,12 +15,12 @@
                 <table class="table table-striped table-hover clickable-rows-with-action">
                     <thead>
                         <tr>
-                            <th>AvropsID</th>
+                            <th>Boknings-ID</th>
                             @if (Model.FilterModel.IsSuperUser)
                             {
                                 <th>Skapad av</th>
                             }
-                            <th>Region</th>
+                            <th>Län</th>
                             <th>Språk</th>
                             <th>Start</th>
                             <th>Slut</th>

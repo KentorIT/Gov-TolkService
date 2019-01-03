@@ -37,6 +37,7 @@ h1 {
 h2 {
   line-height: 31px;
   font-size: 24px;
+  font-weight: bold;
 }
 h3 {
   line-height: 25px;
@@ -273,8 +274,10 @@ select2.selection:active {
 .datepicker {
   border-radius: 0px;
 }
-.form-control.datepicker.time-range-part.datepicker-short {
+.form-control.datepicker.time-range-part {
   width: 120px;
+  padding-left: 5px;
+  padding-right: 1px;
 }
 .datepicker table tr td,
 .datepicker table tr th {
@@ -348,6 +351,9 @@ fieldset[disabled] .datepicker table tr td.today:hover {
 .input-group.time > .input-group-addon {
   width: auto;
 }
+.input-group.date > .input-group-addon {
+  width: auto;
+}
 .input-group-addon {
   background-color: white;
   border: none;
@@ -399,6 +405,10 @@ select:-webkit-autofill:focus {
   font-size: 30px;
   vertical-align: middle;
   line-height: normal;
+}
+.btn-small-remove-times {
+  font-size: 20px;
+  vertical-align: middle;
 }
 a.btn-large {
   vertical-align: middle;
@@ -562,6 +572,10 @@ input[type='checkbox']:checked:after {
 .tooltip .tooltip-inner {
   background-color: #587573;
   border-radius: 0;
+  text-align: left;
+}
+.tooltip.in {
+  opacity: 1;
 }
 .tooltip.top .tooltip-arrow {
   border-top-color: #587573;
@@ -750,9 +764,10 @@ li.placeholder::before {
   font-style: italic;
 }
 .reset-filter-button {
-  margin-bottom: 10px;
-  margin-right: 20px;
   float: right;
+  padding-bottom: 1px;
+  padding-top: 3px;
+  vertical-align: middle;
 }
 .panel {
   border-radius: 0;
@@ -969,7 +984,7 @@ input.force-validation {
   border-collapse: separate;
   border-spacing: 0px 5px;
 }
-.startlist-status {
+.normal-weight {
   font-weight: normal;
 }
 .startlist-subrow-red {

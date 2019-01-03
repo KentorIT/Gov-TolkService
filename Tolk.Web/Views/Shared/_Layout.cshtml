@@ -66,7 +66,7 @@
                         <li><a asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
                         if (User.IsInRole(Roles.SuperUser))
                         {
-                            <li><a asp-area="" asp-controller="User" asp-action="List">Administrera användare</a></li>
+                            <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                         }
                     }
                     else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
