@@ -73,8 +73,11 @@ namespace Tolk.Web.Controllers
                        OrderNumber = r.Order.OrderNumber,
                        CustomerName = r.Order.CustomerOrganisation.Name,
                        RegionName = r.Order.Region.Name,
-                       Start = r.Order.StartAt,
-                       End = r.Order.EndAt,
+                       OrderDateAndTime = new TimeRange
+                       {
+                           StartDateTime = r.Order.StartAt,
+                           EndDateTime = r.Order.EndAt
+                       },
                        Status = r.Status,
                        Action = nameof(View)
                    })

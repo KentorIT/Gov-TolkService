@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
+﻿using System;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -29,5 +23,8 @@ namespace Tolk.Web.Models
         public ComplaintType ComplaintType { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
+
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForComplaintStatus(Status); }
+
     }
 }

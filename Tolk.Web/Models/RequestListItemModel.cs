@@ -3,6 +3,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Controllers;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -28,11 +29,12 @@ namespace Tolk.Web.Models
 
         public int? LanguageId { get; set; }
 
-        public DateTimeOffset Start { get; set; }
-
-        public DateTimeOffset End { get; set; }
+        [NoDisplayName]
+        public virtual TimeRange OrderDateAndTime { get; set; }
 
         public DateTimeOffset? ExpiresAt { get; set; }
+
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
     }
 
     public static class IQueryableOfRequestExtensions
@@ -49,8 +51,11 @@ namespace Tolk.Web.Models
                 CustomerId = r.Order.CustomerOrganisationId,
                 RegionName = r.Order.Region.Name,
                 RegionId = r.Order.RegionId,
-                Start = r.Order.StartAt,
-                End = r.Order.EndAt,
+                OrderDateAndTime = new TimeRange
+                {
+                    StartDateTime = r.Order.StartAt,
+                    EndDateTime = r.Order.EndAt
+                },
                 ExpiresAt = r.ExpiresAt,
                 Status = r.Status,
                 Action = (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) ? nameof(RequestController.Process) : nameof(RequestController.View)

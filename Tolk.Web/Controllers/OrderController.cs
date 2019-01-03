@@ -101,8 +101,11 @@ namespace Tolk.Web.Controllers
                         Language = o.OtherLanguage ?? o.Language.Name,
                         OrderNumber = o.OrderNumber.ToString(),
                         RegionName = o.Region.Name,
-                        Start = o.StartAt,
-                        End = o.EndAt,
+                        OrderDateAndTime = new TimeRange
+                        {
+                            StartDateTime = o.StartAt,
+                            EndDateTime = o.EndAt
+                        },
                         Status = o.Status,
                         CreatorName = o.CreatedByUser.FullName,
                         BrokerName = o.Requests.Where(r =>

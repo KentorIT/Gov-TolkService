@@ -108,7 +108,7 @@ namespace Tolk.Web.Models
         [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 SEK")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
-        
+
         [ClientRequired]
         [Display(Name = "Inställelsesätt")]
         public InterpreterLocation? InterpreterLocation { get; set; }
@@ -135,18 +135,13 @@ namespace Tolk.Web.Models
 
         public EventLogModel EventLog { get; set; }
 
-        public string ColorClassName
-        {
-            get =>
-            (Status == RequestStatus.CancelledByBroker || Status == RequestStatus.CancelledByBrokerConfirmed || Status == RequestStatus.CancelledByCreator || Status == RequestStatus.CancelledByCreatorConfirmed || Status == RequestStatus.DeniedByCreator || Status == RequestStatus.DeniedByTimeLimit || Status == RequestStatus.ResponseNotAnsweredByCreator || Status == RequestStatus.DeclinedByBroker) ? "red-border-left" :
-            (Status == RequestStatus.Approved) ? "green-border-left" : (Status == RequestStatus.Accepted ||Status == RequestStatus.AcceptedNewInterpreterAppointed) ? "yellow-border-left" : "blue-border-left";
-        }
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
 
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]
         [DataType(DataType.MultilineText)]
-        public string Interpreter{ get; set; }
+        public string Interpreter { get; set; }
 
         public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
@@ -192,7 +187,7 @@ namespace Tolk.Web.Models
                     OrderRequirementId = r.OrderRequirementId,
                     IsRequired = r.IsRequired,
                     Description = r.Description,
-                    RequirementType =  r.RequirementType,
+                    RequirementType = r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),

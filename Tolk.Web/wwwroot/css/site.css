@@ -980,7 +980,8 @@ input.force-validation {
   font-weight: 300;
   height: 70px;
 }
-.startlist-table {
+.startlist-table,
+.search-table {
   border-collapse: separate;
   border-spacing: 0px 5px;
 }
@@ -1088,4 +1089,19 @@ input.force-validation {
   vertical-align: top;
   font-weight: 300;
   width: 100%;
+}
+.submenu {
+  font-size: 16px;
+  text-decoration: none;
+  padding: 0px;
+}
+.dropdown-menu > li > a,
+.dropdown-menu > li > a:hover {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.dropdown-menu > li > a:hover {
+  color: #82A7A0;
+  background-color: white;
+  text-decoration: underline;
 }

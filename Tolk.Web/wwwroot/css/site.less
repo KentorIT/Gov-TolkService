@@ -802,7 +802,6 @@ li.placeholder::before {
     margin-bottom: 20px;
 }
 
-
 .no-value-info {
     font-style: italic;
     color: @darkestgray;
@@ -1110,7 +1109,7 @@ input.force-validation {
     height: 70px;
 }
 
-.startlist-table {
+.startlist-table, .search-table {
     border-collapse: separate;
     border-spacing: 0px 5px;
 }
@@ -1240,6 +1239,23 @@ input.force-validation {
     vertical-align: top;
     font-weight: 300;
     width: 100%;
+}
+
+.submenu {
+    font-size: 16px;
+    text-decoration: none;
+    padding: 0px;
+}
+
+.dropdown-menu > li > a, .dropdown-menu > li > a:hover {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.dropdown-menu > li > a:hover {
+    color: @primary;
+    background-color: white;
+    text-decoration: underline;
 }
 
 @media (min-width: 1200px) {

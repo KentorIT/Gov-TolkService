@@ -1,7 +1,7 @@
 ﻿@model RequisitionListModel
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Rekvisitioner";
+    ViewData["Title"] = "Historik - Rekvisitioner";
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
@@ -12,26 +12,24 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-paging table-datatable">
-                <table class="table table-striped table-hover clickable-rows-with-action">
+                <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
-                            <th>Boknings-ID</th>
-                            <th>Språk</th>
-                            <th>Start</th>
-                            <th>Slut</th>
+                            <th>BokningsID</th>
                             <th>Status</th>
+                            <th>Språk</th>
+                            <th>Datum för uppdrag</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "requisition" })">
-                                <td>@item.OrderNumber</td>
-                                <td>@item.Language</td>
-                                <td>@item.Start.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@item.End.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@EnumHelper.GetDescription(item.Status)</td>
-                            </tr>
+                        <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "requisition" })">
+                            <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                            <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                            <td class="gray-border-bottom">@item.Language</td>
+                            <td class="gray-border-bottom gray-border-right"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                        </tr>
                         }
                     </tbody>
                 </table>

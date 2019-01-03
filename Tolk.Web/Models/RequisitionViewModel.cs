@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -66,7 +67,7 @@ namespace Tolk.Web.Models
 
         public AttachmentListModel AttachmentListModel { get; set; }
 
-        public bool AllowCreation {get;set;}
+        public bool AllowCreation { get; set; }
 
         public bool AllowProcessing { get; set; }
 
@@ -76,12 +77,7 @@ namespace Tolk.Web.Models
 
         public EventLogModel EventLog { get; set; }
 
-        public string ColorClassName
-        {
-            get =>
-            (Status == RequisitionStatus.DeniedByCustomer) ? "red-border-left" :
-            (Status == RequisitionStatus.Approved || Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder) ? "green-border-left" : "blue-border-left";
-        }
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
 
         #region methods
 
@@ -123,7 +119,7 @@ namespace Tolk.Web.Models
                 SessionEndedAt = requisition.SessionEndedAt,
                 SessionStartedAt = requisition.SessionStartedAt,
                 ExpectedTravelCosts = requisition.Request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price?? 0,
+                TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 Interpreter = requisition.Request.Interpreter.CompleteContactInformation,

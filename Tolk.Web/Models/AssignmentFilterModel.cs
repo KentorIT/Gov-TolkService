@@ -8,7 +8,7 @@ namespace Tolk.Web.Models
 {
     public class AssignmentFilterModel
     {
-        [Display(Name = "Boknings-ID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Län")]
@@ -20,7 +20,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Startdatum")]
+        [Display(Name = "Datum för uppdrag")]
         public DateRange DateRange { get; set; }
 
         [Display(Name = "Uppdragets status")]

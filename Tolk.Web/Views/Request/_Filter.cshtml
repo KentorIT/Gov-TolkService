@@ -25,21 +25,21 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
+                <form-entry asp-for="OrderDateRange" />
+            </div>
+            <div class="col-sm-4">
                 <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
             </div>
             <div class="col-sm-4">
                 <form-entry asp-for="CustomerOrganizationId" type="select" asp-items="SelectListService.CustomerOrganizations" class="allow-clear" />
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
-            </div>
         </div>
         <div class="row">
             <div class="col-sm-4">
-                <form-entry asp-for="OrderDateRange" />
+                <form-entry asp-for="AnswerByDateRange" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="AnswerByDateRange" />
+                <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
             </div>
         </div>
     </form>

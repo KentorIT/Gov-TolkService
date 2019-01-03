@@ -16,7 +16,7 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-paging table-datatable">
-                <table class="table table-striped table-hover clickable-rows-with-action">
+                <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
                             <th>Namn</th>
@@ -32,13 +32,13 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
-                                <td>@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
-                                <td>@item.Email</td>
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
+                                <td class="gray-border-bottom">@item.Email</td>
                                 @if (Model.FilterModel.IsSystemAdministrator)
                                 {
-                                    <td>@item.Organisation</td>
+                                    <td class="gray-border-bottom">@item.Organisation</td>
                                 }
-                                <td>@item.LastLoginAt</td>
+                                <td class="gray-border-bottom gray-border-right">@item.LastLoginAt</td>
                             </tr>
                         }
                     </tbody>

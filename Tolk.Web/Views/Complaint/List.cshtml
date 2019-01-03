@@ -1,7 +1,7 @@
 ﻿@model ComplaintListModel 
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Reklamationer";
+    ViewData["Title"] = "Historik - Reklamationer";
 }
 <h2>@ViewData["Title"]</h2>
 <div class="row">
@@ -12,15 +12,15 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-paging table-datatable">
-                <table class="table table-striped table-hover clickable-rows-with-action">
+                <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
-                            <th>Boknings-ID</th>
+                            <th>BokningsID</th>
                             <th>Län</th>
                             <th>Myndighet</th>
                             <th>Förmedling</th>
                             <th>Skapad</th>
-                            <th>Reklamationstyp</th>
+                            <th>Typ av reklamation</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -28,13 +28,13 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "complaint"})">
-                                <td>@item.OrderNumber</td>
-                                <td>@item.RegionName</td>
-                                <td>@item.CustomerName</td>
-                                <td>@item.BrokerName</td>
-                                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@EnumHelper.GetDescription(item.ComplaintType)</td>
-                                <td>@EnumHelper.GetDescription(item.Status)</td>
+                                <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                                <td class="gray-border-bottom">@item.RegionName</td>
+                                <td class="gray-border-bottom">@item.CustomerName</td>
+                                <td class="gray-border-bottom">@item.BrokerName</td>
+                                <td class="gray-border-bottom">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.ComplaintType)</td>
+                                <td class="gray-border-bottom gray-border-right">@EnumHelper.GetDescription(item.Status)</td>
                             </tr>
                         }
                     </tbody>
