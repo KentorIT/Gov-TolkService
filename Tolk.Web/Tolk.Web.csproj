@@ -98,9 +98,6 @@
     <Content Update="Views\Requisition\_Filter.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Shared\_DenyMessageDialog.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Shared\_LoginPagePartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

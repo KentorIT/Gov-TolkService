@@ -317,7 +317,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Deny(DenyMessageDialogModel model)
+        public async Task<IActionResult> Deny(RequisitionDenyModel model)
         {
             if (ModelState.IsValid)
             {
@@ -325,17 +325,17 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.CreatedByUser)
-                    .Single(r => r.RequisitionId == model.ParentId);
+                    .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Message);
+                    requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                     _dbContext.SaveChanges();
                     _notificationService.RequisitionDenied(requisition);
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
             }
-            return RedirectToAction(nameof(View), new { id = model.ParentId });
+            return RedirectToAction(nameof(View), new { id = model.RequisitionId });
         }
 
         private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)

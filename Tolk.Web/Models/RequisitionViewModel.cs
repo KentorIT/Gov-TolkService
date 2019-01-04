@@ -62,7 +62,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar mer än två timmar restidskostnad")]
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 
-        [Display(Name = "Meddelande vid nekande")]
+        [Display(Name = "Anledning till underkännande av rekvisition")]
+        [DataType(DataType.MultilineText)]
+        [Required]
         public string DenyMessage { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }

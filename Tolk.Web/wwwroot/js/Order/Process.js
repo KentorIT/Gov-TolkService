@@ -13,6 +13,19 @@
             $("#denyMessageDialog").modal("hide");
         }
     });
+    //this is for requisition-tab
+    $("body").on("click", ".btn-deny-req", function (event) {
+        event.preventDefault();
+        //Before we start, validate the form!
+        var $form = $(this).parents(".modal-content").find("form");
+        $("#denyRequisitionValidator").empty();
+        if ($form.valid() && $form.find("#DenyMessage").val().length > 0) {
+            $form.submit();
+        }
+        else {
+            $("#denyRequisitionValidator").append("Ange anledning till underkännande");
+        }
+    });
     $("body").on("click", ".cancel-button", function () {
         event.preventDefault();
         $("#cancelMessageDialog").openDialog();
