@@ -90,7 +90,7 @@
                         <tbody>
                             @foreach (var item in startlist.StartListObjects)
                             {
-                                <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId })">
+                                <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId, tab = item.DefaultItemTab })">
                                     <td class="gray-border-bottom @item.ColorClassName">
                                         <br />
                                         <span class="normal-weight">

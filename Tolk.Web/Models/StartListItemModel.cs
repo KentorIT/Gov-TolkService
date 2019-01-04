@@ -12,6 +12,8 @@ namespace Tolk.Web.Models
 
         public int DefaultItemId { get; set; }
 
+        public string DefaultItemTab { get; set; }
+
         public string ButtonAction { get; set; }
 
         public string ButtonController { get; set; }
