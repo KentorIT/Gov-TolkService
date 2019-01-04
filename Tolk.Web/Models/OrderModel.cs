@@ -270,6 +270,8 @@ namespace Tolk.Web.Models
 
         public bool AllowComplaintCreation { get; set; } = false;
 
+        public bool AllowProcessing { get; set; } = false;
+
         public bool AllowNoAnswerConfirmation { get; set; } = false;
 
         public bool AllowConfirmCancellation { get; set; } = false;

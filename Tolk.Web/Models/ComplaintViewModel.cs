@@ -49,13 +49,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        public bool AllowAnwserOnDispute
-        {
-            get
-            {
-                return Status == ComplaintStatus.Disputed && IsCustomer;
-            }
-        }
+        public bool AllowAnwserOnDispute { get; set; } = false;
 
         public EventLogModel EventLog { get; set; }
 
