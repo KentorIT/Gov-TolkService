@@ -1,22 +1,50 @@
 ﻿@model RegisterNewAccountViewModel
 @{
-    ViewData["Title"] = "Ny användare";
+    ViewData["Title"] = "Registrera användarkonto";
 }
 
-<h2>@ViewData["Title"]</h2>
-
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-8 login-page page-shadow">
+        <h2 class="padding-bottom-30px">@ViewData["Title"]</h2>
         <form method="post">
             <input type="hidden" asp-for="UserId" />
             <input type="hidden" asp-for="PasswordToken" />
-            <form-entry asp-for="NameFirst" />
-            <form-entry asp-for="NameFamily" />
-            <form-entry asp-for="NewPassword" />
-            <form-entry asp-for="ConfirmPassword" />
-            <form-entry asp-for="PhoneWork" />
-            <form-entry asp-for="PhoneCellphone" />
-            <button class="btn btn-success">Skapa</button>
+            <div class="row">
+                <div class="col-md-6">
+                    <form-entry asp-for="NameFirst" />
+                </div>
+                <div class="col-md-6">
+                    <form-entry asp-for="NameFamily" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <form-entry asp-for="PhoneWork" />
+                </div>
+                <div class="col-md-6">
+                    <form-entry asp-for="PhoneCellphone" />
+                </div>
+            </div>
+            <hr />
+            <div class="row padding-bottom-60px">
+                <div class="col-md-6">
+                    <form-entry asp-for="NewPassword" />
+                </div>
+                <div class="col-md-6">
+                    <form-entry asp-for="ConfirmPassword" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-success btn-large pull-right">Registrera konto</button>
+                </div>
+            </div>
         </form>
+    </div>
+    <div class="col-sm-4 welcome-info">
+        @await Html.PartialAsync("_AppInfoSmall")
     </div>
 </div>

@@ -514,11 +514,6 @@ supporten på {_options.SupportEmail}";
             return View("ConfirmAccountFailed", model);
         }
 
-        public IActionResult ConfirmAccountConfirmation()
-        {
-            return View();
-        }
-
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -670,7 +665,7 @@ supporten på {_options.SupportEmail}";
                                     await _signInManager.RefreshSignInAsync(user);
                                 }
                                 transaction.Complete();
-                                return RedirectToAction(nameof(ConfirmAccountConfirmation));
+                                return View(nameof(RegisterNewAccountConfirmation), model);
                             }
                         }
                     }
@@ -681,6 +676,11 @@ supporten på {_options.SupportEmail}";
                 }
             }
 
+            return View(model);
+        }
+
+        public IActionResult RegisterNewAccountConfirmation(RegisterNewAccountViewModel model)
+        {
             return View(model);
         }
 

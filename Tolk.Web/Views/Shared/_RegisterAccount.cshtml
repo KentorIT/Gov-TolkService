@@ -1,8 +1,27 @@
 ﻿@model RegisterViewModel
 
-<h2>Registrera användarkonto</h2>
-<form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <form-entry asp-for="Email" />
-    <button type="submit" class="btn btn-success">Skapa konto</button>
-</form>
+<div class="row">
+    <div class="col-xs-12">
+        <h2>Registrera användarkonto</h2>
+        <p>För att få tillgång till tjänsten ange den e-postadress som skall användas för att få en aktiveringslänk skickad.</p>
+        <form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
+            <div class="row padding-bottom-60px">
+                <div class="col-xs-12">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <form-entry asp-for="Email" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-align-center">
+                    <button type="submit" class="btn btn-success btn-large">Skicka</button>
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-xs-12 text-align-center">
+                Har du redan ett konto?<br />
+                Gå vidare till <a asp-action="Login">Logga in <span class="glyphicon glyphicon-triangle-right"></span></a>
+            </div>
+        </div>
+    </div>
+</div>
