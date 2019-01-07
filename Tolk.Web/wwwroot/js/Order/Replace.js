@@ -1,4 +1,15 @@
-﻿$(function () {
+﻿function sanitizeTimeInput(value) {
+    if (value.indexOf(":") === -1) {
+        var colonPos = value.length - 2;
+        value = [value.slice(0, colonPos), ":", value.slice(colonPos)].join("");
+    }
+    if (value.length === 4) {
+        value = ["0", value].join("");
+    }
+    return value;
+}
+
+$(function () {
     $.validator.setDefaults({
         ignore: ":hidden:not(.force-validation)"
     });
@@ -18,8 +29,8 @@
         var nextDayField = nextDay.toLocaleDateString("sv-SE");
         //Find the TimeRange_ part of the current input's name, to find the other inputs
         var dateFieldChanged = new Date($("#" + thisPrefix + "_StartDate").val()).toLocaleDateString("sv-SE");
-        var startFieldChanged = $("#" + thisPrefix + "_StartTime").val();
-        var endFieldChanged = $("#" + thisPrefix + "_EndTime").val();
+        var startFieldChanged = sanitizeTimeInput($("#" + thisPrefix + "_StartTime").val());
+        var endFieldChanged = sanitizeTimeInput($("#" + thisPrefix + "_EndTime").val());
         if ((!isTwoDay && dateField !== dateFieldChanged) || (isTwoDay && dateField !== dateFieldChanged && dateFieldChanged !== nextDayField)) {
             return false;
         } else {
