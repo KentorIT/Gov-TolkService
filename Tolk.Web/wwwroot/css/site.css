@@ -108,6 +108,7 @@ hr {
   max-width: 1200px;
 }
 .page {
+  min-height: 500px;
   background-color: white;
   padding: 10px 10px;
   float: none;
@@ -1114,8 +1115,9 @@ input.force-validation {
   width: 100%;
 }
 .submenu {
-  font-size: 16px;
+  font-size: 17px;
   text-decoration: none;
+  padding-bottom: 10px;
   padding: 0px;
 }
 .dropdown-menu > li > a,
