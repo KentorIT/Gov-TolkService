@@ -5,30 +5,42 @@
     ViewData["Title"] = "Skapa användare";
 }
 <h2>@ViewData["Title"]</h2>
-<div class="row">
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="col-md-8 error-message">@Model.ErrorMessage</div>
-    }
-</div>
-<div class="row">
-    <div class="col-md-8">
-        <form method="post">
+
+<form method="post">
+    <div class="row">
+        <div class="col-sm-4">
+
             <form-entry asp-for="Email" />
             <form-entry asp-for="NameFirst" />
             <form-entry asp-for="NameFamily" />
+            <br />
+            <form-entry asp-for="IsSuperUser" />
+        </div>
+        <div class="col-sm-4">
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
-            <form-entry asp-for="IsSuperUser" />
             @if (Model.EditorIsSystemAdministrator)
             {
                 <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organizations" class="allow-clear" />
             }
-            <button type="submit" class="btn btn-success pull-right">Skapa</button>
-            <a class="btn btn-warning pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt</a>
-        </form>
+        </div>
     </div>
-</div>
+    <div class="row">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="col-sm-8 text-danger">@Model.ErrorMessage</div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
+        </div>
+    </div>
+</form>
+
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
