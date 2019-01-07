@@ -229,6 +229,7 @@ $(function () {
             $("#travel-time-checkbox").show();
         }
         else {
+            $("#AllowMoreThanTwoHoursTravelTime").prop("checked", false);
             $("#travel-time-checkbox").hide();
         }
     });
