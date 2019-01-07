@@ -58,7 +58,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
 
-        [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK")]
+        [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK", Description = "Uppgift om resekostnad måste anges. Finns inga reskostnader anges 0")]
         [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 SEK")]
         [DataType(DataType.Currency)]
         public decimal TravelCosts { get; set; }
