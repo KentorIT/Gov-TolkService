@@ -164,15 +164,7 @@ namespace Tolk.Web.Controllers
                     model.AllowComplaintCreation = !request.Complaints.Any() &&
                         (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
-                    
-                    var complaint = request.Complaints.FirstOrDefault();
-                    if (complaint != null)
-                    {
-                        model.ComplaintId = complaint.ComplaintId;
-                        model.ComplaintMessage = complaint.ComplaintMessage;
-                        model.ComplaintStatus = complaint.Status;
-                        model.ComplaintType = complaint.ComplaintType;
-                    }
+      
                     model.RequestAttachmentListModel = new AttachmentListModel
                     {
                         AllowDelete = false,

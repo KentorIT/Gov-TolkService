@@ -276,17 +276,7 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmCancellation { get; set; } = false;
 
-        public int? ComplaintId { get; set; }
-
         public bool ActiveRequestIsAnswered { get; set; }
-
-        [Display(Name = "Reklamationens status")]
-        public ComplaintStatus? ComplaintStatus { get; set; }
-
-        [Display(Name = "Typ av reklamation")]
-        public ComplaintType? ComplaintType { get; set; }
-        [Display(Name = "Reklamationens beskriving")]
-        public string ComplaintMessage { get; set; }
 
         public bool IsReplacement => ReplacingOrderId.HasValue;
 

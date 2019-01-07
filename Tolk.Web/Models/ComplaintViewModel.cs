@@ -55,20 +55,15 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, bool isBroker, bool isCustomer)
+        public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, bool isCustomer)
         {
             return new ComplaintViewModel
             {
                 ComplaintId = complaint.ComplaintId,
-                RequestId = complaint.RequestId,
                 BrokerName = complaint.Request.Ranking.Broker.Name,
                 CustomerName = complaint.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = complaint.Request.Order.CustomerReferenceNumber,
                 InterpreterName = complaint.Request.Interpreter.CompleteContactInformation,
-                LanguageName = complaint.Request.Order.OtherLanguage ?? complaint.Request.Order.Language?.Name ?? "-",
-                OrderNumber = complaint.Request.Order.OrderNumber.ToString(),
-                RegionName = complaint.Request.Ranking.Region.Name,
-                AssignmentType = complaint.Request.Order.AssignentType,
                 CreatedBy = complaint.CreatedByUser.CompleteContactInformation,
                 CreatedAt = complaint.CreatedAt,
                 ComplaintType = complaint.ComplaintType,
@@ -76,8 +71,7 @@ namespace Tolk.Web.Models
                 Status = complaint.Status,
                 DisputeMessage = complaint.AnswerMessage,
                 AnswerDisputedMessage = complaint.AnswerDisputedMessage,
-                IsBroker = isBroker,
-                IsCustomer = isCustomer,
+                IsBroker = !isCustomer,
                 EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint).OrderBy(e => e.Timestamp).ToList() },
             };
         }

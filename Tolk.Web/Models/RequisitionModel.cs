@@ -101,10 +101,6 @@ namespace Tolk.Web.Models
 
         public PreviousRequisitionViewModel PreviousRequisition { get; set; }
 
-        [DataType(DataType.MultilineText)]
-        [Display(Name = "Faktureringsinformation")]
-        public string InvoiceInformation { get; set; }
-
         public List<FileModel> Files { get; set; }
 
         public Guid? FileGroupKey { get; set; }

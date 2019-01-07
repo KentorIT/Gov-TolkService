@@ -151,12 +151,6 @@
                     <a class="btn btn-danger btn-large" href="@Url.Action("Create", "Complaint" , new { id=Model.RequestId })">Registrera reklamation</a>
                 </div>
             }
-            @if (Model.ComplaintId.HasValue)
-            {
-                <div class="col-sm-12">
-                    @await Html.PartialAsync("_ComplaintSummary", Model.ActiveRequest)
-                </div>
-            }
         </div>
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" } })
     </div>

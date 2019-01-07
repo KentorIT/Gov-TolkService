@@ -61,14 +61,6 @@
                     <div class="important-info">@Model.Info48HCancelledByCustomer</div>
                 }
                 <div class="row">
-                    @if (Model.ComplaintId.HasValue)
-                    {
-                        <div class="col-sm-12">
-                            @await Html.PartialAsync("_ComplaintSummary", Model)
-                        </div>
-                    }
-                </div>
-                <div class="row">
                     <div class="col-sm-6">
                         @if (Model.AllowCancellation)
                         {

@@ -151,14 +151,6 @@ namespace Tolk.Web.Models
 
         public int? ComplaintId { get; set; }
 
-        [Display(Name = "Reklamationens status")]
-        public ComplaintStatus? ComplaintStatus { get; set; }
-
-        [Display(Name = "Typ av reklamation")]
-        public ComplaintType? ComplaintType { get; set; }
-        [Display(Name = "Reklamationens beskriving")]
-        public string ComplaintMessage { get; set; }
-
         #endregion
 
         #region methods
@@ -214,9 +206,6 @@ namespace Tolk.Web.Models
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderModel = OrderModel.GetModelFromOrder(request.Order),
                 ComplaintId = complaint?.ComplaintId,
-                ComplaintMessage = complaint?.ComplaintMessage,
-                ComplaintStatus = complaint?.Status,
-                ComplaintType = complaint?.ComplaintType,
                 ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
                 ReplacedByOrderRequestStatus = requestSummaryOnly ? null : replacedByOrderRequest?.Status,
                 ReplacedByOrderRequestId = requestSummaryOnly ? null : replacedByOrderRequest?.RequestId,

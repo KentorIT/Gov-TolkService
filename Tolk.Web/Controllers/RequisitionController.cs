@@ -58,24 +58,15 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ProcessedUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
-                var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel.Value);
-                var request = requisition.Request;
-                var order = request.Order;
-                var listType = order.CustomerOrganisation.PriceListType;
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
                 model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
