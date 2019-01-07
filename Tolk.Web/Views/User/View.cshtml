@@ -1,23 +1,28 @@
 ﻿@model UserModel
-@using System.Security.Claims
 @{
     ViewData["Title"] = "Användardetaljer";
 }
-
 <h2>@ViewData["Title"]</h2>
-
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-sm-4">
         <display-entry asp-for="NameFull" />
         <display-entry asp-for="Organisation" />
         <display-entry asp-for="Email" />
         <display-entry asp-for="PhoneWork" />
+
+    </div>
+    <div class="col-sm-4">
         <display-entry asp-for="PhoneCellphone" />
         <display-entry asp-for="IsSuperUser" />
         <display-entry asp-for="IsActive" />
         <display-entry asp-for="LastLoginAt" />
-        <span class="pull-right">
-            <a class="btn btn-default" asp-action="Edit" asp-route-id="@Model.Id">Ändra användaruppgifter</a>
-        </span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+    </div>
+    <div class="col-sm-4">
+        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id">Ändra användaruppgifter</a>
     </div>
 </div>

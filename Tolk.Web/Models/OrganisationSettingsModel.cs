@@ -31,7 +31,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Använd web hook för skapad förfrågan")]
         public bool UseWebHook { get; set; }
 
-        [Display(Name = "Web hook för skapad förfrågan(request_created)")]
+        [Display(Name = "Web hook skapad förfrågan(request_created)")]
         public string RequestCreatedWebHook { get; set; }
 
     }

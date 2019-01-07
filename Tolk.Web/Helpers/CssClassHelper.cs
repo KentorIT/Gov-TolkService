@@ -31,7 +31,7 @@ namespace Tolk.Web.Helpers
 
         public static string GetColorClassNameForUserStatus(bool isActive)
         {
-            return isActive ? "green-border-left" : "red-border-left";
+            return isActive ? "green-border-left" : "gray-border-left";
         }
 
         public static string GetColorClassNameForStartListItem(StartListItemStatus status)

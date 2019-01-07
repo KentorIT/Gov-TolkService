@@ -1,27 +1,34 @@
 ﻿@model UserModel
 @{
-    ViewData["Title"] = "Uppdatera användare";
+    ViewData["Title"] = "Ändra användare";
 }
-
 <h2>@ViewData["Title"]</h2>
-
-<div class="row">
-    <div class="col-md-8">
-        <form method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
+<form method="post">
+    <div class="row">
+        <div class="col-sm-4">
             <input asp-for="Id" type="hidden" />
             <form-entry asp-for="NameFirst" />
             <form-entry asp-for="NameFamily" />
+            <form-entry asp-for="IsSuperUser" />
+        </div>
+        <div class="col-sm-4">
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
-            <form-entry asp-for="IsSuperUser" />
             <form-entry asp-for="IsActive" />
-            <button type="submit" class="btn btn-default pull-right">Spara</button>
-            <a class="btn btn-warning pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt</a>
-        </form>
+        </div>
+        <div class="col-sm-4">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
     </div>
-</div>
-
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+        </div>
+    </div>
+</form>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

@@ -2,35 +2,43 @@
 @{
     ViewData["Title"] = "Ändra användaruppgifter";
 }
-
 <h2>@ViewData["Title"]</h2>
-
-<div class="row">
-    <div class="col-md-8">
-        <form method="post" asp-action="Edit" asp-controller="Account">
+<form method="post" asp-action="Edit" asp-controller="Account">
+    @if (Model.HasPassword)
+    {
+    <div class="row">
+        <div class="col-sm-4">
+            <input type="hidden" asp-for="HasPassword" />
+            <form-entry asp-for="NameFirst" />
+            <form-entry asp-for="NameFamily" />
+            <form-entry asp-for="CurrentPassword" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="PhoneWork" />
+            <form-entry asp-for="PhoneCellphone" />
             <div asp-validation-summary="All" class="text-danger"></div>
-            @if (Model.HasPassword)
-            {
-                <input type="hidden" asp-for="HasPassword" />
-                <form-entry asp-for="NameFirst" />
-                <form-entry asp-for="NameFamily" />
-                <form-entry asp-for="PhoneWork" />
-                <form-entry asp-for="PhoneCellphone" />
-                <form-entry asp-for="CurrentPassword" />
-                <button type="submit" class="btn btn-success">Spara</button>
-                <a class="btn btn-danger pull-right do-not-check-dirty" asp-action="Index">Avbryt</a>
-            }
-            else
-            {
-                <p>
-                    Du har inget befintligt lösenord, för att sätta ett lösenord behöver du
-                    en återställningslänk som du får via e-post.
-                </p>
-                <button type="submit" class="btn btn-success">Skicka återställningslänk</button>
-            }
-            </form>
+        </div>
     </div>
-</div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-warning do-not-check-dirty" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-success btn-large pull-right">Spara</button>
+        </div>
+    </div>
+    }
+    else
+    {
+    <div class="row">
+        <div class="col-sm-8">
+            Du har inget befintligt lösenord, för att sätta ett lösenord behöver du
+            en återställningslänk som du får via e-post.<br /><br />
+            <button type="submit" class="btn btn-primary btn-large">Skicka återställningslänk</button>
+        </div>
+    </div>
+    }
+</form>
 
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
