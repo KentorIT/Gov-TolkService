@@ -47,5 +47,11 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tillsättning avböjd")]
         RequestDenied = 14,
 
+        [Description("Ersättningsuppdrag inkommet")]
+        ReplacementOrderRequestArrived= 15,
+
+        [Description("Ersättningsuppdrag mottaget")]
+        ReplacementOrderRequestReceived = 16,
+
     }
 }
