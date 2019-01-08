@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Models;
@@ -329,10 +326,7 @@ namespace Tolk.Web.Helpers
             // Add all requisition logs
             if (request.Requisitions != null && request.Requisitions.Any())
             {
-                foreach (var requisition in request.Requisitions)
-                {
-                    eventLog.AddRange(GetEventLog(requisition, customerName));
-                }
+                eventLog.AddRange(GetEventLog(request.Requisitions, customerName));
             }
             // Add all complaint logs
             if (request.Complaints != null && request.Complaints.Any())
@@ -345,54 +339,55 @@ namespace Tolk.Web.Helpers
             return eventLog;
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Requisition requisition, string customerName)
+        public static IEnumerable<EventLogEntryModel> GetEventLog(IEnumerable<Requisition> requisitions, string customerName)
         {
-            var eventLog = new List<EventLogEntryModel>();
-            // Requisition creation
-            if (requisition.Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder)
+            foreach (var requisition in requisitions)
             {
-                eventLog.Add(new EventLogEntryModel
+                // Requisition creation
+                if (requisition.Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder)
                 {
-                    Timestamp = requisition.CreatedAt,
-                    EventDetails = "Rekvisition automatiskt skapad och godkänd, pga avbokning",
-                    Actor = "Systemet",
-                });
-            }
-            else
-            {
-                eventLog.Add(new EventLogEntryModel
-                {
-                    Timestamp = requisition.CreatedAt,
-                    EventDetails = "Rekvisition registrerad",
-                    Actor = requisition.CreatedByUser.FullName,
-                    Organization = requisition.CreatedByUser.Broker?.Name, //interpreter has no org.
-                });
-            }
-            // Requisition processing
-            if (requisition.ProcessedAt.HasValue)
-            {
-                if (requisition.Status == RequisitionStatus.Approved)
-                {
-                    eventLog.Add(new EventLogEntryModel
+                    yield return new EventLogEntryModel
                     {
-                        Timestamp = requisition.ProcessedAt.Value,
-                        EventDetails = "Rekvisition godkänd",
-                        Actor = requisition.ProcessedUser.FullName,
-                        Organization = customerName,
-                    });
+                        Timestamp = requisition.CreatedAt,
+                        EventDetails = "Rekvisition automatiskt skapad och godkänd, pga avbokning",
+                        Actor = "Systemet",
+                    };
                 }
-                else if (requisition.Status == RequisitionStatus.DeniedByCustomer)
+                else
                 {
-                    eventLog.Add(new EventLogEntryModel
+                    yield return new EventLogEntryModel
                     {
-                        Timestamp = requisition.ProcessedAt.Value,
-                        EventDetails = "Rekvisition underkänd",
-                        Actor = requisition.ProcessedUser.FullName,
-                        Organization = customerName,
-                    });
+                        Timestamp = requisition.CreatedAt,
+                        EventDetails = "Rekvisition registrerad",
+                        Actor = requisition.CreatedByUser.FullName,
+                        Organization = requisition.CreatedByUser.Broker?.Name, //interpreter has no org.
+                    };
+                }
+                // Requisition processing
+                if (requisition.ProcessedAt.HasValue)
+                {
+                    if (requisition.Status == RequisitionStatus.Approved)
+                    {
+                        yield return new EventLogEntryModel
+                        {
+                            Timestamp = requisition.ProcessedAt.Value,
+                            EventDetails = "Rekvisition godkänd",
+                            Actor = requisition.ProcessedUser.FullName,
+                            Organization = customerName,
+                        };
+                    }
+                    else if (requisition.Status == RequisitionStatus.DeniedByCustomer)
+                    {
+                        yield return new EventLogEntryModel
+                        {
+                            Timestamp = requisition.ProcessedAt.Value,
+                            EventDetails = "Rekvisition underkänd",
+                            Actor = requisition.ProcessedUser.FullName,
+                            Organization = customerName,
+                        };
+                    }
                 }
             }
-            return eventLog;
         }
 
         public static List<EventLogEntryModel> GetEventLog(Complaint complaint, string customerName)

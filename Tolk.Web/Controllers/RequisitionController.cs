@@ -58,6 +58,8 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ProcessedUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).Include(r => r.ProcessedUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
@@ -75,7 +77,7 @@ namespace Tolk.Web.Controllers
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
                 model.EventLog = new EventLogModel {
-                    Entries = EventLogHelper.GetEventLog(requisition, requisition.Request.Order.CustomerOrganisation.Name)
+                    Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name)
                         .OrderBy(e => e.Timestamp).ToList()
                 };
                 if (returnPartial) { return PartialView(model); }
