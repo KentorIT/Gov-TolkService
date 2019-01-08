@@ -297,7 +297,7 @@ namespace Tolk.Web.Controllers
         {
             var now = _clock.SwedenNow.DateTime;
             var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
-            var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay.AddDays(1)).Date;
+            var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay).Date;
             if (now.Hour >= 14)
             {
                 //Add day if after 14...

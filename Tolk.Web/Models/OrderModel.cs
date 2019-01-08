@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
-        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker imorgon, måste senaste svarstid anges")]
+        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges")]
         [ClientRequired]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 

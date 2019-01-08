@@ -1,4 +1,5 @@
-﻿
+﻿var LastAnswerByIsShowing = false;
+
 $(function () {
     var currentId = 0;
     var currentDesiredId = 0;
@@ -185,9 +186,11 @@ $(function () {
             $("#LatestAnswerBy_Date").datepicker("setEndDate", chosenDate);
             //If LastAnswerBy_Date === chosenDate, check the time-fields as well
             // Check both on change of LastAnswerBy_* and SplitTimeRange_*
+            LastAnswerByIsShowing = true;
         }
         else {
             $("#LatestAnswerBy").hide();
+            LastAnswerByIsShowing = false;
         }
     });
 
@@ -339,8 +342,13 @@ $(function () {
     var $this = $(".wizard");
     $this.tolkWizard({
         nextHandler: function (event) {
+            if (!LastAnswerByIsShowing) {
+                $("#LatestAnswerBy_Date").val("");
+                $("#LatestAnswerBy_Hour").select2("val", "");
+                $("#LatestAnswerBy_Minute").select2("val", "");
+            }
             if (!validateStartTime()) {
-                alert("Uppdradet kan inte starta tidigare än nu.");
+                alert("Uppdraget kan inte starta tidigare än nu.");
                 return false;
             }
             if (!validateLastAnswerBy()) {
@@ -354,10 +362,6 @@ $(function () {
             var $form = $this.closest('form');
             var currentStep = event.NextStep;
             if (event.IsLastPage) {
-                if (!$("#LatestAnswerBy_Date").is("visible")) {
-                    $("#LatestAnswerBy_Date").val("");
-                }
-
                 $form.submit();
             }
             //post to confirm
