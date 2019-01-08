@@ -362,6 +362,7 @@ $(function () {
             var $form = $this.closest('form');
             var currentStep = event.NextStep;
             if (event.IsLastPage) {
+                $("#send").attr("disabled", "disabled");
                 $form.submit();
             }
             //post to confirm
