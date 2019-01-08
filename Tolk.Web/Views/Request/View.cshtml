@@ -9,7 +9,7 @@
 }
 @await Html.PartialAsync("_OrderHeader", Model.OrderModel, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
 <ul class="nav nav-tabs nav-justified">
-    <li class="active"><a data-toggle="tab" href="#request">Förfrågan</a></li>
+    <li class="active"><a data-toggle="tab" href="#request">Bokning</a></li>
     <li class='@(isRequisitionAvailable ? "" : "disabled")'><a id="requisitionTab" data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab(this, '@requisitionPath', '#requisition')">Rekvisition</a></li>
     <li class='@(isComplaintAvailable ? "" : "disabled")'><a id="complaintTab" data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab(this, '@complaintPath', '#complaint')">Reklamation</a></li>
 </ul>
@@ -103,7 +103,7 @@
                         </div>
                     </div>
                 </div>
-                @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Förfråganhändelser" }, { "id", "EventLog_Request" } })
+                @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Request" } })
             </div>
         </div>
     </div>
