@@ -67,7 +67,7 @@ namespace Tolk.Web.Controllers
             }
             return View(new StartViewModel
             {
-                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ? "Aktiva bokningar" : "Aktiva bokningsförfrågningar",
+                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
                 Message = message,
                 ConfirmationMessages = GetConfirmationMessages(),
                 StartLists = await GetStartLists()
@@ -123,7 +123,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Kräver handling av myndighet ({count} st)" : "Kräver handling av myndighet",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som kräver handling av myndigheten",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som kräver handling av myndigheten",
                 StartListObjects = actionList,
                 HasReviewAction = true
             };
@@ -138,7 +138,7 @@ namespace Tolk.Web.Controllers
 
             yield return new StartViewModel.StartList
             {
-                Header = count > 0 ? $"Skickade bokningar ({count} st)" : "Skickade bokningar",
+                Header = count > 0 ? $"Skickade bokningar ({count} st)" : "Skickade bokningsförfrågningar",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är skickade",
                 StartListObjects = sentOrders
             };
@@ -153,7 +153,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är tillsatta",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
                 StartListObjects = approvedOrders
             };
 
@@ -168,7 +168,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Inväntar rekvisition ({count} st)" : "Inväntar rekvisition",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som inväntar rekvisition",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som inväntar rekvisition",
                 StartListObjects = awaitRequisition
             };
         }
@@ -223,7 +223,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Kräver handling av förmedling ({count} st)" : "Kräver handling av förmedling",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som kräver handling av förmedling",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som kräver handling av förmedling",
                 StartListObjects = actionList,
                 HasReviewAction = true
             };
@@ -240,7 +240,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är tillsatta",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
                 StartListObjects = answeredRequests
             };
 
@@ -256,7 +256,7 @@ namespace Tolk.Web.Controllers
             yield return new StartViewModel.StartList
             {
                 Header = count > 0 ? $"Skickade rekvisitioner ({count} st)" : "Skickade rekvisitioner",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar med skickad rekvisition",
+                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar med skickad rekvisition",
                 StartListObjects = sentRequisitions
             };
         }

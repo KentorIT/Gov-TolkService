@@ -7,7 +7,7 @@ namespace Tolk.Web.Models
 
         public IEnumerable<StartList> StartLists { get; set; }
 
-        public string PageTitle { get; set; } = "Aktiva bokningsförfrågningar";
+        public string PageTitle { get; set; } = "Aktiva bokningar";
 
         public string Message { get; set; }
 
