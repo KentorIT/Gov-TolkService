@@ -34,7 +34,7 @@
         {
             <div><span class="detail-text">@Model.TotalPriceToDisplay.ToString("#,0.00 SEK")</span><a class="price-column more-info-price" href="#more-info">Visa specifikation</a></div>
         }
-        <div class="body-content col-sm-12 collapse detail-price-info">
+        <div class="price-body col-sm-12 collapse detail-price-info">
             <span class="price-header bold">@Model.Header</span><br />
             <span class="important-info">Följande tolktaxa har använts för beräkning: @Model.PriceInformationToDisplay.PriceListTypeDescription @Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
             @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
