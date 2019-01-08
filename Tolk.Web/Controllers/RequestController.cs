@@ -176,6 +176,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter)
                 .Include(r => r.ReplacingRequest)
                 .Include(r => r.ReplacedByRequest)
+                .Include(r => r.Requisitions)
                 .Single(o => o.RequestId == id);
             RequestModel model = GetModel(request);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
