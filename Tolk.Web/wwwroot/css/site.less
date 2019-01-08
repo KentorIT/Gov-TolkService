@@ -20,6 +20,7 @@
 @blue: #6BA3E4;
 @red: #E45C5C;
 @yellow: #EFE875;
+@warning: #A94442;
 
 html {
     overflow-y: scroll;
@@ -521,8 +522,6 @@ a.btn-large {
     border: none;
 }
 
-
-
 .btn-primary:hover,
 .btn-primary.hover,
 .btn-primary:focus,
@@ -837,6 +836,14 @@ li.placeholder::before {
     border-bottom: 1px solid #e5e5e5;
 }
 
+.warning-info {
+    background-color: linen;
+    border: 1px solid @warning;
+    color: @warning;
+    padding: 12px 12px 0px 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
 
 .no-result-message {
     margin-bottom: 15px;

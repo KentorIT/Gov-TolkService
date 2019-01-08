@@ -11,7 +11,7 @@
     </div>
     <div class="col-sm-12">
         @await Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] } })
-        @await  Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false } })
+        @await Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false } })
         <div class="row">
             <div class="col-sm-4"></div>
             <div class="col-sm-8 important-info">
@@ -23,6 +23,15 @@
                 </ul>
             </div>
         </div>
+        @if (!string.IsNullOrEmpty(Model.WarningInfo))
+        {
+        <div class="row warning-info">
+            <div class="col-sm-8">@Model.WarningInfo</div>
+            <div class="col-sm-4">
+                <display-entry asp-for="TimeRange" />
+            </div>
+        </div>
+        }
     </div>
 </div>
 

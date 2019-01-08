@@ -146,6 +146,8 @@ namespace Tolk.Web.Models
             }
         }
 
+        public string WarningInfo { get; set; } = string.Empty;
+
         public PriceInformation PriceInformation { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }

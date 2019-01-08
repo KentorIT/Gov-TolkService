@@ -753,6 +753,14 @@ li.placeholder::before {
   border: 0;
   border-bottom: 1px solid #e5e5e5;
 }
+.warning-info {
+  background-color: linen;
+  border: 1px solid #A94442;
+  color: #A94442;
+  padding: 12px 12px 0px 12px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
 .no-result-message {
   margin-bottom: 15px;
   margin-top: 15px;

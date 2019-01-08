@@ -373,6 +373,9 @@ namespace Tolk.Web.Controllers
                     DisplayFiles = attachments
                 };
             }
+            int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
+            updatedModel.WarningInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty;
+
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;
