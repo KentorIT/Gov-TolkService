@@ -239,7 +239,7 @@
             });
 
             if (defaultOpts.onloadHandler !== null) {
-                defaultOpts.onloadHandler(event);
+                defaultOpts.onloadHandler();
             }
             wizardStepRendered({
                 LastPage: $steps.eq(currentStep - 1),

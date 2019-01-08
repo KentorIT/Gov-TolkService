@@ -1,5 +1,5 @@
 ﻿$(function () {
-    $("body").on("click", ".deny-button", function () {
+    $("body").on("click", ".deny-button", function (event) {
         event.preventDefault();
         $("#denyMessageDialog").openDialog();
     });
@@ -26,7 +26,7 @@
             $("#denyRequisitionValidator").append("Ange anledning till underkännande");
         }
     });
-    $("body").on("click", ".cancel-button", function () {
+    $("body").on("click", ".cancel-button", function (event) {
         event.preventDefault();
         $("#cancelMessageDialog").openDialog();
     });

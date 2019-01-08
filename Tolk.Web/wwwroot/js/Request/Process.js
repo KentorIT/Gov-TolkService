@@ -44,7 +44,7 @@ $(function () {
     }
 
     //handle cancellation by broker
-    $("body").on("click", ".cancel-button", function () {
+    $("body").on("click", ".cancel-button", function (event) {
         event.preventDefault();
         $("#cancelMessageDialog").openDialog();
     });

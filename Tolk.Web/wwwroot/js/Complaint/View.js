@@ -1,5 +1,5 @@
 $(function () {
-    $("body").on("click", ".btn-dispute", function () {
+    $("body").on("click", ".btn-dispute", function (event) {
         event.preventDefault();
         triggerValidator("Ange meddelande vid bestridande", $(this), $("#disputeComplaintValidator"), "#DisputeMessage");
     });
