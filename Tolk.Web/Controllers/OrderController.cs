@@ -182,13 +182,12 @@ namespace Tolk.Web.Controllers
                 }
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(order, new EventLogHelper.OrderMetaData
-                    {
-                        TerminatingRequest = order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker
+                    Entries = EventLogHelper.GetEventLog(order, 
+                        order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker
                             || r.Status == RequestStatus.DeniedByTimeLimit)
                             ? order.Requests.OrderBy(r => r.ExpiresAt).Last()
-                            : null,
-                    })
+                            : null
+                    )
                     .OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList(),
                 };
                 if (request != null)
@@ -602,7 +601,8 @@ namespace Tolk.Web.Controllers
             return _dbContext.Orders
                 .Include(o => o.ReplacedByOrder)
                 .Include(o => o.ReplacingOrder)
-                .Include(o => o.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
+                .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
@@ -613,23 +613,30 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.ChangedByUser)
                 .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints)
+                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
+                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
+                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
+                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
+                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
                 .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Requests).ThenInclude(r => r.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
-                .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser)
                 .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
+                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints).ThenInclude(u => u.CreatedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
+                .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
+                        
+                        
         }
     }
 }

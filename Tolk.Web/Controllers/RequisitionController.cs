@@ -55,7 +55,7 @@ namespace Tolk.Web.Controllers
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessedUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(r => r.ProcessedUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -74,7 +74,10 @@ namespace Tolk.Web.Controllers
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
-                model.EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(requisition).OrderBy(e => e.Timestamp).ToList() };
+                model.EventLog = new EventLogModel {
+                    Entries = EventLogHelper.GetEventLog(requisition, requisition.Request.Order.CustomerOrganisation.Name)
+                        .OrderBy(e => e.Timestamp).ToList()
+                };
                 if (returnPartial) { return PartialView(model); }
                 return View(model);
             }

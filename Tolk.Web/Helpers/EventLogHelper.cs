@@ -16,8 +16,9 @@ namespace Tolk.Web.Helpers
             public Request TerminatingRequest { get; set; }
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Order order, OrderMetaData? orderMetaData = null)
+        public static List<EventLogEntryModel> GetEventLog(Order order, Request terminatingRequest = null)
         {
+            var customerName = order.CustomerOrganisation.Name;
             var eventLog = new List<EventLogEntryModel>
             {
                 // Order creation
@@ -26,7 +27,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = order.CreatedAt,
                     EventDetails = order.ReplacingOrder != null ? $"Ersättningsavrop skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Avrop skapat",
                     Actor = order.CreatedByUser.FullName,
-                    Organization = order.CreatedByUser.CustomerOrganisation.Name,
+                    Organization = customerName,
                 }
             };
             // Add all request logs (including their requisition and complaint logs)
@@ -34,7 +35,7 @@ namespace Tolk.Web.Helpers
             {
                 foreach (var request in order.Requests)
                 {
-                    eventLog.AddRange(GetEventLog(request, false));
+                    eventLog.AddRange(GetEventLog(request, customerName, false));
                 }
             }
             // Order replaced
@@ -45,7 +46,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = order.ReplacedByOrder.CreatedAt,
                     EventDetails = $"Bokning ersatt av {order.ReplacedByOrder.OrderNumber}",
                     Actor = order.ReplacedByOrder.CreatedByUser.FullName,
-                    Organization = order.ReplacedByOrder.CreatedByUser.CustomerOrganisation.Name,
+                    Organization = customerName,
                 });
             }
             // Change of contact person  
@@ -74,7 +75,7 @@ namespace Tolk.Web.Helpers
                             Timestamp = cph.ChangedAt,
                             EventDetails = $"Kontaktperson {cph.PreviousContactPersonUser?.FullName} borttagen",
                             Actor = cph.ChangedByUser.FullName,
-                            Organization = order.CustomerOrganisation.Name
+                            Organization = customerName
                         });
                         //find if removed or changed (if removed we don't add a row else add row for new contact)
                         EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
@@ -86,9 +87,8 @@ namespace Tolk.Web.Helpers
                     i++;
                 }
             }
-            if (orderMetaData.HasValue)
             {
-                if (orderMetaData.Value.TerminatingRequest != null)
+                if (terminatingRequest != null)
                 {
                     // No one accepted order
                     if (order.Status == OrderStatus.NoBrokerAcceptedOrder)
@@ -96,9 +96,9 @@ namespace Tolk.Web.Helpers
                         eventLog.Add(new EventLogEntryModel
                         {
                             Weight = 200,
-                            Timestamp = orderMetaData.Value.TerminatingRequest.Status == RequestStatus.DeniedByTimeLimit
-                                ? orderMetaData.Value.TerminatingRequest.ExpiresAt
-                                : orderMetaData.Value.TerminatingRequest.AnswerDate.Value,
+                            Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
+                                ? terminatingRequest.ExpiresAt
+                                : terminatingRequest.AnswerDate.Value,
                             EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
                         });
@@ -112,7 +112,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt.Value,
                     EventDetails = $"Bekräftat bokningsförfrågan avslutad",
                     Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
-                    Organization = order.CustomerOrganisation.Name,
+                    Organization = customerName,
                 });
             }
             return eventLog;
@@ -131,7 +131,7 @@ namespace Tolk.Web.Helpers
             };
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Request request, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
+        public static List<EventLogEntryModel> GetEventLog(Request request, string customerName, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
         {
             var eventLog = new List<EventLogEntryModel>();
             if (isRequestDetailView && request.ReplacingRequestId.HasValue && previousRequests != null)
@@ -139,7 +139,7 @@ namespace Tolk.Web.Helpers
                 // Include event log for all previous requests, if this is the requests detail view
                 foreach (Request r in previousRequests)
                 {
-                    eventLog.AddRange(GetEventLog(r));
+                    eventLog.AddRange(GetEventLog(r, customerName));
                 }
             }
             if (!request.ReplacingRequestId.HasValue)
@@ -207,9 +207,10 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.AnswerProcessedAt.Value,
                         EventDetails = $"Tillsättning avböjd av myndighet",
                         Actor = request.ProcessingUser.FullName,
-                        Organization = request.ProcessingUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                     if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                    {
                         eventLog.Add(new EventLogEntryModel
                         {
                             Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedAt.Value,
@@ -217,6 +218,7 @@ namespace Tolk.Web.Helpers
                             Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser.FullName,
                             Organization = request.AnsweringUser.Broker.Name,
                         });
+                    }
                 }
                 else
                 {
@@ -230,7 +232,7 @@ namespace Tolk.Web.Helpers
                                 Timestamp = request.AnswerDate.Value,
                                 EventDetails = $"Tolkbyte godkänt av myndighet",
                                 Actor = request.ProcessingUser.FullName,
-                                Organization = request.ProcessingUser.CustomerOrganisation.Name,
+                                Organization = customerName,
                             });
                         }
                         else
@@ -251,7 +253,7 @@ namespace Tolk.Web.Helpers
                             Timestamp = request.AnswerProcessedAt.Value,
                             EventDetails = $"Tillsättning godkänd av myndighet",
                             Actor = request.ProcessingUser.FullName,
-                            Organization = request.ProcessingUser.CustomerOrganisation.Name,
+                            Organization = customerName,
                         });
                     }
                 }
@@ -276,7 +278,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.CancelledAt.Value,
                         EventDetails = "Uppdrag avbokat av myndighet",
                         Actor = request.CancelledByUser.FullName,
-                        Organization = request.CancelledByUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
                 else if (request.Status == RequestStatus.CancelledByBroker)
@@ -286,7 +288,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.CancelledAt.Value,
                         EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
-                        Organization = request.CancelledByUser.Broker.Name,
+                        Organization = customerName,
                     });
                 }
             }
@@ -299,7 +301,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = rsc.ConfirmedAt.Value,
                     EventDetails = $"Avbokning bekräftad av förmedling",
                     Actor = rsc.ConfirmedByUser.FullName,
-                    Organization = rsc.ConfirmedByUser.Broker.Name,
+                    Organization = request.Ranking.Broker.Name,
                 });
             }
             else if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))
@@ -310,7 +312,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = rsc.ConfirmedAt.Value,
                     EventDetails = $"Avbokning bekräftad av myndighet",
                     Actor = rsc.ConfirmedByUser.FullName,
-                    Organization = rsc.ConfirmedByUser.CustomerOrganisation.Name,
+                    Organization = customerName,
                 });
             }
             // Interpreter replacement
@@ -329,7 +331,7 @@ namespace Tolk.Web.Helpers
             {
                 foreach (var requisition in request.Requisitions)
                 {
-                    eventLog.AddRange(GetEventLog(requisition));
+                    eventLog.AddRange(GetEventLog(requisition, customerName));
                 }
             }
             // Add all complaint logs
@@ -337,13 +339,13 @@ namespace Tolk.Web.Helpers
             {
                 foreach (var complaints in request.Complaints)
                 {
-                    eventLog.AddRange(GetEventLog(complaints));
+                    eventLog.AddRange(GetEventLog(complaints, customerName));
                 }
             }
             return eventLog;
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Requisition requisition)
+        public static List<EventLogEntryModel> GetEventLog(Requisition requisition, string customerName)
         {
             var eventLog = new List<EventLogEntryModel>();
             // Requisition creation
@@ -376,7 +378,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = requisition.ProcessedAt.Value,
                         EventDetails = "Rekvisition godkänd",
                         Actor = requisition.ProcessedUser.FullName,
-                        Organization = requisition.ProcessedUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
                 else if (requisition.Status == RequisitionStatus.DeniedByCustomer)
@@ -386,14 +388,14 @@ namespace Tolk.Web.Helpers
                         Timestamp = requisition.ProcessedAt.Value,
                         EventDetails = "Rekvisition underkänd",
                         Actor = requisition.ProcessedUser.FullName,
-                        Organization = requisition.ProcessedUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
             }
             return eventLog;
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Complaint complaint)
+        public static List<EventLogEntryModel> GetEventLog(Complaint complaint, string customerName)
         {
             var eventLog = new List<EventLogEntryModel>
             {
@@ -403,7 +405,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = complaint.CreatedAt,
                     EventDetails = "Reklamation registrerad",
                     Actor = complaint.CreatedByUser.FullName,
-                    Organization = complaint.CreatedByUser.CustomerOrganisation.Name,
+                    Organization = customerName,
                 }
             };
             // Complaint answer
@@ -440,7 +442,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.AnswerDisputedAt.Value,
                         EventDetails = "Reklamation är återtagen av myndighet",
                         Actor = complaint.AnswerDisputingUser.FullName,
-                        Organization = complaint.AnswerDisputingUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
                 else
@@ -450,7 +452,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.AnswerDisputedAt.Value,
                         EventDetails = "Reklamation kvarstår, avvaktar extern process",
                         Actor = complaint.AnswerDisputingUser.FullName,
-                        Organization = complaint.AnswerDisputingUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
             }
@@ -464,7 +466,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.TerminatedAt.Value,
                         EventDetails = "Reklamation avslutad, bistådd av extern process",
                         Actor = complaint.TerminatingUser.FullName,
-                        Organization = complaint.TerminatingUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
                 else
@@ -474,7 +476,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.TerminatedAt.Value,
                         EventDetails = "Reklamation avslutad, avslagen av extern process",
                         Actor = complaint.TerminatingUser.FullName,
-                        Organization = complaint.TerminatingUser.CustomerOrganisation.Name,
+                        Organization = customerName,
                     });
                 }
             }

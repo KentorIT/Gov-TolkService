@@ -255,7 +255,7 @@ namespace Tolk.Web.Controllers
         {
             return _dbContext.Complaints
                 .Include(r => r.CreatedByUser)
-                .Include(r => r.AnsweringUser)
+                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(r => r.AnswerDisputingUser)
                 .Include(r => r.TerminatingUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)

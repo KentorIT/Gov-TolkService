@@ -96,19 +96,20 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Interpreter)
                 .Include(r => r.RequirementAnswers)
-                .Include(r => r.Requisitions)
-                .Include(r => r.Complaints)
+                .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
+                .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
+                .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(r => r.ProcessingUser)
                 .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
                 .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
-                .Include(r => r.ReplacedByRequest)
                 .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Single(o => o.RequestId == id);
 
@@ -404,17 +405,20 @@ namespace Tolk.Web.Controllers
             {
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(request,
+                    Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name,
                     previousRequests: _dbContext.Requests
                         .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
                         .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
-                        .Include(r => r.ProcessingUser).ThenInclude(u => u.CustomerOrganisation)
-                        .Include(r => r.CancelledByUser).ThenInclude(u => u.CustomerOrganisation)
+                        .Include(r => r.ProcessingUser)
                         .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser).ThenInclude(u => u.Broker)
-                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                        .Include(r => r.Requisitions)
-                        .Include(r => r.Complaints)
+                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
+                        .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
                         .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
                     .OrderBy(e => e.Timestamp).ToList()
                 };

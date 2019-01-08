@@ -57,6 +57,7 @@ namespace Tolk.Web.Models
 
         public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, bool isCustomer)
         {
+            string customerName = complaint.Request.Order.CustomerOrganisation.Name;
             return new ComplaintViewModel
             {
                 ComplaintId = complaint.ComplaintId,
@@ -72,7 +73,7 @@ namespace Tolk.Web.Models
                 DisputeMessage = complaint.AnswerMessage,
                 AnswerDisputedMessage = complaint.AnswerDisputedMessage,
                 IsBroker = !isCustomer,
-                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint).OrderBy(e => e.Timestamp).ToList() },
+                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint, customerName).OrderBy(e => e.Timestamp).ToList() },
             };
         }
 
