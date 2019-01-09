@@ -173,9 +173,13 @@
     else
     {
         <div class="login">
+            <div class="login-padding-top">
+            </div>
             <div class="container body-content col-sm-10">
                 <div class="row">
-                    <img class="logo-login img-negative" src="~/images/KamK_Logo_x.png" alt="@ViewData["Title"]" />
+                    <div class="login-div-logo col-sm-4">
+                        <img class="logo-login img-negative" src="~/images/KamK_Logo_x.png" alt="@ViewData["Title"]" />
+                    </div>
                 </div>
                 @RenderBody()
                 <br />

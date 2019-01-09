@@ -879,9 +879,18 @@ ul.pagination > li.paginate_button.active > a {
   background-color: #82A7A0;
   padding-bottom: 80px;
 }
+.login-div-logo {
+  margin-top: -50px;
+  margin-bottom: 10px;
+}
+.login-padding-top {
+  padding-top: 80px;
+}
 .login-page {
   background-color: white;
   padding: 30px 20px;
+  margin-top: -30px;
+  min-height: 460px;
 }
 .padding-bottom-30px {
   padding-bottom: 30px;
@@ -902,7 +911,9 @@ ul.pagination > li.paginate_button.active > a {
   padding-top: 10px;
 }
 .logo-login {
-  padding-bottom: 80px;
+  padding-bottom: 5px;
+  padding-left: 40px;
+  margin-top: -30px;
 }
 .img-negative {
   -webkit-filter: invert(1);
@@ -1166,4 +1177,29 @@ input.force-validation {
   .center-md-button {
     text-align: center;
   }
+}
+.appInfo-header {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 300;
+  color: #F4F4F4;
+  letter-spacing: 3px;
+  border-bottom: 2px solid #F4F4F4;
+  margin-left: 25%;
+  margin-right: 25%;
+}
+.appInfo-test {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 300;
+  color: #F4F4F4;
+  letter-spacing: 3px;
+}
+.appInfo-subheader {
+  padding-top: 5px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 500;
+  color: #F4F4F4;
+  letter-spacing: 1.8px;
 }
