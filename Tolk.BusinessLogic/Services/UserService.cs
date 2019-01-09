@@ -34,6 +34,8 @@ namespace Tolk.BusinessLogic.Services
         {
             string subject = null;
             string body = null;
+            string plainBody = null;
+            string htmlBody = null;
 
             if (user.InterpreterId.HasValue)
             {
@@ -50,9 +52,12 @@ namespace Tolk.BusinessLogic.Services
                 throw new NotImplementedException();
             }
 
-            body = string.Format(body, await GenerateActivationLinkAsync(user));
+            var link = await GenerateActivationLinkAsync(user);
 
-            _notificationService.CreateEmail(user.Email, subject, body);
+            plainBody = string.Format(body, link);
+            htmlBody = string.Format(HtmlHelper.ToHtmlBreak(body), HtmlHelper.GetAnchorTag(link));
+
+            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
 
             await _dbContext.SaveChangesAsync();
         }
