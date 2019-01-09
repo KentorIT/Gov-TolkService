@@ -376,6 +376,10 @@ namespace Tolk.Web.Controllers
             int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
             updatedModel.WarningInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty;
 
+            if (updatedModel.LatestAnswerBy.HasValue)
+            {
+                updatedModel.ErrorInfo = order.StartAt < updatedModel.LatestAnswerBy ? "Sista svarstid kan inte vara senare än tolkuppdragets starttid, gå tillbaka till föregående steg för att ändra detta." : updatedModel.LatestAnswerBy < DateTime.Now ? "Sista svarstid har redan passerats, gå tillbaka till föregående steg för att ändra detta." : string.Empty;
+            }
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;

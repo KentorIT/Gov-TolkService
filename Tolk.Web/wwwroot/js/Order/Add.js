@@ -276,7 +276,7 @@ function AddRequirement(target) {
 
 $(function () {
     var validateLastAnswerBy = function () {
-        if (!$("#LatestAnswerBy_Date").is("visible")) {
+        if (!$("#LatestAnswerBy_Date").is(":visible")) {
             return true;
         }
         var date = new Date($("#LatestAnswerBy_Date").val());
@@ -298,7 +298,7 @@ $(function () {
     };
 
     var validateLastAnswerByAgainstStartTime = function () {
-        if (!$("#LatestAnswerBy_Date").is("visible")) {
+        if (!$("#LatestAnswerBy_Date").is(":visible")) {
             return true;
         }
        var date = new Date($("#LatestAnswerBy_Date").val());
@@ -348,15 +348,15 @@ $(function () {
                 $("#LatestAnswerBy_Minute").select2("val", "");
             }
             if (!validateStartTime()) {
-                alert("Uppdraget kan inte starta tidigare än nu.");
+                alert("Uppdraget har en starttid som redan har passerats, var god ändra detta.");
                 return false;
             }
             if (!validateLastAnswerBy()) {
-                alert("Svar kan inte avkrävas tidigare än nu.");
+                alert("Sista svarstid har redan passerats, var god ändra detta.");
                 return false;
             }
             if (!validateLastAnswerByAgainstStartTime()) {
-                alert("Svar kan inte avkrävas efter start på uppdraget.");
+                alert("Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
                 return false;
             }
             var $form = $this.closest('form');

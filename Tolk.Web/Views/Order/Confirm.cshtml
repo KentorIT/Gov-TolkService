@@ -25,12 +25,21 @@
         </div>
         @if (!string.IsNullOrEmpty(Model.WarningInfo))
         {
-        <div class="row warning-info">
-            <div class="col-sm-8">@Model.WarningInfo</div>
-            <div class="col-sm-4">
-                <display-entry asp-for="TimeRange" />
+            <div class="row warning-info">
+                <div class="col-sm-8">@Model.WarningInfo</div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="TimeRange" />
+                </div>
             </div>
-        </div>
+        }
+        @if (!string.IsNullOrEmpty(Model.ErrorInfo))
+        {
+            <div class="row warning-info">
+                <div class="col-sm-8">@Model.ErrorInfo</div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="LatestAnswerBy" />
+                </div>
+            </div>
         }
     </div>
 </div>
