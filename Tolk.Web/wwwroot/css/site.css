@@ -854,6 +854,9 @@ ul.pagination > li.paginate_button.active > a {
 #TimeWasteIWHTime {
   width: 30%;
 }
+#ExpectedTravelCosts {
+  width: 31%;
+}
 .panel-heading {
   background-color: #587573;
   border-color: #587573;

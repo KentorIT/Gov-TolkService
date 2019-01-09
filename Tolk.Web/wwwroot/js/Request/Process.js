@@ -64,7 +64,7 @@ function checkTravelCost() {
     var travelCost = $('#ExpectedTravelCosts').val();
 
     if (travelCost = "" || isNaN(parseInt(travelCost)) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
-        triggerValidator("Resekostnad måste ha ett värde mellan 0 och 100 000 kr <br \><br \>", $('#ExpectedTravelCosts-error'));
+        triggerValidator("Kontrollera värdet för förväntad resekostnad (finns ingen kostnad anges 0) <br \><br \>", $('#ExpectedTravelCosts-error'));
         return false;
     }
     else {

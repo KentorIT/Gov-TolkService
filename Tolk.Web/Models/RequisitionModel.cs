@@ -59,7 +59,7 @@ namespace Tolk.Web.Models
         public decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK", Description = "Uppgift om resekostnad måste anges. Finns inga reskostnader anges 0")]
-        [Range(0, 100000, ErrorMessage = "Ange ett värde mellan 0 och 100 000 SEK")]
+        [Range(0, 100000, ErrorMessage = "Kontrollera värdet för resekostnad (ange 0 om det inte finns någon kostnad)")]
         [DataType(DataType.Currency)]
         public decimal TravelCosts { get; set; }
 
@@ -69,11 +69,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Förväntad sluttid")]
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
-        [Range(31, 600, ErrorMessage = "Ange ett värde mellan 31 och 600 minuter")]
+        [Range(31, 600, ErrorMessage = "Kontrollera värdet för total tidsspillan")]
         [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
         public int? TimeWasteTotalTime { get; set; }
 
-        [Range(0, 600, ErrorMessage = "Ange ett värde mellan 0 och 600 minuter")]
+        [Range(0, 600, ErrorMessage = "Kontrollera värdet för spilltid som inträffat under obekväm arbetstid")]
         [Display(Name = "Andel av total tidsspillan som inträffat under obekväm arbetstid", Description = "Avser tid i minuter av den totala tidsspillan som angetts och som inträffat utanför vardagar 07:00-18:00")]
         public int? TimeWasteIWHTime { get; set; }
 

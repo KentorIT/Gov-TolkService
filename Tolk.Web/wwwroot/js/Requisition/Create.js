@@ -15,7 +15,7 @@ function checkWasteTime() {
         return false;
     }
     else if (nT != "" && (parseInt(nT) < 31 || parseInt(nT) > 600)) {
-        triggerValidator("Spilltidens värde måste vara mellan 31 och 600 minuter <br \><br \>", $('#wasteTimeValidator'));
+        triggerValidator("Kontrollera värden för spilltid (ska endast anges om det överstiger 30 min) <br \><br \>", $('#wasteTimeValidator'));
         return false;
     }
     else {
@@ -36,7 +36,7 @@ function checkTravelCost() {
     var travelCost = $('#TravelCosts').val();
 
     if (travelCost = "" || isNaN(parseInt(travelCost)) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
-        triggerValidator("Resekostnad måste ha ett värde mellan 0 och 100 000 kr <br \><br \>", $('#travelCostsValidator'));
+        triggerValidator("Kontrollera värdet för resekostnad (finns ingen kostnad anges 0) <br \><br \>", $('#travelCostsValidator'));
         return false;
     }
     else {
