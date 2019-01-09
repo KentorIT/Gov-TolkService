@@ -312,7 +312,7 @@ $(function () {
                 if (Number(hour) > Number(starthour)) {
                     return false;
                 } else if (Number(hour) === Number(starthour)) {
-                    return !(Number(startminute) > Number(minute));
+                    return (Number(startminute) > Number(minute));
                 }
             }
         }
