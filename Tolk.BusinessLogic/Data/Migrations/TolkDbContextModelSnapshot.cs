@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -695,12 +695,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Body")
-                        .IsRequired();
-
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<DateTimeOffset?>("DeliveredAt");
+
+                    b.Property<string>("HtmlBody")
+                        .IsRequired();
+
+                    b.Property<string>("PlainBody")
+                        .IsRequired();
 
                     b.Property<string>("Recipient")
                         .IsRequired();
@@ -831,28 +834,111 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Regions");
 
                     b.HasData(
-                        new { RegionId = 1, Name = "Stockholm" },
-                        new { RegionId = 2, Name = "Uppsala" },
-                        new { RegionId = 3, Name = "Södermanland" },
-                        new { RegionId = 4, Name = "Östergötland" },
-                        new { RegionId = 5, Name = "Jönköping" },
-                        new { RegionId = 6, Name = "Kronoberg" },
-                        new { RegionId = 7, Name = "Kalmar" },
-                        new { RegionId = 80, Name = "Gotland" },
-                        new { RegionId = 8, Name = "Blekinge " },
-                        new { RegionId = 25, Name = "Skåne" },
-                        new { RegionId = 11, Name = "Halland" },
-                        new { RegionId = 13, Name = "Västra Götaland" },
-                        new { RegionId = 15, Name = "Värmland" },
-                        new { RegionId = 16, Name = "Örebro" },
-                        new { RegionId = 17, Name = "Västmanland" },
-                        new { RegionId = 18, Name = "Dalarna" },
-                        new { RegionId = 19, Name = "Gävleborg" },
-                        new { RegionId = 20, Name = "Västernorrland" },
-                        new { RegionId = 21, Name = "Jämtland" },
-                        new { RegionId = 22, Name = "Västerbotten" },
-                        new { RegionId = 23, Name = "Norrbotten" }
-                    );
+                        new
+                        {
+                            RegionId = 1,
+                            Name = "Stockholm"
+                        },
+                        new
+                        {
+                            RegionId = 2,
+                            Name = "Uppsala"
+                        },
+                        new
+                        {
+                            RegionId = 3,
+                            Name = "Södermanland"
+                        },
+                        new
+                        {
+                            RegionId = 4,
+                            Name = "Östergötland"
+                        },
+                        new
+                        {
+                            RegionId = 5,
+                            Name = "Jönköping"
+                        },
+                        new
+                        {
+                            RegionId = 6,
+                            Name = "Kronoberg"
+                        },
+                        new
+                        {
+                            RegionId = 7,
+                            Name = "Kalmar"
+                        },
+                        new
+                        {
+                            RegionId = 80,
+                            Name = "Gotland"
+                        },
+                        new
+                        {
+                            RegionId = 8,
+                            Name = "Blekinge "
+                        },
+                        new
+                        {
+                            RegionId = 25,
+                            Name = "Skåne"
+                        },
+                        new
+                        {
+                            RegionId = 11,
+                            Name = "Halland"
+                        },
+                        new
+                        {
+                            RegionId = 13,
+                            Name = "Västra Götaland"
+                        },
+                        new
+                        {
+                            RegionId = 15,
+                            Name = "Värmland"
+                        },
+                        new
+                        {
+                            RegionId = 16,
+                            Name = "Örebro"
+                        },
+                        new
+                        {
+                            RegionId = 17,
+                            Name = "Västmanland"
+                        },
+                        new
+                        {
+                            RegionId = 18,
+                            Name = "Dalarna"
+                        },
+                        new
+                        {
+                            RegionId = 19,
+                            Name = "Gävleborg"
+                        },
+                        new
+                        {
+                            RegionId = 20,
+                            Name = "Västernorrland"
+                        },
+                        new
+                        {
+                            RegionId = 21,
+                            Name = "Jämtland"
+                        },
+                        new
+                        {
+                            RegionId = 22,
+                            Name = "Västerbotten"
+                        },
+                        new
+                        {
+                            RegionId = 23,
+                            Name = "Norrbotten"
+                        });
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Request", b =>

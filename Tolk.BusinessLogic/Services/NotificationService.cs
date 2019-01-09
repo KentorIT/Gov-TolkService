@@ -404,19 +404,30 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void CreateEmail(string recipient, string subject, string body)
+        public void CreateEmail(string recipient, string subject, string plainBody)
         {
-            CreateEmail(new[] { recipient }, subject, body);
+            CreateEmail(new[] { recipient }, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody));
         }
 
-        private void CreateEmail(IEnumerable<string> recipients, string subject, string body)
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody)
+        {
+            CreateEmail(new[] { recipient }, subject, plainBody, htmlBody);
+        }
+
+        private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody)
+        {
+            CreateEmail(recipients, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody));
+        }
+
+        private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody)
         {
             foreach (string recipient in recipients)
             {
                 _dbContext.Add(new OutboundEmail(
                     recipient,
                     subject,
-                    $"{body}\n\nDetta mejl går inte att svara på.",
+                    $"{plainBody}\n\nDetta mejl går inte att svara på.",
+                    htmlBody,
                     _clock.SwedenNow));
             }
             _dbContext.SaveChanges();
