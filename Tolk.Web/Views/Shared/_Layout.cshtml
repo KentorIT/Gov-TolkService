@@ -7,7 +7,7 @@
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
-    bool isLoggedIn = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded) || User.IsInRole(Roles.Impersonator);
+    bool userHasPassword = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.HasPassword)).Succeeded) || User.IsInRole(Roles.Impersonator);
 }
 <!DOCTYPE html>
 <html>
@@ -34,7 +34,7 @@
     </environment>
 </head>
 <body>
-    @if (isLoggedIn)
+    @if (userHasPassword)
     {
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">

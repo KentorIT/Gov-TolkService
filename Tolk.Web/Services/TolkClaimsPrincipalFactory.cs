@@ -51,6 +51,11 @@ namespace Tolk.Web.Services
                 identity.AddClaim(new Claim(TolkClaimTypes.PersonalName, user.FullName));
             }
 
+            if (!string.IsNullOrEmpty(user.PasswordHash))
+            {
+                identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToString()));
+            }
+
             return identity;
         }
     }

@@ -53,6 +53,16 @@ a:focus {
 a:active {
   color: #445352;
 }
+a.light {
+  color: #BFDDD2;
+}
+a.light:hover,
+a.light:focus {
+  color: #95BFB7;
+}
+a.light:active {
+  color: #82A7A0;
+}
 a.collapsible-section {
   color: black;
   text-decoration: none;

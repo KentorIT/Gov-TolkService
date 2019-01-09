@@ -24,6 +24,7 @@ namespace Tolk.Web.Authorization
         public const string Replace = nameof(Replace);
         public const string TimeTravel = nameof(TimeTravel);
         public const string ViewMenuAndStartLists = nameof(ViewMenuAndStartLists);
+        public const string HasPassword = nameof(HasPassword);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
         {
@@ -40,6 +41,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
                 opt.AddPolicy(ViewMenuAndStartLists, builder => builder.RequireAssertion(ViewMenuAndStartListsHandler));
+                opt.AddPolicy(HasPassword, builder => builder.RequireAssertion(HasPasswordHandler));
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
@@ -51,6 +53,11 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> ViewMenuAndStartListsHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.PersonalName);
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>
+        {
+            return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet);
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
