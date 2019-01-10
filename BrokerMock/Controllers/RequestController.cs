@@ -120,6 +120,21 @@ namespace BrokerMock.Controllers
             return new JsonResult("Success");
         }
 
+        [HttpPost]
+        public async Task<JsonResult> Approved([FromBody] RequestAnswerApprovedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Avrops-ID: {payload.OrderNumber} har blivit godkänd");
+            }
+
+            var request = await GetOrderRequest(payload.OrderNumber);
+
+            var extraInstructions = GetExtraInstructions(request.Description);
+
+            return new JsonResult("Success");
+        }
+
         private IEnumerable<string> GetExtraInstructions(string description)
         {
             if (string.IsNullOrEmpty(description))
@@ -127,6 +142,25 @@ namespace BrokerMock.Controllers
                 return Enumerable.Empty<string>();
             }
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
+        }
+        private async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new RequestGetDetailsModel { OrderNumber = orderNumber };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/View?orderNumber=" + orderNumber);
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Avrops-ID: {orderNumber}");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Avrops-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
+                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
+            }
         }
 
         private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)

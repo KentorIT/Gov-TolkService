@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
+using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
+using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -39,7 +41,7 @@ namespace Tolk.Web.Api.Controllers
             _requestService = requestService;
         }
 
-        #region Methods
+        #region Updating Methods
 
         [HttpPost]
         public JsonResult Answer([FromBody] RequestAnswerModel model)
@@ -98,7 +100,7 @@ namespace Tolk.Web.Api.Controllers
                 model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                 {
                     Answer = ra.Answer,
-                    CanSatisfyRequirement = ra.CanMeetRequirement, 
+                    CanSatisfyRequirement = ra.CanMeetRequirement,
                     OrderRequirementId = ra.RequirementId,
                 }).ToList(),
                 //Does not handle attachments yet.
@@ -286,10 +288,10 @@ namespace Tolk.Web.Api.Controllers
             .Include(r => r.Ranking).ThenInclude(r => r.Broker)
             .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
                 r.Ranking.BrokerId == apiUser.BrokerId &&
-                (r.Status == RequestStatus.Approved || 
-                r.Status == RequestStatus.Created || 
-                r.Status == RequestStatus.Received || 
-                r.Status == RequestStatus.InterpreterReplaced || 
+                (r.Status == RequestStatus.Approved ||
+                r.Status == RequestStatus.Created ||
+                r.Status == RequestStatus.Received ||
+                r.Status == RequestStatus.InterpreterReplaced ||
                 r.Status == RequestStatus.Accepted));
             if (request == null)
             {
@@ -356,6 +358,46 @@ namespace Tolk.Web.Api.Controllers
 
         #endregion
 
+        #region getting methods
+
+        public JsonResult View(string orderNumber, string callingUser)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+
+            //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
+            var request = _dbContext.Requests
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.RequirementAnswers)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Interpreter)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments)
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .SingleOrDefault(r => r.Order.OrderNumber == orderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    r.Ranking.BrokerId == apiUser.BrokerId &&
+                    r.ReplacingRequestId == null);
+            if (request == null)
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+            //Possibly the user should be added, if not found?? 
+            var user = _apiUserService.GetBrokerUser(callingUser, apiUser.BrokerId.Value);
+            //End of service
+            return Json(GetResponseFromRequest(request));
+        }
+
+        #endregion
+
         #region private methods
 
         //Break out to error generator service...
@@ -394,6 +436,116 @@ namespace Tolk.Web.Api.Controllers
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
                };
             }
+        }
+
+        public static RequestDetailsResponse GetResponseFromRequest(Request request)
+        {
+            var attach = request.Attachments;
+            return new RequestDetailsResponse
+            {
+                Status = request.Status.GetCustomName(),
+                StatusMessage = request.DenyMessage ?? request.CancelMessage,
+                CreatedAt = request.CreatedAt,
+                OrderNumber = request.Order.OrderNumber,
+                Customer = request.Order.CustomerOrganisation.Name,
+                Region = request.Order.Region.Name,
+                ExpiresAt = request.ExpiresAt,
+                Language = new LanguageModel
+                {
+                    Key = request.Order.Language?.ISO_639_Code,
+                    Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
+                },
+                StartAt = request.Order.StartAt,
+                EndAt = request.Order.EndAt,
+                Locations = request.Order.InterpreterLocations.Select(l => new LocationModel
+                {
+                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    Rank = l.Rank,
+                    Key = l.InterpreterLocation.GetCustomName()
+                }),
+                CompetenceLevels = request.Order.CompetenceRequirements.Select(c => new CompetenceModel
+                {
+                    Key = c.CompetenceLevel.GetCustomName(),
+                    Rank = c.Rank ?? 0
+                }),
+                CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
+                AllowMoreThanTwoHoursTravelTime = request.Order.AllowMoreThanTwoHoursTravelTime,
+                Description = request.Order.Description,
+                AssignentType = request.Order.AssignentType.GetCustomName(),
+                //Should the attachemts from the broker be applied too? Yes I suppose...
+                Attachments = request.Order.Attachments.Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.Attachment.FileName
+                }),
+                Requirements = request.Order.Requirements.Select(r => new RequirementModel
+                {
+                    Description = r.Description,
+                    IsRequired = r.IsRequired,
+                    RequirementId = r.OrderRequirementId,
+                    RequirementType = r.RequirementType.GetCustomName()
+                }),
+                CalculatedPriceInformationFromRequest = new PriceInformationModel
+                {
+                    PriceCalculatedFromCompetenceLevel = request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
+                    PriceRows = request.Order.PriceRows.GroupBy(r => r.PriceRowType)
+                        .Select(p => new PriceRowModel
+                        {
+                            Description = p.Key.GetDescription(),
+                            PriceRowType = p.Key.GetCustomName(),
+                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                            {
+                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                                Price = l.Price,
+                                Quantity = l.Quantity
+                            })
+                        })
+                },
+                CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ? new PriceInformationModel
+                {
+                    PriceCalculatedFromCompetenceLevel = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
+                    PriceRows = request.PriceRows.GroupBy(r => r.PriceRowType)
+                            .Select(p => new PriceRowModel
+                            {
+                                Description = p.Key.GetDescription(),
+                                PriceRowType = p.Key.GetCustomName(),
+                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                                CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                                CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                                PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                                {
+                                    PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                                    Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                                    Price = l.Price,
+                                    Quantity = l.Quantity
+                                })
+                            })
+                } : null,
+                Interpreter = new InterpreterModel
+                {
+                    InterpreterId = request.Interpreter.InterpreterId,
+                    Email = request.Interpreter.Email,
+                    FirstName = request.Interpreter.FirstName,
+                    LastName = request.Interpreter.LastName,
+                    OfficialInterpreterId = request.Interpreter.OfficialInterpreterId,
+                    PhoneNumber = request.Interpreter.PhoneNumber,
+                    InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
+                },
+                InterpreterLocation = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
+                InterpreterCompetenceLevel = EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request?.CompetenceLevel),
+                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
+                RequirementAnswers = request.RequirementAnswers
+                    .Select(r => new RequirementAnswerModel
+                    {
+                        Answer = r.Answer,
+                        CanMeetRequirement = r.CanSatisfyRequirement,
+                        RequirementId = r.OrderRequirementId
+                    }),
+            };
         }
 
         #endregion

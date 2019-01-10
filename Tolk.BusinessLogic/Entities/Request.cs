@@ -208,7 +208,9 @@ namespace Tolk.BusinessLogic.Entities
             //    throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
             //}
             ////Add Validation for competencelevel, if required
-            Status = RequestStatus.Accepted;
+
+            bool requiresAccept = Order.AllowMoreThanTwoHoursTravelTime;
+            Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -219,7 +221,7 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
 
-            Order.Status = OrderStatus.RequestResponded;
+            Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
         }
 
         public void Decline(

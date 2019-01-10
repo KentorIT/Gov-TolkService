@@ -424,7 +424,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    _notificationService.RequestAnswerAccepted(request);
+                    _notificationService.RequestAnswerApproved(request);
                 }
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }

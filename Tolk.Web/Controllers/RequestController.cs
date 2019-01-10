@@ -380,7 +380,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);

@@ -36,7 +36,9 @@ namespace Tolk.BusinessLogic.Entities
             set
             {
                 if (value == OrderStatus.ResponseAccepted &&
-                    (!(Status == OrderStatus.RequestResponded ||
+                //NEED TO ADD A CHECK IF REQUESTED, AND THE ALLOW CHECK IS FALSE
+                    (!((Status == OrderStatus.Requested && !AllowMoreThanTwoHoursTravelTime) ||
+                        Status == OrderStatus.RequestResponded ||
                         Status == OrderStatus.RequestRespondedNewInterpreter ||
                        (Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
                     Requests.Count(r => r.Status == RequestStatus.Approved) != 1))

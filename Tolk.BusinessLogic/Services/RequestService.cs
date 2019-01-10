@@ -49,7 +49,17 @@ namespace Tolk.BusinessLogic.Services
             // Acccept the request
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices);
             //Create notification
-            _notificationService.RequestAccepted(request);
+            switch (request.Status)
+            {
+                case RequestStatus.Accepted:
+                _notificationService.RequestAccepted(request);
+                    break;
+                case RequestStatus.Approved:
+                    _notificationService.RequestAnswerAutomaticallyAccepted(request);
+                    break;
+                default:
+                    throw new NotImplementedException("NOT OK!!");
+            }
         }
 
         public async Task Decline(

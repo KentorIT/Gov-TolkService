@@ -213,7 +213,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} non answered responded requests taht expires: {requestIds}",
+            _logger.LogDebug("Found {count} non answered responded requests that expires: {requestIds}",
                 nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
 
             foreach (var requestId in nonAnsweredRespondedRequestsId)

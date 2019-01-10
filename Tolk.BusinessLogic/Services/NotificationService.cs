@@ -260,15 +260,22 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void RequestAnswerAccepted(Request request)
+        public void RequestAnswerAutomaticallyAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName} på avrop {orderNumber}.";
+            CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat avrop {orderNumber}",
+                $"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats." +
+                $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}");
 
-            //Broker part
-            CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med avrops-ID {orderNumber} verifierat",
+            NotifyBrokerOnAcceptedAnswer(request, orderNumber);
+        }
+        CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med avrops-ID {orderNumber} verifierat",
                 body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
                 body + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
+
+        public void RequestAnswerApproved(Request request)
+        {
+            NotifyBrokerOnAcceptedAnswer(request, request.Order.OrderNumber);
         }
 
         public void RequestAnswerDenied(Request request)
@@ -547,6 +554,32 @@ Tolk:
                 }
                 invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
                 return invoiceInfo;
+            }
+        }
+
+        private void NotifyBrokerOnAcceptedAnswer(Request request, string orderNumber)
+        {
+            //Broker part
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation, $"Tolkuppdrag med avrops-ID {orderNumber}",
+                    $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName}."
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestAnswerApprovedModel
+                    {
+                        OrderNumber = orderNumber
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestAnswerApproved,
+                    webhook.RecipientUserId
+                );
+
             }
         }
 
