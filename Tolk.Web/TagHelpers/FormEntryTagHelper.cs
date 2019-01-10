@@ -453,8 +453,6 @@ namespace Tolk.Web.TagHelpers
 
             if (!Equals(For.Model, default(DateTimeOffset)))
             {
-
-
                 dateValue = dateModelExplorer.Model;
                 timeHourValue = timeHourModelExplorer.Model;
                 timeMinuteValue = timeMinutesModelExplorer.Model;
@@ -558,7 +556,6 @@ namespace Tolk.Web.TagHelpers
                 writer.Write(RequiredStarSpan);
             }
             writer.WriteLine("</label>");
-            writer.WriteLine("<br \\>");
         }
 
         private void WriteDatePickerInput(
@@ -711,18 +708,22 @@ namespace Tolk.Web.TagHelpers
 
             writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(dateModelExplorer, writer);
+            writer.WriteLine("<br \\>");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine("</div>");
 
             writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
+            writer.WriteLine("<br \\>");
             WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
             WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
             writer.WriteLine("</div>");
 
             writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
+            WriteInfoIfDescription(writer);
+            writer.WriteLine("<br \\>");
             WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
             WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
             writer.WriteLine("</div>");
@@ -790,7 +791,7 @@ namespace Tolk.Web.TagHelpers
 
             }
             tagBuilder.WriteTo(writer, _htmlEncoder);
-     
+
         }
 
         private void WriteRadioGroup(TextWriter writer)
@@ -870,7 +871,7 @@ namespace Tolk.Web.TagHelpers
                     isChecked: isChecked,
                     htmlAttributes: new { value = item.Value, @checked = isChecked });
                 checkboxBuilder.Attributes.Add("data-checkbox-group", For.Name);
-                
+
                 htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
                 htmlBuilder.AppendHtml(checkboxBuilder.RenderSelfClosingTag());
                 htmlBuilder.AppendHtml(labelBuilder.InnerHtml);

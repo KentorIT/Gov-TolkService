@@ -4,213 +4,210 @@
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
 {
     @section Scripts {
-        <environment include="Development">
-            <script src="~/js/Files.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
-            <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-            <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-        </environment>
-        <environment exclude="Development">
-            <script src="~/js/Files.min.js" asp-append-version="true"></script>
-            <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-            <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
-        </environment>
+<environment include="Development">
+    <script src="~/js/Files.js" asp-append-version="true"></script>
+    <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
+    <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
+    <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+    <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+    <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
+    <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
+</environment>
         @await Html.PartialAsync("_ValidationScriptsPartial")
     }
-    <div class="wizard row">
-        <div class="col-xs-12">
-            @*step 1 fill form*@
-            <div class="wizard-step" data-forward-button-text="Gå vidare ">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="col-sm-12 text-center">
-                            <img class="progressbar" src="~/images/Step1_Order.PNG" />
+<div class="wizard row">
+    <div class="col-xs-12">
+        @*step 1 fill form*@
+        <div class="wizard-step" data-forward-button-text="Gå vidare ">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="col-sm-12 text-center">
+                        <img class="progressbar" src="~/images/Step1_Order.PNG" />
+                    </div>
+                    <h2 class="normal-weight">Bokningsuppgifter</h2>
+                    <hr />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
+                    <input type="hidden" asp-for="NextLastTimeForRequiringLatestAnswerBy" />
+                    <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" />
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
+                            <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
+                            <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
                         </div>
-                        <h2 class="normal-weight">Bokningsuppgifter</h2>
-                        <hr />
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
-                        <input type="hidden" asp-for="NextLastTimeForRequiringLatestAnswerBy" />
-                        <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" />
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" />
-                                <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
-                                <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
-                            </div>
-                            <div class="col-sm-4">
-                                <form-entry asp-for="Dialect" />
-                                <form-entry asp-for="DialectIsRequired" class="requirement-checkbox" />
-                            </div>
-                            <div class="col-sm-4">
-                                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
-                            </div>
+                        <div class="col-sm-4">
+                            <form-entry asp-for="Dialect" />
+                            <form-entry asp-for="DialectIsRequired" class="requirement-checkbox" />
                         </div>
-                        <form-entry asp-for="SplitTimeRange" class="order-datepicker" />
-                        <div class="important-info">
-                            Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet ”Extra information” nedan
+                        <div class="col-sm-4">
+                            <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" />
                         </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
-                            </div>
+                    </div>
+                    <form-entry asp-for="SplitTimeRange" class="order-datepicker" />
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken. Om endast ett förstahandsval anges, betraktas detta som ett tvingande krav för förmedlingen. Om andrahands- och tredjehandsval anges betraktas alla alternativ som önskemål, och förmedlingen har rätt att tillsätta tolk enligt något av alternativen"></span></h3>
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h3 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken. Om endast ett förstahandsval anges, betraktas detta som ett tvingande krav för förmedlingen. Om andrahands- och tredjehandsval anges betraktas alla alternativ som önskemål, och förmedlingen har rätt att tillsätta tolk enligt något av alternativen"></span></h3>
                         </div>
-                        <div class="row ranked-InterpreterLocation">
-                            <div class="col-sm-4 location-group">
-                                <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                                <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
-                                    <div class="address-information">
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
-                                    </div>
-                                    <div class="off-site-information">
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
-                                    </div>
+                    </div>
+                    <div class="row ranked-InterpreterLocation">
+                        <div class="col-sm-4 location-group">
+                            <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                            <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
+                                <div class="address-information">
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
+                                </div>
+                                <div class="off-site-information">
+                                    <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
                                 </div>
                             </div>
-                            <div class="col-sm-4 interpreter-location-second location-group bg-gray">
-                                <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                                <div class="address-RankedInterpreterLocationSecond">
-                                    <div class="address-information">
-                                        <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
-                                        <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
-                                    </div>
-                                    <div class="off-site-information">
-                                        <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 interpreter-location-third location-group">
-                                <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                                <div class="address-RankedInterpreterLocationThird">
-                                    <div class="address-information">
-                                        <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
-                                        <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
-                                    </div>
-                                    <div class="off-site-information">
-                                        <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                         </div>
-                        <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två. - Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen - Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
+                        <div class="col-sm-4 interpreter-location-second location-group bg-gray">
+                            <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                            <div class="address-RankedInterpreterLocationSecond">
+                                <div class="address-information">
+                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
+                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
+                                </div>
+                                <div class="off-site-information">
+                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 interpreter-location-third location-group">
+                            <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                            <div class="address-RankedInterpreterLocationThird">
+                                <div class="address-information">
+                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
+                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
+                                </div>
+                                <div class="off-site-information">
+                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+                                </div>
+                            </div>
+                        </div>
+                        <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
+                    </div>
+                    <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" id="travel-time-checkbox" />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två. - Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen - Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet"></span></h3>
 
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <span id="competence-required">
-                                    <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
-                                </span>
-                                <span id="competence-requested">
-                                    <label>Ange ett till tre önskemål om kompetensnivå i prioritetsordning</label><br />
-                                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
-                                    <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                    <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                </span>
-                            </div>
-                            <div class="col-sm-4 important-info">
-                                <ul>
-                                    <li>Rättstolk/sjukvårdstolk (nivå 4): Auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
-                                    <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
-                                    <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets register över utbildade tolkar</li>
-                                    <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <form-entry asp-for="Description" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty })
-                            </div>
-                            <div class="col-sm-4">
-                                <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span></label>
-                                <br />
-                                <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
-                                <br /><br />
-                                <div class="d-none order-requirement-list no-padding">
-                                    <table class="table order-requirement-table">
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen"></span></label>
-                                <br />
-                                <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
-                                <br /> <br />
-                                <div class="d-none order-desiredRequirement-list no-padding">
-                                    <table class="table order-desiredRequirement-table">
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                </div>
-                <h2 class="normal-weight">Myndighetens uppgifter</h2>
-                <hr />
-                <div class="row">
-                    <div class="col-sm-4">
-                        <display-entry asp-for="CreatedBy" />
-                    </div>
-                    <div class="col-sm-8">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <form-entry asp-for="CustomerReferenceNumber" />
-                            </div>
-                            <div class="col-sm-6">
-                                <form-entry asp-for="UnitName" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
-                            </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
                         </div>
                     </div>
-                </div>
-                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
-            </div>
-            @*step 2 confirm*@
-            <div class="wizard-step" data-forward-button-text="Skicka bokning ">
-                <div class="row">
-                    <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <span id="competence-required">
+                                <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
+                            </span>
+                            <span id="competence-requested">
+                                <label>Ange ett till tre önskemål om kompetensnivå i prioritetsordning</label><br />
+                                <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
+                                <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                <form-entry asp-for="RequestedCompetenceLevelThird" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                            </span>
+                        </div>
+                        <div class="col-sm-4 important-info">
+                            <ul>
+                                <li>Rättstolk/sjukvårdstolk (nivå 4): Auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
+                                <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
+                                <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets register över utbildade tolkar</li>
+                                <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <form-entry asp-for="Description" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty })
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span></label>
+                            <br />
+                            <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
+                            <br /><br />
+                            <div class="d-none order-requirement-list no-padding">
+                                <table class="table order-requirement-table">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen"></span></label>
+                            <br />
+                            <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
+                            <br /> <br />
+                            <div class="d-none order-desiredRequirement-list no-padding">
+                                <table class="table order-desiredRequirement-table">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="wizard-footer">
-                <div class="wizard-back">
-                    <button type="button" class="btn btn-large btn-warning left-md-button do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
+            <h2 class="normal-weight">Myndighetens uppgifter</h2>
+            <hr />
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="CreatedBy" />
                 </div>
-                <div class="wizard-forward">
-                    <button class="wizard-forward-button btn btn-success btn-large right-md-button" type="button" id="send"></button>
+                <div class="col-sm-8">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <form-entry asp-for="CustomerReferenceNumber" />
+                        </div>
+                        <div class="col-sm-6">
+                            <form-entry asp-for="UnitName" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" />
+                        </div>
+                    </div>
                 </div>
-                <div class="wizard-message-area"></div>
+            </div>
+            <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        @*step 2 confirm*@
+        <div class="wizard-step" data-forward-button-text="Skicka bokning ">
+            <div class="row">
+                <div class="col-sm-12">
+                </div>
             </div>
         </div>
+        <div class="wizard-footer">
+            <div class="wizard-back">
+                <button type="button" class="btn btn-large btn-warning left-md-button do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
+            </div>
+            <div class="wizard-forward">
+                <button class="wizard-forward-button btn btn-success btn-large right-md-button" type="button" id="send"></button>
+            </div>
+            <div class="wizard-message-area"></div>
+        </div>
     </div>
+</div>
 }
 <span id="basefile" class="d-none">
     <input asp-for="Files[0].Id" type="hidden" />
