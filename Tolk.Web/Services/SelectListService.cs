@@ -335,14 +335,6 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> GetCompetenceLevels(CompetenceAndSpecialistLevel minimumLevel)
-        {
-            var filter = EnumHelper.GetBiggerOrEqual(minimumLevel);
-            return EnumHelper.GetAllDescriptions(filter)
-                            .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                            .ToList().AsReadOnly();
-        }
-
         public IEnumerable<SelectListItem> UserStatuses
         { get; } =
             EnumHelper.GetAllDescriptions<UserStatus>()

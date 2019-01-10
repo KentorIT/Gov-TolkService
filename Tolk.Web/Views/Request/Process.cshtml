@@ -55,11 +55,11 @@
                     <div class="col-sm-4">
                         @if (Model.OrderModel.SpecificCompetenceLevelRequired)
                         {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).OrderByDescending(e => (int)e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
                         }
                         else
                         {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.GetCompetenceLevels(CompetenceAndSpecialistLevel.OtherInterpreter)" />
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
                         }
                     </div>
                     <div class="col-sm-4">
