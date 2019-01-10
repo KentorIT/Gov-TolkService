@@ -421,7 +421,7 @@ namespace Tolk.Web.Helpers
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = complaint.AnsweredAt.Value,
-                        EventDetails = "Reklamation bestridd av förmedling",
+                        EventDetails = "Reklamation är bestriden av förmedling",
                         Actor = complaint.AnsweringUser.FullName,
                         Organization = complaint.AnsweringUser.Broker.Name,
                     });

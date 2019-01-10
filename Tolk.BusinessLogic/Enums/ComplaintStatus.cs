@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Enums
         Created = 1,
         [Description("Reklamation är godtagen av förmedling")]
         Confirmed = 2,
-        [Description("Reklamation är bestridd av förmedling")]
+        [Description("Reklamation är bestriden av förmedling")]
         Disputed = 3,
         [Description("Reklamation är återtagen av myndighet")]
         TerminatedAsDisputeAccepted = 4,
