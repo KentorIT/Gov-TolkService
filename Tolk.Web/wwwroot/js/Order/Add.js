@@ -375,6 +375,7 @@ $(function () {
                     dataType: 'html',
                     success: function (data) {
                         $(".wizard .wizard-step").eq(currentStep).html(data);
+                        $('.form-entry-information').tooltip();
                     },
                     error: function (t2) {
                         alert(t2);
