@@ -200,10 +200,10 @@ namespace Tolk.Web.Controllers
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
             
-            var body =
-$@"Hej!
+            var bodyPlain =
+$@"Återställning av lösenord för {Constants.SystemName}
 
-För att återställa ditt lösenord i {Constants.SystemName}, använd följande länk.
+Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
 
 {resetLink}
 
@@ -211,12 +211,30 @@ För att återställa ditt lösenord i {Constants.SystemName}, använd följande
 Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}";
+supporten på {_options.SupportEmail}.
+
+{NotificationService.NoReplyText}";
+
+            var bodyHtml =
+$@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
+
+<div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.</div>
+
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Återställ lösenord")}</div>
+
+<div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
+Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}.</div>
+
+<div>{NotificationService.NoReplyText}</div>";
 
             _notificationService.CreateEmail(
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",
-                body);
+                bodyPlain,
+                bodyHtml);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",
