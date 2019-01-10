@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Rekvisition inkommen")]
         RequisitonArrived  = 4,
 
-        [Description("Tolk tillsatt (godkännade krävs)")]
+        [Description("Tolk tillsatt (godkännande krävs)")]
         OrderAcceptedForApproval = 5,
 
         [Description("Bokning skickad")]
