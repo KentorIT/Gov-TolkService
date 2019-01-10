@@ -269,9 +269,6 @@ namespace Tolk.BusinessLogic.Services
 
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
-        CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med avrops-ID {orderNumber} verifierat",
-                body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
-                body + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
 
         public void RequestAnswerApproved(Request request)
         {
@@ -563,9 +560,10 @@ Tolk:
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
-                CreateEmail(email.ContactInformation, $"Tolkuppdrag med avrops-ID {orderNumber}",
-                    $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName}."
-                );
+                var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName} på avrop {orderNumber}.";
+                CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med avrops-ID {orderNumber} verifierat",
+                        body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
+                        body + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
             }
             var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Webhook);
             if (webhook != null)
