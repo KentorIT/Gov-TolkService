@@ -59,10 +59,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private static string ApplyHtmlTemplate(string htmlMessage)
         {
-            return $@"{htmlMessage}
-<br />
-<br />
-Detta mejl går inte att svara på.";
+            return $@"{htmlMessage}";
         }
     }
 }

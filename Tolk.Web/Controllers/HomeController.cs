@@ -299,14 +299,14 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policies.TimeTravel)]
-        public IActionResult TimeTravel(DateTime date, TimeSpan time, string action)
+        public IActionResult TimeTravel(DateTime toDate, TimeSpan toTime, string action)
         {
             var clock = (TimeTravelClock)_clock;
 
             switch (action)
             {
                 case "Jump":
-                    var targetDateTime = date.Add(time).ToDateTimeOffsetSweden();
+                    var targetDateTime = toDate.Add(toTime).ToDateTimeOffsetSweden();
                     clock.TimeTravelTicks = targetDateTime.ToUniversalTime().Ticks - DateTimeOffset.UtcNow.Ticks;
                     break;
                 case "Reset":
