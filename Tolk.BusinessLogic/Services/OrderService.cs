@@ -345,13 +345,16 @@ namespace Tolk.BusinessLogic.Services
             {
                 var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
 
+                //if swedenNow is not a workday (calculate that the request "arrives" on next workday)
+                var requestArriveDate = _dateCalculationService.GetFirstWorkDay(swedenNow.Date);
+                
                 if (daysInAdvance >= 2)
                 {
-                    return swedenNow.Date.AddDays(1).AddHours(15).ToDateTimeOffsetSweden();
+                    return _dateCalculationService.GetFirstWorkDay(requestArriveDate.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
                 }
                 if (daysInAdvance == 1 && swedenNow.Hour < 14)
                 {
-                    return _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                    return requestArriveDate.Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
                 }
             }
 
