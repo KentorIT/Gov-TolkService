@@ -131,6 +131,21 @@ namespace BrokerMock.Controllers
             var request = await GetOrderRequest(payload.OrderNumber);
 
             var extraInstructions = GetExtraInstructions(request.Description);
+            if (extraInstructions.Contains("CHANGEINTERPRETERONAPPROVE"))
+            {
+                await ChangeInterpreter(
+                    payload.OrderNumber,
+                    _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
+                    request.Locations.Last().Key,
+                    request.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                    request.Requirements.Select(r => new RequirementAnswerModel
+                    {
+                        Answer = "Japp",
+                        CanMeetRequirement = true,
+                        RequirementId = r.RequirementId
+                    })
+                );
+            }
 
             return new JsonResult("Success");
         }
@@ -143,6 +158,7 @@ namespace BrokerMock.Controllers
             }
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
+
         private async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
         {
             using (var client = GetHttpClient())

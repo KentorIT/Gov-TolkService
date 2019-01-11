@@ -121,8 +121,9 @@ namespace Tolk.Web.Models
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3. </span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
 
+        [ClientRequired]
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt Påplats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett mail när bekräftelsen kommit.Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen. Förfrågan ser då likadan ut. Om bedömd resekostnad är 0 kr godkänns bekräftelsen automatiskt")]
-        public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+        public TrueFalse? AllowMoreThanTwoHoursTravelTime { get; set; }
 
         public bool IsOnSiteOrOffSiteDesignatedLocationSelected
         {
@@ -261,7 +262,7 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public bool AllowDenial => (AllowMoreThanTwoHoursTravelTime && ExpectedTravelCosts > 0) || (OrderRequirements?.Any(r => r.RequirementIsRequired) ?? false);
+        public bool AllowDenial => AllowMoreThanTwoHoursTravelTime == TrueFalse.Yes;
 
         public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
 
@@ -386,7 +387,7 @@ namespace Tolk.Web.Models
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
-                order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
+                order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime.GetValueOrDefault(TrueFalse.No) == TrueFalse.Yes;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
                 {
@@ -545,7 +546,7 @@ namespace Tolk.Web.Models
                 Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
-                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime ? TrueFalse.Yes : TrueFalse.No,
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
@@ -652,7 +653,7 @@ namespace Tolk.Web.Models
 
             return new OrderModel
             {
-                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime ? TrueFalse.Yes : TrueFalse.No,
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,

@@ -4,7 +4,7 @@ $(function () {
     var currentId = 0;
     var currentDesiredId = 0;
 
-    $("#travel-time-checkbox").hide();
+    $(".allow-more-travel-time").hide();
 
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
@@ -229,12 +229,13 @@ $(function () {
         });
 
         if (isOnsiteSelected) {
-            $("#travel-time-checkbox").show();
+            $(".allow-more-travel-time").show();
         }
         else {
-            $("#AllowMoreThanTwoHoursTravelTime").prop("checked", false);
-            $("#travel-time-checkbox").hide();
-        }
+            $("input[name=AllowMoreThanTwoHoursTravelTime]").prop("checked", false);
+            $(".allow-more-travel-time").hide();
+            $(".allow-more-travel-time-information").hide();
+       }
     });
 
     $("body").on("click", ".wizard-forward-button", function () {
@@ -254,6 +255,14 @@ $(function () {
         }
     });
 
+    $("body").on("click", "input[name=AllowMoreThanTwoHoursTravelTime]", function () {
+        if ($(this).val() === "Yes") {
+            $(".allow-more-travel-time-information").show();
+        } else {
+            $(".allow-more-travel-time-information").hide();
+        }
+    });
+
     var checkTimeAtStart = function () {
         var now = new Date($("#now").val());
         hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13 || now.getHours() === 23);
@@ -263,6 +272,8 @@ $(function () {
     $("#UseRankedInterpreterLocation").trigger("change");
     checkTimeAtStart();
     $("#SplitTimeRange_StartDate").trigger("change");
+    $("#SplitTimeRange_StartDate").trigger("change");
+    $(".allow-more-travel-time-information").hide();
 });
 
 function AddRequirement(target) {

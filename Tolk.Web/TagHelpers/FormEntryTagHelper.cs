@@ -867,7 +867,7 @@ namespace Tolk.Web.TagHelpers
                 var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
                     ViewContext,
                     For.ModelExplorer,
-                    For.Name,
+                    itemName,
                     isChecked: isChecked,
                     htmlAttributes: new { value = item.Value, @checked = isChecked });
                 checkboxBuilder.Attributes.Add("data-checkbox-group", For.Name);

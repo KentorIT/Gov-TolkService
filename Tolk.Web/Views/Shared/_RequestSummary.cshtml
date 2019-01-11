@@ -164,7 +164,7 @@
             }
         </div>
     }
-    @if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
+    @if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime == TrueFalse.Yes && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
     {
         <div class="row">
             <div class="col-sm-4">
