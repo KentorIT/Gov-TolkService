@@ -771,6 +771,14 @@ li.placeholder::before {
   margin-left: 0px;
   margin-right: 0px;
 }
+.to-accept-info {
+  background-color: #E6F1ED;
+  border: none;
+  color: black;
+  padding: 12px 12px 12px 12px;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
 .no-result-message {
   margin-bottom: 15px;
   margin-top: 15px;
@@ -1154,12 +1162,12 @@ input.force-validation {
 }
 @media (min-width: 1200px) {
   .right-lg-button {
-    float: right ;
+    float: right;
   }
 }
 @media (min-width: 1200px) {
   .left-lg-button {
-    float: left ;
+    float: left;
   }
 }
 @media (min-width: 1200px) {
@@ -1169,17 +1177,17 @@ input.force-validation {
 }
 @media (min-width: 604px) and (max-width: 767px) {
   .right-md-button {
-    float: right ;
+    float: right;
   }
 }
 @media (min-width: 793px) {
   .right-md-button {
-    float: right ;
+    float: right;
   }
 }
 @media (min-width: 604px) {
   .left-md-button {
-    float: left ;
+    float: left;
   }
 }
 @media (min-width: 604px) {

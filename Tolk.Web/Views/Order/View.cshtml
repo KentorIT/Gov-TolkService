@@ -112,6 +112,14 @@
                     </div>
                 </div>
             }
+            @if (Model.AllowProcessing)
+            {
+                <div class="col-sm-12">
+                    <div class="to-accept-info">
+                        Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den förväntade resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas uppgår till: <span class="bold">@Model.ExpectedTravelCosts SEK</span>
+                    </div>
+                </div>
+            }
             @if (Model.AllowOrderCancellation)
             {
                 <div class="col-sm-4">
