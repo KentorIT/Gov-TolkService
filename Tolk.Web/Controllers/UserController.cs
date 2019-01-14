@@ -131,6 +131,7 @@ namespace Tolk.Web.Controllers
                     PhoneCellphone = user.PhoneNumberCellphone,
                     IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
                     IsActive = user.IsActive
+#warning add audit log!
 
                 };
                 return View(model);
@@ -233,6 +234,7 @@ namespace Tolk.Web.Controllers
                             }
                         }
                         await _userService.SendInviteAsync(user);
+#warning add audit log!
 
                         trn.Commit();
                         return RedirectToAction(nameof(View), new { id = user.Id });
@@ -267,6 +269,7 @@ namespace Tolk.Web.Controllers
                         UseWebHook = apiUser.NotificationSettings.Any(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated),
                         RequestCreatedWebHook = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated)?.ConnectionInformation
                     });
+#warning add audit log!
                 }
             }
             return Forbid();
@@ -331,6 +334,7 @@ namespace Tolk.Web.Controllers
                         {
                             apiUser.NotificationSettings.Remove(hookInfo);
                         }
+#warning add audit log!
 
                         _dbContext.SaveChanges();
                         return RedirectToAction(nameof(HomeController.Index), "Home", new { message = "Ändringarna sparades"});
