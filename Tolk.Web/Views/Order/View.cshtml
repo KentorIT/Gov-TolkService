@@ -181,7 +181,7 @@
                     <form-entry asp-for="CancelMessage" />
                     @if (Model.ReplacingOrderId.HasValue)
                     {
-                        <div>Det går inte att skapa ett ersättningsuppdrag för ett ersättningsuppdrag</div>
+                        <div class="important-info">Uppdraget som ska avbokas är ett ersättningsuppdrag. Det är inte möjligt att skapa ytterligare ett ersättningsuppdrag för detta uppdrag.</div>
                     }
                     @if (Model.AllowReplacementOnCancel)
                     {
