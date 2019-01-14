@@ -387,6 +387,7 @@ Kostnader att fakturera:
         {
             string orderNumber = request.Order.OrderNumber;
             var body = $@"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats.
+Du behöver godkänna de beräknade resekostnaderna.
 
 Tolk:
 {request.Interpreter.CompleteContactInformation}";
