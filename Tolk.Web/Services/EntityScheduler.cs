@@ -1,13 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Services
@@ -16,6 +10,7 @@ namespace Tolk.Web.Services
     {
         private IServiceProvider _services;
         private ILogger<EntityScheduler> _logger;
+        private DateTime? nextClean = null;
 
         public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger)
         {
@@ -27,6 +22,7 @@ namespace Tolk.Web.Services
 
         public void Init()
         {
+
             Task.Run(() => Run());
 
             _logger.LogInformation("EntityScheduler initialized");
@@ -41,20 +37,33 @@ namespace Tolk.Web.Services
                 //would like to have a timer here, to make it possible to get tighter runs if the last ru ran for longer than 10 seconds or somethng...
                 using (var serviceScope = _services.CreateScope())
                 {
-                    Task[] tasksToRun = new[] 
+                    Task[] tasksToRun;
+
+                    if (nextClean == null || DateTime.Now > nextClean)
                     {
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredReplacedInterpreterRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredNonAnsweredRespondedRequests(),
-                        serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
-                        serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
-                    };
+                        nextClean = DateTime.Now.AddDays(1).Date;
+                        tasksToRun = new Task[]
+                        {
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments()
+                        };
+                    }
+                    else
+                    {
+                        tasksToRun = new Task[]
+                        {
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredReplacedInterpreterRequests(),
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredNonAnsweredRespondedRequests(),
+                            serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
+                            serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
+                        };
+                    }
 
                     Task.WaitAll(tasksToRun);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Entity Scheduler failed ({message}).", ex.Message);
             }

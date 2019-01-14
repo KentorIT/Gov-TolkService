@@ -347,7 +347,7 @@ namespace Tolk.BusinessLogic.Services
 
                 //if swedenNow is not a workday (calculate that the request "arrives" on next workday)
                 var requestArriveDate = _dateCalculationService.GetFirstWorkDay(swedenNow.Date);
-                
+
                 if (daysInAdvance >= 2)
                 {
                     return _dateCalculationService.GetFirstWorkDay(requestArriveDate.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
@@ -376,6 +376,48 @@ namespace Tolk.BusinessLogic.Services
             }
             // Otherwise, base estimation on the highest (and most expensive) competence level
             return list.OrderByDescending(item => (int)item).First();
+        }
+
+        public async Task CleanTempAttachments()
+        {
+            using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+            {
+                try
+                {
+                    // Leta upp alla TempAttachment äldre än ett dygn som inte finns med som riktig attachment
+                    var attachmentsGroupsToDelete = _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < DateTime.Now.AddDays(-1))
+                                                                                            .Where(ca => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(ca.AttachmentId))
+                                                                                            .Where(ca => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(ca.AttachmentId))
+                                                                                            .Where(ca => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(ca.AttachmentId))
+                                                                                            .ToArray();
+                    if (attachmentsGroupsToDelete != null)
+                    {
+                        _tolkDbContext.RemoveRange(attachmentsGroupsToDelete);
+                    }
+
+                    await _tolkDbContext.SaveChangesAsync();
+
+                    // Leta upp alla Attachments utan koppling alls
+                    var attachmentsToDelete = _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
+                                                                        .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
+                                                                        .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
+                                                                        .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
+                                                                        .ToArray();
+                    if (attachmentsToDelete != null)
+                    {
+                        _tolkDbContext.RemoveRange(attachmentsToDelete);
+                    }
+
+                    await _tolkDbContext.SaveChangesAsync();
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failure processing {methodName}", nameof(CleanTempAttachments));
+                }
+                trn.Commit();
+            }
+
         }
     }
 }
