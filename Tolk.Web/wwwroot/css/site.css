@@ -1154,12 +1154,12 @@ input.force-validation {
 }
 @media (min-width: 1200px) {
   .right-lg-button {
-    float: right !important;
+    float: right ;
   }
 }
 @media (min-width: 1200px) {
   .left-lg-button {
-    float: left !important;
+    float: left ;
   }
 }
 @media (min-width: 1200px) {
@@ -1169,17 +1169,17 @@ input.force-validation {
 }
 @media (min-width: 604px) and (max-width: 767px) {
   .right-md-button {
-    float: right !important;
+    float: right ;
   }
 }
 @media (min-width: 793px) {
   .right-md-button {
-    float: right !important;
+    float: right ;
   }
 }
 @media (min-width: 604px) {
   .left-md-button {
-    float: left !important;
+    float: left ;
   }
 }
 @media (min-width: 604px) {
