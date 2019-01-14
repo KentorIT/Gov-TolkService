@@ -1,9 +1,14 @@
 ﻿$('#TimeWasteTotalTime').change(function () { validateControls(); });
 $('#TimeWasteIWHTime').change(function () { validateControls(); });
-$('#TravelCosts').change(function () { validateControls(); });
+$('#Outlay').change(function () { validateControls(); });
+$('#CarCompensation').change(function () { validateControls(); });
+$('#PerDiem').change(function () { validateControls(); });
 
 function validateControls() {
-    if (checkWasteTime() && checkTravelCost()) { $('#create').attr('disabled', false); }
+    if (checkWasteTime() &&
+        checkTravelCosts($('#Outlay').val(), "Kontrollera värdet för utlägg (finns ingen kostnad anges 0) <br \><br \>", $('#outlayValidator')) &&
+        checkTravelCosts($('#CarCompensation').val(), "Kontrollera värdet för bilersättning (finns ingen kostnad anges 0) <br \><br \>", $('#carCompensationValidator')) &&
+        checkTravelCosts($('#PerDiem').val(), "Kontrollera värdet för traktamente (ange 0 om det inte ska erhållas något traktamente) <br \><br \>", $('#perDiemValidator'))) { $('#create').attr('disabled', false); }
     else { $('#create').attr('disabled', true); }
 }
 
@@ -32,15 +37,13 @@ function checkWasteTime() {
     }
 }
 
-function checkTravelCost() {
-    var travelCost = $('#TravelCosts').val();
-
-    if (travelCost = "" || isNaN(parseInt(travelCost)) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
-        triggerValidator("Kontrollera värdet för resekostnad (finns ingen kostnad anges 0) <br \><br \>", $('#travelCostsValidator'));
+function checkTravelCosts(cost, message, validatorId) {
+    if (cost = "" || isNaN(parseInt(cost)) || (parseInt(cost) < 0 || parseInt(cost) > 20000)) {
+        triggerValidator(message, validatorId);
         return false;
     }
     else {
-        $('#travelCostsValidator').hide();
+        validatorId.hide();
         return true;
     }
 }

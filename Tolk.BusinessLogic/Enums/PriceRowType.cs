@@ -29,6 +29,23 @@ namespace Tolk.BusinessLogic.Enums
 
         [CustomName("rounding")]
         [Description("Öresavrundning")]
-        RoundedPrice = 6
+        RoundedPrice = 6,
+
+        [Parent(TravelCost)]
+        [CustomName("outlay")]
+        [Description("Utlägg")]
+        Outlay = 7,
+
+        [Parent(TravelCost)]
+        [CustomName("per_diem")]
+        [Description("Traktamente")]
+        PerDiem = 8,
+
+        [Parent(TravelCost)]
+        [CustomName("car_compensation")]
+        [Description("Bilersättning")]
+        CarCompensation = 9,
+
+
     }
 }

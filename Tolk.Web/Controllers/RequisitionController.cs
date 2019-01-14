@@ -258,7 +258,9 @@ namespace Tolk.Web.Controllers
                             (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0),
                             model.TimeWasteIWHTime,
                             request.PriceRows.OfType<PriceRowBase>(),
-                            model.TravelCosts,
+                            model.Outlay,
+                            model.PerDiem,
+                            model.CarCompensation,
                             request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null
                         );
 
