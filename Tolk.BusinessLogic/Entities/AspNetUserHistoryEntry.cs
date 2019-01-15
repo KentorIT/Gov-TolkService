@@ -11,12 +11,23 @@ namespace Tolk.BusinessLogic.Entities
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class AspNetUserHistoryEntry
     {
+        public AspNetUserHistoryEntry(AspNetUser userInformation)
+        {
+            Email = userInformation.Email;
+            PhoneNumber = userInformation.PhoneNumber;
+            PhoneNumberCellphone = userInformation.PhoneNumberCellphone;
+            NameFirst = userInformation.NameFirst;
+            NameFamily = userInformation.NameFamily;
+            IsActive = userInformation.IsActive;
+            IsApiUser = userInformation.IsApiUser;
+        }
+
+        private AspNetUserHistoryEntry() { }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int AspNetUserHistoryEntryId { get; set; }
 
         public int UserAuditLogEntryId { get; set; }
-
-        public int UserId { get; set; }
 
         [MaxLength(255)]
         public string Email { get; set; }
@@ -37,9 +48,6 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsApiUser { get; set; }
 
         [ForeignKey(nameof(UserAuditLogEntryId))]
-        public int UserAuditLogEntry { get; set; }
-
-        [ForeignKey(nameof(UserId))]
-        public AspNetUser User { get; set; }
+        public UserAuditLogEntry UserAuditLogEntry { get; set; }
     }
 }

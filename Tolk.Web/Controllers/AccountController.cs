@@ -117,6 +117,7 @@ namespace Tolk.Web.Controllers
                 {
                     if (user != null)
                     {
+                        await _userService.LogOnUpdateAsync(user.Id);
                         // Check if user is authorized to change account
                         if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
                         {
@@ -137,7 +138,6 @@ namespace Tolk.Web.Controllers
                             {
                                 await _signInManager.RefreshSignInAsync(user);
                             }
-#warning add audit log!
                             transaction.Complete();
                             return RedirectToAction(nameof(Index));
                         }
@@ -179,11 +179,11 @@ namespace Tolk.Web.Controllers
 
                     if (result.Succeeded)
                     {
+                        await _userService.LogUpdatePassword(user.Id);
                         return RedirectToAction(nameof(ResetPasswordConfirmation));
                     }
                     AddErrors(result);
                 }
-#warning add audit log!
                 return View(model);
             }
 
@@ -397,6 +397,7 @@ supporten på {_options.SupportEmail}.</div>
                 var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
                 if (result.Succeeded)
                 {
+                    await _userService.LogUpdatePassword(user.Id);
                     if (!User.Identity.IsAuthenticated && user.IsActive)
                     {
                         await _signInManager.SignInAsync(user, true);
@@ -463,7 +464,7 @@ supporten på {_options.SupportEmail}.</div>
                                 transaction.Complete();
                                 return RedirectToAction("Index", "Home");
                             }
-#warning add audit log!
+                            await _userService.LogCreateAsync(user.Id);
                         }
                         AddErrors(result);
                     }
@@ -588,8 +589,8 @@ supporten på {_options.SupportEmail}.</div>
                         if (result.Succeeded)
                         {
                             await _userService.SendInviteAsync(user);
+                            await _userService.LogCreateAsync(user.Id);
 
-#warning add audit log!
                             trn.Commit();
                             return RedirectToAction(nameof(ConfirmAccountLinkSent));
                         }
@@ -611,9 +612,9 @@ supporten på {_options.SupportEmail}.</div>
                         if (result.Succeeded)
                         {
                             await _userService.SendInviteAsync(user);
+                            await _userService.LogCreateAsync(user.Id);
 
                             trn.Commit();
-#warning add audit log!
                             return RedirectToAction(nameof(ConfirmAccountLinkSent));
                         }
                         AddErrors(result);
@@ -667,9 +668,11 @@ supporten på {_options.SupportEmail}.</div>
 
                     if (user != null)
                     {
+                        await _userService.LogUpdatePassword(user.Id);
                         var result = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.NewPassword);
                         if (result.Succeeded)
                         {
+                            await _userService.LogOnUpdateAsync(user.Id);
                             // Resetting the security stamp invalidates the password token so operation cannot be redone.
                             await _userManager.UpdateSecurityStampAsync(user);
                             await _signInManager.SignInAsync(user, true);
@@ -688,7 +691,6 @@ supporten på {_options.SupportEmail}.</div>
                                 {
                                     await _signInManager.RefreshSignInAsync(user);
                                 }
-#warning add audit log!
                                 transaction.Complete();
                                 return View(nameof(RegisterNewAccountConfirmation), model);
                             }

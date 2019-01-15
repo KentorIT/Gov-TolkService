@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Transactions;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -131,8 +132,6 @@ namespace Tolk.Web.Controllers
                     PhoneCellphone = user.PhoneNumberCellphone,
                     IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
                     IsActive = user.IsActive
-#warning add audit log!
-
                 };
                 return View(model);
             }
@@ -140,6 +139,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(UserModel model)
         {
             if (ModelState.IsValid)
@@ -148,6 +148,7 @@ namespace Tolk.Web.Controllers
                 var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
+                    await _userService.LogOnUpdateAsync(model.Id.Value);
                     user.NameFirst = model.NameFirst;
                     user.NameFamily = model.NameFamily;
                     user.PhoneNumber = model.PhoneWork;
@@ -173,6 +174,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(UserModel model)
         {
             if (ModelState.IsValid)
@@ -234,7 +236,8 @@ namespace Tolk.Web.Controllers
                             }
                         }
                         await _userService.SendInviteAsync(user);
-#warning add audit log!
+
+                        await _userService.LogCreateAsync(user.Id, User.GetUserId());
 
                         trn.Commit();
                         return RedirectToAction(nameof(View), new { id = user.Id });
@@ -269,7 +272,6 @@ namespace Tolk.Web.Controllers
                         UseWebHook = apiUser.NotificationSettings.Any(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated),
                         RequestCreatedWebHook = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated)?.ConnectionInformation
                     });
-#warning add audit log!
                 }
             }
             return Forbid();
@@ -286,58 +288,63 @@ namespace Tolk.Web.Controllers
                 var brokerId = User.TryGetBrokerId();
                 if (brokerId != null)
                 {
-                    var apiUser = _dbContext.Users.Include(u => u.NotificationSettings).SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
-                    if (apiUser != null)
+                    using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
-                        //Clear all Claims, and resave them...
-                        await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
-                        if (brokerUser.NormalizedEmail != model.Email.ToUpper())
+                        var apiUser = _dbContext.Users
+                            .Include(u => u.NotificationSettings)
+                            .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                        if (apiUser != null)
                         {
-                            var code = await _userManager.GenerateChangeEmailTokenAsync(brokerUser, model.Email);
-                            var result = await _userManager.ChangeEmailAsync(brokerUser, model.Email, code);
-                        }
-                        if (model.UseApiKeyAuthentication)
-                        {
-                            await _userManager.AddClaimAsync(brokerUser, new Claim("UseApiKeyAuthentication", DateTime.Now.ToShortDateString()));
-                        }
-                        if (model.UseCertificateAuthentication)
-                        {
-                            await _userManager.AddClaimAsync(brokerUser, new Claim("UseCertificateAuthentication", DateTime.Now.ToShortDateString()));
-                        }
-                        if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
-                        {
-                            await _userManager.AddClaimAsync(brokerUser, new Claim("CertSerialNumber", model.CertificateSerialNumber));
-                        }
-                        if (!string.IsNullOrWhiteSpace(model.ApiKey))
-                        {
-                            await _userManager.AddClaimAsync(brokerUser, new Claim("Secret", model.ApiKey));
-                        }
-                        var hookInfo = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated);
-                        if (model.UseWebHook)
-                        {
-                            if (hookInfo != null)
+                            await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId());
+                            var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
+                            //Clear all Claims, and resave them...
+                            await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
+                            if (brokerUser.NormalizedEmail != model.Email.ToUpper())
                             {
-                                hookInfo.ConnectionInformation = model.RequestCreatedWebHook;
+                                var code = await _userManager.GenerateChangeEmailTokenAsync(brokerUser, model.Email);
+                                var result = await _userManager.ChangeEmailAsync(brokerUser, model.Email, code);
                             }
-                            else
+                            if (model.UseApiKeyAuthentication)
                             {
-                                apiUser.NotificationSettings.Add(new UserNotificationSetting
+                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseApiKeyAuthentication), DateTime.Now.ToShortDateString()));
+                            }
+                            if (model.UseCertificateAuthentication)
+                            {
+                                await _userManager.AddClaimAsync(brokerUser, new Claim("UseCertificateAuthentication", DateTime.Now.ToShortDateString()));
+                            }
+                            if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
+                            {
+                                await _userManager.AddClaimAsync(brokerUser, new Claim("CertSerialNumber", model.CertificateSerialNumber));
+                            }
+                            if (!string.IsNullOrWhiteSpace(model.ApiKey))
+                            {
+                                await _userManager.AddClaimAsync(brokerUser, new Claim("Secret", model.ApiKey));
+                            }
+                            var hookInfo = apiUser.NotificationSettings.SingleOrDefault(n => n.NotificationChannel == NotificationChannel.Webhook && n.NotificationType == NotificationType.RequestCreated);
+                            if (model.UseWebHook)
+                            {
+                                if (hookInfo != null)
                                 {
-                                    NotificationType = NotificationType.RequestCreated,
-                                    NotificationChannel = NotificationChannel.Webhook,
-                                    ConnectionInformation = model.RequestCreatedWebHook
-                                });
+                                    hookInfo.ConnectionInformation = model.RequestCreatedWebHook;
+                                }
+                                else
+                                {
+                                    apiUser.NotificationSettings.Add(new UserNotificationSetting
+                                    {
+                                        NotificationType = NotificationType.RequestCreated,
+                                        NotificationChannel = NotificationChannel.Webhook,
+                                        ConnectionInformation = model.RequestCreatedWebHook
+                                    });
+                                }
                             }
+                            else if (hookInfo != null)
+                            {
+                                apiUser.NotificationSettings.Remove(hookInfo);
+                            }
+                            _dbContext.SaveChanges();
+                            transaction.Complete();
+                            return RedirectToAction(nameof(HomeController.Index), "Home", new { message = "Ändringarna sparades" });
                         }
-                        else if (hookInfo != null)
-                        {
-                            apiUser.NotificationSettings.Remove(hookInfo);
-                        }
-#warning add audit log!
-
-                        _dbContext.SaveChanges();
-                        return RedirectToAction(nameof(HomeController.Index), "Home", new { message = "Ändringarna sparades"});
                     }
                 }
             }

@@ -27,6 +27,12 @@ namespace Tolk.BusinessLogic.Data
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
+            builder.Entity<UserAuditLogEntry>()
+                .HasOne(uale => uale.User)
+                .WithMany(u => u.AuditLogEntries)
+                .HasForeignKey(uale => uale.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<IdentityUserRole<int>>()
                 .HasOne<AspNetUser>()
                 .WithMany(u => u.Roles)
@@ -322,6 +328,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<AspNetUserRoleHistoryEntry> AspNetUserRoleHistoryEntries { get; set; }
 
         public DbSet<AspNetUserClaimHistoryEntry> AspNetUserClaimHistoryEntries { get; set; }
+        public DbSet<UserNotificationSettingHistoryEntry> UserNotificationSettingHistoryEntries { get; set; }
 
         public static bool isUserStoreInitialized = false;
 

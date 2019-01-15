@@ -21,10 +21,17 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset LoggedAt { get; set; }
 
-        [ForeignKey(nameof(UserId))]
         public AspNetUser User { get; set; }
 
         [ForeignKey(nameof(UpdatedByUserId))]
         public AspNetUser UpdatedByUser { get; set; }
+
+        public AspNetUserHistoryEntry UserHistory { get; set; }
+
+        public List<AspNetUserRoleHistoryEntry> RolesHistory { get; set; }
+
+        public List<AspNetUserClaimHistoryEntry> ClaimsHistory { get; set; }
+
+        public List<UserNotificationSettingHistoryEntry> NotificationsHistory { get; set; }
     }
 }

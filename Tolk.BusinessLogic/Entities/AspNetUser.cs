@@ -73,6 +73,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<UserNotificationSetting> NotificationSettings { get; set; }
 
+        public List<UserAuditLogEntry> AuditLogEntries { get; set; }
+
         #endregion
     }
 }
