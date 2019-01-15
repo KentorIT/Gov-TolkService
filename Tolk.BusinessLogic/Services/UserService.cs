@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
@@ -109,6 +112,60 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
 
             var activationLink = $"{_options.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={Uri.EscapeDataString(token)}";
             return activationLink;
+        }
+
+        public async Task LogCreateAsync(int userId, int? createdById = null)
+        {
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UpdatedByUserId = createdById,
+                UserChangeType = UserChangeType.Created,
+                UserId = userId
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null)
+        {
+            AspNetUser currentUserInformation = _dbContext.Users
+                            .Include(u => u.NotificationSettings)
+                            .Include(u => u.Claims)
+                            .Include(u => u.Roles)
+                            .SingleOrDefault(u => u.Id == userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UserChangeType = UserChangeType.Updated,
+                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
+                RolesHistory = currentUserInformation.Roles.Select(r => new AspNetUserRoleHistoryEntry {
+                    RoleId = r.RoleId,
+                }).ToList(),
+                ClaimsHistory = currentUserInformation.Claims.Select(c => new AspNetUserClaimHistoryEntry {
+                    ClaimType = c.ClaimType,
+                    ClaimValue = c.ClaimValue,
+                }).ToList(),
+                NotificationsHistory = currentUserInformation.NotificationSettings.Select(n => new UserNotificationSettingHistoryEntry
+                {
+                    ConnectionInformation = n.ConnectionInformation,
+                    NotificationChannel = n.NotificationChannel,
+                    NotificationType = n.NotificationType,
+                }).ToList(),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LogUpdatePassword(int userId)
+        {
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UserChangeType = UserChangeType.ChangedPassword
+            });
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -27,6 +27,12 @@ namespace Tolk.BusinessLogic.Data
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
+            builder.Entity<UserAuditLogEntry>()
+                .HasOne(uale => uale.User)
+                .WithMany(u => u.AuditLogEntries)
+                .HasForeignKey(uale => uale.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<IdentityUserRole<int>>()
                 .HasOne<AspNetUser>()
                 .WithMany(u => u.Roles)
@@ -315,6 +321,15 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserNotificationSetting> UserNotificationSettings { get; set; }
 
+        public DbSet<UserAuditLogEntry> UserAuditLogEntries { get; set; }
+
+        public DbSet<AspNetUserHistoryEntry> AspNetUserHistoryEntries { get; set; }
+
+        public DbSet<AspNetUserRoleHistoryEntry> AspNetUserRoleHistoryEntries { get; set; }
+
+        public DbSet<AspNetUserClaimHistoryEntry> AspNetUserClaimHistoryEntries { get; set; }
+        public DbSet<UserNotificationSettingHistoryEntry> UserNotificationSettingHistoryEntries { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
@@ -324,7 +339,7 @@ namespace Tolk.BusinessLogic.Data
                 if (!isUserStoreInitialized)
                 {
                     // If it is false, we want to check it for every single request.
-                    isUserStoreInitialized = Users.Count() != 0 || Roles.Count() != 0;
+                    isUserStoreInitialized = Users.Count() != 0;
                 }
                 return isUserStoreInitialized;
             }

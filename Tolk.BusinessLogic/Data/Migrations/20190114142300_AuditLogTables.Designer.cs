@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190114142300_AuditLogTables")]
+    partial class AuditLogTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,11 +220,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("ClaimValue");
 
+                    b.Property<int>("UserAuditLogEntry");
+
                     b.Property<int>("UserAuditLogEntryId");
+
+                    b.Property<int>("UserId");
 
                     b.HasKey("AspNetUserClaimHistoryEntryId");
 
-                    b.HasIndex("UserAuditLogEntryId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserClaimHistoryEntries");
                 });
@@ -251,12 +257,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("PhoneNumberCellphone")
                         .HasMaxLength(32);
 
+                    b.Property<int>("UserAuditLogEntry");
+
                     b.Property<int>("UserAuditLogEntryId");
+
+                    b.Property<int>("UserId");
 
                     b.HasKey("AspNetUserHistoryEntryId");
 
-                    b.HasIndex("UserAuditLogEntryId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserHistoryEntries");
                 });
@@ -269,13 +278,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("RoleId");
 
+                    b.Property<int>("UserAuditLogEntry");
+
                     b.Property<int>("UserAuditLogEntryId");
+
+                    b.Property<int>("UserId");
 
                     b.HasKey("AspNetUserRoleHistoryEntryId");
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("UserAuditLogEntryId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserRoleHistoryEntries");
                 });
@@ -1338,27 +1351,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("UserNotificationSettings");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSettingHistoryEntry", b =>
-                {
-                    b.Property<int>("UserNotificationSettingHistoryEntryId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ConnectionInformation");
-
-                    b.Property<int>("NotificationChannel");
-
-                    b.Property<int>("NotificationType");
-
-                    b.Property<int>("UserAuditLogEntryId");
-
-                    b.HasKey("UserNotificationSettingHistoryEntryId");
-
-                    b.HasIndex("UserAuditLogEntryId");
-
-                    b.ToTable("UserNotificationSettingHistoryEntries");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>")
@@ -1421,17 +1413,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserClaimHistoryEntry", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
-                        .WithMany("ClaimsHistory")
-                        .HasForeignKey("UserAuditLogEntryId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
-                        .WithOne("UserHistory")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", "UserAuditLogEntryId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1442,9 +1434,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
-                        .WithMany("RolesHistory")
-                        .HasForeignKey("UserAuditLogEntryId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1877,14 +1869,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("NotificationSettings")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSettingHistoryEntry", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
-                        .WithMany("NotificationsHistory")
-                        .HasForeignKey("UserAuditLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

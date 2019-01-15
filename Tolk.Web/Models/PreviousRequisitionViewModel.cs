@@ -28,9 +28,17 @@ namespace Tolk.Web.Models
         [Display(Name = "Tidigare angiven sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
 
-        [Display(Name = "Tidigare angiven resekostnad")]
+        [Display(Name = "Tidigare angivet utlägg")]
         [DataType(DataType.Currency)]
-        public decimal? TravelCosts { get; set; }
+        public decimal? Outlay { get; set; }
+
+        [Display(Name = "Tidigare angiven bilersättning")]
+        [DataType(DataType.Currency)]
+        public decimal? CarCompensation { get; set; }
+
+        [Display(Name = "Tidigare angivet traktamente")]
+        [DataType(DataType.Currency)]
+        public decimal? PerDiem { get; set; }
 
         public PriceInformationModel ResultPriceInformationModel { get; set; }
 
@@ -47,7 +55,9 @@ namespace Tolk.Web.Models
                 SessionStartedAt = requisition.SessionStartedAt,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
-                TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price
+                Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price,
+                PerDiem = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.PerDiem)?.Price,
+                CarCompensation = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.CarCompensation)?.Price
             };
         }
     }

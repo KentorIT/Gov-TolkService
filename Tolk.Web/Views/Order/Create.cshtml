@@ -21,7 +21,6 @@
         </environment>
         @await Html.PartialAsync("_ValidationScriptsPartial")
     }
-    @*string HelpPage = HelpLinkService.BaseAddress;*@
     <div class="wizard row">
         <div class="col-xs-12">
             @*step 1 fill form*@
@@ -106,7 +105,7 @@
                             <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                         </div>
                         <div class="row allow-more-travel-time">
-                            <div class="col-sm-4 important-info">
+                            <div class="col-sm-8 important-info">
                                 Vid tolkning På plats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för
                                 tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg.
                                 Kostnader för resor som överstiger gränsvärdena måste godkännas i förväg av myndigheten.
@@ -115,7 +114,7 @@
                             <div class="col-sm-12">
                                 <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" type="radio-group" asp-items="SelectListService.BoolList" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
                             </div>
-                            <div class="col-sm-4 important-info allow-more-travel-time-information">
+                            <div class="col-sm-8 important-info allow-more-travel-time-information">
                                 Förmedlingen ska ange bedömd resekostnad som du måste godkänna innan tolk kan tillsättas.
                                 Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.
                             </div>
@@ -219,7 +218,7 @@
             </div>
             <div class="wizard-footer">
                 <div class="wizard-back">
-                    <button type="button" class="btn btn-large btn-warning left-md-button do-not-check-dirty wizard-back-button"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
+                    <button type="button" class="btn btn-large btn-warning left-md-button do-not-check-dirty wizard-back-button" id="back"> <span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Ändra</button>
                 </div>
                 <div class="wizard-forward">
                     <button class="wizard-forward-button btn btn-success btn-large right-md-button" type="button" id="send"></button>

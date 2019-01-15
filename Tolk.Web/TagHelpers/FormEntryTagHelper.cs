@@ -812,39 +812,30 @@ namespace Tolk.Web.TagHelpers
         {
             bool isRow = LayoutOption == "row";
 
-            var groupId = $"{For.Name}_rbGroup";
-
-            writer.WriteLine($"<div id=\"{groupId}\">");
+            writer.WriteLine($"<div id=\"{For.Name}\">");
 
             var itArr = Items.ToArray();
             for (int i = 0; i < itArr.Length; i++)
             {
-                bool isChecked = i == 0; // Auto-check the first item
                 var item = itArr[i];
-                var tagBuilder = _htmlGenerator.GenerateRadioButton(
-                    ViewContext,
-                    For.ModelExplorer,
-                    expression: For.Name,
-                    value: item.Value,
-                    isChecked: isChecked,
-                    htmlAttributes: new { });
+                var itemName = $"{For.Name}_{i}";
+                bool isChecked = i == 0; // Auto-check the first item
+                var checkedAttr = isChecked ? "checked=\"checked\"" : "";
+                // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
+                var inputElem = $"<input id=\"{itemName}\" name=\"{For.Name}\" type=\"radio\" value=\"{item.Value}\" {checkedAttr}/>";
 
-                if (isChecked)
-                {
-                    tagBuilder.Attributes.Add("checked", "checked");
-                }
                 if (isRow)
                 {
-                    writer.WriteLine("<label>");
+                    writer.WriteLine($"<label for=\"{itemName}\">");
                     WritePrefix(writer, PrefixAttribute.Position.Value);
-                    tagBuilder.WriteTo(writer, _htmlEncoder);
+                    writer.WriteLine(inputElem);
                     writer.WriteLine($"{item.Text}</label>");
                 }
                 else
                 {
-                    writer.WriteLine("<label class=\"radiocontainer\"> ");
+                    writer.WriteLine($"<label for=\"{itemName}\" class=\"radiocontainer\"> ");
                     WritePrefix(writer, PrefixAttribute.Position.Value);
-                    tagBuilder.WriteTo(writer, _htmlEncoder);
+                    writer.WriteLine(inputElem);
                     writer.WriteLine($"<span class=\"checkmark\"></span > <span class=\"radio-text\">{item.Text}</span ></label><br><div class=\"radiobutton-row-space\"></div>");
                 }
             }
@@ -870,6 +861,9 @@ namespace Tolk.Web.TagHelpers
                 var item = itemsArr[i];
                 var itemName = $"{For.Name}_{i}";
                 bool isChecked = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems?.Contains(item) ?? false;
+                var checkedAttr = isChecked ? "checked=\"checked\"" : "";
+                // Done manually because GenerateCheckbox automatically sets id=For.Name, which it shouldn't
+                var inputElem = $"<input data-checkbox-group=\"{For.Name}\" id=\"{itemName}\" name=\"{For.Name}\" type=\"checkbox\" value=\"{item.Value}\" {checkedAttr}/>";
 
                 var labelBuilder = _htmlGenerator.GenerateLabel(
                     ViewContext,
@@ -878,16 +872,8 @@ namespace Tolk.Web.TagHelpers
                     labelText: item.Text,
                     htmlAttributes: new { @class = "control-label detail-text" });
 
-                var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
-                    ViewContext,
-                    For.ModelExplorer,
-                    For.Name,
-                    isChecked: isChecked,
-                    htmlAttributes: new { value = item.Value, @checked = isChecked });
-                checkboxBuilder.Attributes.Add("data-checkbox-group", For.Name);
-
                 htmlBuilder.AppendHtml(labelBuilder.RenderStartTag());
-                htmlBuilder.AppendHtml(checkboxBuilder.RenderSelfClosingTag());
+                htmlBuilder.AppendHtml(inputElem);
                 htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
                 htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 

@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Registrera rekvisition";
 }
-
 <div class="row">
     <div class="col-sm-12">
         <h2>@ViewData["Title"]</h2>
@@ -79,7 +78,7 @@
                             }
                         </div>
                         <div class="col-sm-12">
-                            <form-entry asp-for="SessionStartedAt" />
+                            <form-entry asp-for="SessionStartedAt"  id="SessionStartedAt"/>
                         </div>
                     </div>
                 </div>
@@ -95,7 +94,8 @@
                             }
                         </div>
                         <div class="col-sm-12">
-                            <form-entry asp-for="SessionEndedAt" />
+                            <form-entry asp-for="SessionEndedAt" id="SessionEndedAt"/>
+                            <div id="sessionEndedAtValidator" class="d-none text-danger body"></div>
                             <br /><br />
                         </div>
                     </div>
@@ -116,26 +116,76 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-sm-12">
+                    <h3 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span></h3>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-6">
-                    @if (Model.PreviousRequisition?.TravelCosts != null)
+                    @if (Model.ExpectedTravelCosts > 0)
                     {
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <display-entry asp-for="ExpectedTravelCosts" />
-                            </div>
-                            <div class="col-sm-6">
-                                <display-entry asp-for="PreviousRequisition.TravelCosts" />
-                            </div>
-                        </div>
-                    }
+                        <display-entry asp-for="ExpectedTravelCosts" />}
                     else
                     {
-                        <display-entry asp-for="ExpectedTravelCosts" />
+                        <label>Förväntad resekostnad (exkl. moms) i SEK</label>
+                        <div class="no-value-info">Inget angivet</div>
                     }
                 </div>
                 <div class="col-sm-6">
-                    <form-entry asp-for="TravelCosts" />
-                    <div id="travelCostsValidator" class="d-none text-danger body"></div>
+                </div>
+            </div>
+            @if (Model.PreviousRequisition != null)
+            {
+                <div class="row">
+                    <div class="col-sm-4">
+                        @if (Model.PreviousRequisition.Outlay != null)
+                        {
+                            <display-entry asp-for="PreviousRequisition.Outlay" />
+                        }
+                        else
+                        {
+                            <label>Tidigare angivet utlägg</label>
+                            <div class="no-value-info">Inget angivet</div>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.PreviousRequisition.CarCompensation != null)
+                        {
+                            <display-entry asp-for="PreviousRequisition.CarCompensation" />
+                        }
+                        else
+                        {
+                            <label>Tidigare angiven bilersättning</label>
+                            <div class="no-value-info">Inget angivet</div>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.PreviousRequisition.PerDiem != null)
+                        {
+                            <display-entry asp-for="PreviousRequisition.PerDiem" />
+                        }
+                        else
+                        {
+                            <label>Tidigare angivet traktamente</label>
+                            <div class="no-value-info">Inget angivet</div>
+                        }
+                    </div>
+                </div>
+            }
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="Outlay" />
+                    <div id="outlayValidator" class="d-none text-danger body"></div>
+                    <br />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CarCompensation" />
+                    <div id="carCompensationValidator" class="d-none text-danger body"></div>
+                    <br />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="PerDiem" />
+                    <div id="perDiemValidator" class="d-none text-danger body"></div>
                     <br />
                 </div>
             </div>
@@ -156,10 +206,11 @@
                 </div>
             </div>
         </form>
-        <span id="basefile" class="d-none">
-            <input asp-for="Files[0].Id" type="hidden" />
-        </span>
     </div>
+    <span id="basefile" class="d-none">
+        <input asp-for="Files[0].Id" type="hidden" />
+    </span>
+</div>
 </div>
 @await Html.PartialAsync("_UploadFileDialog")
 

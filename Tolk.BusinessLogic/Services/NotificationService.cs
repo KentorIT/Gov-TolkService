@@ -387,6 +387,7 @@ Kostnader att fakturera:
         {
             string orderNumber = request.Order.OrderNumber;
             var body = $@"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats.
+Du behöver godkänna de beräknade resekostnaderna.
 
 Tolk:
 {request.Interpreter.CompleteContactInformation}";
@@ -445,11 +446,6 @@ Tolk:
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har tackat nej till ersättningsuppdrag {orderNumber}",
                 $"{body} {NoReplyTextPlain} {GotoOrderPlain(request.Order.OrderId)}",
                 $"{HtmlHelper.ToHtmlBreak(body)} {NoReplyTextHtml} {GotoOrderButton(request.Order.OrderId)}");
-
-            //send mail to interpreter about changes replaced order => order
-            var cancelledRequest = request.Order.ReplacingOrder.Requests.Single(r => r.Ranking.BrokerId == request.Ranking.BrokerId && (
-                r.Status == RequestStatus.CancelledByCreator ||
-                r.Status == RequestStatus.CancelledByCreatorWhenApproved));
         }
 
         public void RequestChangedInterpreter(Request request)
