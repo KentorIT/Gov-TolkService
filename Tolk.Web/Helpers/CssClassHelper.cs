@@ -37,7 +37,7 @@ namespace Tolk.Web.Helpers
         public static string GetColorClassNameForStartListItem(StartListItemStatus status)
         {
             return (status == StartListItemStatus.ComplaintEvent || status == StartListItemStatus.RequestArrived || status == StartListItemStatus.RequestReceived || status == StartListItemStatus.RequisitonArrived || status == StartListItemStatus.ReplacementOrderRequestReceived || status == StartListItemStatus.ReplacementOrderRequestArrived) ? "blue-border-left" :
-            (status == StartListItemStatus.RequisitionDenied || status == StartListItemStatus.OrderCancelled || status == StartListItemStatus.OrderNotAnswered || status == StartListItemStatus.RequestDenied) ? "red-border-left" :
+            (status == StartListItemStatus.RequisitionDenied || status == StartListItemStatus.OrderCancelled || status == StartListItemStatus.OrderNotAnswered || status == StartListItemStatus.RequestDenied || status == StartListItemStatus.ReplacementOrderNotAnswered) ? "red-border-left" :
             (status == StartListItemStatus.OrderApproved || status == StartListItemStatus.RequisitionToBeCreated) ? "green-border-left" :
             (status == StartListItemStatus.RequisitionAwaited || status == StartListItemStatus.OrderCreated || status == StartListItemStatus.RequisitionCreated) ? "gray-border-left" : "yellow-border-left";
         }

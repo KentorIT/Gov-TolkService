@@ -38,10 +38,10 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Uppdrag utfört")]
         RequisitionToBeCreated = 11,
 
-        [Description("Rekvistion underkänd")]
+        [Description("Rekvisition underkänd")]
         RequisitionDenied = 12,
 
-        [Description("Rekvistion skickad")]
+        [Description("Rekvisition skickad")]
         RequisitionCreated = 13,
 
         [Description("Tillsättning avböjd")]
@@ -52,6 +52,9 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Ersättningsuppdrag mottaget")]
         ReplacementOrderRequestReceived = 16,
+
+        [Description("Ersättningsuppdrag avböjt/ej besvarat")]
+        ReplacementOrderNotAnswered = 17,
 
     }
 }
