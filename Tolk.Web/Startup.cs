@@ -73,6 +73,8 @@ namespace Tolk.Web
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();
 
+            services.AddTransient<HelpLinkService>();
+
             services.RegisterTolkAuthorizationPolicies();
             services.AddMvc(opt =>
             {

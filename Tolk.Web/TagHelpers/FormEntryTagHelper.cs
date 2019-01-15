@@ -10,7 +10,6 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
@@ -58,6 +57,9 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName("label-override")]
         public string LabelOverride { get; set; }
+
+        [HtmlAttributeName("help-link")]
+        public string HelpLink { get; set; }
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -238,6 +240,7 @@ namespace Tolk.Web.TagHelpers
 
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
+        private const string HelpAnchor = " <a href=\"{0}\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
 
         private void WritePrefix(TextWriter writer, PrefixAttribute.Position condition)
         {
@@ -273,6 +276,7 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.WriteTo(writer, _htmlEncoder);
 
                 WriteInfoIfDescription(writer);
+                WriteHelpIfHelpLink(writer);
             }
         }
 
@@ -281,6 +285,14 @@ namespace Tolk.Web.TagHelpers
             if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
             {
                 writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+            }
+        }
+
+        private void WriteHelpIfHelpLink(TextWriter writer)
+        {
+            if (!string.IsNullOrEmpty(HelpLink))
+            {
+                writer.WriteLine(string.Format(HelpAnchor, HelpLink));
             }
         }
 
@@ -546,6 +558,7 @@ namespace Tolk.Web.TagHelpers
             }
             writer.WriteLine("</label>");
             WriteInfoIfDescription(writer);
+            WriteHelpIfHelpLink(writer);
         }
 
         private void WriteLabelWithoutFor(ModelExplorer modelExplorer, TextWriter writer)
@@ -723,6 +736,7 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"col-sm-4\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
             WriteInfoIfDescription(writer);
+            WriteHelpIfHelpLink(writer);
             writer.WriteLine("<br \\>");
             WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
             WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
