@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.Contracts;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -27,7 +29,20 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset SessionStartedAt { get; set; }
 
-        public DateTimeOffset SessionEndedAt { get; set; }
+        private DateTimeOffset _sessionEndedAt;
+
+        public DateTimeOffset SessionEndedAt
+        {
+            get
+            {
+                return _sessionEndedAt;
+            }
+            set
+            {
+                Validate.Ensure(value > SessionStartedAt, $"{nameof(SessionEndedAt)} cannot occur after {nameof(SessionStartedAt)}");
+                _sessionEndedAt = value;
+            }
+        }
 
         public int? TimeWasteTotalTime { get => (TimeWasteNormalTime ?? 0) + (TimeWasteIWHTime ?? 0); }
 

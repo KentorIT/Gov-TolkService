@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -103,7 +104,20 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset StartAt { get; set; }
 
-        public DateTimeOffset EndAt { get; set; }
+        private DateTimeOffset _endAt;
+
+        public DateTimeOffset EndAt
+        {
+            get
+            {
+                return _endAt;
+            }
+            set
+            {
+                Validate.Ensure(value > StartAt, $"{nameof(EndAt)} cannot occur before {nameof(StartAt)}");
+                _endAt = value;
+            }
+        }
 
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
 

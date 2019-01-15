@@ -8,6 +8,42 @@ Date.prototype.equalsDate = function (otherDate) {
     );
 };
 
+Date.prototype.after = function (otherDate) {
+    if (this.getFullYear() === otherDate.getFullYear()
+        && this.getMonth() === otherDate.getMonth()
+        && this.getDate() > otherDate.getDate()) {
+        return true;
+    }
+    else if (this.getFullYear() === otherDate.getFullYear()
+        && this.getMonth() > otherDate.getMonth()) {
+        return true;
+    }
+    else if (this.getFullYear() > otherDate.getFullYear()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+
+Date.prototype.before = function (otherDate) {
+    if (this.getFullYear() === otherDate.getFullYear()
+        && this.getMonth() === otherDate.getMonth()
+        && this.getDate() < otherDate.getDate()) {
+        return true;
+    }
+    else if (this.getFullYear() === otherDate.getFullYear()
+        && this.getMonth() < otherDate.getMonth()) {
+        return true;
+    }
+    else if (this.getFullYear() < otherDate.getFullYear()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+
 Date.prototype.equalsDateTime = function (otherDate) {
     return (
         this.equalsDate(otherDate) &&
