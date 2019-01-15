@@ -339,7 +339,7 @@ namespace Tolk.BusinessLogic.Data
                 if (!isUserStoreInitialized)
                 {
                     // If it is false, we want to check it for every single request.
-                    isUserStoreInitialized = Users.Count() != 0 || Roles.Count() != 0;
+                    isUserStoreInitialized = Users.Count() != 0;
                 }
                 return isUserStoreInitialized;
             }
