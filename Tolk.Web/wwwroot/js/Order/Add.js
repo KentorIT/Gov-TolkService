@@ -353,6 +353,8 @@ $(function () {
     var $this = $(".wizard");
     $this.tolkWizard({
         nextHandler: function (event) {
+            $("#send").attr("disabled", "disabled");
+            $("#back").attr("disabled", "disabled");
             if (!LastAnswerByIsShowing) {
                 $("#LatestAnswerBy_Date").val("");
                 $("#LatestAnswerBy_Hour").select2("val", "");
@@ -373,7 +375,6 @@ $(function () {
             var $form = $this.closest('form');
             var currentStep = event.NextStep;
             if (event.IsLastPage) {
-                $("#send").attr("disabled", "disabled");
                 $form.submit();
             }
             //post to confirm
@@ -387,6 +388,8 @@ $(function () {
                     success: function (data) {
                         $(".wizard .wizard-step").eq(currentStep).html(data);
                         $('.form-entry-information').tooltip();
+                        $("#send").removeAttr("disabled");
+                        $("#back").removeAttr("disabled");
                     },
                     error: function (t2) {
                         alert(t2);
