@@ -5,6 +5,7 @@ $('#Outlay').change(function () { validateControls(); });
 $('#CarCompensation').change(function () { validateControls(); });
 $('#PerDiem').change(function () { validateControls(); });
 $('#SessionEndedAt').change(function () { validateControls(); });
+$('#SessionStartedAt').change(function () { validateControls(); });
 
 function validateControls() {
     if (checkWasteTime() &&
