@@ -80,6 +80,10 @@
                                 <th>Status</th>
                                 <th>Tolkens kompetens</th>
                                 <th>Språk</th>
+                                @if (startlist.DisplayCustomer)
+                                {
+                                    <th>Myndighet</th>
+                                }
                                 <th>Datum för uppdrag</th>
                                 @if (startlist.HasReviewAction)
                                 {
@@ -111,6 +115,13 @@
                                             <span class="startlist-subrow-red">Svara innan: @item.LatestDate?.ToString("yyyy-MM-dd HH:mm")</span>
                                         }
                                     </td>
+                                    @if (startlist.DisplayCustomer && !string.IsNullOrEmpty(item.CustomerName))
+                                    {
+                                        <td class="gray-border-bottom">
+                                            <br />
+                                            @item.CustomerName<br /><br />
+                                        </td>
+                                    }
                                     @if (startlist.HasReviewAction)
                                     {
                                         <td class="gray-border-bottom"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
