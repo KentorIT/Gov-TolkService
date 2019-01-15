@@ -110,5 +110,20 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
             var activationLink = $"{_options.PublicOrigin}/Account/ConfirmAccount?userId={user.Id}&code={Uri.EscapeDataString(token)}";
             return activationLink;
         }
+
+        public void LogCreate()
+        {
+
+        }
+
+        public void LogUpdate()
+        {
+
+        }
+
+        public void LogUpdatePassword()
+        {
+
+        }
     }
 }

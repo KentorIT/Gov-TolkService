@@ -137,6 +137,7 @@ namespace Tolk.Web.Controllers
                             {
                                 await _signInManager.RefreshSignInAsync(user);
                             }
+#warning add audit log!
                             transaction.Complete();
                             return RedirectToAction(nameof(Index));
                         }
@@ -182,6 +183,7 @@ namespace Tolk.Web.Controllers
                     }
                     AddErrors(result);
                 }
+#warning add audit log!
                 return View(model);
             }
 
@@ -461,6 +463,7 @@ supporten på {_options.SupportEmail}.</div>
                                 transaction.Complete();
                                 return RedirectToAction("Index", "Home");
                             }
+#warning add audit log!
                         }
                         AddErrors(result);
                     }
@@ -586,6 +589,7 @@ supporten på {_options.SupportEmail}.</div>
                         {
                             await _userService.SendInviteAsync(user);
 
+#warning add audit log!
                             trn.Commit();
                             return RedirectToAction(nameof(ConfirmAccountLinkSent));
                         }
@@ -609,6 +613,7 @@ supporten på {_options.SupportEmail}.</div>
                             await _userService.SendInviteAsync(user);
 
                             trn.Commit();
+#warning add audit log!
                             return RedirectToAction(nameof(ConfirmAccountLinkSent));
                         }
                         AddErrors(result);
@@ -646,6 +651,7 @@ supporten på {_options.SupportEmail}.</div>
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterNewAccount(RegisterNewAccountViewModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
@@ -682,6 +688,7 @@ supporten på {_options.SupportEmail}.</div>
                                 {
                                     await _signInManager.RefreshSignInAsync(user);
                                 }
+#warning add audit log!
                                 transaction.Complete();
                                 return View(nameof(RegisterNewAccountConfirmation), model);
                             }

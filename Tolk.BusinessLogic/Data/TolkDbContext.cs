@@ -315,6 +315,14 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserNotificationSetting> UserNotificationSettings { get; set; }
 
+        public DbSet<UserAuditLogEntry> UserAuditLogEntries { get; set; }
+
+        public DbSet<AspNetUserHistoryEntry> AspNetUserHistoryEntries { get; set; }
+
+        public DbSet<AspNetUserRoleHistoryEntry> AspNetUserRoleHistoryEntries { get; set; }
+
+        public DbSet<AspNetUserClaimHistoryEntry> AspNetUserClaimHistoryEntries { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
