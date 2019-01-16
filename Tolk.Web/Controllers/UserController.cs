@@ -303,6 +303,8 @@ namespace Tolk.Web.Controllers
                             {
                                 var code = await _userManager.GenerateChangeEmailTokenAsync(brokerUser, model.Email);
                                 var result = await _userManager.ChangeEmailAsync(brokerUser, model.Email, code);
+                                var broker = _dbContext.Brokers.Single(b => b.BrokerId == brokerId);
+                                broker.EmailAddress = model.Email;
                             }
                             if (model.UseApiKeyAuthentication)
                             {
