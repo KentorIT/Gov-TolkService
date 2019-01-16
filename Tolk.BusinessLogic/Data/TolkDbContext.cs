@@ -317,6 +317,10 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OrderAttachment> OrderAttachments { get; set; }
 
+        public DbSet<RequestStatusConfirmation> RequestStatusConfirmation { get; set; }
+
+        public DbSet<OrderStatusConfirmation> OrderStatusConfirmation { get; set; }
+
         public DbSet<TemporaryAttachmentGroup> TemporaryAttachmentGroups { get; set; }
 
         public DbSet<UserNotificationSetting> UserNotificationSettings { get; set; }

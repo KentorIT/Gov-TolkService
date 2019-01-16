@@ -145,7 +145,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredReplacedInterpreterRequests()
         {
             var replacedInterpreterRequestsId = await _tolkDbContext.Requests
-                .Include(r => r.Order).Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow)
+                .Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow)
                 .Where(r => r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                 .Select(r => r.RequestId)
                 .ToListAsync();
@@ -206,12 +206,10 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
-                .Include(r => r.Order).Where(r => (r.Order.Status == OrderStatus.RequestResponded
-                || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
+                .Where(r => (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
                 && r.Order.StartAt <= _clock.SwedenNow)
                 .Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                .Select(r => r.RequestId)
-                .ToListAsync();
+                .Select(r => r.RequestId).ToListAsync();
 
             _logger.LogDebug("Found {count} non answered responded requests that expires: {requestIds}",
                 nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
