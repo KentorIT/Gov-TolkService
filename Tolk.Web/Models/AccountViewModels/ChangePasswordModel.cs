@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
@@ -11,7 +7,7 @@ namespace Tolk.Web.Models.AccountViewModels
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Befintligt lösenord")]
-        [StringLength(255)]
+        [StringLength(100)]
         public string CurrentPassword { get; set; }
 
         public bool HasPassword { get; set; }
