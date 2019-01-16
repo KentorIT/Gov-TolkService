@@ -56,5 +56,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Ersättningsuppdrag avböjt/ej besvarat")]
         ReplacementOrderNotAnswered = 17,
 
+        [Description("Tolk är ersatt med ny tolk (godkännande krävs)")]
+        NewInterpreterForApproval = 18,
     }
 }

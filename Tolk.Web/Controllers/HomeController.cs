@@ -106,7 +106,7 @@ namespace Tolk.Web.Controllers
 
             actionList.AddRange(ordersCorrectStatusAndUser
                 .Where(os => !_dbContext.RequestStatusConfirmation.Where(rs => rs.RequestStatus == RequestStatus.CancelledByBroker)
-                .Select(rs => rs.RequestId).Contains(os.Requests.OrderByDescending(r => r.RequestId).First().RequestId) && 
+                .Select(rs => rs.RequestId).Contains(os.Requests.OrderByDescending(r => r.RequestId).First().RequestId) &&
                 !_dbContext.OrderStatusConfirmation.Where(osc => osc.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)
                 .Select(osc => osc.OrderId).Contains(os.OrderId))
                 .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = GetInfoDateForCustomer(o).Value, CompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, ButtonItemId = o.OrderId, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0), ButtonAction = "View", ButtonController = "Order" }));
@@ -132,10 +132,15 @@ namespace Tolk.Web.Controllers
                 HasReviewAction = true
             };
 
+            //Sent and approved orders
+            var sentAndApprovedOrders = _dbContext.Orders
+                .Include(o => o.Requests).Include(o => o.Language)
+                .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted) 
+                && o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow).ToList();
+
             //Sent orders
-            var sentOrders = _dbContext.Orders
-                .Where(o => o.Status == OrderStatus.Requested && o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow)
-                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.CreatedAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCreated }).ToList();
+            var sentOrders = sentAndApprovedOrders.Where(o => o.Status == OrderStatus.Requested)
+                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.CreatedAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCreated });
 
             count = sentOrders.Any() ? sentOrders.Count() : 0;
 
@@ -147,9 +152,8 @@ namespace Tolk.Web.Controllers
             };
 
             //Approved orders 
-            var approvedOrders = _dbContext.Orders
-            .Where(o => o.Status == OrderStatus.ResponseAccepted && o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow)
-            .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderApproved }).ToList();
+            var approvedOrders = sentAndApprovedOrders.Where(o => o.Status == OrderStatus.ResponseAccepted)
+            .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderApproved });
 
             count = approvedOrders.Any() ? approvedOrders.Count() : 0;
 
@@ -162,7 +166,7 @@ namespace Tolk.Web.Controllers
 
             // Awaiting requisition
             var awaitRequisition = _dbContext.Orders
-            .Where(o => o.Status == OrderStatus.ResponseAccepted && o.CreatedBy == User.GetUserId() && o.EndAt < _clock.SwedenNow && 
+            .Where(o => o.Status == OrderStatus.ResponseAccepted && (o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId()) && o.EndAt < _clock.SwedenNow &&
             !o.Requests.Any(r => r.Requisitions.Any(req => req.Status == RequisitionStatus.Approved || req.Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder || req.Status == RequisitionStatus.Created)))
             .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.EndAt.DateTime, InfoDateDescription = "Utfört: ", CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.RequisitionAwaited }).ToList();
 
@@ -178,7 +182,7 @@ namespace Tolk.Web.Controllers
 
         private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
         {
-            return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? StartListItemStatus.OrderNotAnswered : StartListItemStatus.OrderAcceptedForApproval;
+            return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? StartListItemStatus.OrderNotAnswered : status == OrderStatus.RequestRespondedNewInterpreter ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval;
         }
 
         private DateTime? GetInfoDateForCustomer(Order o)
@@ -228,7 +232,7 @@ namespace Tolk.Web.Controllers
             //approved and accepted (not approved but answered) requests 
             var answeredRequests = _dbContext.Requests
                 .Where(r => (r.Status == RequestStatus.Approved || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Accepted) && r.Order.StartAt > _clock.SwedenNow && !r.Requisitions.Any() && r.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = (r.Status == RequestStatus.Approved && r.AnswerProcessedAt.HasValue) ? r.AnswerProcessedAt.Value.DateTime : r.AnswerDate.Value.DateTime, InfoDateDescription = r.Status == RequestStatus.Approved ? "Godkänd: " : "Tillsatt: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = r.Status == RequestStatus.Approved ? StartListItemStatus.OrderApproved : StartListItemStatus.OrderAcceptedForApproval }).ToList();
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = (r.Status == RequestStatus.Approved && r.AnswerProcessedAt.HasValue) ? r.AnswerProcessedAt.Value.DateTime : r.AnswerDate.Value.DateTime, InfoDateDescription = r.Status == RequestStatus.Approved ? "Godkänd: " : "Tillsatt: ", CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = r.Status == RequestStatus.Approved ? StartListItemStatus.OrderApproved : r.Status == RequestStatus.AcceptedNewInterpreterAppointed ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval }).ToList();
 
             count = answeredRequests.Any() ? answeredRequests.Count() : 0;
 
