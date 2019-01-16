@@ -22,6 +22,8 @@ namespace Tolk.Web.Models
             public IEnumerable<StartListItemModel> StartListObjects { get; set; }
 
             public bool HasReviewAction { get; set; } = false;
+
+            public bool DisplayCustomer { get; set; } = false;
         }
 
         public class ConfirmationMessage
