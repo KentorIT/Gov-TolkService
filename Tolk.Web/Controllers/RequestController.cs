@@ -120,6 +120,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        // Should be a Post ?
         public async Task<IActionResult> Process(int id)
         {
             var request = _dbContext.Requests

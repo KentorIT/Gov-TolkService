@@ -76,7 +76,8 @@ namespace Tolk.Web.Controllers
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
-                model.EventLog = new EventLogModel {
+                model.EventLog = new EventLogModel
+                {
                     Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name)
                         .OrderBy(e => e.Timestamp).ToList()
                 };
@@ -91,6 +92,8 @@ namespace Tolk.Web.Controllers
         /// </summary>
         /// <param name="id">The Request to connect the requisition to</param>
         /// <returns></returns>
+
+        // Should be a Post ?
         public async Task<IActionResult> Create(int id)
         {
             var request = _dbContext.Requests

@@ -164,7 +164,7 @@ namespace Tolk.Web.Controllers
                     model.AllowComplaintCreation = !request.Complaints.Any() &&
                         (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
-      
+
                     model.RequestAttachmentListModel = new AttachmentListModel
                     {
                         AllowDelete = false,
@@ -182,7 +182,7 @@ namespace Tolk.Web.Controllers
                 }
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(order, 
+                    Entries = EventLogHelper.GetEventLog(order,
                         order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker
                             || r.Status == RequestStatus.DeniedByTimeLimit)
                             ? order.Requests.OrderBy(r => r.ExpiresAt).Last()
@@ -496,9 +496,9 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded && order.Status == OrderStatus.NoBrokerAcceptedOrder)
             {
-                    _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
-                    _dbContext.SaveChanges();
-                    return RedirectToAction("Index", "Home", new { message = "Bekräftat att bokningsförfrågan är avslutad pga avböjd av samtliga förmedlingar" });
+                _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
+                _dbContext.SaveChanges();
+                return RedirectToAction("Index", "Home", new { message = "Bekräftat att bokningsförfrågan är avslutad pga avböjd av samtliga förmedlingar" });
             }
             return Forbid();
         }
@@ -525,6 +525,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        // Should be a Post ?
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = GetOrder(model.OrderId);
@@ -642,8 +643,8 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
-                        
-                        
+
+
         }
     }
 }

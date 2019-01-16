@@ -34,6 +34,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult Upload(List<IFormFile> files, Guid? groupKey = null)
         {
             var list = new List<FileModel>();
@@ -127,6 +128,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpDelete]
+        [ValidateAntiForgeryToken]
         public JsonResult Delete(int id, Guid groupKey)
         {
             var attachment = _dbContext.Attachments
