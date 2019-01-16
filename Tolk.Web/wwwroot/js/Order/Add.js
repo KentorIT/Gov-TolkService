@@ -49,13 +49,13 @@ $(function () {
     $("body").on("click", ".add-requirement-button", function () {
         var target = $($(this).data("target"));
         AddRequirement(target);
-        toggleGender(target.find("#RequirementType"), target.find("#Gender_rbGroup"), target.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(target.find("#RequirementType"), target.find("#GenderRequirement"), target.find("#RequirementDescription").parents(".form-group"));
     });
 
     $("body").on("click", ".add-desiredRequirement-button", function () {
         var target = $($(this).data("target"));
         AddRequirement(target);
-        toggleGender(target.find("#RequirementType"), target.find("#Gender_rbGroup"), target.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(target.find("#RequirementType"), target.find("#GenderRequest"), target.find("#RequirementDescription").parents(".form-group"));
     });
 
     $("body").on("click", ".save-requirement", function (event) {
@@ -135,11 +135,11 @@ $(function () {
     var desiredModal = $("#des").parents(".modal-content");
 
     requiredModal.find("#RequirementType").on("change", function () {
-        toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("#Gender_rbGroup"), requiredModal.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("#GenderRequirement"), requiredModal.find("#RequirementDescription").parents(".form-group"));
     });
 
     desiredModal.find("#RequirementType").on("change", function () {
-        toggleGender(desiredModal.find("#RequirementType"), desiredModal.find("#Gender_rbGroup"), desiredModal.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(desiredModal.find("#RequirementType"), desiredModal.find("#GenderRequest"), desiredModal.find("#RequirementDescription").parents(".form-group"));
     });
 
     $("body").on("change", "#LanguageId", function () {

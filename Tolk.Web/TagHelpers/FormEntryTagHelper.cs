@@ -61,6 +61,10 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("help-link")]
         public string HelpLink { get; set; }
 
+        // Applicable for manual html generation
+        [HtmlAttributeName("id-override")]
+        public string IdOverride { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -811,14 +815,15 @@ namespace Tolk.Web.TagHelpers
         private void WriteRadioGroup(TextWriter writer)
         {
             bool isRow = LayoutOption == "row";
+            var id = IdOverride ?? For.Name;
 
-            writer.WriteLine($"<div id=\"{For.Name}\">");
+            writer.WriteLine($"<div id=\"{id}\">");
 
             var itArr = Items.ToArray();
             for (int i = 0; i < itArr.Length; i++)
             {
                 var item = itArr[i];
-                var itemName = $"{For.Name}_{i}";
+                var itemName = $"{id}_{i}";
                 bool isChecked = i == 0; // Auto-check the first item
                 var checkedAttr = isChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
@@ -847,8 +852,10 @@ namespace Tolk.Web.TagHelpers
         {
             var htmlBuilder = new HtmlContentBuilder();
 
+            var id = IdOverride ?? For.Name;
+
             var checkboxGroupBuilder = new TagBuilder("div");
-            checkboxGroupBuilder.Attributes.Add("id", For.Name);
+            checkboxGroupBuilder.Attributes.Add("id", id);
             checkboxGroupBuilder.Attributes.Add("for", For.Name);
             checkboxGroupBuilder.Attributes.Add("name", For.Name);
 
@@ -859,7 +866,7 @@ namespace Tolk.Web.TagHelpers
             for (var i = 0; i < itemsArr.Count(); i++)
             {
                 var item = itemsArr[i];
-                var itemName = $"{For.Name}_{i}";
+                var itemName = $"{id}_{i}";
                 bool isChecked = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems?.Contains(item) ?? false;
                 var checkedAttr = isChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateCheckbox automatically sets id=For.Name, which it shouldn't

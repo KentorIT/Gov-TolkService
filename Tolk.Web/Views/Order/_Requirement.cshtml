@@ -4,7 +4,14 @@
 <form class="do-not-check-dirty">
     <form-entry asp-for="RequirementType" type="select" asp-items="SelectListService.RequirementTypes" />
     <form-entry asp-for="RequirementDescription" />
-    <form-entry asp-for="Gender" type="radio-group" asp-items="SelectListService.Genders" />
+    @if (Model.RequirementIsRequired)
+    {
+        <form-entry id-override="GenderRequirement" asp-for="Gender" type="radio-group" asp-items="SelectListService.Genders" />
+    }
+    else
+    {
+        <form-entry id-override="GenderRequest" asp-for="Gender" type="radio-group" asp-items="SelectListService.Genders" />
+    }
     <div class="d-none">
         <form-entry asp-for="RequirementIsRequired" />
     </div>
