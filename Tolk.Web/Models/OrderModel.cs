@@ -51,7 +51,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Övrig uppdragsinformation", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Beakta eventuell sekretess avseende informationen")]
+        [Display(Name = "Övrig uppdragsinformation", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Här kan du även ange kontaktuppgifter till person som tolken skall kontakta. Beakta eventuell sekretess avseende informationen")]
         [StringLength(1000)]
         public string Description { get; set; }
 
