@@ -163,10 +163,18 @@ $(function () {
     $("body").on("change", "#SplitTimeRange_StartTimeHour", function () {
         var chosenStartHour = parseInt($(this).val());
         var chosenEndHour = $("#SplitTimeRange_EndTimeHour").val();
-        //only set endhour if not selected yet
+        var chosenStartMinutes = $("#SplitTimeRange_StartTimeMinutes").val();
+        var chosenEndMinutes = $("#SplitTimeRange_EndTimeMinutes").val();
+        //only set minutes and endhour if not selected yet
         if (chosenEndHour === "") {
             var nextHour = parseInt($(this).val()) === 23 ? 0 : chosenStartHour + 1;
             $("#SplitTimeRange_EndTimeHour").val(nextHour).trigger("change");
+        }
+        if (chosenStartMinutes === "") {
+            $("#SplitTimeRange_StartTimeMinutes").val(0).trigger("change");
+        }
+        if (chosenEndMinutes === "") {
+            $("#SplitTimeRange_EndTimeMinutes").val(0).trigger("change");
         }
     });
 
