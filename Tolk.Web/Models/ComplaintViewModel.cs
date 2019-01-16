@@ -30,11 +30,13 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [Display(Name = "Meddelande vid bestridande")]
+        [StringLength(1000)]
         public string DisputeMessage { get; set; }
 
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [Display(Name = "Meddelande vid svar på bestridande")]
+        [StringLength(1000)]
         public string AnswerDisputedMessage { get; set; }
 
         public bool IsBroker { get; set; }

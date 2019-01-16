@@ -57,12 +57,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Orsak till avböjande")]
         [DataType(DataType.MultilineText)]
         [Required]
+        [StringLength(1000)]
         public string DenyMessage { get; set; }
 
 
         [Display(Name = "Orsak till avbokning")]
         [DataType(DataType.MultilineText)]
         [Required]
+        [StringLength(1000)]
         public string CancelMessage { get; set; }
 
         public string Info48HCancelledByCustomer { get; set; }
@@ -79,14 +81,17 @@ namespace Tolk.Web.Models
         [EmailAddress]
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "Tolkens e-postadress")]
+        [StringLength(255)]
         public string NewInterpreterEmail { get; set; }
 
         [Required]
         [Display(Name = "Tolkens förnamn")]
+        [StringLength(255)]
         public string NewInterpreterFirstName { get; set; }
 
         [Required]
         [Display(Name = "Tolkens efternamn")]
+        [StringLength(255)]
         public string NewInterpreterLastName { get; set; }
 
         [Display(Name = "Tolk-ID")]
@@ -94,6 +99,7 @@ namespace Tolk.Web.Models
 
         [Required]
         [Display(Name = "Tolkens telefonnummer")]
+        [StringLength(255)]
         public string NewInterpreterPhoneNumber { get; set; }
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }

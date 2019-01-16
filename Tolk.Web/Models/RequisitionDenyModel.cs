@@ -6,6 +6,7 @@ namespace Tolk.Web.Models
     {
         public int RequisitionId { get; set; }
 
+        [StringLength(255)]
         public string DenyMessage { get; set; }
     }
 }

@@ -17,11 +17,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Gatuadress")]
         [ClientRequired]
         [SubItem]
+        [StringLength(100)]
         public string LocationStreet { get; set; }
 
         [Display(Name = "Ort")]
         [ClientRequired]
         [SubItem]
+        [StringLength(100)]
         public string LocationCity { get; set; }
 
         [Display(Name = "Kontaktinformation för tolktillfället", Description = "Ex. telefonnummer eller namn relevant för tillfället")]

@@ -124,6 +124,6 @@
     <value>{0} måste anges.</value>
   </data>
   <data name="StringLength" xml:space="preserve">
-    <value>{0} måste vara minst {2} och max {1} tecken långt.</value>
+    <value>{0} får ha max {1} bokstäver.</value>
   </data>
 </root>

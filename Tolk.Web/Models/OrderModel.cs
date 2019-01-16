@@ -37,6 +37,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Dialekt", Description = "Om Dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet")]
         [RequiredIf(nameof(DialectIsRequired), true, OtherPropertyType = typeof(bool))]
+        [StringLength(255)]
         public string Dialect { get; set; }
 
         [Display(Name = "Dialekt är ett krav")]
@@ -51,6 +52,7 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Övrig uppdragsinformation", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Beakta eventuell sekretess avseende informationen")]
+        [StringLength(1000)]
         public string Description { get; set; }
 
         [Display(Name = "Språk och dialekt")]
@@ -58,6 +60,7 @@ namespace Tolk.Web.Models
         public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
         [Display(Name = "Myndighetens enhet/avdelning")]
+        [StringLength(100)]
         public string UnitName { get; set; }
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
@@ -95,6 +98,7 @@ namespace Tolk.Web.Models
         public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
 
         [Display(Name = "Myndighetens ärendenummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
+        [StringLength(100)]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Myndighet")]
@@ -242,11 +246,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Anledning till att svaret inte godtas")]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
+        [StringLength(1000)]
         public string DenyMessage { get; set; }
 
         [Display(Name = "Anledning till att bokningen avbokas")]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
+        [StringLength(1000)]
         public string CancelMessage { get; set; }
 
         #endregion

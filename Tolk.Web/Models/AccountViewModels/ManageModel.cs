@@ -13,15 +13,18 @@ namespace Tolk.Web.Models.AccountViewModels
 
         [ClientRequired]
         [Display(Name = "Förnamn")]
+        [StringLength(255)]
         public string NameFirst { get; set; }
 
         [ClientRequired]
         [Display(Name = "Efternamn")]
+        [StringLength(255)]
         public string NameFamily { get; set; }
         
         [ClientRequired]
         [DataType(DataType.Password)]
         [Display(Name = "Lösenord", Description = "Bekräfta ändringarna med ditt lösenord")]
+        [StringLength(100)]
         public string CurrentPassword { get; set; }
     }
 }

@@ -15,16 +15,20 @@ namespace Tolk.Web.Models.AccountViewModels
 
         [ClientRequired]
         [Display(Name = "Förnamn")]
+        [StringLength(255)]
         public string NameFirst { get; set; }
 
         [ClientRequired]
         [Display(Name = "Efternamn")]
+        [StringLength(255)]
         public string NameFamily { get; set; }
 
         [Display(Name = "Telefonnummer (arbete)")]
+        [StringLength(32)]
         public string PhoneWork { get; set; }
 
         [Display(Name = "Telefonnummer (mobil)")]
+        [StringLength(32)]
         public string PhoneCellphone { get; set; }
     }
 }

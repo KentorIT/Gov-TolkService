@@ -13,6 +13,7 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [Required]
+        [StringLength(1000)]
         public string CancelMessage { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace Tolk.Web.Models.AccountViewModels
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Befintligt lösenord")]
+        [StringLength(255)]
         public string CurrentPassword { get; set; }
 
         public bool HasPassword { get; set; }

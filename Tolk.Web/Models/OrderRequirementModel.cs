@@ -20,6 +20,7 @@ namespace Tolk.Web.Models
         [StringLength(1000)]
         public string RequirementDescription { get; set; }
 
+        [StringLength(1000)]
         public string Answer { get; set; }
 
         public bool? CanSatisfyRequirement { get; set; }

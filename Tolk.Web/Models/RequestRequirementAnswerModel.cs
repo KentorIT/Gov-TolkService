@@ -20,6 +20,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Svar")]
         [ClientRequired]
         [SubItem]
+        [StringLength(1000)]
         public string Answer { get; set; }
 
         [NoDisplayName]

@@ -79,7 +79,7 @@ namespace Tolk.Web.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} måste vara minst {2} och max {1} tecken långt..
+        ///   Looks up a localized string similar to {0} får ha max {1} bokstäver..
         /// </summary>
         public static string StringLength {
             get {

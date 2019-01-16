@@ -109,6 +109,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Required]
         [Display(Name = "Specifikation", Description = "Var tydlig med var alla tider och kostnader kommer ifrån.")]
+        [StringLength(1000)]
         public string Message { get; set; }
 
         public int? ReplacingRequisitionId { get; set; }
