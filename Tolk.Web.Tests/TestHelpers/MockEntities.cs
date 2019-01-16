@@ -65,7 +65,7 @@ namespace Tolk.Web.Tests.TestHelpers
                     OrderId = 2,
                     OrderNumber = "2018-000042",
                     StartAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
-                    EndAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
+                    EndAt = new DateTimeOffset(2018,08,07,14,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Skåne").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
                     CustomerOrganisationId = 1,
