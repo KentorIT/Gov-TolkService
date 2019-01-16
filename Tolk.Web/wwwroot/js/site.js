@@ -128,10 +128,6 @@ $(function () {
 
     $("div.autofocus > input").first().focus();
 
-    // Whitelist all inputs and textareas for Hotjar recordings
-    $("input").addClass("data-hj-whitelist");
-    $("textarea").addClass("data-hj-whitelist");
-
     // For buttons and anchors that ignore dirty-checks
     $(":button.do-not-check-dirty, a.do-not-check-dirty").on("click", function () {
         $("form").removeClass(dirty);
