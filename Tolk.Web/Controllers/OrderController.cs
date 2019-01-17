@@ -339,6 +339,8 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public ActionResult Confirm(OrderModel model)
         {
             Order order = CreateNewOrder();
@@ -525,7 +527,8 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        // Should be a Post ?
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = GetOrder(model.OrderId);
@@ -643,8 +646,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
-
-
         }
     }
 }
