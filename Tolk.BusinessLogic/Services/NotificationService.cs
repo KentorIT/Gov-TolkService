@@ -263,9 +263,11 @@ namespace Tolk.BusinessLogic.Services
         public void RequestAnswerAutomaticallyAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
-                $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats." +
-                $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}");
+
+            CreateEmail(GetRecipiantsFromOrder(request.Order), 
+                $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
+                $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\nTolk:\n{request.Interpreter.CompleteContactInformation} {NoReplyTextPlain} {GotoOrderPlain(request.Order.OrderId)}",
+                $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.<br/><br/>Tolk:<br/>{request.Interpreter.CompleteContactInformation} {NoReplyTextHtml} {GotoOrderButton(request.Order.OrderId)}");
 
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
