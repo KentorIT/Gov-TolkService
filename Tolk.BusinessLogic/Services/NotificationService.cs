@@ -504,11 +504,25 @@ Tolk:
         public void RemindUnhandledRequest(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            var body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.
+            string body = string.Empty;
+
+            if (request.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+                body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har ändrats med ny tolk.
 Du behöver godkänna de beräknade resekostnaderna.
 
 Tolk:
 {request.Interpreter.CompleteContactInformation}";
+            }
+            else
+            {
+                body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats.
+Du behöver godkänna de beräknade resekostnaderna.
+
+Tolk:
+{request.Interpreter.CompleteContactInformation}";
+            }
+
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
                 body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));

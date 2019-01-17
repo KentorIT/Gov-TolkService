@@ -18,6 +18,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly OrderService _orderService;
         private readonly RankingService _rankingService;
         private readonly TolkDbContext _tolkDbContext;
+        private readonly ISwedishClock _clock;
 
         public RequestService(
             PriceCalculationService priceCalculationService,
@@ -25,7 +26,8 @@ namespace Tolk.BusinessLogic.Services
             NotificationService notificationService,
             OrderService orderService,
             RankingService rankingService,
-            TolkDbContext tolkDbContext
+            TolkDbContext tolkDbContext,
+            ISwedishClock clock
             )
         {
             _priceCalculationService = priceCalculationService;
@@ -34,6 +36,7 @@ namespace Tolk.BusinessLogic.Services
             _orderService = orderService;
             _rankingService = rankingService;
             _tolkDbContext = tolkDbContext;
+            _clock = clock;
         }
 
         public void Accept(
@@ -137,15 +140,23 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task SendEmailReminders()
         {
-            List<Request> notAcceptedRequests = _tolkDbContext.Requests
+            _logger.LogInformation("Start Sending Reminder Emails");
+            List<Request> notAcceptedRequests = await _tolkDbContext.Requests
                 .Where(req => req.Status == RequestStatus.Accepted || req.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                .Include(req => req.Order)
-                .ToList();
+                 .Include(req => req.Order)
+                    .ThenInclude(order => order.CreatedByUser)
+                .Include(req => req.Ranking)
+                    .ThenInclude(rank => rank.Broker)
+                .Include(req => req.Interpreter)
+                .Where(req => req.Order.StartAt > _clock.SwedenNow)
+                .ToListAsync();
 
             foreach (Request request in notAcceptedRequests)
             {
                 _notificationService.RemindUnhandledRequest(request);
             }
+
+            _logger.LogInformation($"{notAcceptedRequests.Count} email reminders sent");
         }
     }
 }
