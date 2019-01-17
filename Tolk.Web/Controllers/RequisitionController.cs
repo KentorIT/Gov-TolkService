@@ -91,9 +91,6 @@ namespace Tolk.Web.Controllers
         /// Create a requisition
         /// </summary>
         /// <param name="id">The Request to connect the requisition to</param>
-        /// <returns></returns>
-
-        // Should be a Post ?
         public async Task<IActionResult> Create(int id)
         {
             var request = _dbContext.Requests
@@ -120,13 +117,6 @@ namespace Tolk.Web.Controllers
                     var previousRequisition = _dbContext.Requisitions.Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
                     // Get the attachments from the previous requisition.
-                    // Save a connection for all of these to Temp
-                    foreach (var attachment in previousRequisition.Attachments)
-                    {
-                        _dbContext.TemporaryAttachmentGroups.Add(new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey, AttachmentId = attachment.AttachmentId, CreatedAt = _clock.SwedenNow, });
-                    }
-                    _dbContext.SaveChanges();
-                    // Set the Files-list and the used FileGroupKey
                     List<FileModel> files = previousRequisition.Attachments.Select(a => new FileModel
                     {
                         Id = a.Attachment.AttachmentId,
@@ -362,7 +352,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris för avropssvar",
+                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true,
                 Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
             };

@@ -22,7 +22,7 @@ namespace Tolk.Web.Helpers
                 new EventLogEntryModel
                 {
                     Timestamp = order.CreatedAt,
-                    EventDetails = order.ReplacingOrder != null ? $"Ersättningsavrop skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Avrop skapat",
+                    EventDetails = order.ReplacingOrder != null ? $"Ersättningsuppdrag skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Bokningsförfrågan skapad",
                     Actor = order.CreatedByUser.FullName,
                     Organization = customerName,
                 }

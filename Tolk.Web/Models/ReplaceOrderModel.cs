@@ -6,7 +6,7 @@ namespace Tolk.Web.Models
 {
     public class ReplaceOrderModel : OrderModel
     {
-        [Display(Name = "Det ersatta avropets datum och tid")]
+        [Display(Name = "Det ersatta uppdragets datum och tid")]
         public TimeRange ReplacedTimeRange { get; set; }
 
         [Display(Name = "Datum och tid för ersättning", Description = "Datum och tid för tolkuppdraget.")]

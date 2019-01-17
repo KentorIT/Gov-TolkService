@@ -120,7 +120,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        // Should be a Post ?
         public async Task<IActionResult> Process(int id)
         {
             var request = _dbContext.Requests
@@ -362,9 +361,11 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestId)
         {
-            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Avböjande är bekräftat");
+            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Bokningsförfrågan arkiverad");
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         private async Task<IActionResult> ConfirmNewRequestStatus(int requestId, RequestStatus expectedStatus, string infoMessage)
         {
             var request = _dbContext.Requests

@@ -881,6 +881,9 @@ ul.pagination > li.paginate_button.active > a {
 #RequirementType {
   width: 300px;
 }
+#ContactPersonId {
+  width: 200px;
+}
 .progressbar {
   margin-top: 35px;
   margin-bottom: 30px;

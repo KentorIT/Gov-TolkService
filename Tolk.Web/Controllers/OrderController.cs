@@ -339,6 +339,8 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public ActionResult Confirm(OrderModel model)
         {
             Order order = CreateNewOrder();
@@ -498,7 +500,7 @@ namespace Tolk.Web.Controllers
             {
                 _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Bekräftat att bokningsförfrågan är avslutad pga avböjd av samtliga förmedlingar" });
+                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
             }
             return Forbid();
         }
@@ -525,7 +527,8 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        // Should be a Post ?
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = GetOrder(model.OrderId);
@@ -553,7 +556,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för avrop {order.OrderNumber} är ändrad" });
+                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för bokning {order.OrderNumber} är ändrad" });
                 }
             }
             return Forbid();
@@ -568,7 +571,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris svar på bokningsförfrågan",
+                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
             };
         }
@@ -643,8 +646,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
-
-
         }
     }
 }
