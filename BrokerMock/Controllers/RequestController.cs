@@ -42,7 +42,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Avrops-ID: {payload.OrderNumber} skapad av {payload.Customer} i {payload.Region}");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} skapad av {payload.Customer} i {payload.Region}");
             }
             if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
             {
@@ -125,7 +125,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Avrops-ID: {payload.OrderNumber} har blivit godkänd");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit godkänd");
             }
 
             var request = await GetOrderRequest(payload.OrderNumber);
@@ -168,12 +168,12 @@ namespace BrokerMock.Controllers
                 var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/View?orderNumber=" + orderNumber);
                 if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Avrops-ID: {orderNumber}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
                 }
                 else
                 {
                     var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Avrops-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
                 }
                 return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
             }
@@ -197,12 +197,12 @@ namespace BrokerMock.Controllers
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Answer", content);
                 if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Avrops-ID: {orderNumber} skickad tolk: {interpreter}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} skickad tolk: {interpreter}");
                 }
                 else
                 {
                     var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Avrops-ID: {orderNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
                 }
             }
 
@@ -222,11 +222,11 @@ namespace BrokerMock.Controllers
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Acknowledge", content);
                 if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge]:: Avrops-ID: {orderNumber} accat mottagande");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge]:: Boknings-ID: {orderNumber} accat mottagande");
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED:: Avrops-ID: {orderNumber} accat mottagande");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
                 }
             }
 
@@ -247,11 +247,11 @@ namespace BrokerMock.Controllers
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Decline", content);
                 if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline]:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline]:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline] FAILED:: Avrops-ID: {orderNumber} Svarat nej på förfrågan");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline] FAILED:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
                 }
             }
 
@@ -266,11 +266,11 @@ namespace BrokerMock.Controllers
                 var file = response.Content.ReadAsAsync<FileResponse>().Result;
                 if (file.Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Avrops-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Boknings-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Avrops-ID: {orderNumber} accat mottagande");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
                 }
             }
 
@@ -295,11 +295,11 @@ namespace BrokerMock.Controllers
                 var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ChangeInterpreter", content);
                 if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter}");
                 }
                 else
                 {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Avrops-ID: {orderNumber} ändrat tolk: {interpreter}");
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter}");
                 }
             }
 

@@ -382,32 +382,29 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
-                    // Leta upp alla TempAttachment äldre än ett dygn som inte finns med som riktig attachment
-                    var attachmentsGroupsToDelete = _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < DateTime.Now.AddDays(-1))
-                                                                                            .Where(ca => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(ca.AttachmentId))
-                                                                                            .Where(ca => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(ca.AttachmentId))
-                                                                                            .Where(ca => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(ca.AttachmentId))
-                                                                                            .ToArray();
-                    if (attachmentsGroupsToDelete != null)
+                    _logger.LogInformation("Cleaning temporary attachments");
+                    // Find attachmentgroups older than 24 hours
+                    var attachmentsGroupsToDelete = _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < _clock.SwedenNow.AddDays(-1)).ToList();
+                    if (attachmentsGroupsToDelete.Any())
                     {
-                        _tolkDbContext.RemoveRange(attachmentsGroupsToDelete);
+                        _logger.LogInformation("Cleaning {0} attachmentgroups", attachmentsGroupsToDelete.Count());
+                        _tolkDbContext.TemporaryAttachmentGroups.RemoveRange(attachmentsGroupsToDelete);
+                        await _tolkDbContext.SaveChangesAsync();
                     }
 
-                    await _tolkDbContext.SaveChangesAsync();
-
-                    // Leta upp alla Attachments utan koppling alls
+                    // Find orphaned attachments
                     var attachmentsToDelete = _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
-                                                                        .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
-                                                                        .ToArray();
-                    if (attachmentsToDelete != null)
+                                                                        .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToList();
+                    if (attachmentsToDelete.Any())
                     {
-                        _tolkDbContext.RemoveRange(attachmentsToDelete);
+                        _logger.LogInformation("Cleaning {0} attachments", attachmentsToDelete.Count());
+                        _tolkDbContext.Attachments.RemoveRange(attachmentsToDelete);
+                        await _tolkDbContext.SaveChangesAsync();
                     }
-
-                    await _tolkDbContext.SaveChangesAsync();
-
+                    
+                    _logger.LogInformation("Done cleaning temporary attachments");
                 }
                 catch (Exception ex)
                 {
@@ -415,7 +412,6 @@ namespace Tolk.BusinessLogic.Services
                 }
                 trn.Commit();
             }
-
         }
     }
 }
