@@ -63,17 +63,17 @@ namespace Tolk.Web.Models
         public decimal TotalTravelCosts { get => Outlay + PerDiem + CarCompensation; }
 
         [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Uppgift om utlägg måste anges. Finns inga kostnader anges 0.")]
-        [Range(0, 20000, ErrorMessage = "Kontrollera värdet för utlägg (ange 0 om det inte finns någon kostnad)")]
+        [Range(0, 100000, ErrorMessage = "Kontrollera värdet för utlägg (ange 0 om det inte finns någon kostnad)")]
         [DataType(DataType.Currency)]
         public decimal Outlay { get; set; }
 
         [Display(Name = "Bilersättning (exkl. moms) i SEK", Description = "Bilersättning ska anges. Finns ingen kostnad för bilersättning anges 0.")]
-        [Range(0, 20000, ErrorMessage = "Kontrollera värdet för bilersättning (ange 0 om det inte finns någon kostnad för bilersättning).")]
+        [Range(0, 100000, ErrorMessage = "Kontrollera värdet för bilersättning (ange 0 om det inte finns någon kostnad för bilersättning).")]
         [DataType(DataType.Currency)]
         public decimal CarCompensation { get; set; }
 
         [Display(Name = "Traktamente (exkl. moms) i SEK", Description = "Traktamente ska anges. Om inget traktamente ska erhållas ange 0.")]
-        [Range(0, 20000, ErrorMessage = "Kontrollera värdet för traktamente (ange 0 om det inte ska erhållas något traktamente).")]
+        [Range(0, 100000, ErrorMessage = "Kontrollera värdet för traktamente (ange 0 om det inte ska erhållas något traktamente).")]
         [DataType(DataType.Currency)]
         public decimal PerDiem { get; set; }
 
