@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
@@ -15,13 +17,15 @@ namespace Tolk.BusinessLogic.Services
         private readonly NotificationService _notificationService;
         private readonly OrderService _orderService;
         private readonly RankingService _rankingService;
+        private readonly TolkDbContext _tolkDbContext;
 
         public RequestService(
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
             NotificationService notificationService,
             OrderService orderService,
-            RankingService rankingService
+            RankingService rankingService,
+            TolkDbContext tolkDbContext
             )
         {
             _priceCalculationService = priceCalculationService;
@@ -29,6 +33,7 @@ namespace Tolk.BusinessLogic.Services
             _notificationService = notificationService;
             _orderService = orderService;
             _rankingService = rankingService;
+            _tolkDbContext = tolkDbContext;
         }
 
         public void Accept(
@@ -52,7 +57,7 @@ namespace Tolk.BusinessLogic.Services
             switch (request.Status)
             {
                 case RequestStatus.Accepted:
-                _notificationService.RequestAccepted(request);
+                    _notificationService.RequestAccepted(request);
                     break;
                 case RequestStatus.Approved:
                     _notificationService.RequestAnswerAutomaticallyAccepted(request);
@@ -128,6 +133,19 @@ namespace Tolk.BusinessLogic.Services
             }
             request.Status = RequestStatus.InterpreterReplaced;
 
+        }
+
+        public async Task SendEmailReminders()
+        {
+            List<Request> notAcceptedRequests = _tolkDbContext.Requests
+                .Where(req => req.Status == RequestStatus.Accepted || req.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                .Include(req => req.Order)
+                .ToList();
+
+            foreach (Request request in notAcceptedRequests)
+            {
+                _notificationService.RemindUnhandledRequest(request);
+            }
         }
     }
 }

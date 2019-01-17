@@ -10,19 +10,32 @@ namespace Tolk.Web.Services
     {
         private IServiceProvider _services;
         private ILogger<EntityScheduler> _logger;
-        private DateTime? nextClean = null;
+        private ISwedishClock _clock;
+        private DateTimeOffset? nextClean = null;
+        private DateTimeOffset nextRemind;
 
-        public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger)
+        public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock)
         {
             _services = services;
             _logger = logger;
+            _clock = clock;
+
+            if (_clock.SwedenNow.Hour < 5)
+            {
+                // Next Remind is today
+                nextRemind = _clock.SwedenNow.Date.AddHours(5);
+            }
+            else
+            {
+                // Next remind is tomorrow
+                nextRemind = _clock.SwedenNow.AddDays(1).Date.AddHours(5);
+            }
 
             _logger.LogDebug("Created EntityScheduler instance");
         }
 
         public void Init()
         {
-
             Task.Run(() => Run());
 
             _logger.LogInformation("EntityScheduler initialized");
@@ -39,12 +52,20 @@ namespace Tolk.Web.Services
                 {
                     Task[] tasksToRun;
 
-                    if (nextClean == null || DateTime.Now > nextClean)
+                    if (nextClean == null || _clock.SwedenNow > nextClean)
                     {
-                        nextClean = DateTime.Now.AddDays(1).Date;
+                        nextClean = _clock.SwedenNow.AddDays(1).Date;
                         tasksToRun = new Task[]
                         {
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments()
+                        };
+                    }
+                    else if (_clock.SwedenNow > nextRemind)
+                    {
+                        nextRemind = _clock.SwedenNow.AddDays(1).Date.AddHours(5);
+                        tasksToRun = new Task[]
+                        {
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
                         };
                     }
                     else

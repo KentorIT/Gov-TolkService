@@ -59,7 +59,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                      $"Uppdraget har avrops-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") + 
+                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
                      NoReplyTextPlain;
                 CreateEmail(broker, $"Avbokat avrop avrops-ID {orderNumber}",
                     body + GotoRequestPlain(request.RequestId),
@@ -96,7 +96,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 string body = $"Behörighet att godkänna eller underkänna rekvisition har ändrats. Du har nu behörighet att utföra detta för avrop {orderNumber}." + NoReplyTextPlain;
                 CreateEmail(currentContactUser.Email, subject,
-                    body + GotoOrderPlain(order.OrderId), 
+                    body + GotoOrderPlain(order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(order.OrderId));
             }
             //Broker
@@ -140,7 +140,7 @@ namespace Tolk.BusinessLogic.Services
 <div>{GotoRequestButton(oldRequest.RequestId, textOverride: "Gå till ursprungligt uppdrag", autoBreakLines: false)}</div>";
             CreateEmail(
                 replacementRequest.Ranking.Broker.EmailAddress,
-                $"Avrop {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}", 
+                $"Avrop {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
                 bodyPlain,
                 bodyHtml);
         }
@@ -355,7 +355,7 @@ Kostnader att fakturera:
                 bodyHtml + GotoOrderButton(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition)
             );
             //Broker
-            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress, 
+            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress,
                 $"Rekvisition för avrop {orderNumber} har godkänts",
                 bodyPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
                 bodyHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
@@ -376,7 +376,7 @@ Kostnader att fakturera:
                 bodyHtml + GotoOrderButton(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition)
             );
             //Broker
-            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress, 
+            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress,
                 $"Rekvisition för avrop {orderNumber} har underkänts",
                 bodyPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
                 bodyHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
@@ -452,7 +452,7 @@ Tolk:
         {
             string orderNumber = request.Order.OrderNumber;
 
-            var body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n" + 
+            var body = $"Nytt svar på avrop {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk på avropet.\n" +
                 $"\nTolk:\n{request.Interpreter.CompleteContactInformation}\n\n" +
                 (request.Order.AllowMoreThanTwoHoursTravelTime ?
                     "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på avropet inte godkänns/avslås så kommer systemet godkänna avropet automatiskt " +
@@ -499,6 +499,19 @@ Tolk:
                 default:
                     throw new NotImplementedException($"{nameof(RequestChangedInterpreterAccepted)} faild to send mail to customer. {changeOrigin.ToString()} is not a handled {nameof(InterpereterChangeAcceptOrigin)}");
             }
+        }
+
+        public void RemindUnhandledRequest(Request request)
+        {
+            string orderNumber = request.Order.OrderNumber;
+            var body = $@"Svar på avrop {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Avropet har accepterats.
+Du behöver godkänna de beräknade resekostnaderna.
+
+Tolk:
+{request.Interpreter.CompleteContactInformation}";
+            CreateEmail(GetRecipiantsFromOrder(request.Order), $"Avrop {orderNumber} väntar på hantering",
+                body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
+                HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
         }
 
         public void CreateEmail(string recipient, string subject, string plainBody)
