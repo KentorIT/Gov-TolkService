@@ -500,7 +500,7 @@ namespace Tolk.Web.Controllers
             {
                 _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = "Bekräftat att bokningsförfrågan är avslutad pga avböjd av samtliga förmedlingar" });
+                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
             }
             return Forbid();
         }

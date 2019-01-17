@@ -361,7 +361,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestId)
         {
-            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Avböjande är bekräftat");
+            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Bokningsförfrågan arkiverad");
         }
 
         [ValidateAntiForgeryToken]
