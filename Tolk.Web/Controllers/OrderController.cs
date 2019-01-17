@@ -556,7 +556,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för avrop {order.OrderNumber} är ändrad" });
+                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för bokning {order.OrderNumber} är ändrad" });
                 }
             }
             return Forbid();
@@ -571,7 +571,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris svar på bokningsförfrågan",
+                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
             };
         }

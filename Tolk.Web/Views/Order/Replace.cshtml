@@ -3,7 +3,7 @@
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @{
-    ViewData["Title"] = "Ersätt avbokat avrop";
+    ViewData["Title"] = "Ersätt avbokat uppdrag";
 }
 <div class="row">
     <form method="post">
@@ -62,7 +62,7 @@
                     <display-entry asp-for="AssignmentType" />
                 </div>
                 <div class="col-sm-4">
-                    <label>Inställelsesätt på det ersatta avropet</label>
+                    <label>Inställelsesätt på det ersatta uppdraget</label>
                     <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.CompactInformation" />
                     @if (Model.RankedInterpreterLocationSecondAddressModel != null)
                     {

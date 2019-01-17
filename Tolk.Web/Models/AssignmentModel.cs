@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
 
         public int BrokerId { get; set; }
 
-        [Display(Name = "AvropsID")]
+        [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
         [Display(Name = "Språk")]

@@ -352,7 +352,7 @@ namespace Tolk.Web.Controllers
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris för avropssvar",
+                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true,
                 Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
             };
