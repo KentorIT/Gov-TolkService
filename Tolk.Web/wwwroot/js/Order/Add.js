@@ -178,6 +178,12 @@ $(function () {
         }
     });
 
+    $("body").on("change", "#LatestAnswerBy_Hour", function () {
+        if ($("#LatestAnswerBy_Minute").val() === "") {
+            $("#LatestAnswerBy_Minute").val(0).trigger("change");
+        }
+    });
+
     var hasToggledLastTimeForRequiringLatestAnswerBy = false;
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
