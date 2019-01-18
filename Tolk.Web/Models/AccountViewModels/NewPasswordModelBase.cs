@@ -10,7 +10,7 @@ namespace Tolk.Web.Models.AccountViewModels
     public abstract class NewPasswordModelBase
     {
         [ClientRequired]
-        [StringLength(100, ErrorMessage = "Lösenordet måste vara mellan {2} och {1} bokstäver långt", MinimumLength = 8)]
+        [StringLength(100)]
         [DataType(DataType.Password)]
         [PasswordValidation(
             MinimumPasswordLength = 8, 

@@ -42,7 +42,7 @@ function checkWasteTime() {
 }
 
 function checkTravelCosts(cost, message, validatorId) {
-    if (cost == "" || isNaN(parseInt(cost)) || (parseInt(cost) < 0 || parseInt(cost) > 20000)) {
+    if (cost === "" || isNaN(cost) || (parseInt(cost) < 0 || parseInt(cost) > 100000)) {
         triggerValidator(message, validatorId);
         return false;
     }
