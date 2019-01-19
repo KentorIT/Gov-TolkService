@@ -32,7 +32,7 @@
                         <tr>
                             <th>Meddelande</th>
                             <th>Förmedling</th>
-                            <th></th>
+                            <th data-sortable="false"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +61,6 @@
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
 }
@@ -84,10 +83,10 @@
                                 {
                                     <th>Myndighet</th>
                                 }
-                                <th>Datum för uppdrag</th>
+                                <th data-order="desc">Datum för uppdrag</th>
                                 @if (startlist.HasReviewAction)
                                 {
-                                    <th></th>
+                                    <th data-sortable="false"></th>
                                 }
                             </tr>
                         </thead>
