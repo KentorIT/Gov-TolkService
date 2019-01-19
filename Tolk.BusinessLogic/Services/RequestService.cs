@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Services
     public class RequestService
     {
         private readonly PriceCalculationService _priceCalculationService;
-        private readonly ILogger<OrderService> _logger;
+        private readonly ILogger<RequestService> _logger;
         private readonly NotificationService _notificationService;
         private readonly OrderService _orderService;
         private readonly RankingService _rankingService;
@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
 
         public RequestService(
             PriceCalculationService priceCalculationService,
-            ILogger<OrderService> logger,
+            ILogger<RequestService> logger,
             NotificationService notificationService,
             OrderService orderService,
             RankingService rankingService,
