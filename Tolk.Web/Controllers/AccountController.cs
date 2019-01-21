@@ -580,10 +580,7 @@ supporten på {_options.SupportEmail}.</div>
 
                     if (organization != null)
                     {
-                        var user = new AspNetUser(model.Email, organization)
-                        {
-                            IsActive = true
-                        };
+                        var user = new AspNetUser(model.Email, organization);
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -603,10 +600,7 @@ supporten på {_options.SupportEmail}.</div>
 
                     if (broker != null)
                     {
-                        var user = new AspNetUser(model.Email, broker)
-                        {
-                            IsActive = true
-                        };
+                        var user = new AspNetUser(model.Email, broker);
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)

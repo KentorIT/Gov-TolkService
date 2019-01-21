@@ -30,6 +30,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             Email = email;
             UserName = email;
+            IsActive = true;
         }
 
         public AspNetUser(string email, CustomerOrganisation customer)
