@@ -109,7 +109,7 @@ namespace Tolk.Web.TagHelpers
                         + timeRange.EndTime.ToString("hh\\:mm");
                     break;
                 case OutputType.Currency:
-                    text = ValuePrefix + ((decimal)For.ModelExplorer.Model).ToString("#,0.00 SEK");
+                    text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToString("#,0.00 SEK");
                     break;
                 case OutputType.MultilineText:
                     className += " line-break";

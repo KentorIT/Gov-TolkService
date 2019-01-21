@@ -129,6 +129,9 @@ namespace Tolk.Web.Controllers
                 model.FileGroupKey = groupKey;
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(request);
+                model.Outlay = null;
+                model.CarCompensation = null;
+                model.PerDiem = null;
                 return View(model);
             }
             return Forbid();
