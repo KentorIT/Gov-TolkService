@@ -49,7 +49,7 @@ namespace Tolk.Web.Controllers
                 return Json(new
                 {
                     success = false,
-                    ErrorMessage = $"Den totala storleken för filerna överstiger den tillåtna gränsen {_options.CombinedMaxSizeAttachments / 1024 / 1024} Mb"
+                    ErrorMessage = $"Den totala storleken på alla bifogade filer överstiger den tillåtna gränsen {_options.CombinedMaxSizeAttachments / 1024 / 1024} MB"
                 });
             }
             using (var trn = _dbContext.Database.BeginTransaction())

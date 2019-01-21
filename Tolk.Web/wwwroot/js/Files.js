@@ -58,7 +58,7 @@ $(function () {
                 $size += $files[i].size;
             }
             if ($size > $("#CombinedMaxSizeAttachments").val()) {
-                alert("Den gemensamma storleken på alla bifogade filer överstiger " + $("#CombinedMaxSizeAttachments").val() / 1024 / 1024 + "MB");
+                alert("Den totala storleken på alla bifogade filer överstiger den tillåtna gränsen " + parseInt($("#CombinedMaxSizeAttachments").val() / 1024 / 1024) + "MB");
                 return;
             }
             $.ajax({
