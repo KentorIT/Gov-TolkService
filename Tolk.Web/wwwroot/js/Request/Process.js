@@ -53,12 +53,6 @@ $(function () {
     });
 });
 
-function triggerValidator(message, validatorId) {
-    validatorId.empty();
-    validatorId.append(message);
-    validatorId.show();
-}
-
 $.fn.extend({
     openDialog: function () {
         $(this).find("input:not(:checkbox,:hidden),select, textarea").val("");

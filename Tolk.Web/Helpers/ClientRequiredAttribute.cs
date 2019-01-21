@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Tolk.Web.Helpers
 {
@@ -13,6 +11,8 @@ namespace Tolk.Web.Helpers
     {
         public void AddValidation(ClientModelValidationContext context)
         {
+            // Overriding required message manually, as it will default to built-in english messages otherwise
+            context.Attributes["data-val-required"] = ErrorMessage ?? string.Format(Resources.DataAnnotationValidationMessages.Required, context.ModelMetadata.DisplayName);
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
