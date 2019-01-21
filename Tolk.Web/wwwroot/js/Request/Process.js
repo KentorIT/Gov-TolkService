@@ -1,12 +1,5 @@
-function validateControls() {
-    if (checkTravelCost()) { $('#Accept').attr('disabled', false); }
-    else { $('#Accept').attr('disabled', true); }
-}
-
 $(function () {
     checkRequirements();
-
-    $('#ExpectedTravelCosts').change(function () { validateControls(); });
 
     $('#InterpreterId').change(function () {
         if ($(this).val() === "-1") {
@@ -59,19 +52,6 @@ $(function () {
         }
     });
 });
-
-function checkTravelCost() {
-    var travelCost = $('#ExpectedTravelCosts').val();
-
-    if (travelCost === "" || isNaN(travelCost) || (parseInt(travelCost) < 0 || parseInt(travelCost) > 100000)) {
-        triggerValidator("Värdet för förväntad resekostnad ska anges i SEK (finns ingen kostnad anges 0) <br \><br \>", $('#ExpectedTravelCosts-error'));
-        return false;
-    }
-    else {
-        $('#ExpectedTravelCosts-error').hide();
-        return true;
-    }
-}
 
 function triggerValidator(message, validatorId) {
     validatorId.empty();
