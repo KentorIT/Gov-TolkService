@@ -51,7 +51,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [DataType(DataType.MultilineText)]
-        [Display(Name = "Övrig uppdragsinformation", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Här kan du även ange kontaktuppgifter till person som tolken skall kontakta. Beakta eventuell sekretess avseende informationen.")]
+        [Display(Name = "Övrig information om uppdraget", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Här kan du även ange kontaktuppgifter till person som tolken skall kontakta. Beakta eventuell sekretess avseende informationen.")]
         [StringLength(1000)]
         public string Description { get; set; }
 
@@ -67,7 +67,7 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
 
-        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start - eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet ”Övrig uppdragsinformation” nedan.")]
+        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet &quotÖvrig information om uppdraget&quot nedan.")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 

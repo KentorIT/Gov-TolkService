@@ -17,11 +17,11 @@ namespace Tolk.BusinessLogic.Enums
         Dialect = 2,
 
         [CustomName("specified_interpreter")]
-        [Description("Specifik tolk")]
+        [Description("Tillsätt specifik tolk")]
         SpecifiedInterpreter = 3,
 
         [CustomName("denied_interpreter")]
-        [Description("Uteslut tolk")]
+        [Description("Tillsätt inte specifik tolk")]
         DeniedInterpreter = 4,
 
         [CustomName("interpreter_has_security_clearence")]
