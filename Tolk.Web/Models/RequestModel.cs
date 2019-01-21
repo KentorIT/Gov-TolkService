@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -110,6 +106,7 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
+        [Required]
         [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Uppgift om resekostnad måste anges. Finns inga reskostnader anges 0.")]
         [Range(0, 100000, ErrorMessage = "Kontrollera värdet för resekostnad (ange 0 om det inte finns någon kostnad)")]
         [DataType(DataType.Currency)]
