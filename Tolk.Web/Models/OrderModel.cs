@@ -121,10 +121,6 @@ namespace Tolk.Web.Models
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">2. </span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelSecond { get; set; }
 
-        [NoDisplayName]
-        [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">3. </span>")]
-        public CompetenceAndSpecialistLevel? RequestedCompetenceLevelThird { get; set; }
-
         [ClientRequired]
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt Påplats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett mail när bekräftelsen kommit.Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen. Förfrågan ser då likadan ut. Om bedömd resekostnad är 0 kr godkänns bekräftelsen automatiskt")]
         public TrueFalse? AllowMoreThanTwoHoursTravelTime { get; set; }
@@ -228,7 +224,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string InterpreterName { get; set; }
 
-        [Display(Name = "Tolkens kompetensnivå", Description = "- Om Kompetensnivå anges som Krav, kan max två alternativ anges. Förmedlingen måste tillsätta tolk med någon av dessa två.- Om Kompetensnivå anges som Önskemål, kan upp till tre alternativ anges och förmedlingen kan tillsätta tolk  enligt något av alternativen - Om inget Krav eller Önskemål anges skall förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå enligt kompetensprioritering i ramavtalet")]
+        [Display(Name = "Tolkens kompetensnivå", Description = "Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering.")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Display(Name = "Inställelsesätt enl. svar")]
@@ -332,10 +328,6 @@ namespace Tolk.Web.Models
                     if (RequestedCompetenceLevelSecond.HasValue)
                     {
                         list.Add(RequestedCompetenceLevelSecond.Value);
-                    }
-                    if (RequestedCompetenceLevelThird.HasValue)
-                    {
-                        list.Add(RequestedCompetenceLevelThird.Value);
                     }
                 }
 
@@ -460,7 +452,7 @@ namespace Tolk.Web.Models
                 }
                 else
                 {
-                    // Counting rank for cases where e.g. first option is undefined, but second and third are defined
+                    // Counting rank for cases where e.g. first option is undefined, but second is defined
                     int rank = 0;
                     if (RequestedCompetenceLevelFirst.HasValue)
                     {
@@ -475,14 +467,6 @@ namespace Tolk.Web.Models
                         order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                         {
                             CompetenceLevel = RequestedCompetenceLevelSecond.Value,
-                            Rank = ++rank
-                        });
-                    }
-                    if (RequestedCompetenceLevelThird.HasValue)
-                    {
-                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                        {
-                            CompetenceLevel = RequestedCompetenceLevelThird.Value,
                             Rank = ++rank
                         });
                     }
@@ -512,7 +496,6 @@ namespace Tolk.Web.Models
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
-            OrderCompetenceRequirement competenceThird = null;
             HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
@@ -531,7 +514,6 @@ namespace Tolk.Web.Models
                 competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
                 competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
                 competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-                competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
             }
 
             return new OrderModel
@@ -580,7 +562,6 @@ namespace Tolk.Web.Models
                 },
                 RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
-                RequestedCompetenceLevelThird = order.SpecificCompetenceLevelRequired ? null : competenceThird?.CompetenceLevel,
                 Status = order.Status,
                 RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
                 RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
@@ -635,7 +616,6 @@ namespace Tolk.Web.Models
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
-            OrderCompetenceRequirement competenceThird = null;
             HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
@@ -654,7 +634,6 @@ namespace Tolk.Web.Models
                 competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
                 competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
                 competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-                competenceThird = competenceRequirements.Count > 2 ? competenceRequirements[2] : null;
             }
 
             return new OrderModel
@@ -687,7 +666,6 @@ namespace Tolk.Web.Models
                 },
                 RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
-                RequestedCompetenceLevelThird = competenceThird?.CompetenceLevel,
                 RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
                 RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
                 RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,

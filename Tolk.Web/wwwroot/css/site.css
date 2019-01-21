@@ -256,8 +256,7 @@ select2.selection:active {
   margin: 0px;
 }
 #RequestedCompetenceLevelSecond,
-#RequestedCompetenceLevelFirst,
-#RequestedCompetenceLevelThird {
+#RequestedCompetenceLevelFirst {
   font-size: 12px;
   width: 200px;
   padding: 0px;
