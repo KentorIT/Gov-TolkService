@@ -115,7 +115,7 @@ INSERT #Languages (LanguageId, Name, ISO_639_Code, TellusName, Active)
 (104, 'Sanskrit', 'san', '', 1),
 (105, 'Sardiska', 'srd', '', 1),
 (106, 'Serbiska', 'srp', '', 1),
-(107, 'Serbo-croation', 'hbs', '', 1),
+(107, 'Serbokroatiska', 'hbs', '', 1),
 (108, 'Sesotho', 'sot', '', 1),
 (109, 'Setswana', 'tsn', '', 1),
 (110, 'Shona', 'sna', '', 1),
