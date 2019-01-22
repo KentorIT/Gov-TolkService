@@ -139,6 +139,7 @@ $(function () {
 
     $(".table-paging table").DataTable({
         searching: false,
+        order: [[0, 'desc']],
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }
