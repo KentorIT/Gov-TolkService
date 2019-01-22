@@ -9,10 +9,7 @@ $('#SessionStartedAt').change(function () { validateControls(); });
 
 function validateControls() {
     if (checkWasteTime() &&
-        checkTravelCosts($('#Outlay').val(), "Kontrollera värdet för utlägg (finns ingen kostnad anges 0) <br \><br \>", $('#outlayValidator')) &&
-        checkTravelCosts($('#CarCompensation').val(), "Kontrollera värdet för bilersättning (finns ingen kostnad anges 0) <br \><br \>", $('#carCompensationValidator')) &&
-        checkTravelCosts($('#PerDiem').val(), "Kontrollera värdet för traktamente (ange 0 om det inte ska erhållas något traktamente) <br \><br \>", $('#perDiemValidator')) &&
-        checkSessionEndedAt()) { $('#create').attr('disabled', false); }
+         checkSessionEndedAt()) { $('#create').attr('disabled', false); }
     else { $('#create').attr('disabled', true); }
 }
 
@@ -38,17 +35,6 @@ function checkWasteTime() {
             $('#wasteTimeValidator').hide();
             return true;
         }
-    }
-}
-
-function checkTravelCosts(cost, message, validatorId) {
-    if (cost === "" || isNaN(cost) || (parseInt(cost) < 0 || parseInt(cost) > 100000)) {
-        triggerValidator(message, validatorId);
-        return false;
-    }
-    else {
-        validatorId.hide();
-        return true;
     }
 }
 
