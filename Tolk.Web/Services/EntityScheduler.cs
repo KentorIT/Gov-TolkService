@@ -20,15 +20,17 @@ namespace Tolk.Web.Services
             _logger = logger;
             _clock = clock;
 
-            if (_clock.SwedenNow.Hour < 5)
-            {
-                // Next Remind is today
-                nextRemind = _clock.SwedenNow.Date.AddHours(5);
-            }
-            else
+            DateTimeOffset now = _clock.SwedenNow;
+            now -= now.TimeOfDay;
+
+            nextRemind = now - now.TimeOfDay;
+            nextRemind = nextRemind.AddHours(5);
+
+            if (_clock.SwedenNow.Hour > 5)
+
             {
                 // Next remind is tomorrow
-                nextRemind = _clock.SwedenNow.AddDays(1).Date.AddHours(5);
+                nextRemind = nextRemind.AddDays(1);
             }
 
             _logger.LogDebug("Created EntityScheduler instance");
@@ -62,7 +64,7 @@ namespace Tolk.Web.Services
                     }
                     else if (_clock.SwedenNow > nextRemind)
                     {
-                        nextRemind = _clock.SwedenNow.AddDays(1).Date.AddHours(5);
+                        nextRemind = nextRemind.AddDays(1);
                         tasksToRun = new Task[]
                         {
                             serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
