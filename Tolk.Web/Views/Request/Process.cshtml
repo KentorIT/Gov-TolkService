@@ -75,13 +75,14 @@
                 </div>
             }
             <input asp-for="Status" type="hidden" />
-            @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowMoreThanTwoHoursTravelTime == TrueFalse.Yes)
+            @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) 
+                && EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes)
             {
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
                 <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
                 <form-entry asp-for="ExpectedTravelCosts" />
             }
-            else if (Model.OrderModel.AllowMoreThanTwoHoursTravelTime == TrueFalse.Yes)
+            else if (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes)
             {
                 // If it is set to Offsite it is not needed at all
                 // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite

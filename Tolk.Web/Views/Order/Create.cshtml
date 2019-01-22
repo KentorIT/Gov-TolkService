@@ -112,7 +112,8 @@
                             </div>
 
                             <div class="col-sm-12">
-                                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" type="radio-group" asp-items="SelectListService.BoolList" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
+                                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" asp-items="SelectListService.BoolList" checked-index="none" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
+                                <div id="AllowMoreThanTwoHoursTravelTimeValidator" class="d-none text-danger body"></div>
                             </div>
                             <div class="col-sm-8 important-info allow-more-travel-time-information">
                                 Förmedlingen ska ange bedömd resekostnad som du måste godkänna innan tolk kan tillsättas.
