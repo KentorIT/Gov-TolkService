@@ -36,7 +36,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
         private readonly LoginLinkTokenProvider _loginLinkTokenProvider;
-        private readonly NotificationService  _notificationService;
+        private readonly NotificationService _notificationService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -50,7 +50,7 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
             LoginLinkTokenProvider loginLinkTokenProvider,
-            NotificationService notificationService) 
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -201,7 +201,7 @@ namespace Tolk.Web.Controllers
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
-            
+
             var bodyPlain =
 $@"Återställning av lösenord för {Constants.SystemName}
 
@@ -338,17 +338,24 @@ supporten på {_options.SupportEmail}.</div>
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
                         model.Email);
-                    // Don't reveal that the user does not exist or is not confirmed
+                    // Don't reveal that the user does not exist
                     return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
-                if (!(await _userManager.IsEmailConfirmedAsync(user)))
+                if (!await _userManager.IsEmailConfirmedAsync(user))
                 {
                     _logger.LogInformation("Cannot reset password for {email}/{userId}, because email is not verified.",
                         user.Email, user.Id);
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    //Send new invite if email is not confirmed and user is active and not apiUser (user has lost invite email)
+                    if (user.IsActive && !user.IsApiUser && !user.LastLoginAt.HasValue)
+                    {
+                        return await ConfirmAccount(new ConfirmAccountModel { UserId = user.Id.ToString() });
+                    }
+                    // Don't reveal that user is not allowed to get password link
+                    else
+                    {
+                        return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    }
                 }
-
                 return await SendPasswordResetLink(user);
             }
 
@@ -641,7 +648,7 @@ supporten på {_options.SupportEmail}.</div>
                 NameFirst = user.NameFirst,
                 NameFamily = user.NameFamily,
                 PhoneCellphone = user.PhoneNumberCellphone,
-                PhoneWork = user.PhoneNumber, 
+                PhoneWork = user.PhoneNumber,
             });
         }
 
