@@ -28,7 +28,6 @@ namespace Tolk.BusinessLogic.Entities
             CreatedAt = creationTime;
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
-            InterpreterLocation = originalRequest.InterpreterLocation;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
