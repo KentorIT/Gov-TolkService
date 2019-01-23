@@ -264,7 +264,7 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public bool AllowDenial => EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes;
+        public bool AllowDenial => AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
 
         public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
 
@@ -385,7 +385,7 @@ namespace Tolk.Web.Models
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
-                order.AllowMoreThanTwoHoursTravelTime = EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes;
+                order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
                 {

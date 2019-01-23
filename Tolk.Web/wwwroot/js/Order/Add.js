@@ -367,11 +367,8 @@ $(function () {
         var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
         var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
         var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
-        if (Number(startHour) > endHour) {
-            return false;
-        }
-        else if (Number(startHour) === endHour) {
-            return endMinute > Number(startMinute);
+        if (Number(startHour) === endHour) {
+            return endMinute !== Number(startMinute);
         }
         return true;
     };
