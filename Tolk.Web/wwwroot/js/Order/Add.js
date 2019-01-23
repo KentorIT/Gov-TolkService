@@ -377,11 +377,11 @@ $(function () {
     };
 
     var validateAllowMoreThanTwoHoursTravelTime = function () {
-        var checked = $("[id^=AllowMoreThanTwoHoursTravelTime_]").filter(":checked")[0];
-        if (checked !== undefined) {
+        if ($("#AllowMoreThanTwoHoursTravelTime").is(":hidden")) {
             return true;
         }
-        return false;
+        var checked = $("[id^=AllowMoreThanTwoHoursTravelTime_]").filter(":checked")[0];
+        return checked !== undefined;
     };
 
     var $this = $(".wizard");
