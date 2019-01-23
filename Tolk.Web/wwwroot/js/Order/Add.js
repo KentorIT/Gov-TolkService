@@ -362,7 +362,7 @@ $(function () {
         return true;
     };
 
-    var validateStartTimeBeforeEndTime = function () {
+    var validateStartTimeAndEndTime = function () {
         var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
         var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
         var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
@@ -399,8 +399,8 @@ $(function () {
                 validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en starttid som redan har passerats, var god ändra detta.");
                 errors++;
             }
-            if (!validateStartTimeBeforeEndTime()) {
-                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en sluttid som ligger före starttid, var god ändra detta.");
+            if (!validateStartTimeAndEndTime()) {
+                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdragets start- och sluttid har samma värde, var god ändra detta.");
                 errors++;
             }
             if (!validateLastAnswerBy()) {
