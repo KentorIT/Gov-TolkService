@@ -23,7 +23,13 @@
         }
     </div>
     <div class="col-sm-3">
-        <display-entry asp-for="AssignmentType" />
+        @{string location = string.Empty;
+            if (Model.InterpreterLocationAnswer != 0)
+            {
+                location = " - " + Tolk.BusinessLogic.Utilities.EnumHelper.GetDescription(Model.InterpreterLocationAnswer);
+            }
+        }
+        <display-entry asp-for="AssignmentType" text-append="@location" />
     </div>
     <div class="col-sm-3">
         <display-entry asp-for="OrderNumber" />

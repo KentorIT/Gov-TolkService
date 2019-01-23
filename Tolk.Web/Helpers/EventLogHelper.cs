@@ -25,6 +25,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = order.ReplacingOrder != null ? $"Ersättningsuppdrag skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Bokningsförfrågan skapad",
                     Actor = order.CreatedByUser.FullName,
                     Organization = customerName,
+                    ActorContactInfo = GetContactinfo(order.CreatedByUser),
                 }
             };
             // Add all request logs (including their requisition and complaint logs)
@@ -44,6 +45,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Bokning ersatt av {order.ReplacedByOrder.OrderNumber}",
                     Actor = order.ReplacedByOrder.CreatedByUser.FullName,
                     Organization = customerName,
+                    ActorContactInfo = GetContactinfo(order.ReplacedByOrder.CreatedByUser),
                 });
             }
             // Change of contact person  
@@ -72,7 +74,8 @@ namespace Tolk.Web.Helpers
                             Timestamp = cph.ChangedAt,
                             EventDetails = $"Kontaktperson {cph.PreviousContactPersonUser?.FullName} borttagen",
                             Actor = cph.ChangedByUser.FullName,
-                            Organization = customerName
+                            Organization = customerName,
+                            ActorContactInfo = GetContactinfo(cph.ChangedByUser),
                         });
                         //find if removed or changed (if removed we don't add a row else add row for new contact)
                         EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
@@ -110,6 +113,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Bekräftat bokningsförfrågan avslutad",
                     Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
                     Organization = customerName,
+                    ActorContactInfo = GetContactinfo(order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser),
                 });
             }
             return eventLog;
@@ -124,7 +128,8 @@ namespace Tolk.Web.Helpers
                 Timestamp = cphPrevious.ChangedAt,
                 EventDetails = $"Kontaktperson {newContactPersonName} tillagd",
                 Actor = cphPrevious.ChangedByUser.FullName,
-                Organization = order.CustomerOrganisation.Name
+                Organization = order.CustomerOrganisation.Name,
+                ActorContactInfo = GetContactinfo(cphPrevious.ChangedByUser),
             };
         }
 
@@ -158,6 +163,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Förfrågan mottagen",
                     Actor = request.ReceivedByUser.FullName,
                     Organization = request.ReceivedByUser.Broker.Name,
+                    ActorContactInfo = GetContactinfo(request.ReceivedByUser),
                 });
             }
             // Request expired
@@ -181,6 +187,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = $"Förfrågan nekad av förmedling",
                         Actor = request.AnsweringUser.FullName,
                         Organization = request.AnsweringUser.Broker.Name,
+                        ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
                 else if (!request.ReplacingRequestId.HasValue)
@@ -191,6 +198,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = $"Tolk tillsatt av förmedling",
                         Actor = request.AnsweringUser.FullName,
                         Organization = request.AnsweringUser.Broker.Name,
+                        ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
             }
@@ -205,6 +213,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = $"Tillsättning avböjd av myndighet",
                         Actor = request.ProcessingUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(request.ProcessingUser),
                     });
                     if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
                     {
@@ -214,6 +223,7 @@ namespace Tolk.Web.Helpers
                             EventDetails = $"Avböjande bekräftat",
                             Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser.FullName,
                             Organization = request.AnsweringUser.Broker.Name,
+                            ActorContactInfo = GetContactinfo(request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser),
                         });
                     }
                 }
@@ -230,6 +240,7 @@ namespace Tolk.Web.Helpers
                                 EventDetails = $"Tolkbyte godkänt av myndighet",
                                 Actor = request.ProcessingUser.FullName,
                                 Organization = customerName,
+                                ActorContactInfo = GetContactinfo(request.ProcessingUser),
                             });
                         }
                         else
@@ -251,6 +262,7 @@ namespace Tolk.Web.Helpers
                             EventDetails = $"Tillsättning godkänd av myndighet",
                             Actor = request.ProcessingUser.FullName,
                             Organization = customerName,
+                            ActorContactInfo = GetContactinfo(request.ProcessingUser),
                         });
                     }
                 }
@@ -276,6 +288,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Uppdrag avbokat av myndighet",
                         Actor = request.CancelledByUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });
                 }
                 else if (request.Status == RequestStatus.CancelledByBroker)
@@ -286,6 +299,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });
                 }
             }
@@ -299,6 +313,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Avbokning bekräftad av förmedling",
                     Actor = rsc.ConfirmedByUser.FullName,
                     Organization = request.Ranking.Broker.Name,
+                    ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
                 });
             }
             else if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))
@@ -310,6 +325,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Avbokning bekräftad av myndighet",
                     Actor = rsc.ConfirmedByUser.FullName,
                     Organization = customerName,
+                    ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
                 });
             }
             // Interpreter replacement
@@ -321,6 +337,7 @@ namespace Tolk.Web.Helpers
                     EventDetails = $"Tolk {request.Interpreter?.FullName} är ersatt av tolk {request.ReplacedByRequest.Interpreter?.FullName}",
                     Actor = request.ReplacedByRequest.AnsweringUser.FullName,
                     Organization = request.ReplacedByRequest.AnsweringUser.Broker.Name,
+                    ActorContactInfo = GetContactinfo(request.ReplacedByRequest.AnsweringUser),
                 });
             }
             // Add all requisition logs
@@ -361,6 +378,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Rekvisition registrerad",
                         Actor = requisition.CreatedByUser.FullName,
                         Organization = requisition.CreatedByUser.Broker?.Name, //interpreter has no org.
+                        ActorContactInfo = GetContactinfo(requisition.CreatedByUser),
                     };
                 }
                 // Requisition processing
@@ -374,6 +392,7 @@ namespace Tolk.Web.Helpers
                             EventDetails = "Rekvisition godkänd",
                             Actor = requisition.ProcessedUser.FullName,
                             Organization = customerName,
+                            ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
                         };
                     }
                     else if (requisition.Status == RequisitionStatus.DeniedByCustomer)
@@ -384,6 +403,7 @@ namespace Tolk.Web.Helpers
                             EventDetails = "Rekvisition underkänd",
                             Actor = requisition.ProcessedUser.FullName,
                             Organization = customerName,
+                            ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
                         };
                     }
                 }
@@ -401,7 +421,8 @@ namespace Tolk.Web.Helpers
                     EventDetails = "Reklamation registrerad",
                     Actor = complaint.CreatedByUser.FullName,
                     Organization = customerName,
-                }
+                    ActorContactInfo = GetContactinfo(complaint.CreatedByUser)
+,                }
             };
             // Complaint answer
             if (complaint.AnsweredAt.HasValue)
@@ -414,6 +435,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation accepterad av förmedling",
                         Actor = complaint.AnsweringUser.FullName,
                         Organization = complaint.AnsweringUser.Broker.Name,
+                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
                     });
                 }
                 else
@@ -424,6 +446,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation är bestriden av förmedling",
                         Actor = complaint.AnsweringUser.FullName,
                         Organization = complaint.AnsweringUser.Broker.Name,
+                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
                     });
                 }
             }
@@ -438,6 +461,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation är återtagen av myndighet",
                         Actor = complaint.AnswerDisputingUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
                     });
                 }
                 else
@@ -448,6 +472,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation kvarstår, avvaktar extern process",
                         Actor = complaint.AnswerDisputingUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
                     });
                 }
             }
@@ -462,6 +487,7 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation avslutad, bistådd av extern process",
                         Actor = complaint.TerminatingUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
                     });
                 }
                 else
@@ -472,10 +498,31 @@ namespace Tolk.Web.Helpers
                         EventDetails = "Reklamation avslutad, avslagen av extern process",
                         Actor = complaint.TerminatingUser.FullName,
                         Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
                     });
                 }
             }
             return eventLog;
+        }
+
+        private static string GetContactinfo(AspNetUser user)
+        {
+            string contactInfo = string.Empty;
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                contactInfo += $"Email: {user.Email}\n";
+            }
+
+            if (!string.IsNullOrEmpty(user.PhoneNumber))
+            {
+                contactInfo += $"Telefon: {user.PhoneNumber}\n";
+            }
+
+            if (!string.IsNullOrEmpty(user.PhoneNumberCellphone))
+            {
+                contactInfo += $"Mobil: {user.PhoneNumberCellphone}\n";
+            }
+            return contactInfo;
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Rekvisition registrerad av")]
         [DataType(DataType.MultilineText)]
         public string RequisitionCreatedBy { get; set; }
-
+                          
         [Display(Name = "Förväntad resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
@@ -131,6 +131,9 @@ namespace Tolk.Web.Models
 
         public bool RequestOrReplacingOrderPricesAreUsed { get; set; }
 
+        [Display(Name = "Inställelsesätt", Description = "Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken.")]
+        public InterpreterLocation? InterpreterLocation { get; set; }
+
         #region methods
 
         public static RequisitionModel GetModelFromRequest(Request request)
@@ -153,6 +156,7 @@ namespace Tolk.Web.Models
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,
                 PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue)),
+                InterpreterLocation = (InterpreterLocation)request.InterpreterLocation
             };
         }
 

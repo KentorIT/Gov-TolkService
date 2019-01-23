@@ -26,6 +26,7 @@ namespace Tolk.Web.TagHelpers
         private const string LabelOverrideattributeName = "label-override";
         private const string ValuePrefixAttributeName = "asp-value-prefix";
         private const string EmptyAttributeName = "asp-empty";
+        private const string TextAppendAttributeName = "text-append";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -38,6 +39,9 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName(EmptyAttributeName)]
         public string Empty { get; set; } = "-";
+
+        [HtmlAttributeName(TextAppendAttributeName)]
+        public string TextAppend { get; set; } = string.Empty;
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -120,7 +124,7 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + (time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter");
                     break;
                 case OutputType.RadioButtonGroup:
-                    text = ValuePrefix + ((RadioButtonGroup) For.ModelExplorer.Model).SelectedItem.Text;
+                    text = ValuePrefix + ((RadioButtonGroup)For.ModelExplorer.Model).SelectedItem.Text;
                     break;
                 case OutputType.CheckboxGroup:
                     className += " line-break";
@@ -137,6 +141,9 @@ namespace Tolk.Web.TagHelpers
                 className += " no-value-info";
                 text = Empty;
             }
+
+            text += TextAppend;
+
             writer.WriteLine($"<div class=\"{className}\">{text}</div>");
         }
 
@@ -163,12 +170,12 @@ namespace Tolk.Web.TagHelpers
             {
                 return OutputType.MultilineText;
             }
-            if (For.ModelExplorer.ModelType == typeof(TimeSpan) 
+            if (For.ModelExplorer.ModelType == typeof(TimeSpan)
                 || For.ModelExplorer.ModelType == typeof(TimeSpan?))
             {
                 return OutputType.TimeSpan;
             }
-            if(For.ModelExplorer.ModelType == typeof(TimeRange))
+            if (For.ModelExplorer.ModelType == typeof(TimeRange))
             {
                 return OutputType.TimeRange;
             }
