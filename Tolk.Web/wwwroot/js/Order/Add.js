@@ -246,10 +246,9 @@ $(function () {
             $(".allow-more-travel-time").show();
         }
         else {
-            $("input[name=AllowMoreThanTwoHoursTravelTime]").prop("checked", false);
             $(".allow-more-travel-time").hide();
             $(".allow-more-travel-time-information").hide();
-       }
+        }
     });
 
     $("body").on("click", ".wizard-forward-button", function () {
@@ -368,37 +367,51 @@ $(function () {
         var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
         var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
         var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
-        if (Number(startHour) > endHour) {
-            return false;
-        }
-        else if (Number(startHour) === endHour) {
-            return endMinute > Number(startMinute);
+        if (Number(startHour) === endHour) {
+            return endMinute !== Number(startMinute);
         }
         return true;
+    };
+
+    var validateAllowMoreThanTwoHoursTravelTime = function () {
+        if ($("#AllowMoreThanTwoHoursTravelTime").is(":hidden")) {
+            return true;
+        }
+        var checked = $("[id^=AllowMoreThanTwoHoursTravelTime_]").filter(":checked")[0];
+        return checked !== undefined;
     };
 
     var $this = $(".wizard");
     $this.tolkWizard({
         nextHandler: function (event) {
+            var errors = 0;
+            $("[data-valmsg-for]").empty();
             if (!LastAnswerByIsShowing) {
                 $("#LatestAnswerBy_Date").val("");
                 $("#LatestAnswerBy_Hour").select2("val", "");
                 $("#LatestAnswerBy_Minute").select2("val", "");
             }
+            if (!validateAllowMoreThanTwoHoursTravelTime()) {
+                validatorMessage("AllowMoreThanTwoHoursTravelTime", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
+                errors++;
+            }
             if (!validateStartTime()) {
-                alert("Uppdraget har en starttid som redan har passerats, var god ändra detta.");
-                return false;
+                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en starttid som redan har passerats, var god ändra detta.");
+                errors++;
             }
             if (!validateStartTimeBeforeEndTime()) {
-                alert("Uppdraget har en sluttid som ligger före starttid, var god ändra detta.");
-                return false;
+                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en sluttid som ligger före starttid, var god ändra detta.");
+                errors++;
             }
             if (!validateLastAnswerBy()) {
-                alert("Sista svarstid har redan passerats, var god ändra detta.");
-                return false;
+                validatorMessage("LatestAnswerBy.Date", "Sista svarstid har redan passerats, var god ändra detta.");
+                errors++;
             }
             if (!validateLastAnswerByAgainstStartTime()) {
-                alert("Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
+                validatorMessage("LatestAnswerBy.Date", "Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
+                errors++;
+            }
+            if (errors !== 0) {
                 return false;
             }
             var $form = $this.closest('form');
@@ -434,3 +447,10 @@ $(function () {
         }
     });
 });
+
+function validatorMessage(forName, message) {
+    var validatorQuery = "[data-valmsg-for=\"" + forName + "\"]";
+    $(validatorQuery).empty();
+    $(validatorQuery).append(message);
+    $(validatorQuery).show();
+}

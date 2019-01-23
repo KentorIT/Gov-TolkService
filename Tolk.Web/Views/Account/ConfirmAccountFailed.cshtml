@@ -1,24 +1,37 @@
 ﻿@model ConfirmAccountModel
 @{
-    ViewData["Title"] = "Kontoverifiering misslyckades";
+    ViewData["Title"] = "Aktivering av konto misslyckades";
 }
-
 <div class="row">
-    <div class="col-md-12">
-        <h2>@ViewData["Title"]</h2>
-
-        <p>
-            Ditt konto kunde inte skapas. Det kan bero på att
-            din verifieringskod gått ut. Du kan i så fall genom att skicka efter en ny som
+    <div class="col-md-4 login-page page-shadow">
+        <h2 class="padding-bottom-30px text-align-center">@ViewData["Title"]</h2>
+        <p class="padding-bottom-30px">
+            Ditt konto kunde inte aktiveras. Det kan bero på att
+            din verifieringskod har gått ut. Du kan i så fall skicka efter en ny som
             är giltig i 24 timmar.
         </p>
-
-        <form asp-action="ConfirmAccount" method="post" class="do-not-check-dirty">
-            <input type="hidden" asp-for="UserId" />
-            <button class="btn btn-success" type="submit">Begär verifieringskod</button>
-        </form>
+        <div class="row">
+            <div class="row padding-bottom-30px">
+                <div class="col-xs-12 text-align-center">
+                    <form asp-action="ConfirmAccount" method="post" class="do-not-check-dirty">
+                        <input type="hidden" asp-for="UserId" />
+                        <button class="btn btn-success btn-large" type="submit">Begär verifieringskod</button>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-align-center">
+                    Har du redan ett konto?<br />
+                    Gå vidare till <a asp-action="Login">Logga in <span class="glyphicon glyphicon-triangle-right"></span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 welcome-info">
+        @await Html.PartialAsync("_AppInfo")
     </div>
 </div>
+
 
 
 

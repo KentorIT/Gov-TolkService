@@ -65,6 +65,9 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("id-override")]
         public string IdOverride { get; set; }
 
+        [HtmlAttributeName("checked-index")]
+        public string CheckedIndex { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -817,6 +820,9 @@ namespace Tolk.Web.TagHelpers
         {
             bool isRow = LayoutOption == "row";
             var id = IdOverride ?? For.Name;
+            int? ci = CheckedIndex == null ? 0 
+                : CheckedIndex == "none" ? (int?)null 
+                : int.Parse(CheckedIndex);
 
             writer.WriteLine($"<div id=\"{id}\">");
 
@@ -825,7 +831,7 @@ namespace Tolk.Web.TagHelpers
             {
                 var item = itArr[i];
                 var itemName = $"{id}_{i}";
-                bool isChecked = i == 0; // Auto-check the first item
+                bool isChecked = CheckedIndex == "none" ? false : i == ci;
                 var checkedAttr = isChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
                 var inputElem = $"<input id=\"{itemName}\" name=\"{For.Name}\" type=\"radio\" value=\"{item.Value}\" {checkedAttr}/>";
