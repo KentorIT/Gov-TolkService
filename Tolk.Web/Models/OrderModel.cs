@@ -287,6 +287,10 @@ namespace Tolk.Web.Models
 
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
+        public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
+            || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
+            || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
+
         public EventLogModel EventLog { get; set; }
 
         private string DialectDescription
@@ -385,7 +389,7 @@ namespace Tolk.Web.Models
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
-                order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
+                order.AllowMoreThanTwoHoursTravelTime = HasOnsiteLocation && AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
                 {
