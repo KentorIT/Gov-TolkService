@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,16 +15,19 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
         private readonly NotificationService _notificationService;
+        private readonly ILogger<RequisitionService> _logger;
 
         public RequisitionService(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            NotificationService notificationService
+            NotificationService notificationService,
+            ILogger<RequisitionService> logger
             )
         {
             _dbContext = dbContext;
             _clock = clock;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public Requisition Create(Request request, int userId, int? impersonatorId, string message, PriceInformation priceInformation, bool useRequestRows, 
@@ -64,6 +68,7 @@ namespace Tolk.BusinessLogic.Services
                     _dbContext.SaveChanges();
                 }
                 transaction.Commit();
+                _logger.LogDebug($"Created requisition {requisition.RequisitionId} for request {request.RequestId}");
                 _notificationService.RequisitionCreated(requisition);
                 return requisition;
             }
@@ -73,6 +78,7 @@ namespace Tolk.BusinessLogic.Services
         {
             requisition.Approve(_clock.SwedenNow, userId, impersonatorId);
             _dbContext.SaveChanges();
+            _logger.LogDebug($"Approved requisition {requisition.RequisitionId}");
             _notificationService.RequisitionApproved(requisition);
         }
 
@@ -80,6 +86,7 @@ namespace Tolk.BusinessLogic.Services
         {
             requisition.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             _dbContext.SaveChanges();
+            _logger.LogDebug($"Denied requisition {requisition.RequisitionId}");
             _notificationService.RequisitionDenied(requisition);
         }
     }
