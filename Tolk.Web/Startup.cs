@@ -130,7 +130,12 @@ namespace Tolk.Web
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            dbContext.Database.Migrate();
+            var autoMigrate = Configuration.GetSection("Database")["AutoMigrateOnStartup"];
+
+            if (autoMigrate != null && bool.Parse(autoMigrate))
+            {
+                dbContext.Database.Migrate();
+            }
 
             if (!roleManager.RoleExistsAsync(Roles.Admin).Result)
             {
