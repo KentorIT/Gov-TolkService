@@ -164,7 +164,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> Organizations
+        public IEnumerable<SelectListItem> Organisations
         {
             get
             {
@@ -194,7 +194,21 @@ namespace Tolk.Web.Services
                 return items;
             }
         }
-        public IEnumerable<SelectListItem> CustomerOrganizations
+
+        public IEnumerable<SelectListItem> SubOrganisations(int parentOrganisationId)
+        {
+            return _dbContext.CustomerOrganisations
+                .Where(co => co.CustomerOrganisationId == parentOrganisationId || co.ParentCustomerOrganisationId == parentOrganisationId)
+                .OrderBy(c => c.ParentCustomerOrganisationId).ThenBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Text = c.Name,
+                        Value = c.CustomerOrganisationId.ToString(),
+                    })
+                .ToList().AsReadOnly();
+        }
+
+        public IEnumerable<SelectListItem> CustomerOrganisations
         {
             get
             {

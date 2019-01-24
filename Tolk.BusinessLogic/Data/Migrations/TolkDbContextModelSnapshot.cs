@@ -410,11 +410,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(20);
+                        .HasMaxLength(100);
+
+                    b.Property<int?>("ParentCustomerOrganisationId");
 
                     b.Property<int>("PriceListType");
 
                     b.HasKey("CustomerOrganisationId");
+
+                    b.HasIndex("ParentCustomerOrganisationId");
 
                     b.ToTable("CustomerOrganisations");
                 });
@@ -1509,6 +1513,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
+                        .WithMany("SubCustomerOrganisations")
+                        .HasForeignKey("ParentCustomerOrganisationId");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
@@ -1867,7 +1878,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("UpdatedByUserId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
-                        .WithMany()
+                        .WithMany("AuditLogEntries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

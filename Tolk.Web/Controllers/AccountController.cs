@@ -582,24 +582,49 @@ supporten på {_options.SupportEmail}.</div>
                 {
                     var domain = model.Email.Split('@')[1];
 
-                    var organization = await _dbContext.CustomerOrganisations
-                        .SingleOrDefaultAsync(o => o.EmailDomain == domain);
+                    var organisation = await _dbContext.CustomerOrganisations
+                        .Include(c => c.SubCustomerOrganisations)
+                        .SingleOrDefaultAsync(c => c.EmailDomain == domain);
 
-                    if (organization != null)
+                    if (organisation != null)
                     {
-                        var user = new AspNetUser(model.Email, organization);
-                        var result = await _userManager.CreateAsync(user);
-
-                        if (result.Succeeded)
+                        //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
+                        if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                         {
-                            await _userService.SendInviteAsync(user);
-                            await _userService.LogCreateAsync(user.Id);
-
-                            trn.Commit();
-                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                            model.ParentOrganisationId = organisation.CustomerOrganisationId;
+                            ModelState.AddModelError(string.Empty, $"Mejldomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan.");
+                            return View(model);
                         }
-                        AddErrors(result);
-                        return View(model);
+                        else
+                        {
+                            //check if user has changed parent domain to another valid parent domain
+                            if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
+                            {
+                                var selectedOrganisationId = int.Parse(model.OrganisationIdentifier);
+                                organisation = await _dbContext.CustomerOrganisations
+                                    .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId) 
+                                    || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
+                                    .SingleOrDefaultAsync();
+                                if (organisation == null)
+                                {
+                                    ModelState.AddModelError(string.Empty, $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
+                                    return View(model);
+                                }
+                            }
+                            var user = new AspNetUser(model.Email, organisation);
+                            var result = await _userManager.CreateAsync(user);
+
+                            if (result.Succeeded)
+                            {
+                                await _userService.SendInviteAsync(user);
+                                await _userService.LogCreateAsync(user.Id);
+
+                                trn.Commit();
+                                return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                            }
+                            AddErrors(result);
+                            return View(model);
+                        }
                     }
 
                     var broker = await _dbContext.Brokers
@@ -621,12 +646,10 @@ supporten på {_options.SupportEmail}.</div>
                         AddErrors(result);
                         return View(model);
                     }
-
                     ModelState.AddModelError(nameof(model.Email),
-                        $"Maildomänen {domain} är inte registrerad på någon organisation i tjänsten.");
+                        $"Mejldomänen {domain} är inte registrerad på någon organisation i tjänsten.");
                 }
             }
-
             return View(model);
         }
 
