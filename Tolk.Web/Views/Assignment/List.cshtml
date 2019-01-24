@@ -15,7 +15,7 @@
                 <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
-                            <th>BokningsID</th>
+                            <th class="defaultSortDesc">BokningsID</th>
                             <th>Status</th>
                             <th>Språk</th>
                             <th>Datum för uppdrag</th>
@@ -26,14 +26,14 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                        <tr data-id="@item.RequestId" data-click-action-url="@Url.Action(item.Action, new { id = item.RequestId })">
-                            <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
-                            <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                            <td class="gray-border-bottom">@item.Language</td>
-                            <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
-                            <td class="gray-border-bottom">@item.RegionName</td>
-                            <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
-                        </tr>
+                            <tr data-id="@item.RequestId" data-click-action-url="@Url.Action(item.Action, new { id = item.RequestId })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                                <td class="gray-border-bottom">@item.Language</td>
+                                <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                <td class="gray-border-bottom">@item.RegionName</td>
+                                <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

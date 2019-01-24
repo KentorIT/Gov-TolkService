@@ -12,10 +12,10 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-paging table-datatable">
-                <table class="table table-hover clickable-rows-with-action search-table">
+                <table class="table table-hover clickable-rows-with-action search-table table-order-col0-desc">
                     <thead>
                         <tr>
-                            <th>BokningsID</th>
+                            <th class="defaultSortDesc">BokningsID</th>
                             <th>Status</th>
                             <th>Språk</th>
                             <th>Datum för uppdrag</th>
@@ -30,23 +30,23 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                        <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
-                            <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
-                            <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                            <td class="gray-border-bottom">@item.Language</td>
-                            <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
-                            <td class="gray-border-bottom">@item.RegionName</td>
+                            <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                                <td class="gray-border-bottom">@item.Language</td>
+                                <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                <td class="gray-border-bottom">@item.RegionName</td>
 
-                            @if (Model.FilterModel.IsSuperUser)
-                            {
-                                <td class="gray-border-bottom">@item.BrokerName</td>
-                                <td class="gray-border-bottom gray-border-right">@item.CreatorName</td>
-                            }
-                            else
-                            {
-                                <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
-                            }
-                        </tr>
+                                @if (Model.FilterModel.IsSuperUser)
+                                {
+                                    <td class="gray-border-bottom">@item.BrokerName</td>
+                                    <td class="gray-border-bottom gray-border-right">@item.CreatorName</td>
+                                }
+                                else
+                                {
+                                    <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                }
+                            </tr>
                         }
                     </tbody>
                 </table>

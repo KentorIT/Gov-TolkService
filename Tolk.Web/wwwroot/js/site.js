@@ -139,7 +139,7 @@ $(function () {
 
     $(".table-paging table").DataTable({
         searching: false,
-        order: [[0, 'desc']],
+        order: [[$('th.defaultSortDesc').index(), 'desc']],
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }
@@ -153,7 +153,7 @@ $(function () {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }
     });
-
+     
     $("select").each(function () {
         var allowClear = $(this).parents().hasClass("allow-clear");
         $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });
