@@ -24,13 +24,15 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
         private readonly NotificationService _notificationService;
+        private readonly ComplaintService _complaintService;
 
         public ComplaintController(
             TolkDbContext dbContext,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
             ILogger<ComplaintController> logger,
-            NotificationService notificationService
+            NotificationService notificationService,
+            ComplaintService complaintService
             )
         {
             _dbContext = dbContext;
@@ -38,6 +40,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _logger = logger;
             _notificationService = notificationService;
+            _complaintService = complaintService;
         }
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)
@@ -84,22 +87,7 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.RequestId == model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
                 {
-                    var complaint = new Complaint
-                    {
-                        RequestId = model.RequestId,
-                        ComplaintType = model.ComplaintType.Value,
-                        ComplaintMessage = model.Message,
-                        Status = ComplaintStatus.Created,
-                        CreatedAt = _clock.SwedenNow,
-                        CreatedBy = User.GetUserId(),
-                        ImpersonatingCreatedBy = User.TryGetImpersonatorId()
-                    };
-                    request.CreateComplaint(complaint);
-                    _dbContext.SaveChanges();
-                    _notificationService.ComplaintCreated(complaint);
-                    var user = _dbContext.Users
-                        .Include(u => u.CustomerOrganisation)
-                        .Single(u => u.Id == complaint.CreatedBy);
+                    var complaint = _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
                 return Forbid();
@@ -164,8 +152,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), null, ComplaintStatus.Confirmed);
-                    _dbContext.SaveChanges();
+                    _complaintService.Accept(complaint, User.GetUserId(), User.TryGetImpersonatorId(), null);
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();
@@ -182,9 +169,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    complaint.Answer(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage, ComplaintStatus.Disputed);
-                    _dbContext.SaveChanges();
-                    _notificationService.ComplaintDisputed(complaint);
+                    _complaintService.Dispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage);
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();
@@ -199,7 +184,12 @@ namespace Tolk.Web.Controllers
             var complaint = GetComplaint(model.ComplaintId);
             if (ModelState.IsValid)
             {
-                return await AnswerDispute(model, ComplaintStatus.TerminatedAsDisputeAccepted);
+                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                {
+                    _complaintService.AcceptDispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
+                    return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
+                }
+                return Forbid();
             }
             return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
         }
@@ -211,33 +201,14 @@ namespace Tolk.Web.Controllers
             var complaint = GetComplaint(model.ComplaintId);
             if (ModelState.IsValid)
             {
-                return await AnswerDispute(model, ComplaintStatus.DisputePendingTrial);
+                if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
+                {
+                    _complaintService.Refute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
+                    return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
+                }
+                return Forbid();
             }
             return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
-        }
-
-        private async Task<IActionResult> AnswerDispute(AnswerDisputeComplaintModel model, ComplaintStatus status)
-        {
-            var complaint = GetComplaint(model.ComplaintId);
-            if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
-            {
-                complaint.AnswerDispute(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage, status);
-                _dbContext.SaveChanges();
-                switch (status)
-                {
-                    case ComplaintStatus.DisputePendingTrial:
-                        _notificationService.ComplaintDisputePendingTrial(complaint);
-                        break;
-                    case ComplaintStatus.TerminatedAsDisputeAccepted:
-                        _notificationService.ComplaintTerminatedAsDisputeAccepted(complaint);
-                        break;
-                    default:
-                        throw new NotImplementedException($"Notification for the complain status {status.GetDescription()} does not exist.");
-
-                }
-                return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
-            }
-            return Forbid();
         }
 
         private Request GetRequest(int id)

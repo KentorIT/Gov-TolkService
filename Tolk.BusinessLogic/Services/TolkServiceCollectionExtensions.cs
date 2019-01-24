@@ -20,7 +20,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<NotificationService>();
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<RequestService>();
-
+            services.AddScoped<ComplaintService>();
         }
     }
 }
