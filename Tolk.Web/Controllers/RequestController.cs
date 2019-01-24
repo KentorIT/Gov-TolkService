@@ -391,7 +391,7 @@ namespace Tolk.Web.Controllers
             model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)
             {
-                model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
+                model.InterpreterLocationAnswer = model.OrderModel.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
             }
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
