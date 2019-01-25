@@ -249,32 +249,34 @@ namespace Tolk.BusinessLogic.Entities
             int userId,
             int? impersonatorId,
             decimal? expectedTravelCosts,
+            InterpreterLocation interpreterLocation,
             PriceInformation priceInformation)
+        {
+            if (Status != RequestStatus.Received)
             {
-                if (Status != RequestStatus.Received)
-                {
-                    throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
-                }
-                if (!Order.ReplacingOrderId.HasValue)
-                {
-                    throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
-                }
-
-                AnswerDate = acceptTime;
-                AnsweredBy = userId;
-                ImpersonatingAnsweredBy = impersonatorId;
-                if (Order.AllowMoreThanTwoHoursTravelTime)
-                {
-                    Status = RequestStatus.Accepted;
-                    Order.Status = OrderStatus.RequestResponded;
-                }
-                else
-                {
-                    Status = RequestStatus.Approved;
-                    Order.Status = OrderStatus.ResponseAccepted;
-                }
-                PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
             }
+            if (!Order.ReplacingOrderId.HasValue)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
+            }
+
+            AnswerDate = acceptTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            InterpreterLocation = (int?)interpreterLocation;
+            if (Order.AllowMoreThanTwoHoursTravelTime)
+            {
+                Status = RequestStatus.Accepted;
+                Order.Status = OrderStatus.RequestResponded;
+            }
+            else
+            {
+                Status = RequestStatus.Approved;
+                Order.Status = OrderStatus.ResponseAccepted;
+            }
+            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+        }
 
         public void ReplaceInterpreter(
             DateTimeOffset acceptTime,

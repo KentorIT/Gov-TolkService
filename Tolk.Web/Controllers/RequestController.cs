@@ -273,6 +273,7 @@ namespace Tolk.Web.Controllers
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
                             model.ExpectedTravelCosts,
+                            model.InterpreterLocation.Value,
                             _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, model.ExpectedTravelCosts)
                         );
 
