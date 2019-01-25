@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 
 namespace Tolk.BusinessLogic.Helpers
 {
@@ -26,6 +23,7 @@ namespace Tolk.BusinessLogic.Helpers
         public long CombinedMaxSizeAttachments { get; set; }
 
         public SideBarBox[] SideBar { get; set; }
+        public string Env { get; set; } = string.Empty;
 
         public void Validate()
         {
@@ -36,7 +34,7 @@ namespace Tolk.BusinessLogic.Helpers
                 throw new InvalidOperationException($"Invalid configuration of PublicOrigin: {PublicOrigin}");
             }
 
-            if(string.IsNullOrEmpty(SupportEmail))
+            if (string.IsNullOrEmpty(SupportEmail))
             {
                 throw new InvalidOperationException($"Support e-mail config missing.");
             }

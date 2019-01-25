@@ -264,7 +264,7 @@ namespace Tolk.BusinessLogic.Services
         {
             string orderNumber = request.Order.OrderNumber;
 
-            CreateEmail(GetRecipiantsFromOrder(request.Order), 
+            CreateEmail(GetRecipiantsFromOrder(request.Order),
                 $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
                 $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\nTolk:\n{request.Interpreter.CompleteContactInformation} {NoReplyTextPlain} {GotoOrderPlain(request.Order.OrderId)}",
                 $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.<br/><br/>Tolk:<br/>{request.Interpreter.CompleteContactInformation} {NoReplyTextHtml} {GotoOrderButton(request.Order.OrderId)}");
@@ -547,11 +547,17 @@ Tolk:
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody)
         {
+            string subjectPrepend = string.Empty;
+            if (!string.IsNullOrEmpty(_options.Env) && _options.Env.ToLower() != "production")
+            {
+                subjectPrepend = $"({_options.Env}) ";
+            }
+
             foreach (string recipient in recipients)
             {
                 _dbContext.Add(new OutboundEmail(
                     recipient,
-                    subject,
+                    subjectPrepend + subject,
                     plainBody,
                     htmlBody,
                     _clock.SwedenNow));

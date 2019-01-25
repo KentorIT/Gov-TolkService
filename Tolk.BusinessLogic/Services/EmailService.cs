@@ -5,10 +5,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
@@ -21,6 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<EmailService> _logger;
         private readonly TolkOptions.SmtpSettings _options;
         private readonly ISwedishClock _clock;
+        private readonly string _environment;
 
         public EmailService(
             TolkDbContext dbContext,
@@ -32,10 +31,17 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _options = options.Value.Smtp;
             _clock = clock;
+            _environment = options.Value.Env;
         }
 
         public async Task SendEmails()
         {
+            string senderPrepend = string.Empty;
+            if (!string.IsNullOrEmpty(_environment) && _environment.ToLower() != "production")
+            {
+                senderPrepend = $"({_environment}) ";
+            }
+
             var emailIds = await _dbContext.OutboundEmails
                 .Where(e => e.DeliveredAt == null)
                 .Select(e => e.OutboundEmailId)
@@ -44,16 +50,16 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogDebug("Found {count} emails to send: {emailIds}",
                 emailIds.Count, string.Join(", ", emailIds));
 
-            if(emailIds.Any())
+            if (emailIds.Any())
             {
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_options.UserName, _options.Password);
 
-                    var from = new MailboxAddress(Constants.SystemName, _options.FromAddress);
+                    var from = new MailboxAddress(senderPrepend + Constants.SystemName, _options.FromAddress);
 
-                    foreach(var emailId in emailIds)
+                    foreach (var emailId in emailIds)
                     {
                         using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
                         {
@@ -62,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
                                 var email = await _dbContext.OutboundEmails
                                     .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId);
 
-                                if(email == null)
+                                if (email == null)
                                 {
                                     _logger.LogDebug("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
                                 }
@@ -79,7 +85,7 @@ namespace Tolk.BusinessLogic.Services
                                     trn.Commit();
                                 }
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 _logger.LogError(ex, "Failure sending e-mail {emailId}");
                                 trn.Rollback();

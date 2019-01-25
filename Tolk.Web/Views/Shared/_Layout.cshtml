@@ -43,7 +43,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <div ckass="navbar-header">
+                    <div class="navbar-header">
                         <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
                             <span class="hidden-xs visible-sm visible-md visible-lg">
                                 <img class="logo-navbar" src="~/images/KamK_Logo_x.png" alt="@ViewData["Title"]" />
@@ -51,6 +51,10 @@
                             <span class="visible-xs hidden-sm hidden-md hidden-lg">
                                 <img class="logo-navbar" src="~/images/KamK_Logo_Crown.png" alt="@ViewData["Title"]" />
                             </span>
+                            @if (!string.IsNullOrEmpty(Options.Value.Env) && Options.Value.Env.ToLower() != "production")
+                            {
+                                <span class="environment-banner">@Options.Value.Env</span>
+                            }
                         </a>
                     </div>
                 </div>
@@ -91,11 +95,13 @@
                                 <li><a asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
                                 <li><a asp-area="" asp-controller="User" asp-action="EditOrganisationSettings">Inställningar</a></li>
                             }
+
                         }
                         else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
                         {
                             <li><a asp-area="" asp-controller="Assignment" asp-action="List">Tilldelningar</a></li>
                             <li><a asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
+
                         }
                         else if (User.IsInRole(Roles.Admin))
                         {
@@ -103,7 +109,9 @@
                             <li><a asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
                             <li><a asp-area="" asp-controller="Statistics" asp-action="List"> Statistik och rapporter</a></li>
                             <li><a asp-area="" asp-controller="News" asp-action="List">Nyheter</a></li>
+
                         }
+
                     </ul>
                     @await Html.PartialAsync("_LoginPartial")
                 </div>
