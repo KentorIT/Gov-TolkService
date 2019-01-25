@@ -29,6 +29,7 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly NotificationService _notificationService;
+        private readonly RequisitionService _requisitionService;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -38,7 +39,8 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService
+            NotificationService notificationService,
+            RequisitionService requisitionService
             )
         {
             _dbContext = dbContext;
@@ -49,6 +51,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options.Value;
             _notificationService = notificationService;
+            _requisitionService = requisitionService;
         }
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)
@@ -215,9 +218,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 bool useRequestRows = false;
-                using (var transaction = _dbContext.Database.BeginTransaction())
-                {
-                    var request = _dbContext.Requests
+                var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Order.ContactPersonUser)
@@ -227,58 +228,28 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Single(o => o.RequestId == model.RequestId);
 
-                    if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
-                    {
-                        var requisition = new Requisition
-                        {
-                            Status = RequisitionStatus.Created,
-                            CreatedBy = User.GetUserId(),
-                            CreatedAt = _clock.SwedenNow,
-                            ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
-                            Message = model.Message,
-                            SessionStartedAt = model.SessionStartedAt,
-                            SessionEndedAt = model.SessionEndedAt,
-                            TimeWasteNormalTime = model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
-                            TimeWasteIWHTime = model.TimeWasteIWHTime,
-                            InterpretersTaxCard = model.InterpreterTaxCard.Value,
-                            PriceRows = new List<RequisitionPriceRow>(),
-                            Attachments = model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList()
-                        };
-                        var priceInformation = _priceCalculationService.GetPricesRequisition(
-                            model.SessionStartedAt,
-                            model.SessionEndedAt,
-                            EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
-                            request.Order.CustomerOrganisation.PriceListType,
-                            request.Ranking.RankingId,
-                            out useRequestRows,
-                            (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0),
-                            model.TimeWasteIWHTime,
-                            request.PriceRows.OfType<PriceRowBase>(),
-                            model.Outlay,
-                            model.PerDiem,
-                            model.CarCompensation,
-                            request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null
-                        );
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
+                {
+                    var priceInformation = _priceCalculationService.GetPricesRequisition(
+                        model.SessionStartedAt,
+                        model.SessionEndedAt,
+                        EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
+                        request.Order.CustomerOrganisation.PriceListType,
+                        request.Ranking.RankingId,
+                        out useRequestRows,
+                        (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0),
+                        model.TimeWasteIWHTime,
+                        request.PriceRows.OfType<PriceRowBase>(),
+                        model.Outlay,
+                        model.PerDiem,
+                        model.CarCompensation,
+                        request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null
+                    );
 
-                        requisition.RequestOrReplacingOrderPeriodUsed = useRequestRows;
-                        requisition.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)));
-                        foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == model.FileGroupKey))
-                        {
-                            _dbContext.TemporaryAttachmentGroups.Remove(tag);
-                        }
-                        request.CreateRequisition(requisition);
-                        _dbContext.SaveChanges();
-                        var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer &&
-                            !r.ReplacedByRequisitionId.HasValue);
-                        if (replacingRequisition != null)
-                        {
-                            replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
-                            _dbContext.SaveChanges();
-                        }
-                        transaction.Commit();
-                        _notificationService.RequisitionCreated(requisition);
-                        return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
-                    }
+                    var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows, 
+                        model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime, 
+                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value);
+                    return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
                 return Forbid();
             }
@@ -299,9 +270,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    requisition.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.SaveChanges();
-                    _notificationService.RequisitionApproved(requisition);
+                    _requisitionService.Approve(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
@@ -322,9 +291,7 @@ namespace Tolk.Web.Controllers
                     .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    requisition.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
-                    _dbContext.SaveChanges();
-                    _notificationService.RequisitionDenied(requisition);
+                    _requisitionService.Deny(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();

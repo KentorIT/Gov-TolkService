@@ -1,16 +1,28 @@
 ﻿@model RegisterViewModel
-
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "Registrera användarkonto";
+}
 <div class="row">
     <div class="col-xs-12">
-        <h2>Registrera användarkonto</h2>
+        <h2>@ViewData["Title"]</h2>
         <p>För att få tillgång till tjänsten ange den e-postadress som skall användas för att få en aktiveringslänk skickad.</p>
         <form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
             <div class="row padding-bottom-30px">
                 <div class="col-xs-12">
-                    <div asp-validation-summary="All" class="text-danger"></div>
                     <form-entry asp-for="Email" />
+                    <div asp-validation-summary="All" class="text-danger"></div>
                 </div>
             </div>
+            @if (Model != null && Model.ParentOrganisationId > 0)
+            {
+                <div class="row padding-bottom-30px">
+                    <div class="col-xs-12">
+                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.SubOrganisations(Model.ParentOrganisationId)" class="allow-clear" />
+                    </div>
+                </div>
+            }
             <div class="row">
                 <div class="col-xs-12 text-align-center">
                     <button type="submit" class="btn btn-success btn-large">Skicka</button>

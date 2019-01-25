@@ -410,11 +410,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(20);
+                        .HasMaxLength(100);
+
+                    b.Property<int?>("ParentCustomerOrganisationId");
 
                     b.Property<int>("PriceListType");
 
                     b.HasKey("CustomerOrganisationId");
+
+                    b.HasIndex("ParentCustomerOrganisationId");
 
                     b.ToTable("CustomerOrganisations");
                 });
@@ -503,6 +507,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasKey("LanguageId");
 
                     b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.MealBreak", b =>
+                {
+                    b.Property<int>("MealBreakId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("EndAt");
+
+                    b.Property<int>("RequisitionId");
+
+                    b.Property<DateTimeOffset>("StartAt");
+
+                    b.HasKey("MealBreakId");
+
+                    b.HasIndex("RequisitionId");
+
+                    b.ToTable("MealBreaks");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
@@ -1509,6 +1532,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
+                        .WithMany("SubCustomerOrganisations")
+                        .HasForeignKey("ParentCustomerOrganisationId");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
@@ -1519,6 +1549,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
                         .WithMany("Brokers")
                         .HasForeignKey("InterpreterId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.MealBreak", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
+                        .WithMany("MealBreaks")
+                        .HasForeignKey("RequisitionId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
@@ -1867,7 +1905,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("UpdatedByUserId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
-                        .WithMany()
+                        .WithMany("AuditLogEntries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

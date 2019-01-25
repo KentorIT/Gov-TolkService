@@ -87,6 +87,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequisitionAttachment> Attachments { get; set; }
 
+        public List<MealBreak> MealBreaks { get; set; }
+
         #region methods
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)

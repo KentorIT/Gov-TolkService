@@ -67,6 +67,7 @@ function changeTab(element, path, tabPaneSelector) {
             dataType: 'html',
             success: function (data) {
                 $(tabPaneSelector).html(data);
+                $('.form-entry-information').tooltip();
                 refreshCollapsibles();
             },
             error: function (t2) {
