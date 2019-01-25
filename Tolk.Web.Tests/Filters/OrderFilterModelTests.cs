@@ -6,6 +6,7 @@ using Xunit;
 using FluentAssertions;
 using Tolk.Web.Tests.TestHelpers;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 
 namespace Tolk.Web.Tests.Filters
 {

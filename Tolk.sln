@@ -18,6 +18,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.BusinessLogic.Tests", "Tolk.BusinessLogic.Tests\Tolk.BusinessLogic.Tests.csproj", "{022DEC81-1BAA-479B-AE02-C3645EDF3E8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Web.Tests", "Tolk.Web.Tests\Tolk.Web.Tests.csproj", "{C8CAE458-E931-4D43-884E-60E5A54151CD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{022DEC81-1BAA-479B-AE02-C3645EDF3E8D} = {022DEC81-1BAA-479B-AE02-C3645EDF3E8D}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrokerMock", "BrokerMock\BrokerMock.csproj", "{6B43B23E-F6AB-40E9-A97F-61AD6E172478}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -28,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Api.Payloads", "Tolk.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.Web.Api", "Tolk.Web.Api\Tolk.Web.Api.csproj", "{A09F5DAD-6D1C-4F1E-A22C-6973B95FD582}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tolk.BusinessLogic.Utilities", "Tolk.BusinessLogic.Utilities\Tolk.BusinessLogic.Utilities.csproj", "{29F3A5C8-5E13-450A-9683-2904E74A4446}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.BusinessLogic.Utilities", "Tolk.BusinessLogic.Utilities\Tolk.BusinessLogic.Utilities.csproj", "{29F3A5C8-5E13-450A-9683-2904E74A4446}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
