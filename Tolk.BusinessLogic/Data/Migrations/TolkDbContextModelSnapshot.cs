@@ -509,6 +509,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Languages");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.MealBreak", b =>
+                {
+                    b.Property<int>("MealBreakId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("EndAt");
+
+                    b.Property<int>("RequisitionId");
+
+                    b.Property<DateTimeOffset>("StartAt");
+
+                    b.HasKey("MealBreakId");
+
+                    b.HasIndex("RequisitionId");
+
+                    b.ToTable("MealBreaks");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -1530,6 +1549,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
                         .WithMany("Brokers")
                         .HasForeignKey("InterpreterId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.MealBreak", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
+                        .WithMany("MealBreaks")
+                        .HasForeignKey("RequisitionId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>

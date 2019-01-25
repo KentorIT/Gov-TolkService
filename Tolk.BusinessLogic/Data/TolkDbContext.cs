@@ -332,7 +332,10 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<AspNetUserRoleHistoryEntry> AspNetUserRoleHistoryEntries { get; set; }
 
         public DbSet<AspNetUserClaimHistoryEntry> AspNetUserClaimHistoryEntries { get; set; }
+
         public DbSet<UserNotificationSettingHistoryEntry> UserNotificationSettingHistoryEntries { get; set; }
+
+        public DbSet<MealBreak> MealBreaks { get; set; }
 
         public static bool isUserStoreInitialized = false;
 
