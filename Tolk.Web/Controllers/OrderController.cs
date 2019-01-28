@@ -298,6 +298,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
+            throw (new Exception("This is just an exception test"));
             var now = _clock.SwedenNow.DateTime;
             var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
             var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay).Date;
