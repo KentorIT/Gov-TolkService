@@ -594,7 +594,8 @@ input[type='checkbox']:checked:after {
 .d-none {
   display: none;
 }
-.table-button-column {
+.table-button-column,
+.table-remove-column {
   cursor: pointer;
 }
 .table-button-column.fixed {
@@ -603,11 +604,16 @@ input[type='checkbox']:checked:after {
 .table-full-column {
   width: 100%;
 }
-.table-description-column {
-  width: 50%;
-}
+.table-description-column,
 .table-type-column {
   width: 50%;
+}
+.table-start-column,
+.table-end-column {
+  width: 40%;
+}
+.table-remove-column {
+  width: 20%;
 }
 .table-attached-files table tbody tr td,
 .table-attached-files table thead tr td,

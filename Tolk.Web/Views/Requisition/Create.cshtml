@@ -115,6 +115,25 @@
                     <form-entry asp-for="TimeWasteIWHTime" />
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <h3 class="no-padding-margin">Måltidspauser <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska eventuella måltidspauser anges. Klicka på +-ikonen för att lägga till."></span></h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a>
+                    <br /><br />
+                    <div class="d-none mealbreak-list no-padding">
+                        <table class="table mealbreak-table">
+                            <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-sm-12">
                     <h3 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span></h3>
@@ -206,12 +225,50 @@
             </div>
         </form>
     </div>
+    <span id="baseMealBreaks" class="d-none">
+        <input asp-for="MealBreaks[0].StartAtTemp" type="hidden" />
+        <input asp-for="MealBreaks[0].EndAtTemp" type="hidden" />
+    </span>
     <span id="basefile" class="d-none">
         <input asp-for="Files[0].Id" type="hidden" />
     </span>
 </div>
-</div>
 @await Html.PartialAsync("_UploadFileDialog")
+<div id="addMealBreak" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Lägg till måltidspaus</h4>
+            </div>
+            <div class="modal-body" id="req">
+                <form method="post" asp-action="" class="do-not-check-dirty">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <form-entry asp-for="MealBreakStartAt" id="MealBreakStartedAt" />
+                            <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
+                            <br /><br />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <form-entry asp-for="MealBreakEndAt" id="MealBreakEndedAt" />
+                            <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
+                            <br /><br />
+                        </div>
+                    </div>
+                </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-default right-md-button save-mealbreak">Spara måltidspaus</button>
+                    <br /><br />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <environment include="Development">

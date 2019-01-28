@@ -668,7 +668,7 @@ input[type='checkbox']:checked:after {
     display: none;
 }
 
-.table-button-column {
+.table-button-column, .table-remove-column {
     cursor: pointer;
 }
 
@@ -680,12 +680,16 @@ input[type='checkbox']:checked:after {
     width: 100%;
 }
 
-.table-description-column {
+.table-description-column, .table-type-column {
     width: 50%;
 }
 
-.table-type-column {
-    width: 50%;
+.table-start-column, .table-end-column {
+    width: 40%;
+}
+
+.table-remove-column {
+    width: 20%;
 }
 
 .table-attached-files table tbody tr td, .table-attached-files table thead tr td, .table-attached-files table thead tr, .table-attached-files tr td, .table-attached-files tbody tr td {

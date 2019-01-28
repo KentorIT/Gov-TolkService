@@ -109,6 +109,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Faktisk sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
 
+        [Display(Name = "Startid för måltidspaus")]
+        public DateTimeOffset MealBreakStartAt { get; set; }
+
+        [Display(Name = "Sluttid för måltidspaus")]
+        public DateTimeOffset MealBreakEndAt { get; set; }
+
+        public List<MealBreak> MealBreaks { get; set; }
+               
         [DataType(DataType.MultilineText)]
         [Required]
         [Display(Name = "Specifikation", Description = "Var tydlig med var alla tider och kostnader kommer ifrån.")]

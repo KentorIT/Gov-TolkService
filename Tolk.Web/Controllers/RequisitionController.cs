@@ -228,6 +228,16 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .Single(o => o.RequestId == model.RequestId);
 
+                //add swedish offset to mealbreak
+                List<MealBreak> mealbreaks = new List<MealBreak>();
+                if (model.MealBreaks != null)
+                {
+                    foreach (MealBreak mb in model.MealBreaks)
+                    {
+                        mealbreaks.Add(new MealBreak { StartAt = mb.StartAtTemp.ToDateTimeOffsetSweden(), EndAt = mb.EndAtTemp.ToDateTimeOffsetSweden() });
+                    }
+                }
+
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                 {
                     var priceInformation = _priceCalculationService.GetPricesRequisition(
@@ -243,12 +253,13 @@ namespace Tolk.Web.Controllers
                         model.Outlay,
                         model.PerDiem,
                         model.CarCompensation,
-                        request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null
+                        request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
+                        mealbreaks
                     );
-
+                    
                     var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows, 
                         model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime, 
-                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value);
+                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks);
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
                 return Forbid();

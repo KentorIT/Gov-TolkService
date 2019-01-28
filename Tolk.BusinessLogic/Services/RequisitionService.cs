@@ -32,7 +32,7 @@ namespace Tolk.BusinessLogic.Services
 
         public Requisition Create(Request request, int userId, int? impersonatorId, string message, PriceInformation priceInformation, bool useRequestRows, 
             DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard? interpreterTaxCard, 
-            List<RequisitionAttachment> attachments, Guid fileGroupKey)
+            List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks)
         {
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
@@ -49,7 +49,8 @@ namespace Tolk.BusinessLogic.Services
                     TimeWasteIWHTime = timeWasteIWHTime,
                     InterpretersTaxCard = interpreterTaxCard.Value,
                     PriceRows = new List<RequisitionPriceRow>(),
-                    Attachments = attachments
+                    Attachments = attachments,
+                    MealBreaks = mealbreaks
                 };
 
                 requisition.RequestOrReplacingOrderPeriodUsed = useRequestRows;

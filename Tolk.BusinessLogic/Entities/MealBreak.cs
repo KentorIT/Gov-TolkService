@@ -29,5 +29,11 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        [NotMapped]
+        public DateTime StartAtTemp { get; set; }
+
+        [NotMapped]
+        public DateTime EndAtTemp { get; set; }
+
     }
 }
