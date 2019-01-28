@@ -15,13 +15,13 @@ namespace Tolk.Web.Tests.Filters
     {
         private Request[] requests;
 
-        private Language[] mockLanguages = MockEntities.MockLanguages();
+        private Language[] mockLanguages = MockEntities.Languages;
 
         public RequestFilterModelTests()
         {
             var mockRankings = MockEntities.MockRankings();
-            var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
-            requests = MockEntities.MockRequests(mockOrders);
+            var mockOrders = MockEntities.Orders(mockLanguages, mockRankings);
+            requests = MockEntities.Requests(mockOrders);
         }
 
         [Fact]

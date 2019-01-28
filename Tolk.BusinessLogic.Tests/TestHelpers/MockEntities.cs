@@ -8,27 +8,31 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
     public static class MockEntities
     {
-        public static Language[] MockLanguages()
+        public static Language[] Languages
         {
-            return new[]
+            get
             {
-                new Language { LanguageId = 0, Name = "English" },
-                new Language { LanguageId = 1, Name = "German" },
-                new Language { LanguageId = 2, Name = "French" },
-                new Language { LanguageId = 3, Name = "Chinese" },
-            };
+                return
+                    new[]
+                    {
+                        new Language { LanguageId = 0, Name = "English" },
+                        new Language { LanguageId = 1, Name = "German" },
+                        new Language { LanguageId = 2, Name = "French" },
+                        new Language { LanguageId = 3, Name = "Chinese" },
+                    };
+            }
         }
 
         public static Ranking[] MockRankings()
         {
             return new[]
             {
-                new Ranking { RankingId = 0, BrokerId = 0, Rank = 1 },
-                new Ranking { RankingId = 1, BrokerId = 1, Rank = 2 },
+                new Ranking { RankingId = 0, BrokerId = 0, Rank = 0 },
+                new Ranking { RankingId = 1, BrokerId = 1, Rank = 1 },
             };
         }
 
-        public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings)
+        public static Order[] Orders(Language[] mockLanguages, Ranking[] mockRankings)
         {
             var orders = new[]
             {
@@ -174,7 +178,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             return mockRequests.ToArray();
         }
 
-        public static Request[] MockRequests(Order[] mockOrders)
+        public static Request[] Requests(Order[] mockOrders)
         {
             return new[]
             {
@@ -217,7 +221,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             };
         }
 
-        public static Requisition[] MockRequisitions(Order[] orders)
+        public static Requisition[] Requisitions(Order[] orders)
         {
             var requisitions = new List<Requisition>
             {

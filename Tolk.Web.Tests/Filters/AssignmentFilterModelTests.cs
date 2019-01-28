@@ -22,10 +22,10 @@ namespace Tolk.Web.Tests.Filters
         {
             _clock = new StubSwedishClock("2018-09-03 12:57:14");
 
-            mockLanguages = MockEntities.MockLanguages();
+            mockLanguages = MockEntities.Languages;
             var mockRankings = MockEntities.MockRankings();
-            var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
-            var mockRequisitions = MockEntities.MockRequisitions(mockOrders);
+            var mockOrders = MockEntities.Orders(mockLanguages, mockRankings);
+            var mockRequisitions = MockEntities.Requisitions(mockOrders);
             mockOrders = MockEntities.LinkRequisitionsInOrdersRequests(mockOrders, mockRequisitions);
             mockRequests = MockEntities.GetRequestsFromOrders(mockOrders);
         }
