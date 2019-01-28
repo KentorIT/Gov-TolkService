@@ -231,12 +231,12 @@ namespace Tolk.Web.Helpers
                 {
                     if (request.ReplacingRequestId.HasValue)
                     {
-                        if (request.Order.AllowMoreThanTwoHoursTravelTime)
+                        if (request.ProcessingUser != null)
                         {
                             eventLog.Add(new EventLogEntryModel
                             {
                                 Weight = 200,
-                                Timestamp = request.AnswerDate.Value,
+                                Timestamp = request.AnswerProcessedAt.Value,
                                 EventDetails = $"Tolkbyte godkänt av myndighet",
                                 Actor = request.ProcessingUser.FullName,
                                 Organization = customerName,
@@ -245,10 +245,12 @@ namespace Tolk.Web.Helpers
                         }
                         else
                         {
+                            //system automatically approves requests where interpreter is replaced and AllowMoreThanTwoHoursTravelTime is true 
+                            //1 hour before order start - then AnswerProcessedAt is set as well
                             eventLog.Add(new EventLogEntryModel
                             {
                                 Weight = 200,
-                                Timestamp = request.AnswerDate.Value,
+                                Timestamp = request.AnswerProcessedAt.Value,
                                 EventDetails = $"Tolkbyte automatiskt godkänt",
                                 Actor = "Systemet",
                             });
