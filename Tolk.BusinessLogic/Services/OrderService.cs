@@ -378,6 +378,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task CleanTempAttachments()
         {
+            throw (new Exception());
             using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
             {
                 try
@@ -403,7 +404,7 @@ namespace Tolk.BusinessLogic.Services
                         _tolkDbContext.Attachments.RemoveRange(attachmentsToDelete);
                         await _tolkDbContext.SaveChangesAsync();
                     }
-                    
+
                     _logger.LogInformation("Done cleaning temporary attachments");
                 }
                 catch (Exception ex)
