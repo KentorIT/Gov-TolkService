@@ -378,7 +378,6 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task CleanTempAttachments()
         {
-            throw (new Exception());
             using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
             {
                 try
