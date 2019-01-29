@@ -69,6 +69,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(r => r.MealBreaks)
               .Single(o => o.RequisitionId == id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
@@ -256,9 +257,9 @@ namespace Tolk.Web.Controllers
                         request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
                         mealbreaks
                     );
-                    
-                    var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows, 
-                        model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime, 
+
+                    var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows,
+                        model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
                         model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks);
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
@@ -316,12 +317,31 @@ namespace Tolk.Web.Controllers
             {
                 return null;
             }
-            return new PriceInformationModel
+            List<MealBreakInformation> mealBreakInformation = null;
+
+            if (requisition.MealBreaks?.Count > 0)
+            {
+                mealBreakInformation = requisition.MealBreaks.Select(m => new MealBreakInformation
+                {
+                    StartAt = m.StartAt,
+                    EndAt = m.EndAt
+                }).ToList();
+            }
+            if (mealBreakInformation == null)
+            {
+                mealBreakInformation = new List<MealBreakInformation>();
+            }
+
+            PriceInformationModel pi = new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : "Fakturainformation",
-                UseDisplayHideInfo = useDisplayHideInfo
+                UseDisplayHideInfo = useDisplayHideInfo,
+
             };
+            pi.PriceInformationToDisplay.MealBreaks = mealBreakInformation;
+
+            return pi;
         }
 
         private PriceInformationModel GetRequisitionPriceInformation(Request request)
