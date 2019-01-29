@@ -476,22 +476,24 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 23:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 02:00:00", 1, 2, 3, 1000)]
-        public void MergePriceListRowsOfSameType(string start1, string start2, string start3, string end1, string end2, string end3, int quant1, int quant2, int quant3, decimal price)
+        [InlineData("2018-10-10 23:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 02:00:00", 2, 2, 2, 1000)]
+        [InlineData("2018-10-10 23:15:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 01:45:00", 1.5, 2, 1.5, 1000)] 
+        public void MergePriceListRowsOfSameType(string start1, string start2, string start3, string end1, string end2, string end3, decimal quant1, decimal quant2, decimal quant3, decimal price)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                int totalQuantity = quant1 + quant2 + quant3;
+                int totalQuantity = (int)(quant1 + quant2 + quant3);
                 decimal totalPrice = price * totalQuantity;
                 DateTime minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
                 DateTime maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
 
+                //decimal.Round(Price, 2, MidpointRounding.AwayFromZero)
                 //generate rows
                 List<PriceRowBase> priceRows = new List<PriceRowBase>
                 {
-                    { GetPriceRowWithPriceListRowForTest(start1, end1, price, quant1, 1101) },
-                    { GetPriceRowWithPriceListRowForTest(start2, end2,  price, quant2, 1101) },
-                    { GetPriceRowWithPriceListRowForTest(start3, end3, price, quant3, 1101) },
+                    { GetPriceRowWithPriceListRowForTest(start1, end1, price, (int)decimal.Round(quant1, MidpointRounding.AwayFromZero), 1101) },
+                    { GetPriceRowWithPriceListRowForTest(start2, end2,  price, (int)decimal.Round(quant2, MidpointRounding.AwayFromZero), 1101) },
+                    { GetPriceRowWithPriceListRowForTest(start3, end3, price, (int)decimal.Round(quant3, MidpointRounding.AwayFromZero), 1101) },
                 };
                 IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsOfSameType(priceRows);
                 mergedPriceRows.Count().Should().Be(1, "total no of rows should be 1");
@@ -517,7 +519,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         private PriceRowBase GetPriceRowWithPriceListRowForTest(string startAt, string endAt,  decimal price, int quantity, int pricelistRowId)
         {
-            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId } };
+            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
         }
     }
 }
