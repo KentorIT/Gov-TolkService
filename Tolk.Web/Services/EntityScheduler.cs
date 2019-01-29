@@ -47,6 +47,21 @@ namespace Tolk.Web.Services
         {
             _logger.LogTrace("EntityScheduler waking up.");
 
+            if ((nextRemind - _clock.SwedenNow).TotalHours > 25 || nextRemind.Hour != 5)
+            {
+                _logger.LogWarning("nextRemind set to invalid time, was {0}", nextRemind);
+                DateTimeOffset now = _clock.SwedenNow;
+                now -= now.TimeOfDay;
+                nextRemind = now - now.TimeOfDay;
+                nextRemind = nextRemind.AddHours(5);
+
+                if (_clock.SwedenNow.Hour > 5)
+                {
+                    // Next remind is tomorrow
+                    nextRemind = nextRemind.AddDays(1);
+                }
+            }
+
             try
             {
                 //would like to have a timer here, to make it possible to get tighter runs if the last ru ran for longer than 10 seconds or somethng...
@@ -65,6 +80,10 @@ namespace Tolk.Web.Services
                     else if (_clock.SwedenNow > nextRemind)
                     {
                         nextRemind = nextRemind.AddDays(1);
+                        nextRemind = nextRemind - nextRemind.TimeOfDay;
+                        nextRemind = nextRemind.AddHours(5);
+                        _logger.LogTrace("Running reminder, next run on {0}", nextRemind);
+
                         tasksToRun = new Task[]
                         {
                             serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
