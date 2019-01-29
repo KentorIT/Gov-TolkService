@@ -95,6 +95,7 @@ namespace Tolk.BusinessLogic.Services
 
         /// <summary>
         /// If order passes midnight their might be two rows of same pricetype, merge these to one 
+        /// Also check if two duplicate rows have less or equal compensationtime together. Then it should be reduced, e.g. 23:45-00:45 (should be two 30 min periods not three)
         /// </summary>
         public IEnumerable<PriceRowBase> MergePriceListRowsOfSameType(IEnumerable<PriceRowBase> pricePerType)
         {
@@ -110,7 +111,10 @@ namespace Tolk.BusinessLogic.Services
                 foreach (int priceListRowId in duplicatesPriceListrows)
                 {
                     PriceRowBase newPriceRow = pricePerType.OrderBy(pr => pr.StartAt).First(pr => pr.PriceListRow.PriceListRowId == priceListRowId);
-                    newPriceRow.Quantity = pricePerType.Where(pr => pr.PriceListRow.PriceListRowId == priceListRowId).Sum(pr => pr.Quantity);
+                    var noOfMinutes = pricePerType.Where(pr => pr.PriceListRow.PriceListRowId == priceListRowId).Sum(pr => pr.Minutes);
+                    var compensationPeriod = newPriceRow.PriceListRow.MaxMinutes;
+                    var newQuantity = compensationPeriod == 0 ? newPriceRow.Quantity : noOfMinutes % compensationPeriod > 0 ? (noOfMinutes / compensationPeriod) + 1 : noOfMinutes / compensationPeriod;
+                    newPriceRow.Quantity = newQuantity;
                     newPriceRow.EndAt = pricePerType.OrderBy(pr => pr.EndAt).Last(pr => pr.PriceListRow.PriceListRowId == priceListRowId).EndAt;
                     mergedList.Add(newPriceRow);
                 }
@@ -413,7 +417,7 @@ namespace Tolk.BusinessLogic.Services
                     separateSubTotalInterpreterCompensation.DisplayPriceRows.Add(new DisplayPriceRow { Description = description, Price = priceRow.Price * priceRow.Quantity, DisplayOrder = (int)priceRow.PriceListRow.PriceListRowType });
                 }
                 //for requisition if pricerowType has Travelcost as parent
-                else if (EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).HasValue  && EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).Value == PriceRowType.TravelCost)
+                else if (EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).HasValue && EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).Value == PriceRowType.TravelCost)
                 {
                     separateSubTotalTravelcosts.DisplayPriceRows.Add(new DisplayPriceRow { Description = priceRow.PriceRowType.GetDescription(), Price = priceRow.Price * priceRow.Quantity, DisplayOrder = GetDisplayOrder(priceRow.PriceRowType) });
                 }
