@@ -1,20 +1,21 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
-using Tolk.Web.Models;
 using Tolk.Web.Helpers;
-using Microsoft.EntityFrameworkCore;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
@@ -24,17 +25,20 @@ namespace Tolk.Web.Controllers
         private readonly UserManager<AspNetUser> _userManager;
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ILogger<HomeController> _logger;
 
         public HomeController(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             ISwedishClock clock,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ILogger<HomeController> logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _clock = clock;
             _authorizationService = authorizationService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(string message)
@@ -135,7 +139,7 @@ namespace Tolk.Web.Controllers
             //Sent and approved orders
             var sentAndApprovedOrders = _dbContext.Orders
                 .Include(o => o.Requests).Include(o => o.Language)
-                .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted) 
+                .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted)
                 && o.CreatedBy == User.GetUserId() && o.EndAt > _clock.SwedenNow).ToList();
 
             //Sent orders
@@ -292,6 +296,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Error()
         {
+            _logger.LogError("TraceID: {0}", Activity.Current?.Id ?? HttpContext.TraceIdentifier);
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
