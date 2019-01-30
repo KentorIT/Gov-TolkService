@@ -25,7 +25,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
                         new Holiday() { Date = new DateTime(2018,12,24), DateType=DateType.BigHolidayFullDay},
                         new Holiday() { Date = new DateTime(2018,12,25), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,12,26), DateType=DateType.BigHolidayFullDay}
+                        new Holiday() { Date = new DateTime(2018,12,26), DateType=DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018,12,27), DateType=DateType.DayAfterBigHoliday}
                     };
             }
         }
