@@ -560,6 +560,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             request.Status = requestStatus;
             request.Order.Requests.First().Status = requestStatus;
 
+            var expectNewRequisition = request.Status == RequestStatus.Approved && !isReplaced;
             var userId = 10;
             var impersonatorId = (int?)null;
             var cancelMessage = "Neh";
@@ -572,6 +573,19 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(userId, request.CancelledBy);
             Assert.Equal(impersonatorId, request.ImpersonatingCanceller);
             Assert.Equal(cancelMessage, request.CancelMessage);
+
+            if (expectNewRequisition)
+            {
+                var requisition = request.Requisitions.Single();
+                var expectedMessage = createFullCompensationRequisition ? "Genererat av systemet, eftersom tillfället avbokades för tätt inpå" : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår";
+                Assert.Equal(cancelledAt, requisition.CreatedAt);
+                Assert.Equal(userId, requisition.CreatedBy);
+                Assert.Equal(impersonatorId, requisition.ImpersonatingCreatedBy);
+                Assert.Equal(expectedMessage, requisition.Message);
+                Assert.Equal(RequisitionStatus.AutomaticApprovalFromCancelledOrder, requisition.Status);
+                Assert.Equal(request.Order.StartAt, requisition.SessionStartedAt);
+                Assert.Equal(request.Order.EndAt, requisition.SessionEndedAt);
+            }
         }
 
         [Theory]
@@ -746,6 +760,116 @@ namespace Tolk.BusinessLogic.Tests.Entities
             request.Order.Requests.First().Status = requestStatus;
 
             Assert.Throws<InvalidOperationException>(() => request.CancelByBroker(cancelledAt, 10, null, "Neh"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        public void CreateRequisition_Valid(RequisitionStatus? preexistingRequisition = null)
+        {
+            Requisition existingRequisition = null;
+            if (preexistingRequisition != null)
+            {
+                existingRequisition = new Requisition
+                {
+                    Status = preexistingRequisition.Value,
+                };
+            }
+            var request = new Request
+            {
+                Status = RequestStatus.Approved,
+                Order = new Order
+                {
+                    Status = OrderStatus.RequestResponded,
+                    Requests = new List<Request>(),
+                },
+                Requisitions = new List<Requisition>(),
+            };
+            if (existingRequisition != null)
+            {
+                request.Requisitions.Add(existingRequisition);
+            }
+            request.Order.Requests.Add(request);
+            request.Order.Status = OrderStatus.ResponseAccepted;
+
+            var requisition = new Requisition()
+            {
+                Status = RequisitionStatus.Created
+            };
+            request.CreateRequisition(requisition);
+
+            Assert.Equal(OrderStatus.Delivered, request.Order.Status);
+            Assert.Equal(requisition, request.Requisitions.Single(r => r.Status == RequisitionStatus.Created));
+        }
+
+        [Theory]
+        // Invalid request status
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.CancelledByBroker)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        // Invalid request status, pre-existing valid requisition (DeniedByCustomer)
+        [InlineData(RequestStatus.Accepted, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.Created, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.Received, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.DeniedByCustomer)]
+        // Invalid request status, pre-existing valid requisition (AutomaticApprovalFromCancelledOrder)
+        [InlineData(RequestStatus.Accepted, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.Created, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.Received, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        // Valid request status, invalid requisition status
+        [InlineData(RequestStatus.Approved, RequisitionStatus.Approved)]
+        [InlineData(RequestStatus.Approved, RequisitionStatus.Created)]
+        public void CreateRequisition_Invalid(RequestStatus status, RequisitionStatus? existingRequisition = null)
+        {
+            Requisition requisition = null;
+            if (existingRequisition != null)
+            {
+                requisition = new Requisition
+                {
+                    Status = existingRequisition.Value,
+                };
+            }
+            var request = new Request
+            {
+                Status = status,
+                Requisitions = new List<Requisition>(),
+            };
+            if (requisition != null)
+            {
+                request.Requisitions.Add(requisition);
+            }
+
+            Assert.Throws<InvalidOperationException>(() => request.CreateRequisition(new Requisition()));
         }
 
         [Fact]
