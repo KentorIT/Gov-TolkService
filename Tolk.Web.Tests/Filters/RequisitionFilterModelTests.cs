@@ -18,10 +18,10 @@ namespace Tolk.Web.Tests.Filters
 
         public RequisitionFilterModelTests()
         {
-            mockLanguages = MockEntities.Languages;
+            mockLanguages = MockEntities.MockLanguages();
             var mockRankings = MockEntities.MockRankings();
-            var mockOrders = MockEntities.Orders(mockLanguages, mockRankings);
-            mockRequisitions = MockEntities.Requisitions(mockOrders);
+            var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
+            mockRequisitions = MockEntities.MockRequisitions(mockOrders);
         }
 
         [Fact]

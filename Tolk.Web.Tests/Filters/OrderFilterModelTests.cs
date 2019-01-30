@@ -20,8 +20,8 @@ namespace Tolk.Web.Tests.Filters
         public OrderFilterModelTests()
         {
             var mockRankings = MockEntities.MockRankings();
-            mockLanguages = MockEntities.Languages;
-            mockOrders = MockEntities.Orders(mockLanguages, mockRankings);
+            mockLanguages = MockEntities.MockLanguages();
+            mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
 
             // Modify request statuses
             mockOrders[0].Requests[0].Status = RequestStatus.DeniedByCreator;

@@ -15,7 +15,6 @@ namespace Tolk.BusinessLogic.Tests.Services
 {
     public class PriceCalculationServiceTests
     {
-        private readonly TolkDbContext TolkDbContext;
 
         private const string DbNameWithPriceData = "PriceCalculationService_WithPriceData";
         private const string DefaultStartDate = "2018-10-10 10:00:00";
@@ -67,20 +66,22 @@ namespace Tolk.BusinessLogic.Tests.Services
         public PriceCalculationServiceTests()
         {
 
-            TolkDbContext = CreateTolkDbContext(DbNameWithPriceData);
-            TolkDbContext.AddRange(MockEntities.PriceListRows.Where(newPrice =>
-            !TolkDbContext.PriceListRows.Select(existPrice => existPrice.PriceListRowId).Contains(newPrice.PriceListRowId)));
+            using (var tolkDbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                tolkDbContext.AddRange(MockEntities.PriceListRows.Where(newPrice =>
+                !tolkDbContext.PriceListRows.Select(existPrice => existPrice.PriceListRowId).Contains(newPrice.PriceListRowId)));
 
-            TolkDbContext.AddRange(MockEntities.PriceCalculationCharges.Where(newCharge =>
-            !TolkDbContext.PriceCalculationCharges.Select(existCharge => existCharge.PriceCalculationChargeId).Contains(newCharge.PriceCalculationChargeId)));
+                tolkDbContext.AddRange(MockEntities.PriceCalculationCharges.Where(newCharge =>
+                !tolkDbContext.PriceCalculationCharges.Select(existCharge => existCharge.PriceCalculationChargeId).Contains(newCharge.PriceCalculationChargeId)));
 
-            TolkDbContext.AddRange(MockEntities.Rankings.Where(newRank =>
-            !TolkDbContext.Rankings.Select(existRank => existRank.RankingId).Contains(newRank.RankingId)));
+                tolkDbContext.AddRange(MockEntities.Rankings.Where(newRank =>
+                !tolkDbContext.Rankings.Select(existRank => existRank.RankingId).Contains(newRank.RankingId)));
 
-            TolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
-            !TolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
+                tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
+                !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
 
-            TolkDbContext.SaveChanges();
+                tolkDbContext.SaveChanges();
+            }
         }
 
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
@@ -122,8 +123,11 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetDateTypes(string date, DateType[] actual)
         {
-            DateType[] found = new PriceCalculationService(TolkDbContext).GetDateTypes(DateTime.Parse(date)).ToArray();
-            Assert.True(Enumerable.SequenceEqual(found.OrderBy(t => t), actual.OrderBy(t => t)));
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                DateType[] found = new PriceCalculationService(tolkdbContext).GetDateTypes(DateTime.Parse(date)).ToArray();
+                Assert.True(Enumerable.SequenceEqual(found.OrderBy(t => t), actual.OrderBy(t => t)));
+            }
         }
 
         [Theory]
@@ -142,7 +146,10 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         private List<PriceListRow> GetPriceList(DateTime startAt, CompetenceLevel compLevel, PriceListType priceListType)
         {
-            return new PriceCalculationService(TolkDbContext).GetPriceList(startAt, compLevel, priceListType);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                return new PriceCalculationService(tolkdbContext).GetPriceList(startAt, compLevel, priceListType);
+            }
         }
 
         [Theory]
@@ -166,9 +173,12 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetLostTimePriceRows(string startAt, string endAt, CompetenceLevel compLevel, PriceListType priceListType, int lostTime, int lostTimeIWH, int actual)
         {
-            var prices = GetPriceList(DateTime.Parse(startAt), compLevel, priceListType);
-            IEnumerable<PriceRowBase> list = new PriceCalculationService(TolkDbContext).GetLostTimePriceRows(DateTime.Parse(startAt), DateTime.Parse(endAt), lostTime, lostTimeIWH, prices);
-            list.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(actual, "number of rows {0}", actual);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                var prices = GetPriceList(DateTime.Parse(startAt), compLevel, priceListType);
+                IEnumerable<PriceRowBase> list = new PriceCalculationService(tolkdbContext).GetLostTimePriceRows(DateTime.Parse(startAt), DateTime.Parse(endAt), lostTime, lostTimeIWH, prices);
+                list.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(actual, "number of rows {0}", actual);
+            }
         }
 
         private PriceRowBase GetPriceRow(decimal price, int quantity)
@@ -214,9 +224,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 10:00:00", "2018-10-10 16:00:00", PriceListType.Other, CompetenceLevel.SpecializedInterpreter, DefaultRankingId, (Price_5_5H_Other_Comp4 + Price_OverMaxTime_Other_Comp4), 2)]//(extra comp. for > 5,5h)
         public void BasePrice_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -225,9 +238,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 18:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2)]//2h work IWH
         public void IWH_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -235,9 +251,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-13 10:00:00", "2018-10-13 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 10), 2)]//5h work IWH weekend
         public void IWH_Weekend_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -245,9 +264,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-12-24 10:00:00", "2018-12-24 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 10), 2)]//5h work IWH big holiday
         public void IWH_BigHoliday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -307,9 +329,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 23:00:00", "2018-10-11 01:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Broker_Fee_Price_Comp1 * 2, 1)]
         public void BrokerFeePriceRow(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.BrokerFee).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.BrokerFee).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.BrokerFee).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.BrokerFee).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -321,9 +346,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 10:00:00", "2018-10-10 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, ((Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1) * SocialInsuranceCharge / 100), 1)]//6h nwt comp.Level 1 (extra comp. for > 5,5h)
         public void SocialInsurancePriceRow_GetPrices(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.SocialInsuranceCharge).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.SocialInsuranceCharge).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.SocialInsuranceCharge).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.SocialInsuranceCharge).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
         }
 
         [Theory]
@@ -334,59 +362,71 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 10:00:00", "2018-10-10 15:00:00", Price_5H_Court_Comp1, (Price_5H_Court_Comp1 * SocialInsuranceCharge / 100))]//5h nwt comp.Level 1
         public void SocialInsurancePriceRow(string startAt, string endAt,  decimal interpreterPrice, decimal actualPrice)
         {
-            List<PriceRowBase> priceRows = new List<PriceRowBase>
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.InterpreterCompensation, interpreterPrice) }
-            };
-            PriceRowBase pr = new PriceCalculationService(TolkDbContext).GetPriceRowSocialInsuranceCharge(DateTime.Parse(startAt), DateTime.Parse(endAt), priceRows);
-            pr.TotalPrice.Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pr.PriceRowType.Should().Be(PriceRowType.SocialInsuranceCharge, "price row type {0}", PriceRowType.SocialInsuranceCharge.GetDescription());
+                List<PriceRowBase> priceRows = new List<PriceRowBase>
+                {
+                    { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.InterpreterCompensation, interpreterPrice) }
+                };
+                PriceRowBase pr = new PriceCalculationService(tolkdbContext).GetPriceRowSocialInsuranceCharge(DateTime.Parse(startAt), DateTime.Parse(endAt), priceRows);
+                pr.TotalPrice.Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pr.PriceRowType.Should().Be(PriceRowType.SocialInsuranceCharge, "price row type {0}", PriceRowType.SocialInsuranceCharge.GetDescription());
+            }
         }
 
         [Fact]
         public void SocialInsurancePriceRow_InvalidOperationException()
         {
-            var priceCalculationCharge = new PriceCalculationCharge { StartDate = new DateTime(2018, 01, 01), EndDate = new DateTime(2098, 01, 01), PriceCalculationChargeId = 4, ChargePercentage = (decimal)SocialInsuranceCharge, ChargeTypeId = ChargeType.SocialInsuranceCharge };
-            //add extra row for SocialInsuranceCharge with date overlapping => should throw exception 
-            TolkDbContext.PriceCalculationCharges.Add(priceCalculationCharge);
-            TolkDbContext.SaveChanges();
-            Action a = () => new PriceCalculationService(TolkDbContext).GetPriceRowSocialInsuranceCharge(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { InterpreterCompensationPriceRow });
-            a.Should().Throw<InvalidOperationException>();
-            TolkDbContext.PriceCalculationCharges.Remove(priceCalculationCharge);
-            TolkDbContext.SaveChanges();
+            using (var tolkDbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                var priceCalculationCharge = new PriceCalculationCharge { StartDate = new DateTime(2018, 01, 01), EndDate = new DateTime(2098, 01, 01), PriceCalculationChargeId = 4, ChargePercentage = (decimal)SocialInsuranceCharge, ChargeTypeId = ChargeType.SocialInsuranceCharge };
+                //add extra row for SocialInsuranceCharge with date overlapping => should throw exception 
+                tolkDbContext.PriceCalculationCharges.Add(priceCalculationCharge);
+                tolkDbContext.SaveChanges();
+                Action a = () => new PriceCalculationService(tolkDbContext).GetPriceRowSocialInsuranceCharge(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { InterpreterCompensationPriceRow });
+                a.Should().Throw<InvalidOperationException>();
+                tolkDbContext.PriceCalculationCharges.Remove(priceCalculationCharge);
+                tolkDbContext.SaveChanges();
+            }
         }
 
         [Fact]
         public void AdministrativePriceRow_InvalidOperationException()
         {
-            var priceCalculationCharge = new PriceCalculationCharge { StartDate = new DateTime(2018, 01, 01), EndDate = new DateTime(2098, 01, 01), PriceCalculationChargeId = 3, ChargePercentage = (decimal)AdministrativeCharge, ChargeTypeId = ChargeType.AdministrativeCharge };
+            using (var tolkDbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                var priceCalculationCharge = new PriceCalculationCharge { StartDate = new DateTime(2018, 01, 01), EndDate = new DateTime(2098, 01, 01), PriceCalculationChargeId = 3, ChargePercentage = (decimal)AdministrativeCharge, ChargeTypeId = ChargeType.AdministrativeCharge };
 
-            //add extra row for AdministrativeCharge with date overlapping => should throw exception 
-            TolkDbContext.PriceCalculationCharges.Add(priceCalculationCharge);
-            TolkDbContext.SaveChanges();
-            Action a = () => new PriceCalculationService(TolkDbContext).GetPriceRowAdministrativeCharge(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { InterpreterCompensationPriceRow });
-            a.Should().Throw<InvalidOperationException>();
-            TolkDbContext.PriceCalculationCharges.Remove(priceCalculationCharge);
-            TolkDbContext.SaveChanges();
+                //add extra row for AdministrativeCharge with date overlapping => should throw exception 
+                tolkDbContext.PriceCalculationCharges.Add(priceCalculationCharge);
+                tolkDbContext.SaveChanges();
+                Action a = () => new PriceCalculationService(tolkDbContext).GetPriceRowAdministrativeCharge(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { InterpreterCompensationPriceRow });
+                a.Should().Throw<InvalidOperationException>();
+                tolkDbContext.PriceCalculationCharges.Remove(priceCalculationCharge);
+                tolkDbContext.SaveChanges();
+            }
         }
 
         [Theory]
         [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, 300, 1000, 130, 1)]//1h nwt, complevel 1
         public void TravelCostRow(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualOutlay, decimal actualPerdiem, decimal actualCarCompensation, int noOfrows)
         {
-            //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
-            };
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPricesRequisition(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, actualOutlay, actualPerdiem, actualCarCompensation, null);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.Outlay).Sum(pr => pr.TotalPrice).Should().Be(actualOutlay, "total price should be {0}", actualOutlay);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.CarCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualCarCompensation, "total price should be {0}", actualCarCompensation);
-            pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.PerDiem).Sum(pr => pr.TotalPrice).Should().Be(actualPerdiem, "total price should be {0}", actualPerdiem);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.Outlay).Should().Be(noOfrows, "number of rows {0}", noOfrows);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.PerDiem).Should().Be(noOfrows, "number of rows {0}", noOfrows);
-            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.CarCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
-            useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
+                //get a requestRow for broker fee
+                List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+                {
+                    { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
+                };
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, actualOutlay, actualPerdiem, actualCarCompensation, null);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.Outlay).Sum(pr => pr.TotalPrice).Should().Be(actualOutlay, "total price should be {0}", actualOutlay);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.CarCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualCarCompensation, "total price should be {0}", actualCarCompensation);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.PerDiem).Sum(pr => pr.TotalPrice).Should().Be(actualPerdiem, "total price should be {0}", actualPerdiem);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.Outlay).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.PerDiem).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.CarCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+                useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
+            }
         }
 
         [Theory]
@@ -401,15 +441,18 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 90, 40, 2)]//90m 40iwh
         public void LostTimeRows(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualPrice, int lostTime, int iwhLostTime, int noOfrows)
         {
-            //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
-            };
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPricesRequisition(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, lostTime, iwhLostTime, requestPriceRows, actualPrice, null, null, null);
-            pi.PriceRows.Where(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
-            pi.PriceRows.Count(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Should().Be(noOfrows, "number of rows {0}", noOfrows);
-            useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
+                //get a requestRow for broker fee
+                List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+                {
+                    { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
+                };
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, lostTime, iwhLostTime, requestPriceRows, actualPrice, null, null, null);
+                pi.PriceRows.Where(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+                useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
+            }
         }
 
         [Theory]
@@ -419,38 +462,46 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 11:29:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, true)]//same tax used
         public void UseRequestPricerows(string requestStartAt, string requestEndAt, string requisitionStartAt, string requisitionEndAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows)
         {
-            //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) },
-                { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.InterpreterCompensation, (decimal)Price_2H_Court_Comp1) }
-            };
-            PriceInformation pi = new PriceCalculationService(TolkDbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, null, null);
-            useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
+                //get a requestRow for broker fee
+                List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+                {
+                    { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) },
+                    { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.InterpreterCompensation, (decimal)Price_2H_Court_Comp1) }
+                };
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, null, null);
+                useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
+            }
         }
 
         [Theory]
-        [InlineData("2018-10-10 23:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 02:00:00", 1, 2, 3, 1000)]
-        public void MergePriceListRowsOfSameType(string start1, string start2, string start3, string end1, string end2, string end3, int quant1, int quant2, int quant3, decimal price)
+        [InlineData("2018-10-10 23:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 02:00:00", 2, 2, 2, 1000)]
+        [InlineData("2018-10-10 23:15:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 00:00:00", "2018-10-11 01:00:00", "2018-10-11 01:45:00", 1.5, 2, 1.5, 1000)] 
+        public void MergePriceListRowsOfSameType(string start1, string start2, string start3, string end1, string end2, string end3, decimal quant1, decimal quant2, decimal quant3, decimal price)
         {
-            int totalQuantity = quant1 + quant2 + quant3;
-            decimal totalPrice = price * totalQuantity;
-            DateTime minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
-            DateTime maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
-
-            //generate rows
-            List<PriceRowBase> priceRows = new List<PriceRowBase>
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
-                { GetPriceRowWithPriceListRowForTest(start1, end1, price, quant1, 1101) },
-                { GetPriceRowWithPriceListRowForTest(start2, end2,  price, quant2, 1101) },
-                { GetPriceRowWithPriceListRowForTest(start3, end3, price, quant3, 1101) },
-            };
-            IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(TolkDbContext).MergePriceListRowsOfSameType(priceRows);
-            mergedPriceRows.Count().Should().Be(1, "total no of rows should be 1");
-            mergedPriceRows.First().StartAt.Should().Be(minStartAt, "startAt should be {0}", minStartAt);
-            mergedPriceRows.First().EndAt.Should().Be(maxEndAt, "endAt should be {0}", maxEndAt);
-            mergedPriceRows.Sum(pr => pr.TotalPrice).Should().Be(totalPrice, "total price should be {0}", totalPrice);
-            mergedPriceRows.Sum(pr => pr.Quantity).Should().Be(totalQuantity, "total quantitiy should be {0}", totalQuantity);
+                int totalQuantity = (int)(quant1 + quant2 + quant3);
+                decimal totalPrice = price * totalQuantity;
+                DateTime minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
+                DateTime maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
+
+                //decimal.Round(Price, 2, MidpointRounding.AwayFromZero)
+                //generate rows
+                List<PriceRowBase> priceRows = new List<PriceRowBase>
+                {
+                    { GetPriceRowWithPriceListRowForTest(start1, end1, price, (int)decimal.Round(quant1, MidpointRounding.AwayFromZero), 1101) },
+                    { GetPriceRowWithPriceListRowForTest(start2, end2,  price, (int)decimal.Round(quant2, MidpointRounding.AwayFromZero), 1101) },
+                    { GetPriceRowWithPriceListRowForTest(start3, end3, price, (int)decimal.Round(quant3, MidpointRounding.AwayFromZero), 1101) },
+                };
+                IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsOfSameType(priceRows);
+                mergedPriceRows.Count().Should().Be(1, "total no of rows should be 1");
+                mergedPriceRows.First().StartAt.Should().Be(minStartAt, "startAt should be {0}", minStartAt);
+                mergedPriceRows.First().EndAt.Should().Be(maxEndAt, "endAt should be {0}", maxEndAt);
+                mergedPriceRows.Sum(pr => pr.TotalPrice).Should().Be(totalPrice, "total price should be {0}", totalPrice);
+                mergedPriceRows.Sum(pr => pr.Quantity).Should().Be(totalQuantity, "total quantitiy should be {0}", totalQuantity);
+            }
         }
 
         private PriceRowBase GetPriceRowBaseForTest(string startAt, string endAt, PriceRowType priceRowType, decimal price)
@@ -468,7 +519,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         private PriceRowBase GetPriceRowWithPriceListRowForTest(string startAt, string endAt,  decimal price, int quantity, int pricelistRowId)
         {
-            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId } };
+            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
         }
     }
 }
