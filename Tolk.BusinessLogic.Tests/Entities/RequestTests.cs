@@ -298,7 +298,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 PriceRows = new List<PriceRowBase>()
             };
 
-            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, null, priceInfo);
+            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, null, InterpreterLocation.OnSite, priceInfo);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -350,7 +350,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 }
             };
             Assert.Throws<InvalidOperationException>(() => 
-                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, new PriceInformation()));
+                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation()));
         }
 
         [Theory]
