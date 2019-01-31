@@ -584,7 +584,7 @@ supporten på {_options.SupportEmail}.</div>
 
                     var organisation = await _dbContext.CustomerOrganisations
                         .Include(c => c.SubCustomerOrganisations)
-                        .SingleOrDefaultAsync(c => c.EmailDomain == domain);
+                        .SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
 
                     if (organisation != null)
                     {
