@@ -495,7 +495,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                     { GetPriceRowWithPriceListRowForTest(start2, end2,  price, (int)decimal.Round(quant2, MidpointRounding.AwayFromZero), 1101) },
                     { GetPriceRowWithPriceListRowForTest(start3, end3, price, (int)decimal.Round(quant3, MidpointRounding.AwayFromZero), 1101) },
                 };
-                IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsOfSameType(priceRows);
+                IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsAndReduceForMealBreak(priceRows);
                 mergedPriceRows.Count().Should().Be(1, "total no of rows should be 1");
                 mergedPriceRows.First().StartAt.Should().Be(minStartAt, "startAt should be {0}", minStartAt);
                 mergedPriceRows.First().EndAt.Should().Be(maxEndAt, "endAt should be {0}", maxEndAt);

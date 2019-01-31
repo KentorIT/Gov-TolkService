@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Entities\" />
-  </ItemGroup>
-
 </Project>
