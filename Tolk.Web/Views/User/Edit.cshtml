@@ -6,6 +6,11 @@
 <form method="post">
     <div class="row">
         <div class="col-sm-4">
+            <display-entry asp-for="UserName" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
             <input asp-for="Id" type="hidden" />
             <form-entry asp-for="NameFirst" />
             <form-entry asp-for="NameFamily" />

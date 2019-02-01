@@ -811,6 +811,11 @@ li.placeholder::before {
   background-color: #587573;
   border-color: #95BFB7;
 }
+.panel > .panel-heading.warning {
+  color: #A94442;
+  background-color: linen;
+  border-color: #A94442;
+}
 .info-message {
   font-size: 18px;
   padding-left: 10px;

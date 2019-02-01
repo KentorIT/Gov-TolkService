@@ -100,6 +100,7 @@ namespace Tolk.Web.Controllers
                 var model = new UserModel
                 {
                     Id = id,
+                    UserName = user.UserName,
                     NameFirst = user.NameFirst,
                     NameFamily = user.NameFamily,
                     Email = user.Email,
@@ -125,6 +126,7 @@ namespace Tolk.Web.Controllers
                 var model = new UserModel
                 {
                     Id = user.Id,
+                    UserName = user.UserName,
                     Email = user.Email,
                     NameFirst = user.NameFirst,
                     NameFamily = user.NameFamily,
@@ -179,23 +181,18 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var customerId = User.TryGetCustomerOrganisationId();
-                var brokerId = User.TryGetBrokerId();
-
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
-                    var user = new AspNetUser(model.Email)
-                    {
-                        NameFirst = model.NameFirst,
-                        NameFamily = model.NameFamily,
-                        PhoneNumber = model.PhoneWork,
-                        PhoneNumberCellphone = model.PhoneCellphone,
-                        IsActive = true,
-                        CustomerOrganisationId = customerId,
-                        BrokerId = brokerId
-                    };
                     var additionalRoles = new List<string>();
-                    if (User.IsInRole(Roles.Admin))
+                    var organisationPrefix = string.Empty;
+                    int? customerId = null;
+                    int? brokerId = null;
+                    if (!User.IsInRole(Roles.Admin))
+                    {
+                        customerId = User.TryGetCustomerOrganisationId();
+                        brokerId = User.TryGetBrokerId();
+                    }
+                    else
                     {
                         if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
                         {
@@ -205,19 +202,37 @@ namespace Tolk.Web.Controllers
                             switch (type)
                             {
                                 case OrganisationType.GovernmentBody:
-                                    user.CustomerOrganisationId = id;
+                                    customerId = id;
                                     break;
                                 case OrganisationType.Broker:
-                                    user.BrokerId = id;
+                                    brokerId = id;
                                     break;
                                 case OrganisationType.Owner:
                                     additionalRoles.Add(Roles.Admin);
+                                    organisationPrefix = "KamK";
                                     break;
                                 default:
                                     throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
                             }
                         }
                     }
+                    if (brokerId.HasValue)
+                    {
+                        organisationPrefix = _dbContext.Brokers.Single(c => c.BrokerId == brokerId).OrganizationPrefix;
+                    }
+                    if (customerId.HasValue)
+                    {
+                        organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganizationPrefix;
+                    }
+
+                    var user = new AspNetUser(model.Email,
+                        _userService.GenerateUserName(model.NameFirst, model.NameFamily, organisationPrefix),
+                        model.NameFirst,
+                        model.NameFamily)
+                    {
+                        CustomerOrganisationId = customerId,
+                        BrokerId = brokerId
+                    };
                     if (model.IsSuperUser)
                     {
                         additionalRoles.Add(Roles.SuperUser);
@@ -296,16 +311,16 @@ namespace Tolk.Web.Controllers
                         if (apiUser != null)
                         {
                             await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId());
-                            var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
-                            //Clear all Claims, and resave them...
-                            await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
-                            if (brokerUser.NormalizedEmail != model.Email.ToUpper())
+                            if (apiUser.NormalizedEmail != model.Email.ToUpper())
                             {
-                                var code = await _userManager.GenerateChangeEmailTokenAsync(brokerUser, model.Email);
-                                var result = await _userManager.ChangeEmailAsync(brokerUser, model.Email, code);
+                                apiUser.Email = model.Email;
+                                apiUser.NormalizedEmail = model.Email.ToUpper();
                                 var broker = _dbContext.Brokers.Single(b => b.BrokerId == brokerId);
                                 broker.EmailAddress = model.Email;
                             }
+                            var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
+                            //Clear all Claims, and resave them...
+                            await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
                             if (model.UseApiKeyAuthentication)
                             {
                                 await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseApiKeyAuthentication), DateTime.Now.ToShortDateString()));

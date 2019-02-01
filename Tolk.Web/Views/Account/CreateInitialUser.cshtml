@@ -11,8 +11,9 @@
         </p>
 
         <form asp-action="CreateInitialUser" asp-controller="Account" class="do-not-check-dirty">
-            <div asp-validation-summary="All" class="text-danger"></div>
             <form-entry asp-for="Email" />
+            <form-entry asp-for="FirstName" />
+            <form-entry asp-for="LastName" />
             <form-entry asp-for="NewPassword" />
             <form-entry asp-for="ConfirmPassword" />
             <button type="submit" class="btn btn-success">Skapa användare</button>

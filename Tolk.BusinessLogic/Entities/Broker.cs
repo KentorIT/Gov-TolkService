@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -18,10 +16,14 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string EmailAddress { get; set; }
 
+        [MaxLength(255)]
         public string EmailDomain { get; set; }
 
         [MaxLength(32)]
         public string OrganizationNumber { get; set; }
+
+        [MaxLength(8)]
+        public string OrganizationPrefix { get; set; }
 
         #region navigation properites
 

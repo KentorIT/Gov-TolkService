@@ -18,7 +18,6 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models.AccountViewModels;
-using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -35,7 +34,6 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
-        private readonly LoginLinkTokenProvider _loginLinkTokenProvider;
         private readonly NotificationService _notificationService;
 
         public AccountController(
@@ -49,7 +47,6 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
-            LoginLinkTokenProvider loginLinkTokenProvider,
             NotificationService notificationService)
         {
             _userManager = userManager;
@@ -62,7 +59,6 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
-            _loginLinkTokenProvider = loginLinkTokenProvider;
             _notificationService = notificationService;
         }
 
@@ -72,6 +68,7 @@ namespace Tolk.Web.Controllers
 
             var model = new AccountViewModel
             {
+                UserName = user.UserName,
                 NameFull = user.FullName ?? "-",
                 Email = user.Email ?? "-",
                 PhoneWork = user.PhoneNumber ?? "-",
@@ -117,13 +114,13 @@ namespace Tolk.Web.Controllers
                 {
                     if (user != null)
                     {
-                        await _userService.LogOnUpdateAsync(user.Id);
                         // Check if user is authorized to change account
                         if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
                         {
                             ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
                             return View(model);
                         }
+                        await _userService.LogOnUpdateAsync(user.Id);
                         user.NameFirst = model.NameFirst;
                         user.NameFamily = model.NameFamily;
                         user.PhoneNumber = model.PhoneWork;
@@ -146,6 +143,56 @@ namespace Tolk.Web.Controllers
                     {
                         throw new ApplicationException($"Can't find user {user.Id}");
                     }
+                }
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> ChangeEmail()
+        {
+            if (!await _userManager.HasPasswordAsync(await _userManager.GetUserAsync(User)))
+            {
+                return Forbid();
+            };
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (await _userManager.HasPasswordAsync(user))
+            {
+                // Check here for modelstate, if no password - there are no password entries.
+                if (ModelState.IsValid)
+                {
+                    if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
+                    {
+                        ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
+                        return View(model);
+                    }
+                    if (!_dbContext.Users.Any(u => !u.IsApiUser &&
+                     (u.NormalizedEmail == model.NewEmailAddress.ToUpper() ||
+                     u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == model.NewEmailAddress.ToUpper())))
+                    {
+                        var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
+
+                        if (emailUser.TemporaryChangedEmailEntry != null)
+                        {
+                            emailUser.TemporaryChangedEmailEntry.EmailAddress = model.NewEmailAddress;
+                            emailUser.TemporaryChangedEmailEntry.ExpirationDate = _clock.SwedenNow.AddDays(7);
+                        }
+                        else
+                        {
+                            user.TemporaryChangedEmailEntry = new TemporaryChangedEmailEntry { EmailAddress = model.NewEmailAddress, User = user, ExpirationDate = _clock.SwedenNow.AddDays(7) };
+                        }
+                        _dbContext.SaveChanges();
+                        return await SendChangedEmailLink(user, model.NewEmailAddress);
+                    }
+                    ModelState.AddModelError(nameof(model.NewEmailAddress), "Denna adress används redan");
                 }
             }
             return View(model);
@@ -190,61 +237,6 @@ namespace Tolk.Web.Controllers
             return await SendPasswordResetLink(user);
         }
 
-        // Common logic for setting of password and forgot password flows.
-        private async Task<IActionResult> SendPasswordResetLink(AspNetUser user)
-        {
-            if (!(await _userManager.IsEmailConfirmedAsync(user)))
-            {
-                // Here we'll just throw. Calling action might check this as well and do better error handling.
-                throw new InvalidOperationException($"Cannot send password reset to user {user.Id}/{user.Email} because email is not confirmed.");
-            }
-
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
-
-            var bodyPlain =
-$@"Återställning av lösenord för {Constants.SystemName}
-
-Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
-
-{resetLink}
-
-{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
-Om du inte har begärt en återställning av ditt lösenord kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.
-
-{NotificationService.NoReplyText}";
-
-            var bodyHtml =
-$@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
-
-<div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.</div>
-
-<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Återställ lösenord")}</div>
-
-<div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
-Om du inte har begärt en återställning av ditt lösenord kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.</div>
-
-<div>{NotificationService.NoReplyText}</div>";
-
-            _notificationService.CreateEmail(
-                user.Email,
-                $"Återställning lösenord {Constants.SystemName}",
-                bodyPlain,
-                bodyHtml);
-            _dbContext.SaveChanges();
-
-            _logger.LogInformation("Password reset link sent to {email} for {userId}",
-                user.Email, user.Id);
-
-            return RedirectToAction(nameof(ForgotPasswordConfirmation));
-        }
-
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string returnUrl = null)
@@ -273,26 +265,30 @@ supporten på {_options.SupportEmail}.</div>
 
         private async Task<IActionResult> PasswordLogin(LoginViewModel model, string returnUrl)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, lockoutOnFailure: true);
+            var user = await _userManager.FindByEmailAsync(model.UserName);
+            if (user == null)
+            {
+                user = await _userManager.FindByNameAsync(model.UserName);
+            }
+            var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                var user = await _userManager.FindByNameAsync(model.Email);
                 if (!user.IsActive)
                 {
                     //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
                     await _signInManager.SignOutAsync();
-                    _logger.LogInformation("Inactivated User {userName} tried to log in.", model.Email);
+                    _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName);
                     ModelState.AddModelError(string.Empty, "Användaren är inaktiverad. Kontakta din lokala administratör för mer information.");
                     return View(model);
                 }
                 user.LastLoginAt = _clock.SwedenNow;
                 await _userManager.UpdateAsync(user);
-                _logger.LogInformation("User {userName} logged in.", model.Email);
+                _logger.LogInformation("User {userName} logged in.", model.UserName);
                 return RedirectToLocal(returnUrl);
             }
             if (result.IsLockedOut)
             {
-                _logger.LogWarning("User account {userName} locked out.", model.Email);
+                _logger.LogWarning("User account {userName} locked out.", model.UserName);
                 return RedirectToAction(nameof(Lockout));
             }
             else
@@ -333,7 +329,7 @@ supporten på {_options.SupportEmail}.</div>
             _logger.LogDebug("Requesting password reset for {email}", model.Email);
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail ==  model.Email.ToUpper());
                 if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
@@ -355,6 +351,11 @@ supporten på {_options.SupportEmail}.</div>
                     {
                         return RedirectToAction(nameof(ForgotPasswordConfirmation));
                     }
+                }
+                if (user.IsApiUser)
+                {
+                    //ApiUser cannot get password!
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
                 return await SendPasswordResetLink(user);
             }
@@ -381,6 +382,37 @@ supporten på {_options.SupportEmail}.</div>
 
             var model = new ResetPasswordViewModel { Code = code };
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ChangeEmailCallback(string userId, string code)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                throw new ApplicationException($"Email confirmation for {userId} with code {code} failed");
+            }
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                var user = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
+                var newEmail = user.TemporaryChangedEmailEntry?.EmailAddress;
+                if (!string.IsNullOrEmpty(newEmail))
+                {
+                    await _userService.LogOnUpdateAsync(user.Id);
+                    var result = await _userManager.ChangeEmailAsync(user, newEmail, code);
+                    if (result.Succeeded)
+                    {
+                        user.TemporaryChangedEmailEntry = null;
+                        await _dbContext.SaveChangesAsync();
+                        transaction.Complete();
+                        return RedirectToAction(nameof(HomeController.Index), "Home", new { Message = "E-postadress uppdaterad" });
+                    }
+                    else
+                    {
+                        transaction.Dispose();
+                    }
+                }
+            }
+            return RedirectToAction(nameof(HomeController.Index), "Home", new { ErrorMessage = "E-postadress kunde inte uppdateras" });
         }
 
         [HttpPost]
@@ -450,11 +482,11 @@ supporten på {_options.SupportEmail}.</div>
                     if (_dbContext.IsUserStoreInitialized)
                     {
                         _logger.LogWarning("Tried to CreateInitialUser even though users/roles exist in the database.");
-                        ModelState.AddModelError("", "Det finns redan användare/roller i databasen, den här operationen är inte tillgänglig.");
+                        ModelState.AddModelError(model.Email, "Det finns redan användare/roller i databasen, den här operationen är inte tillgänglig.");
                     }
                     else
                     {
-                        var user = new AspNetUser(model.Email)
+                        var user = new AspNetUser(model.Email, _userService.GenerateUserName(model.FirstName, model.LastName, string.Empty), model.FirstName, model.LastName)
                         {
                             EmailConfirmed = true
                         };
@@ -602,7 +634,7 @@ supporten på {_options.SupportEmail}.</div>
                             {
                                 var selectedOrganisationId = int.Parse(model.OrganisationIdentifier);
                                 organisation = await _dbContext.CustomerOrganisations
-                                    .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId) 
+                                    .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
                                     || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
                                     .SingleOrDefaultAsync();
                                 if (organisation == null)
@@ -611,7 +643,11 @@ supporten på {_options.SupportEmail}.</div>
                                     return View(model);
                                 }
                             }
-                            var user = new AspNetUser(model.Email, organisation);
+                            var user = new AspNetUser(model.Email,
+                                _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganizationPrefix),
+                                model.FirstName,
+                                model.LastName,
+                                organisation);
                             var result = await _userManager.CreateAsync(user);
 
                             if (result.Succeeded)
@@ -632,7 +668,11 @@ supporten på {_options.SupportEmail}.</div>
 
                     if (broker != null)
                     {
-                        var user = new AspNetUser(model.Email, broker);
+                        var user = new AspNetUser(model.Email,
+                                _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
+                                model.FirstName,
+                                model.LastName,
+                                broker);
                         var result = await _userManager.CreateAsync(user);
 
                         if (result.Succeeded)
@@ -736,6 +776,105 @@ supporten på {_options.SupportEmail}.</div>
         }
 
         #region Helpers
+
+        // Common logic for setting of password and forgot password flows.
+        private async Task<IActionResult> SendPasswordResetLink(AspNetUser user)
+        {
+            if (!(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // Here we'll just throw. Calling action might check this as well and do better error handling.
+                throw new InvalidOperationException($"Cannot send password reset to user {user.Id}/{user.Email} because email is not confirmed.");
+            }
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
+
+            var bodyPlain =
+        $@"Återställning av lösenord för {Constants.SystemName}
+
+Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
+
+{resetLink}
+
+{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
+Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}.
+
+{NotificationService.NoReplyText}";
+
+            var bodyHtml =
+        $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
+
+<div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.</div>
+
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Återställ lösenord")}</div>
+
+<div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
+Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}.</div>
+
+<div>{NotificationService.NoReplyText}</div>";
+
+            _notificationService.CreateEmail(
+                user.Email,
+                $"Återställning lösenord {Constants.SystemName}",
+                bodyPlain,
+                bodyHtml);
+            _dbContext.SaveChanges();
+
+            _logger.LogInformation("Password reset link sent to {email} for {userId}",
+                user.Email, user.Id);
+
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+        }
+
+        private async Task<IActionResult> SendChangedEmailLink(AspNetUser user, string newEmailAddress)
+        {
+            var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmailAddress);
+            var resetLink = Url.ChangeEmailCallbackLink(user.Id.ToString(), code);
+
+            var bodyPlain =
+        $@"Ändring av e-postadress för {Constants.SystemName}
+
+Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
+
+{resetLink}
+
+Om du inte har bytt e-postadress kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}.
+
+{NotificationService.NoReplyText}";
+
+            var bodyHtml =
+        $@"<h2>Ändring av e-postadress för {Constants.SystemName} </h2>
+
+<div>Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren för att verifiera ändringen.</div>
+
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Verifiera e-postadress")}</div>
+
+<div>Om du inte har bytt e-postadress kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.SupportEmail}.</div>
+
+<div>{NotificationService.NoReplyText}</div>";
+
+            _notificationService.CreateEmail(
+                newEmailAddress,
+                $"Ändring av e-postadress för {Constants.SystemName}",
+                bodyPlain,
+                bodyHtml);
+            _dbContext.SaveChanges();
+
+            _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",
+                user.Email, user.Id);
+
+            return RedirectToAction(nameof(HomeController.Index), "Home", new { Message = "För att slutföra bytet av e-postadress, klicka på den länk som skickats till den angivna e-postadressen." });
+        }
 
         private void AddErrors(IdentityResult result)
         {

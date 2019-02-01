@@ -41,7 +41,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index(string message)
+        public async Task<IActionResult> Index(string message, string errorMessage)
         {
             if (!_dbContext.IsUserStoreInitialized)
             {
@@ -73,6 +73,7 @@ namespace Tolk.Web.Controllers
             {
                 PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
                 Message = message,
+                ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
                 StartLists = await GetStartLists()
             });

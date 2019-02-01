@@ -11,6 +11,29 @@ namespace Tolk.BusinessLogic.Entities
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class AspNetUser : IdentityUser<int>
     {
+        private AspNetUser() { }
+
+        public AspNetUser(string email, string userName, string firstName, string lastName)
+        {
+            Email = email;
+            UserName = userName;
+            NameFirst = firstName;
+            NameFamily = lastName;
+            IsActive = true;
+        }
+
+        public AspNetUser(string email, string userName, string firstName, string lastName, CustomerOrganisation customer)
+            : this(email, userName, firstName, lastName)
+        {
+            CustomerOrganisation = customer;
+        }
+
+        public AspNetUser(string email, string userName, string firstName, string lastName, Broker broker)
+            : this(email, userName, firstName, lastName)
+        {
+            Broker = broker;
+        }
+
         [MaxLength(255)]
         public string NameFirst { get; set; }
 
@@ -23,28 +46,6 @@ namespace Tolk.BusinessLogic.Entities
 
         [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }
-
-        private AspNetUser() { }
-
-        public AspNetUser(string email)
-        {
-            Email = email;
-            UserName = email;
-            IsActive = true;
-        }
-
-        public AspNetUser(string email, CustomerOrganisation customer)
-            : this(email)
-        {
-            CustomerOrganisation = customer;
-        }
-
-        public AspNetUser(string email, Broker broker)
-            : this(email)
-        {
-            Broker = broker;
-        }
-
         public List<IdentityUserRole<int>> Roles { get; set; }
 
         public List<IdentityUserClaim<int>> Claims { get; set; }
@@ -75,6 +76,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<UserNotificationSetting> NotificationSettings { get; set; }
 
         public List<UserAuditLogEntry> AuditLogEntries { get; set; }
+        public TemporaryChangedEmailEntry TemporaryChangedEmailEntry { get; set; }
 
         #endregion
     }

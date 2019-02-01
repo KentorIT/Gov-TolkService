@@ -8,6 +8,9 @@ namespace Tolk.Web.Models.AccountViewModels
 {
     public class AccountViewModel
     {
+        [Display(Name = "Användarnamn")]
+        public string UserName { get; set; }
+
         [Display(Name = "Namn")]
         public string NameFull { get; set; }
 

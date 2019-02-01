@@ -29,5 +29,7 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ParentCustomerOrganisation))]
         public List<CustomerOrganisation> SubCustomerOrganisations { get; set; }
 
+        [MaxLength(8)]
+        public string OrganizationPrefix { get; set; }
     }
 }

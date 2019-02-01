@@ -335,6 +335,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserNotificationSettingHistoryEntry> UserNotificationSettingHistoryEntries { get; set; }
 
+        public DbSet<TemporaryChangedEmailEntry> TemporaryChangedEmailStoreEntries { get; set; }
+
         public DbSet<MealBreak> MealBreaks { get; set; }
 
         public static bool isUserStoreInitialized = false;
