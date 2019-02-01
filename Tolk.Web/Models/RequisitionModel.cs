@@ -88,10 +88,12 @@ namespace Tolk.Web.Models
 
         [Range(31, 600, ErrorMessage = "Kontrollera värdet för total tidsspillan")]
         [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
+        [RegularExpression("^\\d{1,3}$", ErrorMessage = "Kontrollera värdet för total tidsspillan (endast heltal tillåtna, ange 0 om det inte finns någon tidsspillan)")]
         public int? TimeWasteTotalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Kontrollera värdet för spilltid som inträffat under obekväm arbetstid")]
         [Display(Name = "Andel av total tidsspillan som inträffat under obekväm arbetstid", Description = "Avser tid i minuter av den totala tidsspillan som angetts och som inträffat utanför vardagar 07:00-18:00")]
+        [RegularExpression("^\\d{1,3}$", ErrorMessage = "Kontrollera värdet för andel tidsspillan under obekväm arbetstid (endast heltal tillåtna, ange 0 om ingen tidsspillan inträffade under obekväm arbetstid)")]
         public int? TimeWasteIWHTime { get; set; }
 
         [Display(Name = "Angiven tidsspillan")]
