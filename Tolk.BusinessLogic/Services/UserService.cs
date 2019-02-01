@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -18,19 +20,22 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private readonly NotificationService _notificationService;
+        private readonly ILogger _logger;
 
         public UserService(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             IOptions<TolkOptions> options,
             ISwedishClock clock,
-            NotificationService notificationService)
+            NotificationService notificationService,
+            ILogger<UserService> logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _options = options.Value;
             _clock = clock;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public async Task SendInviteAsync(AspNetUser user)
@@ -140,10 +145,12 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 UpdatedByUserId = updatedByUserId,
                 UserChangeType = UserChangeType.Updated,
                 UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
-                RolesHistory = currentUserInformation.Roles.Select(r => new AspNetUserRoleHistoryEntry {
+                RolesHistory = currentUserInformation.Roles.Select(r => new AspNetUserRoleHistoryEntry
+                {
                     RoleId = r.RoleId,
                 }).ToList(),
-                ClaimsHistory = currentUserInformation.Claims.Select(c => new AspNetUserClaimHistoryEntry {
+                ClaimsHistory = currentUserInformation.Claims.Select(c => new AspNetUserClaimHistoryEntry
+                {
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
@@ -166,6 +173,32 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 UserChangeType = UserChangeType.ChangedPassword
             });
             await _dbContext.SaveChangesAsync();
+        }
+        public string GenerateUserName(string firstName, string lastName, string prefix)
+        {
+            string userNameStart = $"{prefix}{firstName.GetPrefix()}{lastName.GetPrefix()}";
+            var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWith(userNameStart)).Select(u => u.NormalizedUserName).ToList();
+            for (int i = 1; i < 100; ++i)
+            {
+                var userName = $"{userNameStart}{i.ToString("D2")}";
+                if (!users.Contains(userName.ToUpper()))
+                {
+                    return userName;
+                }
+            }
+            _logger.LogWarning("There are at least 100 users starting with the string {userName}.", userNameStart);
+            _notificationService.CreateEmail(_options.SupportEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...");
+            for (int i = 1; i < 1000; ++i)
+            {
+                var userName = $"{userNameStart}{i.ToString("D3")}";
+                if (!users.Contains(userName.ToUpper()))
+                {
+                    return userName;
+                }
+            }
+            _logger.LogWarning("There are at least 1100 users starting with the string {userName}.", userNameStart);
+
+            throw new NotSupportedException("Too many users starting with the string {userNameStart}.");
         }
     }
 }

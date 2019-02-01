@@ -29,6 +29,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public int Minutes { get => (int)(EndAt - StartAt).TotalMinutes; }
+
         [NotMapped]
         public DateTime StartAtTemp { get; set; }
 

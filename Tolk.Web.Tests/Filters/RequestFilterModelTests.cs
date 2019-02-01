@@ -7,6 +7,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 using Tolk.Web.Tests.TestHelpers;
 using Xunit;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 
 namespace Tolk.Web.Tests.Filters
 {

@@ -7,20 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Tolk.Web.Services;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Tolk.Web.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Tolk.Web.Authorization;
 using Tolk.BusinessLogic.Services;
-using Microsoft.Extensions.Internal;
 using Tolk.Web.Helpers;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Tolk.BusinessLogic.Helpers;
 using System;
-using Microsoft.AspNetCore.Http;
 using Tolk.Web.Models;
 using AutoMapper;
 
@@ -28,6 +22,7 @@ namespace Tolk.Web
 {
     public class Startup
     {
+        private const string EmailConfirmationTokenProviderName = "ConfirmEmail";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -60,15 +55,23 @@ namespace Tolk.Web
                 // If less than half of ExpireTimeSpan remains, lengthen session to ExpireTimeSpan again.
                 opt.SlidingExpiration = true;
             });
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Tokens.EmailConfirmationTokenProvider = EmailConfirmationTokenProviderName;
+                options.Tokens.ChangeEmailTokenProvider = EmailConfirmationTokenProviderName;
+            });
 
+            services.Configure<ConfirmEmailDataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromDays(7);
+            });
             services.AddIdentity<AspNetUser, IdentityRole<int>>(opt =>
             {
                 opt.SignIn.RequireConfirmedEmail = true;
             })
                 .AddEntityFrameworkStores<TolkDbContext>()
-                .AddDefaultTokenProviders();
-
-            services.AddTransient<LoginLinkTokenProvider>();
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<ConfirmEmailDataProtectorTokenProvider<AspNetUser>>(EmailConfirmationTokenProviderName);
 
             services.AddMemoryCache();
             services.AddScoped<SelectListService>();

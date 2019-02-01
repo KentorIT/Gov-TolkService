@@ -11,6 +11,9 @@ namespace Tolk.Web.Models
     {
         public int? Id { get; set; }
 
+        [Display(Name = "Användarnamn")]
+        public string UserName { get; set; }
+
         [Display(Name = "Namn")]
         public string NameFull => $"{NameFirst} {NameFamily}";
 

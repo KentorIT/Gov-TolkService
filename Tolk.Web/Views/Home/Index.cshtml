@@ -21,6 +21,22 @@
         </div>
     </div>
 }
+@if (!string.IsNullOrEmpty(@Model.ErrorMessage))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <br />
+            <div class="panel panel-primary">
+                <div class="panel-heading warning">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                    <span class="info-message">
+                        @Model.ErrorMessage
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @if (Model.ConfirmationMessages.Any())
 {
     <div class="row">

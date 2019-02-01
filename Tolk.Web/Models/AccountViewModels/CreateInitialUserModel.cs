@@ -14,5 +14,13 @@ namespace Tolk.Web.Models.AccountViewModels
         [Display(Name = "E-post")]
         [StringLength(255)]
         public string Email { get; set; }
+
+        [Required]
+        [Display(Name = "Förnamn")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Efternamn")]
+        public string LastName { get; set; }
     }
 }

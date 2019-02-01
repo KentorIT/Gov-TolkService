@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Tolk.BusinessLogic.Tests\Tolk.BusinessLogic.Tests.csproj" />
     <ProjectReference Include="..\Tolk.Web\Tolk.Web.csproj" />
   </ItemGroup>
 

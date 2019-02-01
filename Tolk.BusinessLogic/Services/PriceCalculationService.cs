@@ -56,14 +56,22 @@ namespace Tolk.BusinessLogic.Services
         public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
         }
 
         public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, decimal? perdiem, decimal? carCompensation, Order replacingOrder, List<MealBreak> mealbreaks = null)
         {
             //if replacementorder then we must check times from the replacing order (not the comp.level) 
             var prices = GetPriceList(startAt, competenceLevel, listType);
-            var priceListRowsPerPriceType = MergePriceListRowsOfSameType(GetPriceRowsPerType(startAt, endAt, prices)).ToList();
+
+            //we have to check for mealbeaks and reduce extra compensation
+            IDictionary<PriceListRowType, int> mealbreakTimes = null;
+            //Get mealbreaks times, if any
+            if (mealbreaks != null && mealbreaks.Any())
+            {
+                mealbreakTimes = GetMealBreakTimesAndTypes(mealbreaks);
+            }
+            var priceListRowsPerPriceType = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices, mealbreaks), mealbreakTimes).ToList();
 
             //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
             var priceRowsFromRequest = requestPriceRows.Where(plr => plr.PriceRowType == PriceRowType.InterpreterCompensation).ToList();
@@ -79,7 +87,7 @@ namespace Tolk.BusinessLogic.Services
             if (replacingOrder != null)
             {
                 var pricesReplacingOrder = GetPriceList(replacingOrder.StartAt, competenceLevel, listType);
-                var priceListRowsReplacingOrder = MergePriceListRowsOfSameType(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, pricesReplacingOrder)).ToList();
+                var priceListRowsReplacingOrder = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, pricesReplacingOrder)).ToList();
                 bool useReplacingOrderTimes = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceListRowsReplacingOrder);
                 if (useReplacingOrderTimes)
                 {
@@ -97,13 +105,32 @@ namespace Tolk.BusinessLogic.Services
         /// If order passes midnight their might be two rows of same pricetype, merge these to one 
         /// Also check if two duplicate rows have less or equal compensationtime together. Then it should be reduced, e.g. 23:45-00:45 (should be two 30 min periods not three)
         /// </summary>
-        public IEnumerable<PriceRowBase> MergePriceListRowsOfSameType(IEnumerable<PriceRowBase> pricePerType)
+        public IEnumerable<PriceRowBase> MergePriceListRowsAndReduceForMealBreak(IEnumerable<PriceRowBase> pricePerType, IDictionary<PriceListRowType, int> mealbreakDictionary = null)
         {
-            var hash = new HashSet<int>();
-            var duplicatesPriceListrows = pricePerType.Select(pri => pri.PriceListRow.PriceListRowId).Where(item => !hash.Add(item.Value)).Distinct();
+            int newQuantity = 0;
+            var duplicatesPriceListrows = pricePerType.GroupBy(x => x.PriceListRow.PriceListRowId)
+                             .Where(g => g.Count() > 1)
+                             .Select(g => g.Key)
+                             .Distinct().ToList();
+
             if (!duplicatesPriceListrows.Any())
             {
-                return pricePerType;
+                if (mealbreakDictionary != null)
+                {
+                    List<PriceRowBase> pl = pricePerType.Where(pr => pr.PriceListRow.PriceListRowType != PriceListRowType.BigHolidayWeekendIWH && pr.PriceListRow.PriceListRowType != PriceListRowType.WeekendIWH && pr.PriceListRow.PriceListRowType != PriceListRowType.InconvenientWorkingHours).ToList();
+                    foreach (PriceRowBase pricerow in pricePerType.Where(pr => pr.PriceListRow.PriceListRowType == PriceListRowType.BigHolidayWeekendIWH || pr.PriceListRow.PriceListRowType == PriceListRowType.WeekendIWH || pr.PriceListRow.PriceListRowType == PriceListRowType.InconvenientWorkingHours))
+                    {
+                        //reduce quantity with mealbreaks, check if quantity > 0 before adding
+                        newQuantity = GetReducedQuantityForMealbreak(pricerow, mealbreakDictionary[pricerow.PriceListRow.PriceListRowType]);
+                        if (newQuantity > 0)
+                        {
+                            pricerow.Quantity = newQuantity;
+                            pl.Add(pricerow);
+                        }
+                    }
+                    return pl;
+                }
+                else { return pricePerType; }
             }
             else
             {
@@ -112,16 +139,33 @@ namespace Tolk.BusinessLogic.Services
                 {
                     PriceRowBase newPriceRow = pricePerType.OrderBy(pr => pr.StartAt).First(pr => pr.PriceListRow.PriceListRowId == priceListRowId);
                     var noOfMinutes = pricePerType.Where(pr => pr.PriceListRow.PriceListRowId == priceListRowId).Sum(pr => pr.Minutes);
+
+                    //reduce noOfMinutes with mealbreak minutes
+                    if (mealbreakDictionary != null && mealbreakDictionary.ContainsKey(newPriceRow.PriceListRow.PriceListRowType))
+                    {
+                        noOfMinutes -= mealbreakDictionary[newPriceRow.PriceListRow.PriceListRowType];
+                    }
                     var compensationPeriod = newPriceRow.PriceListRow.MaxMinutes;
-                    var newQuantity = compensationPeriod == 0 ? newPriceRow.Quantity : noOfMinutes % compensationPeriod > 0 ? (noOfMinutes / compensationPeriod) + 1 : noOfMinutes / compensationPeriod;
+                    newQuantity = compensationPeriod == 0 ? newPriceRow.Quantity : noOfMinutes % compensationPeriod > 0 ? (noOfMinutes / compensationPeriod) + 1 : noOfMinutes / compensationPeriod;
                     newPriceRow.Quantity = newQuantity;
                     newPriceRow.EndAt = pricePerType.OrderBy(pr => pr.EndAt).Last(pr => pr.PriceListRow.PriceListRowId == priceListRowId).EndAt;
-                    mergedList.Add(newPriceRow);
+                    if (newQuantity > 0)
+                    {
+                        newPriceRow.Quantity = newQuantity;
+                        mergedList.Add(newPriceRow);
+                    }
                 }
                 mergedList.AddRange(pricePerType.Where(pri => !duplicatesPriceListrows.Contains(pri.PriceListRow.PriceListRowId)));
                 return mergedList;
             }
         }
+
+        private int GetReducedQuantityForMealbreak(PriceRowBase newPriceRow, int mealbreakMinutes)
+        {
+            int reducedMinutes = newPriceRow.Minutes - mealbreakMinutes;
+            return reducedMinutes > 0 ? reducedMinutes % newPriceRow.PriceListRow.MaxMinutes > 0 ? (reducedMinutes / newPriceRow.PriceListRow.MaxMinutes) + 1 : reducedMinutes / newPriceRow.PriceListRow.MaxMinutes : 0;
+        }
+
         private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, decimal? outlay = null, decimal? perDiem = null, decimal? carCompensation = null, PriceRowBase requestBrokerFeeForRequisition = null)
         {
             List<PriceRowBase> allPriceRows = new List<PriceRowBase>
@@ -264,11 +308,105 @@ namespace Tolk.BusinessLogic.Services
             return priceTime;
         }
 
-        private IEnumerable<PriceRowBase> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices)
+        private IDictionary<PriceListRowType, int> GetMealBreakTimesAndTypes(List<MealBreak> mealbreaks)
+        {
+            int minIWH = 0; // normal iwh time
+            int minWeekendsIWH = 0; // weekends, holiday
+            int minIWHBigHoliday = 0; // big holiday
+
+            DateTimeOffset tempstart;
+            DateTimeOffset tempstop;
+
+            foreach (MealBreak mb in mealbreaks)
+            {
+                var start = mb.StartAt;
+                var endAt = mb.EndAt;
+
+                while (start < endAt)
+                {
+                    var dateTypes = GetDateTypes(start.Date);
+                    if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
+                        dateTypes.Contains(DateType.Holiday) ||
+                        (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
+                    {
+                        tempstart = start;
+                        tempstop = start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden();
+                        if (dateTypes.Contains(DateType.BigHolidayFullDay))
+                        {
+                            minIWHBigHoliday += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                        else
+                        {
+                            minWeekendsIWH += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                    }
+
+                    //Find any minutes before 07:00
+                    if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
+                        dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) &&
+                        start.TimeOfDay < new TimeSpan(7, 0, 0))
+                    {
+                        tempstart = start;
+                        tempstop = start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7).ToDateTimeOffsetSweden() : endAt;
+                        if (dateTypes.Contains(DateType.DayAfterBigHoliday))
+                        {
+                            minIWHBigHoliday += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                        else
+                        {
+                            minIWH += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                    }
+                    //takes wrong when day after big holiday and after 18:00
+                    if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
+                        dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) &&
+                        (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0)))
+                    {
+                        tempstart = start.Hour < 18 ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : start;
+                        tempstop = start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden();
+                        if (dateTypes.Contains(DateType.DayBeforeBigHoliday))
+                        {
+                            minIWHBigHoliday += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                        else
+                        {
+                            minIWH += (int)(tempstop - tempstart).TotalMinutes;
+                        }
+                    }
+                    //00:00 => 18:00
+                    if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
+                       start.TimeOfDay < new TimeSpan(18, 0, 0))
+                    {
+                        tempstart = start;
+                        tempstop = start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : endAt;
+                        minWeekendsIWH += (int)(tempstop - tempstart).TotalMinutes;
+                    }
+                    //07:00 => 24:00
+                    if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
+                        (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0)))
+                    {
+                        tempstart = start.Date.AddHours(7).ToDateTimeOffsetSweden();
+                        tempstop = start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden();
+                        minWeekendsIWH += (int)(tempstop - tempstart).TotalMinutes;
+                    }
+                    //Start counting from the first minute on next day
+                    start = start.AddDays(1).Date.ToDateTimeOffsetSweden();
+                }
+            }
+            return new Dictionary<PriceListRowType, int>
+            {
+                { PriceListRowType.InconvenientWorkingHours, minIWH },
+                { PriceListRowType.WeekendIWH, minWeekendsIWH },
+                { PriceListRowType.BigHolidayWeekendIWH, minIWHBigHoliday }
+            };
+        }
+
+        private IEnumerable<PriceRowBase> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, List<MealBreak> mealbreaks = null)
         {
             int maxMinutes = 330;
             TimeSpan span = endAt - startAt;
-            int totalMinutes = (int)span.TotalMinutes;
+            int mealbreakMinutes = mealbreaks == null ? 0 : mealbreaks.Sum(mb => mb.Minutes);
+            int totalMinutes = (int)span.TotalMinutes - mealbreakMinutes;
             if (totalMinutes > maxMinutes)
             {
                 DateTimeOffset extraTimeStartsAt = startAt.AddMinutes(maxMinutes);
@@ -283,11 +421,10 @@ namespace Tolk.BusinessLogic.Services
                     Price = basePrice.Price
                 };
                 //Calculate when the extra time starts, date wize.
-                yield return GetPriceInformation(extraTimeStartsAt, endAt, PriceListRowType.PriceOverMaxTime, prices);
+                yield return GetPriceInformation(extraTimeStartsAt.AddMinutes(mealbreakMinutes), endAt, PriceListRowType.PriceOverMaxTime, prices);
             }
             else
             {
-                var basePriceTest = prices.OrderBy(p => p.MaxMinutes);
                 var basePrice = prices.OrderBy(p => p.MaxMinutes)
                     .First(r => r.PriceListRowType == PriceListRowType.BasePrice && r.MaxMinutes >= totalMinutes);
                 yield return new PriceRowBase

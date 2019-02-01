@@ -189,3 +189,12 @@ FROM Brokers b
 JOIN Rankings r ON b.BrokerId = r.BrokerId
 JOIN Regions reg ON reg.RegionId = r.RegionId
 ORDER BY reg.Name, r.Rank
+
+--lägg in skyddad tolk för varje förmedling (OBS! detta är ej gjort i Tolkprod ännu)
+  BEGIN TRAN
+  
+  INSERT INTO [dbo].[InterpreterBrokers]
+  (BrokerId, Email, FirstName, LastName, OfficialInterpreterId)  
+  SELECT BrokerId, 'tolk@'+EmailDomain, 'Tolk', 'Skyddad Identitet', 1 FROM [dbo].[Brokers];
+
+  COMMIT TRAN;

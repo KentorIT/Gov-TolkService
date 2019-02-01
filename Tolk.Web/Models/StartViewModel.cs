@@ -10,6 +10,7 @@ namespace Tolk.Web.Models
         public string PageTitle { get; set; } = "Aktiva bokningar";
 
         public string Message { get; set; }
+        public string ErrorMessage { get; set; }
 
         public IEnumerable<ConfirmationMessage> ConfirmationMessages { get; set; }
 

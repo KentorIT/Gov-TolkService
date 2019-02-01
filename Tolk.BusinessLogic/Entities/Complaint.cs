@@ -86,6 +86,10 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Disputed complaints can be answered.");
             }
+            if (status != ComplaintStatus.TerminatedAsDisputeAccepted && status != ComplaintStatus.DisputePendingTrial)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. The complaint is in the wrong state to be set as {status}");
+            }
             Status = status;
             AnswerDisputedAt = answerDisputedAt;
             AnswerDisputedBy = userId;
@@ -98,6 +102,10 @@ namespace Tolk.BusinessLogic.Entities
             if (Status != ComplaintStatus.Created)
             {
                 throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. Only Created complaints can be answered.");
+            }
+            if (status != ComplaintStatus.Confirmed && status != ComplaintStatus.Disputed)
+            {
+                throw new InvalidOperationException($"Complaint {ComplaintId} is {Status}. The complaint is in the wrong state to be set as {status}");
             }
             AnswerMessage = message;
             Status = status;

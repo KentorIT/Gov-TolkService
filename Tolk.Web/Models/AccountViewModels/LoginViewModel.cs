@@ -10,11 +10,8 @@ namespace Tolk.Web.Models.AccountViewModels
     public class LoginViewModel
     {
         [Required]
-        [EmailAddress]
-        [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
-        [Display(Name = "E-post")]
-        [StringLength(255)]
-        public string Email { get; set; }
+        [Display(Name = "E-post eller användarnamn")]
+        public string UserName { get; set; }
 
         [ClientRequired]
         [DataType(DataType.Password)]

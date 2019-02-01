@@ -16,6 +16,14 @@ namespace Tolk.Web.Models.AccountViewModels
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
 
+        [Required]
+        [Display(Name = "Förnamn")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Efternamn")]
+        public string LastName { get; set; }
+
         public int ParentOrganisationId { get; set; }
     }
 }
