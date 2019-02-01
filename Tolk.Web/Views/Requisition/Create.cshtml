@@ -79,6 +79,7 @@
                         </div>
                         <div class="col-sm-12">
                             <form-entry asp-for="SessionStartedAt" id="SessionStartedAt" />
+                            <div id="sessionStartedAtValidator" class="d-none text-danger body"></div>
                         </div>
                     </div>
                 </div>
@@ -128,7 +129,7 @@
                     <div class="d-none mealbreak-list no-padding">
                         <table class="table mealbreak-table">
                             <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
-                            <tbody></tbody>
+                            <tbody id="mealBreak-tbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -245,14 +246,14 @@
             <div class="modal-body" id="req">
                 <form method="post" asp-action="" class="do-not-check-dirty">
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div class="col-sm-10">
                             <form-entry asp-for="MealBreakStartAt" id="MealBreakStartedAt" />
-                            <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
+                            <div id="mealBreakStartedAtAtValidator" class="d-none text-danger body"></div>
                             <br /><br />
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div class="col-sm-10">
                             <form-entry asp-for="MealBreakEndAt" id="MealBreakEndedAt" />
                             <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
                             <br /><br />
