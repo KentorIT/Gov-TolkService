@@ -97,6 +97,12 @@ namespace Tolk.Web.Controllers
         /// <param name="id">The Request to connect the requisition to</param>
         public async Task<IActionResult> Create(int id)
         {
+            // No prior status is also valid
+            RequisitionStatus[] validStatuses = new[]
+            {
+                RequisitionStatus.DeniedByCustomer
+            };
+
             var request = _dbContext.Requests
                 .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
@@ -108,12 +114,18 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.PriceRows)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Single(o => o.RequestId == id);
+               .Single(o => o.RequestId == id);
+
+            if (request.Requisitions.Where(req => req.RequestId == id && !validStatuses.Contains(req.Status)).Any())
+            {
+                return RedirectToAction("View", "Request", new { id, tab = "requisition" });
+            }
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
                 var model = RequisitionModel.GetModelFromRequest(request);
                 Guid groupKey = Guid.NewGuid();
+
 
                 //Get request model from db
                 if (model.PreviousRequisition != null)

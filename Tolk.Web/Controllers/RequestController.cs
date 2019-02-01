@@ -122,6 +122,11 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Process(int id)
         {
+            RequestStatus[] validStatuses = new[]
+            {
+              RequestStatus.Created
+            };
+
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.PriceRows)
                 .Include(r => r.Order).ThenInclude(o => o.Requirements)
@@ -141,6 +146,11 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
+
+            if (!validStatuses.Contains(request.Status))
+            {
+                return RedirectToAction("View", new { id });
+            }
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
