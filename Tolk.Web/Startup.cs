@@ -1,22 +1,25 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Tolk.Web.Services;
-using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
-using System.Globalization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Tolk.Web.Authorization;
-using Tolk.BusinessLogic.Services;
-using Tolk.Web.Helpers;
-using Tolk.BusinessLogic.Helpers;
+using Microsoft.AspNetCore.Rewrite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using System;
+using System.Globalization;
+using System.Net;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using AutoMapper;
+using Tolk.Web.Services;
 
 namespace Tolk.Web
 {
@@ -87,13 +90,13 @@ namespace Tolk.Web
                 opt.ModelBinderProviders.Insert(3, new CheckboxGroupModelBinderProvider());
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
- 
+
             Mapper.Initialize(cfg =>
             {
                 cfg.CreateMap<OrderModel, ReplaceOrderModel>();
             });
 
-           // This does not, for some reason, work. I had to initialize the map when I use it instead...
+            // This does not, for some reason, work. I had to initialize the map when I use it instead...
             //services.AddAutoMapper(cfg =>
             //{
             //    cfg.CreateMap<OrderModel, ReplaceOrderModel>();
@@ -132,7 +135,6 @@ namespace Tolk.Web
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
             var autoMigrate = Configuration.GetSection("Database")["AutoMigrateOnStartup"];
 
             if (autoMigrate != null && bool.Parse(autoMigrate))
@@ -142,7 +144,7 @@ namespace Tolk.Web
 
             if (!roleManager.RoleExistsAsync(Roles.Admin).Result)
             {
-                 IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Admin)).Result;
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Admin)).Result;
             }
             if (!roleManager.RoleExistsAsync(Roles.Impersonator).Result)
             {
@@ -165,12 +167,53 @@ namespace Tolk.Web
                 SupportedCultures = cultureArray,
                 SupportedUICultures = cultureArray
             });
+            app.UseRewriter(new RewriteOptions
+            {
+                Rules =
+                {
+                    new RedirectHostRule
+                    {
+                        InternalHost = Configuration["InternalHost"],
+                        OfficialSiteUrl = Configuration["PublicOrigin"],
+                    }
+                }
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+    }
+    public class RedirectHostRule : IRule
+    {
+        public int StatusCode { get; } = (int)HttpStatusCode.MovedPermanently;
+        public bool ExcludeLocalhost { get; set; } = true;
+        public string InternalHost { get; set; }
+        public string OfficialSiteUrl { get; set; }
+
+        public void ApplyRule(RewriteContext context)
+        {
+            var request = context.HttpContext.Request;
+            var host = request.Host;
+            if (ExcludeLocalhost && string.Equals(host.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Result = RuleResult.ContinueRules;
+                return;
+            }
+
+            if (string.Equals(host.Host, InternalHost, StringComparison.OrdinalIgnoreCase))
+            {
+                var response = context.HttpContext.Response;
+                response.StatusCode = StatusCode;
+                response.Headers[HeaderNames.Location] =
+                    $"{OfficialSiteUrl}{request.PathBase}{request.Path}{request.QueryString}";
+                context.Result = RuleResult.EndResponse; // Do not continue processing the request     
+                return;
+            }
+            context.Result = RuleResult.ContinueRules;
+            return;
         }
     }
 }
