@@ -39,8 +39,11 @@ function checkWasteTime() {
 }
 
 function checkSessionEndedAt() {
-    var validatorId = "#sessionEndedAtValidator";
 
+    var validatorId = "#sessionEndedAtValidator";
+    var validatorIdStart = "#sessionStartedAtValidator";
+    $(validatorId).hide();
+    $(validatorIdStart).hide();
     if (!checkSessionEndedAtBeforeNow()) {
         triggerValidator("Faktisk sluttid kan inte ske efter nutid", $(validatorId));
         return false;
@@ -49,10 +52,19 @@ function checkSessionEndedAt() {
         triggerValidator("Faktisk sluttid kan inte ske före faktisk starttid", $(validatorId));
         return false;
     }
-    else {
-        $(validatorId).hide();
-        return true;
+    //check mealbreaks
+    var message = checkEachMealBreak(getSessionStartDate(), getSessionEndDate(), true);
+    if (message !== "") {
+        if (message.includes("slut")) {
+            triggerValidator(message, $(validatorId));
+        }
+        else {
+            triggerValidator(message, $(validatorIdStart));
+            $(validatorId).hide();
+        }
+        return false;
     }
+    return true;
 }
 
 function checkSessionEndedAtAfterStart() {
@@ -95,7 +107,6 @@ function checkSessionEndedAtBeforeNow() {
             return false;
         }
     }
-
     return true;
 }
 
@@ -104,8 +115,6 @@ function triggerValidator(message, validatorId) {
     validatorId.append(message);
     validatorId.show();
 }
-
-
 
 $(function () {
     var currentId = 0;
@@ -116,27 +125,44 @@ $(function () {
     });
 
     function AddMealbreak(target) {
-        //maybe we should empty dates/check date lock date etc 
+        //empty validators
+        $('#mealBreakEndedAtAtValidator').empty();
+        $('#mealBreakStartedAtAtValidator').empty();
+
         var sessionStart = $('#SessionStartedAt_Date').val();
         var sessionEnd = $('#SessionEndedAt_Date').val();
-        var sessionStartTime = $('#SessionStartedAt_Hour').val();
-        var sessionEndTime = $('#SessionEndedAt_Hour').val();
-        //if assignment time just one day set calander and lock it (maybe we should not display them)
+        var sessionStartHour = $('#SessionStartedAt_Hour').val();
+        var sessionEndHour = $('#SessionEndedAt_Hour').val();
+
+        var newSessionStartHour = sessionStartHour == 23 ? 0 : Number(sessionStartHour) + 1;
+        var newSessionEndHour = sessionEndHour == 0 ? 23 : Number(sessionEndHour) - 1;
+
+        target.find("#MealBreakStartAt_Minute").val(0).trigger("change");
+        target.find("#MealBreakEndAt_Minute").val(0).trigger("change");
+
+        //if assignment time just one day set calander and lock them
         if (sessionStart !== "" && sessionEnd === sessionStart) {
             target.find("#MealBreakStartAt_Date").val(sessionStart);
             target.find("#MealBreakEndAt_Date").val(sessionEnd);
             target.find("#MealBreakStartAt_Date").attr('disabled', true);
             target.find("#MealBreakEndAt_Date").attr('disabled', true);
+            if (sessionEndHour - sessionStartHour > 1) {
+                target.find("#MealBreakStartAt_Hour").val(newSessionStartHour).trigger("change");
+                target.find("#MealBreakEndAt_Hour").val(newSessionEndHour).trigger("change");
+            }
+            else {
+                target.find("#MealBreakStartAt_Hour").val(sessionStartHour).trigger("change");
+                target.find("#MealBreakEndAt_Hour").val(sessionEndHour).trigger("change");
+            }
         }
         else {
             target.find("#MealBreakStartAt_Date").val(sessionStart);
             target.find("#MealBreakEndAt_Date").val(sessionStart);
+            target.find("#MealBreakStartAt_Hour").val(newSessionStartHour).trigger("change");
+            target.find("#MealBreakEndAt_Hour").val(newSessionEndHour).trigger("change");
             target.find("#MealBreakStartAt_Date").attr('disabled', false);
             target.find("#MealBreakEndAt_Date").attr('disabled', false);
         }
-        //todo check starthour and no of hours for assignment and add some hours?
-        target.find("#MealBreakStartAt_Hour").val(sessionStartTime).trigger("change");
-        target.find("#MealBreakEndAt_Hour").val(sessionEndTime).trigger("change");
 
         var $form = target.find('form:first');
         target.bindEnterKey('form:first input', '.btn-default');
@@ -163,13 +189,53 @@ $(function () {
                 currentId++;
             });
         }
+        validateControls();
     });
 
     $("body").on("click", ".save-mealbreak", function (event) {
         event.preventDefault();
+
+        $('#mealBreakEndedAtAtValidator').empty();
+        $('#mealBreakStartedAtAtValidator').empty();
         var modalContent = $(this).parents(".modal-content");
 
-        //Before we start, validate the form!
+        var startSessionDateAndTime = getSessionStartDate();
+        var endSessionDateAndTime = getSessionEndDate();
+
+        var startMealDateAndTime = getDate($("#MealBreakStartAt_Date").val(), $("#MealBreakStartAt_Hour").val(), $("#MealBreakStartAt_Minute").val());
+        var endMealDateAndTime = getDate($("#MealBreakEndAt_Date").val(), $("#MealBreakEndAt_Hour").val(), $("#MealBreakEndAt_Minute").val());
+
+        if (startMealDateAndTime - endMealDateAndTime === 0) {
+            triggerValidator("Sluttid kan inte vara samma som starttid", $('#mealBreakEndedAtAtValidator'));
+            return;
+        }
+        else if (startMealDateAndTime > endMealDateAndTime) {
+            triggerValidator("Sluttid kan inte vara före starttid", $('#mealBreakEndedAtAtValidator'));
+            return;
+        }
+        if (startSessionDateAndTime - startMealDateAndTime === 0) {
+            triggerValidator("Måltidspausen kan inte starta samtidigt som uppdraget startar", $('#mealBreakStartedAtAtValidator'));
+            return;
+        }
+        if (endSessionDateAndTime - endMealDateAndTime === 0) {
+            triggerValidator("Måltidspausen kan inte sluta samtidigt som uppdraget slutar", $('#mealBreakEndedAtAtValidator'));
+            return;
+        }
+
+        if (startSessionDateAndTime > startMealDateAndTime) {
+            triggerValidator("Måltidspausen kan inte starta innan uppdraget startar", $('#mealBreakStartedAtAtValidator'));
+            return;
+        }
+        if (endSessionDateAndTime < endMealDateAndTime) {
+            triggerValidator("Måltidspausen kan inte sluta efter uppdraget slutar", $('#mealBreakEndedAtAtValidator'));
+            return;
+        }
+        var validationMessage = checkEachMealBreak(startMealDateAndTime, endMealDateAndTime, false);
+        if (validationMessage !== "") {
+            triggerValidator(validationMessage, $('#mealBreakEndedAtAtValidator'));
+            return;
+        }
+
         if (modalContent.find("form").valid()) {
             var $hidden = $("#baseMealBreaks").clone();
             //Change the ids for the cloned inputs
@@ -179,16 +245,8 @@ $(function () {
             });
 
             //check modal for input
-            var startAtDate = modalContent.find("#MealBreakStartAt_Date").val();
-            var startAtHour = modalContent.find("#MealBreakStartAt_Hour").val().length === 1 ? "0" + modalContent.find("#MealBreakStartAt_Hour").val() : modalContent.find("#MealBreakStartAt_Hour").val();
-            var startAtMin = modalContent.find("#MealBreakStartAt_Minute").val().length === 1 ? "0" + modalContent.find("#MealBreakStartAt_Minute").val() : modalContent.find("#MealBreakStartAt_Minute").val();
-
-            var endAtDate = modalContent.find("#MealBreakEndAt_Date").val();
-            var endAtHour = modalContent.find("#MealBreakEndAt_Hour").val().length === 1 ? "0" + modalContent.find("#MealBreakEndAt_Hour").val() : modalContent.find("#MealBreakEndAt_Hour").val();
-            var endAtMin = modalContent.find("#MealBreakEndAt_Minute").val().length === 1 ? "0" + modalContent.find("#MealBreakEndAt_Minute").val() :modalContent.find("#MealBreakEndAt_Minute").val();
-
-            var totalStartAt = startAtDate + ' ' + startAtHour + ':' + startAtMin;
-            var totalEndAt = endAtDate + ' ' + endAtHour + ':' + endAtMin;
+            var totalStartAt = $("#MealBreakStartAt_Date").val() + ' ' + getTimeString($("#MealBreakStartAt_Hour").val()) + ':' + getTimeString($("#MealBreakStartAt_Minute").val());
+            var totalEndAt = $("#MealBreakEndAt_Date").val() + ' ' + getTimeString($("#MealBreakEndAt_Hour").val()) + ':' + getTimeString($("#MealBreakEndAt_Minute").val());
 
             var startAtSelector = "#MealBreaks_" + currentId + "__StartAtTemp";
             $hidden.find(startAtSelector).val(totalStartAt);
@@ -212,3 +270,62 @@ $(function () {
         }
     });
 });
+
+function getSessionStartDate() {
+    return getDate($('#SessionStartedAt_Date').val(), $('#SessionStartedAt_Hour').val(), $('#SessionStartedAt_Minute').val());
+}
+
+function getSessionEndDate() {
+    return getDate($('#SessionEndedAt_Date').val(), $('#SessionEndedAt_Hour').val(), $('#SessionEndedAt_Minute').val());
+}
+
+function getDate(date, hour, min) {
+    hour = hour.length === 1 ? "0" + hour : hour;
+    min = min.length === 1 ? "0" + min : min;
+    return new Date(date + "T" + hour + ":" + min + ":00");
+}
+
+function getTimeString(timeValue) {
+    return timeValue.length === 1 ? "0" + timeValue : timeValue;
+}
+
+function checkEachMealBreak(start, end, checkAgainstSessionTime) {
+    var message = "";
+    var mbTbody = $("#mealBreak-tbody");
+    var $rows = mbTbody.find("tr");
+    if ($rows.length === 0) {
+        return message;
+    }
+    else {
+        $rows.each(function () {
+            var tdStart = $(this).find(".table-start-column").text().trim();
+            var tdEnd = $(this).find(".table-end-column").text().trim();
+            var testStart = tdStart.substring(0, 10) + "T" + tdStart.substring(11, 16) + ":00";
+            var testEnd = tdEnd.substring(0, 10) + "T" + tdEnd.substring(11, 16) + ":00";
+            //check added mealbreak against previous mealbreaks
+            if (!checkAgainstSessionTime) {
+                if (new Date(testStart) - end === 0 || new Date(testEnd) - start === 0 || new Date(testStart) - start === 0 || new Date(testEnd) - end === 0) {
+                    message = "Denna måltidspaus startar eller slutar precis samtidigt som en tidigare sparad måltidspaus startar eller slutar. Det måste vara mellanrum mellan måltidspauser.";
+                    return;
+                }
+                else if ((new Date(testStart) > start && new Date(testStart) < end) || (new Date(testStart) < start && new Date(testEnd) > start)) {
+                    message = "Denna måltidspaus överlappar med en tidigare sparad måltidspaus.";
+                    return;
+                }
+            }
+            //check against session start and end
+            else {
+                if (new Date(testStart) <= start) {
+                    message = "Minst en måltidspaus börjar innan eller samtidigt som den faktiska starttiden för uppdraget. Ta bort måltidspausen eller ändra faktisk starttid.";
+                    return;
+                }
+                else if (new Date(testEnd) >= end) {
+                    message = "Minst en måltidspaus slutar efter  eller samtidigt som den faktiska sluttiden för uppdraget. Ta bort måltidspausen eller ändra faktisk sluttid.";
+                    return;
+                }
+            }
+        });
+        return message;
+    }
+    return message;
+}
