@@ -244,6 +244,8 @@ namespace Tolk.Web.Controllers
                     var priceInformation = _priceCalculationService.GetPricesRequisition(
                         model.SessionStartedAt,
                         model.SessionEndedAt,
+                        request.Order.StartAt,
+                        request.Order.EndAt,
                         EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                         request.Order.CustomerOrganisation.PriceListType,
                         request.Ranking.RankingId,
