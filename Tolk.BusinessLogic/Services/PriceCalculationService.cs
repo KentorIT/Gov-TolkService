@@ -59,46 +59,37 @@ namespace Tolk.BusinessLogic.Services
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, decimal? perdiem, decimal? carCompensation, Order replacingOrder, List<MealBreak> mealbreaks = null)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, decimal? perdiem, decimal? carCompensation, Order replacingOrder, List<MealBreak> mealbreaks = null)
         {
-            //if replacementorder then we must check times from the replacing order (not the comp.level) 
             var prices = GetPriceList(startAt, competenceLevel, listType);
 
-            //we have to check for mealbeaks and reduce extra compensation
-            IDictionary<PriceListRowType, int> mealbreakTimes = null;
-            //Get mealbreaks times, if any
-            if (mealbreaks != null && mealbreaks.Any())
-            {
-                mealbreakTimes = GetMealBreakTimesAndTypes(mealbreaks);
-            }
-            var priceListRowsPerPriceType = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices, mealbreaks), mealbreakTimes).ToList();
+            //get mealbeaks if any
+            IDictionary<PriceListRowType, int> mealbreakTimes = GetMealBreakTimesAndTypes(mealbreaks);
 
-            //Check what price to use for requistion, broker should always get payed for original time of request/order if that exceeds time of requisition
-            var priceRowsFromRequest = requestPriceRows.Where(plr => plr.PriceRowType == PriceRowType.InterpreterCompensation).ToList();
+            //compare compensation for origin times with requisition times (including mealbreaks), broker/interpreter should have the compensation that get most payed
+            var pricesRequisition = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices, mealbreaks), mealbreakTimes);
+            var pricesOriginTimes = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(originStartAt, originEndAt, prices, mealbreaks), mealbreakTimes);
 
-            useRequestPricerows = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceRowsFromRequest);
+            useRequestPricerows = UsePricesOriginTimes(pricesRequisition, pricesOriginTimes);
 
-            if (useRequestPricerows)
-            {
-                priceListRowsPerPriceType = priceRowsFromRequest.Select(p => new PriceRowBase { StartAt = p.StartAt, EndAt = p.EndAt, PriceListRowId = p.PriceListRowId, Quantity = p.Quantity, Price = p.Price, PriceRowType = p.PriceRowType }).ToList();
-            }
+            //if we should use request, set start and end from request start and end
+            var pricesToUse = useRequestPricerows ? pricesOriginTimes.ToList() : pricesRequisition.ToList();
 
-            //if replacementorder then we must check start- and endtime from the replacing order (not the comp.level since that can be changed) 
+            //if replacementorder - check and compare start- and endtime from replacing order
             if (replacingOrder != null)
             {
-                var pricesReplacingOrder = GetPriceList(replacingOrder.StartAt, competenceLevel, listType);
-                var priceListRowsReplacingOrder = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, pricesReplacingOrder)).ToList();
-                bool useReplacingOrderTimes = CheckRequisitionPriceToUse(priceListRowsPerPriceType, priceListRowsReplacingOrder);
+                var pricesReplacingOrder = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, prices, mealbreaks), mealbreakTimes);
+
+                bool useReplacingOrderTimes = UsePricesOriginTimes(useRequestPricerows ? pricesOriginTimes : pricesRequisition, pricesReplacingOrder);
                 if (useReplacingOrderTimes)
                 {
-                    priceListRowsPerPriceType = priceListRowsReplacingOrder;
+                    pricesToUse = pricesReplacingOrder.ToList();
                     useRequestPricerows = useReplacingOrderTimes;
                 }
             }
-
-            //get lost time
-            priceListRowsPerPriceType.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, priceListRowsPerPriceType, rankingId, null, outlay, perdiem, carCompensation, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
+            //get lost time and extra charges
+            pricesToUse.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, outlay, perdiem, carCompensation, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
         }
 
         /// <summary>
@@ -236,9 +227,9 @@ namespace Tolk.BusinessLogic.Services
                 r.StartDate.Date <= startAt.Date && r.EndDate.Date >= startAt.Date).ToList();
         }
 
-        private bool CheckRequisitionPriceToUse(List<PriceRowBase> priceToCompareRequsition, IEnumerable<PriceRowBase> priceToCompareRequestReplacingOrder)
+        private bool UsePricesOriginTimes(IEnumerable<PriceRowBase> priceRequsition, IEnumerable<PriceRowBase> priceOriginTimes)
         {
-            return priceToCompareRequestReplacingOrder.Sum(p => p.TotalPrice) > priceToCompareRequsition.Sum(p => p.TotalPrice);
+            return priceOriginTimes.Sum(p => p.TotalPrice) > priceRequsition.Sum(p => p.TotalPrice);
         }
 
         public PriceRowBase GetPriceRowSocialInsuranceCharge(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType)
@@ -310,6 +301,8 @@ namespace Tolk.BusinessLogic.Services
 
         private IDictionary<PriceListRowType, int> GetMealBreakTimesAndTypes(List<MealBreak> mealbreaks)
         {
+            if (mealbreaks == null || !mealbreaks.Any()) { return null; }
+
             int minIWH = 0; // normal iwh time
             int minWeekendsIWH = 0; // weekends, holiday
             int minIWHBigHoliday = 0; // big holiday
