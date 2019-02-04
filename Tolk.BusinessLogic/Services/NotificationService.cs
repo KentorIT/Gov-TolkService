@@ -548,7 +548,7 @@ Tolk:
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody)
         {
             string subjectPrepend = string.Empty;
-            if (!string.IsNullOrEmpty(_options.Env) && _options.Env.ToLower() != "production")
+            if (!string.IsNullOrEmpty(_options.Env.Name) && _options.Env.Name.ToLower() != "production")
             {
                 subjectPrepend = $"({_options.Env}) ";
             }

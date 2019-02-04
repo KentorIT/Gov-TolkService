@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Helpers
         public long CombinedMaxSizeAttachments { get; set; }
 
         public SideBarBox[] SideBar { get; set; }
-        public string Env { get; set; } = string.Empty;
+        public Environment Env { get; set; } = new Environment { Name = string.Empty, Background = "background: rgba(255, 0, 0, 0.5)", Foreground = "color: #f1f1f1" };
 
         public void Validate()
         {
@@ -63,6 +63,13 @@ namespace Tolk.BusinessLogic.Helpers
             }
             public string Title { get; set; }
             public string Message { get; set; }
+        }
+
+        public class Environment
+        {
+            public string Name { get; set; }
+            public string Background { get; set; }
+            public string Foreground { get; set; }
         }
     }
 }

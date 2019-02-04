@@ -53,9 +53,9 @@
                             <span class="visible-xs hidden-sm hidden-md hidden-lg">
                                 <img class="logo-navbar" src="~/images/KamK_Logo_Crown.png" alt="@ViewData["Title"]" />
                             </span>
-                            @if (!string.IsNullOrEmpty(Options.Value.Env) && Options.Value.Env.ToLower() != "production")
+                            @if (!string.IsNullOrEmpty(Options.Value.Env.Name) && Options.Value.Env.Name.ToLower() != "production")
                             {
-                                <span class="environment-banner">@Options.Value.Env</span>
+                                <span class="environment-banner" style="@Options.Value.Env.Background; @Options.Value.Env.Foreground;">@Options.Value.Env.Name</span>
                             }
                         </a>
                     </div>

@@ -31,7 +31,7 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _options = options.Value.Smtp;
             _clock = clock;
-            _environment = options.Value.Env;
+            _environment = options.Value.Env.Name;
         }
 
         public async Task SendEmails()
