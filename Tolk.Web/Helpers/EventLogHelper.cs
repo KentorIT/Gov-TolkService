@@ -33,7 +33,7 @@ namespace Tolk.Web.Helpers
             {
                 foreach (var request in order.Requests)
                 {
-                    eventLog.AddRange(GetEventLog(request, customerName, false));
+                    eventLog.AddRange(GetEventLog(request, customerName, request.Ranking.Broker.Name, false));
                 }
             }
             // Order replaced
@@ -133,7 +133,7 @@ namespace Tolk.Web.Helpers
             };
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Request request, string customerName, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
+        public static List<EventLogEntryModel> GetEventLog(Request request, string customerName, string brokerName, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
         {
             var eventLog = new List<EventLogEntryModel>();
             if (isRequestDetailView && request.ReplacingRequestId.HasValue && previousRequests != null)
@@ -141,7 +141,10 @@ namespace Tolk.Web.Helpers
                 // Include event log for all previous requests, if this is the requests detail view
                 foreach (Request r in previousRequests)
                 {
-                    eventLog.AddRange(GetEventLog(r, customerName));
+                    if (r.Ranking.Broker.BrokerId == request.Ranking.BrokerId)
+                    {
+                        eventLog.AddRange(GetEventLog(r, customerName, r.Ranking.Broker.Name));
+                    }
                 }
             }
             if (!request.ReplacingRequestId.HasValue)
@@ -150,7 +153,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
-                    EventDetails = isRequestDetailView ? "Förfrågan inkommen" : $"Förfrågan skickad till {request.Ranking.Broker.Name}",
+                    EventDetails = isRequestDetailView ? "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
             }
@@ -162,7 +165,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = request.RecievedAt.Value,
                     EventDetails = $"Förfrågan mottagen",
                     Actor = request.ReceivedByUser.FullName,
-                    Organization = request.ReceivedByUser.Broker.Name,
+                    Organization = brokerName,
                     ActorContactInfo = GetContactinfo(request.ReceivedByUser),
                 });
             }
@@ -186,7 +189,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.AnswerDate.Value,
                         EventDetails = $"Förfrågan nekad av förmedling",
                         Actor = request.AnsweringUser.FullName,
-                        Organization = request.AnsweringUser.Broker.Name,
+                        Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
@@ -197,7 +200,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.AnswerDate.Value,
                         EventDetails = $"Tolk tillsatt av förmedling",
                         Actor = request.AnsweringUser.FullName,
-                        Organization = request.AnsweringUser.Broker.Name,
+                        Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
@@ -222,7 +225,7 @@ namespace Tolk.Web.Helpers
                             Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedAt.Value,
                             EventDetails = $"Avböjande bekräftat",
                             Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser.FullName,
-                            Organization = request.AnsweringUser.Broker.Name,
+                            Organization = brokerName,
                             ActorContactInfo = GetContactinfo(request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser),
                         });
                     }
@@ -314,7 +317,7 @@ namespace Tolk.Web.Helpers
                     Timestamp = rsc.ConfirmedAt.Value,
                     EventDetails = $"Avbokning bekräftad av förmedling",
                     Actor = rsc.ConfirmedByUser.FullName,
-                    Organization = request.Ranking.Broker.Name,
+                    Organization = brokerName,
                     ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
                 });
             }
@@ -338,27 +341,27 @@ namespace Tolk.Web.Helpers
                     Timestamp = request.ReplacedByRequest.AnswerDate.Value,
                     EventDetails = $"Tolk {request.Interpreter?.FullName} är ersatt av tolk {request.ReplacedByRequest.Interpreter?.FullName}",
                     Actor = request.ReplacedByRequest.AnsweringUser.FullName,
-                    Organization = request.ReplacedByRequest.AnsweringUser.Broker.Name,
+                    Organization = brokerName,
                     ActorContactInfo = GetContactinfo(request.ReplacedByRequest.AnsweringUser),
                 });
             }
             // Add all requisition logs
             if (request.Requisitions != null && request.Requisitions.Any())
             {
-                eventLog.AddRange(GetEventLog(request.Requisitions, customerName));
+                eventLog.AddRange(GetEventLog(request.Requisitions, customerName, brokerName));
             }
             // Add all complaint logs
             if (request.Complaints != null && request.Complaints.Any())
             {
                 foreach (var complaints in request.Complaints)
                 {
-                    eventLog.AddRange(GetEventLog(complaints, customerName));
+                    eventLog.AddRange(GetEventLog(complaints, customerName, brokerName));
                 }
             }
             return eventLog;
         }
 
-        public static IEnumerable<EventLogEntryModel> GetEventLog(IEnumerable<Requisition> requisitions, string customerName)
+        public static IEnumerable<EventLogEntryModel> GetEventLog(IEnumerable<Requisition> requisitions, string customerName, string brokerName)
         {
             foreach (var requisition in requisitions)
             {
@@ -379,7 +382,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = requisition.CreatedAt,
                         EventDetails = "Rekvisition registrerad",
                         Actor = requisition.CreatedByUser.FullName,
-                        Organization = requisition.CreatedByUser.Broker?.Name, //interpreter has no org.
+                        Organization = brokerName, //interpreter "works" for broker
                         ActorContactInfo = GetContactinfo(requisition.CreatedByUser),
                     };
                 }
@@ -412,7 +415,7 @@ namespace Tolk.Web.Helpers
             }
         }
 
-        public static List<EventLogEntryModel> GetEventLog(Complaint complaint, string customerName)
+        public static List<EventLogEntryModel> GetEventLog(Complaint complaint, string customerName, string brokerName)
         {
             var eventLog = new List<EventLogEntryModel>
             {
@@ -436,7 +439,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.AnsweredAt.Value,
                         EventDetails = "Reklamation accepterad av förmedling",
                         Actor = complaint.AnsweringUser.FullName,
-                        Organization = complaint.AnsweringUser.Broker.Name,
+                        Organization = brokerName,
                         ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
                     });
                 }
@@ -447,7 +450,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = complaint.AnsweredAt.Value,
                         EventDetails = "Reklamation är bestriden av förmedling",
                         Actor = complaint.AnsweringUser.FullName,
-                        Organization = complaint.AnsweringUser.Broker.Name,
+                        Organization = brokerName,
                         ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
                     });
                 }
