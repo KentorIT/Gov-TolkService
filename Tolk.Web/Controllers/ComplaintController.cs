@@ -2,18 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
@@ -68,6 +65,11 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {
+                if (!request.CanCreateComplaint())
+                {
+                    _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                }
                 //Get request model from db
                 return View(ComplaintModel.GetModelFromRequest(request));
             }
@@ -87,6 +89,11 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.RequestId == model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
                 {
+                    if (!request.CanCreateComplaint())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                        return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                    }
                     var complaint = _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
@@ -106,7 +113,7 @@ namespace Tolk.Web.Controllers
             var userId = User.GetUserId();
             model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
             model.IsBrokerUser = brokerId.HasValue;
-           
+
             var items = _dbContext.Complaints
                 .Include(c => c.Request)
                     .ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -123,13 +130,13 @@ namespace Tolk.Web.Controllers
             }
 
             items = model.Apply(items);
-        
+
             return View(
                 new ComplaintListModel
                 {
                     Items = items.Select(c => new ComplaintListItemModel
                     {
-                        OrderRequestId =  customerId.HasValue ?  c.Request.OrderId : c.RequestId,
+                        OrderRequestId = customerId.HasValue ? c.Request.OrderId : c.RequestId,
                         BrokerName = c.Request.Ranking.Broker.Name,
                         CustomerName = c.Request.Order.CustomerOrganisation.Name,
                         ComplaintType = c.ComplaintType,
@@ -152,6 +159,12 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
+                    if (!complaint.CanAnswer())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Accept complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
+                        return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
+                    }
+
                     _complaintService.Accept(complaint, User.GetUserId(), User.TryGetImpersonatorId(), null);
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
@@ -169,6 +182,12 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
+                    if (!complaint.CanAnswer())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Dispute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
+                        return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
+                    }
+
                     _complaintService.Dispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage);
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
@@ -186,6 +205,12 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
+                    if (!complaint.CanAnswerDispute())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Accept Dispute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
+                        return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
+                    }
+
                     _complaintService.AcceptDispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
@@ -203,6 +228,13 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
+                    if (!complaint.CanAnswerDispute())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Refute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
+
+                        return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
+                    }
+
                     _complaintService.Refute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
@@ -219,6 +251,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
+                .Include(r => r.Complaints)
                 .Single(o => o.RequestId == id);
         }
 

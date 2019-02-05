@@ -420,6 +420,13 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+                if (!request.CanApprove())
+                {
+                    _logger.LogWarning("Wrong status when trying to Approve request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+
+                    return RedirectToAction(nameof(View), new { id = order.OrderId });
+                }
+
                 bool isInterpreterChangeApproval = request.Status == RequestStatus.AcceptedNewInterpreterAppointed;
                 request.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
 

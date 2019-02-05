@@ -97,12 +97,6 @@ namespace Tolk.Web.Controllers
         /// <param name="id">The Request to connect the requisition to</param>
         public async Task<IActionResult> Create(int id)
         {
-            // No prior status is also valid
-            RequisitionStatus[] validStatuses = new[]
-            {
-                RequisitionStatus.DeniedByCustomer
-            };
-
             var request = _dbContext.Requests
                 .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
@@ -117,16 +111,16 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Single(o => o.RequestId == id);
 
-            if (request.Requisitions.Where(req => req.RequestId == id && !validStatuses.Contains(req.Status)).Any())
-            {
-                return RedirectToAction("View", "Request", new { id, tab = "requisition" });
-            }
-
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
+                if (!request.CanCreateRequisition())
+                {
+                    _logger.LogWarning("Wrong status when trying to Create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction("View", "Request", new { id, tab = "requisition" });
+                }
+
                 var model = RequisitionModel.GetModelFromRequest(request);
                 Guid groupKey = Guid.NewGuid();
-
 
                 //Get request model from db
                 if (model.PreviousRequisition != null)
@@ -309,6 +303,12 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
+                    if (!requisition.CanApproveOrDeny())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Approve requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
+
+                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+                    }
                     _requisitionService.Approve(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
@@ -330,6 +330,11 @@ namespace Tolk.Web.Controllers
                     .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
+                    if (!requisition.CanApproveOrDeny())
+                    {
+                        _logger.LogWarning("Wrong status when trying to Deny requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
+                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+                    }
                     _requisitionService.Deny(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }

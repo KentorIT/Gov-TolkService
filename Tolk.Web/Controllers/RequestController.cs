@@ -122,11 +122,6 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Process(int id)
         {
-            RequestStatus[] validStatuses = new[]
-            {
-              RequestStatus.Created
-            };
-
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.PriceRows)
                 .Include(r => r.Order).ThenInclude(o => o.Requirements)
@@ -147,13 +142,14 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
-            if (!validStatuses.Contains(request.Status))
-            {
-                return RedirectToAction("View", new { id });
-            }
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
+                if (!request.CanProcess())
+                {
+                    _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction("View", new { id });
+                }
                 if (request.Status == RequestStatus.Created)
                 {
                     request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());

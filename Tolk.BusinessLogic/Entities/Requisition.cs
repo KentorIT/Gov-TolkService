@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.Contracts;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Validation;
 
@@ -61,7 +60,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ReplacedByRequisitionId))]
         public Requisition ReplacedByRequisition { get; set; }
-        
+
         public int RequestId { get; set; }
 
         [ForeignKey(nameof(RequestId))]
@@ -103,6 +102,15 @@ namespace Tolk.BusinessLogic.Entities
             ProcessedAt = approveTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;
+        }
+
+        public bool CanApproveOrDeny()
+        {
+            if (Status != RequisitionStatus.Created)
+            {
+                return false;
+            }
+            return true;
         }
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)

@@ -181,6 +181,15 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
+        public bool CanApprove()
+        {
+            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public void Accept(
             DateTimeOffset acceptTime,
             int userId,
@@ -434,6 +443,15 @@ namespace Tolk.BusinessLogic.Entities
             Order.DeliverRequisition();
         }
 
+        public bool CanCreateRequisition()
+        {
+            if (Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public void CreateComplaint(Complaint complaint)
         {
             if (Complaints.Any())
@@ -442,6 +460,26 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Complaints.Add(complaint);
+        }
+
+        public bool CanCreateComplaint()
+        {
+            if (Complaints.Any())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool CanProcess()
+        {
+            if (Status != RequestStatus.Created)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
