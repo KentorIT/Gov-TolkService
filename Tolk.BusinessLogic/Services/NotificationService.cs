@@ -54,25 +54,43 @@ namespace Tolk.BusinessLogic.Services
         public void OrderCancelledByCustomer(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
         {
             string orderNumber = request.Order.OrderNumber;
-            string broker = request.Ranking.Broker.EmailAddress;
-            if (requestWasApproved)
+            //string broker = request.Ranking.Broker.EmailAddress;
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
+            if (email != null)
             {
-                string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                     $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
-                     NoReplyTextPlain;
-                CreateEmail(broker, $"Avbokat tolkuppdrag boknings-ID {orderNumber}",
-                    body + GotoRequestPlain(request.RequestId),
-                    HtmlHelper.ToHtmlBreak(body) + GotoRequestButton(request.RequestId));
+                if (requestWasApproved)
+                {
+                    string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
+                         $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                         (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.") +
+                         NoReplyTextPlain;
+                    CreateEmail(email.ContactInformation, $"Avbokat tolkuppdrag boknings-ID {orderNumber}",
+                        body + GotoRequestPlain(request.RequestId),
+                        HtmlHelper.ToHtmlBreak(body) + GotoRequestButton(request.RequestId));
+                }
+                else
+                {
+                    var body = $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
+                        $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
+                        NoReplyTextPlain;
+                    CreateEmail(email.ContactInformation, $"Avbokad förfrågan boknings-ID {orderNumber}",
+                        body + GotoRequestPlain(request.RequestId),
+                        HtmlHelper.ToHtmlBreak(body) + GotoRequestButton(request.RequestId));
+                }
             }
-            else
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Webhook);
+            if (webhook != null)
             {
-                var body = $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                    $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
-                    NoReplyTextPlain;
-                CreateEmail(broker, $"Avbokad förfrågan boknings-ID {orderNumber}",
-                    body + GotoRequestPlain(request.RequestId),
-                    HtmlHelper.ToHtmlBreak(body) + GotoRequestButton(request.RequestId));
+                CreateWebHookCall(
+                   new RequestCancelledByCustomerModel
+                   {
+                       OrderNumber = orderNumber,
+                       Message = request.CancelMessage
+                   },
+                   webhook.ContactInformation,
+                   NotificationType.RequestCancelledByCustomer,
+                   webhook.RecipientUserId
+               );
             }
         }
 
@@ -279,17 +297,38 @@ namespace Tolk.BusinessLogic.Services
 
         public void RequestAnswerDenied(Request request)
         {
-            CreateEmail(request.Ranking.Broker.EmailAddress,
-                $"Svar på bokningsförfrågan med boknings-ID {request.Order.OrderNumber} har underkänts",
-                $"Ert svar på bokningsförfrågan {request.Order.OrderNumber} underkändes med följande meddelande:\n{request.DenyMessage}. {NoReplyTextPlain} {GotoRequestPlain(request.RequestId)}",
-                $"Ert svar på bokningsförfrågan {request.Order.OrderNumber} underkändes med följande meddelande:<br />{request.DenyMessage}. {NoReplyTextHtml} {GotoRequestButton(request.RequestId)}"
-            );
+            string orderNumber = request.Order.OrderNumber;
+            //string broker = request.Ranking.Broker.EmailAddress;
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Svar på bokningsförfrågan med boknings-ID {orderNumber} har underkänts",
+                    $"Ert svar på bokningsförfrågan {orderNumber} underkändes med följande meddelande:\n{request.DenyMessage}. {NoReplyTextPlain} {GotoRequestPlain(request.RequestId)}",
+                    $"Ert svar på bokningsförfrågan {orderNumber} underkändes med följande meddelande:<br />{request.DenyMessage}. {NoReplyTextHtml} {GotoRequestButton(request.RequestId)}"
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Webhook);
+            CreateWebHookCall(
+               new RequestAnswerDeniedModel
+               {
+                   OrderNumber = orderNumber,
+                   Message = request.DenyMessage
+               },
+               webhook.ContactInformation,
+               NotificationType.RequestAnswerDenied,
+               webhook.RecipientUserId
+           );
         }
 
         public void ComplaintCreated(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
-            CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"En reklamation har registrerats för tolkuppdrag med boknings-ID {orderNumber}",
+            //string broker = request.Ranking.Broker.EmailAddress;
+            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation, $"En reklamation har registrerats för tolkuppdrag med boknings-ID {orderNumber}",
                 $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats med följande meddelande:
 {complaint.ComplaintType.GetDescription()}
 {complaint.ComplaintMessage} 
@@ -301,6 +340,23 @@ namespace Tolk.BusinessLogic.Services
 {NoReplyTextHtml}
 {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
             );
+            }
+            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new ComplaintMessageModel
+                    {
+                        OrderNumber = orderNumber,
+                        ComplaintType = complaint.ComplaintType.GetCustomName(),
+                        Message = complaint.ComplaintMessage
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.ComplaintCreated,
+                    webhook.RecipientUserId
+                );
+
+            }
         }
 
         public void ComplaintDisputed(Complaint complaint)
@@ -315,19 +371,59 @@ namespace Tolk.BusinessLogic.Services
         public void ComplaintDisputePendingTrial(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
-            CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
-                $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
-                $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
-            );
+            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new ComplaintMessageModel
+                    {
+                        OrderNumber = orderNumber,
+                        ComplaintType = complaint.ComplaintType.GetCustomName(),
+                        Message = complaint.AnswerDisputedMessage
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.ComplaintDisputePendingTrial,
+                    webhook.RecipientUserId
+                );
+            }
         }
 
         public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
-            CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
-                $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
-                $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
-            );
+            //string broker = request.Ranking.Broker.EmailAddress;
+            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new ComplaintMessageModel
+                    {
+                        OrderNumber = orderNumber,
+                        ComplaintType = complaint.ComplaintType.GetCustomName(),
+                        Message = complaint.AnswerDisputedMessage
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.ComplaintDisputedAccepted,
+                    webhook.RecipientUserId
+                );
+            }
+
         }
 
         public void RequisitionCreated(Requisition requisition)

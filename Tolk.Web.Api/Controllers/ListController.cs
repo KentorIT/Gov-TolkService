@@ -167,6 +167,39 @@ namespace Tolk.Web.Api.Controllers
             });
         }
 
+        [HttpGet]
+        public JsonResult ComplaintTypes()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<ComplaintType>().Select(d =>
+            new
+            {
+                Key = d.CustomName,
+                d.Description
+            }));
+        }
+
+        [HttpGet]
+        public JsonResult RequestStatuses()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<RequestStatus>().Select(d =>
+            new
+            {
+                Key = d.CustomName,
+                d.Description
+            }));
+        }
+
+        [HttpGet]
+        public JsonResult ComplaintStatuses()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<ComplaintStatus>().Select(d =>
+            new
+            {
+                Key = d.CustomName,
+                d.Description
+            }));
+        }
+
         #region SAME AS IN REQUEST, SHOULD BE MOVED
 
         //Break out to error generator service...

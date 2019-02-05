@@ -79,6 +79,21 @@ namespace BrokerMock.Services
                 items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get interpreter information types: {items.Count}");
                 _cache.Set("InterpreterInformationTypes", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ComplaintTypes/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get complaint types: {items.Count}");
+                _cache.Set("ComplaintTypes", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ComplaintStatuses/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get complaint statuses: {items.Count}");
+                _cache.Set("ComplaintStatuses", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/RequestStatuses/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get request statuses: {items.Count}");
+                _cache.Set("RequestStatuses", items);
             }
             using (var client = GetHttpClient())
             {

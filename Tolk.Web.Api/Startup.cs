@@ -31,6 +31,7 @@ namespace Tolk.Web.Api
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<OrderService>();
             services.AddScoped<RequestService>();
+            services.AddScoped<ComplaintService>();
             services.AddScoped<ApiUserService>();
             services.AddSingleton<ISwedishClock, TimeService>();
             services.AddScoped<TimeService>();

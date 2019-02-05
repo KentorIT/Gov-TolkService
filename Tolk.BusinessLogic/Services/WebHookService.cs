@@ -1,11 +1,7 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MimeKit;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.Http;
@@ -46,7 +42,7 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogDebug("Found {count} outbound web hook calls to send: {callIds}",
                 callIds.Count, string.Join(", ", callIds));
 
-            if(callIds.Any())
+            if (callIds.Any())
             {
                 //Need app settings: UseCertFile, Cert.FilePath, CertPublicKey
 
@@ -54,22 +50,22 @@ namespace Tolk.BusinessLogic.Services
                 //handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 //handler.SslProtocols = SslProtocols.Tls12;
                 //handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
-                using (var client = new HttpClient()) //new HttpClient(handler) 
+                foreach (var callId in callIds)
                 {
-                    foreach(var callId in callIds)
+                    using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
                     {
-                        using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                        try
                         {
-                            try
-                            {
-                                var call = await _dbContext.OutboundWebHookCalls
-                                    .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
+                            var call = await _dbContext.OutboundWebHookCalls
+                                .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
 
-                                if(call == null)
-                                {
-                                    _logger.LogDebug("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
-                                }
-                                else
+                            if (call == null)
+                            {
+                                _logger.LogDebug("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
+                            }
+                            else
+                            {
+                                using (var client = new HttpClient()) //new HttpClient(handler) 
                                 {
                                     client.DefaultRequestHeaders.Accept.Clear();
                                     client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
@@ -93,10 +89,10 @@ namespace Tolk.BusinessLogic.Services
                                     trn.Commit();
                                 }
                             }
-                            catch(Exception ex)
-                            {
-                                _logger.LogError(ex, "Failure calling web hook {callId}", callId);
-                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure calling web hook {callId}", callId);
                         }
                     }
                 }

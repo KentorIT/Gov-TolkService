@@ -444,7 +444,7 @@ namespace Tolk.Web.Controllers
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Interpreter)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking)
                 .Include(r => r.Requisitions)
                 .Include(r => r.PriceRows)
                 .Single(r => r.OrderId == model.OrderId &&

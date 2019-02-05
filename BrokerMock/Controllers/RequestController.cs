@@ -150,6 +150,28 @@ namespace BrokerMock.Controllers
             return new JsonResult("Success");
         }
 
+        [HttpPost]
+        public async Task<JsonResult> CancelledByCustomer([FromBody] RequestCancelledByCustomerModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit avbokats, med meddelande: '{payload.Message}'");
+            }
+
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> AnswerDenied([FromBody] RequestAnswerDeniedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Svaret på Boknings-ID: {payload.OrderNumber} har nekats, med meddelande: '{payload.Message}'");
+            }
+
+            return new JsonResult("Success");
+        }
+
         private IEnumerable<string> GetExtraInstructions(string description)
         {
             if (string.IsNullOrEmpty(description))
