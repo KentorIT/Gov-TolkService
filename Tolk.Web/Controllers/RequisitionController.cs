@@ -106,6 +106,7 @@ namespace Tolk.Web.Controllers
             var request = _dbContext.Requests
                 .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
+                .Include(r => r.Requisitions).ThenInclude(r => r.MealBreaks)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
@@ -114,7 +115,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.PriceRows)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-               .Single(o => o.RequestId == id);
+                .Single(o => o.RequestId == id);
 
             if (request.Requisitions.Where(req => req.RequestId == id && !validStatuses.Contains(req.Status)).Any())
             {
@@ -141,7 +142,19 @@ namespace Tolk.Web.Controllers
                     }).ToList();
                     model.Files = files.Count() > 0 ? files : null;
                     model.PreviousRequisition.ResultPriceInformationModel = GetRequisitionPriceInformation(previousRequisition, true);
+                    model.SessionStartedAt = previousRequisition.SessionStartedAt;
+                    model.SessionEndedAt = previousRequisition.SessionEndedAt;
+                    model.MealBreaks = previousRequisition.MealBreaks.Any() ? previousRequisition.MealBreaks : null;
                 }
+                if (model.MealBreaks != null && model.MealBreaks.Any())
+                {
+                    foreach (MealBreak mb in model.MealBreaks)
+                    {
+                        mb.StartAtTemp = mb.StartAt.DateTime;
+                        mb.EndAtTemp = mb.EndAt.DateTime;
+                    }
+                }
+
                 model.FileGroupKey = groupKey;
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(request);

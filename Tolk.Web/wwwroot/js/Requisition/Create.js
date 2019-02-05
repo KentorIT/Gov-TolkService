@@ -269,6 +269,7 @@ $(function () {
             $("#addMealBreak").modal("hide");
         }
     });
+    currentId = $(".mealbreak-table > tbody > tr").length;
 });
 
 function getSessionStartDate() {

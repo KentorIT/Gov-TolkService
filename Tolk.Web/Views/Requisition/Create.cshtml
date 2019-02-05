@@ -1,7 +1,9 @@
 ﻿@model Tolk.Web.Models.RequisitionModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Entities;
 @{
     ViewData["Title"] = "Registrera rekvisition";
+    string tableClassName = Model.MealBreaks != null && Model.MealBreaks.Any() ? string.Empty : "d-none";
 }
 <div class="row">
     <div class="col-sm-12">
@@ -126,22 +128,40 @@
                 <div class="col-sm-6">
                     <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a>
                     <br /><br />
-                    <div class="d-none mealbreak-list no-padding">
-                        <table class="table mealbreak-table">
-                            <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
-                            <tbody id="mealBreak-tbody"></tbody>
-                        </table>
-                    </div>
+                          <div class="@tableClassName mealbreak-list no-padding">
+                              <label>Angivna måltidspauser</label><br />
+                              <table class="table mealbreak-table">
+                                  <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
+                                  <tbody id="mealBreak-tbody">
+                                      @if (Model.MealBreaks != null && Model.MealBreaks.Any())
+                                      {
+                                          @for (var i = 0; i < Model.MealBreaks.Count; ++i)
+                                          {
+                                              <tr>
+                                                  <td class="table-start-column">
+                                                      <input asp-for="MealBreaks[i].StartAtTemp" type="hidden">
+                                                      <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
+                                                      @Model.MealBreaks[i].StartAt.ToString("yyyy-MM-dd HH:mm")
+                                                  </td>
+                                                  <td class="table-end-column">
+                                                      @Model.MealBreaks[i].EndAt.ToString("yyyy-MM-dd HH:mm")
+                                                  </td>
+                                                  <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
+                                              </tr>
+                                          }
+                                      }
+                                  </tbody>
+                              </table>
+                          </div>
                 </div>
             </div>
-
             <div class="row">
                 <div class="col-sm-12">
                     <h3 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span></h3>
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     @if (Model.ExpectedTravelCosts > 0)
                     {
                         <display-entry asp-for="ExpectedTravelCosts" />}
@@ -151,7 +171,9 @@
                         <div class="no-value-info">Inget angivet</div>
                     }
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-4">
                     <display-entry asp-for="InterpreterLocation" />
                 </div>
             </div>
