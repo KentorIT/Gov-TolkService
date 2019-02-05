@@ -646,7 +646,7 @@ Tolk:
             string subjectPrepend = string.Empty;
             if (!string.IsNullOrEmpty(_options.Env.Name) && _options.Env.Name.ToLower() != "production")
             {
-                subjectPrepend = $"({_options.Env}) ";
+                subjectPrepend = $"({_options.Env.Name}) ";
             }
 
             foreach (string recipient in recipients)
