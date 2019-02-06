@@ -145,6 +145,8 @@ namespace Tolk.BusinessLogic.Services
                 .Where(req => req.Status == RequestStatus.Accepted || req.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                  .Include(req => req.Order)
                     .ThenInclude(order => order.CreatedByUser)
+                 .Include(req => req.Order)
+                    .ThenInclude(order => order.ContactPersonUser)
                 .Include(req => req.Ranking)
                     .ThenInclude(rank => rank.Broker)
                 .Include(req => req.Interpreter)
