@@ -152,15 +152,18 @@ namespace Tolk.BusinessLogic.Services
 
             Order replacementOrder = order.ReplacedByOrder;
             Request replacementRequest = replacementOrder.Requests.Single();
-            var bodyPlain = $"\tOrginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                $"\tTolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}\n" +
-                $"\tSvara senast: {replacementRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
-                $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, replacementRequest.RequestId)}\n" +
-                $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, oldRequest.RequestId)}";
-            var bodyHtml = $@"
+            var email = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
+            if (email != null)
+            {
+                 var bodyPlain = $"\tOrginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
+                    $"\tTolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}\n" +
+                    $"\tSvara senast: {replacementRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, replacementRequest.RequestId)}\n" +
+                    $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, oldRequest.RequestId)}";
+                var bodyHtml = $@"
 <ul>
 <li>Orginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Orginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}</li>
@@ -172,14 +175,25 @@ namespace Tolk.BusinessLogic.Services
 <div>{NoReplyText}</div>
 <div>{GotoRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
 <div>{GotoRequestButton(oldRequest.RequestId, textOverride: "Gå till ursprungligt uppdrag", autoBreakLines: false)}</div>";
-            var email = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
-            if (email != null)
+               CreateEmail(
+                    email.ContactInformation,
+                    $"Bokning {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
+                    bodyPlain,
+                    bodyHtml);
+            }
+            var webhook = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Webhook);
+            if (webhook != null)
             {
-                CreateEmail(
-                email.ContactInformation,
-                $"Bokning {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
-                bodyPlain,
-                bodyHtml);
+                CreateWebHookCall(
+                    new RequestReplacementCreatedModel
+                    {
+                        OriginalRequest = GetRequestModel(oldRequest),
+                        ReplacementRequest = GetRequestModel(GetRequest(replacementRequest.RequestId))
+                    },
+                   webhook.ContactInformation,
+                   NotificationType.RequestInformationUpdated,
+                   webhook.RecipientUserId
+               );
             }
         }
 
@@ -227,70 +241,7 @@ namespace Tolk.BusinessLogic.Services
             if (webhook != null)
             {
                 CreateWebHookCall(
-                    new RequestModel
-                    {
-                        CreatedAt = request.CreatedAt,
-                        OrderNumber = order.OrderNumber,
-                        Customer = order.CustomerOrganisation.Name,
-                        //D2 pads any single digit with a zero 1 -> "01"
-                        Region = order.Region.RegionId.ToString("D2"),
-                        Language = new LanguageModel
-                        {
-                            Key = request.Order.Language?.ISO_639_Code,
-                            Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
-                        },
-                        ExpiresAt = request.ExpiresAt,
-                        StartAt = order.StartAt,
-                        EndAt = order.EndAt,
-                        Locations = order.InterpreterLocations.Select(l => new LocationModel
-                        {
-                            ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
-                            Rank = l.Rank,
-                            Key = EnumHelper.GetCustomName(l.InterpreterLocation)
-                        }),
-                        CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
-                        {
-                            Key = EnumHelper.GetCustomName(c.CompetenceLevel),
-                            Rank = c.Rank ?? 0
-                        }),
-                        AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
-                        AssignentType = EnumHelper.GetCustomName(order.AssignentType),
-                        Description = order.Description,
-                        CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
-                        Requirements = order.Requirements.Select(r => new RequirementModel
-                        {
-                            Description = r.Description,
-                            IsRequired = r.IsRequired,
-                            RequirementId = r.OrderRequirementId,
-                            RequirementType = EnumHelper.GetCustomName(r.RequirementType)
-                        }),
-                        Attachments = order.Attachments.Select(a => new AttachmentInformationModel
-                        {
-                            AttachmentId = a.AttachmentId,
-                            FileName = a.Attachment.FileName
-                        }),
-                        //Need to aggregate the price list types
-                        PriceInformation = new PriceInformationModel
-                        {
-                            PriceCalculatedFromCompetenceLevel = order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
-                            PriceRows = order.PriceRows.GroupBy(r => r.PriceRowType)
-                            .Select(p => new PriceRowModel
-                            {
-                                Description = p.Key.GetDescription(),
-                                PriceRowType = p.Key.GetCustomName(),
-                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                                CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                                CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                                PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                                {
-                                    PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                                    Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                                    Price = l.Price,
-                                    Quantity = l.Quantity
-                                })
-                            })
-                        }
-                    },
+                    GetRequestModel(request),
                     webhook.ContactInformation,
                     NotificationType.RequestCreated,
                     webhook.RecipientUserId
@@ -854,6 +805,89 @@ Tolk:
                 case HtmlHelper.ViewTab.Complaint:
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}?tab=complaint", "Till reklamation");
             }
+        }
+
+        private static RequestModel GetRequestModel(Request request)
+        {
+            var order = request.Order;
+
+            return new RequestModel
+            {
+                CreatedAt = request.CreatedAt,
+                OrderNumber = order.OrderNumber,
+                Customer = order.CustomerOrganisation.Name,
+                //D2 pads any single digit with a zero 1 -> "01"
+                Region = order.Region.RegionId.ToString("D2"),
+                Language = new LanguageModel
+                {
+                    Key = request.Order.Language?.ISO_639_Code,
+                    Description = order.OtherLanguage ?? order.Language.Name,
+                },
+                ExpiresAt = request.ExpiresAt,
+                StartAt = order.StartAt,
+                EndAt = order.EndAt,
+                Locations = order.InterpreterLocations.Select(l => new LocationModel
+                {
+                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    Rank = l.Rank,
+                    Key = EnumHelper.GetCustomName(l.InterpreterLocation)
+                }),
+                CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
+                {
+                    Key = EnumHelper.GetCustomName(c.CompetenceLevel),
+                    Rank = c.Rank ?? 0
+                }),
+                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AssignentType = EnumHelper.GetCustomName(order.AssignentType),
+                Description = order.Description,
+                CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
+                Requirements = order.Requirements.Select(r => new RequirementModel
+                {
+                    Description = r.Description,
+                    IsRequired = r.IsRequired,
+                    RequirementId = r.OrderRequirementId,
+                    RequirementType = EnumHelper.GetCustomName(r.RequirementType)
+                }),
+                Attachments = order.Attachments.Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.Attachment.FileName
+                }),
+                //Need to aggregate the price list types
+                PriceInformation = new PriceInformationModel
+                {
+                    PriceCalculatedFromCompetenceLevel = order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
+                    PriceRows = order.PriceRows.GroupBy(r => r.PriceRowType)
+                        .Select(p => new PriceRowModel
+                        {
+                            Description = p.Key.GetDescription(),
+                            PriceRowType = p.Key.GetCustomName(),
+                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                            {
+                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                                Price = l.Price,
+                                Quantity = l.Quantity
+                            })
+                        })
+                }
+            };
+        }
+
+        private Request GetRequest(int id)
+        {
+            return _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(o => o.Attachment)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Single(o => o.RequestId == id);
         }
     }
 }

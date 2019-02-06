@@ -70,6 +70,27 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+
+        public void AcceptReplacement(
+            Request request,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterLocation interpreterLocation,
+            decimal? expectedTravelCosts
+        )
+        {
+            request.AcceptReplacementOrder(
+                acceptTime,
+                userId,
+                impersonatorId,
+                expectedTravelCosts,
+                interpreterLocation,
+                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts)
+            );
+            _notificationService.RequestReplamentOrderAccepted(request);
+        }
+
         public async Task Decline(
             Request request,
             DateTimeOffset declinedAt,

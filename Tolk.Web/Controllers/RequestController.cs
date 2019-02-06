@@ -274,16 +274,14 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        request.AcceptReplacementOrder(
+                        _requestService.AcceptReplacement(
+                            request,
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
-                            model.ExpectedTravelCosts,
                             model.InterpreterLocation.Value,
-                            _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, model.ExpectedTravelCosts)
+                            model.ExpectedTravelCosts
                         );
-
-                        _notificationService.RequestReplamentOrderAccepted(request);
                     }
                     _dbContext.SaveChanges();
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });

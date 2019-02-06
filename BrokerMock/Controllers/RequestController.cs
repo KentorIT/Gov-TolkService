@@ -122,6 +122,43 @@ namespace BrokerMock.Controllers
             return new JsonResult("Success");
         }
 
+        public async Task<JsonResult> ReplacementCreated([FromBody] RequestReplacementCreatedModel payload)
+        {
+            var originalRequest = payload.OriginalRequest;
+            var replacementRequest = payload.ReplacementRequest;
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {originalRequest.OrderNumber} har ersatts av {replacementRequest.OrderNumber}");
+            }
+            if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
+            {
+                await _apiService.GetAllLists();
+            }
+            var extraInstructions = GetExtraInstructions(replacementRequest.Description);
+
+            if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
+            {
+                if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                {
+                    await Acknowledge(replacementRequest.OrderNumber);
+                }
+                if (extraInstructions.Contains("DECLINE"))
+                {
+                    await Decline(replacementRequest.OrderNumber, "Vill inte, kan inte bör inte ens på en ersättning...");
+                }
+                else
+                {
+                    if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    {
+                        await AcceptReplacement(replacementRequest.OrderNumber, replacementRequest.Locations.First().Key);
+                    }
+                }
+                //Get the headers:
+                //X-Kammarkollegiet-InterpreterService-Delivery
+            }
+            return new JsonResult("Success");
+        }
+
         [HttpPost]
         public async Task<JsonResult> Approved([FromBody] RequestAnswerApprovedModel payload)
         {
@@ -251,6 +288,33 @@ namespace BrokerMock.Controllers
                 {
                     var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> AcceptReplacement(string orderNumber, string location)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new RequestAcceptReplacementModel
+                {
+                    OrderNumber = orderNumber,
+                    Location = location,
+                    ExpectedTravelCosts = 0,
+                    CallingUser = "regular-user@formedling1.se",
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/AcceptReplacement", content);
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcceptReplacement]:: Boknings-ID: {orderNumber} ersättning har accepterats");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcceptReplacement] FAILED:: Boknings-ID: {orderNumber} ersättning skulle accepteras ErrorMessage: {errorResponse.ErrorMessage}");
                 }
             }
 

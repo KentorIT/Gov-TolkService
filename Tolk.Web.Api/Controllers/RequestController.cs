@@ -335,24 +335,53 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        public JsonResult AcceptReplacement([FromBody] ApiPayloadBaseModel model)
+        public JsonResult AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
                 return ReturError("UNAUTHORIZED");
             }
-            return Json(new ResponseBase());
-        }
-
-        [HttpPost]
-        public JsonResult DeclineReplacement([FromBody] RequestDeclineModel model)
-        {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+            if (order == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError("ORDER_NOT_FOUND");
             }
+            //Possibly the user should be added, if not found?? 
+            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+            var request = order.Requests.SingleOrDefault(r =>
+                apiUser.BrokerId == r.Ranking.BrokerId &&
+                r.Order.ReplacingOrderId != null &&
+                //Possibly other statuses
+                (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+            if (request == null)
+            {
+                return ReturError("REQUEST_NOT_FOUND");
+            }
+            var now = _timeService.SwedenNow;
+            //Add transaction here!!!
+            if (request.Status == RequestStatus.Created)
+            {
+                request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+            }
+            _requestService.AcceptReplacement(
+                request,
+                now,
+                user?.Id ?? apiUser.Id,
+                (user != null ? (int?)apiUser.Id : null),
+                EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                model.ExpectedTravelCosts
+            );
+            _dbContext.SaveChanges();
+            //End of service
             return Json(new ResponseBase());
         }
 
