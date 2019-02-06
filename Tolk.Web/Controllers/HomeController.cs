@@ -121,12 +121,12 @@ namespace Tolk.Web.Controllers
             actionList.AddRange(_dbContext.Requisitions
                 .Where(r => r.Status == RequisitionStatus.Created && r.Request.Order.Status == OrderStatus.Delivered &&
                 (r.Request.Order.CreatedBy == User.GetUserId() || r.Request.Order.ContactPersonId == User.GetUserId()))
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt.DateTime, EndDateTime = r.Request.Order.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = r.Request.Order.OrderId, DefaultItemTab = "requisition", InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, ButtonItemId = r.Request.OrderId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitonArrived, ButtonAction = "View", ButtonController = "Order", ButtonItemTab = "requisition" }).ToList());
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = r.Request.Order.OrderId, DefaultItemTab = "requisition", InfoDate = r.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, ButtonItemId = r.Request.OrderId, Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name, OrderNumber = r.Request.Order.OrderNumber, Status = StartListItemStatus.RequisitonArrived, ButtonAction = "View", ButtonController = "Order", ButtonItemTab = "requisition" }).ToList());
 
             //Disputed complaints
             actionList.AddRange(_dbContext.Complaints
                 .Where(c => c.Status == ComplaintStatus.Disputed && c.CreatedBy == User.GetUserId())
-                .Select(c => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt.DateTime, EndDateTime = c.Request.Order.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = c.Request.Order.OrderId, DefaultItemTab = "complaint", InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, ButtonItemId = c.Request.OrderId, Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, OrderNumber = c.Request.Order.OrderNumber, Status = StartListItemStatus.ComplaintEvent, ButtonAction = "View", ButtonController = "Order", ButtonItemTab = "complaint" }).ToList());
+                .Select(c => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = c.Request.Order.OrderId, DefaultItemTab = "complaint", InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, ButtonItemId = c.Request.OrderId, Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, OrderNumber = c.Request.Order.OrderNumber, Status = StartListItemStatus.ComplaintEvent, ButtonAction = "View", ButtonController = "Order", ButtonItemTab = "complaint" }).ToList());
 
             var count = actionList.Any() ? actionList.Count() : 0;
 
@@ -146,7 +146,7 @@ namespace Tolk.Web.Controllers
 
             //Sent orders
             var sentOrders = sentAndApprovedOrders.Where(o => o.Status == OrderStatus.Requested)
-                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.CreatedAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCreated });
+                .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.CreatedAt.DateTime, InfoDateDescription = "Skickad: ", CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter, Language = o.OtherLanguage ?? o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderCreated });
 
             count = sentOrders.Any() ? sentOrders.Count() : 0;
 
@@ -159,7 +159,7 @@ namespace Tolk.Web.Controllers
 
             //Approved orders 
             var approvedOrders = sentAndApprovedOrders.Where(o => o.Status == OrderStatus.ResponseAccepted)
-            .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt.DateTime, EndDateTime = o.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderApproved });
+            .Select(o => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }, DefaulListAction = "View", DefaulListController = "Order", DefaultItemId = o.OrderId, InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime, CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter, Language = o.Language.Name, OrderNumber = o.OrderNumber, Status = StartListItemStatus.OrderApproved });
 
             count = approvedOrders.Any() ? approvedOrders.Count() : 0;
 
@@ -211,7 +211,7 @@ namespace Tolk.Web.Controllers
 
             //Complaints
             actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
-                .Select(c => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt.DateTime, EndDateTime = c.Request.Order.EndAt.DateTime }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = c.Request.RequestId, DefaultItemTab = "complaint", InfoDate = c.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = c.Request.Order.CustomerOrganisation.Name, ButtonItemId = c.RequestId, Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, OrderNumber = c.Request.Order.OrderNumber, Status = StartListItemStatus.ComplaintEvent, ButtonAction = "View", ButtonController = "Request", ButtonItemTab = "complaint" }).ToList());
+                .Select(c => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt }, DefaulListAction = "View", DefaulListController = "Request", DefaultItemId = c.Request.RequestId, DefaultItemTab = "complaint", InfoDate = c.CreatedAt.DateTime, CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = c.Request.Order.CustomerOrganisation.Name, ButtonItemId = c.RequestId, Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, OrderNumber = c.Request.Order.OrderNumber, Status = StartListItemStatus.ComplaintEvent, ButtonAction = "View", ButtonController = "Request", ButtonItemTab = "complaint" }).ToList());
 
             //To be reported
             actionList.AddRange(_dbContext.Requests
