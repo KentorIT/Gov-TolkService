@@ -328,16 +328,19 @@ namespace Tolk.BusinessLogic.Services
                 );
             }
             var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Webhook);
-            CreateWebHookCall(
-               new RequestAnswerDeniedModel
-               {
-                   OrderNumber = orderNumber,
-                   Message = request.DenyMessage
-               },
-               webhook.ContactInformation,
-               NotificationType.RequestAnswerDenied,
-               webhook.RecipientUserId
-           );
+            if (webhook != null)
+            {
+               CreateWebHookCall(
+                    new RequestAnswerDeniedModel
+                    {
+                       OrderNumber = orderNumber,
+                       Message = request.DenyMessage
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestAnswerDenied,
+                    webhook.RecipientUserId
+                );
+            }
         }
 
         public void ComplaintCreated(Complaint complaint)
