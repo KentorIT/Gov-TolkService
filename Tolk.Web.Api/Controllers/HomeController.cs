@@ -7,13 +7,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tolk.Api.Payloads;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
     public class HomeController : Controller
     {
-        public HomeController()
+        private readonly ISwedishClock _timeService;
+
+        public HomeController(ISwedishClock timeService)
         {
+            _timeService = timeService;
         }
 
         [AllowAnonymous]
@@ -29,6 +33,11 @@ namespace Tolk.Web.Api.Controllers
             X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
 
             return clientCertInRequest?.SerialNumber;
+        }
+        [HttpGet]
+        public ActionResult<string> TestTime()
+        {
+            return _timeService.SwedenNow.ToString("yyyy-MM-dd hh:mm:ss");
         }
     }
 }
