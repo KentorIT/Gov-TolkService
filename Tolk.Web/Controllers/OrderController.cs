@@ -378,13 +378,15 @@ namespace Tolk.Web.Controllers
                     DisplayFiles = attachments
                 };
             }
-            int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
-            updatedModel.WarningInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty;
 
-            if (updatedModel.LatestAnswerBy.HasValue)
-            {
-                updatedModel.ErrorInfo = order.StartAt < updatedModel.LatestAnswerBy ? "Sista svarstid kan inte vara senare än tolkuppdragets starttid, gå tillbaka till föregående steg för att ändra detta." : updatedModel.LatestAnswerBy < DateTime.Now ? "Sista svarstid har redan passerats, gå tillbaka till föregående steg för att ändra detta." : string.Empty;
-            }
+
+            //check reasonable duration time for order (more than 10h or less than 1h)
+            int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
+            updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty;
+
+            //check if order is far in future (more than 2 years ahead)
+            updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty : updatedModel.WarningOrderTimeInfo;
+
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;

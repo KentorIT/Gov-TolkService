@@ -23,21 +23,12 @@
                 </ul>
             </div>
         </div>
-        @if (!string.IsNullOrEmpty(Model.WarningInfo))
+        @if (!string.IsNullOrEmpty(Model.WarningOrderTimeInfo))
         {
             <div class="row warning-info">
-                <div class="col-sm-8">@Model.WarningInfo</div>
+                <div class="col-sm-8">@Model.WarningOrderTimeInfo</div>
                 <div class="col-sm-4">
                     <display-entry asp-for="TimeRange" />
-                </div>
-            </div>
-        }
-        @if (!string.IsNullOrEmpty(Model.ErrorInfo))
-        {
-            <div class="row warning-info">
-                <div class="col-sm-8">@Model.ErrorInfo</div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="LatestAnswerBy" />
                 </div>
             </div>
         }

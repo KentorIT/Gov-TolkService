@@ -147,9 +147,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        public string WarningInfo { get; set; } = string.Empty;
-
-        public string ErrorInfo { get; set; } = string.Empty;
+        public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
         public PriceInformation PriceInformation { get; set; }
 
