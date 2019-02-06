@@ -67,5 +67,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("x")]
         [CustomName("complaint_terminated_trial_denied")]
         ComplaintTerminatedTrialDenied = 15,
+
+        [Description("x")]
+        [CustomName("request_replaced_interpreter_accepted")]
+        RequestReplacedInterpreterAccepted = 16,
     }
 }

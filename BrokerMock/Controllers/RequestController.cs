@@ -37,6 +37,8 @@ namespace BrokerMock.Controllers
             _cache = cache;
         }
 
+        #region incomming
+
         [HttpPost]
         public async Task<JsonResult> Created([FromBody] RequestModel payload)
         {
@@ -171,6 +173,19 @@ namespace BrokerMock.Controllers
 
             return new JsonResult("Success");
         }
+
+        [HttpPost]
+        public async Task<JsonResult> ChangedInterpreterAccepted([FromBody] RequestChangedInterpreterAcceptedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Tolkändringen på Boknings-ID: {payload.OrderNumber} har accepterats");
+            }
+
+            return new JsonResult("Success");
+        }
+
+        #endregion
 
         private IEnumerable<string> GetExtraInstructions(string description)
         {

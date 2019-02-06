@@ -403,7 +403,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
             if (email != null)
             {
-                CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
+                CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
                     $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
                     $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
                 );
@@ -423,7 +423,6 @@ namespace Tolk.BusinessLogic.Services
                     webhook.RecipientUserId
                 );
             }
-
         }
 
         public void RequisitionCreated(Requisition requisition)
@@ -565,10 +564,28 @@ Tolk:
         {
             string orderNumber = request.Order.OrderNumber;
             //Broker
-            CreateEmail(request.Ranking.Broker.EmailAddress, $"Byte av tolk godkänt för boknings-ID {orderNumber}",
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation, $"Byte av tolk godkänt för boknings-ID {orderNumber}",
                 $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}. {NoReplyTextPlain} {GotoRequestPlain(request.RequestId)}",
                 $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}. {NoReplyTextHtml} {GotoRequestButton(request.RequestId)}"
             );
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestChangedInterpreterAcceptedModel
+                    {
+                        OrderNumber = orderNumber,
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestReplacedInterpreterAccepted,
+                    webhook.RecipientUserId
+                );
+            }
+            //
             //Creator
             switch (changeOrigin)
             {
