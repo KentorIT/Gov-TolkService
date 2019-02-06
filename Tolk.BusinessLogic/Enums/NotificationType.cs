@@ -20,8 +20,8 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_cancelled_by_customer")]
         RequestCancelledByCustomer = 3,
 
-        [Description("x")]
-        [CustomName("request_cancelled_by_broker")]
+        [Description("Detta är en notifieringshook, som inte är i bruk än...")]
+        [CustomName("request_cancelled_by_broker", false)]
         RequestCancelledByBroker= 4,
 
         [Description("x")]

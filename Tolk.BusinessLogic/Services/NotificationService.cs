@@ -131,6 +131,19 @@ namespace Tolk.BusinessLogic.Services
                     bodyBroker + GotoRequestPlain(request.RequestId),
                     HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId));
             }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                   new RequestInformationUpdatedModel
+                   {
+                       OrderNumber = orderNumber,
+                   },
+                   webhook.ContactInformation,
+                   NotificationType.RequestInformationUpdated,
+                   webhook.RecipientUserId
+               );
+            }
         }
 
         public void OrderReplacementCreated(Order order)
