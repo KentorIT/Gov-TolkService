@@ -1,4 +1,10 @@
 
+--OBS!!!!! Semantix ska tas bort så detta måste göras om
+--Email to Broker and UserNotificationSettings must be set!
+
+DELETE FROM Brokers
+DBCC CHECKIDENT ('Brokers', RESEED, 0)
+
 -- To be completed: EmailAddress to Broker
 INSERT Brokers (BrokerId, Name, EmailDomain, EmailAddress, OrganizationNumber)
 	VALUES 
