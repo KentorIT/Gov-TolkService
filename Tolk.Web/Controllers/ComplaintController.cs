@@ -65,7 +65,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {
-                if (!request.CanCreateComplaint())
+                if (!request.CanCreateComplaint)
                 {
                     _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
@@ -89,7 +89,7 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.RequestId == model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
                 {
-                    if (!request.CanCreateComplaint())
+                    if (!request.CanCreateComplaint)
                     {
                         _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
                         return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
@@ -159,7 +159,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    if (!complaint.CanAnswer())
+                    if (!complaint.CanAnswer)
                     {
                         _logger.LogWarning("Wrong status when trying to Accept complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
                         return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
@@ -182,7 +182,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    if (!complaint.CanAnswer())
+                    if (!complaint.CanAnswer)
                     {
                         _logger.LogWarning("Wrong status when trying to Dispute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
                         return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
@@ -205,7 +205,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    if (!complaint.CanAnswerDispute())
+                    if (!complaint.CanAnswerDispute)
                     {
                         _logger.LogWarning("Wrong status when trying to Accept Dispute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
                         return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
@@ -228,7 +228,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
                 {
-                    if (!complaint.CanAnswerDispute())
+                    if (!complaint.CanAnswerDispute)
                     {
                         _logger.LogWarning("Wrong status when trying to Refute complaint. Status: {complaint.Status}, ComplaintId: {complaint.ComplaintId}", complaint.Status, complaint.ComplaintId);
 

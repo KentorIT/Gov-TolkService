@@ -145,7 +145,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                if (!request.CanProcess())
+                if (!request.CanProcess)
                 {
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", new { id });

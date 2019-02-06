@@ -181,13 +181,9 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
-        public bool CanApprove()
+        public bool CanApprove
         {
-            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
-            {
-                return false;
-            }
-            return true;
+            get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
         }
 
         public void Accept(
@@ -443,43 +439,28 @@ namespace Tolk.BusinessLogic.Entities
             Order.DeliverRequisition();
         }
 
-        public bool CanCreateRequisition()
+        public bool CanCreateRequisition
         {
-            if (Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved)
-            {
-                return false;
-            }
-            return true;
+            get { return !(Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved); }
         }
 
         public void CreateComplaint(Complaint complaint)
         {
-            if (Complaints.Any())
+            if (!CanCreateComplaint)
             {
-                throw new InvalidOperationException($"Several complaints cannot be created.");
+                throw new InvalidOperationException($"Several complaints cannot be created or request does not have status approved .");
             }
-
             Complaints.Add(complaint);
         }
 
-        public bool CanCreateComplaint()
+        public bool CanCreateComplaint
         {
-            if (Complaints.Any())
-            {
-                return false;
-            }
-
-            return true;
+            get { return !Complaints.Any() && Status == RequestStatus.Approved; }
         }
 
-        public bool CanProcess()
+        public bool CanProcess
         {
-            if (Status != RequestStatus.Created)
-            {
-                return false;
-            }
-
-            return true;
+            get { return Status == RequestStatus.Created || Status == RequestStatus.Received; }
         }
     }
 }

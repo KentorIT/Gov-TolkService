@@ -97,13 +97,9 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDisputedMessage = message;
         }
 
-        public bool CanAnswerDispute()
+        public bool CanAnswerDispute
         {
-            if (Status != ComplaintStatus.Disputed)
-            {
-                return false;
-            }
-            return true;
+            get { return Status == ComplaintStatus.Disputed; }
         }
 
         public void Answer(DateTimeOffset answeredAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
@@ -123,14 +119,9 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
         }
 
-        public bool CanAnswer()
+        public bool CanAnswer
         {
-            if (Status != ComplaintStatus.Created)
-            {
-                return false;
-            }
-
-            return true;
+            get { return Status == ComplaintStatus.Created; }
         }
     }
 }

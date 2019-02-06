@@ -165,8 +165,7 @@ namespace Tolk.Web.Controllers
                     model.InterpreterName = _dbContext.Requests
                         .Include(r => r.Interpreter)
                         .Single(r => r.RequestId == request.RequestId).Interpreter?.CompleteContactInformation;
-                    model.AllowComplaintCreation = !request.Complaints.Any() &&
-                        (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                    model.AllowComplaintCreation = request.CanCreateComplaint &&
                         order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
 
                     model.RequestAttachmentListModel = new AttachmentListModel
@@ -420,7 +419,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
                 var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-                if (!request.CanApprove())
+                if (!request.CanApprove)
                 {
                     _logger.LogWarning("Wrong status when trying to Approve request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
 

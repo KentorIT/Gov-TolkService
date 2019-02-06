@@ -113,7 +113,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
-                if (!request.CanCreateRequisition())
+                if (!request.CanCreateRequisition)
                 {
                     _logger.LogWarning("Wrong status when trying to Create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", "Request", new { id, tab = "requisition" });
@@ -303,7 +303,7 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.CanApproveOrDeny())
+                    if (!requisition.CanApproveOrDeny)
                     {
                         _logger.LogWarning("Wrong status when trying to Approve requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
 
@@ -330,7 +330,7 @@ namespace Tolk.Web.Controllers
                     .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.CanApproveOrDeny())
+                    if (!requisition.CanApproveOrDeny)
                     {
                         _logger.LogWarning("Wrong status when trying to Deny requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });

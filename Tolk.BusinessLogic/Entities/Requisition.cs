@@ -104,13 +104,9 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingProcessedBy = impersonatorId;
         }
 
-        public bool CanApproveOrDeny()
+        public bool CanApproveOrDeny
         {
-            if (Status != RequisitionStatus.Created)
-            {
-                return false;
-            }
-            return true;
+            get { return Status == RequisitionStatus.Created; }
         }
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
