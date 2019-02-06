@@ -54,7 +54,6 @@ namespace Tolk.BusinessLogic.Services
         public void OrderCancelledByCustomer(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
         {
             string orderNumber = request.Order.OrderNumber;
-            //string broker = request.Ranking.Broker.EmailAddress;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
@@ -124,10 +123,14 @@ namespace Tolk.BusinessLogic.Services
                             r.Status == RequestStatus.Accepted ||
                             r.Status == RequestStatus.Approved ||
                             r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
-            string bodyBroker = "Kontaktperson har ändrats för bokning {orderNumber}." + NoReplyTextPlain;
-            CreateEmail(request.Ranking.Broker.EmailAddress, $"Bokning {order.OrderNumber} har uppdaterats",
-                bodyBroker + GotoRequestPlain(request.RequestId),
-                HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId));
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
+            if (email != null)
+            {
+                string bodyBroker = "Kontaktperson har ändrats för bokning {orderNumber}." + NoReplyTextPlain;
+                CreateEmail(email.ContactInformation, $"Bokning {order.OrderNumber} har uppdaterats",
+                    bodyBroker + GotoRequestPlain(request.RequestId),
+                    HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId));
+            }
         }
 
         public void OrderReplacementCreated(Order order)
@@ -156,11 +159,15 @@ namespace Tolk.BusinessLogic.Services
 <div>{NoReplyText}</div>
 <div>{GotoRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
 <div>{GotoRequestButton(oldRequest.RequestId, textOverride: "Gå till ursprungligt uppdrag", autoBreakLines: false)}</div>";
-            CreateEmail(
-                replacementRequest.Ranking.Broker.EmailAddress,
+            var email = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(
+                email.ContactInformation,
                 $"Bokning {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
                 bodyPlain,
                 bodyHtml);
+            }
         }
 
         public void OrderNoBrokerAccepted(Order order)
@@ -298,7 +305,6 @@ namespace Tolk.BusinessLogic.Services
         public void RequestAnswerDenied(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            //string broker = request.Ranking.Broker.EmailAddress;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Email);
             if (email != null)
             {
@@ -324,7 +330,6 @@ namespace Tolk.BusinessLogic.Services
         public void ComplaintCreated(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
-            //string broker = request.Ranking.Broker.EmailAddress;
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Email);
             if (email != null)
             {
@@ -374,7 +379,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Email);
             if (email != null)
             {
-                CreateEmail(complaint.Request.Ranking.Broker.EmailAddress, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
+                CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
                     $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {NoReplyTextPlain} {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
                     $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {NoReplyTextHtml} {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}"
                 );
@@ -399,7 +404,6 @@ namespace Tolk.BusinessLogic.Services
         public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
-            //string broker = request.Ranking.Broker.EmailAddress;
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
             if (email != null)
             {
@@ -443,41 +447,30 @@ namespace Tolk.BusinessLogic.Services
 Kostnader att fakturera:
 
 {GetRequisitionPriceInformationForMail(requisition)}";
-            var bodyPlain = body + NoReplyTextPlain;
-            var bodyHtml = HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml;
-            //Customer
-            CreateEmail(requisition.CreatedByUser.Email,
-                $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har godkänts",
-                bodyPlain + GotoOrderPlain(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition),
-                bodyHtml + GotoOrderButton(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition)
-            );
-            //Broker
-            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress,
-                $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har godkänts",
-                bodyPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
-                bodyHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
-            );
+            var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionApproved, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har godkänts",
+                    body + NoReplyTextPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
+                    HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
+                );
+            }
         }
 
         public void RequisitionDenied(Requisition requisition)
         {
             string orderNumber = requisition.Request.Order.OrderNumber;
             var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har underkänts med följande meddelande:\n{requisition.DenyMessage}";
-            var bodyPlain = body + NoReplyTextPlain;
-            var bodyHtml = HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml;
-            List<string> receipents = new List<string>() { requisition.CreatedByUser.Email };
-            //Customer
-            CreateEmail(requisition.CreatedByUser.Email,
-                $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har underkänts",
-                bodyPlain + GotoOrderPlain(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition),
-                bodyHtml + GotoOrderButton(requisition.Request.Order.OrderId, HtmlHelper.ViewTab.Requisition)
-            );
-            //Broker
-            CreateEmail(requisition.Request.Ranking.Broker.EmailAddress,
-                $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har underkänts",
-                bodyPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
-                bodyHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
-            );
+            var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionDenied, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har underkänts",
+                    body + NoReplyTextPlain + GotoRequestPlain(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
+                    HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition)
+                );
+            }
         }
 
         public void RequestAccepted(Request request)
