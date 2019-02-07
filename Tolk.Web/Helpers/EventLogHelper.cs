@@ -153,7 +153,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
-                    EventDetails = isRequestDetailView ? "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
+                    EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter { request.Order.ReplacingOrder.OrderNumber })" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
             }
@@ -305,6 +305,18 @@ namespace Tolk.Web.Helpers
                         Actor = request.CancelledByUser.FullName,
                         Organization = customerName,
                         ActorContactInfo = GetContactinfo(request.CancelledByUser),
+                    });
+                }
+                // Order replaced, just in detailed view (for broker)
+                if (isRequestDetailView && request.Order?.ReplacedByOrder != null)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.Order.ReplacedByOrder.CreatedAt,
+                        EventDetails = $"Uppdrag ersatt av {request.Order.ReplacedByOrder.OrderNumber}",
+                        Actor = request.Order.ReplacedByOrder.CreatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(request.Order.ReplacedByOrder.CreatedByUser),
                     });
                 }
             }
