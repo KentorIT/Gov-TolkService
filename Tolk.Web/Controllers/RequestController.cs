@@ -417,6 +417,7 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.ProcessingUser)
                         .Include(r => r.CancelledByUser)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser)
+                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.Interpreter)
                         .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                         .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser)
                         .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
