@@ -875,14 +875,15 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [Fact]
         public void CreateComplaint_Valid()
         {
-            var complaint = new Complaint()
+            var complaint = new Complaint
             {
                 Status = ComplaintStatus.Created,
                 ComplaintType = ComplaintType.NoDelivery,
                 ComplaintMessage = "Vafalls!",
             };
-            var request = new Request()
+            var request = new Request
             {
+                Status = RequestStatus.Approved,
                 Complaints = new List<Complaint>()
             };
             request.CreateComplaint(complaint);
