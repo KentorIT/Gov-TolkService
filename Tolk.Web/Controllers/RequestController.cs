@@ -186,14 +186,12 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReplacedByRequest)
                 .Include(r => r.Requisitions)
                 .Single(o => o.RequestId == id);
-            RequestModel model = GetModel(request);
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter)
             {
-                if (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted)
-                {
-                    model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
-                    model.ExpectedTravelCosts = 0;
-                }
+                RequestModel model = GetModel(request);
+                model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+                model.ExpectedTravelCosts = 0;
+                model.OldInterpreterId = request.InterpreterBrokerId;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 return View("Process", model);
@@ -403,7 +401,7 @@ namespace Tolk.Web.Controllers
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
             model.BrokerId = request.Ranking.BrokerId;
-            model.AllowInterpreterChange = (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Accepted || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.StartAt > _clock.SwedenNow;
+            model.AllowInterpreterChange = request.CanChangeInterpreter && request.Order.StartAt > _clock.SwedenNow;
             model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);

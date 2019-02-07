@@ -155,6 +155,8 @@ namespace Tolk.Web.Models
 
         public int? ComplaintId { get; set; }
 
+        public int? OldInterpreterId { get; set; }
+
         #endregion
 
         #region methods

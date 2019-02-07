@@ -186,6 +186,11 @@ namespace Tolk.BusinessLogic.Entities
             get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
         }
 
+        public bool CanChangeInterpreter
+        {
+            get { return Status == RequestStatus.Approved || Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
+        }
+
         public void Accept(
             DateTimeOffset acceptTime,
             int userId,
