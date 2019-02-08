@@ -263,6 +263,88 @@ namespace Tolk.Web.Controllers
 
             return View(model);
         }
+        [Authorize(Roles = Roles.SuperUser)]
+        public ActionResult EditNotificationSettings()
+        {
+            var brokerId = User.TryGetBrokerId();
+            if (brokerId != null)
+            {
+                var apiUser = _dbContext.Users
+                    .Include(u => u.Claims)
+                    .Include(u => u.NotificationSettings)
+                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                if (apiUser != null)
+                {
+                    var settings = apiUser.NotificationSettings.Select(s => s);
+                    return View(GetAvailableNotifications(settings));
+                }
+            }
+            return Forbid();
+        }
+
+        private IEnumerable<NotificationSettingsModel> GetAvailableNotifications(IEnumerable<UserNotificationSetting> settings)
+        {
+            foreach (var val in Enum.GetValues(typeof(NotificationType)).OfType<NotificationType>())
+            {
+                var emailSettings = settings.SingleOrDefault(s => s.NotificationType == val && s.NotificationChannel == NotificationChannel.Email);
+                var webhookSettings = settings.SingleOrDefault(s => s.NotificationType == val && s.NotificationChannel == NotificationChannel.Webhook);
+                yield return new NotificationSettingsModel
+                {
+                    Type = val,
+                    UseEmail = emailSettings != null,
+                    SpecificEmail = emailSettings?.ConnectionInformation,
+                    UseWebHook= webhookSettings != null,
+                    WebHookUrl = webhookSettings?.ConnectionInformation,
+                };
+            }
+        }
+
+        [Authorize(Roles = Roles.SuperUser)]
+        public ActionResult ChangeApiKey()
+        {
+            var brokerId = User.TryGetBrokerId();
+            if (brokerId != null)
+            {
+                var apiUser = _dbContext.Users
+                    .Include(u => u.Claims)
+                    .Include(u => u.NotificationSettings)
+                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                if (apiUser != null)
+                {
+                }
+            }
+            return Forbid();
+
+        }
+#warning should proably add a generate new api key that can be called with ajax.
+#warning skuld also be possible to change the api key in ap, if you know the old one?
+#warning or not, becaues if someone gets the hands on the key, they can change it...
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Roles = Roles.SuperUser)]
+        public async Task<ActionResult> ChangeApiKey(string key)
+        {
+            if (ModelState.IsValid)
+            {
+#warning should be validated with the password...
+                //Save all Claims and Notification settings and stuff here...
+                var brokerId = User.TryGetBrokerId();
+                if (brokerId != null)
+                {
+                    using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        var apiUser = _dbContext.Users
+                            .Include(u => u.NotificationSettings)
+                            .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                        if (apiUser != null)
+                        {
+                            return View();
+                        }
+                    }
+                }
+            }
+            return Forbid();
+        }
 
         [Authorize(Roles = Roles.SuperUser)]
         public ActionResult EditOrganisationSettings()

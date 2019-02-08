@@ -12,11 +12,11 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_created")]
         RequestCreated = 1,
 
-        [Description("x")]
+        [Description("Uppdaterad information på förfrågan")]
         [CustomName("request_information_updated")]
         RequestInformationUpdated = 2,
 
-        [Description("x")]
+        [Description("Uppdrag avokat av myndighet")]
         [CustomName("request_cancelled_by_customer")]
         RequestCancelledByCustomer = 3,
 
@@ -24,51 +24,51 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_cancelled_by_broker", false)]
         RequestCancelledByBroker= 4,
 
-        [Description("x")]
+        [Description("Svar på förfrågan har accepterats")]
         [CustomName("request_answer_approved")]
         RequestAnswerApproved = 5,
 
-        [Description("x")]
+        [Description("Svar på förfrågan godtogs inte")]
         [CustomName("request_answer_denied")]
         RequestAnswerDenied= 6,
 
-        [Description("x")]
+        [Description("Förlorad förfrågan på grund av inaktivitet")]
         [CustomName("request_lost_due_to_inactivity")]
         RequestLostDueToInactivity = 7,
 
-        [Description("x")]
+        [Description("Ersättningsuppdrag har inkommit")]
         [CustomName("request_replacement_created")]
         RequestReplacementCreated = 8,
 
-        [Description("x")]
+        [Description("Rekvisition har godkänts")]
         [CustomName("requisition_approved")]
         RequisitionApproved = 9,
 
-        [Description("x")]
+        [Description("Rekvisition har avslagits")]
         [CustomName("requistion_denied")]
         RequisitionDenied = 10,
 
-        [Description("x")]
+        [Description("Reklamation har skapats")]
         [CustomName("complaint_created")]
         ComplaintCreated = 11,
 
-        [Description("x")]
+        [Description("Reklamation är återtagits av myndighet")]
         [CustomName("complaint_disputed_accepted")]
         ComplaintDisputedAccepted = 12,
 
-        [Description("x")]
+        [Description("Reklamation har gått till extern process")]
         [CustomName("complaint_dispute_pending_trial")]
         ComplaintDisputePendingTrial = 13,
 
-        [Description("x")]
+        [Description("Reklamation har blivit bistådd av extern process")]
         [CustomName("complaint_terminated_trial_confirmed")]
         ComplaintTerminatedTrialConfirmed = 14,
 
-        [Description("x")]
+        [Description("Reklamation har blivit avslagen av extern process")]
         [CustomName("complaint_terminated_trial_denied")]
         ComplaintTerminatedTrialDenied = 15,
 
-        [Description("x")]
+        [Description("Ersättning av tolk har godkänts")]
         [CustomName("request_replaced_interpreter_accepted")]
         RequestReplacedInterpreterAccepted = 16,
     }

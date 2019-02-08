@@ -111,6 +111,9 @@
     <Content Update="Views\User\EditNotificationSettings.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\User\EditNotificationSettings.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\User\EditOrganisationSettings.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -127,6 +130,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\User\List.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\User\_EditNotificationSettingsRow.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\User\_Filter.cshtml">
