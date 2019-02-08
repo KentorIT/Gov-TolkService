@@ -7,11 +7,14 @@
 
 <div class="row">
     <div class="col-sm-4">
+        <display-entry asp-for="NameFirst" />
+        <display-entry asp-for="NameFamily" />
+    </div>
+    <div class="col-sm-4">
         <display-entry asp-for="UserName" />
         <display-entry asp-for="Email" />
     </div>
-    <div class="col-sm-8">
-        <display-entry asp-for="NameFull" />
+    <div class="col-sm-4">
         <display-entry asp-for="PhoneWork" />
         <display-entry asp-for="PhoneCellphone" />
     </div>
@@ -21,9 +24,9 @@
         <a class="btn btn-primary btn-large" asp-action="ChangePassword">Ändra lösenord</a>
     </div>
     <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="Edit">Ändra uppgifter</a>
+        <a class="btn btn-primary btn-large" asp-action="ChangeEmail">Ändra e-postadress</a>
     </div>
     <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="ChangeEmail">Byt e-postadress</a>
+        <a class="btn btn-primary btn-large" asp-action="Edit">Ändra uppgifter</a>
     </div>
 </div>

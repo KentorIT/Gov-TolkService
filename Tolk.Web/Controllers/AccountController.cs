@@ -68,6 +68,8 @@ namespace Tolk.Web.Controllers
 
             var model = new AccountViewModel
             {
+                NameFirst = user.NameFirst,
+                NameFamily = user.NameFamily,
                 UserName = user.UserName,
                 NameFull = user.FullName ?? "-",
                 Email = user.Email ?? "-",
@@ -204,7 +206,8 @@ namespace Tolk.Web.Controllers
 
             var model = new ChangePasswordModel
             {
-                HasPassword = await _userManager.HasPasswordAsync(user)
+                HasPassword = await _userManager.HasPasswordAsync(user),
+                Email = user.Email
             };
 
             return View(model);
@@ -712,6 +715,7 @@ namespace Tolk.Web.Controllers
                 NameFamily = user.NameFamily,
                 PhoneCellphone = user.PhoneNumberCellphone,
                 PhoneWork = user.PhoneNumber,
+                Email = user.Email
             });
         }
 

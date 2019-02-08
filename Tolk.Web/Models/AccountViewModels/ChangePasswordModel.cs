@@ -11,5 +11,7 @@ namespace Tolk.Web.Models.AccountViewModels
         public string CurrentPassword { get; set; }
 
         public bool HasPassword { get; set; }
+
+        public string Email { get; set; }
     }
 }

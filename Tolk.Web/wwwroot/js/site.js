@@ -193,6 +193,11 @@ $(function () {
     refreshCollapsibles();
 });
 
+$(document).ready(function () {
+    $('.pwd').val("");
+    $('.no-auto-complete').val("");
+});
+
 $.fn.extend({
     bindEnterKey: function (input, button, context) {
         var $context = context ? $(context) : $(this);

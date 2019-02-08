@@ -23,12 +23,16 @@ namespace Tolk.Web.Models.AccountViewModels
         [StringLength(255)]
         public string NameFamily { get; set; }
 
+        [NoAutoComplete]
         [Display(Name = "Telefonnummer (arbete)")]
         [StringLength(32)]
         public string PhoneWork { get; set; }
 
+        [NoAutoComplete]
         [Display(Name = "Telefonnummer (mobil)")]
         [StringLength(32)]
         public string PhoneCellphone { get; set; }
+
+        public string Email { get; set; }
     }
 }

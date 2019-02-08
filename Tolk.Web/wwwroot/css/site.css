@@ -1241,3 +1241,6 @@ input.force-validation {
   top: 0px;
   left: 100px;
 }
+.neg-margin-top {
+  margin-top: -45px;
+}

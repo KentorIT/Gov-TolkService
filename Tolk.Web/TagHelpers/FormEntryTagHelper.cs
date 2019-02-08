@@ -306,22 +306,26 @@ namespace Tolk.Web.TagHelpers
         private TagBuilder GenerateLabel(bool isSubItem = false)
         {
             return _htmlGenerator.GenerateLabel(
-                ViewContext,
-                For.ModelExplorer,
-                For.Name,
-                labelText: LabelOverride,
-                htmlAttributes: new { @class = isSubItem ? "subitem control-label" : "control-label" });
+               ViewContext,
+               For.ModelExplorer,
+               For.Name,
+               labelText: LabelOverride,
+               htmlAttributes: new { @class = isSubItem ? "subitem control-label" : "control-label" });
         }
 
         private void WriteInput(TextWriter writer)
         {
+            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoComplete>(
+            For.ModelExplorer.Metadata.ContainerType,
+            For.ModelExplorer.Metadata.PropertyName);
+
             var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 value: For.Model,
                 format: null,
-                htmlAttributes: new { @class = "form-control" });
+                htmlAttributes: new { @class = IsNoAutoComplete ? "form-control no-auto-complete" : "form-control" });
 
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
@@ -341,6 +345,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteTextArea(TextWriter writer)
         {
+
             var tagBuilder = _htmlGenerator.GenerateTextArea(
                 ViewContext,
                 For.ModelExplorer,
@@ -393,7 +398,7 @@ namespace Tolk.Web.TagHelpers
                 For.ModelExplorer,
                 For.Name,
                 value: For.Model,
-                htmlAttributes: new { @class = "form-control" });
+                htmlAttributes: new { @class = "form-control pwd", autocomplete = "new-password" });
 
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
@@ -820,8 +825,8 @@ namespace Tolk.Web.TagHelpers
         {
             bool isRow = LayoutOption == "row";
             var id = IdOverride ?? For.Name;
-            int? ci = CheckedIndex == null ? 0 
-                : CheckedIndex == "none" ? (int?)null 
+            int? ci = CheckedIndex == null ? 0
+                : CheckedIndex == "none" ? (int?)null
                 : int.Parse(CheckedIndex);
 
             writer.WriteLine($"<div id=\"{id}\">");

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
@@ -11,6 +12,7 @@ namespace Tolk.Web.Models.AccountViewModels
         public string CurrentPassword { get; set; }
 
         [Required]
+        [NoAutoComplete]
         [EmailAddress]
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "Ny e-postadress")]
