@@ -1,0 +1,1 @@
+dotnet ef migrations script -o bin\TolkMigrate.sql --startup-project ..\Tolk.Web\Tolk.Web.csproj -p ..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj -i
