@@ -37,12 +37,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public SystemMessageUserTypeGroup SystemMessageUserTypeGroup { get; set; }
 
-        public int LastUpdatedBy { get; set; }
+        public int? LastUpdatedBy { get; set; }
 
         [ForeignKey(nameof(LastUpdatedBy))]
         public AspNetUser LastUpdatedByUser { get; set; }
 
-        public DateTimeOffset LastUpdatedAt { get; set; }
+        public DateTimeOffset? LastUpdatedAt { get; set; }
 
     }
 }

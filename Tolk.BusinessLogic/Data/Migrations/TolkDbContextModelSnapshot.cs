@@ -1330,9 +1330,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("ImpersonatingCreator");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt");
+                    b.Property<DateTimeOffset?>("LastUpdatedAt");
 
-                    b.Property<int>("LastUpdatedBy");
+                    b.Property<int?>("LastUpdatedBy");
 
                     b.Property<string>("SystemMessageHeader")
                         .HasMaxLength(255);
