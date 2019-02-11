@@ -1314,6 +1314,47 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("RequisitionPriceRows");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.SystemMessage", b =>
+                {
+                    b.Property<int>("SystemMessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("ActiveFrom");
+
+                    b.Property<DateTimeOffset>("ActiveTo");
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<int>("CreatedBy");
+
+                    b.Property<int?>("ImpersonatingCreator");
+
+                    b.Property<DateTimeOffset>("LastUpdatedAt");
+
+                    b.Property<int>("LastUpdatedBy");
+
+                    b.Property<string>("SystemMessageHeader")
+                        .HasMaxLength(255);
+
+                    b.Property<string>("SystemMessageText")
+                        .HasMaxLength(2000);
+
+                    b.Property<int>("SystemMessageType");
+
+                    b.Property<int>("SystemMessageUserTypeGroup");
+
+                    b.HasKey("SystemMessageId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ImpersonatingCreator");
+
+                    b.HasIndex("LastUpdatedBy");
+
+                    b.ToTable("SystemMessages");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
                 {
                     b.Property<Guid>("TemporaryAttachmentGroupKey");
@@ -1909,6 +1950,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("PriceRows")
                         .HasForeignKey("RequisitionId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.SystemMessage", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreator")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "LastUpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastUpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
