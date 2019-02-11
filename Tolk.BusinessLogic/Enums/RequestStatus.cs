@@ -52,5 +52,7 @@ namespace Tolk.BusinessLogic.Enums
         ResponseNotAnsweredByCreator = 16,
         [Description("Inväntar sista svarstid från myndighet")]
         AwaitingDeadlineFromCustomer = 17,
+        [Description("Ingen sista svarstid från myndighet")]
+        NoDeadlineFromCustomer = 18,
     }
 }

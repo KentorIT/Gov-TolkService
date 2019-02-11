@@ -34,12 +34,19 @@
                         </form>
                     </div>
                 }
-                @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
+                @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer)
                 {
                     <div class="row">
                         <br />
                         <div class="col-sm-6">
-                            <span>Bokningsförfrågan avböjd av samtliga förmedlingar, bokningsförfrågan avslutad.</span>
+                            @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
+                            {
+                                <span>Bokningsförfrågan avböjd av samtliga förmedlingar, bokningsförfrågan avslutad.</span>
+                            }
+                            else if (Model.Status == OrderStatus.NoDeadlineFromCustomer)
+                            {
+                                <span>Ingen sista svarstid satt av myndighet, bokningsförfrågan avslutad.</span>
+                            }
                         </div>
                         @if (Model.AllowNoAnswerConfirmation)
                         {
@@ -65,13 +72,17 @@
                             <ul>
                                 @foreach (var request in Model.PreviousRequests)
                                 {
-                                    <li class="detail-text">
-                                        @request.BrokerName (@EnumHelper.GetDescription(request.Status))
-                                        @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
-                                        {
-                                            <span> Orsak: @request.DenyMessage</span>
-                                        }
-                                    </li>
+                                    if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer 
+                                        && request.Status != RequestStatus.NoDeadlineFromCustomer)
+                                    {
+                                        <li class="detail-text">
+                                            @request.BrokerName (@EnumHelper.GetDescription(request.Status))
+                                            @if (!string.IsNullOrWhiteSpace(request.DenyMessage))
+                                            {
+                                                <span> Orsak: @request.DenyMessage</span>
+                                            }
+                                        </li>
+                                    }
                                 }
                             </ul>
                         </div>
@@ -168,7 +179,6 @@
                     <div class="col-sm-8">
                         <form-entry asp-for="LatestAnswerBy"></form-entry>
                     </div>
-                    
                 </div>
                 <div class="row">
                     <div class="col-sm-4">

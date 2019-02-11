@@ -7,7 +7,7 @@ namespace Tolk.Web.Helpers
     {
         public static string GetColorClassNameForOrderStatus(OrderStatus status)
         {
-            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator) ? "red-border-left" 
+            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator || status == OrderStatus.NoDeadlineFromCustomer) ? "red-border-left" 
                 : (status == OrderStatus.Delivered || status == OrderStatus.DeliveryAccepted || status == OrderStatus.ResponseAccepted) ? "green-border-left" 
                 : (status == OrderStatus.RequestResponded || status == OrderStatus.RequestRespondedNewInterpreter || status == OrderStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left" 
                 : "blue-border-left";
@@ -20,7 +20,7 @@ namespace Tolk.Web.Helpers
 
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
         {
-            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker) ? "red-border-left" 
+            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer) ? "red-border-left" 
                 : (status == RequestStatus.Approved) ? "green-border-left" 
                 : (status == RequestStatus.Accepted || status == RequestStatus.AcceptedNewInterpreterAppointed || status == RequestStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left" 
                 : "blue-border-left";

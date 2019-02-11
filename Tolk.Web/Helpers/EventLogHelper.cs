@@ -97,9 +97,19 @@ namespace Tolk.Web.Helpers
                         {
                             Weight = 200,
                             Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
-                                ? terminatingRequest.ExpiresAt.Value
+                                ? terminatingRequest.ExpiresAt ?? terminatingRequest.Order.StartAt
                                 : terminatingRequest.AnswerDate.Value,
                             EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
+                            Actor = "Systemet",
+                        });
+                    }
+                    else if (order.Status == OrderStatus.NoDeadlineFromCustomer)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Weight = 200,
+                            Timestamp = terminatingRequest.Order.StartAt,
+                            EventDetails = "Bokningsförfrågan avslutad, pga utebliven sista svarstid från myndighet",
                             Actor = "Systemet",
                         });
                     }
@@ -147,7 +157,7 @@ namespace Tolk.Web.Helpers
                     }
                 }
             }
-            if (!request.ReplacingRequestId.HasValue)
+            if (!request.ReplacingRequestId.HasValue && request.ExpiresAt.HasValue)
             {
                 // Request creation
                 eventLog.Add(new EventLogEntryModel
@@ -172,24 +182,21 @@ namespace Tolk.Web.Helpers
             // Request expired
             if (request.Status == RequestStatus.DeniedByTimeLimit)
             {
-                if (request.ExpiresAt.HasValue)
+                eventLog.Add(new EventLogEntryModel
                 {
-                    eventLog.Add(new EventLogEntryModel
-                    {
-                        Timestamp = request.ExpiresAt.Value,
-                        EventDetails = "Förfrågan obesvarad, tiden gick ut",
-                        Actor = "Systemet",
-                    });
-                }
-                else
+                    Timestamp = request.ExpiresAt.Value,
+                    EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                    Actor = "Systemet",
+                });
+            }
+            else if (request.Status == RequestStatus.NoDeadlineFromCustomer)
+            {
+                eventLog.Add(new EventLogEntryModel
                 {
-                    eventLog.Add(new EventLogEntryModel
-                    {
-                        Timestamp = request.Order.StartAt,
-                        EventDetails = "Sista svarstid ej satt, tiden gick ut",
-                        Actor = "Systemet",
-                    });
-                }
+                    Timestamp = request.Order.StartAt,
+                    EventDetails = "Sista svarstid ej satt, tiden gick ut",
+                    Actor = "Systemet",
+                });
             }
             // Request answered by broker
             if (request.AnswerDate.HasValue)

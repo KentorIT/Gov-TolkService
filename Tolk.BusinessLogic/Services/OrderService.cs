@@ -87,6 +87,7 @@ namespace Tolk.BusinessLogic.Services
 
                             if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
                             {
+                                expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
                                 await TerminateOrder(expiredRequest.Order);
                             }
                             else
@@ -323,7 +324,14 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task TerminateOrder(Order order)
         {
-            order.Status = OrderStatus.NoBrokerAcceptedOrder;
+            if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
+            {
+                order.Status = OrderStatus.NoDeadlineFromCustomer;
+            }
+            else
+            {
+                order.Status = OrderStatus.NoBrokerAcceptedOrder;
+            }
 
             //There are no more brokers to ask.
             // Send an email to tell the order creator, and possibly the other user as well...
