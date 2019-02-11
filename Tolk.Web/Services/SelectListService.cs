@@ -87,10 +87,21 @@ namespace Tolk.Web.Services
             EnumHelper.GetAllDescriptions<AssignmentType>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> SystemMessageTypes { get; } =
+            EnumHelper.GetAllDescriptions<SystemMessageType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
+        public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups { get; } =
+          EnumHelper.GetAllDescriptions<SystemMessageUserTypeGroup>()
+              .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+              .ToList().AsReadOnly();
+
         public static IEnumerable<SelectListItem> Genders { get; } =
             EnumHelper.GetAllDescriptions<Gender>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+
         public static IEnumerable<SelectListItem> BoolList { get; } =
             EnumHelper.GetAllDescriptions<TrueFalse>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })

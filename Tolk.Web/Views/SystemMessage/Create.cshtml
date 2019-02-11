@@ -1,0 +1,41 @@
+﻿@model Tolk.Web.Models.SystemMessageModel
+@using Tolk.Web.Services
+@inject SelectListService SelectListService
+@{
+    ViewData["Title"] = "Skapa nyhet";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <form method="post">
+            <h2>@ViewData["Title"]</h2>
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="SystemMessageHeader" />
+                </div>
+                <div class="col-sm-8">
+                    <form-entry asp-for="SystemMessageText" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="DisplayDate" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="DisplayedForUserTypeGroup" type="select" asp-items="SelectListService.SystemMessageUserTypeGroups" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="SystemMessageType" asp-items="SelectListService.SystemMessageTypes" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    <button class="btn btn-large btn-success pull-right">Skapa nyhet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

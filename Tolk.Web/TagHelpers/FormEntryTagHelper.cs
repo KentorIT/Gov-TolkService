@@ -150,7 +150,7 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeSplitTimeRange;
                     return;
                 }
-                if (For.ModelExplorer.ModelType == typeof(DateRange))
+                if (For.ModelExplorer.ModelType == typeof(DateRange) || For.ModelExplorer.ModelType == typeof(RequiredDateRange))
                 {
                     InputType = InputTypeDateRange;
                     return;
@@ -417,13 +417,17 @@ namespace Tolk.Web.TagHelpers
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
             WritePrefix(writer, PrefixAttribute.Position.Value);
+ 
             WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer);
             WriteRightArrowSpan(writer);
             WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer);
-
-            writer.WriteLine("</div>"); // form-inline.
+            writer.WriteLine("<div class=\"col-sm-6 no-padding\">");
             WriteValidation(writer, fromModelExplorer, fromFieldName);
+            writer.WriteLine("</div>");
+            writer.WriteLine("<div class=\"col-sm-6 no-padding\">");
             WriteValidation(writer, toModelExplorer, toFieldName);
+            writer.WriteLine("</div>");
+            writer.WriteLine("</div>"); // form-inline.
         }
 
         private static void WriteRightArrowSpan(TextWriter writer)

@@ -44,5 +44,17 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset? LastUpdatedAt { get; set; }
 
+        public void Create(DateTimeOffset swedenNow, int userId, int? impersonatorId, DateTimeOffset activeFrom, DateTimeOffset activeTo, string systemMessageHeader, string systemMessageText, SystemMessageType systemMessageType, SystemMessageUserTypeGroup displayedForUserTypeGroup)
+        {
+            CreatedAt = swedenNow;
+            ImpersonatingCreator = impersonatorId;
+            CreatedBy = userId;
+            ActiveFrom = activeFrom;
+            ActiveTo = activeTo;
+            SystemMessageHeader = systemMessageHeader;
+            SystemMessageText = systemMessageText;
+            SystemMessageType = systemMessageType;
+            SystemMessageUserTypeGroup = displayedForUserTypeGroup;
+        }
     }
 }
