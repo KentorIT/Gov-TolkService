@@ -56,5 +56,17 @@ namespace Tolk.BusinessLogic.Entities
             SystemMessageType = systemMessageType;
             SystemMessageUserTypeGroup = displayedForUserTypeGroup;
         }
+
+        public void Update(DateTimeOffset swedenNow, int userId, DateTimeOffset activeFrom, DateTimeOffset activeTo, string systemMessageHeader, string systemMessageText, SystemMessageType systemMessageType, SystemMessageUserTypeGroup displayedForUserTypeGroup)
+        {
+            LastUpdatedAt = swedenNow;
+            LastUpdatedBy = userId;
+            ActiveFrom = activeFrom;
+            ActiveTo = activeTo;
+            SystemMessageHeader = systemMessageHeader;
+            SystemMessageText = systemMessageText;
+            SystemMessageType = systemMessageType;
+            SystemMessageUserTypeGroup = displayedForUserTypeGroup;
+        }
     }
 }

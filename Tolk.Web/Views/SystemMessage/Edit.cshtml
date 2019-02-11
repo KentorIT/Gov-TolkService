@@ -1,7 +1,7 @@
 ﻿@model Tolk.Web.Models.SystemMessageModel
 
 @{
-    ViewData["Title"] = "Skapa nyhet";
+    ViewData["Title"] = "Ändra nyhet";
 }
 <form method="post">
     <div class="row">
@@ -10,8 +10,9 @@
             @await Html.PartialAsync("_SystemMessage", Model)
             <div class="row">
                 <div class="col-sm-12">
+                    <input asp-for="SystemMessageId" type="hidden" />
                     <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Avbryt <span class="btn-remove-times">&times;</span></a>
-                    <button class="btn btn-large btn-success pull-right">Skapa nyhet</button>
+                    <button class="btn btn-large btn-success pull-right">Ändra nyhet</button>
                 </div>
             </div>
 

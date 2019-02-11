@@ -17,6 +17,8 @@ namespace Tolk.Web.Models
         [Required]
         public RadioButtonGroup SystemMessageType { get; set; }
 
+        public string SystemMessageTypeCheckedIndex { get; set; } = "1";
+
         [Required]
         [StringLength(255)]
         [Display(Name = "Nyhetens rubrik")]

@@ -14,7 +14,7 @@
         @if (Model.Items.Any())
         {
             <div class="table-responsive table-paging table-datatable">
-                <table class="table table-hover search-table">
+                <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
                             <th>Typ</th>
@@ -29,16 +29,15 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            @*<tr data-id="@item.SystemMessageId" data-click-action-url="@Url.Action("Edit", "SystemMessage", new { id = item.SystemMessageId})">*@
-                        <tr>
-                            <td class="gray-border-bottom @item.ColorClassName">@EnumHelper.GetDescription(item.SystemMessageType)</td>
-                            <td class="gray-border-bottom">@item.SystemMessageHeader</td>
-                            <td class="gray-border-bottom">@item.ActiveFrom.ToString("yyyy-MM-dd")</td>
-                            <td class="gray-border-bottom">@item.ActiveTo.ToString("yyyy-MM-dd")</td>
-                            <td class="gray-border-bottom">@item.CreatedLastUpdatedBy</td>
-                            <td class="gray-border-bottom">@item.CreatedLastUpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td class="gray-border-bottom gray-border-right">@EnumHelper.GetDescription(item.DisplayedFor)</td>
-                        </tr>
+                            <tr data-id="@item.SystemMessageId" data-click-action-url="@Url.Action("Edit", "SystemMessage", new { id = item.SystemMessageId})">
+                                <td class="gray-border-bottom @item.ColorClassName">@EnumHelper.GetDescription(item.SystemMessageType)</td>
+                                <td class="gray-border-bottom">@item.SystemMessageHeader</td>
+                                <td class="gray-border-bottom">@item.ActiveFrom.ToString("yyyy-MM-dd")</td>
+                                <td class="gray-border-bottom">@item.ActiveTo.ToString("yyyy-MM-dd")</td>
+                                <td class="gray-border-bottom">@item.CreatedLastUpdatedBy</td>
+                                <td class="gray-border-bottom">@item.CreatedLastUpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="gray-border-bottom gray-border-right">@EnumHelper.GetDescription(item.DisplayedFor)</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

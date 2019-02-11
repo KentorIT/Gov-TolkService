@@ -1,0 +1,25 @@
+﻿@model Tolk.Web.Models.SystemMessageModel
+@using Tolk.Web.Services
+@inject SelectListService SelectListService
+@{
+    string checkedType = @Model == null ? "0" : @Model.SystemMessageTypeCheckedIndex;
+}
+<div class="row">
+    <div class="col-sm-4">
+        <form-entry asp-for="SystemMessageHeader" />
+    </div>
+    <div class="col-sm-8">
+        <form-entry asp-for="SystemMessageText" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <form-entry asp-for="DisplayDate" />
+    </div>
+    <div class="col-sm-4">
+        <form-entry asp-for="DisplayedForUserTypeGroup" type="select" asp-items="SelectListService.SystemMessageUserTypeGroups" />
+    </div>
+    <div class="col-sm-4">
+        <form-entry asp-for="SystemMessageType" asp-items="SelectListService.SystemMessageTypes" checked-index="@checkedType" />
+    </div>
+</div>

@@ -13,6 +13,7 @@ using Tolk.Web.Models;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -64,6 +65,38 @@ namespace Tolk.Web.Controllers
         public ActionResult Create()
         {
             return View();
+        }
+
+        public ActionResult Edit(int id)
+        {
+            var systemMessage = _dbContext.SystemMessages
+                .Single(s => s.SystemMessageId == id);
+
+            return View(new SystemMessageModel
+            {
+                SystemMessageId = systemMessage.SystemMessageId,
+                SystemMessageText = systemMessage.SystemMessageText,
+                SystemMessageHeader = systemMessage.SystemMessageHeader,
+                DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
+                SystemMessageType = new RadioButtonGroup { SelectedItem = SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessage.SystemMessageType.ToString()) },
+                SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessage.SystemMessageType.ToString())).ToString(),
+                DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
+            });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Edit(SystemMessageModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var sysMessage = _dbContext.SystemMessages
+                .Single(s => s.SystemMessageId == model.SystemMessageId);
+                sysMessage.Update(_clock.SwedenNow, User.GetUserId(), model.DisplayDate.Start.ToDateTimeOffsetSweden(), model.DisplayDate.End.ToDateTimeOffsetSweden(), model.SystemMessageHeader, model.SystemMessageText, EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value), model.DisplayedForUserTypeGroup);
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("List");
+            }
+            return View(model);
         }
 
         [ValidateAntiForgeryToken]
