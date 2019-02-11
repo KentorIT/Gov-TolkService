@@ -66,7 +66,7 @@
     <Content Update="Views\Statistics\List.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\News\List.cshtml">
+    <Content Update="Views\SystemMessage\List.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Order\Replace.cshtml">

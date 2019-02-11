@@ -1,0 +1,51 @@
+﻿@model SystemMessageListModel
+@using Tolk.BusinessLogic.Utilities
+@{
+    ViewData["Title"] = "Sparade nyheter";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="row">
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive table-paging table-datatable">
+                <table class="table table-hover search-table">
+                    <thead>
+                        <tr>
+                            <th>Typ</th>
+                            <th>Rubrik</th>
+                            <th class="defaultSortDesc">Visas från</th>
+                            <th>Visas till</th>
+                            <th>Skapad/senast ändrad av</th>
+                            <th>Skapad/senast ändrad</th>
+                            <th>Visas för</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            @*<tr data-id="@item.SystemMessageId" data-click-action-url="@Url.Action("Edit", "SystemMessage", new { id = item.SystemMessageId})">*@
+                        <tr>
+                            <td class="gray-border-bottom @item.ColorClassName">@EnumHelper.GetDescription(item.SystemMessageType)</td>
+                            <td class="gray-border-bottom">@item.SystemMessageHeader</td>
+                            <td class="gray-border-bottom">@item.ActiveFrom.ToString("yyyy-MM-dd")</td>
+                            <td class="gray-border-bottom">@item.ActiveTo.ToString("yyyy-MM-dd")</td>
+                            <td class="gray-border-bottom">@item.CreatedLastUpdatedBy</td>
+                            <td class="gray-border-bottom">@item.CreatedLastUpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="gray-border-bottom gray-border-right">@EnumHelper.GetDescription(item.DisplayedFor)</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <span class="no-result-message">
+                Det finns inga sparade nyheter
+            </span>
+        }
+    </div>
+</div>

@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Enums;
+﻿using System;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Helpers
 {
@@ -9,6 +10,11 @@ namespace Tolk.Web.Helpers
             return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator) ? "red-border-left" :
             (status == OrderStatus.Delivered || status == OrderStatus.DeliveryAccepted || status == OrderStatus.ResponseAccepted) ? "green-border-left" :
             (status == OrderStatus.RequestResponded || status == OrderStatus.RequestRespondedNewInterpreter) ? "yellow-border-left" : "blue-border-left";
+        }
+
+        internal static string GetColorClassNameForSystemMessageType(SystemMessageType systemMessageType)
+        {
+            return systemMessageType == SystemMessageType.Information ? "blue-border-left" : "yellow-border-left";
         }
 
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
