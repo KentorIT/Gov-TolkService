@@ -120,7 +120,14 @@
                                     <td class="gray-border-bottom">
                                         <br />
                                         @EnumHelper.GetDescription(item.CompetenceLevel)<br /><br />
-                                        <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate.ToString("yyyy-MM-dd HH:mm")</span>
+                                        @if (item.InfoDate.HasValue)
+                                        {
+                                            <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate?.ToString("yyyy-MM-dd HH:mm")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="startlist-subrow">@item.InfoDateDescription -</span>
+                                        }
                                     </td>
                                     <td class="gray-border-bottom">
                                         <br />

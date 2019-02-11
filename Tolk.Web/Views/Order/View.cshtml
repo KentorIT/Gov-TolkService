@@ -160,6 +160,23 @@
                 </div>
             }
         </div>
+        @if (Model.Status == OrderStatus.AwaitingDeadlineFromCustomer)
+        {
+            <form method="post" asp-action="UpdateExpiry">
+                <input asp-for="OrderId" type="hidden" />
+                <div class="row">
+                    <div class="col-sm-8">
+                        <form-entry asp-for="LatestAnswerBy"></form-entry>
+                    </div>
+                    
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <button class="btn btn-default btn-success btn-large">Uppdatera svarstid <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+                    </div>
+                </div>
+            </form>
+        }
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" } })
     </div>
     <div id="requisition" class="tab-pane fade">

@@ -160,7 +160,7 @@ namespace Tolk.BusinessLogic.Services
                     $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tTolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}\n" +
-                    $"\tSvara senast: {replacementRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    $"\tSvara senast: {replacementRequest.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, replacementRequest.RequestId)}\n" +
                     $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, oldRequest.RequestId)}";
                 var bodyHtml = $@"
@@ -170,7 +170,7 @@ namespace Tolk.BusinessLogic.Services
 <li>Ersättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Ersättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Tolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}</li>
-<li>Svara senast: {replacementRequest.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}</li>
+<li>Svara senast: {replacementRequest.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{NoReplyText}</div>
 <div>{GotoRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
@@ -217,7 +217,7 @@ namespace Tolk.BusinessLogic.Services
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSvara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    $"\tSvara senast: {request.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     NoReplyTextPlain +
                     GotoRequestPlain(request.RequestId);
                 string bodyHtml = $@"En ny bokningsförfrågan har kommit in från {order.CustomerOrganisation.Name}.<br />
@@ -226,7 +226,7 @@ namespace Tolk.BusinessLogic.Services
 <li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
 <li>Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}</li>
-<li>Svara senast: {request.ExpiresAt.ToString("yyyy-MM-dd HH:mm")}</li>
+<li>Svara senast: {request.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{NoReplyText}</div>
 <div>{GotoRequestButton(request.RequestId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
@@ -247,6 +247,20 @@ namespace Tolk.BusinessLogic.Services
                     webhook.RecipientUserId
                 );
             }
+        }
+
+        public void RequestCreatedWithoutExpiry(Request request)
+        {
+            string body = $@"Bokningsförfrågan {request.Order.OrderNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
+
+Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills dess sista svarstid är satt.";
+
+            CreateEmail(GetRecipiantsFromOrder(request.Order),
+                $"Sista svarstid ej satt på bokningsförfrågan {request.Order.OrderNumber}",
+                $"{body} {NoReplyTextPlain} {GotoOrderPlain(request.OrderId)}",
+                $"{HtmlHelper.ToHtmlBreak(body)} {NoReplyTextHtml} {GotoOrderButton(request.OrderId)}");
+
+            _logger.LogInformation($"Email created for customer regarding missing expiry on request {request.RequestId} for order {request.OrderId}");
         }
 
         public void RequestAnswerAutomaticallyAccepted(Request request)
@@ -681,7 +695,6 @@ Tolk:
                     NotificationType.RequestAnswerApproved,
                     webhook.RecipientUserId
                 );
-
             }
         }
 

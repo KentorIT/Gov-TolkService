@@ -49,7 +49,8 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                    || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
@@ -67,10 +68,10 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order)
                             .ThenInclude(o => o.Requests)
                             .ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(
-                            r => r.ExpiresAt <= _clock.SwedenNow
-                            && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
-                            && r.RequestId == requestId);
+                            .SingleOrDefaultAsync(r => 
+                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                                || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                && r.RequestId == requestId);
 
                         if (expiredRequest == null)
                         {
@@ -84,7 +85,14 @@ namespace Tolk.BusinessLogic.Services
 
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
-                            await CreateRequest(expiredRequest.Order, expiredRequest);
+                            if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
+                            {
+                                await TerminateOrder(expiredRequest.Order);
+                            }
+                            else
+                            {
+                                await CreateRequest(expiredRequest.Order, expiredRequest);
+                            }
 
                             trn.Commit();
                         }
@@ -252,20 +260,20 @@ namespace Tolk.BusinessLogic.Services
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
         {
             Request request = null;
+            DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
-            var newExpiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
 
             if (expiredRequest != null)
             {
                 // Check if expired request was created before assignment after 14:00
                 if (!expiredRequest.IsTerminalRequest)
                 {
-                    request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow);
+                    request = order.CreateRequest(rankings, expiry, _clock.SwedenNow);
                 }
             }
             else
             {
-                request = order.CreateRequest(rankings, newExpiry, _clock.SwedenNow, latestAnswerBy.HasValue);
+                request = order.CreateRequest(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
                 //This is the first time a request is created on this order, add the priceinformation too...
                 await _tolkDbContext.SaveChangesAsync();
                 CreatePriceInformation(order);
@@ -276,8 +284,6 @@ namespace Tolk.BusinessLogic.Services
 
             if (request != null)
             {
-                _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
-                    request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                 var newRequest = _tolkDbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
@@ -290,22 +296,57 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Include(r => r.Ranking.Broker)
                     .Single(r => r.RequestId == request.RequestId);
-                _notificationService.RequestCreated(newRequest);
+                if (expiry.HasValue)
+                {
+                    _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
+                        request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
+                    _notificationService.RequestCreated(newRequest);
+                }
+                else
+                {
+                    // Request expiry information from customer
+                    order.Status = OrderStatus.AwaitingDeadlineFromCustomer;
+                    request.Status = RequestStatus.AwaitingDeadlineFromCustomer;
+                    request.IsTerminalRequest = true;
+
+                    await _tolkDbContext.SaveChangesAsync();
+
+                    _logger.LogInformation($"Created request {request.RequestId} for order {request.OrderId}, but system was unable to calculate expiry.");
+                    _notificationService.RequestCreatedWithoutExpiry(newRequest);
+                }
             }
             else
             {
-                order.Status = OrderStatus.NoBrokerAcceptedOrder;
-
-                //There are no more brokers to ask.
-                // Send an email to tell the order creator, and possibly the other user as well...
-                var terminatedOrder = await _tolkDbContext.Orders
-                    .Include(o => o.CreatedByUser)
-                    .Include(o => o.ContactPersonUser)
-                    .SingleAsync(o => o.OrderId == order.OrderId);
-                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
-                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
-                    order.OrderId);
+                await TerminateOrder(order);
             }
+        }
+
+        public async Task TerminateOrder(Order order)
+        {
+            order.Status = OrderStatus.NoBrokerAcceptedOrder;
+
+            //There are no more brokers to ask.
+            // Send an email to tell the order creator, and possibly the other user as well...
+            var terminatedOrder = await _tolkDbContext.Orders
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .SingleAsync(o => o.OrderId == order.OrderId);
+            _notificationService.OrderNoBrokerAccepted(terminatedOrder);
+            _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
+                order.OrderId);
+        }
+
+        public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry)
+        {
+            request.ExpiresAt = expiry;
+            request.Order.Status = OrderStatus.Requested;
+            request.Status = RequestStatus.Created;
+
+            await _tolkDbContext.SaveChangesAsync();
+
+            // Log and notify
+            _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
+            _notificationService.RequestCreated(request);
         }
 
         public void CreatePriceInformation(Order order)
@@ -334,7 +375,15 @@ namespace Tolk.BusinessLogic.Services
             return _priceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
         }
 
-        public DateTimeOffset CalculateExpiryForNewRequest(DateTimeOffset startDateTime)
+        /// <summary>
+        /// Takes an orders start time and calculates an expiry time for answering an order request.
+        /// 
+        /// When the appointment starts in too short of a time-frame, the system will not calculate an expiry time and return null. 
+        /// When that happens: the user should manually set an expiry time.
+        /// </summary>
+        /// <param name="startDateTime">Time and date when the appointment starts</param>
+        /// <returns>Null if startDateTime is too close in time to automatically calculate an expiry time</returns>
+        public DateTimeOffset? CalculateExpiryForNewRequest(DateTimeOffset startDateTime)
         {
             // Grab current time to not risk it flipping over during execution of the method.
             var swedenNow = _clock.SwedenNow;
@@ -356,8 +405,8 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
 
-            // TODO Need to get/understand rules for late day before or same day requests.
-            return swedenNow.AddHours(1).ToDateTimeOffsetSweden();
+            // Starts too soon to automatically calculate response expiry time. Customer must define a dead-line manually.
+            return null;
         }
 
         // This is an auxilary method for calculating initial estimate

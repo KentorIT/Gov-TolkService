@@ -58,5 +58,8 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Tolk är ersatt med ny tolk (godkännande krävs)")]
         NewInterpreterForApproval = 18,
+
+        [Description("Sista svarstid ej satt")]
+        AwaitingDeadlineFromCustomer = 19,
     }
 }

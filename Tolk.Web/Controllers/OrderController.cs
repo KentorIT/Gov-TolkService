@@ -185,13 +185,12 @@ namespace Tolk.Web.Controllers
                 }
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(order,
-                        order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker
-                            || r.Status == RequestStatus.DeniedByTimeLimit)
-                            ? order.Requests.OrderBy(r => r.ExpiresAt).Last()
-                            : null
-                    )
-                    .OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList(),
+                    Entries = EventLogHelper.GetEventLog(order, order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker || r.Status == RequestStatus.DeniedByTimeLimit)
+                        ? order.Requests.OrderBy(r => r.RequestId).Last()
+                        : null)
+                            .OrderBy(e => e.Timestamp)
+                            .ThenBy(e => e.Weight)
+                            .ToList(),
                 };
                 if (request != null)
                 {
@@ -570,6 +569,21 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för bokning {order.OrderNumber} är ändrad" });
                 }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> UpdateExpiry(int orderId, DateTimeOffset latestAnswerBy)
+        {
+            var order = GetOrder(orderId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            {
+                var request = order.Requests.Single(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+                await _orderService.SetRequestExpiryManually(request, latestAnswerBy);
+                return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för bokning {order.OrderNumber} är satt" });
             }
             return Forbid();
         }

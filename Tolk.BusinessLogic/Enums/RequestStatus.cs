@@ -49,6 +49,8 @@ namespace Tolk.BusinessLogic.Enums
         CancelledByBroker = 14,
         [CustomName("request_answer_never_processed_by_creator")]
         [Description("Tillsättning ej besvarad")]
-        ResponseNotAnsweredByCreator = 16
+        ResponseNotAnsweredByCreator = 16,
+        [Description("Inväntar sista svarstid från myndighet")]
+        AwaitingDeadlineFromCustomer = 17,
     }
 }

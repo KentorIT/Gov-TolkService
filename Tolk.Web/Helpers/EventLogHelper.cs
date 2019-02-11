@@ -97,7 +97,7 @@ namespace Tolk.Web.Helpers
                         {
                             Weight = 200,
                             Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
-                                ? terminatingRequest.ExpiresAt
+                                ? terminatingRequest.ExpiresAt.Value
                                 : terminatingRequest.AnswerDate.Value,
                             EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
                             Actor = "Systemet",
@@ -172,12 +172,24 @@ namespace Tolk.Web.Helpers
             // Request expired
             if (request.Status == RequestStatus.DeniedByTimeLimit)
             {
-                eventLog.Add(new EventLogEntryModel
+                if (request.ExpiresAt.HasValue)
                 {
-                    Timestamp = request.ExpiresAt,
-                    EventDetails = "Förfrågan obesvarad, tiden gick ut",
-                    Actor = "Systemet",
-                });
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.ExpiresAt.Value,
+                        EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                        Actor = "Systemet",
+                    });
+                }
+                else
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.Order.StartAt,
+                        EventDetails = "Sista svarstid ej satt, tiden gick ut",
+                        Actor = "Systemet",
+                    });
+                }
             }
             // Request answered by broker
             if (request.AnswerDate.HasValue)

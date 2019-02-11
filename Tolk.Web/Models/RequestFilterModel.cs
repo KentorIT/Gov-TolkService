@@ -56,14 +56,16 @@ namespace Tolk.Web.Models
                 ? items.Where(i => i.Order.StartAt.Date <= OrderDateRange.End)
                 : items;
             items = AnswerByDateRange?.Start != null
-                ? items.Where(i => i.ExpiresAt.Date >= AnswerByDateRange.Start)
+                ? items.Where(i => i.ExpiresAt.Value.Date >= AnswerByDateRange.Start)
                 : items;
             items = AnswerByDateRange?.End != null
-                ? items.Where(i => i.ExpiresAt.Date <= AnswerByDateRange.End)
+                ? items.Where(i => i.ExpiresAt.Value.Date <= AnswerByDateRange.End)
                 : items;
             items = Status.HasValue
-                ? Status.Value == RequestStatus.ToBeProcessedByBroker ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) : items.Where(r => r.Status == Status)
-                 : items;
+                ? Status.Value == RequestStatus.ToBeProcessedByBroker 
+                    ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) 
+                    : items.Where(r => r.Status == Status)
+                : items;
             items = AnsweredById.HasValue
                 ? items.Where(i => i.AnsweredBy == AnsweredById)
                 : items;

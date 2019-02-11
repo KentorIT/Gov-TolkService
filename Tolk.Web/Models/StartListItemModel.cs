@@ -35,7 +35,7 @@ namespace Tolk.Web.Models
 
         public string Language { get; set; }
 
-        public DateTime InfoDate { get; set; }
+        public DateTime? InfoDate { get; set; }
 
         public DateTime? LatestDate { get; set; }
 

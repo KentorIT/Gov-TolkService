@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Entities
     {
         public Request() { }
 
-        public Request(Ranking ranking, DateTimeOffset expiry, DateTimeOffset creationTime, bool isTerminalRequest = false)
+        public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false)
         {
             Ranking = ranking;
             Status = RequestStatus.Created;
@@ -20,7 +20,7 @@ namespace Tolk.BusinessLogic.Entities
             CreatedAt = creationTime;
             IsTerminalRequest = isTerminalRequest;
         }
-        public Request(Request originalRequest, DateTimeOffset expiry, DateTimeOffset creationTime)
+        public Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
         {
             Ranking = originalRequest.Ranking;
             Status = RequestStatus.Created;
@@ -45,9 +45,9 @@ namespace Tolk.BusinessLogic.Entities
         public Order Order { get; set; }
 
         /// <summary>
-        /// The time (inclusive) when the request is expired.
+        /// The time (inclusive) when the request is expired. If null, expiry must be manually defined
         /// </summary>
-        public DateTimeOffset ExpiresAt { get; set; }
+        public DateTimeOffset? ExpiresAt { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
 

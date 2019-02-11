@@ -170,7 +170,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region methods
 
-        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
 

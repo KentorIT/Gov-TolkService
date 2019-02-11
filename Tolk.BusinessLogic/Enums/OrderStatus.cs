@@ -38,5 +38,7 @@ namespace Tolk.BusinessLogic.Enums
         CancelledByBroker = 12,
         [Description("Bokningsbekräftelse ej besvarad")]
         ResponseNotAnsweredByCreator = 15,
+        [Description("Sista svarstid ej satt")]
+        AwaitingDeadlineFromCustomer = 16,
     }
 }
