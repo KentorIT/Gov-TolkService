@@ -76,7 +76,8 @@ namespace Tolk.Web.Controllers
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
-                StartLists = await GetStartLists()
+                StartLists = await GetStartLists(),
+                IsBroker = User.TryGetBrokerId().HasValue ? true : false
             });
         }
 
@@ -188,9 +189,9 @@ namespace Tolk.Web.Controllers
 
         private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
         {
-            return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled 
-                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered 
-                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? StartListItemStatus.OrderNotAnswered 
+            return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled
+                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered
+                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? StartListItemStatus.OrderNotAnswered
                 : status == OrderStatus.RequestRespondedNewInterpreter ? StartListItemStatus.NewInterpreterForApproval
                 : status == OrderStatus.AwaitingDeadlineFromCustomer ? StartListItemStatus.AwaitingDeadlineFromCustomer
                 : StartListItemStatus.OrderAcceptedForApproval;
@@ -198,7 +199,7 @@ namespace Tolk.Web.Controllers
 
         private DateTimeOffset? GetInfoDateForCustomer(Order o)
         {
-            return o.Status == OrderStatus.CancelledByBroker ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt 
+            return o.Status == OrderStatus.CancelledByBroker ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt
                 : o.Status == OrderStatus.NoBrokerAcceptedOrder ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().ExpiresAt
                 : o.Status == OrderStatus.AwaitingDeadlineFromCustomer ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CreatedAt
                 : o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate;

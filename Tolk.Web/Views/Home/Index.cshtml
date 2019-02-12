@@ -2,6 +2,8 @@
 @using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Utilities
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = Model.PageTitle;
 }
@@ -80,7 +82,17 @@
         </div>
     </div>
 }
-<h2>@ViewData["Title"]</h2>
+@{
+    if (Model.IsBroker)
+    {
+        HelpLinkService.PageName = "formedling-de-olika-listorna-pa-startsidan/";
+    }
+    else
+    {
+        HelpLinkService.PageName = "myndighet-de-olika-listorna-pa-startsidan/";
+    }
+}
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
 @foreach (var startlist in Model.StartLists)
 {
     <div class="row">

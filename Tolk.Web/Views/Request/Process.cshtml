@@ -1,11 +1,13 @@
 ﻿@model Tolk.Web.Models.RequestModel
 @inject SelectListService SelectListService
+@inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Byt ut tolk" : "Svara på bokningsförfrågan";
     var declineHeader = @Model.OrderModel.ReplacingOrderId.HasValue ? "Tacka nej till ersättningsuppdrag" : "Tacka nej till bokning";
+    HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
 }
 <div class="row">
     <div class="col-sm-12">
@@ -45,7 +47,7 @@
                     }
                     else
                     {
-                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
                     }
                 </div>
             }
@@ -53,7 +55,7 @@
             {
                 <div class="row">
                     <div class="col-sm-4">
-                        <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId).Where(i=> i.Value != Model.OldInterpreterId.ToString()).ToList()" />
+                        <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId).Where(i=> i.Value != Model.OldInterpreterId.ToString()).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
                         <div class="collapse" id="new-interpreter">
                             <form-entry asp-for="NewInterpreterFirstName" />
                             <form-entry asp-for="NewInterpreterLastName" />
@@ -65,11 +67,11 @@
                     <div class="col-sm-4">
                         @if (Model.OrderModel.SpecificCompetenceLevelRequired)
                         {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).OrderByDescending(e => (int)e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RequestedCompetenceLevels).OrderByDescending(e => (int)e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
                         }
                         else
                         {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" />
+                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
                         }
                     </div>
                     <div class="col-sm-4">
@@ -79,7 +81,7 @@
                         }
                         else
                         {
-                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" />
+                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
                         }
                     </div>
                 </div>
@@ -98,7 +100,7 @@
                 // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
                 <div class="collapse" id="set-expected-travel-costs">
                     <div class="important-info"> Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
-                    <form-entry asp-for="ExpectedTravelCosts" />
+                    <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
                 </div>
             }
             <div class="row">
@@ -106,7 +108,7 @@
                 {
 
                     <div class="col-sm-4">
-                        <label>Tillkommande krav</label><br />
+                        <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
                         @if (Model.RequiredRequirementAnswers.Any())
                         {
                             @for (var i = 0; i < Model.RequiredRequirementAnswers.Count(); ++i)
@@ -126,7 +128,7 @@
                         }
                     </div>
                     <div class="col-sm-4">
-                        <label>Tillkommande önskemål</label><br />
+                        <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
                         @if (Model.DesiredRequirementAnswers.Any())
                         {
                             @for (var i = 0; i < Model.DesiredRequirementAnswers.Count(); ++i)
@@ -148,7 +150,7 @@
                     </div>
                     <div class="col-sm-4">
                         <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty })
+                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
                         <br />
                         <br />
                     </div>

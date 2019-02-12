@@ -1,11 +1,14 @@
 ﻿@model AttachmentListModel
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     var visibleClass = Model.Files != null ? !Model.Files.Any() ? "d-none" : string.Empty : "d-none";
+    HelpLinkService.PageName = (string)ViewData["helplink"];
 }
 @if (Model.AllowUpload)
 {
     <label>Bifoga filer</label>
-    <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span>
+    <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span> @HelpLinkService.Anchor("bifoga-filer")
     <br />
     <br />
     <a href="#" class="btn btn-warning" data-target="#addFilesDialog" data-toggle="modal" data-backdrop="static"><span class="glyphicon glyphicon-paperclip"></span> Bifoga filer</a>

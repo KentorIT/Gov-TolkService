@@ -1,5 +1,6 @@
 ﻿@model OrderModel
 @inject SelectListService SelectListService
+@inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
@@ -16,6 +17,8 @@
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "OrderSummary";
+
+    HelpLinkService.PageName = (string)ViewData["helplink"];
 }
 
 @if (isCollapsible)
@@ -26,7 +29,7 @@
 }
 else
 {
-    <h2 class="normal-weight">@header</h2>
+    <h2 class="normal-weight">@header @HelpLinkService.HeaderAnchor()</h2>
 }
 <hr />
 <div id="@divId" class="@divClass">
@@ -108,7 +111,7 @@ else
     {
         <div class="row">
             <div class="col-sm-12">
-                <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" checked-index="none"/>
+                <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" checked-index="none" />
             </div>
         </div>
     }

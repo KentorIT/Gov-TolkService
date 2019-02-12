@@ -1,13 +1,15 @@
 ﻿@model Tolk.Web.Models.RequisitionModel
+@inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Entities;
 @{
     ViewData["Title"] = "Registrera rekvisition";
     string tableClassName = Model.MealBreaks != null && Model.MealBreaks.Any() ? string.Empty : "d-none";
+    HelpLinkService.PageName = "formedling-skapa-rekvisition/";
 }
 <div class="row">
     <div class="col-sm-12">
-        <h2>@ViewData["Title"]</h2>
+        <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
         <form method="post">
             <div class="row">
                 <div class="col-sm-4">
@@ -42,7 +44,7 @@
                     <input asp-for="RequestId" type="hidden" />
                     <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
                     <input asp-for="FileGroupKey" type="hidden" />
-                    <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" />
+                    <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("tolkens-skattsedel")" />
                 </div>
             </div>
             <div class="row">
@@ -80,7 +82,7 @@
                             }
                         </div>
                         <div class="col-sm-12">
-                            <form-entry asp-for="SessionStartedAt" id="SessionStartedAt" />
+                            <form-entry asp-for="SessionStartedAt" id="SessionStartedAt" help-link="@HelpLinkService.GenerateUrl("faktiskt-starttid")" />
                             <div id="sessionStartedAtValidator" class="d-none text-danger body"></div>
                         </div>
                     </div>
@@ -97,7 +99,7 @@
                             }
                         </div>
                         <div class="col-sm-12">
-                            <form-entry asp-for="SessionEndedAt" id="SessionEndedAt" />
+                            <form-entry asp-for="SessionEndedAt" id="SessionEndedAt" help-link="@HelpLinkService.GenerateUrl("faktiskt-sluttid")" />
                             <div id="sessionEndedAtValidator" class="d-none text-danger body"></div>
                             <br /><br />
                         </div>
@@ -106,7 +108,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-6">
-                    <form-entry asp-for="TimeWasteTotalTime" />
+                    <form-entry asp-for="TimeWasteTotalTime" help-link="@HelpLinkService.GenerateUrl("tidsspillan")" />
                     @if (Model.PreviousRequisition != null)
                     {
                         <display-entry asp-for="PreviousRequisition.TimeWasteInfo" label-override="Tidigare angiven tidsspillan" />
@@ -115,49 +117,49 @@
                     <br />
                 </div>
                 <div class="test-class col-sm-6">
-                    <form-entry asp-for="TimeWasteIWHTime" />
+                    <form-entry asp-for="TimeWasteIWHTime" help-link="@HelpLinkService.GenerateUrl("tidsspillan-obekvam")" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-12">
-                    <h3 class="no-padding-margin">Måltidspauser <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska eventuella måltidspauser anges. Klicka på +-ikonen för att lägga till."></span></h3>
+                    <h3 class="no-padding-margin">Måltidspauser <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska eventuella måltidspauser anges. Klicka på +-ikonen för att lägga till."></span> @HelpLinkService.Anchor("tillkommande-onskemal")</h3>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6">
                     <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a>
                     <br /><br />
-                          <div class="@tableClassName mealbreak-list no-padding">
-                              <label>Angivna måltidspauser</label><br />
-                              <table class="table mealbreak-table">
-                                  <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
-                                  <tbody id="mealBreak-tbody">
-                                      @if (Model.MealBreaks != null && Model.MealBreaks.Any())
-                                      {
-                                          @for (var i = 0; i < Model.MealBreaks.Count; ++i)
-                                          {
-                                              <tr>
-                                                  <td class="table-start-column">
-                                                      <input asp-for="MealBreaks[i].StartAtTemp" type="hidden">
-                                                      <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
-                                                      @Model.MealBreaks[i].StartAt.ToString("yyyy-MM-dd HH:mm")
-                                                  </td>
-                                                  <td class="table-end-column">
-                                                      @Model.MealBreaks[i].EndAt.ToString("yyyy-MM-dd HH:mm")
-                                                  </td>
-                                                  <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
-                                              </tr>
-                                          }
-                                      }
-                                  </tbody>
-                              </table>
-                          </div>
+                    <div class="@tableClassName mealbreak-list no-padding">
+                        <label>Angivna måltidspauser</label><br />
+                        <table class="table mealbreak-table">
+                            <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
+                            <tbody id="mealBreak-tbody">
+                                @if (Model.MealBreaks != null && Model.MealBreaks.Any())
+                                {
+                                    @for (var i = 0; i < Model.MealBreaks.Count; ++i)
+                                    {
+                                        <tr>
+                                            <td class="table-start-column">
+                                                <input asp-for="MealBreaks[i].StartAtTemp" type="hidden">
+                                                <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
+                                                @Model.MealBreaks[i].StartAt.ToString("yyyy-MM-dd HH:mm")
+                                            </td>
+                                            <td class="table-end-column">
+                                                @Model.MealBreaks[i].EndAt.ToString("yyyy-MM-dd HH:mm")
+                                            </td>
+                                            <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-12">
-                    <h3 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span></h3>
+                    <h3 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span> @HelpLinkService.Anchor("resekostnad")</h3>
                 </div>
             </div>
             <div class="row">
@@ -232,10 +234,10 @@
 
             <div class="row">
                 <div class="col-sm-6">
-                    <form-entry asp-for="Message" />
+                    <form-entry asp-for="Message" help-link="@HelpLinkService.GenerateUrl("specifikation")" />
                 </div>
                 <div class="col-sm-6">
-                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty })
+                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
                 </div>
             </div>
             <div class="row">

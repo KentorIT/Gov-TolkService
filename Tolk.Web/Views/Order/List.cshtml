@@ -1,9 +1,12 @@
 ﻿@model OrderListModel
 @using Tolk.BusinessLogic.Utilities
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = "Historik - Bokningar";
+    HelpLinkService.PageName = "myndighet-historik/";
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h2>
 <div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>

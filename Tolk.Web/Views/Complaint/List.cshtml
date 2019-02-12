@@ -1,9 +1,19 @@
 ﻿@model ComplaintListModel
 @using Tolk.BusinessLogic.Utilities
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = "Historik - Reklamationer";
+    if (Model.FilterModel.IsBrokerUser)
+    {
+        HelpLinkService.PageName = "formedling-historik/";
+    }
+    else
+    {
+        HelpLinkService.PageName = "myndighet-historik/";
+    }
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-reklamationer")</h2>
 <div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>

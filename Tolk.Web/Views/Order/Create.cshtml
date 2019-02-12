@@ -25,14 +25,14 @@
         <div class="col-xs-12">
             @*step 1 fill form*@
             <div class="wizard-step" data-forward-button-text="Gå vidare ">
-                @{ HelpLinkService.PageName = "att-boka-en-tolk/";}
+                @{ HelpLinkService.PageName = "myndighet-skapa-bokning/";}
 
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="col-sm-12 text-center">
                             <img class="progressbar" src="~/images/Step1_Order.PNG" />
                         </div>
-                        <h2 class="normal-weight">Bokningsuppgifter @HelpLinkService.HeaderAnchor() </h2>
+                        <h2 class="normal-weight">Bokningsuppgifter @HelpLinkService.HeaderAnchor()</h2>
                         <hr />
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
@@ -158,7 +158,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4">
-                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty })
+                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
                             </div>
                             <div class="col-sm-4">
                                 <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span> @HelpLinkService.Anchor("nybokning_krav")</label>

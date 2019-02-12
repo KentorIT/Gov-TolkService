@@ -13,6 +13,7 @@ namespace Tolk.Web.Models
         public string ErrorMessage { get; set; }
 
         public IEnumerable<ConfirmationMessage> ConfirmationMessages { get; set; }
+        public bool IsBroker { get; set; }
 
         public class StartList
         {

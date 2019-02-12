@@ -1,7 +1,10 @@
 ﻿@model OrderModel
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = "Tack för din bokning";
 }
+@{ HelpLinkService.PageName = "bokning-skickad/";}
 <div class="row">
     <div class="col-sm-9 center-content">
         <div class="col-sm-12 text-center">
@@ -9,7 +12,7 @@
         </div>
         <div class="col-sm-12 center-content">
             <div class="col-sm-12 text-center">
-                <h2>@ViewData["Title"]</h2>
+                <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
             </div>
             <div class="col-sm-12 text-center">
                 <h3>BokningsID: @Model.OrderNumber</h3>

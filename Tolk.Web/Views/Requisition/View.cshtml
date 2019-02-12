@@ -47,8 +47,8 @@
     <div class="col-sm-12">
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" }, { "id", "EventLog_Requisition" } })
     </div>
-</div>   
- <div id="denyReqMessageDialog" class="modal fade" role="dialog">
+</div>
+<div id="denyReqMessageDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -59,7 +59,7 @@
                 <form method="post" asp-action="Deny" class="do-not-check-dirty">
                     <input asp-for="RequisitionId" type="hidden" />
                     <form-entry asp-for="DenyMessage" />
-                    <span id="denyRequisitionValidator"class="text-danger left-padding"></span>
+                    <span id="denyRequisitionValidator" class="text-danger left-padding"></span>
                     <button type="submit" class="btn btn-default right-md-button do-not-check-dirty btn-deny-req">Underkänn</button>
                     <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                     <br /><br />

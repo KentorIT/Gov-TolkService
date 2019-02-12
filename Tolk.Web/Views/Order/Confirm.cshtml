@@ -1,5 +1,6 @@
 ﻿@model Tolk.Web.Models.OrderModel
-
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
     ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.SelectedItem.Text.ToLower()}";
     ViewData["OrderSummary_ShowCalculatedPrice"] = true;
@@ -10,7 +11,7 @@
         <img class="progressbar" src="~/images/Step2_Order.PNG" />
     </div>
     <div class="col-sm-12">
-        @await Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] } })
+        @await Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] }, { "helplink", "myndighet-sammanfattning-av-bokning/" } })
         @await Html.PartialAsync("_CustomerOrganizationInfo", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false } })
         <div class="row">
             <div class="col-sm-4"></div>
