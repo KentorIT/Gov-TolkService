@@ -194,7 +194,6 @@ $(function () {
 });
 
 $(document).ready(function () {
-    $('.pwd').val("");
     $('.no-auto-complete').val("");
 });
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
@@ -10,6 +6,7 @@ namespace Tolk.Web.Models.AccountViewModels
     public abstract class NewPasswordModelBase
     {
         [ClientRequired]
+        [NoAutoComplete]
         [StringLength(100)]
         [DataType(DataType.Password)]
         [PasswordValidation(
@@ -22,6 +19,7 @@ namespace Tolk.Web.Models.AccountViewModels
         public string NewPassword { get; set; }
 
         [ClientRequired]
+        [NoAutoComplete]
         [DataType(DataType.Password)]
         [Display(Name = "Bekräfta nytt lösenord")]
         [Compare(nameof(NewPassword))]

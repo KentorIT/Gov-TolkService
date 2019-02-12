@@ -7,6 +7,7 @@ namespace Tolk.Web.Models.AccountViewModels
     {
         [Required]
         [DataType(DataType.Password)]
+        [NoAutoComplete]
         [Display(Name = "Lösenord", Description = "Bekräfta ändringen med ditt lösenord")]
         [StringLength(100)]
         public string CurrentPassword { get; set; }

@@ -7,13 +7,11 @@ namespace Tolk.Web.Models.AccountViewModels
     {
         public bool HasPassword { get; set; }
 
-
-        
         [ClientRequired]
+        [NoAutoComplete]
         [DataType(DataType.Password)]
         [Display(Name = "Lösenord", Description = "Bekräfta ändringarna med ditt lösenord")]
         [StringLength(100)]
         public string CurrentPassword { get; set; }
-
     }
 }

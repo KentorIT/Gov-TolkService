@@ -393,13 +393,22 @@ namespace Tolk.Web.TagHelpers
 
         private void WritePassword(TextWriter writer)
         {
+            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoComplete>(
+            For.ModelExplorer.Metadata.ContainerType,
+            For.ModelExplorer.Metadata.PropertyName);
+
+
             var tagBuilder = _htmlGenerator.GeneratePassword(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 value: For.Model,
-                htmlAttributes: new { @class = "form-control pwd", autocomplete = "new-password" });
+                htmlAttributes: new { @class = IsNoAutoComplete ? "form-control no-auto-complete" : "form-control" });
 
+            if (IsNoAutoComplete)
+            {
+                tagBuilder.Attributes.Add("autocomplete", "new-password");
+            }
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
@@ -417,7 +426,7 @@ namespace Tolk.Web.TagHelpers
             object toValue = toModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date")?.Model;
 
             WritePrefix(writer, PrefixAttribute.Position.Value);
- 
+
             WriteDatePickerInput(fromModelExplorer, fromFieldName, fromValue, writer);
             WriteRightArrowSpan(writer);
             WriteDatePickerInput(toModelExplorer, toFieldName, toValue, writer);
