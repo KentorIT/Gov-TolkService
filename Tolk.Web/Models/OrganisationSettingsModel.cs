@@ -5,6 +5,8 @@ namespace Tolk.Web.Models
 {
     public class OrganisationSettingsModel
     {
+        public string Message { get; set; }
+
         [Display(Name = "Användarnamnet kopplat till apinyckel-inloggning")]
         public string UserName { get; set; }
         [Required]
@@ -16,23 +18,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Authenticera med apinyckel")]
         public bool UseApiKeyAuthentication { get; set; }
 
-        [Display(Name = "Apinyckel")]
-        [DataType(DataType.Password)]
-        public string ApiKey { get; set; }
-
         [Display(Name = "Certifikatets serienummer")]
         public string CertificateSerialNumber { get; set; }
 
         [Display(Name = "Organisationsnummer")]
+        [Required]
         public string OrganisationNumber { get; set; }
 
-        //TO BE REMOVED!! SHOULD BE HANDLED IN SEPARATE LIST UI!!
-
-        [Display(Name = "Använd web hook för skapad förfrågan")]
-        public bool UseWebHook { get; set; }
-
-        [Display(Name = "Web hook skapad förfrågan(request_created)")]
-        public string RequestCreatedWebHook { get; set; }
-
+        public IEnumerable<NotificationSettingsDetailsModel> NotificationSettings { get; set; }
     }
 }

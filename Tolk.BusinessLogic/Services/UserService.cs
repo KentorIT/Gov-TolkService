@@ -134,7 +134,6 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
-                            .Include(u => u.NotificationSettings)
                             .Include(u => u.Claims)
                             .Include(u => u.Roles)
                             .SingleOrDefault(u => u.Id == userId);
@@ -154,6 +153,21 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LogOnNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null)
+        {
+            AspNetUser currentUserInformation = _dbContext.Users
+                            .Include(u => u.NotificationSettings)
+                            .SingleOrDefault(u => u.Id == userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UserChangeType = UserChangeType.UpdatedNotificationSettings,
                 NotificationsHistory = currentUserInformation.NotificationSettings.Select(n => new UserNotificationSettingHistoryEntry
                 {
                     ConnectionInformation = n.ConnectionInformation,
@@ -174,6 +188,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
             });
             await _dbContext.SaveChangesAsync();
         }
+
         public string GenerateUserName(string firstName, string lastName, string prefix)
         {
             string userNameStart = $"{prefix}{firstName.GetPrefix()}{lastName.GetPrefix()}";

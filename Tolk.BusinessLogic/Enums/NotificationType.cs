@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_information_updated")]
         RequestInformationUpdated = 2,
 
-        [Description("Uppdrag avokat av myndighet")]
+        [Description("Uppdrag avbokat av myndighet")]
         [CustomName("request_cancelled_by_customer")]
         RequestCancelledByCustomer = 3,
 

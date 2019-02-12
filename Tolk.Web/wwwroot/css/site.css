@@ -272,6 +272,9 @@ select2.selection:active {
 #impersonation-select {
   width: 450px;
 }
+.zebra .row:nth-of-type(odd) {
+  background: #e0e0e0;
+}
 .row {
   padding-bottom: 15px;
 }

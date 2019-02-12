@@ -1,13 +1,36 @@
-﻿@model IEnumerable<NotificationSettingsModel>
+﻿@model List<NotificationSettingsModel>
 @{
     ViewData["Title"] = "Organisationens notifieringsinställningar";
 }
 <h2>@ViewData["Title"]</h2>
 <form method="post">
-    @foreach (var row in Model)
+    <div class="zebra">
+    @for (int i = 0; i < Model.Count(); ++i)
     {
-        @await Html.PartialAsync("_EditNotificationSettingsRow", row)
+        <div class="row">
+            <div class="col-sm-12">
+                <input asp-for="@Model[i].Type" type="hidden" />
+                <display-entry asp-for="@Model[i].Type" />
+                <div class="col-sm-12">
+                    <div class="col-sm-2 selection-box">
+                        <form-entry asp-for="@Model[i].UseEmail" />
+                    </div>
+                    <div class="col-sm-10 selection-textbox">
+                        <form-entry asp-for="@Model[i].SpecificEmail" />
+                    </div>
+                </div>  
+                <div class="col-sm-12">
+                    <div class="col-sm-2 selection-box">
+                        <form-entry asp-for="@Model[i].UseWebHook" />
+                    </div>
+                    <div class="col-sm-10 selection-textbox">
+                        <form-entry asp-for="@Model[i].WebHookUrl" />
+                    </div>
+                </div>
+            </div>
+        </div>
     }
+    </div>
     <div class="row">
         <div class="col-sm-4">
             <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
@@ -18,6 +41,12 @@
     </div>
 
 </form>
-@section Scripts{
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/User/EditNotificationSettings.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Requisition/EditNotificationSettings.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

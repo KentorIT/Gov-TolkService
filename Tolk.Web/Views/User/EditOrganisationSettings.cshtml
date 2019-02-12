@@ -6,24 +6,29 @@
 <form method="post">
     <div class="row">
         <div class="col-sm-12">
- 
+            <div class="col-sm-4">
+                <display-entry asp-for="UserName" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="Email" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OrganisationNumber" />
+            </div>
         </div>
     </div>
+    <h3>Integrationsinställningar</h3>
     <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="UserName" />
-            <br />
-            <form-entry asp-for="UseApiKeyAuthentication" />
-            <form-entry asp-for="ApiKey" />
-            <br />
-            <form-entry asp-for="UseWebHook" />
-            <form-entry asp-for="RequestCreatedWebHook" />
-        </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="Email" />
-            <br />
-            <form-entry asp-for="UseCertificateAuthentication" />
-            <form-entry asp-for="CertificateSerialNumber" />
+        <div class="col-sm-12">
+            <div class="col-sm-4">
+                <form-entry asp-for="UseApiKeyAuthentication" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="UseCertificateAuthentication" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="CertificateSerialNumber" />
+            </div>
         </div>
     </div>
     <div class="row">

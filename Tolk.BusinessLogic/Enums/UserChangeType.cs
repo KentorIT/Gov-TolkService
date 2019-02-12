@@ -6,6 +6,7 @@ namespace Tolk.BusinessLogic.Enums
     {
         Created = 1,
         Updated = 2,
-        ChangedPassword = 3
+        ChangedPassword = 3,
+        UpdatedNotificationSettings = 4,
     }
 }
