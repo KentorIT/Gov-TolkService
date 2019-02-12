@@ -280,6 +280,11 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(s => s.LastUpdatedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<SystemMessage>()
+                .HasOne(s => s.LastUpdatedImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

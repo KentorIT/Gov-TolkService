@@ -1,8 +1,4 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
-html {
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
 .bg-gray {
   background-color: #F1F4F2;
 }
@@ -775,6 +771,34 @@ li.placeholder::before {
   padding: 12px 12px 0px 12px;
   margin-left: 0px;
   margin-right: 0px;
+}
+.system-message {
+  color: #333333;
+  padding: 8px 8px 8px 8px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  font-size: 13px;
+}
+.system-message-info {
+  background-color: #f0f7ff;
+  border: 1px solid #64aee1;
+  color: #333333;
+  padding: 8px 8px 8px 8px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  font-size: 13px;
+}
+.system-message-warning {
+  background-color: #fdfaf0;
+  border: 1px solid #F5971C;
+  color: #333333;
+  padding: 8px 8px 8px 8px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  font-size: 13px;
 }
 .to-accept-info {
   background-color: #E6F1ED;

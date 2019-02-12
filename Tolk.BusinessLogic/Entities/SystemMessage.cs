@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset ActiveTo { get; set; }
 
         public SystemMessageType SystemMessageType { get; set; }
-
+        
         public SystemMessageUserTypeGroup SystemMessageUserTypeGroup { get; set; }
 
         public int? LastUpdatedBy { get; set; }
@@ -42,7 +42,16 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(LastUpdatedBy))]
         public AspNetUser LastUpdatedByUser { get; set; }
 
+        public int? ImpersonatingLastUpdated { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingLastUpdated))]
+        public AspNetUser LastUpdatedImpersonator { get; set; }
+
         public DateTimeOffset? LastUpdatedAt { get; set; }
+
+        public DateTimeOffset LastUpdatedCreatedAt { get => LastUpdatedAt ?? CreatedAt; }
+
+        public string CssClass { get => SystemMessageType == SystemMessageType.Information ? "system-message-info" : "system-message-warning"; }
 
         public void Create(DateTimeOffset swedenNow, int userId, int? impersonatorId, DateTimeOffset activeFrom, DateTimeOffset activeTo, string systemMessageHeader, string systemMessageText, SystemMessageType systemMessageType, SystemMessageUserTypeGroup displayedForUserTypeGroup)
         {
@@ -57,10 +66,11 @@ namespace Tolk.BusinessLogic.Entities
             SystemMessageUserTypeGroup = displayedForUserTypeGroup;
         }
 
-        public void Update(DateTimeOffset swedenNow, int userId, DateTimeOffset activeFrom, DateTimeOffset activeTo, string systemMessageHeader, string systemMessageText, SystemMessageType systemMessageType, SystemMessageUserTypeGroup displayedForUserTypeGroup)
+        public void Update(DateTimeOffset swedenNow, int userId, int? impersonatorId, DateTimeOffset activeFrom, DateTimeOffset activeTo, string systemMessageHeader, string systemMessageText, SystemMessageType systemMessageType, SystemMessageUserTypeGroup displayedForUserTypeGroup)
         {
             LastUpdatedAt = swedenNow;
             LastUpdatedBy = userId;
+            ImpersonatingLastUpdated = impersonatorId;
             ActiveFrom = activeFrom;
             ActiveTo = activeTo;
             SystemMessageHeader = systemMessageHeader;

@@ -1330,6 +1330,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("ImpersonatingCreator");
 
+                    b.Property<int?>("ImpersonatingLastUpdated");
+
                     b.Property<DateTimeOffset?>("LastUpdatedAt");
 
                     b.Property<int?>("LastUpdatedBy");
@@ -1349,6 +1351,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("ImpersonatingCreator");
+
+                    b.HasIndex("ImpersonatingLastUpdated");
 
                     b.HasIndex("LastUpdatedBy");
 
@@ -1962,6 +1966,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()
                         .HasForeignKey("ImpersonatingCreator")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "LastUpdatedImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingLastUpdated")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "LastUpdatedByUser")

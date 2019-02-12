@@ -19,9 +19,9 @@ namespace Tolk.Web.Models
 
         public SystemMessageUserTypeGroup DisplayedFor { get; set; }
 
-        public DateTimeOffset CreatedLastUpdatedAt { get; set; }
+        public DateTimeOffset LastUpdatedCreatedAt { get; set; }
 
-        public string CreatedLastUpdatedBy { get; set; }
+        public string LastUpdatedCreatedBy { get; set; }
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForSystemMessageType(SystemMessageType); }
     }

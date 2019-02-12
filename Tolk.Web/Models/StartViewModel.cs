@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
@@ -42,6 +43,8 @@ namespace Tolk.Web.Models
 
             public int Id { get; set; }
         }
+
+        public IEnumerable<SystemMessage> SystemMessages { get; set; }
 
     }
 
