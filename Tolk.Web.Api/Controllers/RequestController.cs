@@ -233,37 +233,6 @@ namespace Tolk.Web.Api.Controllers
             return Json(new ResponseBase());
         }
 
-        [HttpGet]
-        public JsonResult File(string orderNumber, int attachmentId)
-        {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
-            {
-                return ReturError("UNAUTHORIZED");
-            }
-            var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .SingleOrDefault(o => o.OrderNumber == orderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
-            {
-                return ReturError("ORDER_NOT_FOUND");
-            }
-
-            var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
-            if (attachment == null)
-            {
-                return ReturError("ATTACHMENT_NOT_FOUND");
-            }
-
-            return Json(new FileResponse
-            {
-                FileBase64 = Convert.ToBase64String(attachment.Blob)
-            });
-        }
-
         [HttpPost]
         public JsonResult ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
@@ -388,6 +357,37 @@ namespace Tolk.Web.Api.Controllers
         #endregion
 
         #region getting methods
+
+        [HttpGet]
+        public JsonResult File(string orderNumber, int attachmentId, string callingUser)
+        {
+            var apiUser = GetApiUser();
+            if (apiUser == null)
+            {
+                return ReturError("UNAUTHORIZED");
+            }
+            var order = _dbContext.Orders
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .SingleOrDefault(o => o.OrderNumber == orderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+            if (order == null)
+            {
+                return ReturError("ORDER_NOT_FOUND");
+            }
+
+            var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
+            if (attachment == null)
+            {
+                return ReturError("ATTACHMENT_NOT_FOUND");
+            }
+
+            return Json(new FileResponse
+            {
+                FileBase64 = Convert.ToBase64String(attachment.Blob)
+            });
+        }
 
         public JsonResult View(string orderNumber, string callingUser)
         {

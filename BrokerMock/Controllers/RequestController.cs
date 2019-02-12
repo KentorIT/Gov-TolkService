@@ -374,7 +374,7 @@ namespace BrokerMock.Controllers
         {
             using (var client = GetHttpClient())
             {
-                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/File?OrderNumber={orderNumber}&AttachmentId={ attachmentId}");
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/File?OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se");
                 var file = response.Content.ReadAsAsync<FileResponse>().Result;
                 if (file.Success)
                 {
