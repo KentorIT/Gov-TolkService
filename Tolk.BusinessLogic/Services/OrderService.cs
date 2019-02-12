@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order)
                             .ThenInclude(o => o.Requests)
                             .ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(r => 
+                            .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestId == requestId);
@@ -295,6 +295,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
                     .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.Ranking.Broker)
                     .Single(r => r.RequestId == request.RequestId);
                 if (expiry.HasValue)
