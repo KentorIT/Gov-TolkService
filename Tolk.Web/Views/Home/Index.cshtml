@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.StartViewModel
 @using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Utilities
+@using Tolk.BusinessLogic.Entities
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
@@ -36,6 +37,22 @@
                     </span>
                 </div>
             </div>
+        </div>
+    </div>
+}
+@if (Model.SystemMessages.Any())
+{
+    <div class="row ">
+        <div class="col-xs-12">
+            <h2>Nyheter</h2>
+            @foreach (SystemMessage sm in Model.SystemMessages)
+            {
+                <div class="col-xs-12 @sm.CssClass">
+                    <span class="font-size-14">@sm.LastUpdatedCreatedAt.ToString("yyyy-MM-dd"): @sm.SystemMessageHeader</span>
+                    <br />
+                    @sm.SystemMessageText
+                </div>
+            }
         </div>
     </div>
 }
