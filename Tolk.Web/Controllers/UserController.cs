@@ -367,9 +367,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
 
         }
-#warning should proably add a generate new api key that can be called with ajax.
-#warning skuld also be possible to change the api key in ap, if you know the old one?
-#warning or not, becaues if someone gets the hands on the key, they can change it...
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Authorize(Roles = Roles.SuperUser)]
