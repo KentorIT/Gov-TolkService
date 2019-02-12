@@ -782,6 +782,7 @@ li.placeholder::before {
   margin-left: 0px;
   margin-right: 0px;
   font-size: 13px;
+  font-weight: 200;
 }
 .system-message-info {
   background-color: #f0f7ff;
@@ -792,9 +793,10 @@ li.placeholder::before {
   margin-left: 0px;
   margin-right: 0px;
   font-size: 13px;
+  font-weight: 200;
 }
 .system-message-warning {
-  background-color: #fdfaf0;
+  background-color: #ffffe0;
   border: 1px solid #F5971C;
   color: #333333;
   padding: 8px 8px 8px 8px;
@@ -802,6 +804,7 @@ li.placeholder::before {
   margin-left: 0px;
   margin-right: 0px;
   font-size: 13px;
+  font-weight: 200;
 }
 .to-accept-info {
   background-color: #E6F1ED;

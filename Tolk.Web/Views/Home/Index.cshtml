@@ -48,7 +48,7 @@
             @foreach (SystemMessage sm in Model.SystemMessages)
             {
                 <div class="col-xs-12 @sm.CssClass">
-                    <span class="font-size-14">@sm.LastUpdatedCreatedAt.ToString("yyyy-MM-dd"): @sm.SystemMessageHeader</span>
+                    <span class="normal-weight font-size-14">@sm.LastUpdatedCreatedAt.ToString("yyyy-MM-dd"): @sm.SystemMessageHeader</span>
                     <br />
                     @sm.SystemMessageText
                 </div>
