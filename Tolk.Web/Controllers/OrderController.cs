@@ -258,7 +258,7 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
                         Order replacementOrder = CreateNewOrder();
-                        var replacingRequest = new Request(request, _orderService.CalculateExpiryForNewRequest(model.TimeRange.StartDateTime), _clock.SwedenNow);
+                        var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
                         order.MakeCopy(replacementOrder);
                         model.UpdateOrder(replacementOrder, true);
                         replacementOrder.Requests.Add(replacingRequest);
