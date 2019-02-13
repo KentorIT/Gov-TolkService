@@ -32,14 +32,15 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
-        </div>
-        <div class="col-sm-4">
-            <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>
+        <div class="col-sm-12">
+            <div class="col-sm-4">
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="ViewOrganisationSettings">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-8">
+                <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>
+            </div>
         </div>
     </div>
-
 </form>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
