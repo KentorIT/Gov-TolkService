@@ -308,6 +308,32 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
+        public void RequestExpired(Request request)
+        {
+            var orderNumber = request.Order.OrderNumber;
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Bokningsförfrågan {orderNumber} har gått vidare till nästa förmedling i rangordningen",
+                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name}.\nTidsfristen enligt ramavtal har nu gått ut. {NoReplyTextPlain} {GotoRequestPlain(request.RequestId)}",
+                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name}.<br />Tidsfristen enligt ramavtal har nu gått ut. {NoReplyTextHtml} {GotoRequestButton(request.RequestId)}");
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestLostDueToInactivityModel
+                    {
+                        OrderNumber = orderNumber,
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestLostDueToInactivity,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
         public void ComplaintCreated(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;

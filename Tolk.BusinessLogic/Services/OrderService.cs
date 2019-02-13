@@ -65,9 +65,8 @@ namespace Tolk.BusinessLogic.Services
                     {
                         var expiredRequest = await _tolkDbContext.Requests
                             .Include(r => r.Ranking)
-                            .Include(r => r.Order)
-                            .ThenInclude(o => o.Requests)
-                            .ThenInclude(r => r.Ranking)
+                            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
@@ -92,6 +91,7 @@ namespace Tolk.BusinessLogic.Services
                             }
                             else
                             {
+                                _notificationService.RequestExpired(expiredRequest);
                                 await CreateRequest(expiredRequest.Order, expiredRequest);
                             }
 
