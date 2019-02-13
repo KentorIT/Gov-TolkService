@@ -213,6 +213,7 @@ namespace Tolk.BusinessLogic.Services
             if (email != null)
             {
                 string bodyPlain = $"En ny bokningsförfrågan har kommit in från {order.CustomerOrganisation.Name}.\n" +
+                    $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}\n" +
                     $"\tRegion: {order.Region.Name}\n" +
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tStart: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
@@ -222,6 +223,7 @@ namespace Tolk.BusinessLogic.Services
                     GotoRequestPlain(request.RequestId);
                 string bodyHtml = $@"En ny bokningsförfrågan har kommit in från {order.CustomerOrganisation.Name}.<br />
 <ul>
+<li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}</li>
 <li>Region: {order.Region.Name}</li>
 <li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
 <li>Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
