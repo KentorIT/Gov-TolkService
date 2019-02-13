@@ -123,6 +123,8 @@ namespace Tolk.Web.Models
         [StringLength(1000)]
         public string Message { get; set; }
 
+        public string ViewedByUser { get; set; } = string.Empty;
+
         public int? ReplacingRequisitionId { get; set; }
 
         public PreviousRequisitionViewModel PreviousRequisition { get; set; }

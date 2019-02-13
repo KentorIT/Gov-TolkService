@@ -247,6 +247,9 @@ select2.selection:active {
 .subitem {
   font-size: 14px;
 }
+.redcolor {
+  color: #E45C5C;
+}
 .competence-level {
   padding: 0px;
   margin: 0px;

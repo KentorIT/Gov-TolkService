@@ -32,6 +32,9 @@ namespace Tolk.Web.Models
                 return OrderModel?.OrderId;
             }
         }
+
+        public string ViewedByUser { get; set; } = string.Empty;
+
         public List<FileModel> Files { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }

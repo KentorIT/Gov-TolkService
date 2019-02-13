@@ -42,6 +42,9 @@ namespace Tolk.Web.Models
         public string InfoDateDescription { get; set; } = "Inkommen: ";
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForStartListItem(Status); }
+
+        public string ViewedByUser { get; set; } = string.Empty;
+
     }
 
 }

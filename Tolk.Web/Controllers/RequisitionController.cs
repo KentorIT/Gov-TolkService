@@ -105,7 +105,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Ranking).ThenInclude(r => r.Region)
                 .Include(r => r.PriceRows)
@@ -156,6 +156,10 @@ namespace Tolk.Web.Controllers
                 model.Outlay = null;
                 model.CarCompensation = null;
                 model.PerDiem = null;
+                if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
+                {
+                    model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
+                }
                 request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
                 _dbContext.SaveChanges();
                 return View(model);

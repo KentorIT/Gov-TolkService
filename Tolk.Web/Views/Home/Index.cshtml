@@ -145,6 +145,10 @@
                                             @EnumHelper.GetDescription(item.Status)
                                         </span><br /><br />
                                         <span class="startlist-subrow">ID: @item.OrderNumber</span>
+                                        @if (!string.IsNullOrEmpty(item.ViewedByUser))
+                                        {
+                                            <span class="glyphicon glyphicon-user redcolor" title="  @item.ViewedByUser"></span>
+                                        }
                                     </td>
                                     <td class="gray-border-bottom">
                                         <br />

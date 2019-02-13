@@ -97,7 +97,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.RequestViews)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
                 .Include(r => r.Interpreter)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
@@ -142,7 +142,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
                 .Include(r => r.Ranking)
                 .Include(r => r.PriceRows)
                 .Include(r => r.RequirementAnswers)
@@ -408,6 +408,10 @@ namespace Tolk.Web.Controllers
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
+            }
+            if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
+            {
+                model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
             }
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = request.CanChangeInterpreter && request.Order.StartAt > _clock.SwedenNow;

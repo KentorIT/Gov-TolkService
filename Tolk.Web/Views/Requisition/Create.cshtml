@@ -7,6 +7,11 @@
     string tableClassName = Model.MealBreaks != null && Model.MealBreaks.Any() ? string.Empty : "d-none";
     HelpLinkService.PageName = "formedling-skapa-rekvisition/";
 }
+@if (!string.IsNullOrEmpty(Model.ViewedByUser))
+{
+    <span class="glyphicon glyphicon-user redcolor" title="@Model.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ViewedByUser</span>
+    <br />
+}
 <div class="row">
     <div class="col-sm-12">
         <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
