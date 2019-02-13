@@ -1207,6 +1207,31 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("RequestStatusConfirmation");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>
+                {
+                    b.Property<int>("RequestViewId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("ImpersonatingViewedBy");
+
+                    b.Property<int>("RequestId");
+
+                    b.Property<DateTimeOffset>("ViewedAt");
+
+                    b.Property<int>("ViewedBy");
+
+                    b.HasKey("RequestViewId");
+
+                    b.HasIndex("ImpersonatingViewedBy");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("ViewedBy");
+
+                    b.ToTable("RequestViews");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Requisition", b =>
                 {
                     b.Property<int>("RequisitionId")
@@ -1893,6 +1918,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("RequestStatusConfirmations")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ViewedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingViewedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ViewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ViewedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Requisition", b =>

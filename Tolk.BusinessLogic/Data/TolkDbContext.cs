@@ -190,14 +190,14 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<OrderContactPersonHistory>()
-             .HasOne(r => r.ChangedByImpersonator)
-             .WithMany()
-             .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(r => r.ChangedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<OrderContactPersonHistory>()
-             .HasOne(r => r.ChangedByUser)
-             .WithMany()
-             .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(r => r.ChangedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<OutboundWebHookCall>()
                 .HasOne(c => c.RecipientUser)
@@ -205,10 +205,10 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<TemporaryAttachmentGroup>()
-            .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
+                .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
 
             builder.Entity<RequisitionAttachment>()
-            .HasKey(ra => new { ra.RequisitionId, ra.AttachmentId });
+                .HasKey(ra => new { ra.RequisitionId, ra.AttachmentId });
 
             builder.Entity<RequisitionAttachment>()
                 .HasOne(ra => ra.Requisition)
@@ -221,7 +221,7 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(map => map.AttachmentId);
 
             builder.Entity<RequestAttachment>()
-            .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
+                .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
 
             builder.Entity<RequestAttachment>()
                 .HasOne(ra => ra.Request)
@@ -234,7 +234,7 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(map => map.AttachmentId);
 
             builder.Entity<OrderAttachment>()
-           .HasKey(oa => new { oa.OrderId, oa.AttachmentId });
+                .HasKey(oa => new { oa.OrderId, oa.AttachmentId });
 
             builder.Entity<OrderAttachment>()
                 .HasOne(oa => oa.Order)
@@ -283,6 +283,16 @@ namespace Tolk.BusinessLogic.Data
 
             builder.Entity<SystemMessage>()
                 .HasOne(s => s.LastUpdatedImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestView>()
+                .HasOne(r => r.ViewedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestView>()
+                .HasOne(r => r.ViewedByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }
@@ -360,6 +370,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<MealBreak> MealBreaks { get; set; }
 
         public DbSet<SystemMessage> SystemMessages { get; set; }
+
+        public DbSet<RequestView> RequestViews { get; set; }
 
         public static bool isUserStoreInitialized = false;
 
