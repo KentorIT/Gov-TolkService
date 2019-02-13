@@ -176,7 +176,7 @@
                                     @if (startlist.HasReviewAction)
                                     {
                                         <td class="gray-border-bottom"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
-                                        <td class="gray-border-bottom gray-border-right"><br /><a class="btn btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId" asp-route-tab="@item.ButtonItemTab">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
+                                        <td class="gray-border-bottom gray-border-right"><br /><a class="btn btn-datatable btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId" asp-route-tab="@item.ButtonItemTab">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
                                     }
                                     else
                                     {

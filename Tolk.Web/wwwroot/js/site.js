@@ -154,7 +154,11 @@ $(function () {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }
     });
-     
+
+    $("body").on("click", ".btn-datatable", function (e) {
+        e.stopPropagation();
+    });
+    
     $("select").each(function () {
         var allowClear = $(this).parents().hasClass("allow-clear");
         $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });

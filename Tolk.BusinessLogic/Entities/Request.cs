@@ -155,6 +155,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestStatusConfirmation> RequestStatusConfirmations { get; set; }
 
+        public List<RequestView> RequestViews { get; set; }
+
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
         public static object HttpContext { get; set; }
@@ -231,6 +233,19 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
 
             Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+        }
+
+        public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
+        {
+            if (!RequestViews.Any(rv => rv.RequestId == RequestId && rv.ViewedBy == userId))
+            {
+                RequestViews.Add(new RequestView
+                {
+                    ViewedBy = userId,
+                    ImpersonatingViewedBy = impersonatorId,
+                    ViewedAt = swedenNow
+                });
+            }
         }
 
         public void Decline(

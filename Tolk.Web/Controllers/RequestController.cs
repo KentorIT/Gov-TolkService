@@ -66,7 +66,7 @@ namespace Tolk.Web.Controllers
                 model = new RequestFilterModel();
             }
             var items = _dbContext.Requests.Include(r => r.Order)
-                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId() 
+                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId()
                             && r.Status != RequestStatus.InterpreterReplaced
                             && r.Status != RequestStatus.AwaitingDeadlineFromCustomer
                             && r.Status != RequestStatus.NoDeadlineFromCustomer);
@@ -97,6 +97,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.RequestViews)
                 .Include(r => r.Interpreter)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
@@ -118,6 +119,8 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
+                request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
+                _dbContext.SaveChanges();
                 return View(GetModel(request, true));
             }
             return Forbid();
@@ -139,6 +142,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
                 .Include(r => r.Interpreter)
+                .Include(r => r.RequestViews)
                 .Include(r => r.Ranking)
                 .Include(r => r.PriceRows)
                 .Include(r => r.RequirementAnswers)
@@ -153,11 +157,13 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", new { id });
                 }
+                request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
+
                 if (request.Status == RequestStatus.Created)
                 {
                     request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.SaveChanges();
                 }
+                _dbContext.SaveChanges();
                 RequestModel model = GetModel(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
