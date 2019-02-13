@@ -116,6 +116,10 @@ function triggerValidator(message, validatorId) {
     validatorId.show();
 }
 
+function inputNumbersOnly(elem) {
+    elem.value = elem.value.replace(/[^0-9]/g, '');
+}
+
 $(function () {
     var currentId = 0;
 
@@ -191,6 +195,22 @@ $(function () {
         }
         validateControls();
     });
+
+    { // Bruteforcing to ints only, to prevent unmodifiable english-language int validation messages from triggering
+        $('#TimeWasteTotalTime').keyup(function () {
+            inputNumbersOnly(this);
+        });
+        $('#TimeWasteTotalTime').change(function () {
+            inputNumbersOnly(this);
+        });
+
+        $('#TimeWasteIWHTime').keyup(function () {
+            inputNumbersOnly(this);
+        });
+        $('#TimeWasteIWHTime').change(function () {
+            inputNumbersOnly(this);
+        });
+    }
 
     $("body").on("click", ".save-mealbreak", function (event) {
         event.preventDefault();
