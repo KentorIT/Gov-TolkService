@@ -9,6 +9,7 @@
     var declineHeader = @Model.OrderModel.ReplacingOrderId.HasValue ? "Tacka nej till ersättningsuppdrag" : "Tacka nej till bokning";
     HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
 }
+<input asp-for="RequestViewId" type="hidden" />
 <div class="row">
     <div class="col-sm-12">
         @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
@@ -88,7 +89,7 @@
             }
             <input asp-for="Status" type="hidden" />
             @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite)
-              && EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes)
+           && EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes)
             {
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
                 <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>

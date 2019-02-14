@@ -395,6 +395,27 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [HttpDelete]
+        public JsonResult DeleteRequestView(int id)
+        {
+            var requestView = _dbContext.RequestViews
+                .SingleOrDefault(r => r.RequestViewId == id);
+
+            if (requestView != null)
+            {
+                if (_authorizationService.AuthorizeAsync(User, requestView, Policies.Delete).Result.Succeeded)
+                {
+                    _dbContext.RequestViews.Remove(requestView);
+                    _dbContext.SaveChanges();
+                }
+                else
+                {
+                    _logger.LogWarning("Wrong user trying to delete requestview. RequestViewId: {requestView.RequestViewId}, UserId: {userId}", requestView.RequestViewId, User.GetUserId());
+                }
+            }
+            return Json(new { success = true });
+        }
+
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
@@ -409,9 +430,16 @@ namespace Tolk.Web.Controllers
             {
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
-            if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
+            if (request.RequestViews != null)
             {
-                model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
+                if (request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
+                {
+                    model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
+                }
+                if (request.RequestViews.Any(rv => rv.ViewedBy == User.GetUserId()))
+                {
+                    model.RequestViewId = request.RequestViews.Last(rv => rv.ViewedBy == User.GetUserId()).RequestViewId;
+                }
             }
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = request.CanChangeInterpreter && request.Order.StartAt > _clock.SwedenNow;

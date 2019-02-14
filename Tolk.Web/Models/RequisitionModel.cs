@@ -125,6 +125,8 @@ namespace Tolk.Web.Models
 
         public string ViewedByUser { get; set; } = string.Empty;
 
+        public int RequestViewId { get; set; } = 0;
+
         public int? ReplacingRequisitionId { get; set; }
 
         public PreviousRequisitionViewModel PreviousRequisition { get; set; }

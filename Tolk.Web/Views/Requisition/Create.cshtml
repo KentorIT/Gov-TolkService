@@ -12,6 +12,7 @@
     <span class="glyphicon glyphicon-user redcolor" title="@Model.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ViewedByUser</span>
     <br />
 }
+<input asp-for="RequestViewId" type="hidden" />
 <div class="row">
     <div class="col-sm-12">
         <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>

@@ -53,6 +53,21 @@ $(function () {
     });
 });
 
+window.addEventListener('beforeunload', function (e) {
+    var requestViewId = $("#RequestViewId").val();
+    if (requestViewId > 0) {
+        var $url = tolkBaseUrl + "Request/DeleteRequestView?id=" + requestViewId;
+        $.ajax({
+            type: "DELETE",
+            url: $url,
+            dataType: "json"
+        });
+    }
+});
+
+
+
+
 $.fn.extend({
     openDialog: function () {
         $(this).find("input:not(:checkbox,:hidden),select, textarea").val("");

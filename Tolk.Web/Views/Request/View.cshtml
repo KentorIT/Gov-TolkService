@@ -17,6 +17,7 @@
     <div id="request" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
+                <input asp-for="RequestViewId" type="hidden" />
                 @if (Model.AllowConfirmCancellation)
                 {
                     <br />
@@ -33,11 +34,11 @@
                 @if (Model.AllowConfirmationDenial)
                 {
                     <br />
-                        <form method="post" asp-action="ConfirmDenial">
-                            <input asp-for="RequestId" type="hidden" />
-                            <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-                        </form>
-                        <br /><br />
+                    <form method="post" asp-action="ConfirmDenial">
+                        <input asp-for="RequestId" type="hidden" />
+                        <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    </form>
+                    <br /><br />
                 }
                 @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false } })
                 <div class="row">
@@ -115,16 +116,16 @@
     </div>
 </div>
 @section Scripts {
-<environment include="Development">
-    <script src="~/js/Request/Process.js" asp-append-version="true"></script>
-    <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
-    <script src="~/js/Files.js" asp-append-version="true"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
-    <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
-    <script src="~/js/Files.min.js" asp-append-version="true"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+        <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+        <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
 

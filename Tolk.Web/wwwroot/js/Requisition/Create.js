@@ -7,6 +7,19 @@ $('#PerDiem').change(function () { validateControls(); });
 $('#SessionEndedAt').change(function () { validateControls(); });
 $('#SessionStartedAt').change(function () { validateControls(); });
 
+window.addEventListener('beforeunload', function (e) {
+    var requestViewId = $("#RequestViewId").val();
+    if (requestViewId > 0) {
+        var $url = tolkBaseUrl + "Request/DeleteRequestView?id=" + requestViewId;
+        $.ajax({
+            type: "DELETE",
+            url: $url,
+            dataType: "json"
+        });
+    }
+});
+
+
 function validateControls() {
     if (checkWasteTime() &&
         checkSessionEndedAt()) { $('#create').attr('disabled', false); }

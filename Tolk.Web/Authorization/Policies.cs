@@ -20,6 +20,7 @@ namespace Tolk.Web.Authorization
         public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
         public const string Accept = nameof(Accept);
+        public const string Delete = nameof(Delete);
         public const string Cancel = nameof(Cancel);
         public const string Replace = nameof(Replace);
         public const string TimeTravel = nameof(TimeTravel);
@@ -38,6 +39,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
+                opt.AddPolicy(Delete, builder => builder.RequireAssertion(DeleteHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
                 opt.AddPolicy(ViewMenuAndStartLists, builder => builder.RequireAssertion(ViewMenuAndStartListsHandler));
@@ -188,6 +190,17 @@ namespace Tolk.Web.Authorization
                         return complaint.CreatedBy == context.User.GetUserId();
                     }
                     return false;
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> DeleteHandler = (context) =>
+        {
+            switch (context.Resource)
+            {
+                case RequestView requestView:
+                    return requestView.ViewedBy == context.User.GetUserId();
                 default:
                     throw new NotImplementedException();
             }
