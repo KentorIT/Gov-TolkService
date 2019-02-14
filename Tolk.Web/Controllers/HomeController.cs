@@ -91,9 +91,9 @@ namespace Tolk.Web.Controllers
             return _dbContext.SystemMessages
                 .OrderByDescending(s => s.SystemMessageType)
                 .ThenByDescending(s => s.LastUpdatedCreatedAt)
-                .Where(s => s.ActiveFrom < _clock.SwedenNow 
-                && s.ActiveTo.Date >= _clock.SwedenNow.Date 
-                && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All 
+                .Where(s => s.ActiveFrom < _clock.SwedenNow
+                && s.ActiveTo.Date >= _clock.SwedenNow.Date
+                && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
                 || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
                 || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
                 || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.SuperUsers && displaySuperUserMessages)));
@@ -325,7 +325,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Error()
         {
-            _logger.LogError("TraceID: {0} UserID: {1}", Activity.Current?.Id ?? HttpContext.TraceIdentifier, User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            _logger.LogError("TraceID: {0} UserID: {1}", Activity.Current?.Id ?? HttpContext.TraceIdentifier, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "-");
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
