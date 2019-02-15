@@ -52,9 +52,9 @@ namespace Tolk.BusinessLogic.Services
                 //handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
                 foreach (var callId in callIds)
                 {
-                    using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                    try
                     {
-                        try
+                        using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
                         {
                             var call = await _dbContext.OutboundWebHookCalls
                                 .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
@@ -90,10 +90,10 @@ namespace Tolk.BusinessLogic.Services
                                 }
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Failure calling web hook {callId}", callId);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure calling web hook {callId}", callId);
                     }
                 }
             }
