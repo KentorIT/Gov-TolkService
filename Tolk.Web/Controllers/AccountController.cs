@@ -273,32 +273,33 @@ namespace Tolk.Web.Controllers
             {
                 user = await _userManager.FindByNameAsync(model.UserName);
             }
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
-            if (result.Succeeded)
+            if (user != null)
             {
-                if (!user.IsActive)
+                var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
+                if (result.Succeeded)
                 {
-                    //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
-                    await _signInManager.SignOutAsync();
-                    _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName);
-                    ModelState.AddModelError(string.Empty, "Användaren är inaktiverad. Kontakta din lokala administratör för mer information.");
-                    return View(model);
+                    if (!user.IsActive)
+                    {
+                        //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
+                        await _signInManager.SignOutAsync();
+                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName);
+                        ModelState.AddModelError(nameof(model.UserName), "Användaren är inaktiverad. Kontakta din lokala administratör för mer information.");
+                        return View(model);
+                    }
+                    user.LastLoginAt = _clock.SwedenNow;
+                    await _userManager.UpdateAsync(user);
+                    _logger.LogInformation("User {userName} logged in.", model.UserName);
+                    return RedirectToLocal(returnUrl);
                 }
-                user.LastLoginAt = _clock.SwedenNow;
-                await _userManager.UpdateAsync(user);
-                _logger.LogInformation("User {userName} logged in.", model.UserName);
-                return RedirectToLocal(returnUrl);
+                if (result.IsLockedOut)
+                {
+                    _logger.LogWarning("User account {userName} locked out.", model.UserName);
+                    return RedirectToAction(nameof(Lockout));
+                }
             }
-            if (result.IsLockedOut)
-            {
-                _logger.LogWarning("User account {userName} locked out.", model.UserName);
-                return RedirectToAction(nameof(Lockout));
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
-                return View(model);
-            }
+            //No user found, or wrong password is handled the same
+            ModelState.AddModelError(nameof(model.UserName), "Felaktigt användarnamn eller lösenord.");
+            return View(model);
         }
 
         [HttpGet]

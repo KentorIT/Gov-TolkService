@@ -1,15 +1,12 @@
 @using Tolk.BusinessLogic.Entities
 @model LoginViewModel
 @inject SignInManager<AspNetUser> SignInManager
-@{
-}
 
 <h2>Logga in</h2>
 <section>
     <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" asp-action="Login" asp-controller="Account" class="do-not-check-dirty">
         <div class="row padding-bottom-30px">
             <div class="col-xs-12">
-                <div asp-validation-summary="All" class="text-danger"></div>
                 <form-entry asp-for="UserName" class="autofocus" />
                 <form-entry asp-for="Password" />
                 <a asp-action="ForgotPassword" asp-controller="Account" class="pull-right">Gl&ouml;mt l&ouml;senord?</a>
