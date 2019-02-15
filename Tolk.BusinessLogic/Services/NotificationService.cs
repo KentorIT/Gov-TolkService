@@ -771,6 +771,12 @@ Tolk:
             }
         }
 
+        //SHOULD PROBABLY NOT BE HERE AT ALL...
+        public void FlushNotifictionSettings()
+        {
+            _cache.Remove(brokerSettingsCacheKey);
+        }
+
         private void CreateWebHookCall(WebHookPayloadBaseModel payload, string recipientUrl, NotificationType type, int userId)
         {
             _dbContext.Add(new OutboundWebHookCall(

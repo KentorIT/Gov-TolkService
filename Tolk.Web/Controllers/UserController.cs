@@ -29,6 +29,7 @@ namespace Tolk.Web.Controllers
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly NotificationService _notificationService;
 
         public UserController(
             UserManager<AspNetUser> userManager,
@@ -36,7 +37,8 @@ namespace Tolk.Web.Controllers
             ILogger<UserController> logger,
             RoleManager<IdentityRole<int>> roleManager,
             UserService userService,
-            IAuthorizationService authorizationService
+            IAuthorizationService authorizationService,
+            NotificationService notificationService
 )
         {
             _userManager = userManager;
@@ -45,6 +47,7 @@ namespace Tolk.Web.Controllers
             _roleManager = roleManager;
             _userService = userService;
             _authorizationService = authorizationService;
+            _notificationService = notificationService;
         }
 
         public ActionResult List(UserFilterModel model)
@@ -340,6 +343,7 @@ namespace Tolk.Web.Controllers
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();
+                            _notificationService.FlushNotifictionSettings();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                         }
                         return View(model);
