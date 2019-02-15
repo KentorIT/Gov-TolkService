@@ -53,20 +53,30 @@ $(function () {
     });
 });
 
-window.addEventListener('beforeunload', function (e) {
-    var requestViewId = $("#RequestViewId").val();
-    if (requestViewId > 0) {
-        var $url = tolkBaseUrl + "Request/DeleteRequestView?id=" + requestViewId;
+$(window).on("unload", function () {
+    var requestId = $("#RequestId").val();
+    if (requestId > 0) {
+        var $url = tolkBaseUrl + "Request/DeleteRequestView?requestId=" + requestId;
         $.ajax({
             type: "DELETE",
             url: $url,
-            dataType: "json"
+            dataType: "json",
+            async: false
         });
     }
 });
 
-
-
+$(document).ready(function () {
+    var requestId = $("#RequestId").val();
+    if (requestId > 0) {
+        var $url = tolkBaseUrl + "Request/AddRequestView?requestId=" + requestId;
+        $.ajax({
+            type: "POST",
+            url: $url,
+            dataType: "json",
+        });
+    }
+});
 
 $.fn.extend({
     openDialog: function () {

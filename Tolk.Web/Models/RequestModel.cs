@@ -35,8 +35,6 @@ namespace Tolk.Web.Models
 
         public string ViewedByUser { get; set; } = string.Empty;
 
-        public int RequestViewId { get; set; } = 0;
-
         public List<FileModel> Files { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }

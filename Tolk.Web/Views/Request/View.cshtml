@@ -13,11 +13,11 @@
     <li class='@(isRequisitionAvailable ? "" : "disabled")'><a id="requisitionTab" data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab(this, '@requisitionPath', '#requisition')">Rekvisition</a></li>
     <li class='@(isComplaintAvailable ? "" : "disabled")'><a id="complaintTab" data-toggle='@(isComplaintAvailable ? "tab" : "")' href="#complaint" onclick="changeTab(this, '@complaintPath', '#complaint')">Reklamation</a></li>
 </ul>
+<input asp-for="RequestId" type="hidden" />
 <div class="tab-content">
     <div id="request" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
-                <input asp-for="RequestViewId" type="hidden" />
                 @if (Model.AllowConfirmCancellation)
                 {
                     <br />

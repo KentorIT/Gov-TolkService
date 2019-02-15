@@ -119,8 +119,6 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
-                _dbContext.SaveChanges();
                 return View(GetModel(request, true));
             }
             return Forbid();
@@ -149,7 +147,6 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
                 .Single(o => o.RequestId == id);
 
-
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 if (!request.CanProcess)
@@ -157,13 +154,12 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", new { id });
                 }
-                request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
-
                 if (request.Status == RequestStatus.Created)
                 {
                     request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    _dbContext.SaveChanges();
                 }
-                _dbContext.SaveChanges();
+
                 RequestModel model = GetModel(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
@@ -396,22 +392,27 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteRequestView(int id)
+        public JsonResult DeleteRequestView(int requestId)
         {
-            var requestView = _dbContext.RequestViews
-                .SingleOrDefault(r => r.RequestViewId == id);
-
-            if (requestView != null)
+            var requestViews = _dbContext.RequestViews
+                .Where(r => r.RequestId == requestId && r.ViewedBy == User.GetUserId());
+            if (requestViews.Any())
             {
-                if (_authorizationService.AuthorizeAsync(User, requestView, Policies.Delete).Result.Succeeded)
-                {
-                    _dbContext.RequestViews.Remove(requestView);
-                    _dbContext.SaveChanges();
-                }
-                else
-                {
-                    _logger.LogWarning("Wrong user trying to delete requestview. RequestViewId: {requestView.RequestViewId}, UserId: {userId}", requestView.RequestViewId, User.GetUserId());
-                }
+                _dbContext.RequestViews.RemoveRange(requestViews);
+                _dbContext.SaveChanges();
+            }
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public JsonResult AddRequestView(int requestId)
+        {
+            var request = _dbContext.Requests
+               .Include(r => r.RequestViews).Single(r => r.RequestId == requestId);
+            if (request != null)
+            {
+                request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
+                _dbContext.SaveChanges();
             }
             return Json(new { success = true });
         }
@@ -430,16 +431,9 @@ namespace Tolk.Web.Controllers
             {
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
-            if (request.RequestViews != null)
+            if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
             {
-                if (request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
-                {
-                    model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
-                }
-                if (request.RequestViews.Any(rv => rv.ViewedBy == User.GetUserId()))
-                {
-                    model.RequestViewId = request.RequestViews.Last(rv => rv.ViewedBy == User.GetUserId()).RequestViewId;
-                }
+                model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
             }
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = request.CanChangeInterpreter && request.Order.StartAt > _clock.SwedenNow;

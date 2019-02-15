@@ -9,7 +9,6 @@
     var declineHeader = @Model.OrderModel.ReplacingOrderId.HasValue ? "Tacka nej till ersättningsuppdrag" : "Tacka nej till bokning";
     HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
 }
-<input asp-for="RequestViewId" type="hidden" />
 <div class="row">
     <div class="col-sm-12">
         @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
