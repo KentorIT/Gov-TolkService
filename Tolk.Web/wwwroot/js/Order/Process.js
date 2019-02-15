@@ -1,4 +1,51 @@
-﻿$(function () {
+﻿function validatorMessage(forName, message) {
+    var validatorQuery = "[data-valmsg-for=\"" + forName + "\"]";
+    $(validatorQuery).empty();
+    $(validatorQuery).append(message);
+    $(validatorQuery).show();
+}
+
+function validateLastAnswerBy() {
+    if (!$("#LatestAnswerBy_Date").is(":visible")) {
+        return true;
+    }
+    var date = new Date($("#LatestAnswerBy_Date").val());
+    var hour = $("#LatestAnswerBy_Hour").val();
+    var minute = $("#LatestAnswerBy_Minute").val();
+    if (date !== "" && hour !== "" && minute !== "") {
+        var now = new Date($("#now").val());
+        if (date.equalsDate(now)) {
+            var hours = now.getHours();
+            if (hours > Number(hour)) {
+                return false;
+            } else if (hours === Number(hour)) {
+                return !(now.getMinutes() > Number(minute));
+            }
+        }
+    }
+
+    return true;
+};
+
+function validateLastAnswerByAgainstStartTime() {
+    if (!$("#LatestAnswerBy_Date").is(":visible")) {
+        return true;
+    }
+    var date = new Date($("#LatestAnswerBy_Date").val());
+    var hour = $("#LatestAnswerBy_Hour").val();
+    var minute = $("#LatestAnswerBy_Minute").val();
+    if (date !== "" && hour !== "" && minute !== "") {
+        var startDateTime = new Date($("#TimeRange_StartDateTime").val());
+        var latestAnswerByDateTime = new Date(date);
+        latestAnswerByDateTime.setHours(Number(hour));
+        latestAnswerByDateTime.setMinutes(Number(minute));
+        return latestAnswerByDateTime <= startDateTime;
+    }
+
+    return true;
+};
+
+$(function () {
     $("body").on("click", ".deny-button", function (event) {
         event.preventDefault();
         $("#denyMessageDialog").openDialog();
@@ -42,6 +89,18 @@
             $("#cancelMessageDialog").modal("hide");
         }
     });
+
+    $("#LatestAnswerBy_Date").datepicker("setStartDate", new Date($('#now').val()).zeroTime());
+    $("#LatestAnswerBy_Date").datepicker("setEndDate", new Date($('#TimeRange_StartDateTime').val()).zeroTime());
+
+    $("body").on("click", "#updateLatestAnswerBy", function (event) {
+        // Validate LatestAnswerBy time
+        if (!validateLastAnswerBy()
+            || !validateLastAnswerByAgainstStartTime()) {
+            event.preventDefault();
+            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, vänligen kontrollera senaste svarstid.");
+        }
+    });
 });
 $.fn.extend({
     openDialog: function () {
@@ -55,4 +114,3 @@ $.fn.extend({
         $(this).modal({ backdrop: "static" });
     }
 });
-

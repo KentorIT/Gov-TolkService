@@ -177,12 +177,13 @@
                 <input asp-for="OrderId" type="hidden" />
                 <div class="row">
                     <div class="col-sm-8">
+                        <input asp-for="TimeRange.StartDateTime" type="hidden" />
                         <form-entry asp-for="LatestAnswerBy"></form-entry>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-4">
-                        <button class="btn btn-default btn-success btn-large">Uppdatera svarstid <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+                        <button id="updateLatestAnswerBy" class="btn btn-default btn-success btn-large">Uppdatera svarstid <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
                     </div>
                 </div>
             </form>
