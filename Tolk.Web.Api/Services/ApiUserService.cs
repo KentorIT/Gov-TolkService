@@ -42,7 +42,7 @@ namespace Tolk.Web.Api.Services
             _logger.LogInformation("User retrieved using certificate");
             return _dbContext.Users.SingleOrDefault(u => 
                 u.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication") && 
-                u.Claims.Any(c => c.ClaimType == "CertSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
+                u.Claims.Any(c => c.ClaimType == "CertificateSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
         }
 
         public AspNetUser GetApiUserByApiKey(string userName, string key)
