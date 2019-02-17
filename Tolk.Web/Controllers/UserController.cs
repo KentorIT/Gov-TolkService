@@ -234,7 +234,9 @@ namespace Tolk.Web.Controllers
                         model.NameFamily)
                     {
                         CustomerOrganisationId = customerId,
-                        BrokerId = brokerId
+                        BrokerId = brokerId,
+                        PhoneNumber = model.PhoneWork,
+                        PhoneNumberCellphone = model.PhoneCellphone
                     };
                     if (model.IsSuperUser)
                     {
