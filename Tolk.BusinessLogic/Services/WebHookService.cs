@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -52,41 +51,31 @@ namespace Tolk.BusinessLogic.Services
                 //handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
                 foreach (var callId in callIds)
                 {
+                    bool success = false;
+                    var call = await _dbContext.OutboundWebHookCalls
+                        .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
                     try
                     {
-                        using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                        if (call == null)
                         {
-                            var call = await _dbContext.OutboundWebHookCalls
-                                .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
+                            _logger.LogDebug("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
+                        }
+                        else
+                        {
+                            using (var client = new HttpClient()) //new HttpClient(handler) 
+                            {
+                                client.DefaultRequestHeaders.Accept.Clear();
+                                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
+                                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
+                                //Also add cert to call
+                                _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
+                                var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
+                                var response = await client.PostAsync(call.RecipientUrl, content);
 
-                            if (call == null)
-                            {
-                                _logger.LogDebug("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
-                            }
-                            else
-                            {
-                                using (var client = new HttpClient()) //new HttpClient(handler) 
+                                success = response.IsSuccessStatusCode;
+                                if (!success)
                                 {
-                                    client.DefaultRequestHeaders.Accept.Clear();
-                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
-                                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
-                                    //Also add cert to call
-                                    _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
-                                    var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
-                                    var response = await client.PostAsync(call.RecipientUrl, content);
-
-                                    if (response.IsSuccessStatusCode)
-                                    {
-                                        call.DeliveredAt = _clock.SwedenNow;
-                                    }
-                                    else
-                                    {
-                                        call.FailedTries++;
-                                        _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
-                                    }
-                                    //else set failed tries, and possibly write something somewhere
-                                    _dbContext.SaveChanges();
-                                    trn.Commit();
+                                    _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
                                 }
                             }
                         }
@@ -94,6 +83,18 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure calling web hook {callId}", callId);
+                    }
+                    finally
+                    {
+                        if (success)
+                        {
+                            call.DeliveredAt = _clock.SwedenNow;
+                        }
+                        else
+                        {
+                            call.FailedTries++;
+                        }
+                        await _dbContext.SaveChangesAsync();
                     }
                 }
             }
