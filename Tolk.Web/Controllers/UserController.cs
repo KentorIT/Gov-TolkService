@@ -285,7 +285,7 @@ namespace Tolk.Web.Controllers
                         Message = message,
                         UserName = apiUser.UserName,
                         Email = apiUser.Email,
-                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertSerialNumber")?.ClaimValue,
+                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                         UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                         UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
                         OrganisationNumber = apiUser.Broker.OrganizationNumber,
@@ -391,17 +391,15 @@ namespace Tolk.Web.Controllers
                     }
                     using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        var apiUser = _dbContext.Users
-                            .Include(u => u.NotificationSettings)
-                            .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                        var apiUser = _dbContext.Users.SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
                         if (apiUser != null)
                         {
-                            var secretClaim = (await _userManager.GetClaimsAsync(user)).SingleOrDefault(c => c.Type == "Secret");
+                            var secretClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Secret");
                             if (secretClaim != null)
                             {
-                                await _userManager.RemoveClaimAsync(user, secretClaim);
+                                await _userManager.RemoveClaimAsync(apiUser, secretClaim);
                             }
-                            await _userManager.AddClaimAsync(user, new Claim("Secret", model.ApiKey));
+                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", model.ApiKey));
                             transaction.Complete();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                         }
@@ -428,7 +426,7 @@ namespace Tolk.Web.Controllers
                     {
                         UserName = apiUser.UserName,
                         Email = apiUser.Email,
-                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertSerialNumber")?.ClaimValue,
+                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                         UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                         UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
                         OrganisationNumber = apiUser.Broker.OrganizationNumber
@@ -466,18 +464,33 @@ namespace Tolk.Web.Controllers
                             broker.OrganizationNumber = model.OrganisationNumber;
                             var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
                             //Clear all Claims, and resave them...
-                            await _userManager.RemoveClaimsAsync(brokerUser, await _userManager.GetClaimsAsync(brokerUser));
+                            var claims = await _userManager.GetClaimsAsync(apiUser);
+                            var claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseApiKeyAuthentication));
+                            if (claim != null)
+                            {
+                                await _userManager.RemoveClaimAsync(brokerUser, claim);
+                            }
                             if (model.UseApiKeyAuthentication)
                             {
                                 await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseApiKeyAuthentication), DateTime.Now.ToShortDateString()));
                             }
+                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseCertificateAuthentication));
+                            if (claim != null)
+                            {
+                                await _userManager.RemoveClaimAsync(brokerUser, claim);
+                            }
                             if (model.UseCertificateAuthentication)
                             {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim("UseCertificateAuthentication", DateTime.Now.ToShortDateString()));
+                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseCertificateAuthentication), DateTime.Now.ToShortDateString()));
+                            }
+                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.CertificateSerialNumber));
+                            if (claim != null)
+                            {
+                                await _userManager.RemoveClaimAsync(brokerUser, claim);
                             }
                             if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
                             {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim("CertSerialNumber", model.CertificateSerialNumber));
+                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CertificateSerialNumber), model.CertificateSerialNumber));
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();
