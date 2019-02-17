@@ -191,7 +191,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
 
         public string GenerateUserName(string firstName, string lastName, string prefix)
         {
-            string userNameStart = $"{prefix}{firstName.GetPrefix()}{lastName.GetPrefix()}";
+            string userNameStart = $"{prefix.GetPrefix(prefix.Length)}{firstName.GetPrefix()}{lastName.GetPrefix()}";
             var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWith(userNameStart)).Select(u => u.NormalizedUserName).ToList();
             for (int i = 1; i < 100; ++i)
             {

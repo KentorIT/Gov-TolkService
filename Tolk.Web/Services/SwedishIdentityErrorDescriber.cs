@@ -56,7 +56,7 @@ namespace Tolk.Web.Services
             {
                 Code = nameof(InvalidUserName),
                 //Description = $"User name '{userName}' is invalid, can only contain letters or digits."
-                Description = $"Användarnamnet {userName} måste var en giltig e-postaddress."
+                Description = $"Användarnamnet {userName} får bara innehålla bokstäver och siffror."
             };
         }
         public override IdentityError InvalidEmail(string email)
