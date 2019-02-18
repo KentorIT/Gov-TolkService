@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Tolk.BusinessLogic.Data;
@@ -30,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
         private readonly NotificationService _notificationService;
+        private readonly HashService _hashService;
 
         public UserController(
             UserManager<AspNetUser> userManager,
@@ -38,7 +41,8 @@ namespace Tolk.Web.Controllers
             RoleManager<IdentityRole<int>> roleManager,
             UserService userService,
             IAuthorizationService authorizationService,
-            NotificationService notificationService
+            NotificationService notificationService,
+            HashService hashService
 )
         {
             _userManager = userManager;
@@ -48,6 +52,7 @@ namespace Tolk.Web.Controllers
             _userService = userService;
             _authorizationService = authorizationService;
             _notificationService = notificationService;
+            _hashService = hashService;
         }
 
         public ActionResult List(UserFilterModel model)
@@ -405,7 +410,15 @@ namespace Tolk.Web.Controllers
                             {
                                 await _userManager.RemoveClaimAsync(apiUser, secretClaim);
                             }
-                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", model.ApiKey));
+                            var saltClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Salt");
+                            if (saltClaim != null)
+                            {
+                                await _userManager.RemoveClaimAsync(apiUser, saltClaim);
+                            }
+
+                            var salt = _hashService.CreateSalt(32);
+                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", _hashService.GenerateHash( model.ApiKey, salt)));
+                            await _userManager.AddClaimAsync(apiUser, new Claim("Salt", salt));
                             transaction.Complete();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                         }

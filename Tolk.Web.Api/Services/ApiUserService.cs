@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
@@ -8,6 +9,7 @@ using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Api.Services
@@ -18,12 +20,14 @@ namespace Tolk.Web.Api.Services
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly IMemoryCache _cache;
+        private readonly HashService _hashService;
 
         private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public ApiUserService(TolkDbContext dbContext,
             ILogger<ApiUserService> logger,
             IOptions<TolkOptions> options,
+            HashService hashService,
             IMemoryCache cache = null
             )
         {
@@ -31,6 +35,7 @@ namespace Tolk.Web.Api.Services
             _dbContext = dbContext;
             _options = options.Value;
             _cache = cache;
+            _hashService = hashService;
         }
 
         public AspNetUser GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
@@ -51,12 +56,20 @@ namespace Tolk.Web.Api.Services
             {
                 return null;
             }
-            _logger.LogInformation("User retrieved using use/apiKey");
+            _logger.LogInformation("User retrieved using user/apiKey");
             //Need a lot more security here
-            return _dbContext.Users.SingleOrDefault(u => 
+            var user = _dbContext.Users
+                .Include(u => u.Claims)
+                .SingleOrDefault(u => 
                 u.NormalizedUserName == userName.ToUpper() &&
-                u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication") && 
-                u.Claims.Any(c => c.ClaimType == "Secret" && c.ClaimValue == key));
+                u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"));
+            var secret = user?.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue;
+            var salt = user?.Claims.SingleOrDefault(c => c.ClaimType == "Salt")?.ClaimValue;
+            if (secret != null && salt != null && _hashService.AreEqual(key, secret, salt))
+            {
+                return user;
+            }
+            return null;
         }
 
         public AspNetUser GetBrokerUser(string caller, int? brokerId)
