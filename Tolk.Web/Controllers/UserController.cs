@@ -241,8 +241,6 @@ namespace Tolk.Web.Controllers
                         {
                             CustomerOrganisationId = customerId,
                             BrokerId = brokerId,
-                            PhoneNumber = model.PhoneWork,
-                            PhoneNumberCellphone = model.PhoneCellphone
                         };
                         if (model.IsSuperUser)
                         {
@@ -266,7 +264,7 @@ namespace Tolk.Web.Controllers
                             await _userService.LogCreateAsync(user.Id, User.GetUserId());
 
                             trn.Commit();
-                            return RedirectToAction(nameof(View), new { id = user.Id });
+                            return RedirectToAction(nameof(List), new UserFilterModel { Name = user.NameFamily });
                         }
                         model.ErrorMessage = GetErrors(result);
                     }

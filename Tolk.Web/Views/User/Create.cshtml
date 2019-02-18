@@ -17,8 +17,6 @@
             <form-entry asp-for="IsSuperUser" />
         </div>
         <div class="col-sm-4">
-            <form-entry asp-for="PhoneWork" />
-            <form-entry asp-for="PhoneCellphone" />
             @if (Model.EditorIsSystemAdministrator)
             {
                 <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
