@@ -181,5 +181,21 @@ namespace Tolk.BusinessLogic.Services
 
             _logger.LogInformation($"{notAcceptedRequests.Count} email reminders sent");
         }
+
+        public async Task DeleteRequestViews()
+        {
+            _logger.LogInformation("Start checking for RequestViews to delete");
+            List<RequestView> nonDeletedRequestViews = await _tolkDbContext.RequestViews
+                .Where(rv => rv.ViewedAt.Date < _clock.SwedenNow.Date)
+                .ToListAsync();
+
+            if (nonDeletedRequestViews.Any())
+            {
+                _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews to delete");
+                _tolkDbContext.RemoveRange(nonDeletedRequestViews);
+                _tolkDbContext.SaveChanges();
+            }
+            _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews to delete");
+        }
     }
 }

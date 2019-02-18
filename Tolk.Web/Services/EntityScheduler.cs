@@ -11,8 +11,9 @@ namespace Tolk.Web.Services
         private IServiceProvider _services;
         private ILogger<EntityScheduler> _logger;
         private ISwedishClock _clock;
-        private DateTimeOffset? nextClean = null;
-        private DateTimeOffset nextRemind;
+        private DateTimeOffset nextDailyRunTime;
+
+        private const int TimeToRun = 5;
 
         public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock)
         {
@@ -23,14 +24,14 @@ namespace Tolk.Web.Services
             DateTimeOffset now = _clock.SwedenNow;
             now -= now.TimeOfDay;
 
-            nextRemind = now - now.TimeOfDay;
-            nextRemind = nextRemind.AddHours(5);
+            nextDailyRunTime = now - now.TimeOfDay;
+            nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
 
-            if (_clock.SwedenNow.Hour > 5)
+            if (_clock.SwedenNow.Hour > TimeToRun)
 
             {
                 // Next remind is tomorrow
-                nextRemind = nextRemind.AddDays(1);
+                nextDailyRunTime = nextDailyRunTime.AddDays(1);
             }
 
             _logger.LogDebug("Created EntityScheduler instance");
@@ -47,46 +48,40 @@ namespace Tolk.Web.Services
         {
             _logger.LogTrace("EntityScheduler waking up.");
 
-            if ((nextRemind - _clock.SwedenNow).TotalHours > 25 || nextRemind.Hour != 5)
+            if ((nextDailyRunTime - _clock.SwedenNow).TotalHours > 25 || nextDailyRunTime.Hour != TimeToRun)
             {
-                _logger.LogWarning("nextRemind set to invalid time, was {0}", nextRemind);
+                _logger.LogWarning("nextDailyRunTime set to invalid time, was {0}", nextDailyRunTime);
                 DateTimeOffset now = _clock.SwedenNow;
                 now -= now.TimeOfDay;
-                nextRemind = now - now.TimeOfDay;
-                nextRemind = nextRemind.AddHours(5);
+                nextDailyRunTime = now - now.TimeOfDay;
+                nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
 
-                if (_clock.SwedenNow.Hour > 5)
+                if (_clock.SwedenNow.Hour > TimeToRun)
                 {
                     // Next remind is tomorrow
-                    nextRemind = nextRemind.AddDays(1);
+                    nextDailyRunTime = nextDailyRunTime.AddDays(1);
                 }
             }
 
             try
             {
-                //would like to have a timer here, to make it possible to get tighter runs if the last ru ran for longer than 10 seconds or somethng...
+                //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...
                 using (var serviceScope = _services.CreateScope())
                 {
                     Task[] tasksToRun;
 
-                    if (nextClean == null || _clock.SwedenNow > nextClean)
+                    if (_clock.SwedenNow > nextDailyRunTime)
                     {
-                        nextClean = _clock.SwedenNow.AddDays(1).Date;
-                        tasksToRun = new Task[]
-                        {
-                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments()
-                        };
-                    }
-                    else if (_clock.SwedenNow > nextRemind)
-                    {
-                        nextRemind = nextRemind.AddDays(1);
-                        nextRemind = nextRemind - nextRemind.TimeOfDay;
-                        nextRemind = nextRemind.AddHours(5);
-                        _logger.LogTrace("Running reminder, next run on {0}", nextRemind);
+                        nextDailyRunTime = nextDailyRunTime.AddDays(1);
+                        nextDailyRunTime = nextDailyRunTime - nextDailyRunTime.TimeOfDay;
+                        nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
+                        _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
                         tasksToRun = new Task[]
                         {
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().DeleteRequestViews()
                         };
                     }
                     else
