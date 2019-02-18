@@ -191,11 +191,12 @@ namespace Tolk.BusinessLogic.Services
 
             if (nonDeletedRequestViews.Any())
             {
-                _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews to delete");
+                _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews deleted");
                 _tolkDbContext.RemoveRange(nonDeletedRequestViews);
                 _tolkDbContext.SaveChanges();
+                return;
             }
-            _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews to delete");
+            _logger.LogInformation($"No RequestViews to delete");
         }
     }
 }
