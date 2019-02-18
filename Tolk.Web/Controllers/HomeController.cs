@@ -76,27 +76,30 @@ namespace Tolk.Web.Controllers
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
-                SystemMessages = GetSystemMessages(),
+                SystemMessages = SystemMessagesForUser,
                 StartLists = await GetStartLists(),
                 IsBroker = User.TryGetBrokerId().HasValue,
             });
         }
 
-        private IEnumerable<SystemMessage> GetSystemMessages()
+        private IEnumerable<SystemMessage> SystemMessagesForUser
         {
-            bool displayBrokerMessages = !User.TryGetBrokerId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
-            bool displayCustomerMessages = !User.TryGetCustomerOrganisationId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
-            bool displaySuperUserMessages = !User.IsInRole(Roles.SuperUser) ? User.IsInRole(Roles.Admin) ? true : false : true;
+            get
+            {
+                bool displayBrokerMessages = !User.TryGetBrokerId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
+                bool displayCustomerMessages = !User.TryGetCustomerOrganisationId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
+                bool displaySuperUserMessages = !User.IsInRole(Roles.SuperUser) ? User.IsInRole(Roles.Admin) ? true : false : true;
 
-            return _dbContext.SystemMessages
-                .OrderByDescending(s => s.SystemMessageType)
-                .ThenByDescending(s => s.LastUpdatedCreatedAt)
-                .Where(s => s.ActiveFrom < _clock.SwedenNow
-                && s.ActiveTo.Date >= _clock.SwedenNow.Date
-                && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
-                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
-                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
-                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.SuperUsers && displaySuperUserMessages)));
+                return _dbContext.SystemMessages
+                    .Where(s => s.ActiveFrom < _clock.SwedenNow
+                    && s.ActiveTo.Date >= _clock.SwedenNow.Date
+                    && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
+                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
+                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
+                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.SuperUsers && displaySuperUserMessages)))
+                    .ToList().OrderByDescending(s => s.SystemMessageType)
+                .ThenByDescending(s => s.LastUpdatedCreatedAt);
+            }
         }
 
         private async Task<IEnumerable<StartViewModel.StartList>> GetStartLists()
