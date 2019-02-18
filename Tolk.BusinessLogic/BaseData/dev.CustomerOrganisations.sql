@@ -9,6 +9,6 @@ INSERT CustomerOrganisations (CustomerOrganisationId, Name, PriceListType, Email
 	(3, 'Domstolsverket', 1, 'dom.se', NULL, 'Dom'),
 	(4, 'Sopra Steria', 2, 'soprasteria.com', NULL, 'Sop'),
 	(5, 'Södertörns tingsrätt', 1, 'sodertorns.domstol.se', 3, 'SödTing'),
-	(6, 'Förvaltningsrätten i Stockholm', 1, 'forvaltningsrattenistockholm.domstol.se', 3, 'FörvSthlm')
+	(6, 'Förvaltningsrätten i Stockholm', 1, 'forvaltningsrattenistockholm.domstol.se', 3, 'FörvSthm')
 
 SET IDENTITY_INSERT CustomerOrganisations OFF
