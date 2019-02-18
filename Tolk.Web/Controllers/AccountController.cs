@@ -176,9 +176,7 @@ namespace Tolk.Web.Controllers
                         ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
                         return View(model);
                     }
-                    if (!_dbContext.Users.Any(u => !u.IsApiUser &&
-                     (u.NormalizedEmail == model.NewEmailAddress.ToUpper() ||
-                     u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == model.NewEmailAddress.ToUpper())))
+                    if (_userService.IsUniqueEmail(model.NewEmailAddress))
                     {
                         var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
 
@@ -333,7 +331,7 @@ namespace Tolk.Web.Controllers
             _logger.LogDebug("Requesting password reset for {email}", model.Email);
             if (ModelState.IsValid)
             {
-                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail ==  model.Email.ToUpper());
+                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToUpper());
                 if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
@@ -614,44 +612,75 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    var domain = model.Email.Split('@')[1];
-
-                    var organisation = await _dbContext.CustomerOrganisations
-                        .Include(c => c.SubCustomerOrganisations)
-                        .SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
-
-                    if (organisation != null)
+                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
+                }
+                else
+                {
+                    using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
-                        //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
-                        if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
+                        var domain = model.Email.Split('@')[1];
+
+                        var organisation = await _dbContext.CustomerOrganisations
+                            .Include(c => c.SubCustomerOrganisations)
+                            .SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
+
+                        if (organisation != null)
                         {
-                            model.ParentOrganisationId = organisation.CustomerOrganisationId;
-                            ModelState.AddModelError(string.Empty, $"Mejldomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan.");
-                            return View(model);
-                        }
-                        else
-                        {
-                            //check if user has changed parent domain to another valid parent domain
-                            if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
+                            //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
+                            if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                             {
-                                var selectedOrganisationId = int.Parse(model.OrganisationIdentifier);
-                                organisation = await _dbContext.CustomerOrganisations
-                                    .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
-                                    || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
-                                    .SingleOrDefaultAsync();
-                                if (organisation == null)
-                                {
-                                    ModelState.AddModelError(string.Empty, $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
-                                    return View(model);
-                                }
+                                model.ParentOrganisationId = organisation.CustomerOrganisationId;
+                                ModelState.AddModelError(nameof(model.Email), $"Mejldomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan.");
+                                return View(model);
                             }
+                            else
+                            {
+                                //check if user has changed parent domain to another valid parent domain
+                                if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
+                                {
+                                    var selectedOrganisationId = int.Parse(model.OrganisationIdentifier);
+                                    organisation = await _dbContext.CustomerOrganisations
+                                        .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
+                                        || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
+                                        .SingleOrDefaultAsync();
+                                    if (organisation == null)
+                                    {
+                                        ModelState.AddModelError(nameof(model.Email), $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
+                                        return View(model);
+                                    }
+                                }
+                                var user = new AspNetUser(model.Email,
+                                    _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganizationPrefix),
+                                    model.FirstName,
+                                    model.LastName,
+                                    organisation);
+                                var result = await _userManager.CreateAsync(user);
+
+                                if (result.Succeeded)
+                                {
+                                    await _userService.SendInviteAsync(user);
+                                    await _userService.LogCreateAsync(user.Id);
+
+                                    trn.Commit();
+                                    return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                                }
+                                AddErrors(result);
+                                return View(model);
+                            }
+                        }
+
+                        var broker = await _dbContext.Brokers
+                            .SingleOrDefaultAsync(b => b.EmailDomain == domain);
+
+                        if (broker != null)
+                        {
                             var user = new AspNetUser(model.Email,
-                                _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganizationPrefix),
-                                model.FirstName,
-                                model.LastName,
-                                organisation);
+                                    _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
+                                    model.FirstName,
+                                    model.LastName,
+                                    broker);
                             var result = await _userManager.CreateAsync(user);
 
                             if (result.Succeeded)
@@ -665,35 +694,12 @@ namespace Tolk.Web.Controllers
                             AddErrors(result);
                             return View(model);
                         }
+                        ModelState.AddModelError(nameof(model.Email),
+                            $"Mejldomänen {domain} är inte registrerad på någon organisation i tjänsten.");
                     }
-
-                    var broker = await _dbContext.Brokers
-                        .SingleOrDefaultAsync(b => b.EmailDomain == domain);
-
-                    if (broker != null)
-                    {
-                        var user = new AspNetUser(model.Email,
-                                _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
-                                model.FirstName,
-                                model.LastName,
-                                broker);
-                        var result = await _userManager.CreateAsync(user);
-
-                        if (result.Succeeded)
-                        {
-                            await _userService.SendInviteAsync(user);
-                            await _userService.LogCreateAsync(user.Id);
-
-                            trn.Commit();
-                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
-                        }
-                        AddErrors(result);
-                        return View(model);
-                    }
-                    ModelState.AddModelError(nameof(model.Email),
-                        $"Mejldomänen {domain} är inte registrerad på någon organisation i tjänsten.");
                 }
             }
+
             return View(model);
         }
 

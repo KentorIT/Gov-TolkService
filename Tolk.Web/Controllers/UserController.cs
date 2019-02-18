@@ -184,88 +184,94 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    var additionalRoles = new List<string>();
-                    var organisationPrefix = string.Empty;
-                    int? customerId = null;
-                    int? brokerId = null;
-                    if (!User.IsInRole(Roles.Admin))
+                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
+                }
+                else
+                {
+                    using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
-                        customerId = User.TryGetCustomerOrganisationId();
-                        brokerId = User.TryGetBrokerId();
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
+                        var additionalRoles = new List<string>();
+                        var organisationPrefix = string.Empty;
+                        int? customerId = null;
+                        int? brokerId = null;
+                        if (!User.IsInRole(Roles.Admin))
                         {
-                            var org = model.OrganisationIdentifier.Split("_");
-                            var id = int.Parse(org.First());
-                            var type = Enum.Parse<OrganisationType>(org.Last());
-                            switch (type)
+                            customerId = User.TryGetCustomerOrganisationId();
+                            brokerId = User.TryGetBrokerId();
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
                             {
-                                case OrganisationType.GovernmentBody:
-                                    customerId = id;
-                                    break;
-                                case OrganisationType.Broker:
-                                    brokerId = id;
-                                    break;
-                                case OrganisationType.Owner:
-                                    additionalRoles.Add(Roles.Admin);
-                                    organisationPrefix = "KamK";
-                                    break;
-                                default:
-                                    throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
+                                var org = model.OrganisationIdentifier.Split("_");
+                                var id = int.Parse(org.First());
+                                var type = Enum.Parse<OrganisationType>(org.Last());
+                                switch (type)
+                                {
+                                    case OrganisationType.GovernmentBody:
+                                        customerId = id;
+                                        break;
+                                    case OrganisationType.Broker:
+                                        brokerId = id;
+                                        break;
+                                    case OrganisationType.Owner:
+                                        additionalRoles.Add(Roles.Admin);
+                                        organisationPrefix = "KamK";
+                                        break;
+                                    default:
+                                        throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when creating users.");
+                                }
                             }
                         }
-                    }
-                    if (brokerId.HasValue)
-                    {
-                        organisationPrefix = _dbContext.Brokers.Single(c => c.BrokerId == brokerId).OrganizationPrefix;
-                    }
-                    if (customerId.HasValue)
-                    {
-                        organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganizationPrefix;
-                    }
-
-                    var user = new AspNetUser(model.Email,
-                        _userService.GenerateUserName(model.NameFirst, model.NameFamily, organisationPrefix),
-                        model.NameFirst,
-                        model.NameFamily)
-                    {
-                        CustomerOrganisationId = customerId,
-                        BrokerId = brokerId,
-                        PhoneNumber = model.PhoneWork,
-                        PhoneNumberCellphone = model.PhoneCellphone
-                    };
-                    if (model.IsSuperUser)
-                    {
-                        additionalRoles.Add(Roles.SuperUser);
-                    }
-                    var result = await _userManager.CreateAsync(user);
-
-                    if (result.Succeeded)
-                    {
-                        if (additionalRoles.Any())
+                        if (brokerId.HasValue)
                         {
-                            //Make another admin user
-                            var roleResult = await _userManager.AddToRolesAsync(user, additionalRoles);
-                            if (!roleResult.Succeeded)
-                            {
-                                throw new NotSupportedException("Failed to add user, trying to add roles.");
-                            }
+                            organisationPrefix = _dbContext.Brokers.Single(c => c.BrokerId == brokerId).OrganizationPrefix;
                         }
-                        await _userService.SendInviteAsync(user);
+                        if (customerId.HasValue)
+                        {
+                            organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganizationPrefix;
+                        }
 
-                        await _userService.LogCreateAsync(user.Id, User.GetUserId());
+                        var user = new AspNetUser(model.Email,
+                            _userService.GenerateUserName(model.NameFirst, model.NameFamily, organisationPrefix),
+                            model.NameFirst,
+                            model.NameFamily)
+                        {
+                            CustomerOrganisationId = customerId,
+                            BrokerId = brokerId,
+                            PhoneNumber = model.PhoneWork,
+                            PhoneNumberCellphone = model.PhoneCellphone
+                        };
+                        if (model.IsSuperUser)
+                        {
+                            additionalRoles.Add(Roles.SuperUser);
+                        }
+                        var result = await _userManager.CreateAsync(user);
 
-                        trn.Commit();
-                        return RedirectToAction(nameof(View), new { id = user.Id });
+                        if (result.Succeeded)
+                        {
+                            if (additionalRoles.Any())
+                            {
+                                //Make another admin user
+                                var roleResult = await _userManager.AddToRolesAsync(user, additionalRoles);
+                                if (!roleResult.Succeeded)
+                                {
+                                    throw new NotSupportedException("Failed to add user, trying to add roles.");
+                                }
+                            }
+                            await _userService.SendInviteAsync(user);
+
+                            await _userService.LogCreateAsync(user.Id, User.GetUserId());
+
+                            trn.Commit();
+                            return RedirectToAction(nameof(View), new { id = user.Id });
+                        }
+                        model.ErrorMessage = GetErrors(result);
                     }
-                    model.ErrorMessage = GetErrors(result);
                 }
             }
-
             return View(model);
         }
 

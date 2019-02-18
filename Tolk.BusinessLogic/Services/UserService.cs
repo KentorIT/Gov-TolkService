@@ -215,5 +215,12 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
 
             throw new NotSupportedException("Too many users starting with the string {userNameStart}.");
         }
+
+        public bool IsUniqueEmail(string email)
+        {
+            return !_dbContext.Users.Any(u => !u.IsApiUser &&
+                     (u.NormalizedEmail == email.ToUpper() ||
+                     u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper()));
+        }
     }
 }
