@@ -602,6 +602,11 @@ namespace Tolk.Web.Controllers
         [AllowAnonymous]
         public IActionResult Register()
         {
+            if (!_options.EnableRegisterUser)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
@@ -610,6 +615,11 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            if (!_options.EnableRegisterUser)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (ModelState.IsValid)
             {
                 if (!_userService.IsUniqueEmail(model.Email))

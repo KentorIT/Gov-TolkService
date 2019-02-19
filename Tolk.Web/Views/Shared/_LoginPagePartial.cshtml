@@ -1,6 +1,8 @@
 @using Tolk.BusinessLogic.Entities
 @model LoginViewModel
-@inject SignInManager<AspNetUser> SignInManager
+@using Tolk.BusinessLogic.Helpers
+@using Microsoft.Extensions.Options
+@inject IOptions<TolkOptions> options
 
 <h2>Logga in</h2>
 <section>
@@ -19,7 +21,10 @@
         </div>
         <div class="row padding-bottom-30px">
             <div class="col-xs-12 text-align-center">
-                <a asp-action="Register" asp-controller="Account">Registrera ny anv&auml;ndare</a>
+                @if (options.Value.EnableRegisterUser)
+                {
+                    <a asp-action="Register" asp-controller="Account">Registrera ny anv&auml;ndare</a>
+                }
             </div>
         </div>
     </form>
