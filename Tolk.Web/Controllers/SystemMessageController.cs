@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -72,7 +73,7 @@ namespace Tolk.Web.Controllers
             var systemMessage = _dbContext.SystemMessages
                 .Single(s => s.SystemMessageId == id);
 
-            var selectedItem = SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessage.SystemMessageType.ToString());
+            var selectedItem = GetSelectedSystemMessageType(systemMessage.SystemMessageType);
 
             return View(new SystemMessageModel
             {
@@ -80,7 +81,6 @@ namespace Tolk.Web.Controllers
                 SystemMessageText = systemMessage.SystemMessageText,
                 SystemMessageHeader = systemMessage.SystemMessageHeader,
                 DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
-                SystemMessageType = new RadioButtonGroup { SelectedItem = selectedItem },
                 SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToString(),
                 DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
             });
@@ -92,18 +92,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (model.DisplayDate.Start > model.DisplayDate.End)
-                {
-                    ModelState.AddModelError($"{nameof(model.DisplayDate)}.{nameof(model.DisplayDate.Start)}", "Visningsdatum för nyheten är fel. Från och med datum kan inte vara större än till och med datum.");
-                }
-                else
-                {
-                    var sysMessage = _dbContext.SystemMessages
-                    .Single(s => s.SystemMessageId == model.SystemMessageId);
-                    sysMessage.Update(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisplayDate.Start.ToDateTimeOffsetSweden(), model.DisplayDate.End.ToDateTimeOffsetSweden(), model.SystemMessageHeader, model.SystemMessageText, EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value), model.DisplayedForUserTypeGroup);
-                    await _dbContext.SaveChangesAsync();
-                    return RedirectToAction("List");
-                }
+                return await CreateUpdateSystemMessage(model, true);
             }
             return View(model);
         }
@@ -114,20 +103,43 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (model.DisplayDate.Start > model.DisplayDate.End)
+                return await CreateUpdateSystemMessage(model, false);
+            }
+            return View(model);
+        }
+
+        private async Task<IActionResult> CreateUpdateSystemMessage(SystemMessageModel model, bool update)
+        {
+            if (model.DisplayDate.Start > model.DisplayDate.End)
+            {
+                var selectedItem = GetSelectedSystemMessageType(EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value));
+                model.SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToString();
+                ModelState.AddModelError($"{nameof(model.DisplayDate)}.{nameof(model.DisplayDate.Start)}", "Visningsdatum för nyheten är fel. Från och med datum kan inte vara större än till och med datum.");
+            }
+            else
+            {
+                if (update)
                 {
-                    ModelState.AddModelError($"{nameof(model.DisplayDate)}.{nameof(model.DisplayDate.Start)}", "Visningsdatum för nyheten är fel. Från och med datum kan inte vara större än till och med datum.");
+                    var sysMessage = _dbContext.SystemMessages
+                   .Single(s => s.SystemMessageId == model.SystemMessageId);
+                    sysMessage.Update(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisplayDate.Start.ToDateTimeOffsetSweden(), model.DisplayDate.End.ToDateTimeOffsetSweden(), model.SystemMessageHeader, model.SystemMessageText, EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value), model.DisplayedForUserTypeGroup);
                 }
                 else
                 {
                     var sysMessage = new SystemMessage();
                     sysMessage.Create(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisplayDate.Start.ToDateTimeOffsetSweden(), model.DisplayDate.End.ToDateTimeOffsetSweden(), model.SystemMessageHeader, model.SystemMessageText, EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value), model.DisplayedForUserTypeGroup);
                     await _dbContext.AddAsync(sysMessage);
-                    await _dbContext.SaveChangesAsync();
-                    return RedirectToAction("List");
                 }
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("List");
             }
             return View(model);
         }
+
+        private SelectListItem GetSelectedSystemMessageType(SystemMessageType systemMessageType)
+        {
+            return SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessageType.ToString());
+        }
+
     }
 }
