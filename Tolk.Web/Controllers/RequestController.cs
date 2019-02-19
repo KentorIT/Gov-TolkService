@@ -65,11 +65,11 @@ namespace Tolk.Web.Controllers
             {
                 model = new RequestFilterModel();
             }
-            var items = _dbContext.Requests.Include(r => r.Order)
-                        .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId()
-                            && r.Status != RequestStatus.InterpreterReplaced
-                            && r.Status != RequestStatus.AwaitingDeadlineFromCustomer
-                            && r.Status != RequestStatus.NoDeadlineFromCustomer);
+            var items = _dbContext.Requests
+                .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId()
+                && r.Status != RequestStatus.InterpreterReplaced
+                && r.Status != RequestStatus.AwaitingDeadlineFromCustomer
+                && r.Status != RequestStatus.NoDeadlineFromCustomer);
             // Filters
             items = model.Apply(items);
 

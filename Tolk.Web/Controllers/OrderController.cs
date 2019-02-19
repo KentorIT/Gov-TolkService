@@ -72,12 +72,6 @@ namespace Tolk.Web.Controllers
             var isSuperUser = User.IsInRole(Roles.SuperUser);
             model.IsSuperUser = isSuperUser;
             var orders = _dbContext.Orders
-                .Include(o => o.Language)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.Region)
-                .Include(o => o.Requests)
-                    .ThenInclude(r => r.Ranking)
-                    .ThenInclude(r => r.Broker)
                 .Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
 
             if (!isSuperUser)

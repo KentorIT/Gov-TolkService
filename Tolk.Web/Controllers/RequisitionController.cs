@@ -177,7 +177,6 @@ namespace Tolk.Web.Controllers
             model.IsBroker = brokerId.HasValue;
 
             var requisitions = _dbContext.Requisitions
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue);
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
             var userId = User.GetUserId();

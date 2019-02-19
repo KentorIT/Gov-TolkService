@@ -115,12 +115,6 @@ namespace Tolk.Web.Controllers
             model.IsBrokerUser = brokerId.HasValue;
 
             var items = _dbContext.Complaints
-                .Include(c => c.Request)
-                    .ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(c => c.Request)
-                    .ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                .Include(c => c.Request)
-                    .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
                      c.Request.Order.CustomerOrganisationId == customerId);
 
