@@ -5,7 +5,7 @@ namespace Tolk.BusinessLogic.Enums
     public enum SystemMessageType
     {
 
-        [Description("Infromation")]
+        [Description("Information")]
         Information = 1,
 
         [Description("Varning")]
