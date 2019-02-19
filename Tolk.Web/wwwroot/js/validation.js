@@ -68,6 +68,11 @@ $.validator.addMethod('requiredchecked', function (value, element, params) {
     return true;
 });
 
+// Swedish decimals and thousand separators
+$.validator.methods.number = function (value, element) {
+    return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:\.\d{3})+)?(?:,\d+)?$/.test(value);
+};
+
 $.validator.unobtrusive.adapters.add('requiredif', ['otherproperty', 'otherpropertytype', 'otherpropertyvalue'], function (options) {
     var element = $(options.form).find("#" + options.params['otherproperty'])[0];
     options.rules['requiredif'] = [element, options.params['otherpropertytype'], options.params['otherpropertyvalue']];

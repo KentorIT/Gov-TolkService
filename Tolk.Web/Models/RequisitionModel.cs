@@ -63,19 +63,19 @@ namespace Tolk.Web.Models
         public decimal TotalTravelCosts { get => (Outlay ?? 0) + (PerDiem ?? 0) + (CarCompensation ?? 0); }
 
         [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Uppgift om utlägg måste anges. Finns inga kostnader anges 0.")]
-        [RegularExpression("^[0-9]{1,6}(\\.[0-9]{0,4})?$", ErrorMessage = "Kontrollera värdet för utlägg (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
+        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [ClientRequired(ErrorMessage = "Ange utlägg (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
         [DataType(DataType.Currency)]
         public decimal? Outlay { get; set; }
 
         [Display(Name = "Bilersättning (exkl. moms) i SEK", Description = "Bilersättning ska anges. Finns ingen kostnad för bilersättning anges 0.")]
-        [RegularExpression("^[0-9]{1,6}(\\.[0-9]{0,4})?$", ErrorMessage = "Kontrollera värdet för bilersättning (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad för bilersättning)")]
+        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för bilersättning")]
         [ClientRequired(ErrorMessage = "Ange bilersättning (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
         [DataType(DataType.Currency)]
         public decimal? CarCompensation { get; set; }
 
         [Display(Name = "Traktamente (exkl. moms) i SEK", Description = "Traktamente ska anges. Om inget traktamente ska erhållas ange 0.")]
-        [RegularExpression("^[0-9]{1,6}(\\.[0-9]{0,4})?$", ErrorMessage = "Kontrollera värdet för traktamente (inga bokstäver tillåtna, ange 0 om det inte ska erhållas något traktamente)")]
+        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för traktamente")]
         [ClientRequired(ErrorMessage = "Ange traktamente (inga bokstäver tillåtna, ange 0 om det inte ska erhållas något traktamente)")]
         [DataType(DataType.Currency)]
         public decimal? PerDiem { get; set; }

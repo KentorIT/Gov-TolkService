@@ -109,8 +109,7 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        // Restricts the number before the decimal point to 1-6 digits, and the number after the point to 0-4 digits. Will not match with negative numbers or non-numeric characters
-        [RegularExpression("^[0-9]{1,6}(\\.[0-9]{0,4})?$", ErrorMessage = "Kontrollera värdet för resekostnad (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
+        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för resekostnad")]
         [ClientRequired(ErrorMessage = "Ange resekostnad (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
         [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Uppgift om resekostnad måste anges. Finns inga reskostnader anges 0.")]
         [DataType(DataType.Currency)]
