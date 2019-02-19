@@ -268,11 +268,15 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         public void RequestAnswerAutomaticallyAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
+            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
+                $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
+                $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}" +
+                $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}";
 
             CreateEmail(GetRecipiantsFromOrder(request.Order),
                 $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
-                $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\nTolk:\n{request.Interpreter.CompleteContactInformation} {NoReplyTextPlain} {GotoOrderPlain(request.Order.OrderId)}",
-                $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.<br/><br/>Tolk:<br/>{request.Interpreter.CompleteContactInformation} {NoReplyTextHtml} {GotoOrderButton(request.Order.OrderId)}");
+                body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
+                HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
 
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
@@ -485,11 +489,11 @@ Kostnader att fakturera:
         public void RequestAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            var body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.
-Du behöver godkänna de beräknade resekostnaderna.
+            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. Du behöver godkänna de beräknade resekostnaderna.\n\n" +
+                    $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
+                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}" +
+                    $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}";
 
-Tolk:
-{request.Interpreter.CompleteContactInformation}";
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
                 body + NoReplyTextPlain + GotoOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + NoReplyTextHtml + GotoOrderButton(request.Order.OrderId));
