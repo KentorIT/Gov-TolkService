@@ -254,6 +254,10 @@ namespace Tolk.BusinessLogic.Entities
             int? impersonatorId,
             string message)
         {
+            if (Status != RequestStatus.Received)
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be declined.");
+            }
             Status = RequestStatus.DeclinedByBroker;
             AnswerDate = declinedAt;
             AnsweredBy = userId;

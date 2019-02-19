@@ -271,6 +271,50 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
+        // Invalid status
+        [InlineData(RequestStatus.Accepted, false)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false)]
+        [InlineData(RequestStatus.Approved, false)]
+        [InlineData(RequestStatus.CancelledByBroker, false)]
+        [InlineData(RequestStatus.CancelledByCreator, false)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, false)]
+        [InlineData(RequestStatus.Created, false)]
+        [InlineData(RequestStatus.DeclinedByBroker, false)]
+        [InlineData(RequestStatus.DeniedByCreator, false)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, false)]
+        [InlineData(RequestStatus.InterpreterReplaced, false)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, false)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, false)]
+        // Invalid status, Replacing order
+        [InlineData(RequestStatus.Accepted, true)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true)]
+        [InlineData(RequestStatus.Approved, true)]
+        [InlineData(RequestStatus.CancelledByBroker, true)]
+        [InlineData(RequestStatus.CancelledByCreator, true)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, true)]
+        [InlineData(RequestStatus.Created, true)]
+        [InlineData(RequestStatus.DeclinedByBroker, true)]
+        [InlineData(RequestStatus.DeniedByCreator, true)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, true)]
+        [InlineData(RequestStatus.InterpreterReplaced, true)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, true)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, true)]
+        public void Decline_InvalidStatus(RequestStatus status, bool hasReplacingOrder)
+        {
+            var replacingOrderId = hasReplacingOrder ? (int?)10 : null;
+            var request = new Request()
+            {
+                Status = status,
+                Order = new Order()
+                {
+                    ReplacingOrderId = replacingOrderId
+                }
+            };
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Decline(DateTime.Now, 10, null, "Fel"));
+        }
+
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void AcceptReplacementOrder_Valid(bool AllowMoreThanTwoHoursTravelTime)
