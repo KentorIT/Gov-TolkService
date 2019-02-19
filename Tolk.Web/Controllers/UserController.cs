@@ -7,8 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Tolk.BusinessLogic.Data;
@@ -191,6 +189,7 @@ namespace Tolk.Web.Controllers
             {
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
+                    model.EditorIsSystemAdministrator = User.IsInRole(Roles.Admin);
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
                 }
                 else
