@@ -83,3 +83,13 @@ Date.prototype.localDateTime = function () {
     this.setTime(this.getTime() - (this.getTimezoneOffset() * 60 * 1000)); // Compensate GMT timezone offset
     return this;
 };
+
+function getDate(date, hour, min) {
+    hour = hour.length === 1 ? "0" + hour : hour;
+    min = min.length === 1 ? "0" + min : min;
+    return new Date(date + "T" + hour + ":" + min + ":00");
+}
+
+function getTimeString(timeValue) {
+    return timeValue.length === 1 ? "0" + timeValue : timeValue;
+}

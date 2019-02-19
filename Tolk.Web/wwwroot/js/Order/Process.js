@@ -25,7 +25,7 @@ function validateLastAnswerBy() {
     }
 
     return true;
-};
+}
 
 function validateLastAnswerByAgainstStartTime() {
     if (!$("#LatestAnswerBy_Date").is(":visible")) {
@@ -43,7 +43,7 @@ function validateLastAnswerByAgainstStartTime() {
     }
 
     return true;
-};
+}
 
 $(function () {
     $("body").on("click", ".deny-button", function (event) {
@@ -90,8 +90,12 @@ $(function () {
         }
     });
 
-    $("#LatestAnswerBy_Date").datepicker("setStartDate", new Date($('#now').val()).zeroTime());
-    $("#LatestAnswerBy_Date").datepicker("setEndDate", new Date($('#TimeRange_StartDateTime').val()).zeroTime());
+    // Turn datetime string into UTC string for parsing
+    var startVal = $('#TimeRange_StartDateTime').val().replace(" ", "T").replace(" ", "");
+    var now = new Date($('#now').val()).zeroTime();
+    var start = new Date(startVal).zeroTime();
+    $("#LatestAnswerBy_Date").datepicker("setStartDate", now);
+    $("#LatestAnswerBy_Date").datepicker("setEndDate", start);
 
     $("body").on("click", "#updateLatestAnswerBy", function (event) {
         // Validate LatestAnswerBy time

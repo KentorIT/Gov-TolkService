@@ -325,16 +325,6 @@ function getSessionEndDate() {
     return getDate($('#SessionEndedAt_Date').val(), $('#SessionEndedAt_Hour').val(), $('#SessionEndedAt_Minute').val());
 }
 
-function getDate(date, hour, min) {
-    hour = hour.length === 1 ? "0" + hour : hour;
-    min = min.length === 1 ? "0" + min : min;
-    return new Date(date + "T" + hour + ":" + min + ":00");
-}
-
-function getTimeString(timeValue) {
-    return timeValue.length === 1 ? "0" + timeValue : timeValue;
-}
-
 function checkEachMealBreak(start, end, checkAgainstSessionTime) {
     var message = "";
     var mbTbody = $("#mealBreak-tbody");
