@@ -445,7 +445,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         public void RequisitionCreated(Requisition requisition)
         {
             var order = requisition.Request.Order;
-            CreateEmail(GetRecipiantsFromOrder(order),
+            CreateEmail(GetRecipiantsFromOrder(order, true),
                 $"En rekvisition har registrerats för tolkuppdrag {order.OrderNumber}",
                 $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {NoReplyTextPlain} {GotoOrderPlain(order.OrderId, HtmlHelper.ViewTab.Requisition)}",
                 $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {NoReplyTextHtml} {GotoOrderButton(order.OrderId, HtmlHelper.ViewTab.Requisition)}"
@@ -730,10 +730,10 @@ Tolk:
             }
         }
 
-        private static IEnumerable<string> GetRecipiantsFromOrder(Order order)
+        private static IEnumerable<string> GetRecipiantsFromOrder(Order order, bool sendToContactPerson = false)
         {
             yield return order.CreatedByUser.Email;
-            if (order.ContactPersonId.HasValue)
+            if (sendToContactPerson && order.ContactPersonId.HasValue)
             {
                 yield return order.ContactPersonUser.Email;
             }
