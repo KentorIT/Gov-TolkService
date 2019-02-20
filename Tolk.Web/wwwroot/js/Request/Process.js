@@ -53,7 +53,7 @@ $(function () {
     });
 });
 
-$(window).on("unload", function () {
+$(window).on("beforeunload", function () {
     var requestId = $("#RequestId").val();
     if (requestId > 0) {
         var $url = tolkBaseUrl + "Request/DeleteRequestView?requestId=" + requestId;
