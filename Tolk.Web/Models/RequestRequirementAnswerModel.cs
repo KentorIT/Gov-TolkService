@@ -15,10 +15,9 @@ namespace Tolk.Web.Models
         public RequirementType RequirementType { get; set; }
 
         [Display(Name = "Är ett krav")]
-        public bool IsRequired{ get; set; }
+        public bool IsRequired { get; set; }
 
         [Display(Name = "Svar")]
-        [ClientRequired]
         [SubItem]
         [StringLength(1000)]
         public string Answer { get; set; }
