@@ -70,7 +70,7 @@ $.validator.addMethod('requiredchecked', function (value, element, params) {
 
 // Swedish decimals and thousand separators
 $.validator.methods.number = function (value, element) {
-    return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:\.\d{3})+)?(?:,\d+)?$/.test(value);
+    return this.optional(element) || /^-?(?: ?\d{0,3})+(?:,\d{0,3})?$/.test(value);
 };
 
 $.validator.unobtrusive.adapters.add('requiredif', ['otherproperty', 'otherpropertytype', 'otherpropertyvalue'], function (options) {

@@ -339,6 +339,11 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("data-val-regex", regex.ErrorMessage);
                 tagBuilder.Attributes.Add("data-val-regex-pattern", regex.Pattern);
             }
+            // This is how we override unobtrusive validation error messages, because globaLIES.js is not doing what we expect it to.
+            if (tagBuilder.Attributes.Any(a => a.Key == "data-val-number"))
+            {
+                tagBuilder.Attributes["data-val-number"] = $"Fältet {For.Metadata.DisplayName} måste vara en siffra.";
+            }
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }

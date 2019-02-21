@@ -63,16 +63,19 @@ namespace Tolk.Web.Models
         public decimal TotalTravelCosts { get => (Outlay ?? 0) + (PerDiem ?? 0) + (CarCompensation ?? 0); }
 
         [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Uppgift om utlägg måste anges. Finns inga kostnader anges 0.")]
+        [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [DataType(DataType.Currency)]
         public decimal? Outlay { get; set; }
 
         [Display(Name = "Bilersättning (exkl. moms) i SEK", Description = "Bilersättning ska anges. Finns ingen kostnad för bilersättning anges 0.")]
+        [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för bilersättning")]
         [DataType(DataType.Currency)]
         public decimal? CarCompensation { get; set; }
 
         [Display(Name = "Traktamente (exkl. moms) i SEK", Description = "Traktamente ska anges. Om inget traktamente ska erhållas ange 0.")]
+        [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för traktamente")]
         [DataType(DataType.Currency)]
         public decimal? PerDiem { get; set; }
