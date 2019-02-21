@@ -43,6 +43,9 @@
                                 <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" help-link="@HelpLinkService.GenerateUrl("nybokning_sprak")" />
                                 <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
                                 <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
+                                <span class="d-none">
+                                    <input asp-for="LanguageHasAuthorizedInterpreter" type="hidden" />
+                                </span>
                             </div>
                             <div class="col-sm-4">
                                 <form-entry asp-for="Dialect" help-link="@HelpLinkService.GenerateUrl("nybokning_dialekt")" />
@@ -120,35 +123,37 @@
                                 Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering."></span> @HelpLinkService.Anchor("nybokning_installelsesatt")</h3>
+                        <div class="d-none" id="divCompetenceLevel">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering."></span> @HelpLinkService.Anchor("nybokning_installelsesatt")</h3>
 
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <span id="competence-required">
-                                    <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
-                                </span>
-                                <span id="competence-requested">
-                                    <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
-                                    <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
-                                    <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                </span>
-                            </div>
-                            <div class="col-sm-4 important-info">
-                                <ul>
-                                    <li>Rättstolk/sjukvårdstolk (nivå 4): Tolkar i Kammarkollegiets register över auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
-                                    <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
-                                    <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets nationella tolkregister över utbildade tolkar</li>
-                                    <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
-                                </ul>
+                            <div class="row">
+                                <div class="col-sm-8">
+                                    <span id="competence-required">
+                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
+                                    </span>
+                                    <span id="competence-requested">
+                                        <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
+                                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
+                                        <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                    </span>
+                                </div>
+                                <div class="col-sm-4 important-info">
+                                    <ul>
+                                        <li>Rättstolk/sjukvårdstolk (nivå 4): Tolkar i Kammarkollegiets register över auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
+                                        <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
+                                        <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets nationella tolkregister över utbildade tolkar</li>
+                                        <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                         <div class="row">

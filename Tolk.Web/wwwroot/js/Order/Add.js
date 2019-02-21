@@ -143,7 +143,7 @@ $(function () {
     });
 
     $("body").on("change", "#LanguageId", function () {
-        toggleOtherLanguage($(this).val());
+        toggleLanguage($("#LanguageId option:selected"));
     });
 
     $("body").on("change", "input[name=CompetenceLevelDesireType]", function () {
@@ -188,7 +188,7 @@ $(function () {
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var now = new Date($("#now").val());
-        if (!hasToggledLastTimeForRequiringLatestAnswerBy && (now.getHours() === 14 || now.getHours() === 0) ) {
+        if (!hasToggledLastTimeForRequiringLatestAnswerBy && (now.getHours() === 14 || now.getHours() === 0)) {
             $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
             hasToggledLastTimeForRequiringLatestAnswerBy = true;
         }
@@ -208,12 +208,20 @@ $(function () {
         }
     });
 
-    var toggleOtherLanguage = function (id) {
-        if (id === $("#OtherLanguageId").val()) {
+    var toggleLanguage = function (selectedItem) {
+        if (selectedItem.attr('value') === $("#OtherLanguageId").val()) {
             $('#other-language').collapse('show');
         }
         else {
             $('#other-language').collapse('hide');
+        }
+        if (selectedItem.attr('data-additional') === "") {
+            $('#divCompetenceLevel').hide();
+            $('#LanguageHasAuthorizedInterpreter').val('false');
+        }
+        else {
+            $('#divCompetenceLevel').show();
+            $('#LanguageHasAuthorizedInterpreter').val('true');
         }
     };
 
@@ -324,7 +332,7 @@ $(function () {
         if (!$("#LatestAnswerBy_Date").is(":visible")) {
             return true;
         }
-       var date = new Date($("#LatestAnswerBy_Date").val());
+        var date = new Date($("#LatestAnswerBy_Date").val());
         var hour = $("#LatestAnswerBy_Hour").val();
         var minute = $("#LatestAnswerBy_Minute").val();
         if (date !== "" && hour !== "" && minute !== "") {

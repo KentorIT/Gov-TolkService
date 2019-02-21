@@ -98,6 +98,9 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string OtherLanguage { get; set; }
 
+        [NotMapped]
+        public bool LanguageHasAuthorizedInterpreter { get; set; }
+
         public AssignmentType AssignentType { get; set; }
 
         public bool SpecificCompetenceLevelRequired { get; set; }

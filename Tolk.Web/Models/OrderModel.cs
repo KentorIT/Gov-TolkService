@@ -35,7 +35,9 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public int? LanguageId { get; set; }
 
-        [Display(Name = "Dialekt", Description = "Om Dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet")]
+        public bool? LanguageHasAuthorizedInterpreter { get; set; }
+
+        [Display(Name = "Dialekt", Description = "Om dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet")]
         [RequiredIf(nameof(DialectIsRequired), true, OtherPropertyType = typeof(bool))]
         [StringLength(255)]
         public string Dialect { get; set; }
@@ -385,6 +387,7 @@ namespace Tolk.Web.Models
             {
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
+                order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
                 order.AllowMoreThanTwoHoursTravelTime = HasOnsiteLocation && AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
@@ -440,37 +443,49 @@ namespace Tolk.Web.Models
                 }
             }
             // OrderCompetenceRequirements
-            if (RequestedCompetenceLevels.Count > 0)
+            //set OtherInterpreter as a requirement for languages that lacks authorized interpreters
+            if (LanguageHasAuthorizedInterpreter.HasValue && !LanguageHasAuthorizedInterpreter.Value)
             {
-                if (SpecificCompetenceLevelRequired)
+                order.SpecificCompetenceLevelRequired = true;
+                order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                 {
-                    foreach (var entry in RequiredCompetenceLevels.SelectedItems)
-                    {
-                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                        {
-                            CompetenceLevel = EnumHelper.Parse<CompetenceAndSpecialistLevel>(entry.Value)
-                        });
-                    }
-                }
-                else
+                    CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter
+                });
+            }
+            else
+            {
+                if (RequestedCompetenceLevels.Count > 0)
                 {
-                    // Counting rank for cases where e.g. first option is undefined, but second is defined
-                    int rank = 0;
-                    if (RequestedCompetenceLevelFirst.HasValue)
+                    if (SpecificCompetenceLevelRequired)
                     {
-                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        foreach (var entry in RequiredCompetenceLevels.SelectedItems)
                         {
-                            CompetenceLevel = RequestedCompetenceLevelFirst.Value,
-                            Rank = ++rank
-                        });
+                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                            {
+                                CompetenceLevel = EnumHelper.Parse<CompetenceAndSpecialistLevel>(entry.Value)
+                            });
+                        }
                     }
-                    if (RequestedCompetenceLevelSecond.HasValue)
+                    else
                     {
-                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                        // Counting rank for cases where e.g. first option is undefined, but second is defined
+                        int rank = 0;
+                        if (RequestedCompetenceLevelFirst.HasValue)
                         {
-                            CompetenceLevel = RequestedCompetenceLevelSecond.Value,
-                            Rank = ++rank
-                        });
+                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                            {
+                                CompetenceLevel = RequestedCompetenceLevelFirst.Value,
+                                Rank = ++rank
+                            });
+                        }
+                        if (RequestedCompetenceLevelSecond.HasValue)
+                        {
+                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
+                            {
+                                CompetenceLevel = RequestedCompetenceLevelSecond.Value,
+                                Rank = ++rank
+                            });
+                        }
                     }
                 }
             }
@@ -651,6 +666,7 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
+                LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceLevelDesireType = new RadioButtonGroup
                 {
                     SelectedItem = order.SpecificCompetenceLevelRequired

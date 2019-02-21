@@ -546,7 +546,6 @@ namespace Tolk.Web.TagHelpers
             RemoveRequiredIfNullable(tagBuilder);
             tagBuilder.WriteTo(writer, _htmlEncoder);
             writer.WriteLine("</div>");
-            //writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
         }
 
         private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
@@ -554,7 +553,6 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"input-group time timesplit\">");
             WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min");
             writer.WriteLine("</div>");
-            //writer.WriteLine("<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-time\"></span></div></div>"); //input-group time
             WriteValidation(writer, timeModelExplorer, timeFieldName);
         }
 
@@ -792,52 +790,100 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
         {
-            var prefixAttribute = (PrefixAttribute)AttributeHelper.GetAttribute<PrefixAttribute>(
-                For.ModelExplorer.Metadata.ContainerType,
-                For.ModelExplorer.Metadata.PropertyName);
-            bool writePrefix = prefixAttribute != null && prefixAttribute.PrefixPosition == PrefixAttribute.Position.Value;
-            var realModelType = modelExplorer.ModelType;
-            var allowMultiple = typeof(string) != realModelType &&
-                typeof(IEnumerable).IsAssignableFrom(realModelType);
+            if (selectList.FirstOrDefault() is ExtendedSelectListItem)
+            {
+                GenerateExtendedSelectList(_htmlGenerator, writer, selectList, placeholder);
+            }
+            else
+            {
+                var prefixAttribute = (PrefixAttribute)AttributeHelper.GetAttribute<PrefixAttribute>(
+                    For.ModelExplorer.Metadata.ContainerType,
+                    For.ModelExplorer.Metadata.PropertyName);
+                bool writePrefix = prefixAttribute != null && prefixAttribute.PrefixPosition == PrefixAttribute.Position.Value;
+                var realModelType = modelExplorer.ModelType;
+                var allowMultiple = typeof(string) != realModelType &&
+                    typeof(IEnumerable).IsAssignableFrom(realModelType);
 
-            var currentValues = _htmlGenerator.GetCurrentValues(
-                ViewContext,
-                modelExplorer,
-                expression: expression,
-                allowMultiple: allowMultiple);
+                var currentValues = _htmlGenerator.GetCurrentValues(
+                    ViewContext,
+                    modelExplorer,
+                    expression: expression,
+                    allowMultiple: allowMultiple);
 
-            var tagBuilder = _htmlGenerator.GenerateSelect(
-                ViewContext,
-                modelExplorer,
-                optionLabel: null,
-                expression: expression,
-                selectList: selectList,
-                currentValues: currentValues,
-                allowMultiple: allowMultiple,
-                htmlAttributes: new { @class = "form-control" });
+                var tagBuilder = _htmlGenerator.GenerateSelect(
+                    ViewContext,
+                    modelExplorer,
+                    optionLabel: null,
+                    expression: expression,
+                    selectList: selectList,
+                    currentValues: currentValues,
+                    allowMultiple: allowMultiple,
+                    htmlAttributes: new { @class = "form-control" });
+                tagBuilder.Attributes.Add("data-placeholder", placeholder);
+                if (For.Model == null)
+                {
+                    var existingOptionsBuilder = new HtmlContentBuilder();
+                    tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
+
+                    tagBuilder.InnerHtml.Clear();
+                    tagBuilder.InnerHtml.AppendHtml("<option value></option>");
+                    tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
+                }
+                if (writePrefix)
+                {
+                    writer.Write("<span class=\"prefix\">");
+                }
+                WritePrefix(writer, PrefixAttribute.Position.Value);
+                if (writePrefix)
+                {
+                    writer.Write("</span>");
+                }
+                tagBuilder.WriteTo(writer, _htmlEncoder);
+            }
+        }
+
+        private void GenerateExtendedSelectList(IHtmlGenerator htmlGenerator, TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder)
+        {
+            writer.WriteLine("<br>");
+            TagBuilder tagBuilder = new TagBuilder("select");
             tagBuilder.Attributes.Add("data-placeholder", placeholder);
-            if (For.Model == null)
+            tagBuilder.AddCssClass("form-control");
+            if (For.Metadata.IsRequired)
             {
-                var existingOptionsBuilder = new HtmlContentBuilder();
-                tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
-
-                tagBuilder.InnerHtml.Clear();
-                tagBuilder.InnerHtml.AppendHtml("<option value></option>");
-                tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
+                tagBuilder.Attributes.Add("data-val", "true");
+                tagBuilder.Attributes.Add("data-val-required", "Språk måste anges.");
             }
-            if (writePrefix)
-            {
-                writer.Write("<span class=\"prefix\">");
-            }
-            WritePrefix(writer, PrefixAttribute.Position.Value);
-            if (writePrefix)
-            {
-                writer.Write("</span>");
+            tagBuilder.Attributes.Add("id", For.Name);
+            tagBuilder.Attributes.Add("name", For.Name);
 
+            //this is for the default option -- Välj --  
+            tagBuilder.InnerHtml.AppendHtml("<option value></option>");
+
+            foreach (ExtendedSelectListItem item in selectList)
+            {
+                tagBuilder.InnerHtml.AppendHtml(ListItemToOptionForExtendedListItem(item));
             }
             tagBuilder.WriteTo(writer, _htmlEncoder);
-
         }
+
+
+        private static IHtmlContentBuilder ListItemToOptionForExtendedListItem(ExtendedSelectListItem item)
+        {
+            TagBuilder builder = new TagBuilder("option");
+            builder.Attributes["value"] = item.Value;
+
+            if (item.Selected)
+            {
+                builder.Attributes["selected"] = "selected";
+            }
+            if (item.AdditionalDataAttribute != null)
+            {
+                builder.Attributes["data-additional"] = item.AdditionalDataAttribute;
+            }
+            builder.InnerHtml.Append(item.Text);
+            return new HtmlContentBuilder().AppendHtml(builder);
+        }
+
 
         private void WriteRadioGroup(TextWriter writer)
         {

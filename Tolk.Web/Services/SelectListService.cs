@@ -142,10 +142,11 @@ namespace Tolk.Web.Services
                 if (!_cache.TryGetValue(languagesSelectListKey, out IEnumerable<SelectListItem> items))
                 {
                     items = _dbContext.Languages.Where(l => l.Active == true)
-                        .OrderBy(l => l.Name).Select(l => new SelectListItem
+                        .OrderBy(l => l.Name).Select(l => new ExtendedSelectListItem
                         {
                             Value = l.LanguageId.ToString(),
-                            Text = l.Name
+                            Text = l.Name,
+                            AdditionalDataAttribute = l.TellusName?? string.Empty
                         })
                     .ToList().AsReadOnly();
 

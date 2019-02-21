@@ -117,7 +117,14 @@ else
     }
     <div class="row">
         <div class="col-sm-4">
-            @if (Model.RequestedCompetenceLevels.Count != 0)
+            @if (Model.LanguageHasAuthorizedInterpreter.HasValue && !Model.LanguageHasAuthorizedInterpreter.Value)
+            {
+                <label>Tolkens kompetensnivå</label>
+                <div class="no-value-info">
+                    Det valda språket har inte auktoriserade tolkar. Det preliminära priset är beräknat för arvodesnivå Övrig tolk.
+                </div>
+            }
+            else if (Model.RequestedCompetenceLevels.Any())
             {
                 @if (Model.SpecificCompetenceLevelRequired)
                 {
