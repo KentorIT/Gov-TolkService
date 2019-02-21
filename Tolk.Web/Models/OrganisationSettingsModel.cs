@@ -12,10 +12,10 @@ namespace Tolk.Web.Models
         [Required]
         public string Email { get; set; }
 
-        [Display(Name = "Authentisera med certifikat")]
+        [Display(Name = "Autentisera med certifikat")]
         public bool UseCertificateAuthentication { get; set; }
 
-        [Display(Name = "Authenticera med apinyckel")]
+        [Display(Name = "Autentisera med apinyckel")]
         public bool UseApiKeyAuthentication { get; set; }
 
         [Display(Name = "Certifikatets serienummer")]
