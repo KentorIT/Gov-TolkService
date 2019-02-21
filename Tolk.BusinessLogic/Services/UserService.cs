@@ -63,7 +63,7 @@ namespace Tolk.BusinessLogic.Services
             var link = await GenerateActivationLinkAsync(user);
 
             plainBody = string.Format(body, link);
-            htmlBody = string.Format(HtmlHelper.ToHtmlBreak(body) + NotificationService.NoReplyTextHtml, HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
+            htmlBody = string.Format(HtmlHelper.ToHtmlBreak(body), HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
 
             _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
 
