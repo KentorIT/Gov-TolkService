@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -562,6 +562,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("EndAt");
 
                     b.Property<int?>("ImpersonatingCreator");
+
+                    b.Property<bool>("LanguageHasAuthorizedInterpreter");
 
                     b.Property<int?>("LanguageId");
 
@@ -1928,7 +1930,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
-                        .WithMany()
+                        .WithMany("RequestViews")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade);
 

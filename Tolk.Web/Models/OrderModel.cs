@@ -551,6 +551,7 @@ namespace Tolk.Web.Models
                 Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
+                LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 AllowMoreThanTwoHoursTravelTime = new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.AllowMoreThanTwoHoursTravelTime ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,

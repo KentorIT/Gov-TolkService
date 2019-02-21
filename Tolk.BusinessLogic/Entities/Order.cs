@@ -98,7 +98,6 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string OtherLanguage { get; set; }
 
-        [NotMapped]
         public bool LanguageHasAuthorizedInterpreter { get; set; }
 
         public AssignmentType AssignentType { get; set; }
@@ -212,6 +211,7 @@ namespace Tolk.BusinessLogic.Entities
             order.Language = Language;
             order.OtherLanguage = OtherLanguage;
             order.Region = Region;
+            order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter;
             order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
             order.CompetenceRequirements = CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
