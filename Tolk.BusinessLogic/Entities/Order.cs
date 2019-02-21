@@ -209,6 +209,7 @@ namespace Tolk.BusinessLogic.Entities
             order.Language = Language;
             order.OtherLanguage = OtherLanguage;
             order.Region = Region;
+            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
             order.CompetenceRequirements = CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
