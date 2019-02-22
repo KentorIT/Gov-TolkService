@@ -62,7 +62,7 @@
                 }
                 else
                 {
-                    @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "showHeader", false } })
+                    @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", false } })
                 }
                 @if (Model.PreviousRequests.Any())
                 {

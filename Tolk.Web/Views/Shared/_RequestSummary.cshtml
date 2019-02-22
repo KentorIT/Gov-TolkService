@@ -5,8 +5,7 @@
 @{
     string header = (string)ViewData["header"] ?? "Bokningsförfrågan";
     bool showHeader = (bool?)ViewData["showHeader"] ?? true;
-    bool showRequestStatus = (bool?)ViewData["showRequestStatus"] ?? true;
-    bool showLinks = (bool?)ViewData["showLinks"] ?? false;
+    bool isBroker = (bool?)ViewData["isBroker"] ?? false;
     bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
          && Model.Status != RequestStatus.Created
          && Model.Status != RequestStatus.Received) && Model.RequestId > 0;
@@ -35,25 +34,6 @@
 }
 <div id="@divId" class="@divClass">
     <div class="row">
-        <div class="row">
-            <div class="col-sm-12">
-                @if (showLinks)
-                {
-                    @if (Model.RequisitionId.HasValue)
-                    {
-                        <div class="col-sm-4">
-                            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
-                        </div>
-                    }
-                    @if (Model.ComplaintId.HasValue)
-                    {
-                        <div class="col-sm-4">
-                            <a href="@Url.Action("View", "Complaint", new { id = Model.ComplaintId })">Visa reklamation</a>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
         @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator || Model.OrderModel.Status == OrderStatus.CancelledByBroker)
         {
             @if (!string.IsNullOrEmpty(Model.CancelMessage))
@@ -74,9 +54,18 @@
         }
     </div>
     <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
-        </div>
+        @if (!requestIsAnswered && !isBroker)
+        {
+            <div class="col-sm-4">
+                <label>Tolk ej tillsatt</label>
+            </div>
+        }
+        else
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
+            </div>
+        }
         <div class="col-sm-8">
             <div class="row">
                 <div class="col-sm-6">
@@ -164,8 +153,8 @@
             }
         </div>
     }
-    @if (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes 
-        && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
+    @if (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes
+     && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
     {
         <div class="row">
             <div class="col-sm-8">

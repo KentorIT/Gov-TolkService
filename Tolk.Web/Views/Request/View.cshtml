@@ -40,7 +40,7 @@
                     </form>
                     <br /><br />
                 }
-                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false } })
+                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
                 <div class="row">
                     @if (Model.RequestCalculatedPriceInformationModel != null)
                     {

@@ -142,7 +142,7 @@ namespace Tolk.Web.Controllers
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
-                model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null;
+                model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;

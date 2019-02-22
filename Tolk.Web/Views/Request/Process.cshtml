@@ -39,7 +39,7 @@
 
             @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
-                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" } })
+                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" }, { "isBroker", true } })
                 <div class="col-sm-4">
                     @if (Model.InterpreterLocation.HasValue)
                     {
