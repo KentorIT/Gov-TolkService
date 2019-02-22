@@ -119,6 +119,10 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
+                if (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received)
+                { 
+                    return RedirectToAction(nameof(Process), new { id = request.RequestId });
+                }
                 return View(GetModel(request, true));
             }
             return Forbid();
