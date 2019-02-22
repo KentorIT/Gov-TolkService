@@ -342,7 +342,7 @@ namespace Tolk.Web.TagHelpers
             // This is how we override unobtrusive validation error messages, because globaLIES.js is not doing what we expect it to.
             if (tagBuilder.Attributes.Any(a => a.Key == "data-val-number"))
             {
-                tagBuilder.Attributes["data-val-number"] = $"Fältet {For.Metadata.DisplayName} måste vara en siffra.";
+                tagBuilder.Attributes["data-val-number"] = $"Fältet {For.Metadata.DisplayName} får endast innehålla siffror.";
             }
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
