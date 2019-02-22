@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -29,6 +24,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Status")]
         public UserStatus? Status { get; set; }
 
+        public string Email { get; set; }
+
         public bool IsSystemAdministrator { get; set; }
 
         public bool HasActiveFilters
@@ -38,6 +35,10 @@ namespace Tolk.Web.Models
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
+            //used when user is created to display only the created user
+            users = !string.IsNullOrWhiteSpace(Email) ? users.Where(u => u.Email == Email)
+               : users;
+
             users = !string.IsNullOrWhiteSpace(Name)
                ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name))
                : users;

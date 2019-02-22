@@ -268,7 +268,7 @@ namespace Tolk.Web.Controllers
                             await _userService.LogCreateAsync(user.Id, User.GetUserId());
 
                             trn.Commit();
-                            return RedirectToAction(nameof(List), new UserFilterModel { Name = user.NameFamily });
+                            return RedirectToAction(nameof(List), new UserFilterModel { Email = user.Email });
                         }
                         model.ErrorMessage = GetErrors(result);
                     }
