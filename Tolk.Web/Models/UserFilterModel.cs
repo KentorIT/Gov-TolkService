@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
                : users;
 
             users = !string.IsNullOrWhiteSpace(Name)
-               ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name))
+               ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name) || (u.NameFirst + u.NameFamily).Contains(Name.Replace(" ", "")))
                : users;
             if (!string.IsNullOrWhiteSpace(OrganisationIdentifier))
             {
