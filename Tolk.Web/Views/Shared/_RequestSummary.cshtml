@@ -43,7 +43,7 @@
                 </div>
             }
         }
-        else if (Model.Status == RequestStatus.DeclinedByBroker || Model.Status == RequestStatus.DeniedByCreator)
+        @if (Model.Status == RequestStatus.DeclinedByBroker || Model.Status == RequestStatus.DeniedByCreator)
         {
             @if (!string.IsNullOrEmpty(Model.DenyMessage))
             {
