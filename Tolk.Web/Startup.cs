@@ -47,6 +47,8 @@ namespace Tolk.Web
 
             services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
 
+            services.AddScoped<MockTellusApiService>();
+
             services.ConfigureApplicationCookie(opt =>
             {
                 //This does not work, for some reason...
