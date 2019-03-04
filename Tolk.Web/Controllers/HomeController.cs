@@ -221,7 +221,8 @@ namespace Tolk.Web.Controllers
         private DateTimeOffset? GetInfoDateForCustomer(Order o)
         {
             return o.Status == OrderStatus.CancelledByBroker ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt
-                : o.Status == OrderStatus.NoBrokerAcceptedOrder ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().ExpiresAt
+                //if status is NoBrokerAcceptedOrder check if last request is answered (denied/declined) else take expiresAt (no answer)
+                : o.Status == OrderStatus.NoBrokerAcceptedOrder ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate ?? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().ExpiresAt
                 : o.Status == OrderStatus.AwaitingDeadlineFromCustomer ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CreatedAt
                 : o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate;
         }
