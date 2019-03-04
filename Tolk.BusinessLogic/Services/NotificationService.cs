@@ -120,7 +120,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyBroker = "Kontaktperson har ändrats för bokning {orderNumber}.";
+                string bodyBroker = $"Kontaktperson har ändrats för bokning {orderNumber}.";
                 CreateEmail(email.ContactInformation, $"Bokning {order.OrderNumber} har uppdaterats",
                     bodyBroker + GotoRequestPlain(request.RequestId),
                     HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId),
