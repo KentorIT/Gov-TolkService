@@ -154,7 +154,6 @@ namespace Tolk.BusinessLogic.Services
                     $"\tOrginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tTolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}\n" +
                     $"\tSvara senast: {replacementRequest.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, replacementRequest.RequestId)}\n" +
                     $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, oldRequest.RequestId)}";
@@ -164,7 +163,6 @@ namespace Tolk.BusinessLogic.Services
 <li>Orginal Slut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Ersättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
 <li>Ersättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}</li>
-<li>Tolk: {replacementRequest.Interpreter.FullName}, e-post: {replacementRequest.Interpreter.Email}</li>
 <li>Svara senast: {replacementRequest.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{GotoRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
@@ -195,7 +193,7 @@ namespace Tolk.BusinessLogic.Services
         public void OrderNoBrokerAccepted(Order order)
         {
             CreateEmail(GetRecipiantsFromOrder(order),
-                $"Bokningsförfrågan fick ingen tolk: {order.OrderNumber}",
+                $"Bokningsförfrågan {order.OrderNumber} fick ingen tolk",
                 $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {order.OrderNumber}. {GotoOrderPlain(order.OrderId)}",
                 $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {order.OrderNumber}. {GotoOrderButton(order.OrderId)}"
             );
@@ -264,8 +262,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}" +
-                $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}";
+                $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}";
 
             CreateEmail(GetRecipiantsFromOrder(request.Order),
                 $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
@@ -490,8 +487,7 @@ Kostnader att fakturera:
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. Du behöver godkänna de beräknade resekostnaderna.\n\n" +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}" +
-                    $"\n\nTolk:\n{request.Interpreter.CompleteContactInformation}";
+                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("hh:mm")}";
 
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
                 body + GotoOrderPlain(request.Order.OrderId),
@@ -554,8 +550,7 @@ Kostnader att fakturera:
         {
             string orderNumber = request.Order.OrderNumber;
 
-            var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n" +
-                $"\nTolk:\n{request.Interpreter.CompleteContactInformation}\n\n" +
+            var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                 (request.Order.AllowMoreThanTwoHoursTravelTime ?
                     "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på för uppdraget inte godkänns/avslås så kommer systemet godkänna bokningsförfrågan automatiskt " +
                     $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att bokningsförfrågan tidigare haft status godkänd." :
@@ -606,8 +601,7 @@ Kostnader att fakturera:
                     );
                     break;
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
-                    var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n" +
-                        $"\nTolk:\n{request.Interpreter.CompleteContactInformation}\n\n" +
+                    var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                         "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.";
                     CreateEmail(request.Order.CreatedByUser.Email, $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                         $"{bodyNoAccept} {GotoOrderPlain(request.Order.OrderId)}",
@@ -630,18 +624,12 @@ Kostnader att fakturera:
             if (request.Status == RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har ändrats med ny tolk.
-Du behöver godkänna de beräknade resekostnaderna.
-
-Tolk:
-{request.Interpreter.CompleteContactInformation}";
+Du behöver godkänna de beräknade resekostnaderna.";
             }
             else
             {
                 body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats.
-Du behöver godkänna de beräknade resekostnaderna.
-
-Tolk:
-{request.Interpreter.CompleteContactInformation}";
+Du behöver godkänna de beräknade resekostnaderna.";
             }
 
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
@@ -713,7 +701,7 @@ Tolk:
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av {request.Interpreter.FullName} på bokningsförfrågan {orderNumber}.";
+                var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}.";
                 CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med boknings-ID {orderNumber} verifierat",
                         body + GotoOrderPlain(request.Order.OrderId),
                         body + GotoOrderButton(request.Order.OrderId),
