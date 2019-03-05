@@ -57,7 +57,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         // Illegal status preconditions
         [InlineData(OrderStatus.Delivered, false, null, true, RequestStatus.Approved)]
         [InlineData(OrderStatus.CancelledByCreator, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.DeliveryAccepted, false, null, true, RequestStatus.Approved)]
         [InlineData(OrderStatus.NoBrokerAcceptedOrder, false, null, true, RequestStatus.Approved)]
         [InlineData(OrderStatus.CancelledByBroker, false, null, true, RequestStatus.Approved)]
         [InlineData(OrderStatus.ResponseNotAnsweredByCreator, false, null, true, RequestStatus.Approved)]
@@ -92,6 +91,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
+        [InlineData(1)]
         [InlineData(3)]
         [InlineData(5)]
         [InlineData(7)]
@@ -104,7 +104,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
         [InlineData(2)]
         [InlineData(4)]
         [InlineData(6)]
@@ -125,7 +124,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.RequestResponded, "2019-01-25 10:00:00", 1, null, 101, null)]
         [InlineData(OrderStatus.ResponseAccepted, "2019-01-25 10:00:00", 1, null, 101, null)]
         [InlineData(OrderStatus.Delivered, "2019-01-25 10:00:00", 1, null, 101, null)]
-        [InlineData(OrderStatus.DeliveryAccepted, "2019-01-25 10:00:00", 1, null, 101, null)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, "2019-01-25 10:00:00", 1, null, 101, null)]
         public void ChangeContactPerson_Valid(OrderStatus currentStatus, string changedAt, int userId, int? impersonatorId, int contactPersonId, int? prevContactPersonId)
         {

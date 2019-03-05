@@ -76,6 +76,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> OrderStatuses { get; } =
             EnumHelper.GetAllDescriptions<OrderStatus>()
+            .Where(e => e.Value != OrderStatus.DeliveryAccepted)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 

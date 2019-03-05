@@ -52,7 +52,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             requisition.Request.Order.Requests.Add(requisition.Request);
-            requisition.Request.Order.Status = OrderStatus.ResponseAccepted;
+            //when a requisition is created order get status Delivered
+            requisition.Request.Order.Status = OrderStatus.Delivered;
             var approveTime = DateTime.Parse("2019-01-31 12:31");
             var userId = 10;
             var impersonatorId = (int?)null;
@@ -60,7 +61,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             requisition.Review(approveTime, userId, impersonatorId);
 
             Assert.Equal(RequisitionStatus.Reviewed, requisition.Status);
-            Assert.Equal(OrderStatus.DeliveryAccepted, requisition.Request.Order.Status);
+            Assert.Equal(OrderStatus.Delivered, requisition.Request.Order.Status);
             Assert.Equal(approveTime, requisition.ProcessedAt);
             Assert.Equal(userId, requisition.ProcessedBy);
             Assert.Equal(impersonatorId, requisition.ImpersonatingProcessedBy);

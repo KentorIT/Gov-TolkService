@@ -98,7 +98,6 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Status = RequisitionStatus.Reviewed;
-            Request.Order.Status = OrderStatus.DeliveryAccepted;
             ProcessedAt = approveTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;

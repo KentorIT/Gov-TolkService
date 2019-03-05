@@ -55,7 +55,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Region = Region.Regions.Where(r => r.Name == "Stockholm").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
                     CustomerOrganisationId = 2,
-                    Status = OrderStatus.DeliveryAccepted,
+                    Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),

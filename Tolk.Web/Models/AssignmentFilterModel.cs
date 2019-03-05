@@ -64,7 +64,7 @@ namespace Tolk.Web.Models
                         requests = requests.Where(r => !r.Requisitions.Any() && r.Order.StartAt < clock.SwedenNow && r.Status == RequestStatus.Approved);
                         break;
                     case AssignmentStatus.Executed:
-                        requests = requests.Where(r => r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted);
+                        requests = requests.Where(r => r.Order.Status == OrderStatus.Delivered);
                         break;
                     case AssignmentStatus.Cancelled:
                         requests = requests.Where(r => r.Order.Status == OrderStatus.CancelledByBroker || r.Order.Status == OrderStatus.CancelledByCreator);

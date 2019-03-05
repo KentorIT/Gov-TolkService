@@ -19,11 +19,12 @@ namespace Tolk.BusinessLogic.Enums
         RequestResponded = 3,
         [Description("Tillsättning är godkänd")]
         ResponseAccepted = 4,
-        [Description("Uppdraget har genomförts")]
+        [Description("Uppdrag har genomförts")]
         Delivered = 5,
         [Description("Uppdrag avbokat av myndighet")]
         CancelledByCreator = 6,
-        [Description("Uppdraget har genomförts")]
+        //this might be used when it is possible to approve requisitions
+        [Description("Utförande bekräftat")]
         DeliveryAccepted = 7,
         [Description("Uppdraget har annullerats via reklamation")]
         [Obsolete("Inte använd än")]

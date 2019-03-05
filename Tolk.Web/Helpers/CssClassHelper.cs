@@ -8,7 +8,7 @@ namespace Tolk.Web.Helpers
         public static string GetColorClassNameForOrderStatus(OrderStatus status)
         {
             return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator || status == OrderStatus.NoDeadlineFromCustomer) ? "red-border-left" 
-                : (status == OrderStatus.Delivered || status == OrderStatus.DeliveryAccepted || status == OrderStatus.ResponseAccepted) ? "green-border-left" 
+                : (status == OrderStatus.Delivered || status == OrderStatus.ResponseAccepted) ? "green-border-left" 
                 : (status == OrderStatus.RequestResponded || status == OrderStatus.RequestRespondedNewInterpreter || status == OrderStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left" 
                 : "blue-border-left";
         }
