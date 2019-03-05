@@ -15,6 +15,12 @@
 }
 <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-rekvisitioner")</h2>
 <div class="row">
+    <p class="requisition-info">
+        Rekvisitionen i avropstjänsten är under utveckling och än så länge är det inte möjligt att godkänna eller underkänna rekvisitioner direkt i tjänsten. Rekvisitionen ska initialt ses som ett underlag över genomfört tolkuppdrag som ska granskas av den person som gjort bokningen eller annan person som blivit utsedd att granska rekvisitionen. Parallellt med avropstjänsten kommer det fortsatt att finnas fler typer av rekvisitioner, t.ex. pappersblanketter eller tolkförmedlingars bokningssystem. Varje avropande myndighet kommer överens med respektive tolkförmedling på vilket sätt godkännande av rekvisitioner ska göras.
+        Rekvisitionen ska visa det slutliga utfallet för tolkuppdraget vad gäller tider, arvoden och förmedlingsavgift. När det gäller tolkens resekostnader kan det finnas poster som inte är kända vid tillfället för registrering av rekvisitionen. Det avser främst traktamenten och bilersättning som ska beräknas enligt särskilda tabeller i tolktaxan eller enligt Skatteverkets regler. Rekvisitionen visar alltså inte alltid den slutliga kostnaden för denna typ av poster utan dessa kan tillkomma när uppdraget slutligen faktureras.
+    </p>
+</div>
+<div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>
 <div class="row">
