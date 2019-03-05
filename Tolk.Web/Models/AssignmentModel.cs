@@ -63,7 +63,7 @@ namespace Tolk.Web.Models
 
         public static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
         {
-            int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId;
+            int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Reviewed)?.RequisitionId;
             var location = request.Order.InterpreterLocations.Single(l => (int)l.InterpreterLocation == request.InterpreterLocation.Value);
             return new AssignmentModel
             {
@@ -79,7 +79,7 @@ namespace Tolk.Web.Models
                 BrokerName = request.Ranking.Broker.Name,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 RequestId = request.RequestId,
-                RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Approved)?.RequisitionId,
+                RequisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Reviewed)?.RequisitionId,
                 AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && request.Status == RequestStatus.Approved),
                 ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderStatus = request.Order.ReplacedByOrder?.Status,

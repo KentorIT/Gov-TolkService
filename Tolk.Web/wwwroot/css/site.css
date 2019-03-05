@@ -593,6 +593,15 @@ input[type='checkbox']:checked:after {
 .tooltip.top .tooltip-arrow {
   border-top-color: #587573;
 }
+.info-sign-big {
+  font-size: 20px;
+  padding-left: 10px;
+  vertical-align: top;
+  margin-top: 14px;
+}
+.decrease-left-margin {
+  margin-left: -4px;
+}
 .d-none {
   display: none;
 }

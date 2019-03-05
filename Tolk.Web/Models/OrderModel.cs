@@ -27,17 +27,17 @@ namespace Tolk.Web.Models
 
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
-        [Display(Name = "Län", Description = "Län för den plats där tolkbehovet finns. I det fall tolkning sker på distans anges länet där myndigheten som använder den aktuella tolktjänsten är placerad. Om tolkning ska genomföras vid en myndighets lokalkontor anges det län där lokalkontoret är placerat")]
+        [Display(Name = "Län", Description = "Län för den plats där tolkbehovet finns. I det fall tolkning sker på distans anges länet där myndigheten som använder den aktuella tolktjänsten är placerad. Om tolkning ska genomföras vid en myndighets lokalkontor anges det län där lokalkontoret är placerat.")]
         [Required]
         public int? RegionId { get; set; }
 
-        [Display(Name = "Språk", Description = "Om önskat språk inte finns i listan, välj Övrigt språk och ange själv språk i textfältet som visas")]
+        [Display(Name = "Språk", Description = "Om önskat språk inte finns i listan, välj Övrigt språk och ange själv språk i textfältet som visas.")]
         [ClientRequired]
         public int? LanguageId { get; set; }
 
         public bool? LanguageHasAuthorizedInterpreter { get; set; }
 
-        [Display(Name = "Dialekt", Description = "Om dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet")]
+        [Display(Name = "Dialekt", Description = "Om dialekt är krav måste förmedlingen tillsätta tolk som uppfyller kravet. Annars betraktas det som ett önskemål, och förmedlingen behöver inte uppfylla kravet.")]
         [RequiredIf(nameof(DialectIsRequired), true, OtherPropertyType = typeof(bool))]
         [StringLength(255)]
         public string Dialect { get; set; }
@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Dialekt är ett krav")]
         public bool DialectIsRequired { get; set; }
 
-        [Display(Name = "Rätt att godkänna rekvisition", Description = "Välj vid behov en annan person som skall ges rätt att godkänna rekvisition, t ex person som deltar vid tolktillfället. Denna uppgift kan du även komplettera eller ändra senare")]
+        [Display(Name = "Rätt att granska rekvisition", Description = "Välj vid behov en annan person som skall ges rätt att granska rekvisition, t ex person som deltar vid tolktillfället. Denna uppgift kan du även komplettera eller ändra senare.")]
         public int? ContactPersonId { get; set; }
 
         public int? ChangeContactPersonId { get; set; }
@@ -73,11 +73,11 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
-        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges")]
-        [ClientRequired]
+        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges.")]
+        [ClientRequired(ErrorMessage = "Ange sista svarstid")]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
-        [Display(Name = "Uppdragstyp", Description = "Avistatolkning sker genom en kombination av tal och skrift, till exempel uppläsning av dokument")]
+        [Display(Name = "Uppdragstyp", Description = "Avistatolkning sker genom en kombination av tal och skrift, till exempel uppläsning av dokument.")]
         [Required]
         public RadioButtonGroup AssignmentType { get; set; }
 
@@ -99,7 +99,7 @@ namespace Tolk.Web.Models
         public InterpreterLocationAddressModel RankedInterpreterLocationSecondAddressModel { get; set; }
         public InterpreterLocationAddressModel RankedInterpreterLocationThirdAddressModel { get; set; }
 
-        [Display(Name = "Myndighetens ärendenummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet")]
+        [Display(Name = "Myndighetens ärendenummer", Description = "Fält för att koppla till ett ärendenummer i er verksamhet.")]
         [StringLength(100)]
         public string CustomerReferenceNumber { get; set; }
 
@@ -199,7 +199,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att godkänna rekvisitionen")]
+        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att granska rekvisition")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 

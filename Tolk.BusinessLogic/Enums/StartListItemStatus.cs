@@ -38,8 +38,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Uppdrag utfört")]
         RequisitionToBeCreated = 11,
 
-        [Description("Rekvisition underkänd")]
-        RequisitionDenied = 12,
+        [Description("Rekvisition har kommenterats av myndighet")]
+        RequisitionCommented = 12,
 
         [Description("Rekvisition skickad")]
         RequisitionCreated = 13,

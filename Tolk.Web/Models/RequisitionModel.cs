@@ -165,7 +165,7 @@ namespace Tolk.Web.Models
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber.ToString(),
                 RegionName = request.Ranking.Region.Name,
-                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer && !r.ReplacedByRequisitionId.HasValue)),
+                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented && !r.ReplacedByRequisitionId.HasValue)),
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation
             };
         }

@@ -21,10 +21,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 
-        [Display(Name = "Anledning till underkännande av rekvisition")]
+        [Display(Name = "Myndighetens kommentar")]
         [DataType(DataType.MultilineText)]
         [Required]
-        public string DenyMessage { get; set; }
+        public string Comment { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }
 
@@ -73,7 +73,7 @@ namespace Tolk.Web.Models
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,
-                DenyMessage = requisition.DenyMessage,
+                Comment = requisition.DenyMessage,
                 ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 AttachmentListModel = new AttachmentListModel
                 {

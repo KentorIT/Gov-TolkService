@@ -2,11 +2,11 @@
 
 namespace Tolk.Web.Models
 {
-    public class RequisitionDenyModel
+    public class CommentRequisitionModel
     {
         public int RequisitionId { get; set; }
 
         [StringLength(255)]
-        public string DenyMessage { get; set; }
+        public string Comment { get; set; }
     }
 }

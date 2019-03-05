@@ -40,13 +40,13 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_replacement_created")]
         RequestReplacementCreated = 8,
 
-        [Description("Rekvisition har godkänts")]
-        [CustomName("requisition_approved")]
-        RequisitionApproved = 9,
+        [Description("Rekvisition har granskats")]
+        [CustomName("requisition_reviewed")]
+        RequisitionReviewed = 9,
 
-        [Description("Rekvisition har avslagits")]
-        [CustomName("requistion_denied")]
-        RequisitionDenied = 10,
+        [Description("Rekvisition har kommenterats")]
+        [CustomName("requistion_commented")]
+        RequisitionCommented = 10,
 
         [Description("Reklamation har skapats")]
         [CustomName("complaint_created")]

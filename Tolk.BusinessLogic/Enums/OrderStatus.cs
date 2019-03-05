@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace Tolk.BusinessLogic.Enums
 {
@@ -25,7 +23,7 @@ namespace Tolk.BusinessLogic.Enums
         Delivered = 5,
         [Description("Uppdrag avbokat av myndighet")]
         CancelledByCreator = 6,
-        [Description("Leverans är bekräftad")]
+        [Description("Uppdraget har genomförts")]
         DeliveryAccepted = 7,
         [Description("Uppdraget har annullerats via reklamation")]
         [Obsolete("Inte använd än")]

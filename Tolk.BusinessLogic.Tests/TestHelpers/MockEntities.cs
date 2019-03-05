@@ -223,17 +223,17 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new Requisition
                 {
-                    Status = RequisitionStatus.DeniedByCustomer,
+                    Status = RequisitionStatus.Commented,
                     Request = orders[0].Requests[1]
                 },
                 new Requisition
                 {
-                    Status = RequisitionStatus.Approved,
+                    Status = RequisitionStatus.Reviewed,
                     Request = orders[1].Requests[0]
                 },
                 new Requisition
                 {
-                    Status = RequisitionStatus.Approved,
+                    Status = RequisitionStatus.Reviewed,
                     Request = orders[3].Requests[0]
                 },
                 new Requisition

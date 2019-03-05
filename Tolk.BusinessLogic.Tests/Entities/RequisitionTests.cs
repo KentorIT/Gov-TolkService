@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Xunit;
@@ -37,7 +36,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Fact]
-        public void Approve_Valid()
+        public void Review_Valid()
         {
             var requisition = new Requisition
             {
@@ -58,9 +57,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var userId = 10;
             var impersonatorId = (int?)null;
 
-            requisition.Approve(approveTime, userId, impersonatorId);
+            requisition.Review(approveTime, userId, impersonatorId);
 
-            Assert.Equal(RequisitionStatus.Approved, requisition.Status);
+            Assert.Equal(RequisitionStatus.Reviewed, requisition.Status);
             Assert.Equal(OrderStatus.DeliveryAccepted, requisition.Request.Order.Status);
             Assert.Equal(approveTime, requisition.ProcessedAt);
             Assert.Equal(userId, requisition.ProcessedBy);
@@ -68,41 +67,41 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequisitionStatus.Approved)]
-        [InlineData(RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequisitionStatus.DeniedByCustomer)]
-        public void Approve_Invalid(RequisitionStatus status)
+        [InlineData(RequisitionStatus.Reviewed)]
+        [InlineData(RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequisitionStatus.Commented)]
+        public void Review_Invalid(RequisitionStatus status)
         {
             var requisition = new Requisition { Status = status };
-            Assert.Throws<InvalidOperationException>(() => requisition.Approve(DateTime.Now, 10, null));
+            Assert.Throws<InvalidOperationException>(() => requisition.Review(DateTime.Now, 10, null));
         }
 
         [Fact]
-        public void Deny_Valid()
+        public void Comment_Valid()
         {
             var requisition = new Requisition { Status = RequisitionStatus.Created };
             var approveTime = DateTime.Parse("2019-01-31 12:31");
             var userId = 10;
             var impersonatorId = (int?)null;
-            var denyMessage = "Denied!";
+            var comment = "Commented!";
 
-            requisition.Deny(approveTime, userId, impersonatorId, denyMessage);
+            requisition.Comment(approveTime, userId, impersonatorId, comment);
 
-            Assert.Equal(RequisitionStatus.DeniedByCustomer, requisition.Status);
+            Assert.Equal(RequisitionStatus.Commented, requisition.Status);
             Assert.Equal(approveTime, requisition.ProcessedAt);
             Assert.Equal(userId, requisition.ProcessedBy);
             Assert.Equal(impersonatorId, requisition.ImpersonatingProcessedBy);
-            Assert.Equal(denyMessage, requisition.DenyMessage);
+            Assert.Equal(comment, requisition.DenyMessage);
         }
 
         [Theory]
-        [InlineData(RequisitionStatus.Approved)]
-        [InlineData(RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequisitionStatus.DeniedByCustomer)]
-        public void Deny_Invalid(RequisitionStatus status)
+        [InlineData(RequisitionStatus.Reviewed)]
+        [InlineData(RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequisitionStatus.Commented)]
+        public void Comment_Invalid(RequisitionStatus status)
         {
             var requisition = new Requisition { Status = status };
-            Assert.Throws<InvalidOperationException>(() => requisition.Deny(DateTime.Now, 10, null, "Test"));
+            Assert.Throws<InvalidOperationException>(() => requisition.Comment(DateTime.Now, 10, null, "Test"));
         }
     }
 }

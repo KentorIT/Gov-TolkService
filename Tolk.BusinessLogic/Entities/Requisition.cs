@@ -90,33 +90,33 @@ namespace Tolk.BusinessLogic.Entities
 
         #region methods
 
-        public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        public void Review(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (Status != RequisitionStatus.Created)
             {
                 throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be approved");
             }
 
-            Status = RequisitionStatus.Approved;
+            Status = RequisitionStatus.Reviewed;
             Request.Order.Status = OrderStatus.DeliveryAccepted;
             ProcessedAt = approveTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;
         }
 
-        public bool CanApproveOrDeny
+        public bool ProcessAllowed
         {
             get { return Status == RequisitionStatus.Created; }
         }
 
-        public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        public void Comment(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (Status != RequisitionStatus.Created)
             {
                 throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be denied");
             }
 
-            Status = RequisitionStatus.DeniedByCustomer;
+            Status = RequisitionStatus.Commented;
             ProcessedAt = denyTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;

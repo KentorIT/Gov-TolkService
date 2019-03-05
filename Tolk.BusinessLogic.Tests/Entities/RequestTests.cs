@@ -626,7 +626,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Assert.Equal(userId, requisition.CreatedBy);
                 Assert.Equal(impersonatorId, requisition.ImpersonatingCreatedBy);
                 Assert.Equal(expectedMessage, requisition.Message);
-                Assert.Equal(RequisitionStatus.AutomaticApprovalFromCancelledOrder, requisition.Status);
+                Assert.Equal(RequisitionStatus.AutomaticGeneratedFromCancelledOrder, requisition.Status);
                 Assert.Equal(request.Order.StartAt, requisition.SessionStartedAt);
                 Assert.Equal(request.Order.EndAt, requisition.SessionEndedAt);
             }
@@ -808,8 +808,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         [InlineData(null)]
-        [InlineData(RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequisitionStatus.Commented)]
+        [InlineData(RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
         public void CreateRequisition_Valid(RequisitionStatus? preexistingRequisition = null)
         {
             Requisition existingRequisition = null;
@@ -863,35 +863,35 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
         [InlineData(RequestStatus.ToBeProcessedByBroker)]
         // Invalid request status, pre-existing valid requisition (DeniedByCustomer)
-        [InlineData(RequestStatus.Accepted, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.Created, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.Received, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.DeniedByCustomer)]
-        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.DeniedByCustomer)]
+        [InlineData(RequestStatus.Accepted, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.Created, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.Received, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.Commented)]
         // Invalid request status, pre-existing valid requisition (AutomaticApprovalFromCancelledOrder)
-        [InlineData(RequestStatus.Accepted, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.Created, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.Received, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
-        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.AutomaticApprovalFromCancelledOrder)]
+        [InlineData(RequestStatus.Accepted, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.Created, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.DeclinedByBroker, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.DeniedByCreator, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.InterpreterReplaced, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.Received, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
         // Valid request status, invalid requisition status
-        [InlineData(RequestStatus.Approved, RequisitionStatus.Approved)]
+        [InlineData(RequestStatus.Approved, RequisitionStatus.Reviewed)]
         [InlineData(RequestStatus.Approved, RequisitionStatus.Created)]
         public void CreateRequisition_Invalid(RequestStatus status, RequisitionStatus? existingRequisition = null)
         {

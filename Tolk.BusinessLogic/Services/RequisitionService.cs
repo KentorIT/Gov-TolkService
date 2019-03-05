@@ -61,7 +61,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 request.CreateRequisition(requisition);
                 _dbContext.SaveChanges();
-                var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.DeniedByCustomer &&
+                var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented &&
                     !r.ReplacedByRequisitionId.HasValue);
                 if (replacingRequisition != null)
                 {
@@ -75,20 +75,20 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void Approve(Requisition requisition, int userId, int? impersonatorId)
+        public void Review(Requisition requisition, int userId, int? impersonatorId)
         {
-            requisition.Approve(_clock.SwedenNow, userId, impersonatorId);
+            requisition.Review(_clock.SwedenNow, userId, impersonatorId);
             _dbContext.SaveChanges();
-            _logger.LogDebug($"Approved requisition {requisition.RequisitionId}");
-            _notificationService.RequisitionApproved(requisition);
+            _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
+            _notificationService.RequisitionReviewed(requisition);
         }
 
-        public void Deny(Requisition requisition, int userId, int? impersonatorId, string message)
+        public void Comment(Requisition requisition, int userId, int? impersonatorId, string message)
         {
-            requisition.Deny(_clock.SwedenNow, userId, impersonatorId, message);
+            requisition.Comment(_clock.SwedenNow, userId, impersonatorId, message);
             _dbContext.SaveChanges();
-            _logger.LogDebug($"Denied requisition {requisition.RequisitionId}");
-            _notificationService.RequisitionDenied(requisition);
+            _logger.LogDebug($"Requisition commented {requisition.RequisitionId}");
+            _notificationService.RequisitionCommented(requisition);
         }
     }
 }

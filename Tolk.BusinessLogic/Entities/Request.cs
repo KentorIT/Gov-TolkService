@@ -394,7 +394,7 @@ namespace Tolk.BusinessLogic.Entities
                         CreatedBy = userId,
                         ImpersonatingCreatedBy = impersonatorId,
                         Message = createFullCompensationRequisition ? "Genererat av systemet, eftersom tillfället avbokades för tätt inpå" : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår",
-                        Status = RequisitionStatus.AutomaticApprovalFromCancelledOrder,
+                        Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
                         SessionStartedAt = Order.StartAt,
                         SessionEndedAt = Order.EndAt,
                         PriceRows = GetPriceRows(createFullCompensationRequisition)
@@ -450,7 +450,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void CreateRequisition(Requisition requisition)
         {
-            if (Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created))
+            if (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created))
             {
                 throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
             }
@@ -465,7 +465,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCreateRequisition
         {
-            get { return !(Requisitions.Any(r => r.Status == RequisitionStatus.Approved || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved); }
+            get { return !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved); }
         }
 
         public void CreateComplaint(Complaint complaint)

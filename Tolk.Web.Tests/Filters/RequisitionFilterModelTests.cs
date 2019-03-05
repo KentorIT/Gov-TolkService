@@ -75,11 +75,11 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new RequisitionFilterModel
             {
-                Status = BusinessLogic.Enums.RequisitionStatus.Approved
+                Status = BusinessLogic.Enums.RequisitionStatus.Reviewed
             };
 
             var list = filter.Apply(mockRequisitions.AsQueryable());
-            var actual = mockRequisitions.Where(r => r.Status == BusinessLogic.Enums.RequisitionStatus.Approved);
+            var actual = mockRequisitions.Where(r => r.Status == BusinessLogic.Enums.RequisitionStatus.Reviewed);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -91,7 +91,7 @@ namespace Tolk.Web.Tests.Filters
             var filter = new RequisitionFilterModel
             {
                 DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 10, 01) },
-                Status = BusinessLogic.Enums.RequisitionStatus.Approved,
+                Status = BusinessLogic.Enums.RequisitionStatus.Reviewed,
                 LanguageId = mockLanguages.Where(l => l.Name == "Chinese").Single().LanguageId
             };
 

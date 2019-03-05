@@ -397,12 +397,12 @@ namespace Tolk.Web.Helpers
             foreach (var requisition in requisitions)
             {
                 // Requisition creation
-                if (requisition.Status == RequisitionStatus.AutomaticApprovalFromCancelledOrder)
+                if (requisition.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder)
                 {
                     yield return new EventLogEntryModel
                     {
                         Timestamp = requisition.CreatedAt,
-                        EventDetails = "Rekvisition automatiskt skapad och godkänd, pga avbokning",
+                        EventDetails = "Rekvisition automatiskt genererad, pga sen avbokning",
                         Actor = "Systemet",
                     };
                 }
@@ -420,23 +420,23 @@ namespace Tolk.Web.Helpers
                 // Requisition processing
                 if (requisition.ProcessedAt.HasValue)
                 {
-                    if (requisition.Status == RequisitionStatus.Approved)
+                    if (requisition.Status == RequisitionStatus.Reviewed)
                     {
                         yield return new EventLogEntryModel
                         {
                             Timestamp = requisition.ProcessedAt.Value,
-                            EventDetails = "Rekvisition godkänd",
+                            EventDetails = "Rekvisition granskad",
                             Actor = requisition.ProcessedUser.FullName,
                             Organization = customerName,
                             ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
                         };
                     }
-                    else if (requisition.Status == RequisitionStatus.DeniedByCustomer)
+                    else if (requisition.Status == RequisitionStatus.Commented)
                     {
                         yield return new EventLogEntryModel
                         {
                             Timestamp = requisition.ProcessedAt.Value,
-                            EventDetails = "Rekvisition underkänd",
+                            EventDetails = "Rekvisition kommenterad",
                             Actor = requisition.ProcessedUser.FullName,
                             Organization = customerName,
                             ActorContactInfo = GetContactinfo(requisition.ProcessedUser),

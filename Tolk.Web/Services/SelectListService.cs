@@ -58,7 +58,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> RequestStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequestStatus>()
-                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer 
+                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer
                     && e.Value != RequestStatus.NoDeadlineFromCustomer)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
@@ -70,6 +70,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> RequisitionStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequisitionStatus>()
+                .Where(e => e.Value != RequisitionStatus.Approved && e.Value != RequisitionStatus.DeniedByCustomer)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
@@ -146,7 +147,7 @@ namespace Tolk.Web.Services
                         {
                             Value = l.LanguageId.ToString(),
                             Text = l.Name,
-                            AdditionalDataAttribute = l.TellusName?? string.Empty
+                            AdditionalDataAttribute = l.TellusName ?? string.Empty
                         })
                     .ToList().AsReadOnly();
 

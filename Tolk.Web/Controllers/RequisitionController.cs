@@ -75,7 +75,7 @@ namespace Tolk.Web.Controllers
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
-                model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.DeniedByCustomer);
+                model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented);
                 model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
@@ -294,7 +294,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Approve(int requisitionId)
+        public async Task<IActionResult> Review(int requisitionId)
         {
             var requisition = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order)
@@ -306,13 +306,13 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.CanApproveOrDeny)
+                    if (!requisition.ProcessAllowed)
                     {
-                        _logger.LogWarning("Wrong status when trying to Approve requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
+                        _logger.LogWarning("Wrong status when trying to Review requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
 
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                     }
-                    _requisitionService.Approve(requisition, User.GetUserId(), User.TryGetImpersonatorId());
+                    _requisitionService.Review(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
@@ -322,7 +322,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Deny(RequisitionDenyModel model)
+        public async Task<IActionResult> Comment(CommentRequisitionModel model)
         {
             if (ModelState.IsValid)
             {
@@ -333,12 +333,12 @@ namespace Tolk.Web.Controllers
                     .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.CanApproveOrDeny)
+                    if (!requisition.ProcessAllowed)
                     {
-                        _logger.LogWarning("Wrong status when trying to Deny requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
+                        _logger.LogWarning("Wrong status when trying to Comment requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                     }
-                    _requisitionService.Deny(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+                    _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.Comment);
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
