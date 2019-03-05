@@ -1240,11 +1240,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CarCompensation");
+
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<int>("CreatedBy");
 
-                    b.Property<string>("DenyMessage")
+                    b.Property<string>("CustomerComment")
                         .HasMaxLength(255);
 
                     b.Property<int?>("ImpersonatingCreatedBy");
@@ -1255,6 +1257,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
+                        .HasMaxLength(1000);
+
+                    b.Property<string>("PerDiem")
                         .HasMaxLength(1000);
 
                     b.Property<DateTimeOffset?>("ProcessedAt");

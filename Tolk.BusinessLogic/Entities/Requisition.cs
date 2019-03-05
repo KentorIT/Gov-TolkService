@@ -21,6 +21,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ImpersonatingCreatedBy { get; set; }
 
+        public int? CarCompensation { get; set; }
+
+        [MaxLength(1000)]
+        public string PerDiem { get; set; }
+
         [ForeignKey(nameof(ImpersonatingCreatedBy))]
         public AspNetUser CreatedByImpersonator { get; set; }
 
@@ -54,7 +59,7 @@ namespace Tolk.BusinessLogic.Entities
         public string Message { get; set; }
 
         [MaxLength(255)]
-        public string DenyMessage { get; set; }
+        public string CustomerComment { get; set; }
 
         public int? ReplacedByRequisitionId { get; set; }
 
@@ -108,7 +113,7 @@ namespace Tolk.BusinessLogic.Entities
             get { return Status == RequisitionStatus.Created; }
         }
 
-        public void Comment(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        public void Comment(DateTimeOffset denyTime, int userId, int? impersonatorId, string comment)
         {
             if (Status != RequisitionStatus.Created)
             {
@@ -119,7 +124,7 @@ namespace Tolk.BusinessLogic.Entities
             ProcessedAt = denyTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;
-            DenyMessage = message;
+            CustomerComment = comment;
         }
 
         #endregion

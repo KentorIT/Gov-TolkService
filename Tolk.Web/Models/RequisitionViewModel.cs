@@ -73,7 +73,7 @@ namespace Tolk.Web.Models
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,
-                Comment = requisition.DenyMessage,
+                Comment = requisition.CustomerComment,
                 ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 AttachmentListModel = new AttachmentListModel
                 {

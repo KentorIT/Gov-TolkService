@@ -469,7 +469,7 @@ Kostnader att fakturera:
         public void RequisitionCommented(Requisition requisition)
         {
             string orderNumber = requisition.Request.Order.OrderNumber;
-            var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.DenyMessage}";
+            var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.CustomerComment}";
             var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Email);
             if (email != null)
             {

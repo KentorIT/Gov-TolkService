@@ -92,7 +92,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(approveTime, requisition.ProcessedAt);
             Assert.Equal(userId, requisition.ProcessedBy);
             Assert.Equal(impersonatorId, requisition.ImpersonatingProcessedBy);
-            Assert.Equal(comment, requisition.DenyMessage);
+            Assert.Equal(comment, requisition.CustomerComment);
         }
 
         [Theory]
