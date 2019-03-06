@@ -199,7 +199,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        [Display(Name = "Annan kontaktperson", Description = "Person som har rätt att granska rekvisition")]
+        [Display(Name = "Person med rätt att granska rekvisition", Description = "Person som har rätt att granska rekvisition")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 

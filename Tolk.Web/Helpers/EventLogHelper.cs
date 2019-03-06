@@ -72,7 +72,7 @@ namespace Tolk.Web.Helpers
                         eventLog.Add(new EventLogEntryModel
                         {
                             Timestamp = cph.ChangedAt,
-                            EventDetails = $"Kontaktperson {cph.PreviousContactPersonUser?.FullName} borttagen",
+                            EventDetails = $"{cph.PreviousContactPersonUser?.FullName} fråntogs rätt att granska rekvisition",
                             Actor = cph.ChangedByUser.FullName,
                             Organization = customerName,
                             ActorContactInfo = GetContactinfo(cph.ChangedByUser),
@@ -136,7 +136,7 @@ namespace Tolk.Web.Helpers
             return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
             {
                 Timestamp = cphPrevious.ChangedAt,
-                EventDetails = $"Kontaktperson {newContactPersonName} tillagd",
+                EventDetails = $"{newContactPersonName} tilldelades rätt att granska rekvisition",
                 Actor = cphPrevious.ChangedByUser.FullName,
                 Organization = order.CustomerOrganisation.Name,
                 ActorContactInfo = GetContactinfo(cphPrevious.ChangedByUser),

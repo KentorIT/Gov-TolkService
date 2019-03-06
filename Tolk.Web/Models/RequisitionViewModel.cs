@@ -17,7 +17,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Status")]
         public RequisitionStatus Status { get; set; }
 
-        [Display(Name = "Annan kontaktperson")]
+        [Display(Name = "Person med rätt att granska rekvisition")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
 

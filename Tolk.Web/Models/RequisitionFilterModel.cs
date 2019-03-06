@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
 
         public RequisitionStatus? Status { get; set; }
 
-        [Display(Name = "Rekvisitioner med kontaktperson")]
+        [Display(Name = "Rekvisitioner med person som har rätt att granska rekvisition ")]
         public bool? FilterByContact { get; set; }
 
         public bool HasActiveFilters

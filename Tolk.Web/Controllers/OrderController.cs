@@ -561,7 +561,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("Index", "Home", new { message = $"Kontaktpersonen för bokning {order.OrderNumber} är ändrad" });
+                    return RedirectToAction("Index", "Home", new { message = $"Person med rätt att granska rekvisition för bokning {order.OrderNumber} är ändrad" });
                 }
             }
             return Forbid();
