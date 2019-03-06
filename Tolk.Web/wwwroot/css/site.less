@@ -874,13 +874,31 @@ li.placeholder::before {
     border-bottom: 1px solid #e5e5e5;
 }
 
+.system-action-info {
+    background-color: @primary-lightest;
+    border: 1px solid @primary-darker;
+    color: black;
+    padding: 12px 12px 12px 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
 .warning-info {
     background-color: @warning-background;
     border: 1px solid @warning;
     color: @warning;
-    padding: 12px 12px 0px 12px;
     margin-left: 0px;
     margin-right: 0px;
+}
+
+.warning-info-confirm {
+    padding: 8px 12px 0px 8px;
+    .warning-info
+}
+
+.warning-info-home {
+    padding: 12px 12px 12px 12px;
+    .warning-info
 }
 
 .system-message {

@@ -206,11 +206,11 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.Received)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
+                throw new InvalidOperationException($"Det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
             if (Order.ReplacingOrderId.HasValue)
             {
-                throw new InvalidOperationException($"Request {RequestId} is connected to a replacement order. use the {nameof(AcceptReplacementOrder)} method instead.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
             ////TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
             ////Add validation for interperter location
@@ -256,7 +256,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.Received)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be declined.");
+                throw new InvalidOperationException($"Det gick inte att tacka nej till förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
             Status = RequestStatus.DeclinedByBroker;
             AnswerDate = declinedAt;
@@ -283,11 +283,11 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.Received)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Received requests can be accepted.");
+                throw new InvalidOperationException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} har redan blivit besvarad");
             }
             if (!Order.ReplacingOrderId.HasValue)
             {
-                throw new InvalidOperationException($"Request {RequestId} is not connected to a replacement order.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inget ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
 
             AnswerDate = acceptTime;
@@ -323,7 +323,7 @@ namespace Tolk.BusinessLogic.Entities
             //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only AcceptedNewInterpreter requests can be replaced by new interpreter.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}");
             }
             AnswerDate = acceptTime;
             AnsweredBy = userId;

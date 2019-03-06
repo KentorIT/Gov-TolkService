@@ -779,11 +779,34 @@ li.placeholder::before {
   border: 0;
   border-bottom: 1px solid #e5e5e5;
 }
+.system-action-info {
+  background-color: #BFDDD2;
+  border: 1px solid #587573;
+  color: black;
+  padding: 12px 12px 12px 12px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
 .warning-info {
   background-color: linen;
   border: 1px solid #A94442;
   color: #A94442;
-  padding: 12px 12px 0px 12px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+.warning-info-confirm {
+  padding: 8px 12px 0px 8px;
+  background-color: linen;
+  border: 1px solid #A94442;
+  color: #A94442;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+.warning-info-home {
+  padding: 12px 12px 12px 12px;
+  background-color: linen;
+  border: 1px solid #A94442;
+  color: #A94442;
   margin-left: 0px;
   margin-right: 0px;
 }

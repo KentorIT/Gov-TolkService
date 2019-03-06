@@ -120,7 +120,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
                 if (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received)
-                { 
+                {
                     return RedirectToAction(nameof(Process), new { id = request.RequestId });
                 }
                 return View(GetModel(request, true));
@@ -244,52 +244,59 @@ namespace Tolk.Web.Controllers
                         Answer = ra.Answer,
                         CanSatisfyRequirement = ra.CanMeetRequirement
                     }).ToList());
-                    //if change interpreter or else if not a replacementorder
-                    if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
+                    try
                     {
-                        var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
-
-                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        //if change interpreter or else if not a replacementorder
+                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
-                            _requestService.ChangeInterpreter(
-                                request,
-                                _clock.SwedenNow,
-                                User.GetUserId(),
-                                User.TryGetImpersonatorId(),
-                                interpreter,
-                                model.InterpreterLocation.Value,
-                                model.InterpreterCompetenceLevel.Value,
-                                requirementAnswers,
-                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
-                                model.ExpectedTravelCosts
-                            );
+                            var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
+
+                            if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                            {
+                                _requestService.ChangeInterpreter(
+                                    request,
+                                    _clock.SwedenNow,
+                                    User.GetUserId(),
+                                    User.TryGetImpersonatorId(),
+                                    interpreter,
+                                    model.InterpreterLocation.Value,
+                                    model.InterpreterCompetenceLevel.Value,
+                                    requirementAnswers,
+                                    model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
+                                    model.ExpectedTravelCosts
+                                );
+                            }
+                            else
+                            {
+                                _requestService.Accept(
+                                    request,
+                                    _clock.SwedenNow,
+                                    User.GetUserId(),
+                                    User.TryGetImpersonatorId(),
+                                    interpreter,
+                                    model.InterpreterLocation.Value,
+                                    model.InterpreterCompetenceLevel.Value,
+                                    requirementAnswers,
+                                    model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                                    model.ExpectedTravelCosts
+                                );
+                            }
                         }
                         else
                         {
-                            _requestService.Accept(
+                            _requestService.AcceptReplacement(
                                 request,
                                 _clock.SwedenNow,
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
-                                interpreter,
                                 model.InterpreterLocation.Value,
-                                model.InterpreterCompetenceLevel.Value,
-                                requirementAnswers,
-                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                                 model.ExpectedTravelCosts
                             );
                         }
                     }
-                    else
+                    catch (InvalidOperationException ex)
                     {
-                        _requestService.AcceptReplacement(
-                            request,
-                            _clock.SwedenNow,
-                            User.GetUserId(),
-                            User.TryGetImpersonatorId(),
-                            model.InterpreterLocation.Value,
-                            model.ExpectedTravelCosts
-                        );
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
                     _dbContext.SaveChanges();
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
@@ -356,7 +363,14 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                await _requestService.Decline(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+                try
+                {
+                    await _requestService.Decline(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
             }
