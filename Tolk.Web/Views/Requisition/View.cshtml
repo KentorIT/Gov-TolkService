@@ -15,11 +15,11 @@
         <display-entry asp-for="CustomerReferenceNumber" />
     </div>
 </div>
-@if (!string.IsNullOrWhiteSpace(Model.Comment))
+@if (!string.IsNullOrWhiteSpace(Model.CustomerComment))
 {
     <div class="row">
         <div class="col-sm-6">
-            <display-entry asp-for="Comment"></display-entry>
+            <display-entry asp-for="CustomerComment"></display-entry>
         </div>
         @if (Model.AllowCreation)
         {
@@ -65,7 +65,7 @@
             <div class="modal-body">
                 <form method="post" asp-action="Comment" class="do-not-check-dirty">
                     <input asp-for="RequisitionId" type="hidden" />
-                    <form-entry asp-for="Comment" />
+                    <form-entry asp-for="CustomerComment" />
                     <span id="commentRequisitionValidator" class="text-danger left-padding"></span>
                     <button type="submit" class="btn btn-default right-md-button do-not-check-dirty btn-comment-req">Skicka kommentar</button>
                     <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>

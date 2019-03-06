@@ -59,7 +59,7 @@ namespace Tolk.BusinessLogic.Services
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, decimal? perdiem, decimal? carCompensation, Order replacingOrder, List<MealBreak> mealbreaks = null)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, List<MealBreak> mealbreaks = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
 
@@ -89,7 +89,7 @@ namespace Tolk.BusinessLogic.Services
             }
             //get lost time and extra charges
             pricesToUse.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, outlay, perdiem, carCompensation, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, outlay, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Tolk.BusinessLogic.Services
             return reducedMinutes > 0 ? reducedMinutes % newPriceRow.PriceListRow.MaxMinutes > 0 ? (reducedMinutes / newPriceRow.PriceListRow.MaxMinutes) + 1 : reducedMinutes / newPriceRow.PriceListRow.MaxMinutes : 0;
         }
 
-        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, decimal? outlay = null, decimal? perDiem = null, decimal? carCompensation = null, PriceRowBase requestBrokerFeeForRequisition = null)
+        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, decimal? outlay = null, PriceRowBase requestBrokerFeeForRequisition = null)
         {
             List<PriceRowBase> allPriceRows = new List<PriceRowBase>
             {
@@ -174,14 +174,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 allPriceRows.Add(GetTravelCostRow(startAt.Date, startAt.Date.AddDays(1).ToDateTimeOffsetSweden(), outlay, PriceRowType.Outlay));
             }
-            if (perDiem != null && perDiem > 0)
-            {
-                allPriceRows.Add(GetTravelCostRow(startAt.Date, startAt.Date.AddDays(1).ToDateTimeOffsetSweden(), perDiem, PriceRowType.PerDiem));
-            }
-            if (carCompensation != null && carCompensation > 0)
-            {
-                allPriceRows.Add(GetTravelCostRow(startAt.Date, startAt.Date.AddDays(1).ToDateTimeOffsetSweden(), carCompensation, PriceRowType.CarCompensation));
-            }
+   
             allPriceRows.Add(GetRoundedPriceRow(startAt, endAt, allPriceRows));
 
             var priceInformation = new PriceInformation
@@ -525,10 +518,6 @@ namespace Tolk.BusinessLogic.Services
             {
                 SubPriceHeader = PriceRowType.InterpreterCompensation.GetDescription()
             };
-            DisplayPriceInformation separateSubTotalTravelcosts = new DisplayPriceInformation
-            {
-                SubPriceHeader = PriceRowType.TravelCost.GetDescription()
-            };
 
             decimal interpreterCompensation = priceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice);
             dpiTotal.DisplayPriceRows.Add(new DisplayPriceRow { Description = PriceRowType.InterpreterCompensation.GetDescription(), Price = interpreterCompensation, HasSeparateSubTotal = true, DisplayOrder = GetDisplayOrder(PriceRowType.InterpreterCompensation) });
@@ -546,22 +535,12 @@ namespace Tolk.BusinessLogic.Services
                     string description = priceRow.PriceListRow.PriceListRowType.GetDescription() + hourTaxDescription + GetQuantityAndPricePerUnit(priceRow);
                     separateSubTotalInterpreterCompensation.DisplayPriceRows.Add(new DisplayPriceRow { Description = description, Price = priceRow.Price * priceRow.Quantity, DisplayOrder = (int)priceRow.PriceListRow.PriceListRowType });
                 }
-                //for requisition if pricerowType has Travelcost as parent
-                else if (EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).HasValue && EnumHelper.Parent<PriceRowType, PriceRowType?>(priceRow.PriceRowType).Value == PriceRowType.TravelCost)
-                {
-                    separateSubTotalTravelcosts.DisplayPriceRows.Add(new DisplayPriceRow { Description = priceRow.PriceRowType.GetDescription(), Price = priceRow.Price * priceRow.Quantity, DisplayOrder = GetDisplayOrder(priceRow.PriceRowType) });
-                }
                 else
                 {
                     dpiTotal.DisplayPriceRows.Add(new DisplayPriceRow { Description = priceRow.PriceRowType.GetDescription() + GetQuantityAndPricePerUnit(priceRow), Price = priceRow.Price * priceRow.Quantity, DisplayOrder = GetDisplayOrder(priceRow.PriceRowType) });
                 }
             }
             dpiTotal.SeparateSubTotal.Add(separateSubTotalInterpreterCompensation);
-            if (separateSubTotalTravelcosts.DisplayPriceRows.Any())
-            {
-                dpiTotal.SeparateSubTotal.Add(separateSubTotalTravelcosts);
-                dpiTotal.DisplayPriceRows.Add(new DisplayPriceRow { Description = PriceRowType.TravelCost.GetDescription(), Price = separateSubTotalTravelcosts.TotalPrice, HasSeparateSubTotal = true, DisplayOrder = GetDisplayOrder(PriceRowType.TravelCost) });
-            }
             return dpiTotal;
         }
 
@@ -581,10 +560,6 @@ namespace Tolk.BusinessLogic.Services
                     return 5;
                 case PriceRowType.Outlay:
                     return 6;
-                case PriceRowType.CarCompensation:
-                    return 7;
-                case PriceRowType.PerDiem:
-                    return 8;
                 case PriceRowType.RoundedPrice:
                     return 100;
                 default:

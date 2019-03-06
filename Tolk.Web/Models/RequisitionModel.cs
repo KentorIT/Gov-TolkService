@@ -60,25 +60,22 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
-        public decimal TotalTravelCosts { get => (Outlay ?? 0) + (PerDiem ?? 0) + (CarCompensation ?? 0); }
+        public decimal TotalTravelCosts { get => Outlay ?? 0; }
 
-        [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Uppgift om utlägg måste anges. Finns inga kostnader anges 0.")]
+        [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Ange uppgift om utlägg om det finns")]
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [DataType(DataType.Currency)]
         public decimal? Outlay { get; set; }
 
-        [Display(Name = "Bilersättning (exkl. moms) i SEK", Description = "Bilersättning ska anges. Finns ingen kostnad för bilersättning anges 0.")]
-        [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
-        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för bilersättning")]
-        [DataType(DataType.Currency)]
-        public decimal? CarCompensation { get; set; }
+        [Display(Name = "Bilersättning (antal km)", Description = "Ange uppgift om bilersättning ska utgå. Ange i antal hela kilometer.")]
+        [Range(0, 100000, ErrorMessage = "Kontrollera värdet för bilersättning")]
+        public int? CarCompensation { get; set; }
 
-        [Display(Name = "Traktamente (exkl. moms) i SEK", Description = "Traktamente ska anges. Om inget traktamente ska erhållas ange 0.")]
-        [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
-        [Range(0, 999999, ErrorMessage = "Kontrollera värdet för traktamente")]
-        [DataType(DataType.Currency)]
-        public decimal? PerDiem { get; set; }
+        [DataType(DataType.MultilineText)]
+        [StringLength(1000)]
+        [Display(Name = "Traktamente", Description = "Ange uppgift om traktamente (flerdygnsförrättning inkl. ev. måltidsavdrag) ska utgå. Ange i antal dagar eller i belopp i SEK")]
+        public string PerDiem { get; set; }
 
         [Display(Name = "Förväntad startid")]
         public DateTimeOffset ExpectedStartedAt { get; set; }

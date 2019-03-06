@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -32,7 +31,7 @@ namespace Tolk.BusinessLogic.Services
 
         public Requisition Create(Request request, int userId, int? impersonatorId, string message, PriceInformation priceInformation, bool useRequestRows, 
             DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard? interpreterTaxCard, 
-            List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks)
+            List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
@@ -50,7 +49,9 @@ namespace Tolk.BusinessLogic.Services
                     InterpretersTaxCard = interpreterTaxCard.Value,
                     PriceRows = new List<RequisitionPriceRow>(),
                     Attachments = attachments,
-                    MealBreaks = mealbreaks
+                    MealBreaks = mealbreaks,
+                    CarCompensation = carCompensation,
+                    PerDiem = perDiem
                 };
 
                 requisition.RequestOrReplacingOrderPeriodUsed = useRequestRows;

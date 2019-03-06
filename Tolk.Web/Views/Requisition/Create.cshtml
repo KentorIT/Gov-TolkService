@@ -128,7 +128,7 @@
 
             <div class="row">
                 <div class="col-sm-12">
-                    <h3 class="no-padding-margin">Måltidspauser <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska eventuella måltidspauser anges. Klicka på +-ikonen för att lägga till."></span> @HelpLinkService.Anchor("maltidspaus")</h3>
+                    <h3 class="no-padding-margin">Måltidspauser <span class="form-entry-information glyphicon glyphicon-info-sign" title="Avdrag för en måltidspaus kan göras med maximalt 60 minuter. Om måltidspaus blir längre ska överskjutande tid registreras som tidsspillan."></span> @HelpLinkService.Anchor("maltidspaus")</h3>
                 </div>
             </div>
             <div class="row">
@@ -210,7 +210,7 @@
                         }
                     </div>
                     <div class="col-sm-4">
-                        @if (Model.PreviousRequisition.PerDiem != null)
+                        @if (!string.IsNullOrWhiteSpace(Model.PreviousRequisition.PerDiem))
                         {
                             <display-entry asp-for="PreviousRequisition.PerDiem" />
                         }
@@ -229,6 +229,7 @@
                 </div>
                 <div class="col-sm-4">
                     <form-entry asp-for="CarCompensation" />
+                    <div id="carCompensationValidator" class="d-none text-danger body"></div>
                     <br />
                 </div>
                 <div class="col-sm-4">

@@ -74,6 +74,20 @@ else
                     <td class="left-padding">Tidsspillan</td>
                     <td colspan="2">@Model.TimeWasteInfo</td>
                 </tr>
+                @if (Model.CarCompensation != null)
+                {
+                    <tr class="align-top">
+                        <td class="left-padding">Bilersättning (antal km)</td>
+                        <td colspan="2">@Model.CarCompensation</td>
+                    </tr>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.PerDiem))
+                {
+                    <tr class="align-top">
+                        <td class="left-padding">Traktamente</td>
+                        <td colspan="2">@Model.PerDiem</td>
+                    </tr>
+                }
                 <tr class="align-top">
                     <td class="left-padding">Specifikation</td>
                     <td colspan="2">@Model.Message</td>

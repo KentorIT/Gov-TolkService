@@ -2,8 +2,7 @@
 ﻿$('#TimeWasteTotalTime').change(function () { validateControls(); });
 $('#TimeWasteIWHTime').change(function () { validateControls(); });
 $('#Outlay').change(function () { validateControls(); });
-$('#CarCompensation').change(function () { validateControls(); });
-$('#PerDiem').change(function () { validateControls(); });
+$('#CarCompensation').change(function () { validateCarCompensation(); });
 $('#SessionEndedAt').change(function () { validateControls(); });
 $('#SessionStartedAt').change(function () { validateControls(); });
 
@@ -36,6 +35,23 @@ function validateControls() {
     if (checkWasteTime() &&
         checkSessionEndedAt()) { $('#create').attr('disabled', false); }
     else { $('#create').attr('disabled', true); }
+}
+
+function validateCarCompensation() {
+    $('#CarCompensation').val($('#CarCompensation').val().replace('.',''));
+    var carComp = $('#CarCompensation').val();
+    if ((carComp != "" && !(Math.floor(carComp) == carComp && $.isNumeric(carComp)))) {
+        triggerValidator("Bilersättning kan endast bestå av siffor <br \><br \>", $('#carCompensationValidator'));
+        $('#create').attr('disabled', true);
+    }
+    else if (carComp != "" && (parseInt(carComp) < 0 || parseInt(carComp) > 10000)) {
+        triggerValidator("Kontrollera värdet för bilersättning <br \><br \>", $('#carCompensationValidator'));
+        $('#create').attr('disabled', true);
+    }
+    else {
+        $('#create').attr('disabled', false);
+        $('#carCompensationValidator').hide();
+    }
 }
 
 function checkWasteTime() {

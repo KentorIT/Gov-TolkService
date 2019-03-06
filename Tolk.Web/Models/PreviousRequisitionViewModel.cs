@@ -33,12 +33,11 @@ namespace Tolk.Web.Models
         public decimal? Outlay { get; set; }
 
         [Display(Name = "Tidigare angiven bilersättning")]
-        [DataType(DataType.Currency)]
-        public decimal? CarCompensation { get; set; }
+        public int? CarCompensation { get; set; }
 
         [Display(Name = "Tidigare angivet traktamente")]
-        [DataType(DataType.Currency)]
-        public decimal? PerDiem { get; set; }
+        [DataType(DataType.MultilineText)]
+        public string PerDiem { get; set; }
 
         public PriceInformationModel ResultPriceInformationModel { get; set; }
 
@@ -56,8 +55,8 @@ namespace Tolk.Web.Models
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
                 Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price,
-                PerDiem = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.PerDiem)?.Price,
-                CarCompensation = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.CarCompensation)?.Price
+                PerDiem = requisition.PerDiem,
+                CarCompensation = requisition.CarCompensation
             };
         }
     }

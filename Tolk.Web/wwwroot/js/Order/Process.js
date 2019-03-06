@@ -66,7 +66,7 @@ $(function () {
         //Before we start, validate the form!
         var $form = $(this).parents(".modal-content").find("form");
         $("#commentRequisitionValidator").empty();
-        if ($form.valid() && $form.find("#Comment").val().length > 0) {
+        if ($form.valid() && $form.find("#CustomerComment").val().length > 0) {
             $form.submit();
         }
         else {

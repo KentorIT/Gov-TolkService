@@ -276,15 +276,13 @@ namespace Tolk.Web.Controllers
                         model.TimeWasteIWHTime,
                         request.PriceRows.OfType<PriceRowBase>(),
                         model.Outlay,
-                        model.PerDiem,
-                        model.CarCompensation,
                         request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
                         mealbreaks
                     );
 
                     var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows,
                         model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
-                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks);
+                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
                 return Forbid();
@@ -338,7 +336,7 @@ namespace Tolk.Web.Controllers
                         _logger.LogWarning("Wrong status when trying to Comment requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                     }
-                    _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.Comment);
+                    _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.CustomerComment);
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();

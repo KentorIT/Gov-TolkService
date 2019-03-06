@@ -24,7 +24,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens kommentar")]
         [DataType(DataType.MultilineText)]
         [Required]
-        public string Comment { get; set; }
+        public string CustomerComment { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }
 
@@ -64,8 +64,8 @@ namespace Tolk.Web.Models
                 SessionStartedAt = requisition.SessionStartedAt,
                 ExpectedTravelCosts = requisition.Request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
-                PerDiem = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.PerDiem)?.Price ?? 0,
-                CarCompensation = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.CarCompensation)?.Price ?? 0,
+                PerDiem = requisition.PerDiem,
+                CarCompensation = requisition.CarCompensation,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
@@ -73,7 +73,7 @@ namespace Tolk.Web.Models
                 CreatedAt = requisition.CreatedAt,
                 Message = requisition.Message,
                 Status = requisition.Status,
-                Comment = requisition.CustomerComment,
+                CustomerComment = requisition.CustomerComment,
                 ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 AttachmentListModel = new AttachmentListModel
                 {

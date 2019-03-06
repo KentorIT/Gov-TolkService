@@ -7,6 +7,6 @@ namespace Tolk.Web.Models
         public int RequisitionId { get; set; }
 
         [StringLength(255)]
-        public string Comment { get; set; }
+        public string CustomerComment { get; set; }
     }
 }
