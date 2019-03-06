@@ -34,6 +34,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new Order {
                     OrderId = 0,
+                    CustomerReferenceNumber = "Number0",
                     OrderNumber = "2018-001337",
                     StartAt = new DateTimeOffset(2018,06,07,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,06,07,15,00,00, new TimeSpan(02,00,00)),
@@ -49,6 +50,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order {
                     OrderId = 1,
+                    CustomerReferenceNumber = "Number1",
                     OrderNumber = "2018-000066", // execute order 66...
                     StartAt = new DateTimeOffset(2018,07,07,08,30,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,07,07,17,00,00, new TimeSpan(02,00,00)),
@@ -63,6 +65,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order {
                     OrderId = 2,
+                    CustomerReferenceNumber = "Number2",
                     OrderNumber = "2018-000042",
                     StartAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,08,07,14,00,00, new TimeSpan(02,00,00)),
@@ -78,6 +81,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
                 new Order {
                     OrderId = 3,
+                    CustomerReferenceNumber = "Number3",
                     OrderNumber = "2018-000654",
                     StartAt = new DateTimeOffset(2018,09,03,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
@@ -92,6 +96,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order {
                     OrderId = 4,
+                    CustomerReferenceNumber = "Number4",
                     OrderNumber = "2018-000330",
                     StartAt = new DateTimeOffset(2018,09,18,09,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,18,13,00,00, new TimeSpan(02,00,00)),
@@ -106,6 +111,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order {
                     OrderId = 5,
+                    CustomerReferenceNumber = "Number5",
                     OrderNumber = "2018-000501",
                     StartAt = new DateTimeOffset(2018,10,09,10,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,10,09,15,00,00, new TimeSpan(02,00,00)),
@@ -121,6 +127,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order {
                     OrderId = 6,
+                    CustomerReferenceNumber = "Number6",
                     OrderNumber = "2018-000006",
                     StartAt = new DateTimeOffset(2018,09,03,00,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
@@ -136,6 +143,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order
                 {
                     OrderId = 7,
+                    CustomerReferenceNumber = "Number7",
                     OrderNumber = "2018-000007",
                     StartAt = new DateTimeOffset(2018,08,15,00,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,08,15,19,00,00, new TimeSpan(02,00,00)),

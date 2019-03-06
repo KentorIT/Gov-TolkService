@@ -13,6 +13,9 @@ namespace Tolk.Web.Models
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
+        [Display(Name = "Myndighetens ärendenummer")]
+        public string CustomerReferenceNumber { get; set; }
+
         public OrderStatus? Status { get; set; }
 
         [Display(Name = "Län")]
@@ -31,13 +34,17 @@ namespace Tolk.Web.Models
 
         public bool HasActiveFilters
         {
-            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue; 
+            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(CustomerReferenceNumber) || 
+                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue; 
         }
 
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
             orders = !string.IsNullOrWhiteSpace(OrderNumber) 
                 ? orders.Where(o => o.OrderNumber.Contains(OrderNumber)) 
+                : orders;
+            orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
+                ? orders.Where(o => o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : orders;
             orders = RegionId.HasValue 
                 ? orders.Where(o => o.RegionId == RegionId) 

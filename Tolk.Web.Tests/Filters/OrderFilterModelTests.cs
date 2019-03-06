@@ -74,6 +74,22 @@ namespace Tolk.Web.Tests.Filters
             listSecond.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[5], mockOrders[6] });
         }
 
+        [Theory]
+        [InlineData("x", 0)]
+        [InlineData("Number2", 1)]
+        [InlineData("Numb", 8)]
+        public void OrderFilter_ByCustomerOrderNumber(string input, int count)
+        {
+            var filter = new OrderFilterModel
+            {
+                CustomerReferenceNumber = input
+            };
+
+            var list = filter.Apply(mockOrders.AsQueryable());
+
+            list.Should().HaveCount(count);
+        }
+
         [Fact]
         public void OrderFilter_ByStatus()
         {
