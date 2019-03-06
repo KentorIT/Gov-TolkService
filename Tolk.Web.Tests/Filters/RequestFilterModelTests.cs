@@ -40,6 +40,22 @@ namespace Tolk.Web.Tests.Filters
             list.Should().Contain(actual);
         }
 
+        [Theory]
+        [InlineData("x", 0)]
+        [InlineData("Number2", 1)]
+        [InlineData("Numb", 6)]
+        public void RequestFilter_ByCustomerOrderNumber(string input, int count)
+        {
+            var filter = new RequestFilterModel
+            {
+                CustomerReferenceNumber = input
+            };
+
+            var list = filter.Apply(requests.AsQueryable());
+
+            list.Should().HaveCount(count);
+        }
+
         [Fact]
         public void RequestFilter_ByRegion()
         {
