@@ -15,6 +15,7 @@ SELECT * FROM Requisitions r WHERE r.PerDiem <> ''
 
 SELECT * FROM RequisitionPriceRows rpr WHERE rpr.PriceRowType IN (9)
 
+--set to a fix value
 UPDATE Requisitions SET CarCompensation = 12
 FROM Requisitions r JOIN RequisitionPriceRows rpr ON r.RequisitionId = rpr.RequisitionId
  WHERE rpr.PriceRowType IN (9)
