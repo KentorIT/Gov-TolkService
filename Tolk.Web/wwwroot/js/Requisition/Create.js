@@ -1,8 +1,7 @@
 ﻿/* eslint-disable eqeqeq */
 ﻿$('#TimeWasteTotalTime').change(function () { validateControls(); });
 $('#TimeWasteIWHTime').change(function () { validateControls(); });
-$('#Outlay').change(function () { validateControls(); });
-$('#CarCompensation').change(function () { validateCarCompensation(); });
+$('#CarCompensation').change(function () { validateControls(); });
 $('#SessionEndedAt').change(function () { validateControls(); });
 $('#SessionStartedAt').change(function () { validateControls(); });
 
@@ -32,51 +31,58 @@ $(document).ready(function () {
 });
 
 function validateControls() {
-    if (checkWasteTime() &&
-        checkSessionEndedAt()) { $('#create').attr('disabled', false); }
+    var wasteTimeOk = checkWasteTime();
+    var sessionEndOk = checkSessionEndedAt();
+    var carCompenstionOk = checkCarCompensation();
+    if (wasteTimeOk && sessionEndOk && carCompenstionOk) { $('#create').attr('disabled', false); }
     else { $('#create').attr('disabled', true); }
 }
 
-function validateCarCompensation() {
-    $('#CarCompensation').val($('#CarCompensation').val().replace('.',''));
+function checkCarCompensation() {
     var carComp = $('#CarCompensation').val();
-    if ((carComp != "" && !(Math.floor(carComp) == carComp && $.isNumeric(carComp)))) {
-        triggerValidator("Bilersättning kan endast bestå av siffor <br \><br \>", $('#carCompensationValidator'));
-        $('#create').attr('disabled', true);
+
+    if (carComp != "" && (!(Math.floor(carComp) == carComp && $.isNumeric(carComp)) || carComp.indexOf(".") > 0)) {
+        triggerValidator("Bilersättning får endast innehålla siffror <br \><br \>", $('#carCompensationValidator'));
+        return false;
     }
     else if (carComp != "" && (parseInt(carComp) < 0 || parseInt(carComp) > 10000)) {
         triggerValidator("Kontrollera värdet för bilersättning <br \><br \>", $('#carCompensationValidator'));
-        $('#create').attr('disabled', true);
+        return false;
     }
     else {
-        $('#create').attr('disabled', false);
         $('#carCompensationValidator').hide();
+        return true;
     }
 }
 
 function checkWasteTime() {
     var nT = $('#TimeWasteTotalTime').val();
     var iwhT = $('#TimeWasteIWHTime').val();
-    if ((nT != "" && isNaN(parseInt(nT)) || (iwhT != "" && isNaN(parseInt(iwhT))))) {
-        triggerValidator("Spilltid måste vara ett tal, ange antal minuter <br \><br \>", $('#wasteTimeValidator'));
+    if (nT != "" && (!(Math.floor(nT) == nT && $.isNumeric(nT)) || nT.indexOf(".") > 0)) {
+        triggerValidator("Spilltid får endast innehålla siffror, ange antal minuter <br \><br \>", $('#wasteTimeValidator'));
         return false;
     }
     else if (nT != "" && (parseInt(nT) < 31 || parseInt(nT) > 600)) {
         triggerValidator("Kontrollera värden för spilltid (ska endast anges om det överstiger 30 min) <br \><br \>", $('#wasteTimeValidator'));
         return false;
     }
-    else {
-        nT = nT == "" ? 0 : nT;
-
-        if (parseInt(iwhT) > parseInt(nT)) {
-            triggerValidator("Spilltid för obekväm tid kan inte vara större än den totala spilltiden <br \><br \>", $('#wasteTimeValidator'));
-            return false;
-        }
-        else {
-            $('#wasteTimeValidator').hide();
-            return true;
-        }
+    if (iwhT != "" && (!(Math.floor(iwhT) == iwhT && $.isNumeric(iwhT)) || iwhT.indexOf(".") > 0)) {
+        triggerValidator("Spilltid för obekväm tid får endast innehålla siffror, ange antal minuter <br \><br \>", $('#wasteTimeValidator'));
+        return false;
     }
+
+    nT = nT == "" ? 0 : nT;
+    if (parseInt(iwhT) > parseInt(nT)) {
+        triggerValidator("Spilltid för obekväm tid kan inte vara större än den totala spilltiden <br \><br \>", $('#wasteTimeValidator'));
+        return false;
+    }
+    iwhT = iwhT == "" ? 0 : iwhT;
+    if (parseInt(iwhT) < 0) {
+        triggerValidator("Spilltid för obekväm tid kan inte vara mindre än noll <br \><br \>", $('#wasteTimeValidator'));
+        return false;
+    }
+    $('#wasteTimeValidator').hide();
+    return true;
 }
 
 function checkSessionEndedAt() {
@@ -157,10 +163,6 @@ function triggerValidator(message, validatorId) {
     validatorId.show();
 }
 
-function inputNumbersOnly(elem) {
-    elem.value = elem.value.replace(/[^0-9]/g, '');
-}
-
 $(function () {
     var currentId = 0;
 
@@ -236,22 +238,6 @@ $(function () {
         }
         validateControls();
     });
-
-    { // Bruteforcing to ints only, to prevent unmodifiable english-language int validation messages from triggering
-        $('#TimeWasteTotalTime').keyup(function () {
-            inputNumbersOnly(this);
-        });
-        $('#TimeWasteTotalTime').change(function () {
-            inputNumbersOnly(this);
-        });
-
-        $('#TimeWasteIWHTime').keyup(function () {
-            inputNumbersOnly(this);
-        });
-        $('#TimeWasteIWHTime').change(function () {
-            inputNumbersOnly(this);
-        });
-    }
 
     $("body").on("click", ".save-mealbreak", function (event) {
         event.preventDefault();
