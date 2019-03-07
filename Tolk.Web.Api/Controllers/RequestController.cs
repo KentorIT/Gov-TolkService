@@ -44,14 +44,14 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
-        public JsonResult Answer([FromBody] RequestAnswerModel model)
+        public async Task<JsonResult> Answer([FromBody] RequestAnswerModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
                 return ReturError("UNAUTHORIZED");
             }
-            var order = _dbContext.Orders
+            var order = await _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
@@ -59,7 +59,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Language)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
+                .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
@@ -85,12 +85,11 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("INTERPRETER_NOT_FOUND");
             }
             var now = _timeService.SwedenNow;
-            //Add transaction here!!!
             if (request.Status == RequestStatus.Created)
             {
                 request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
             }
-            _requestService.Accept(
+            await _requestService.Accept(
                 request,
                 now,
                 user?.Id ?? apiUser.Id,
@@ -108,7 +107,7 @@ namespace Tolk.Web.Api.Controllers
                 new List<RequestAttachment>(),
                 model.ExpectedTravelCosts
             );
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             //End of service
             return Json(new ResponseBase());
         }
@@ -235,7 +234,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        public JsonResult ChangeInterpreter([FromBody] RequestAnswerModel model)
+        public async Task<JsonResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
             var apiUser = GetApiUser();
             if (apiUser == null)
@@ -277,7 +276,7 @@ namespace Tolk.Web.Api.Controllers
 
             try
             {
-                _requestService.ChangeInterpreter(
+                await _requestService.ChangeInterpreter(
                     request,
                     _timeService.SwedenNow,
                     user?.Id ?? apiUser.Id,
@@ -294,7 +293,7 @@ namespace Tolk.Web.Api.Controllers
                     //Does not handle attachments yet.
                     new List<RequestAttachment>(),
                     model.ExpectedTravelCosts);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
@@ -557,7 +556,7 @@ namespace Tolk.Web.Api.Controllers
                 } : null,
                 Interpreter = new InterpreterModel
                 {
-                    InterpreterId = request.Interpreter.InterpreterId,
+                    InterpreterId = request.Interpreter.InterpreterBrokerId,
                     Email = request.Interpreter.Email,
                     FirstName = request.Interpreter.FirstName,
                     LastName = request.Interpreter.LastName,

@@ -229,7 +229,6 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-
                     var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
                         RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
@@ -253,7 +252,7 @@ namespace Tolk.Web.Controllers
 
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
-                                _requestService.ChangeInterpreter(
+                            	await _requestService.ChangeInterpreter(
                                     request,
                                     _clock.SwedenNow,
                                     User.GetUserId(),
@@ -268,7 +267,7 @@ namespace Tolk.Web.Controllers
                             }
                             else
                             {
-                                _requestService.Accept(
+                            	await _requestService.Accept(
                                     request,
                                     _clock.SwedenNow,
                                     User.GetUserId(),
@@ -293,12 +292,12 @@ namespace Tolk.Web.Controllers
                                 model.ExpectedTravelCosts
                             );
                         }
+                        await _dbContext.SaveChangesAsync();
                     }
                     catch (InvalidOperationException ex)
                     {
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
-                    _dbContext.SaveChanges();
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
                 }
                 return Forbid();

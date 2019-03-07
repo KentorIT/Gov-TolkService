@@ -35,7 +35,9 @@ namespace Tolk.Web.Api
             services.AddScoped<ApiUserService>();
             services.AddSingleton<ISwedishClock, TimeService>();
             services.AddScoped<TimeService>();
+            services.AddScoped<ITellusConnection, Services.TellusConnectionService>();
             services.AddScoped<HashService>();
+            services.AddScoped<VerificationService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));

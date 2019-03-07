@@ -52,6 +52,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.CustomName ?? value.ToString();
         }
+
         public static TEnum? GetEnumByCustomName<TEnum>(string value) where TEnum : struct
         {
             var type = typeof(TEnum);
@@ -59,6 +60,18 @@ namespace Tolk.BusinessLogic.Utilities
 
             return Enum.GetValues(type).OfType<TEnum>()
                 .SingleOrDefault(v => GetAttributeProperty<CustomNameAttribute, TEnum>(v)?.CustomName == value);
+        }
+        public static string GetTellusName<TEnum>(TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperty<TellusNameAttribute, TEnum>(value)?.Name ?? value.ToString();
+        }
+        public static TEnum? GetEnumByTellusName<TEnum>(string value) where TEnum : struct
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return Enum.GetValues(type).OfType<TEnum>()
+                .SingleOrDefault(v => GetAttributeProperty<TellusNameAttribute, TEnum>(v)?.Name == value);
         }
 
         /// <summary>

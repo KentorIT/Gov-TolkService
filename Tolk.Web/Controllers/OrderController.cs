@@ -546,7 +546,6 @@ namespace Tolk.Web.Controllers
                 }
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), model.ContactPersonId);
-                _dbContext.SaveChanges();
                 var changedOrder = _dbContext.Orders
                     .Include(o => o.Requests
                         ).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -555,6 +554,7 @@ namespace Tolk.Web.Controllers
                     .Single(o => o.OrderId == order.OrderId);
 
                 _notificationService.OrderContactPersonChanged(changedOrder);
+                _dbContext.SaveChanges();
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
                     return RedirectToAction("View", new { id = order.OrderId });

@@ -24,6 +24,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<OrderService> _logger;
         private readonly TolkOptions _options;
         private readonly NotificationService _notificationService;
+        private readonly VerificationService _verificationService;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -33,7 +34,8 @@ namespace Tolk.BusinessLogic.Services
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService
+            NotificationService notificationService,
+            VerificationService verificationService
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -44,6 +46,47 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _options = options.Value;
             _notificationService = notificationService;
+            _verificationService = verificationService;
+        }
+
+        public async Task HandleStartedOrders()
+        {
+            var requestIds = await _tolkDbContext.Requests
+                .Where(r => (r.Order.StartAt <= _clock.SwedenNow && r.Order.Status == OrderStatus.ResponseAccepted) &&
+                     r.Status == RequestStatus.Approved && r.InterpreterCompetenceVerificationResultOnAssign != null &&
+                     r.InterpreterCompetenceVerificationResultOnStart == null)
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogDebug("Found {count} requests where the interpreter should be revalidated: {requestIds}",
+                requestIds.Count, string.Join(", ", requestIds));
+
+            foreach (var requestId in requestIds)
+            {
+                try
+                {
+                    var startedRequest = await _tolkDbContext.Requests
+                    .Include(r => r.Interpreter)
+                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
+
+                    if (startedRequest == null)
+                    {
+                        _logger.LogDebug("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            requestId);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
+                            startedRequest.RequestId, startedRequest.OrderId);
+                        startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel);
+                        await _tolkDbContext.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
+                }
+            }
         }
 
         public async Task HandleExpiredRequests()

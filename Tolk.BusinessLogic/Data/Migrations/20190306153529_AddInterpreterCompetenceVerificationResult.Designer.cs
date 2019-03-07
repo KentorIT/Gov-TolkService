@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190306153529_AddInterpreterCompetenceVerificationResult")]
+    partial class AddInterpreterCompetenceVerificationResult
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -430,25 +432,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerOrganisations");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
-                {
-                    b.Property<int>("FailedWebHookCallId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ErrorMessage");
-
-                    b.Property<DateTimeOffset>("FailedAt");
-
-                    b.Property<int>("OutboundWebHookCallId");
-
-                    b.HasKey("FailedWebHookCallId");
-
-                    b.HasIndex("OutboundWebHookCallId");
-
-                    b.ToTable("FailedWebHookCalls");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Holiday", b =>
                 {
                     b.Property<DateTime>("Date")
@@ -560,7 +543,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("AllowExceedingTravelCost");
+                    b.Property<bool>("AllowMoreThanTwoHoursTravelTime");
 
                     b.Property<int>("AssignentType");
 
@@ -861,13 +844,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("RecipientUserId");
 
-                    b.Property<int?>("ResentHookId");
-
                     b.HasKey("OutboundWebHookCallId");
 
                     b.HasIndex("RecipientUserId");
-
-                    b.HasIndex("ResentHookId");
 
                     b.ToTable("OutboundWebHookCalls");
                 });
@@ -1111,9 +1090,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("InterpreterBrokerId");
 
-                    b.Property<int?>("InterpreterCompetenceVerificationResultOnAssign");
-
-                    b.Property<int?>("InterpreterCompetenceVerificationResultOnStart");
+                    b.Property<int?>("InterpreterCompetenceVerificationResult");
 
                     b.Property<int?>("InterpreterLocation");
 
@@ -1664,14 +1641,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("ParentCustomerOrganisationId");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "OutboundWebHookCall")
-                        .WithMany("FailedCalls")
-                        .HasForeignKey("OutboundWebHookCallId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
@@ -1839,10 +1808,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("RecipientUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "ResentHook")
-                        .WithMany()
-                        .HasForeignKey("ResentHookId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Ranking", b =>

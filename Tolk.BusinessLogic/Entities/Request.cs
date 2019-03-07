@@ -58,6 +58,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? CompetenceLevel { get; set; }
 
+        public VerificationResult? InterpreterCompetenceVerificationResultOnAssign { get; set; }
+
+        public VerificationResult? InterpreterCompetenceVerificationResultOnStart { get; set; }
+
         [ForeignKey(nameof(InterpreterBrokerId))]
         public InterpreterBroker Interpreter { get; set; }
 
@@ -202,7 +206,8 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
-            PriceInformation priceInformation)
+            PriceInformation priceInformation, 
+            VerificationResult? verificationResult = null)
         {
             if (Status != RequestStatus.Received)
             {
@@ -231,6 +236,7 @@ namespace Tolk.BusinessLogic.Entities
             RequirementAnswers.AddRange(requirementAnswers);
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+            InterpreterCompetenceVerificationResultOnAssign = verificationResult;
 
             Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
         }
@@ -318,7 +324,8 @@ namespace Tolk.BusinessLogic.Entities
             IEnumerable<RequestAttachment> attachments,
             PriceInformation priceInformation,
             bool isAutoAccepted,
-            Request oldRequest)
+            Request oldRequest,
+            VerificationResult? verificationResult = null)
         {
             //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
@@ -342,6 +349,7 @@ namespace Tolk.BusinessLogic.Entities
             RequirementAnswers = requirementAnswers;
             Attachments = attachments.ToList();
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+            InterpreterCompetenceVerificationResultOnAssign = verificationResult; 
             //if old request already was approved by customer
             if (oldRequest.Status == RequestStatus.Approved)
             {

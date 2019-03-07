@@ -156,7 +156,7 @@ namespace Tolk.Web.Api.Controllers
                     .Where(i => i.BrokerId == apiUser.BrokerId)
                     .Select(i => new InterpreterModel
                     {
-                        InterpreterId = i.InterpreterId,
+                        InterpreterId = i.InterpreterBrokerId,
                         Email = i.Email,
                         FirstName = i.FirstName,
                         LastName = i.LastName,

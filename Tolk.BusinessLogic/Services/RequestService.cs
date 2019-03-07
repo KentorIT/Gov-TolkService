@@ -19,6 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly RankingService _rankingService;
         private readonly TolkDbContext _tolkDbContext;
         private readonly ISwedishClock _clock;
+        private readonly VerificationService _verificationService;
 
         public RequestService(
             PriceCalculationService priceCalculationService,
@@ -27,7 +28,8 @@ namespace Tolk.BusinessLogic.Services
             OrderService orderService,
             RankingService rankingService,
             TolkDbContext tolkDbContext,
-            ISwedishClock clock
+            ISwedishClock clock,
+            VerificationService verificationService
             )
         {
             _priceCalculationService = priceCalculationService;
@@ -37,9 +39,10 @@ namespace Tolk.BusinessLogic.Services
             _rankingService = rankingService;
             _tolkDbContext = tolkDbContext;
             _clock = clock;
+            _verificationService = verificationService;
         }
 
-        public void Accept(
+        public async Task Accept(
             Request request,
             DateTimeOffset acceptTime,
             int userId,
@@ -54,8 +57,14 @@ namespace Tolk.BusinessLogic.Services
         {
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
+            VerificationResult? verificationResult = null;
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter)
+            {
+                //Only check if the selected level is other than other.
+                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
+            }
             // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices);
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, verificationResult);
             //Create notification
             switch (request.Status)
             {
@@ -116,7 +125,7 @@ namespace Tolk.BusinessLogic.Services
             _notificationService.RequestCancelledByBroker(request);
         }
 
-        public void ChangeInterpreter(
+        public async Task ChangeInterpreter(
             Request request,
             DateTimeOffset changedAt,
             int userId,
@@ -135,6 +144,13 @@ namespace Tolk.BusinessLogic.Services
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
             };
             request.Order.Requests.Add(newRequest);
+            VerificationResult? verificationResult = null;
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter)
+            {
+                //Only check if the selected level is other than other.
+                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
+
+            }
             newRequest.ReplaceInterpreter(changedAt,
                 userId,
                 impersonatorId,
@@ -145,8 +161,9 @@ namespace Tolk.BusinessLogic.Services
                 attachedFiles.Select(f => new RequestAttachment { AttachmentId = f.AttachmentId }),
                 _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
                 request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved,
-                request
-                 );
+                request,
+                verificationResult
+            );
             if (request.Status == RequestStatus.Approved && request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
@@ -156,7 +173,6 @@ namespace Tolk.BusinessLogic.Services
                 _notificationService.RequestChangedInterpreter(newRequest);
             }
             request.Status = RequestStatus.InterpreterReplaced;
-
         }
 
         public async Task SendEmailReminders()

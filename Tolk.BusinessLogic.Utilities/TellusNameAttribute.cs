@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tolk.BusinessLogic.Helpers
+namespace Tolk.BusinessLogic.Utilities
 {
     public class TellusNameAttribute : Attribute
     {

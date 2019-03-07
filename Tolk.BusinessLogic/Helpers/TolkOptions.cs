@@ -1,8 +1,9 @@
 ﻿using System;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public class TolkOptions
+    public class TolkOptions: TolkBaseOptions
     {
         public string PublicOrigin { get; set; }
 
@@ -22,11 +23,9 @@ namespace Tolk.BusinessLogic.Helpers
 
         public long CombinedMaxSizeAttachments { get; set; }
 
-        public SideBarBox[] SideBar { get; set; }
         public Environment Env { get; set; } = new Environment { Name = string.Empty, Background = "background: rgba(255, 0, 0, 0.5)", Foreground = "color: #f1f1f1" };
-        public bool EnableRegisterUser { get; set; }
 
-        public Tellus TellusSettings { get; set; }
+        public bool EnableRegisterUser { get; set; }
 
         public void Validate()
         {
@@ -73,15 +72,6 @@ namespace Tolk.BusinessLogic.Helpers
             public string Name { get; set; }
             public string Background { get; set; }
             public string Foreground { get; set; }
-        }
-
-        public class Tellus
-        {
-            public string BaseAddress { get; set; }
-
-            public string RouteApi { get; set; }
-
-            public string RouteGet { get; set; }
         }
     }
 }
