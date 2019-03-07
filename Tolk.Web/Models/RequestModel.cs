@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -152,6 +153,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string Interpreter { get; set; }
 
+        public bool? IsInterpreterVerified { get; set; }
+
+        public string InterpreterVerificationMessage { get; set; }
+
         public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
         public PriceInformationModel RequestCalculatedPriceInformationModel { get; set; }
@@ -170,6 +175,9 @@ namespace Tolk.Web.Models
             var replacingOrderRequest = requestSummaryOnly ? null : request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
             var replacedByOrderRequest = requestSummaryOnly ? null : request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
             var attach = request.Attachments;
+            var verificationResult = (request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign);
+            bool? isInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null;
+   
             return new RequestModel
             {
                 Status = request.Status,
@@ -182,6 +190,8 @@ namespace Tolk.Web.Models
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
+                IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
+                InterpreterVerificationMessage  = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 RequisitionId = request.Requisitions?.OrderByDescending(r => r.RequisitionId).FirstOrDefault()?.RequisitionId,

@@ -1,7 +1,6 @@
 ﻿@model RequestModel
 @using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
-
 @{
     string header = (string)ViewData["header"] ?? "Bokningsförfrågan";
     bool showHeader = (bool?)ViewData["showHeader"] ?? true;
@@ -17,7 +16,6 @@
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "RequestSummary";
 }
-
 @if (showHeader)
 {
     @if (isCollapsible)
@@ -64,6 +62,28 @@
         {
             <div class="col-sm-4">
                 <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
+                @if (Model.IsInterpreterVerified.HasValue)
+                {
+                    if (Model.IsInterpreterVerified.Value)
+                    {
+
+                        <div class="system-action-info">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <span class="info-message">
+                                @Model.InterpreterVerificationMessage
+                            </span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="warning-info-home">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>
+                            <span class="info-message">
+                                @Model.InterpreterVerificationMessage
+                            </span>
+                        </div>
+                    }
+                }
             </div>
         }
         <div class="col-sm-8">
@@ -154,7 +174,8 @@
         </div>
     }
 
-    @if (Model.OrderModel.DisplayExpectedTravelcost && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
+    @if (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes
+     && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
     {
         <div class="row">
             <div class="col-sm-8">
