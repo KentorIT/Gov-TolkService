@@ -430,6 +430,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerOrganisations");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
+                {
+                    b.Property<int>("FailedWebHookCallId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ErrorMessage");
+
+                    b.Property<DateTimeOffset>("FailedAt");
+
+                    b.Property<int>("OutboundWebHookCallId");
+
+                    b.HasKey("FailedWebHookCallId");
+
+                    b.HasIndex("OutboundWebHookCallId");
+
+                    b.ToTable("FailedWebHookCalls");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Holiday", b =>
                 {
                     b.Property<DateTime>("Date")
@@ -841,6 +860,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired();
 
                     b.Property<int>("RecipientUserId");
+
+                    b.Property<int?>("ResentHookId");
 
                     b.HasKey("OutboundWebHookCallId");
 
@@ -1635,6 +1656,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
                         .WithMany("SubCustomerOrganisations")
                         .HasForeignKey("ParentCustomerOrganisationId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "OutboundWebHookCall")
+                        .WithMany()
+                        .HasForeignKey("OutboundWebHookCallId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>

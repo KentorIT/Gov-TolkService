@@ -374,5 +374,18 @@ namespace Tolk.Web.Services
             EnumHelper.GetAllDescriptions<UserStatus>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+
+        public IEnumerable<SelectListItem> NotificationTypes
+        { get; } =
+            EnumHelper.GetAllDescriptions<NotificationType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
+        public IEnumerable<SelectListItem> WebhookStatuses
+        { get; } =
+            EnumHelper.GetAllDescriptions<WebhookStatus>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
     }
 }

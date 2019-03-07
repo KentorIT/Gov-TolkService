@@ -1,0 +1,24 @@
+﻿@model WebHookFilterModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+<div class="col-sm-12">
+
+    <form method="get" class="filter-form do-not-check-dirty">
+        <div class="row">
+            <div class="col-xs-4">
+                <h4>Filtrera</h4>
+            </div>
+            <div class="col-xs-8">
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.WebhookStatuses" class="allow-clear" />
+            </div>
+            <div class="col-sm-6">
+                <form-entry asp-for="NotificationType" type="select" asp-items="SelectListService.NotificationTypes" class="allow-clear" />
+            </div>
+        </div>
+    </form>
+</div>

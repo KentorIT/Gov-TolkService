@@ -104,7 +104,7 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + (((bool)For.ModelExplorer.Model) ? "Ja" : "Nej");
                     break;
                 case OutputType.DateTimeOffset:
-                    text = ValuePrefix + ((DateTimeOffset)For.ModelExplorer.Model).ToString("yyyy-MM-dd HH:mm");
+                    text = ValuePrefix + ((DateTimeOffset?)For.ModelExplorer.Model)?.ToString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.TimeRange:
                     var timeRange = (TimeRange)For.ModelExplorer.Model;

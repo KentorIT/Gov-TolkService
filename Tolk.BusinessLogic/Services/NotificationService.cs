@@ -932,5 +932,35 @@ Du behöver godkänna de beräknade resekostnaderna.";
                 .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Single(o => o.RequestId == id);
         }
+
+        public bool ResendWebHook(OutboundWebHookCall failedCall)
+        {
+            int? brokerId = _dbContext.Users.SingleOrDefault(u => u.Id == failedCall.RecipientUserId)?.BrokerId;
+            if (brokerId == null)
+            {
+                return false;
+            }
+
+            var webhook = GetBrokerNotificationSettings((int)brokerId, failedCall.NotificationType, NotificationChannel.Webhook);
+
+            if (webhook == null)
+            {
+                return false;
+            }
+
+            OutboundWebHookCall newCall = new OutboundWebHookCall(
+                webhook.ContactInformation,
+                failedCall.Payload,
+                failedCall.NotificationType,
+                _clock.SwedenNow,
+                webhook.RecipientUserId);
+
+            _dbContext.OutboundWebHookCalls.Add(newCall);
+            _dbContext.SaveChanges();
+            failedCall.ResentHookId = newCall.OutboundWebHookCallId;
+            _dbContext.SaveChanges();
+
+            return true;
+        }
     }
 }

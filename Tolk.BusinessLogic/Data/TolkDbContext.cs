@@ -373,6 +373,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<RequestView> RequestViews { get; set; }
 
+        public DbSet<FailedWebHookCall> FailedWebHookCalls { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized

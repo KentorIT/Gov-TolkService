@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using MimeKit;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
@@ -25,7 +23,7 @@ namespace Tolk.BusinessLogic.Entities
         }
 
         public int OutboundWebHookCallId { get; private set; }
-        
+
         [Required]
         public string RecipientUrl { get; private set; }
 
@@ -44,5 +42,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset? DeliveredAt { get; set; }
 
         public int FailedTries { get; set; }
+        public int? ResentHookId { get; set; }
+        public ICollection<FailedWebHookCall> FailedCalls { get; set; }
     }
 }

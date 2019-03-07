@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
@@ -40,6 +41,8 @@ namespace Tolk.BusinessLogic.Services
 
             _logger.LogDebug("Found {count} outbound web hook calls to send: {callIds}",
                 callIds.Count, string.Join(", ", callIds));
+
+            string errorMessage = string.Empty;
 
             if (callIds.Any())
             {
@@ -76,6 +79,7 @@ namespace Tolk.BusinessLogic.Services
                                 if (!success)
                                 {
                                     _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
+                                    errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}";
                                 }
                             }
                         }
@@ -83,6 +87,7 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure calling web hook {callId}", callId);
+                        errorMessage = $"Failure calling web hook {callId}. {ex}";
                     }
                     finally
                     {
@@ -93,6 +98,8 @@ namespace Tolk.BusinessLogic.Services
                         else
                         {
                             call.FailedTries++;
+                            FailedWebHookCall failedCall = new FailedWebHookCall { OutboundWebHookCallId = callId, ErrorMessage = errorMessage, FailedAt = _clock.SwedenNow };
+                            _dbContext.FailedWebHookCalls.Add(failedCall);
                         }
                         await _dbContext.SaveChangesAsync();
                     }
