@@ -267,7 +267,7 @@ namespace Tolk.Web.Helpers
                         }
                         else
                         {
-                            //system automatically approves requests where interpreter is replaced and AllowMoreThanTwoHoursTravelTime is true 
+                            //system automatically approves requests where interpreter is replaced and AllowExceedingTravelCost is true 
                             //1 hour before order start - then AnswerProcessedAt is set as well
                             eventLog.Add(new EventLogEntryModel
                             {

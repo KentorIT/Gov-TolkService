@@ -38,7 +38,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 if (value == OrderStatus.ResponseAccepted &&
                 //NEED TO ADD A CHECK IF REQUESTED, AND THE ALLOW CHECK IS FALSE
-                    (!((Status == OrderStatus.Requested && !AllowMoreThanTwoHoursTravelTime) ||
+                    (!((Status == OrderStatus.Requested && AllowExceedingTravelCost != Enums.AllowExceedingTravelCost.YesShouldBeApproved) ||
                         Status == OrderStatus.RequestResponded ||
                         Status == OrderStatus.RequestRespondedNewInterpreter ||
                        (Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
@@ -121,7 +121,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+        public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
 
         [MaxLength(1000)]
         public string Description { get; set; }
@@ -205,7 +205,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void MakeCopy(Order order)
         {
-            order.AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime;
+            order.AllowExceedingTravelCost = AllowExceedingTravelCost;
             order.AssignentType = AssignentType;
             order.CustomerOrganisation = CustomerOrganisation;
             order.Language = Language;

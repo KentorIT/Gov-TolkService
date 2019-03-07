@@ -560,7 +560,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("AllowMoreThanTwoHoursTravelTime");
+                    b.Property<int?>("AllowExceedingTravelCost");
 
                     b.Property<int>("AssignentType");
 

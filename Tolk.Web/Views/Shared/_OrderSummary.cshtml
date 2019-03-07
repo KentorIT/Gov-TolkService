@@ -107,11 +107,11 @@ else
             }
         </div>
     </div>
-    @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected)
+    @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
     {
         <div class="row">
             <div class="col-sm-12">
-                <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" checked-index="none" />
+                <display-entry asp-for="AllowExceedingTravelCost" checked-index="none" />
             </div>
         </div>
     }

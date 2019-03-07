@@ -551,7 +551,7 @@ Kostnader att fakturera:
             string orderNumber = request.Order.OrderNumber;
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
-                (request.Order.AllowMoreThanTwoHoursTravelTime ?
+                (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
                     "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på för uppdraget inte godkänns/avslås så kommer systemet godkänna bokningsförfrågan automatiskt " +
                     $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att bokningsförfrågan tidigare haft status godkänd." :
                     "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.");
@@ -880,7 +880,7 @@ Du behöver godkänna de beräknade resekostnaderna.";
                     Key = EnumHelper.GetCustomName(c.CompetenceLevel),
                     Rank = c.Rank ?? 0
                 }),
-                AllowMoreThanTwoHoursTravelTime = order.AllowMoreThanTwoHoursTravelTime,
+                AllowExceedingTravelCost = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 AssignentType = EnumHelper.GetCustomName(order.AssignentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,

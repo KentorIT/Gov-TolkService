@@ -111,8 +111,8 @@ namespace Tolk.Web.Models
 
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för resekostnad")]
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite not explicitly allowing them
-        [ClientRequired(ErrorMessage = "Ange resekostnad (inga bokstäver tillåtna, ange 0 om det inte finns någon kostnad)")]
-        [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Uppgift om resekostnad måste anges. Finns inga reskostnader anges 0.")]
+        [ClientRequired(ErrorMessage = "Ange resekostnad (endast siffror, ange 0 om det inte finns någon kostnad)")]
+        [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd.")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
 
@@ -213,7 +213,7 @@ namespace Tolk.Web.Models
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
-                OrderModel = OrderModel.GetModelFromOrder(request.Order),
+                OrderModel = OrderModel.GetModelFromOrder(request.Order, null, true),
                 ComplaintId = complaint?.ComplaintId,
                 ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
                 ReplacedByOrderRequestStatus = requestSummaryOnly ? null : replacedByOrderRequest?.Status,

@@ -144,10 +144,10 @@ namespace Tolk.BusinessLogic.Services
                 requirementAnswers,
                 attachedFiles.Select(f => new RequestAttachment { AttachmentId = f.AttachmentId }),
                 _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
-                !request.Order.AllowMoreThanTwoHoursTravelTime,
+                request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved,
                 request
                  );
-            if (request.Status == RequestStatus.Approved && !request.Order.AllowMoreThanTwoHoursTravelTime)
+            if (request.Status == RequestStatus.Approved && request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
             }

@@ -21,18 +21,24 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(OrderStatus.Requested, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.Requested, false, 1, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.Requested, true, 1, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestResponded, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestResponded, false, 1, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestResponded, true, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestResponded, true, 1, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, false, 1, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, true, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, true, 1, true, RequestStatus.Approved)]
-        public void SetResponseAccepted_Valid(OrderStatus status, bool allowMoreThanTwoHourTravelTime, int? replacingOrderId, bool requestExists, RequestStatus? requestStatus)
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved)]
+        public void SetResponseAccepted_Valid(OrderStatus status, AllowExceedingTravelCost allowExceedingTravelCost, int? replacingOrderId, bool requestExists, RequestStatus? requestStatus)
         {
             List<Request> requests = null;
             if (requestExists)
@@ -45,7 +51,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = new Order()
             {
                 Status = status,
-                AllowMoreThanTwoHoursTravelTime = allowMoreThanTwoHourTravelTime,
+                AllowExceedingTravelCost = allowExceedingTravelCost,
                 ReplacingOrderId = replacingOrderId,
                 Requests = requests
             };
@@ -55,18 +61,26 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Illegal status preconditions
-        [InlineData(OrderStatus.Delivered, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.CancelledByCreator, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.NoBrokerAcceptedOrder, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.CancelledByBroker, false, null, true, RequestStatus.Approved)]
-        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, false, null, true, RequestStatus.Approved)]
-        // Over two hours travel time allowed
-        [InlineData(OrderStatus.Requested, true, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Delivered, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.CancelledByCreator, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.CancelledByBroker, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.Delivered, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.CancelledByCreator, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.CancelledByBroker, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved)]
+        //ExceedingTravelCosts must be accepted
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved)]
         // No requests
-        [InlineData(OrderStatus.Requested, false, null, false, null)]
-        [InlineData(OrderStatus.RequestResponded, false, null, false, null)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, false, null, false, null)]
-        public void SetResponseAccepted_Invalid(OrderStatus status, bool allowMoreThanTwoHourTravelTime, int? replacingOrderId, bool requestExists, RequestStatus? requestStatus)
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.No, null, false, null)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, false, null)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, null, false, null)]
+        [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null)]
+        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null)]
+        public void SetResponseAccepted_Invalid(OrderStatus status, AllowExceedingTravelCost allowExceedingTravelCost, int? replacingOrderId, bool requestExists, RequestStatus? requestStatus)
         {
             List<Request> requests = null;
             if (requestExists)
@@ -83,7 +97,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = new Order()
             {
                 Status = status,
-                AllowMoreThanTwoHoursTravelTime = allowMoreThanTwoHourTravelTime,
+                AllowExceedingTravelCost = allowExceedingTravelCost,
                 ReplacingOrderId = replacingOrderId,
                 Requests = requests
             };
@@ -139,7 +153,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = currentStatus,
                 ContactPersonId = prevContactPersonId ?? null,
                 OrderContactPersonHistory = new List<OrderContactPersonHistory>(),
-                AllowMoreThanTwoHoursTravelTime = false,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
                 Requests = new List<Request>()
                 {
                     new Request() { Status = RequestStatus.Approved }

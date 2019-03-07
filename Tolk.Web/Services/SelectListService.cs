@@ -109,6 +109,11 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
+        public static IEnumerable<SelectListItem> AllowExceedingTravelCost { get; } =
+           EnumHelper.GetAllDescriptions<AllowExceedingTravelCost>()
+               .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+               .ToList().AsReadOnly();
+
         public static IEnumerable<SelectListItem> InterpreterLocations { get; } =
             EnumHelper.GetAllDescriptions<InterpreterLocation>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })

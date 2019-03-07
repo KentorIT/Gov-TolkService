@@ -127,9 +127,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Accept_Valid(bool AllowMoreThanTwoHoursTravelTime)
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved)]
+        [InlineData(AllowExceedingTravelCost.No)]
+        public void Accept_Valid(AllowExceedingTravelCost allowExceedingTravelCost)
         {
             var request = new Request()
             {
@@ -139,14 +140,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Order = new Order()
                 {
                     Status = OrderStatus.Requested,
-                    AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
                     Requests = new List<Request>(),
                 },
             };
             request.Order.Requests.Add(request);
 
-            var expectedRequestStatus = AllowMoreThanTwoHoursTravelTime ? RequestStatus.Accepted : RequestStatus.Approved;
-            var expectedOrderStatus = AllowMoreThanTwoHoursTravelTime ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            var expectedRequestStatus = allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ? RequestStatus.Accepted : RequestStatus.Approved;
+            var expectedOrderStatus = allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
             var acceptTime = DateTime.Now;
             var answeredBy = 10;
             var impersonatingAnsweredBy = (int?)null;
@@ -315,9 +316,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void AcceptReplacementOrder_Valid(bool AllowMoreThanTwoHoursTravelTime)
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved)]
+        [InlineData(AllowExceedingTravelCost.No)]
+        public void AcceptReplacementOrder_Valid(AllowExceedingTravelCost allowExceedingTravelCost)
         {
             var request = new Request()
             {
@@ -326,14 +328,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Order = new Order()
                 {
                     Status = OrderStatus.Requested,
-                    AllowMoreThanTwoHoursTravelTime = AllowMoreThanTwoHoursTravelTime,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
                     ReplacingOrderId = 14,
                     Requests = new List<Request>(),
                 }
             };
             request.Order.Requests.Add(request);
-            var expectedRequestStatus = AllowMoreThanTwoHoursTravelTime ? RequestStatus.Accepted : RequestStatus.Approved;
-            var expectedOrderStatus = AllowMoreThanTwoHoursTravelTime ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            var expectedRequestStatus = allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ? RequestStatus.Accepted : RequestStatus.Approved;
+            var expectedOrderStatus = allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
             var acceptTime = DateTime.Now;
             var userId = 10;
             var impersonatorId = (int?)null;
@@ -488,8 +490,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.ToBeProcessedByBroker)]
         public void ReplaceInterpreter_Invalid(RequestStatus status)
         {
-            var request = new Request()
+            var request = new Request
             {
+                Order = new Order(),
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() => 

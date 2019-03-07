@@ -4,7 +4,7 @@ $(function () {
     var currentId = 0;
     var currentDesiredId = 0;
 
-    $(".allow-more-travel-time").hide();
+    $(".allow-more-travel-cost").hide();
 
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
@@ -251,11 +251,11 @@ $(function () {
         });
 
         if (isOnsiteSelected) {
-            $(".allow-more-travel-time").show();
+            $(".allow-more-travel-cost").show();
         }
         else {
-            $(".allow-more-travel-time").hide();
-            $(".allow-more-travel-time-information").hide();
+            $(".allow-more-travel-cost").hide();
+            $(".allow-more-travel-cost-information").hide();
         }
     });
 
@@ -276,11 +276,11 @@ $(function () {
         }
     });
 
-    $("body").on("click", "input[name=AllowMoreThanTwoHoursTravelTime]", function () {
-        if ($(this).val() === "Yes") {
-            $(".allow-more-travel-time-information").show();
+    $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
+        if ($(this).val() === "YesShouldBeApproved") {
+            $(".allow-more-travel-cost-information").show();
         } else {
-            $(".allow-more-travel-time-information").hide();
+            $(".allow-more-travel-cost-information").hide();
         }
     });
 
@@ -293,7 +293,7 @@ $(function () {
     $("#UseRankedInterpreterLocation").trigger("change");
     checkTimeAtStart();
     $("#SplitTimeRange_StartDate").trigger("change");
-    $(".allow-more-travel-time-information").hide();
+    $(".allow-more-travel-cost-information").hide();
 });
 
 function AddRequirement(target) {
@@ -324,7 +324,6 @@ $(function () {
                 }
             }
         }
-
         return true;
     };
 
@@ -381,11 +380,11 @@ $(function () {
         return true;
     };
 
-    var validateAllowMoreThanTwoHoursTravelTime = function () {
-        if ($("#AllowMoreThanTwoHoursTravelTime").is(":hidden")) {
+    var validateAllowExceedingTravelCost = function () {
+        if ($("#AllowExceedingTravelCost").is(":hidden")) {
             return true;
         }
-        var checked = $("[id^=AllowMoreThanTwoHoursTravelTime_]").filter(":checked")[0];
+        var checked = $("[id^=AllowExceedingTravelCost_]").filter(":checked")[0];
         return checked !== undefined;
     };
 
@@ -399,8 +398,8 @@ $(function () {
                 $("#LatestAnswerBy_Hour").select2("val", "");
                 $("#LatestAnswerBy_Minute").select2("val", "");
             }
-            if (!validateAllowMoreThanTwoHoursTravelTime()) {
-                validatorMessage("AllowMoreThanTwoHoursTravelTime", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
+            if (!validateAllowExceedingTravelCost()) {
+                validatorMessage("AllowExceedingTravelCost", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
                 errors++;
             }
             if (!validateStartTime()) {

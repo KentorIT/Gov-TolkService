@@ -125,7 +125,9 @@ namespace Tolk.Web.Models
 
         [ClientRequired]
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt På plats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett mail när bekräftelsen kommit.Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen. Förfrågan ser då likadan ut. Om bedömd resekostnad är 0 kr godkänns bekräftelsen automatiskt")]
-        public RadioButtonGroup AllowMoreThanTwoHoursTravelTime { get; set; }
+        public RadioButtonGroup AllowExceedingTravelCost { get; set; }
+
+        public bool DisplayForBroker { get; set; } = false;
 
         public bool IsOnSiteOrOffSiteDesignatedLocationSelected
         {
@@ -141,13 +143,9 @@ namespace Tolk.Web.Models
         }
 
         [Display(Name = "Kompetensnivå är ett krav")]
-        public bool SpecificCompetenceLevelRequired
-        {
-            get
-            {
-                return CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
-            }
-        }
+        public bool SpecificCompetenceLevelRequired { get => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement; }
+
+        public bool DisplayExpectedTravelcost { get => (AllowExceedingTravelCost == null || AllowExceedingTravelCost.SelectedItem == null) ? false : DisplayForBroker ? EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes : (EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved); }
 
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
@@ -264,7 +262,7 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public bool AllowDenial => AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
+        public bool AllowDenial => AllowExceedingTravelCost != null && EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved;
 
         public bool AllowEditContactPerson => (Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator);
 
@@ -390,7 +388,10 @@ namespace Tolk.Web.Models
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
-                order.AllowMoreThanTwoHoursTravelTime = HasOnsiteLocation && AllowMoreThanTwoHoursTravelTime != null ? EnumHelper.Parse<TrueFalse>(AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes : false;
+                if (HasOnsiteLocation && AllowExceedingTravelCost != null)
+                {
+                    order.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
+                }
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
                 if (Dialect != null)
                 {
@@ -507,7 +508,7 @@ namespace Tolk.Web.Models
             };
         }
 
-        public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null)
+        public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null, bool displayForBroker = false)
         {
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
 
@@ -532,9 +533,10 @@ namespace Tolk.Web.Models
                 competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
                 competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
             }
-
+            
             return new OrderModel
             {
+                DisplayForBroker = displayForBroker,
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber.ToString(),
                 ReplacingOrderNumber = order?.ReplacingOrder?.OrderNumber,
@@ -552,7 +554,7 @@ namespace Tolk.Web.Models
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
-                AllowMoreThanTwoHoursTravelTime = new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.AllowMoreThanTwoHoursTravelTime ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) },
+                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } :  new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
@@ -656,7 +658,7 @@ namespace Tolk.Web.Models
 
             return new OrderModel
             {
-                AllowMoreThanTwoHoursTravelTime = new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.AllowMoreThanTwoHoursTravelTime ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) },
+                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,

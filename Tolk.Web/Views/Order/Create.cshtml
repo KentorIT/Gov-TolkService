@@ -107,7 +107,7 @@
                             </div>
                             <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                         </div>
-                        <div class="row allow-more-travel-time">
+                        <div class="row allow-more-travel-cost">
                             <div class="col-sm-8 important-info">
                                 Vid tolkning På plats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för
                                 tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg.
@@ -115,10 +115,10 @@
                             </div>
 
                             <div class="col-sm-12">
-                                <form-entry asp-for="AllowMoreThanTwoHoursTravelTime" asp-items="SelectListService.BoolList" checked-index="none" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
-                                <div id="AllowMoreThanTwoHoursTravelTimeValidator" class="d-none text-danger body"></div>
+                                <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-index="none" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
+                                <div id="AllowExceedingTravelCostValidator" class="d-none text-danger body"></div>
                             </div>
-                            <div class="col-sm-8 important-info allow-more-travel-time-information">
+                            <div class="col-sm-8 important-info allow-more-travel-cost-information">
                                 Förmedlingen ska ange bedömd resekostnad som du måste godkänna innan tolk kan tillsättas.
                                 Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.
                             </div>

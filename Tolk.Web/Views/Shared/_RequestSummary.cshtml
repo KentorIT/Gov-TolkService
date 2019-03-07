@@ -153,8 +153,8 @@
             }
         </div>
     }
-    @if (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowMoreThanTwoHoursTravelTime.SelectedItem.Value) == TrueFalse.Yes
-     && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
+
+    @if (Model.OrderModel.DisplayExpectedTravelcost && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
     {
         <div class="row">
             <div class="col-sm-8">

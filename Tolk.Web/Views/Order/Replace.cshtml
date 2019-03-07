@@ -69,9 +69,12 @@
                         <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.CompactInformation" />
                     }
                 </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="AllowMoreThanTwoHoursTravelTime" />
-                </div>
+                @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AllowExceedingTravelCost" />
+                    </div>
+                }
             </div>
             <div class="row">
                 <div class="col-sm-4">

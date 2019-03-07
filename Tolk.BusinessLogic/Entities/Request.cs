@@ -220,7 +220,7 @@ namespace Tolk.BusinessLogic.Entities
             //}
             ////Add Validation for competencelevel, if required
 
-            bool requiresAccept = Order.AllowMoreThanTwoHoursTravelTime;
+            bool requiresAccept = Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
             AnswerDate = acceptTime;
             AnsweredBy = userId;
@@ -294,7 +294,7 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
-            if (Order.AllowMoreThanTwoHoursTravelTime)
+            if (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved)
             {
                 Status = RequestStatus.Accepted;
                 Order.Status = OrderStatus.RequestResponded;
