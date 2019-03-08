@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
@@ -25,7 +26,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _notificationService = notificationService;
         }
-        public async Task<IActionResult> List(WebHookFilterModel model)
+        public IActionResult List(WebHookFilterModel model)
         {
             if (model == null)
             {
@@ -41,7 +42,7 @@ namespace Tolk.Web.Controllers
             int? apiUser = _dbContext.Users.Where(u => u.BrokerId == brokerId && u.IsApiUser && u.IsActive)
                 .SingleOrDefault()?.Id;
 
-            var items = _dbContext.OutboundWebHookCalls
+            IQueryable<OutboundWebHookCall> items = _dbContext.OutboundWebHookCalls
                 .Where(wh => wh.RecipientUserId == apiUser);
 
             items = model.Apply(items);
@@ -51,8 +52,8 @@ namespace Tolk.Web.Controllers
                 {
                     Items = items.Select(wh => new WebHookListItemModel
                     {
-                        CreatedAt = wh.CreatedAt,
-                        DeliveredAt = wh.DeliveredAt,
+                        CreatedAt = wh.CreatedAt.DateTime,
+                        DeliveredAt = wh.DeliveredAt == null ? null : (DateTime?)wh.DeliveredAt.Value.DateTime,
                         FailedTries = wh.FailedTries,
                         HasBeenResent = wh.ResentHookId != null,
                         NotificationType = wh.NotificationType,
@@ -67,7 +68,7 @@ namespace Tolk.Web.Controllers
                 });
         }
 
-        public async Task<IActionResult> View(int id)
+        public IActionResult View(int id)
         {
             if (!User.IsInRole(Roles.SuperUser))
             {
@@ -90,7 +91,7 @@ namespace Tolk.Web.Controllers
                     RecipientUrl = wh.RecipientUrl,
                     ReplacedBy = wh.ResentHookId,
                     Replaces = _dbContext.OutboundWebHookCalls.Where(w => w.ResentHookId == wh.OutboundWebHookCallId && w.ResentHookId != null).Select(w => (int?)w.OutboundWebHookCallId).SingleOrDefault(),
-                    FailedTries = wh.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt, ErrorMessage = f.ErrorMessage }).ToList()
+                    FailedTries = wh.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt.DateTime, ErrorMessage = f.ErrorMessage }).ToList()
 
                 })
                 .SingleOrDefault(wh => wh.OutboundWebHookCallId == id);
@@ -105,7 +106,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Resend(int WebHookId)
+        public IActionResult Resend(int WebHookId)
         {
             if (!User.IsInRole(Roles.SuperUser))
             {

@@ -7,6 +7,7 @@ namespace Tolk.Web.Models
 {
     public class WebHookModel
     {
+        [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }
         public string RecipientUrl { get; set; }
         [Display(Name = "Innehåll")]
@@ -23,11 +24,4 @@ namespace Tolk.Web.Models
         public int? Replaces { get; set; }
     }
 
-    public class FailedTryModel
-    {
-        [Display(Name = "Tidpunkt")]
-        public DateTimeOffset FailedAt { get; set; }
-        [Display(Name = "Felmeddelande")]
-        public string ErrorMessage { get; set; }
-    }
 }

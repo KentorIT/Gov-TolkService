@@ -21,7 +21,6 @@ namespace Tolk.BusinessLogic.Entities
             NotificationType = notificationType;
             RecipientUserId = recipientUserId;
         }
-
         public int OutboundWebHookCallId { get; private set; }
 
         [Required]
@@ -42,7 +41,10 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset? DeliveredAt { get; set; }
 
         public int FailedTries { get; set; }
+
         public int? ResentHookId { get; set; }
+        [ForeignKey(nameof(ResentHookId))]
+        public OutboundWebHookCall ResentHook { get; set; }
         public ICollection<FailedWebHookCall> FailedCalls { get; set; }
     }
 }

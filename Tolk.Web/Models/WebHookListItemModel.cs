@@ -6,11 +6,12 @@ namespace Tolk.Web.Models
 {
     public class WebHookListItemModel
     {
+        [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }
         [Display(Name = "Skapad")]
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
         [Display(Name = "Skickad")]
-        public DateTimeOffset? DeliveredAt { get; set; }
+        public DateTime? DeliveredAt { get; set; }
         [Display(Name = "Misslyckade försök")]
         public int FailedTries { get; set; }
         [Display(Name = "Notifieringstyp")]

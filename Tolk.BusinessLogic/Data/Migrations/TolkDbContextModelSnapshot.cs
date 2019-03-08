@@ -867,6 +867,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RecipientUserId");
 
+                    b.HasIndex("ResentHookId");
+
                     b.ToTable("OutboundWebHookCalls");
                 });
 
@@ -1661,7 +1663,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "OutboundWebHookCall")
-                        .WithMany()
+                        .WithMany("FailedCalls")
                         .HasForeignKey("OutboundWebHookCallId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1833,6 +1835,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("RecipientUserId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "ResentHook")
+                        .WithMany()
+                        .HasForeignKey("ResentHookId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Ranking", b =>

@@ -16,6 +16,7 @@
                 <table class="table table-hover clickable-rows-with-action search-table">
                     <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Skapat</th>
                             <th>Levererat</th>
                             <th>Typ</th>
@@ -27,7 +28,8 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr data-id="@item.OutboundWebHookCallId" data-click-action-url="@Url.Action("View", new { id = item.OutboundWebHookCallId })">
-                                <td class="@item.ListColor">@item.CreatedAt</td>
+                                <td class="@item.ListColor">@item.OutboundWebHookCallId</td>
+                                <td class="gray-border-bottom">@item.CreatedAt</td>
                                 <td class="gray-border-bottom">@item.DeliveredAt</td>
                                 <td class="gray-border-bottom">@EnumHelper.GetDescription(item.NotificationType)</td>
                                 <td class="gray-border-bottom">@item.FailedTries</td>
