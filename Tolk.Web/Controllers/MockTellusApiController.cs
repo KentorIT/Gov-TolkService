@@ -16,7 +16,7 @@ namespace Tolk.Web.Controllers
 
         [HttpGet]
         [Route("Get")]
-        public JsonResult Get(int id)
+        public JsonResult Get(string id)
         {
             dynamic result = _tellusService.GetInterpreter(id);
             if (result == null)

@@ -6,30 +6,14 @@ using System.Text;
 
 namespace Tolk.BusinessLogic.Enums
 {
-    public enum VerificationResult
-    {
-        #region Valid
-        // 1xx = valid 
-        // Interpreter is undoubtedly valid
-        [Display(Name = "Tolk validerad", Description = "Tolken finns i Kammarkollegiets tolkregister, och har den eftersökta kompetensen.")]
-        [Description("Tolk validerad")]
-        Validated = 100,
-        #endregion
 
-        #region Not valid
-        // 2xx = not valid
-        // Interpreter is undoubtedly not found or not valid
-        [Display(Name = "Tolk finns ej", Description = "Tolken finns ej i Kammarkollegiets tolkregister.")]
-        [Description("Tolk finns ej")]
-        NotFound = 200,
-        [Display(Name = "Tolk har ej eftersökt kompetens", Description = "Tolken finns i Kammarkollegiets tolkregister, men saknar den eftersökta kompetensen.")]
-        [Description("Tolk har ej eftersökt kompetens")]
+    /*
         NotCorrectCompetence = 201,
         [Display(Name = "Språk ej registrerat", Description = "Tolken finns i Kammarkollegiets tolkregister, men saknar den eftersökta kompetensen.")]
         [Description("Språk ej registrerat")]
         LanguageNotRegistered = 202,
         #endregion
-
+@@ -33,13 +29,10 @@ namespace Tolk.BusinessLogic.Enums
         #region Validity undetermined
         // 3xx = validity undetermined
         // Interpreter found and has competence, but validity can't be determined
@@ -43,7 +27,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Kompetens giltig efter bokningstillfälle")]
         CompetenceValidAfterAssignment = 302,
         #endregion
-
+@@ -47,10 +40,8 @@ namespace Tolk.BusinessLogic.Enums
         #region Error
         // 4xx = error
         // Non-critical errors when trying to validate interpreter
@@ -51,6 +35,49 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Fel vid verifiering")]
         UnknownError = 400,
         [Display(Name = "Uppkopplingsfel vid verifiering", Description = "Uppkoppling mot Kammarkollegiets tolkregister för tolkverifiering misslyckades.")]
+        [Description("Uppkopplingsfel vid verifiering")]
+        ConnectionError = 401,
+ *      * */
+    public enum VerificationResult
+    {
+        #region Valid
+        // 1xx = valid 
+        // Interpreter is undoubtedly valid
+        //Tolken finns ej i Kammarkollegiets tolkregister.
+        [Description("Tolk validerad ok")]
+        Validated = 100,
+        #endregion
+
+        #region Not valid
+        // 2xx = not valid
+        // Interpreter is undoubtedly not found or not valid
+        //Tolken finns ej i Kammarkollegiets tolkregister.
+        [Description("Tolk finns ej i registret")]
+        NotFound = 200,
+        //Tolken finns i Kammarkollegiets tolkregister, men saknar den eftersökta kompetensen.
+        [Description("Tolk har ej förväntad kompetens")]
+        NotCorrectCompetence = 201,
+        [Description("Språk ej registrerat")]
+        LanguageNotRegistered = 202,
+        #endregion
+
+        #region Validity undetermined
+        // 3xx = validity undetermined
+        // Interpreter found and has competence, but validity can't be determined
+        [Description("Kompetens har ingen fastställd utgångstid")]
+        CompetenceValidityExpiryUndefined = 300,
+        //Tolken är eller har varit giltig, men giltigheten kommer preliminärt att vara utgången vid bokningstillfället.
+        [Description("Kompetens inte giltig vid bokat tillfälle")]
+        CompetenceExpiredAtAssignment = 301,
+        [Description("Kompetens inte giltig vid bokat tillfälle")]
+        CompetenceValidAfterAssignment = 302,
+        #endregion
+
+        #region Error
+        // 4xx = error
+        // Non-critical errors when trying to validate interpreter
+        [Description("Fel vid verifiering")]
+        UnknownError = 400,
         [Description("Uppkopplingsfel vid verifiering")]
         ConnectionError = 401,
         #endregion

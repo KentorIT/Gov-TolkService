@@ -260,7 +260,7 @@ namespace Tolk.BusinessLogic.Entities
             int? impersonatorId,
             string message)
         {
-            if (Status != RequestStatus.Received)
+            if (Status != RequestStatus.Created && Status != RequestStatus.Received)
             {
                 throw new InvalidOperationException($"Det gick inte att tacka nej till förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }

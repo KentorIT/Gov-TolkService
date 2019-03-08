@@ -241,14 +241,16 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Decline(bool hasReplacingOrder)
+        [InlineData(RequestStatus.Created, false)]
+        [InlineData(RequestStatus.Received, false)]
+        [InlineData(RequestStatus.Created, true)]
+        [InlineData(RequestStatus.Received, true)]
+        public void Decline(RequestStatus status, bool hasReplacingOrder)
         {
             var replacingOrderId = hasReplacingOrder ? (int?)10 : null;
             var request = new Request()
             {
-                Status = RequestStatus.Received,
+                Status = status,
                 Order = new Order()
                 {
                     ReplacingOrderId = replacingOrderId
@@ -279,7 +281,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.CancelledByBroker, false)]
         [InlineData(RequestStatus.CancelledByCreator, false)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved, false)]
-        [InlineData(RequestStatus.Created, false)]
         [InlineData(RequestStatus.DeclinedByBroker, false)]
         [InlineData(RequestStatus.DeniedByCreator, false)]
         [InlineData(RequestStatus.DeniedByTimeLimit, false)]
@@ -293,7 +294,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.CancelledByBroker, true)]
         [InlineData(RequestStatus.CancelledByCreator, true)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved, true)]
-        [InlineData(RequestStatus.Created, true)]
         [InlineData(RequestStatus.DeclinedByBroker, true)]
         [InlineData(RequestStatus.DeniedByCreator, true)]
         [InlineData(RequestStatus.DeniedByTimeLimit, true)]

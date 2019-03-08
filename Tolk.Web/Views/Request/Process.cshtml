@@ -36,6 +36,7 @@
         </div>
         <form method="post" asp-action="Accept">
             <input asp-for="RequestId" type="hidden" />
+            <input asp-for="OrderId" type="hidden" />
 
             @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
@@ -63,6 +64,12 @@
                             <form-entry asp-for="NewInterpreterEmail" />
                             <form-entry asp-for="NewInterpreterPhoneNumber" />
                         </div>
+                        <div class="interpreter-information d-none">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <span class="info-message">
+                                
+                            </span>
+                        </div>
                     </div>
                     <div class="col-sm-4">
                         @if (Model.OrderModel.SpecificCompetenceLevelRequired)
@@ -88,7 +95,7 @@
             }
             <input asp-for="Status" type="hidden" />
             @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowExceedingTravelCost.SelectedItem != null &&
-            (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes))
+           (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes))
             {
                 //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
                 <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>

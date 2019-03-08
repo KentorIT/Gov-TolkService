@@ -90,12 +90,14 @@ $(function () {
         }
     });
 
-    // Turn datetime string into UTC string for parsing
-    var startVal = $('#TimeRange_StartDateTime').val().replace(" ", "T").replace(" ", "");
-    var now = new Date($('#now').val()).zeroTime();
-    var start = new Date(startVal).zeroTime();
-    $("#LatestAnswerBy_Date").datepicker("setStartDate", now);
-    $("#LatestAnswerBy_Date").datepicker("setEndDate", start);
+    if ($('#TimeRange_StartDateTime').length > 0) {
+        // Turn datetime string into UTC string for parsing
+        var startVal = $('#TimeRange_StartDateTime').val().replace(" ", "T").replace(" ", "");
+        var now = new Date($('#now').val()).zeroTime();
+        var start = new Date(startVal).zeroTime();
+        $("#LatestAnswerBy_Date").datepicker("setStartDate", now);
+        $("#LatestAnswerBy_Date").datepicker("setEndDate", start);
+    }
 
     $("body").on("click", "#updateLatestAnswerBy", function (event) {
         // Validate LatestAnswerBy time

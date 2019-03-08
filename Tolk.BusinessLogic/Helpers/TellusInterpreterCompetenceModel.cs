@@ -4,14 +4,14 @@ namespace Tolk.BusinessLogic.Helpers
 {
     public class TellusInterpreterCompetenceModel
     {
-        public string language { get; set; }
-        public string competenceLevel { get; set; }
-        public DateTime? validFrom { get; set; }
-        public DateTime? validTo { get; set; }
+        public string Language { get; set; }
+        public string CompetenceLevel { get; set; }
+        public DateTime? ValidFrom { get; set; }
+        public DateTime? ValidTo { get; set; }
 
         public bool IsValidAt(DateTimeOffset startAt)
         {
-            return validFrom.GetValueOrDefault(DateTime.MinValue) < startAt.Date && validTo.GetValueOrDefault(DateTime.MinValue) > startAt.Date;
+            return ValidFrom.GetValueOrDefault(DateTime.MinValue) < startAt.Date && ValidTo.GetValueOrDefault(DateTime.MinValue) > startAt.Date;
         }
     }
 }

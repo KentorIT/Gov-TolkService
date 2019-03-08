@@ -19,6 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly ITellusConnection _tellusConnection;
         private readonly ILogger<VerificationService> _logger;
+        private const string EmptyResult = "[]";
 
         public VerificationService(TolkDbContext dbContext, ISwedishClock clock, ITellusConnection tellusConnection, ILogger<VerificationService> logger)
         {
@@ -43,15 +44,16 @@ namespace Tolk.BusinessLogic.Services
                 {
                     client.DefaultRequestHeaders.Accept.Clear();
                     var response = await client.GetAsync($"{_tellusConnection.Uri}{interpreterId}");
-                    var information = JsonConvert.DeserializeObject<TellusInterpreterModel>(await response.Content.ReadAsStringAsync());
+                    string content = await response.Content.ReadAsStringAsync();
+                    var information = content != EmptyResult ? JsonConvert.DeserializeObject<TellusInterpreterModel>(content) : null;
                     if (information == null)
                     {
                         return VerificationResult.NotFound;
                     }
-                    var competences = information.competences.Where(c => c.language == order.Language.TellusName);
-                    if (competences.Any(c => c.competenceLevel == competenceLevel.GetTellusName()))
+                    var competences = information.Competences.Where(c => c.Language == order.Language.TellusName);
+                    if (competences.Any(c => c.CompetenceLevel == competenceLevel.GetTellusName()))
                     {
-                        var competence = competences.Single(c => c.competenceLevel == competenceLevel.GetTellusName());
+                        var competence = competences.Single(c => c.CompetenceLevel == competenceLevel.GetTellusName());
                         if (competence.IsValidAt(order.StartAt))
                         {
                             return VerificationResult.Validated;

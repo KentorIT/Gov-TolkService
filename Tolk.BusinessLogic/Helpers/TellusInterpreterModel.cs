@@ -6,10 +6,10 @@ namespace Tolk.BusinessLogic.Helpers
 {
     public  class TellusInterpreterModel
     {
-        public int interpreterId { get; set; }
-        public string name { get; set; }
-        public string email { get; set; }
-        public string cellphone { get; set; }
-        public List<TellusInterpreterCompetenceModel> competences { get; set; }
+        public int InterpreterId { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Cellphone { get; set; }
+        public List<TellusInterpreterCompetenceModel> Competences { get; set; }
     }
 }

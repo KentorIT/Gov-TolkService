@@ -11,126 +11,126 @@ namespace Tolk.Web.Services
         {
             new TellusInterpreterModel
             {
-                interpreterId = 90000,
-                name = "Tolk Tolksson",
-                email = "tolk.tolksson@hetbrev.se",
-                cellphone = "+4612345678910",
-                competences = new List<TellusInterpreterCompetenceModel>
+                InterpreterId = 90000,
+                Name = "Tolk Tolksson",
+                Email = "tolk.tolksson@hetbrev.se",
+                Cellphone = "+4612345678910",
+                Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "albanska",
-                        competenceLevel = "Authorized",
-                        validFrom = null,
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "albanska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = null,
+                        ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "albanska",
-                        competenceLevel = "Legal",
-                        validFrom = null,
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "albanska",
+                        CompetenceLevel = "Legal",
+                        ValidFrom = null,
+                        ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "albanska",
-                        competenceLevel = "Medical",
-                        validFrom = null,
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "albanska",
+                        CompetenceLevel = "Medical",
+                        ValidFrom = null,
+                        ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "bosniska, kroatiska, serbiska",
-                        competenceLevel = "Authorized",
-                        validFrom = null,
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "bosniska, kroatiska, serbiska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = null,
+                        ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "makedonska",
-                        competenceLevel = "Authorized",
-                        validFrom = null,
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "makedonska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = null,
+                        ValidTo = new DateTime(2020, 3, 15)
                     }
                 }
             },
             new TellusInterpreterModel
             {
-                interpreterId = 90001,
-                name = "Test Testmeyer",
-                email = "test.testmeyer@hetbrev.se",
-                cellphone = "+4612345678910",
-                competences = new List<TellusInterpreterCompetenceModel>
+                InterpreterId = 90001,
+                Name = "Test Testmeyer",
+                Email = "test.testmeyer@hetbrev.se",
+                Cellphone = "+4612345678910",
+                Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "nederländska",
-                        competenceLevel = "Authorized",
-                        validFrom  = new DateTime(2014, 3, 15),
-                        validTo = new DateTime(2019, 3, 15)
+                        Language = "nederländska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom  = new DateTime(2014, 3, 15),
+                        ValidTo = new DateTime(2019, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "tyska",
-                        competenceLevel = "Authorized",
-                        validFrom = new DateTime(2017, 3, 15),
-                        validTo = new DateTime(2022, 3, 15)
+                        Language = "tyska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = new DateTime(2017, 3, 15),
+                        ValidTo = new DateTime(2022, 3, 15)
                     },
                 }
             },
             new TellusInterpreterModel
             {
-                interpreterId = 90002,
-                name = "John Doe",
-                email = "john.doe@hetbrev.se",
-                cellphone = "+4612345678910",
-                competences = new List<TellusInterpreterCompetenceModel>
+                InterpreterId = 90002,
+                Name = "John Doe",
+                Email = "john.doe@hetbrev.se",
+                Cellphone = "+4612345678910",
+                Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "grekiska",
-                        competenceLevel = "Authorized",
-                        validFrom = new DateTime(2014, 3, 15),
-                        validTo = new DateTime(2019, 3, 15)
+                        Language = "grekiska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = new DateTime(2014, 3, 15),
+                        ValidTo = new DateTime(2019, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "grekiska",
-                        competenceLevel = "Medical",
-                        validFrom = new DateTime(2017, 3, 15),
-                        validTo = new DateTime(2022, 3, 15)
+                        Language = "grekiska",
+                        CompetenceLevel = "Medical",
+                        ValidFrom = new DateTime(2017, 3, 15),
+                        ValidTo = new DateTime(2022, 3, 15)
                     },
                 }
             },
             new TellusInterpreterModel
             {
-                interpreterId = 90003,
-                name = "Carl Hamilton",
-                email = "carl.hamilton@hetbrev.se",
-                cellphone = "+4612345678910",
-                competences = new List<TellusInterpreterCompetenceModel>
+                InterpreterId = 90003,
+                Name = "Carl Hamilton",
+                Email = "carl.hamilton@hetbrev.se",
+                Cellphone = "+4612345678910",
+                Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "ryska",
-                        competenceLevel = "Authorized",
-                        validFrom = new DateTime(2014, 3, 15),
-                        validTo = new DateTime(2020, 3, 15)
+                        Language = "ryska",
+                        CompetenceLevel = "Authorized",
+                        ValidFrom = new DateTime(2014, 3, 15),
+                        ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        language = "ryska",
-                        competenceLevel = "Legal",
-                        validFrom = new DateTime(2014, 3, 15),
-                        validTo = new DateTime(2022, 3, 15)
+                        Language = "ryska",
+                        CompetenceLevel = "Legal",
+                        ValidFrom = new DateTime(2014, 3, 15),
+                        ValidTo = new DateTime(2022, 3, 15)
                     },
                 }
             }
         };
 
-        public TellusInterpreterModel GetInterpreter(int id)
+        public TellusInterpreterModel GetInterpreter(string id)
         {
-            return _interpreterModels.SingleOrDefault(i => i.interpreterId == id);
+            return _interpreterModels.SingleOrDefault(i => i.InterpreterId.ToString() == id);
         }
     }
 }
