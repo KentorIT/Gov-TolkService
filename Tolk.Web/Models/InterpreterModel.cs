@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Namn")]
         public string FullName => $"{FirstName} {LastName}";
 
-        [ClientRequired]
+        [Required]
         [EmailAddress(ErrorMessage = "Felaktig e-postadress")]
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "E-post")]
@@ -32,6 +32,7 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string LastName { get; set; }
 
+        [Required]
         [Display(Name = "Telefonnummer")]
         [StringLength(32)]
         public string PhoneNumber { get; set; }

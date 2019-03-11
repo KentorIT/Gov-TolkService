@@ -123,7 +123,7 @@ namespace Tolk.Web.Controllers
                 {
                     InterpreterBroker interpreter = new InterpreterBroker(User.GetBrokerId());
                     model.UpdateInterpreter(interpreter);
-                    _dbContext.Add(interpreter);
+                    await _dbContext.AddAsync(interpreter);
                     await _dbContext.SaveChangesAsync();
                     return RedirectToAction(nameof(List), new InterpreterFilterModel { Message = "Ny tolk har skapats" });
                 }

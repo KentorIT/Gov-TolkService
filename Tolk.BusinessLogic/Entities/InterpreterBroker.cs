@@ -30,6 +30,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string LastName { get; set; }
 
+        [Required]
         [MaxLength(255)]
         public string Email { get; set; }
 

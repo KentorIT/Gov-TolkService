@@ -3,6 +3,20 @@
     ViewData["Title"] = "Tolkar";
 }
 <h2>@ViewData["Title"]</h2>
+@if (!string.IsNullOrEmpty(@Model.Message))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <br />
+            <div class="system-action-info">
+                <span class="glyphicon glyphicon-ok"></span>
+                <span class="info-message">
+                    @Model.Message
+                </span>
+            </div>
+        </div>
+    </div>
+}
 <div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>
@@ -27,11 +41,11 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                        <tr data-id="@item.Id" data-click-action-url="@Url.Action("View", new { id = item.Id })">
-                            <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
-                            <td class="gray-border-bottom">@item.Email</td>
-                            <td class="gray-border-bottom">@item.OfficialInterpreterId</td>
-                        </tr>
+                            <tr data-id="@item.Id" data-click-action-url="@Url.Action("View", new { id = item.Id })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
+                                <td class="gray-border-bottom">@item.Email</td>
+                                <td class="gray-border-bottom">@item.OfficialInterpreterId</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
