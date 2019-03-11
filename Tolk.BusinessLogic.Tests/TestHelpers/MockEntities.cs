@@ -296,10 +296,19 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Holiday() { Date = new DateTime(2018,05,10), DateType=DateType.Holiday},
                         new Holiday() { Date = new DateTime(2018,05,18), DateType=DateType.DayBeforeBigHoliday},
                         new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018,06,06), DateType=DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2018,12,23), DateType=DateType.DayBeforeBigHoliday},
                         new Holiday() { Date = new DateTime(2018,12,24), DateType=DateType.BigHolidayFullDay},
                         new Holiday() { Date = new DateTime(2018,12,25), DateType=DateType.BigHolidayFullDay},
                         new Holiday() { Date = new DateTime(2018,12,26), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,12,27), DateType=DateType.DayAfterBigHoliday}
+                        new Holiday() { Date = new DateTime(2018,12,27), DateType=DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2020,06,06), DateType=DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2019,12,23), DateType=DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2020,12,27), DateType=DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2022,06,06), DateType=DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2022,06,06), DateType=DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2025,06,06), DateType=DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2025,06,06), DateType=DateType.Holiday}
                     };
             }
         }

@@ -174,7 +174,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 allPriceRows.Add(GetTravelCostRow(startAt.Date, startAt.Date.AddDays(1).ToDateTimeOffsetSweden(), outlay, PriceRowType.Outlay));
             }
-   
+
             allPriceRows.Add(GetRoundedPriceRow(startAt, endAt, allPriceRows));
 
             var priceInformation = new PriceInformation
@@ -312,8 +312,8 @@ namespace Tolk.BusinessLogic.Services
                 {
                     var dateTypes = GetDateTypes(start.Date);
                     if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
-                        dateTypes.Contains(DateType.Holiday) ||
-                        (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
+                    (dateTypes.Contains(DateType.Holiday) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)) ||
+                    (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
                     {
                         tempstart = start;
                         tempstop = start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden();
@@ -327,10 +327,9 @@ namespace Tolk.BusinessLogic.Services
                         }
                     }
 
-                    //Find any minutes before 07:00
-                    if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
-                        dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) &&
-                        start.TimeOfDay < new TimeSpan(7, 0, 0))
+                    // => 07:00
+                    if (((!dateTypes.Any(t => t == DateType.Holiday || t == DateType.BigHolidayFullDay) &&
+                    dateTypes.Any(t => t == DateType.WeekDay)) || dateTypes.Any(t => t == DateType.DayAfterBigHoliday)) && start.TimeOfDay < new TimeSpan(7, 0, 0))
                     {
                         tempstart = start;
                         tempstop = start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0) ? start.Date.AddHours(7).ToDateTimeOffsetSweden() : endAt;
@@ -343,9 +342,9 @@ namespace Tolk.BusinessLogic.Services
                             minIWH += (int)(tempstop - tempstart).TotalMinutes;
                         }
                     }
-                    //takes wrong when day after big holiday and after 18:00
-                    if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
-                        dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) &&
+                    // 18:00 =>
+                    if (((!dateTypes.Any(t => t == DateType.Holiday || t == DateType.BigHolidayFullDay)) &&
+                        dateTypes.Any(t => t == DateType.WeekDay) || dateTypes.Any(t => t == DateType.DayBeforeBigHoliday)) &&
                         (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0)))
                     {
                         tempstart = start.Hour < 18 ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : start;
@@ -359,19 +358,19 @@ namespace Tolk.BusinessLogic.Services
                             minIWH += (int)(tempstop - tempstart).TotalMinutes;
                         }
                     }
-                    //00:00 => 18:00
-                    if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
-                       start.TimeOfDay < new TimeSpan(18, 0, 0))
+                    // => 18:00 (or end)
+                    if (dateTypes.Any(t => t == DateType.Weekend || t == DateType.Holiday) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
+                        start.TimeOfDay < new TimeSpan(18, 0, 0))
                     {
                         tempstart = start;
                         tempstop = start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0) ? start.Date.AddHours(18).ToDateTimeOffsetSweden() : endAt;
                         minWeekendsIWH += (int)(tempstop - tempstart).TotalMinutes;
                     }
-                    //07:00 => 24:00
-                    if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
+                    // 07:00 (or start) => 
+                    if (dateTypes.Any(t => t == DateType.Weekend || t == DateType.Holiday) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
                         (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0)))
                     {
-                        tempstart = start.Date.AddHours(7).ToDateTimeOffsetSweden();
+                        tempstart = start.Hour > 7 ? start : start.Date.AddHours(7).ToDateTimeOffsetSweden();
                         tempstop = start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden();
                         minWeekendsIWH += (int)(tempstop - tempstart).TotalMinutes;
                     }
@@ -428,9 +427,10 @@ namespace Tolk.BusinessLogic.Services
 
             while (start < endAt)
             {
+                //for weeekend and holidays check that no DayBeforeBigHoliday or DayAfterBigHoliday (then they should be calculated separately)
                 var dateTypes = GetDateTypes(start.Date);
                 if (dateTypes.Contains(DateType.BigHolidayFullDay) ||
-                    dateTypes.Contains(DateType.Holiday) ||
+                    (dateTypes.Contains(DateType.Holiday) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)) ||
                     (dateTypes.Contains(DateType.Weekend) && !dateTypes.Any(t => t == DateType.DayBeforeBigHoliday || t == DateType.DayAfterBigHoliday)))
                 {
                     yield return GetPriceInformation(
@@ -441,10 +441,9 @@ namespace Tolk.BusinessLogic.Services
                     );
                 }
 
-                //Find any minutes before 07:00
-                if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
-                    dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayAfterBigHoliday) &&
-                    start.TimeOfDay < new TimeSpan(7, 0, 0))
+                // => 07:00 
+                if (((!dateTypes.Any(t => t == DateType.Holiday || t == DateType.BigHolidayFullDay) &&
+                    dateTypes.Any(t => t == DateType.WeekDay)) || dateTypes.Any(t => t == DateType.DayAfterBigHoliday)) && start.TimeOfDay < new TimeSpan(7, 0, 0))
                 {
                     yield return GetPriceInformation(
                         start,
@@ -453,9 +452,9 @@ namespace Tolk.BusinessLogic.Services
                         prices
                     );
                 }
-
-                if (!dateTypes.Contains(DateType.Holiday) && !dateTypes.Contains(DateType.BigHolidayFullDay) &&
-                    dateTypes.Any(t => t == DateType.WeekDay || t == DateType.DayBeforeBigHoliday) &&
+                // 18:00 => 
+                if (((!dateTypes.Any(t => t == DateType.Holiday || t == DateType.BigHolidayFullDay)) &&
+                    dateTypes.Any(t => t == DateType.WeekDay) || dateTypes.Any(t => t == DateType.DayBeforeBigHoliday)) &&
                     (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(18, 0, 0)))
                 {
                     yield return GetPriceInformation(
@@ -465,8 +464,8 @@ namespace Tolk.BusinessLogic.Services
                         prices
                     );
                 }
-                //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayBeforeBigHoliday) 00:00 => 18:00
-                if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
+                // => 18:00 (or end)
+                if (dateTypes.Any(t => t == DateType.Weekend || t == DateType.Holiday) && dateTypes.Any(t => t == DateType.DayBeforeBigHoliday) &&
                    start.TimeOfDay < new TimeSpan(18, 0, 0))
                 {
                     yield return GetPriceInformation(
@@ -476,12 +475,12 @@ namespace Tolk.BusinessLogic.Services
                         prices
                      );
                 }
-                //dateTypes.Contains(DateType.Weekend) && dateTypes.Any( t => t == DateType.DayAfterBigHoliday) 07:00 => 24:00
-                if ((dateTypes.Contains(DateType.Weekend) || dateTypes.Contains(DateType.Holiday)) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
+                // 07:00 (or start) =>
+                if (dateTypes.Any(t => t == DateType.Weekend || t == DateType.Holiday) && dateTypes.Any(t => t == DateType.DayAfterBigHoliday) &&
                     (start.Date < endAt.Date || endAt.TimeOfDay > new TimeSpan(7, 0, 0)))
                 {
                     yield return GetPriceInformation(
-                        start.Date.AddHours(7).ToDateTimeOffsetSweden(),
+                        start = start.Hour > 7 ? start : start.Date.AddHours(7).ToDateTimeOffsetSweden(),
                         start.Date == endAt.Date ? endAt : start.Date.AddDays(1).ToDateTimeOffsetSweden(),
                         PriceListRowType.WeekendIWH,
                         prices
@@ -495,20 +494,21 @@ namespace Tolk.BusinessLogic.Services
         public IEnumerable<DateType> GetDateTypes(DateTime date)
         {
             yield return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday ? DateType.Weekend : DateType.WeekDay;
-            var holidayDayType = GetHolidayDayTypeIfAny(date);
-            if (holidayDayType.HasValue)
+            var holidayDayTypes = GetHolidayDayTypesIfAny(date);
+            if (holidayDayTypes.Any())
             {
-                yield return holidayDayType.Value;
+                foreach (var holidayDayType in holidayDayTypes)
+                    yield return holidayDayType;
             }
         }
 
-        private DateType? GetHolidayDayTypeIfAny(DateTime date)
+        public IEnumerable<DateType> GetHolidayDayTypesIfAny(DateTime date)
         {
             if (_dateCalculationService == null)
             {
-                return _dbContext.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
+                return _dbContext.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
             }
-            return _dateCalculationService.Holidays.SingleOrDefault(h => h.Date.Date == date.Date)?.DateType;
+            return _dateCalculationService.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
         }
 
         public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)

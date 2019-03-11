@@ -460,7 +460,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(255);
 
-                    b.HasKey("Date");
+                    b.HasKey("Date", "DateType");
 
                     b.ToTable("Holidays");
                 });

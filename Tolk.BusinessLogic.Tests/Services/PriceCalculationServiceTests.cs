@@ -240,7 +240,158 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 17:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2)]//2h work 1h IWH
         [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2)]//1h work IWH
         [InlineData("2018-10-10 18:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2)]//2h work IWH
-        public void IWH_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 22:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2)]//5h work IWH
+        public void IWH_WeekdayEveningInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-10 02:00:00", "2018-10-10 06:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2)]//4h work 4h IWH
+        [InlineData("2018-10-10 06:00:00", "2018-10-10 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2)]//3h work 1h IWH
+        [InlineData("2018-10-10 07:00:00", "2018-10-10 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1, 1)]//2h work no IWH
+        public void IWH_WeekdayMorningInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-10 05:00:00", "2018-10-10 10:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2)]//5h 2h iwh
+        [InlineData("2018-10-10 06:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_30M__Court_Comp1 * 4), 3)]//13h 2h iwh
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 22:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + + Price_IWH_30M__Court_Comp1 * 8), 2)]//5h 4h iwh
+        [InlineData("2018-10-10 17:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 7 + Price_IWH_30M__Court_Comp1 * 16), 3)]//9h work 8h iwh
+        [InlineData("2018-10-10 23:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 6), 2)]//3h work 3h iwh
+        public void IWH_WeekdayDifferentPeriodsInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-13 10:00:00", "2018-10-13 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 16:00:00", "2018-10-13 18:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 18:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 02:00:00", "2018-10-13 04:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 05:00:00", "2018-10-13 07:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 06:00:00", "2018-10-13 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        [InlineData("2018-10-13 07:00:00", "2018-10-13 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work weekend
+        public void IWH_WeekendInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-06-06 10:00:00", "2018-06-06 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 16:00:00", "2018-06-06 18:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 17:00:00", "2018-06-06 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 18:00:00", "2018-06-06 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 02:00:00", "2018-06-06 04:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 05:00:00", "2018-06-06 07:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 06:00:00", "2018-06-06 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-06 07:00:00", "2018-06-06 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2018-06-05 17:00:00", "2018-06-06 01:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 5 + Price_IWH_30M__Court_Comp1 * 12 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 4)]//8h work 1h holiday + 6h iwh
+        [InlineData("2018-06-06 17:00:00", "2018-06-07 01:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 5 + Price_IWH_30M__Court_Comp1 * 2 + Price_IWH_Weekend_30M__Court_Comp1 * 14), 4)]//8h work 7h holiday + 1h iwh
+        public void IWH_HolidayInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        //2020-06-06 is weekend (saturday)
+        [InlineData("2020-06-06 10:00:00", "2020-06-06 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 16:00:00", "2020-06-06 18:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 17:00:00", "2020-06-06 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 18:00:00", "2020-06-06 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 02:00:00", "2020-06-06 04:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 05:00:00", "2020-06-06 07:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 06:00:00", "2020-06-06 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        [InlineData("2020-06-06 07:00:00", "2020-06-06 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday/weekend
+        public void IWH_HolidayIsWeekendInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-13 22:00:00", "2018-10-14 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 8), 2)]//2h work weekend
+        [InlineData("2018-10-13 16:00:00", "2018-10-14 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 9 + Price_IWH_Weekend_30M__Court_Comp1 * 20), 3)]//10h work weekend
+        [InlineData("2018-10-13 23:45:00", "2018-10-14 00:15:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1), 2)]//30m work weekend
+        [InlineData("2018-10-13 23:00:00", "2018-10-14 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_Weekend_30M__Court_Comp1 * 26), 3)]//13h work weekend
+        public void IWH_WeekendPassingMidnightToWeekendInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-14 22:00:00", "2018-10-15 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 4), 3)]//4h work 2h weekend, 2h iwh
+        [InlineData("2018-10-14 16:00:00", "2018-10-15 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 9 + Price_IWH_Weekend_30M__Court_Comp1 * 16 + Price_IWH_30M__Court_Comp1 * 4), 4)]//10h work, 8h weekend, 2h iwh
+        [InlineData("2018-10-14 23:45:00", "2018-10-15 00:15:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 1), 3)]//15m work weekend + 15m work weekday
+        [InlineData("2018-10-14 23:00:00", "2018-10-15 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_Weekend_30M__Court_Comp1 * 2 + Price_IWH_30M__Court_Comp1 * 14), 4)]//13h work 1h weekend + 12h no weekend
+        public void IWH_WeekendPassingMidnightToWeekdayInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-10 22:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2)]//4h work iwh
+        [InlineData("2018-10-10 16:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 9 + Price_IWH_30M__Court_Comp1 * 16), 3)]//10h work, 8h iwh 
+        [InlineData("2018-10-10 23:45:00", "2018-10-11 00:15:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 1), 2)]//30m work weekday
+        [InlineData("2018-10-10 23:00:00", "2018-10-11 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_30M__Court_Comp1 * 16), 3)]//13h work 8h iwh
+        public void IWH_WeekdayPassingMidnightToWeekdayInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-10-12 22:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 4), 3)]//4h work 2h weekend, 2h iwh
+        [InlineData("2018-10-12 16:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 9 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 12), 4)]//10h work 8h weekday(6h iwh) +2h weekend
+        [InlineData("2018-10-12 23:45:00", "2018-10-13 00:15:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 1), 3)]//15m work weekend + 15m work weekday
+        [InlineData("2018-10-12 23:00:00", "2018-10-13 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_Weekend_30M__Court_Comp1 * 24 + Price_IWH_30M__Court_Comp1 * 2), 4)]//13h work 1h weekday + 12h weekend
+        public void IWH_WeekdayPassingMidnightToWeekendInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
@@ -437,6 +588,36 @@ namespace Tolk.BusinessLogic.Tests.Services
             }
         }
 
+        //Holiday and AfterBigHoliday coincide
+        [Theory]
+        [InlineData("2022-06-06 06:00:00", "2022-06-06 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 2) + (Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 3)]//2h work 1h big holiday, 1h holiday day + Price_IWH_BigHoliday_30M__Court_Comp1 * 2
+        [InlineData("2022-06-06 10:00:00", "2022-06-06 14:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_4H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 8), 2)]//4h work holiday 
+        [InlineData("2022-06-06 17:00:00", "2022-06-06 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        public void IWH_AfterBigHoliday_And_Holiday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        //Holiday and BeforeBigHoliday coincide
+        [Theory]
+        [InlineData("2025-06-06 06:00:00", "2025-06-06 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work holiday
+        [InlineData("2025-06-06 10:00:00", "2025-06-06 14:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_4H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 8), 2)]//4h work holiday 
+        [InlineData("2025-06-06 17:00:00", "2025-06-06 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1 + (Price_IWH_Weekend_30M__Court_Comp1 * 2) + (Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 3)]//2h work 1h big holiday, 1h holiday day + Price_IWH_BigHoliday_30M__Court_Comp1 * 2
+        public void IWH_BeforeBigHoliday_And_Holiday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
         [Theory]
         [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "", "", false)]//no mealbreak, the requisition times should get more (4 *30m iwh)
         [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 16:00:00", "2018-10-10 16:30:00", false)]//30m mealbreak non iwh times => requisition times get more (4* 30m iwh) 
@@ -464,10 +645,11 @@ namespace Tolk.BusinessLogic.Tests.Services
             }
         }
 
-
         [Theory]
         [InlineData("2018-10-13 10:00:00", "2018-10-13 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2)]//1h work IWH weekend
         [InlineData("2018-10-13 10:00:00", "2018-10-13 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 10), 2)]//5h work IWH weekend
+        [InlineData("2018-10-13 06:00:00", "2018-10-13 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 2)]//2h work IWH weekend
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2)]//3h work IWH weekend
         public void IWH_Weekend_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
@@ -478,12 +660,72 @@ namespace Tolk.BusinessLogic.Tests.Services
             }
         }
 
+        //23/12 is weekday 
         [Theory]
+        [InlineData("2019-12-23 05:00:00", "2019-12-23 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2)]//3h work, 2h before 07:00 normal iwh
+        [InlineData("2019-12-23 10:00:00", "2019-12-23 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_5H_Court_Comp1, 1)]//5h normal work
+        [InlineData("2019-12-23 17:00:00", "2019-12-23 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 4), 2)]//3h work, 2h IWH big holiday
+        public void IWH_DayBeforeBigHoliday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        //23/12 is weekend saturday or sunday
+        [Theory]
+        [InlineData("2018-12-23 05:00:00", "2018-12-23 08:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2)]//3h work weekend
+        [InlineData("2018-12-23 10:00:00", "2018-12-23 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 10), 2)]//5h work weekend
+        [InlineData("2018-12-23 17:00:00", "2018-12-23 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2 + Price_IWH_BigHoliday_30M__Court_Comp1 * 4), 3)]//3h work, 1h normal weekend iwh IWH 2h big holiday
+        public void IWH_DayBeforeBigHolidayWeekend_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-12-24 05:00:00", "2018-12-24 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 8), 2)]//4h work IWH big holiday
         [InlineData("2018-12-24 10:00:00", "2018-12-24 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 2)]//1h work IWH big holiday
         [InlineData("2018-12-24 10:00:00", "2018-12-24 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 10), 2)]//5h work IWH big holiday
-        [InlineData("2018-12-27 06:00:00", "2018-12-27 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 2)]//3h work day fter big holiday (1hour before 07:00 counts as big holiday)
-        [InlineData("2018-12-27 10:00:00", "2018-12-27 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_5H_Court_Comp1, 1)]//5h work day after big holiday (should be no extra time)
+        [InlineData("2018-12-24 17:00:00", "2018-12-24 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 6), 2)]//3h work IWH big holiday
         public void IWH_BigHoliday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        //27/12 is weekday
+        [Theory]
+        [InlineData("2018-12-27 06:00:00", "2018-12-27 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 2)]//3h work day after big holiday (1hour before 07:00 counts as big holiday)
+        [InlineData("2018-12-27 10:00:00", "2018-12-27 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_5H_Court_Comp1, 1)]//5h work day after big holiday (should be no extra comp)
+        [InlineData("2018-12-27 17:00:00", "2018-12-27 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4, 2)]//3h work, 2h normal iwh 
+        public void IWH_DayAfterBigHoliday_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
+        {
+            using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
+            {
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPrices(DateTime.Parse(startAt), DateTime.Parse(endAt), competenceLevel, listType, rankingId);
+                pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
+                pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            }
+        }
+
+        //27/12 is weekend saturday or sunday
+        [Theory]
+        [InlineData("2020-12-27 06:00:00", "2020-12-27 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2 + Price_IWH_Weekend_30M__Court_Comp1 * 4), 3)]//3h work day after big holiday (1h before 07:00 counts as big holiday, 2h weekend iwh)
+        [InlineData("2020-12-27 10:00:00", "2020-12-27 15:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 10, 2)]//5h work 5h weekend iwh
+        [InlineData("2020-12-27 17:00:00", "2020-12-27 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6, 2)]//5h work day after big holiday (should be no extra time)
+        public void IWH_DayAfterBigHolidayWeekend_InterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {

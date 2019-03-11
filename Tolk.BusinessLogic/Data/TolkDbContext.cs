@@ -64,6 +64,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<OrderInterpreterLocation>()
                 .HasKey(oil => new { oil.OrderId, oil.InterpreterLocation });
 
+            builder.Entity<Holiday>()
+                .HasKey(h => new { h.Date, h.DateType });
+
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()
