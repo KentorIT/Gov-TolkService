@@ -19,6 +19,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<WebHookService>();
             services.AddTransient<NotificationService>();
             services.AddTransient<VerificationService>();
+            services.AddTransient<InterpreterService>();
             services.AddTransient<ITellusConnection, TellusConnectionService>();
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<RequestService>();

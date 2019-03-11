@@ -67,6 +67,8 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == context.User.GetUserId();
+                case InterpreterBroker interpreter:
+                    return user.IsInRole(Roles.SuperUser) && interpreter.BrokerId == context.User.TryGetBrokerId();
                 case AspNetUser editedUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -284,6 +286,8 @@ namespace Tolk.Web.Authorization
                         return user.IsInRole(Roles.SuperUser) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.Admin);
+                case InterpreterBroker interpreter:
+                    return user.IsInRole(Roles.SuperUser) && interpreter.BrokerId == context.User.TryGetBrokerId();
                 default:
                     throw new NotImplementedException();
             }

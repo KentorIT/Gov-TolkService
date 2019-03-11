@@ -6,13 +6,18 @@ namespace Tolk.BusinessLogic.Entities
     public class InterpreterBroker
     {
         public InterpreterBroker(string firstName, string lastName, int brokerId, string email, string phoneNumber, string officialInterpreterId)
+            : this(brokerId)
         {
             FirstName = firstName;
             LastName = lastName;
-            BrokerId = brokerId;
             Email = email;
             PhoneNumber = phoneNumber;
             OfficialInterpreterId = officialInterpreterId;
+        }
+
+        public InterpreterBroker(int brokerId)
+        {
+            BrokerId = brokerId;
         }
 
         public int InterpreterBrokerId { get; set; }
