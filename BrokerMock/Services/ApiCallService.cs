@@ -94,6 +94,11 @@ namespace BrokerMock.Services
                 items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get request statuses: {items.Count}");
                 _cache.Set("RequestStatuses", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/TaxCardTypes/");
+                items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get tax card types: {items.Count}");
+                _cache.Set("TaxCardTypes", items);
             }
             using (var client = GetHttpClient())
             {

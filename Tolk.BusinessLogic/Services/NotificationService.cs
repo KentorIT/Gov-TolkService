@@ -464,6 +464,17 @@ Sammanställning:
                     true
                 );
             }
+            var webhook = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new RequisitionReviewedModel
+                {
+                    OrderNumber = orderNumber
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
+            }
         }
 
         public void RequisitionCommented(Requisition requisition)
@@ -479,6 +490,18 @@ Sammanställning:
                     HtmlHelper.ToHtmlBreak(body) + GotoRequestButton(requisition.Request.RequestId, HtmlHelper.ViewTab.Requisition),
                     true
                 );
+            }
+            var webhook = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new RequisitionCommentedModel
+                {
+                    OrderNumber = orderNumber,
+                    Message = requisition.CustomerComment
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
             }
         }
 

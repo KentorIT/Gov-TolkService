@@ -30,23 +30,13 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult AssignmentTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<AssignmentType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<AssignmentType>();
         }
 
         [HttpGet]
         public JsonResult CompetenceLevels()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<CompetenceAndSpecialistLevel>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<CompetenceAndSpecialistLevel>();
         }
 
         [HttpGet]
@@ -89,56 +79,37 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult PriceListTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<PriceListType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<PriceListType>();
         }
 
         [HttpGet]
         public JsonResult PriceRowTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<PriceRowType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<PriceRowType>();
         }
 
         [HttpGet]
         public JsonResult LocationTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<InterpreterLocation>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<InterpreterLocation>();
         }
 
         [HttpGet]
         public JsonResult RequirementTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<RequirementType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<RequirementType>();
         }
 
         [HttpGet]
         public JsonResult InterpreterInformationTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<InterpreterInformationType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<InterpreterInformationType>();
+        }
+
+        [HttpGet]
+        public JsonResult TaxCardTypes()
+        {
+            return DescriptionsAsJson<TaxCard>();
         }
 
         [HttpGet]
@@ -170,29 +141,24 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult ComplaintTypes()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<ComplaintType>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<ComplaintType>();
         }
 
         [HttpGet]
         public JsonResult RequestStatuses()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<RequestStatus>().Select(d =>
-            new
-            {
-                Key = d.CustomName,
-                d.Description
-            }));
+            return DescriptionsAsJson<RequestStatus>();
         }
 
         [HttpGet]
         public JsonResult ComplaintStatuses()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<ComplaintStatus>().Select(d =>
+            return DescriptionsAsJson<ComplaintStatus>();
+        }
+
+        private JsonResult DescriptionsAsJson<T>()
+        {
+            return Json(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
             new
             {
                 Key = d.CustomName,
