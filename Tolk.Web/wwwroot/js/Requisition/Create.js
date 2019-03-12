@@ -34,8 +34,8 @@ function validateControls() {
     var wasteTimeOk = checkWasteTime();
     var sessionEndOk = checkSessionEndedAt();
     var carCompenstionOk = checkCarCompensation();
-    if (wasteTimeOk && sessionEndOk && carCompenstionOk) { $('#create').attr('disabled', false); }
-    else { $('#create').attr('disabled', true); }
+    if (wasteTimeOk && sessionEndOk && carCompenstionOk) { $('#create').enable(); }
+    else { $('#create').disable(); }
 }
 
 function checkCarCompensation() {
@@ -165,6 +165,8 @@ function triggerValidator(message, validatorId) {
 
 $(function () {
     var currentId = 0;
+
+    $("#create").closest("form").on("submit", function () { disableOnSubmit("#create"); });
 
     $("body").on("click", ".add-mealbreak-button", function () {
         var target = $($(this).data("target"));
@@ -365,5 +367,4 @@ function checkEachMealBreak(start, end, checkAgainstSessionTime) {
         });
         return message;
     }
-    return message;
 }

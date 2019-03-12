@@ -77,6 +77,14 @@ function changeTab(element, path, tabPaneSelector) {
     }
 }
 
+function disableOnSubmit(selector) {
+    $(selector).disable();
+    var isValid = $(selector).closest("form").valid();
+    if (!isValid) {
+        $(selector).enable();
+    }
+}
+
 $.urlParam = function (name) {
     var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
     if (results != null) { //eslint-disable-line eqeqeq
@@ -237,7 +245,12 @@ $.fn.extend({
             ? $(this).is(":checked") === value
             : $(this).val() == value; //eslint-disable-line eqeqeq
     },
-
+    disable: function () {
+        $(this).attr("disabled", "disabled");
+    },
+    enable: function () {
+        $(this).removeAttr("disabled");
+    },
     // wizard
     tolkWizard: function (opts) {
         var $wizard = $(".wizard");

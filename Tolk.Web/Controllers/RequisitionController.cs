@@ -279,10 +279,18 @@ namespace Tolk.Web.Controllers
                         request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
                         mealbreaks
                     );
+                    Requisition requisition;
 
-                    var requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows,
-                        model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
-                        model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
+                    try
+                    {
+                        requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows,
+                            model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
+                            model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return RedirectToAction("Index", "Home", new { errorMessage = $"Rekvisition för {request.OrderId} är redan skickad." });
+                    }
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
                 return Forbid();

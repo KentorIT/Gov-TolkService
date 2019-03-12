@@ -33,6 +33,10 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard? interpreterTaxCard, 
             List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
+            if (!request.CanCreateRequisition)
+            {
+                throw new InvalidOperationException($"Cannot create requisition on order {request.OrderId}");
+            }
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
                 var requisition = new Requisition
