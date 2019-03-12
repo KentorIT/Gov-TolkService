@@ -289,7 +289,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException)
                     {
-                        return RedirectToAction("Index", "Home", new { errorMessage = $"Rekvisition för {request.OrderId} är redan skickad." });
+                        return RedirectToAction("Index", "Home", new { errorMessage = $"Det gick ej att registrera rekvisition för {request.Order.OrderNumber}, den var redan registrerad." });
                     }
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
                 }
