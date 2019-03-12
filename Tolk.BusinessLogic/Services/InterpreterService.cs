@@ -1,15 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using Microsoft.Extensions.Logging;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -26,9 +17,9 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
         }
 
-        public bool IsUniqueOfficialInterpreterId(string officialInterpreterId, int brokerId)
+        public bool IsUniqueOfficialInterpreterId(string officialInterpreterId, int brokerId, int? interpreterBrokerId = null)
         {
-            return !_dbContext.InterpreterBrokers.Any(i => i.BrokerId == brokerId && i.OfficialInterpreterId.ToUpper() == officialInterpreterId.ToUpper());
+            return !_dbContext.InterpreterBrokers.Any(i => i.BrokerId == brokerId && i.OfficialInterpreterId.ToUpper() == officialInterpreterId.ToUpper() && i.InterpreterBrokerId != interpreterBrokerId);
         }
     }
 }

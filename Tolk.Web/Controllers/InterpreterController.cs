@@ -89,7 +89,7 @@ namespace Tolk.Web.Controllers
                 var interpreter = _dbContext.InterpreterBrokers.SingleOrDefault(u => u.InterpreterBrokerId == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, interpreter, Policies.Edit)).Succeeded)
                 {
-                    if (!string.IsNullOrWhiteSpace(model.OfficialInterpreterId) && !_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId()))
+                    if (!string.IsNullOrWhiteSpace(model.OfficialInterpreterId) && !_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId(), model.Id))
                     {
                         ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-Id i tjänsten.");
                     }
