@@ -12,6 +12,8 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize(Roles = Roles.SuperUser)]
+    [Authorize(Policy = Policies.Broker)]
     public class WebhookController : Controller
     {
         private readonly TolkDbContext _dbContext;

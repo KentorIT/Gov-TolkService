@@ -30,6 +30,7 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Policy = Policies.Broker)]
         public ActionResult ListLanguages()
         {
             return View(

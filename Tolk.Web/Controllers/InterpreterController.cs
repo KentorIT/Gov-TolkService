@@ -14,6 +14,7 @@ namespace Tolk.Web.Controllers
 {
 
     [Authorize(Policy = Policies.Broker)]
+    [Authorize(Roles = Roles.SuperUser)]
     public class InterpreterController : Controller
     {
         private readonly TolkDbContext _dbContext;
