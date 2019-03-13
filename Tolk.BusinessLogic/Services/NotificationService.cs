@@ -451,7 +451,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             string orderNumber = requisition.Request.Order.OrderNumber;
             var body = $@"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har granskats.
 
-Kostnader att fakturera:
+Sammanställning:
 
 {GetRequisitionPriceInformationForMail(requisition)}";
             var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Email);
@@ -690,7 +690,7 @@ Du behöver godkänna de beräknade resekostnaderna.";
                 {
                     invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToString("#,0.00 SEK")}\n\n";
                 }
-                invoiceInfo += $"Summa totalt att fakturera: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
+                invoiceInfo += $"Total summa: {priceInfo.TotalPrice.ToString("#,0.00 SEK")}";
                 return invoiceInfo;
             }
         }

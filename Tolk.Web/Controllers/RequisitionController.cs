@@ -376,7 +376,7 @@ namespace Tolk.Web.Controllers
             PriceInformationModel pi = new PriceInformationModel
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : "Fakturainformation",
+                Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : string.Empty,
                 UseDisplayHideInfo = useDisplayHideInfo,
 
             };
