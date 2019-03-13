@@ -305,7 +305,7 @@ namespace Tolk.Web.Controllers
 
         private DateTime? GetInfoDateForBroker(Request r)
         {
-            return r.Status == RequestStatus.CancelledByCreator ? r.CancelledAt?.DateTime : r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
+            return (r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
         }
 
         private StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId)
