@@ -61,5 +61,8 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Sista svarstid ej satt")]
         AwaitingDeadlineFromCustomer = 19,
+
+        [Description("Ersättningsuppdrag skickat")]
+        ReplacementOrderCreated = 20,
     }
 }

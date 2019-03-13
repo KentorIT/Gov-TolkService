@@ -277,11 +277,9 @@ namespace Tolk.Web.Controllers
                         //Genarate new price rows from current times, might be subject to change!!!
                         _orderService.CreatePriceInformation(replacementOrder);
                         _notificationService.OrderReplacementCreated(order);
-
                         _dbContext.SaveChanges();
-                        //Close the replaced order as cancelled
                         trn.Commit();
-                        return RedirectToAction(nameof(View), new { id = replacementOrder.OrderId });
+                        return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
                     }
                 }
             }
