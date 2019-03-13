@@ -12,6 +12,7 @@ $(window).on("unload", function () {
         $.ajax({
             type: "DELETE",
             url: $url,
+            data: { __RequestVerificationToken: getAntiForgeryToken() },
             dataType: "json",
             async: false
         });
@@ -25,6 +26,7 @@ $(document).ready(function () {
         $.ajax({
             type: "POST",
             url: $url,
+            data: { __RequestVerificationToken: getAntiForgeryToken() },
             dataType: "json",
         });
     }

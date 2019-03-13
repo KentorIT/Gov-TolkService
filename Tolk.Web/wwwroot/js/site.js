@@ -29,6 +29,10 @@ $('#timeTravelDatePicker').on('changeDate', function () {
     );
 });
 
+function getAntiForgeryToken() {
+    return $('input[name="__RequestVerificationToken"]').val();
+}
+
 function updateTime() {
     var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
     $('#now').val(date);

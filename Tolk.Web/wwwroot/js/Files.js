@@ -9,6 +9,7 @@ $(function () {
             url: $url,
             type: 'DELETE',
             dataType: "json",
+            data: { __RequestVerificationToken: getAntiForgeryToken() },
             success: function (data) {
                 if (!data.success) {
                     alert(data.ErrorMessage, "Något gick fel när filen skulle tas bort!");

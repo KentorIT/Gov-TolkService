@@ -409,6 +409,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [ValidateAntiForgeryToken]
         [HttpDelete]
         public JsonResult DeleteRequestView(int requestId)
         {
@@ -422,6 +423,7 @@ namespace Tolk.Web.Controllers
             return Json(new { success = true });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public JsonResult AddRequestView(int requestId)
         {
