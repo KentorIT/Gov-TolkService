@@ -240,7 +240,6 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                bool useRequestRows = false;
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order.CreatedByUser)
@@ -263,29 +262,13 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                 {
-                    var priceInformation = _priceCalculationService.GetPricesRequisition(
-                        model.SessionStartedAt,
-                        model.SessionEndedAt,
-                        request.Order.StartAt,
-                        request.Order.EndAt,
-                        EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
-                        request.Order.CustomerOrganisation.PriceListType,
-                        request.Ranking.RankingId,
-                        out useRequestRows,
-                        (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0),
-                        model.TimeWasteIWHTime,
-                        request.PriceRows.OfType<PriceRowBase>(),
-                        model.Outlay,
-                        request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
-                        mealbreaks
-                    );
                     Requisition requisition;
 
                     try
                     {
-                        requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, priceInformation, useRequestRows,
+                        requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.Outlay,
                             model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
-                            model.TimeWasteIWHTime, model.InterpreterTaxCard, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
+                            model.TimeWasteIWHTime, model.InterpreterTaxCard.Value, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
                     }
                     catch (InvalidOperationException)
                     {

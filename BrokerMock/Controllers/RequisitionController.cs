@@ -65,12 +65,12 @@ namespace BrokerMock.Controllers
 
             if (extraInstructions.Contains("GETCURRENTREQUISITION"))
             {
-                await GetOrderRequisition(payload.OrderNumber);
+                await _apiService.GetOrderRequisition(payload.OrderNumber);
             }
 
             if (extraInstructions.Contains("MAKENEWREQUISITION"))
             {
-               await CreateRequisition(payload.OrderNumber);
+               await _apiService.CreateRequisition(payload.OrderNumber);
             }
             return new JsonResult("Success");
         }
@@ -84,91 +84,6 @@ namespace BrokerMock.Controllers
                 return Enumerable.Empty<string>();
             }
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
-        }
-
-        private async Task<RequestDetailsResponse> GetOrderRequisition(string orderNumber)
-        {
-            using (var client = GetHttpClient())
-            {
-                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Requisition/View?orderNumber={orderNumber}&IncludePreviousRequisitions=false");
-                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View]:: Boknings-ID: {orderNumber}");
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
-                }
-                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
-            }
-        }
-
-        private async Task<bool> CreateRequisition(string orderNumber)
-        {
-            using (var client = GetHttpClient())
-            {
-                var payload = new RequisitionModel
-                {
-                    OrderNumber = orderNumber,
-                    CallingUser = "regular-user@formedling1.se",
-                };
-                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Requisition/Create", content);
-                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
-                }
-            }
-
-            return true;
-        }
-
-        private async Task<bool> GetFile(string orderNumber, int attachmentId)
-        {
-            using (var client = GetHttpClient())
-            {
-                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/File?OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se");
-                var file = response.Content.ReadAsAsync<FileResponse>().Result;
-                if (file.Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Boknings-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
-                }
-            }
-
-            return true;
-        }
-
-        private HttpClient GetHttpClient()
-        {
-            var client = new HttpClient(GetCertHandler());
-            client.DefaultRequestHeaders.Accept.Clear();
-            if (_options.UseApiKey)
-            {
-                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
-                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
-            }
-            return client;
-        }
-
-        private static HttpClientHandler GetCertHandler()
-        {
-            var handler = new HttpClientHandler
-            {
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                SslProtocols = SslProtocols.Tls12
-            };
-            handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
-            return handler;
         }
     }
 }

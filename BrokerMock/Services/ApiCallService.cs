@@ -5,10 +5,13 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
+using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
 
 namespace BrokerMock.Services
@@ -132,6 +135,78 @@ namespace BrokerMock.Services
             }
             return client;
         }
+
+
+        public  async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new RequestGetDetailsModel { OrderNumber = orderNumber };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/View?orderNumber=" + orderNumber);
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
+                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        public async Task<RequestDetailsResponse> GetOrderRequisition(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Requisition/View?orderNumber={orderNumber}&IncludePreviousRequisitions=false");
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View]:: Boknings-ID: {orderNumber}");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
+                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        public async Task<bool> CreateRequisition(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var request = await GetOrderRequest(orderNumber);
+
+                var payload = new RequisitionModel
+                {
+                    OrderNumber = orderNumber,
+                    AcctualStartedAt = request.StartAt,
+                    AcctualEndedAt = request.EndAt,
+                    CallingUser = "regular-user@formedling1.se",
+                    TaxCard = _cache.Get<List<ListItemResponse>>("TaxCardTypes").First().Key,
+                    Message = "Testar att skicka en ny rekvisition, då",
+                    MealBreaks = Enumerable.Empty<MealBreakModel>()
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Requisition/Create", content);
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
+            }
+
+            return true;
+        }
+
         private static HttpClientHandler GetCertHandler()
         {
             var handler = new HttpClientHandler

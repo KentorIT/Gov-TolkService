@@ -15,28 +15,48 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly NotificationService _notificationService;
         private readonly ILogger<RequisitionService> _logger;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public RequisitionService(
             TolkDbContext dbContext,
             ISwedishClock clock,
             NotificationService notificationService,
-            ILogger<RequisitionService> logger
+            ILogger<RequisitionService> logger,
+            PriceCalculationService priceCalculationService
             )
         {
             _dbContext = dbContext;
             _clock = clock;
             _notificationService = notificationService;
             _logger = logger;
+            _priceCalculationService = priceCalculationService;
         }
 
-        public Requisition Create(Request request, int userId, int? impersonatorId, string message, PriceInformation priceInformation, bool useRequestRows, 
-            DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard? interpreterTaxCard, 
+        public Requisition Create(Request request, int userId, int? impersonatorId, string message,decimal? outlay, 
+            DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard interpreterTaxCard, 
             List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
             if (!request.CanCreateRequisition)
             {
                 throw new InvalidOperationException($"Cannot create requisition on order {request.OrderId}");
             }
+            var priceInformation = _priceCalculationService.GetPricesRequisition(
+                sessionStartedAt,
+                sessionEndedAt,
+                request.Order.StartAt,
+                request.Order.EndAt,
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
+                request.Order.CustomerOrganisation.PriceListType,
+                request.Ranking.RankingId,
+                out bool useRequestRows,
+                timeWasteNormalTime,
+                timeWasteIWHTime,
+                request.PriceRows.OfType<PriceRowBase>(),
+                outlay,
+                request.Order.ReplacingOrderId.HasValue ? request.Order.ReplacingOrder : null,
+                mealbreaks
+            );
+
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
                 var requisition = new Requisition
@@ -50,7 +70,7 @@ namespace Tolk.BusinessLogic.Services
                     SessionEndedAt = sessionEndedAt,
                     TimeWasteNormalTime = timeWasteNormalTime,
                     TimeWasteIWHTime = timeWasteIWHTime,
-                    InterpretersTaxCard = interpreterTaxCard.Value,
+                    InterpretersTaxCard = interpreterTaxCard,
                     PriceRows = new List<RequisitionPriceRow>(),
                     Attachments = attachments,
                     MealBreaks = mealbreaks,

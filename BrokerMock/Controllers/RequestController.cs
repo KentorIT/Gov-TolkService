@@ -167,7 +167,7 @@ namespace BrokerMock.Controllers
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit godkänd");
             }
 
-            var request = await GetOrderRequest(payload.OrderNumber);
+            var request = await _apiService.GetOrderRequest(payload.OrderNumber);
 
             var extraInstructions = GetExtraInstructions(request.Description);
             if (extraInstructions.Contains("CHANGEINTERPRETERONAPPROVE"))
@@ -242,26 +242,6 @@ namespace BrokerMock.Controllers
                 return Enumerable.Empty<string>();
             }
             return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
-        }
-
-        private async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
-        {
-            using (var client = GetHttpClient())
-            {
-                var payload = new RequestGetDetailsModel { OrderNumber = orderNumber };
-                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-                var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/View?orderNumber=" + orderNumber);
-                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
-                }
-                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
-            }
         }
 
         private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
