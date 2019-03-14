@@ -93,6 +93,7 @@ $(function () {
     if ($('#TimeRange_StartDateTime').length > 0) {
         // Turn datetime string into UTC string for parsing
         var startVal = $('#TimeRange_StartDateTime').val().replace(" ", "T").replace(" ", "");
+        $('#TimeRange_StartDateTime').val(startVal);
         var now = new Date($('#now').val()).zeroTime();
         var start = new Date(startVal).zeroTime();
         $("#LatestAnswerBy_Date").datepicker("setStartDate", now);
@@ -104,7 +105,7 @@ $(function () {
         if (!validateLastAnswerBy()
             || !validateLastAnswerByAgainstStartTime()) {
             event.preventDefault();
-            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, vänligen kontrollera senaste svarstid.");
+            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, vänligen kontrollera sista svarstid.");
         }
     });
 });
