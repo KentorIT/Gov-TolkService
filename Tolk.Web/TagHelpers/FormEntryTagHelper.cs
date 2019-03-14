@@ -551,7 +551,7 @@ namespace Tolk.Web.TagHelpers
         private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
         {
             writer.WriteLine("<div class=\"input-group time timesplit\">");
-            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min");
+            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
             writer.WriteLine("</div>");
             WriteValidation(writer, timeModelExplorer, timeFieldName);
         }
@@ -788,7 +788,7 @@ namespace Tolk.Web.TagHelpers
             WriteSelect(Items, writer, For.Name, For.ModelExplorer);
         }
 
-        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --")
+        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null)
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
@@ -820,6 +820,11 @@ namespace Tolk.Web.TagHelpers
                     allowMultiple: allowMultiple,
                     htmlAttributes: new { @class = "form-control" });
                 tagBuilder.Attributes.Add("data-placeholder", placeholder);
+                if (requiredMessage != null)
+                {
+                    tagBuilder.Attributes.Remove("data-val-required");
+                    tagBuilder.Attributes.Add("data-val-required", requiredMessage);
+                }
                 if (For.Model == null)
                 {
                     var existingOptionsBuilder = new HtmlContentBuilder();
