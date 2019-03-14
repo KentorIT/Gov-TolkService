@@ -37,7 +37,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public ActionResult<string> TestTime()
         {
-            return _timeService.SwedenNow.ToString("yyyy-MM-dd hh:mm:ss");
+            return _timeService.SwedenNow.ToString("yyyy-MM-dd HH:mm:ss");
         }
     }
 }
