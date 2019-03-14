@@ -2,7 +2,7 @@
 
 SET IDENTITY_INSERT CustomerOrganisations ON
 
-INSERT CustomerOrganisations (CustomerOrganisationId, Name, PriceListType, EmailDomain, ParentCustomerOrganisationId, OrganisationPrefix)
+INSERT CustomerOrganisations (CustomerOrganisationId, Name, PriceListType, EmailDomain, ParentCustomerOrganisationId, OrganizationPrefix)
 	VALUES 
 	(1,	'Kammarkollegiet',	2, 'kammarkollegiet.se', NULL, 'KamK'),
 	(2, 'Domstolsverket', 1, 'dom.se', NULL, 'Dom'),
