@@ -353,7 +353,7 @@ namespace Tolk.Web.Services
 
         public const int NewInterpreterId = -1;
 
-        public IEnumerable<SelectListItem> GetInterpreters(int brokerId)
+        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null)
         {
             yield return new SelectListItem
             {
@@ -361,11 +361,11 @@ namespace Tolk.Web.Services
                 Text = "Ny tolk"
             };
 
-            var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId)
+            var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId && i.InterpreterBrokerId != interpreterToBeReplacedId)
             .Select(i => new SelectListItem
             {
                 Value = i.InterpreterBrokerId.ToString(),
-                Text = i.FullName,
+                Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (Tolk-ID: saknas)" : $"{i.FullName} (Tolk-ID: {i.OfficialInterpreterId})",
             });
 
             foreach (var i in interpretersInDb)
