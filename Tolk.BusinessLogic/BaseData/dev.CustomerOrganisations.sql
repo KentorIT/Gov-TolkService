@@ -2,7 +2,7 @@ USE TolkDev
 
 SET IDENTITY_INSERT CustomerOrganisations ON
 
-INSERT CustomerOrganisations (CustomerOrganisationId, Name, PriceListType, EmailDomain, ParentCustomerOrganisationId, OrganisationPrefix)
+INSERT CustomerOrganisations (CustomerOrganisationId, Name, PriceListType, EmailDomain, ParentCustomerOrganisationId, OrganizationPrefix)
 	VALUES 
 	(1, 'Polismyndigheten', 2, 'polisen.se', NULL, 'Pol'),
 	(2, 'Migrationsverket', 2, 'migrationsverket.se', NULL, 'Mig'),
