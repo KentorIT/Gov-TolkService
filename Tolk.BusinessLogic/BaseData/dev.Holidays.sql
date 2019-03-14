@@ -195,7 +195,7 @@ INSERT INTO #Holidays (Date, Name, DateType)
 
 MERGE Holidays dst
 USING #Holidays src
-ON (src.Date = dst.Date)
+ON (src.Date = dst.Date AND dst.DateType = src.DateType)
 WHEN MATCHED THEN
 UPDATE SET dst.Name = src.Name, dst.DateType = src.DateType
 WHEN NOT MATCHED THEN
