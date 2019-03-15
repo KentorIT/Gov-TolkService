@@ -116,7 +116,8 @@ namespace Tolk.BusinessLogic.Services
                             r.Status == RequestStatus.Received ||
                             r.Status == RequestStatus.Accepted ||
                             r.Status == RequestStatus.Approved ||
-                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
+                            r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
             if (email != null)
             {

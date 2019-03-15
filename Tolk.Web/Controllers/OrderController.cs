@@ -104,7 +104,8 @@ namespace Tolk.Web.Controllers
                             r.Status == RequestStatus.Received ||
                             r.Status == RequestStatus.Accepted ||
                             r.Status == RequestStatus.Approved ||
-                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
+                            r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
                             .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
                         Action = nameof(View)
                     })
@@ -544,15 +545,15 @@ namespace Tolk.Web.Controllers
                 }
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), model.ContactPersonId);
+                //Need to have a save here to be able to get the information for the notification.
+                await _dbContext.SaveChangesAsync();
                 var changedOrder = _dbContext.Orders
-                    .Include(o => o.Requests
-                        ).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                     .Include(o => o.ContactPersonUser)
                     .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
                     .Single(o => o.OrderId == order.OrderId);
 
                 _notificationService.OrderContactPersonChanged(changedOrder);
-                _dbContext.SaveChanges();
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
                     return RedirectToAction("View", new { id = order.OrderId });
