@@ -171,7 +171,7 @@
                 </div>
             }
         </div>
-        @if (Model.Status == OrderStatus.AwaitingDeadlineFromCustomer)
+        @if (Model.AllowUpdateExpiry)
         {
             <form method="post" asp-action="UpdateExpiry">
                 <input asp-for="OrderId" type="hidden" />

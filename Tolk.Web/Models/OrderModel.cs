@@ -279,6 +279,8 @@ namespace Tolk.Web.Models
 
         public bool AllowNoAnswerConfirmation { get; set; } = false;
 
+        public bool AllowUpdateExpiry { get; set; } = false;
+
         public bool AllowConfirmCancellation { get; set; } = false;
 
         public bool ActiveRequestIsAnswered { get; set; }
