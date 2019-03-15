@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _tolkDbContext;
         private readonly ISwedishClock _clock;
         private readonly VerificationService _verificationService;
-        private readonly TolkOptions _options;
+        private readonly TolkOptions  _options;
 
         public RequestService(
             PriceCalculationService priceCalculationService,
@@ -32,7 +33,7 @@ namespace Tolk.BusinessLogic.Services
             TolkDbContext tolkDbContext,
             ISwedishClock clock,
             VerificationService verificationService,
-            TolkOptions options
+            IOptions<TolkOptions> options
             )
         {
             _priceCalculationService = priceCalculationService;
@@ -43,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _verificationService = verificationService;
-            _options = options;
+            _options = options.Value;
         }
 
         public async Task Accept(
