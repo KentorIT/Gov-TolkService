@@ -142,6 +142,8 @@ namespace Tolk.Web.Controllers
                 model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                model.AllowUpdateExpiry = order.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
+                model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                 model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
                 if (model.ActiveRequestIsAnswered)
@@ -177,8 +179,6 @@ namespace Tolk.Web.Controllers
                         }).ToList()
                     };
                     model.AllowProcessing = model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
-                    model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
-                    model.AllowUpdateExpiry = order.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 }
                 model.EventLog = new EventLogModel
                 {
