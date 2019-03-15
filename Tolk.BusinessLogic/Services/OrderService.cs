@@ -76,10 +76,13 @@ namespace Tolk.BusinessLogic.Services
                     }
                     else
                     {
-                        _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
-                            startedRequest.RequestId, startedRequest.OrderId);
-                        startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel);
-                        await _tolkDbContext.SaveChangesAsync();
+                        if (_options.Tellus.IsActivated)
+                        {
+                            _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
+                                startedRequest.RequestId, startedRequest.OrderId);
+                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel);
+                            await _tolkDbContext.SaveChangesAsync();
+                        }
                     }
                 }
                 catch (Exception ex)

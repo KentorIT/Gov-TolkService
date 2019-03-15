@@ -10,6 +10,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public class TellusApi
         {
+            public bool IsActivated { get; set; }
             public string Uri { get; set; }
         }
     }

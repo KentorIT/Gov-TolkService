@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -20,6 +21,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _tolkDbContext;
         private readonly ISwedishClock _clock;
         private readonly VerificationService _verificationService;
+        private readonly TolkOptions _options;
 
         public RequestService(
             PriceCalculationService priceCalculationService,
@@ -29,7 +31,8 @@ namespace Tolk.BusinessLogic.Services
             RankingService rankingService,
             TolkDbContext tolkDbContext,
             ISwedishClock clock,
-            VerificationService verificationService
+            VerificationService verificationService,
+            TolkOptions options
             )
         {
             _priceCalculationService = priceCalculationService;
@@ -40,6 +43,7 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _verificationService = verificationService;
+            _options = options;
         }
 
         public async Task Accept(
@@ -58,7 +62,7 @@ namespace Tolk.BusinessLogic.Services
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
             VerificationResult? verificationResult = null;
-            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter)
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _options.Tellus.IsActivated)
             {
                 //Only check if the selected level is other than other.
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
@@ -145,7 +149,7 @@ namespace Tolk.BusinessLogic.Services
             };
             request.Order.Requests.Add(newRequest);
             VerificationResult? verificationResult = null;
-            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter)
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _options.Tellus.IsActivated)
             {
                 //Only check if the selected level is other than other.
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
