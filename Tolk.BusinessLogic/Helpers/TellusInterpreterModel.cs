@@ -4,12 +4,15 @@ using System.Text;
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public  class TellusInterpreterModel
+    public  class TellusInterpreterModel : ITellusResultModel
     {
-        public int InterpreterId { get; set; }
-        public string Name { get; set; }
+        public string InterpreterId { get; set; }
+        public string GivenName { get; set; }
+        public string Surname { get; set; }
         public string Email { get; set; }
         public string Cellphone { get; set; }
+        public string County { get; set; }
         public List<TellusInterpreterCompetenceModel> Competences { get; set; }
+        public List<TellusInterpreterEducationModel> Educations { get; set; }
     }
 }

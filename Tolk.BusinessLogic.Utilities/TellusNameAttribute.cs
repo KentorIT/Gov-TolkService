@@ -4,11 +4,13 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public class TellusNameAttribute : Attribute
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
+        public string Value { get; set; }
 
-        public TellusNameAttribute(string name)
+        public TellusNameAttribute(string id, string value)
         {
-            Name = name;
+            Id = id;
+            Value = value;
         }
     }
 }

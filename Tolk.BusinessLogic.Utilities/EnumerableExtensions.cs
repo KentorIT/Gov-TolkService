@@ -43,9 +43,13 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return EnumHelper.GetCustomName<T>(item);
         }
+        public static string GetTellusId<T>(this T item) where T : struct
+        {
+            return EnumHelper.GetTellusId(item);
+        }
         public static string GetTellusName<T>(this T item) where T : struct
         {
-            return EnumHelper.GetTellusName<T>(item);
+            return EnumHelper.GetTellusName(item);
         }
     }
 }

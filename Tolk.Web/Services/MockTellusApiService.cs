@@ -11,124 +11,156 @@ namespace Tolk.Web.Services
         {
             new TellusInterpreterModel
             {
-                InterpreterId = 90000,
-                Name = "Tolk Tolksson",
+                InterpreterId = "90000",
+                GivenName = "Tolk",
+                Surname = "Tolksson",
                 Email = "tolk.tolksson@hetbrev.se",
                 Cellphone = "+4612345678910",
+                County = "Stockholm",
                 Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "albanska",
-                        CompetenceLevel = "Authorized",
+                        Language = "sqi",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = null,
                         ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "albanska",
-                        CompetenceLevel = "Legal",
+                        Language = "sqi",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("2", "rättstolk"),
                         ValidFrom = null,
                         ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "albanska",
-                        CompetenceLevel = "Medical",
+                        Language = "sqi",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("3", "sjukvårdstolk"),
                         ValidFrom = null,
                         ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "bosniska, kroatiska, serbiska",
-                        CompetenceLevel = "Authorized",
+                        Language = "bos,hrv,srp",
+                        CompetenceLevel =  new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = null,
                         ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "makedonska",
-                        CompetenceLevel = "Authorized",
+                        Language = "mkd",
+                        CompetenceLevel =  new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = null,
                         ValidTo = new DateTime(2020, 3, 15)
                     }
-                }
+                },
+                Educations = new List<TellusInterpreterEducationModel> { }
             },
             new TellusInterpreterModel
             {
-                InterpreterId = 90001,
-                Name = "Test Testmeyer",
+                InterpreterId = "90001",
+                GivenName = "Test",
+                Surname = "Testmeyer",
                 Email = "test.testmeyer@hetbrev.se",
                 Cellphone = "+4612345678910",
+                County = "Malmö",
                 Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "nederländska",
-                        CompetenceLevel = "Authorized",
+                        Language = "nld",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom  = new DateTime(2014, 3, 15),
                         ValidTo = new DateTime(2019, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "tyska",
-                        CompetenceLevel = "Authorized",
+                        Language = "deu",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = new DateTime(2017, 3, 15),
                         ValidTo = new DateTime(2022, 3, 15)
                     },
+                },
+                Educations = new List<TellusInterpreterEducationModel>
+                {
+                    new TellusInterpreterEducationModel
+                    {
+                        Language = "nld",
+                        FromLanguage = "nld",
+                        ToLanguage = "swe",
+                        EducationLevel = "konferenstolk (universitet)",
+                        ValidFrom = new DateTime(2016, 2, 26),
+                        ValidTo = new DateTime(2021, 6, 29)
+                    }
                 }
             },
             new TellusInterpreterModel
             {
-                InterpreterId = 90002,
-                Name = "John Doe",
+                InterpreterId = "90002",
+                GivenName = "John",
+                Surname = "Doe",
                 Email = "john.doe@hetbrev.se",
                 Cellphone = "+4612345678910",
+                County = "Stockholm",
                 Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "grekiska",
-                        CompetenceLevel = "Authorized",
+                        Language = "gre",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = new DateTime(2014, 3, 15),
                         ValidTo = new DateTime(2019, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "grekiska",
-                        CompetenceLevel = "Medical",
+                        Language = "gre",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("3", "sjukvårdstolk"),
                         ValidFrom = new DateTime(2017, 3, 15),
                         ValidTo = new DateTime(2022, 3, 15)
                     },
-                }
+                },
+                Educations = new List<TellusInterpreterEducationModel> { }
             },
             new TellusInterpreterModel
             {
-                InterpreterId = 90003,
-                Name = "Carl Hamilton",
+                InterpreterId = "90003",
+                GivenName = "Carl",
+                Surname = "Hamilton",
                 Email = "carl.hamilton@hetbrev.se",
                 Cellphone = "+4612345678910",
+                County = "Stockholm",
                 Competences = new List<TellusInterpreterCompetenceModel>
                 {
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "ryska",
-                        CompetenceLevel = "Authorized",
+                        Language = "rus",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("1", "auktoriserad tolk"),
                         ValidFrom = new DateTime(2014, 3, 15),
                         ValidTo = new DateTime(2020, 3, 15)
                     },
                     new TellusInterpreterCompetenceModel
                     {
-                        Language = "ryska",
-                        CompetenceLevel = "Legal",
+                        Language = "rus",
+                        CompetenceLevel = new TellusInterpreterCompetencePairModel ("2", "rättstolk"),
                         ValidFrom = new DateTime(2014, 3, 15),
                         ValidTo = new DateTime(2022, 3, 15)
                     },
+                },
+                Educations = new List<TellusInterpreterEducationModel>
+                {
+                    new TellusInterpreterEducationModel
+                    {
+                        Language = "rus",
+                        EducationLevel = "tolk, talade språk (folkbildning)",
+                        ValidFrom = new DateTime(2012, 3, 15),
+                        ValidTo = new DateTime(2019, 3, 15),
+                    }
                 }
             }
         };
 
-        public TellusInterpreterModel GetInterpreter(string id)
+        public ITellusResultModel GetInterpreter(string id)
         {
             return _interpreterModels.SingleOrDefault(i => i.InterpreterId.ToString() == id);
         }

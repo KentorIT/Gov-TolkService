@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
@@ -18,13 +20,22 @@ namespace Tolk.Web.Controllers
         [Route("Get")]
         public JsonResult Get(string id)
         {
-            dynamic result = _tellusService.GetInterpreter(id);
-            if (result == null)
+            TellusModel model;
+            var result = _tellusService.GetInterpreter(id);
+            if (result != null)
             {
-                // Actual API returns an empty array if no result was found
-                result = new int[] { };
+                model = new TellusModel
+                {
+                    Status = 200,
+                    TotalMatching = 1,
+                    Result = new List<ITellusResultModel> { result }
+                };
             }
-            return Json(result);
+            else
+            {
+                model = new TellusModel { Status = 200, TotalMatching = 0, Result = new List<ITellusResultModel> { } };
+            }
+            return Json(model);
         }
     }
 }

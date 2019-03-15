@@ -51,9 +51,9 @@ namespace Tolk.BusinessLogic.Services
                         return VerificationResult.NotFound;
                     }
                     var competences = information.Competences.Where(c => c.Language == order.Language.TellusName);
-                    if (competences.Any(c => c.CompetenceLevel == competenceLevel.GetTellusName()))
+                    if (competences.Any(c => c.CompetenceLevel.Id == competenceLevel.GetTellusId()))
                     {
-                        var competence = competences.Single(c => c.CompetenceLevel == competenceLevel.GetTellusName());
+                        var competence = competences.Single(c => c.CompetenceLevel.Id == competenceLevel.GetTellusId());
                         if (competence.IsValidAt(order.StartAt))
                         {
                             return VerificationResult.Validated;
