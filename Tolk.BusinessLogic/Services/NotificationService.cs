@@ -111,34 +111,37 @@ namespace Tolk.BusinessLogic.Services
                     HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(order.OrderId));
             }
             //Broker
-            var request = order.Requests.Single(r =>
+            var request = order.Requests.SingleOrDefault(r =>
                             r.Status == RequestStatus.Created ||
                             r.Status == RequestStatus.Received ||
                             r.Status == RequestStatus.Accepted ||
                             r.Status == RequestStatus.Approved ||
-                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
-                            r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
-            if (email != null)
+                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+            if (request != null)
             {
-                string bodyBroker = $"Person som har rätt att granska rekvisition har ändrats för bokning {orderNumber}.";
-                CreateEmail(email.ContactInformation, $"Bokning {order.OrderNumber} har uppdaterats",
-                    bodyBroker + GotoRequestPlain(request.RequestId),
-                    HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId),
-                    true);
-            }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
-            if (webhook != null)
-            {
-                CreateWebHookCall(
-                   new RequestInformationUpdatedModel
-                   {
-                       OrderNumber = orderNumber,
-                   },
-                   webhook.ContactInformation,
-                   NotificationType.RequestInformationUpdated,
-                   webhook.RecipientUserId
-               );
+                //if the contact person is changed on a order with no currently active request, no notification should be sent to broker
+                var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
+                if (email != null)
+                {
+                    string bodyBroker = $"Person som har rätt att granska rekvisition har ändrats för bokning {orderNumber}.";
+                    CreateEmail(email.ContactInformation, $"Bokning {order.OrderNumber} har uppdaterats",
+                        bodyBroker + GotoRequestPlain(request.RequestId),
+                        HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId),
+                        true);
+                }
+                var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
+                if (webhook != null)
+                {
+                    CreateWebHookCall(
+                       new RequestInformationUpdatedModel
+                       {
+                           OrderNumber = orderNumber,
+                       },
+                       webhook.ContactInformation,
+                       NotificationType.RequestInformationUpdated,
+                       webhook.RecipientUserId
+                   );
+                }
             }
         }
 
