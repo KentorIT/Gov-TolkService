@@ -134,12 +134,13 @@ namespace Tolk.Web.Controllers
             var attachment = _dbContext.Attachments
                 .Include(a => a.TemporaryAttachmentGroup)
                 .Include(a => a.Requisitions)
+                .Include(a => a.Requests)
                 .SingleOrDefault(a => a.AttachmentId == id && a.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey);
             //Add check for if the user is allowed to remove the attachment
             // Check if the file is not connected to any requisitions or requests. If it is, just remove the temp-connection.
             if (attachment != null)
             {
-                if (attachment.Requisitions.Any())
+                if (attachment.Requisitions.Any() || attachment.Requests.Any())
                 {
                     _dbContext.TemporaryAttachmentGroups.Remove(attachment.TemporaryAttachmentGroup);
                 }
