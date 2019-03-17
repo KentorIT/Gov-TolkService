@@ -344,12 +344,12 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"En reklamation har registrerats för tolkuppdrag med boknings-ID {orderNumber}",
-                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats med följande meddelande:
-{complaint.ComplaintType.GetDescription()}
+                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats.\nReklamationstyp:\n
+{complaint.ComplaintType.GetDescription()}\n\nAngiven reklamationsbeskrivning:\n
 {complaint.ComplaintMessage} 
 {GotoRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
-                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats med följande meddelande:<br />
-{complaint.ComplaintType.GetDescription()}<br />
+                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats.<br />Reklamationstyp:<br />
+{complaint.ComplaintType.GetDescription()}<br /><br />Angiven reklamationsbeskrivning:<br />
 {complaint.ComplaintMessage}
 {GotoRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
                 true
