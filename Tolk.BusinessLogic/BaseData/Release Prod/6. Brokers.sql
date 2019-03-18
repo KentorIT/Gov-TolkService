@@ -1,20 +1,18 @@
 
---OBS!!!!! Semantix ska tas bort så detta måste göras om
 --Email to Broker and UserNotificationSettings must be set!
 
-DELETE FROM Brokers
-DBCC CHECKIDENT ('Brokers', RESEED, 0)
+
 
 -- To be completed: EmailAddress to Broker
 INSERT Brokers (BrokerId, Name, EmailDomain, EmailAddress, OrganizationNumber, OrganizationPrefix)
 	VALUES 
-	(1, 'Hero Tolk AB', 'herotolk.se', '', '556400-4546', 'Hero'),
-	(2, 'Språkservice Sverige AB', 'sprakservice.se', '', '556629-1513', 'SpSv'),
-	(3, 'Digital Interpretations Scandianvia AB', 'digitaltolk.se', '', '559032-5394', 'DigInt'),
-	(4, 'Linguacom AB', 'linguacom.se', '', '556863-9628', 'Ling'),
-	(5, 'Stockholm Tolkförmedling AB', 'transcom.com', '', '556482-8654', 'StTF'),
-	(6, 'Folkhälsobyrån Tolkförmedling', 'folkhalsobyran.se', '', '556580-0744', 'FHB'),
-	(7, 'Järva Tolk och Översättning AB', 'jarvatolk.se', '', '556613-1792', 'JTO')
+	(1, 'Hero Tolk AB', 'herotolk.se', 'avropa@herotolk.se', '556400-4546', 'Hero'),
+	(2, 'Språkservice Sverige AB', 'sprakservice.se', 'info@sprakservice.se', '556629-1513', 'SpSv'),
+	(3, 'Digital Interpretations Scandianvia AB', 'digitaltolk.se', 'tolk@digitaltolk.se', '559032-5394', 'DigInt'),
+	(4, 'Linguacom AB', 'linguacom.se', 'kundservice@linguacom.se', '556863-9628', 'Ling'),
+	(5, 'Stockholm Tolkförmedling AB', 'transcom.com', 'transvoice@transcom.com', '556482-8654', 'StTF'),
+	(6, 'Folkhälsobyrån Tolkförmedling', 'folkhalsobyran.se', 'kontakt@folkhalsobyran.se', '556580-0744', 'FHB'),
+	(7, 'Järva Tolk och Översättning AB', 'jarvatolk.se', 'info@jarvatolk.se', '556613-1792', 'JTO')
 	
 
 --Blekinge (8)	Hero Tolk AB	1% Språkservice Sverige AB	9%	Digital Interpretations Scandianvia AB	12%

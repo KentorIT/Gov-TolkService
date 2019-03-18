@@ -5,8 +5,8 @@
 INSERT AspNetUsers (ConcurrencyStamp, Email, NormalizedEmail, NormalizedUserName, SecurityStamp, UserName, AccessFailedCount, EmailConfirmed, LockoutEnabled, PhoneNumberConfirmed, TwoFactorEnabled, CustomerOrganisationId, BrokerId, InterpreterId, NameFirst, NameFamily, PhoneNumberCellphone, PasswordHash, IsActive, IsApiUser)
 	SELECT
 		NEWID()
-	   ,'api@' + b.EmailDomain
-	   ,UPPER('api@' + b.EmailDomain)
+	   ,b.EmailAddress
+	   ,UPPER(b.EmailAddress)
 	   ,UPPER('apiuser.' + b.EmailDomain)
 	   ,NEWID()
 	   ,'apiuser.' + b.EmailDomain
