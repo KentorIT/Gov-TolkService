@@ -545,7 +545,7 @@ Sammanställning:
             switch (request.Status)
             {
                 case RequestStatus.Accepted:
-                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. Eventuellt förändrade svar finns som måste beaktas.";
+                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. Du behöver godkänna de beräknade resekostnaderna.";
                     CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         body + GotoOrderPlain(request.Order.OrderId),
                         HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
@@ -579,7 +579,7 @@ Sammanställning:
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                 (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
-                    "Eventuellt förändrade krav finns som måste beaktas. Om byte av tolk på för uppdraget inte godkänns/avslås så kommer systemet godkänna bokningsförfrågan automatiskt " +
+                    "Du behöver godkänna de beräknade resekostnaderna. Om byte av tolk för uppdraget inte godkänns eller underkänns så kommer systemet godkänna bokningsförfrågan automatiskt " +
                     $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att bokningsförfrågan tidigare haft status godkänd." :
                     "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.");
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
