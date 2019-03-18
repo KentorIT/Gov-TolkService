@@ -216,10 +216,12 @@ $(function () {
             $('#other-language').collapse('hide');
         }
         if (selectedItem.attr('data-additional') === "") {
+            $('#divNonCompetenceLevel').show();
             $('#divCompetenceLevel').hide();
             $('#LanguageHasAuthorizedInterpreter').val('false');
         }
         else {
+            $('#divNonCompetenceLevel').hide();
             $('#divCompetenceLevel').show();
             $('#LanguageHasAuthorizedInterpreter').val('true');
         }
