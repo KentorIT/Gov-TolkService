@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Enums
         Reviewed = 2,
         [Description("Rekvisition har kommenterats")]
         Commented = 3,
-        [Description("Rekvisition är automatiskt genererad pga sen avbokning")]
+        [Description("Rekvisition är automatiskt genererad pga avbokning")]
         AutomaticGeneratedFromCancelledOrder = 4,
         [Description("Rekvisition är godkänd")]
         Approved = 5,

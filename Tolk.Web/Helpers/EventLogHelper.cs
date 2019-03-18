@@ -402,7 +402,7 @@ namespace Tolk.Web.Helpers
                     yield return new EventLogEntryModel
                     {
                         Timestamp = requisition.CreatedAt,
-                        EventDetails = "Rekvisition automatiskt genererad, pga sen avbokning",
+                        EventDetails = "Rekvisition automatiskt genererad pga avbokning",
                         Actor = "Systemet",
                     };
                 }
