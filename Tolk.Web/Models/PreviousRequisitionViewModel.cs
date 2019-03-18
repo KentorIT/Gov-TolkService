@@ -39,6 +39,13 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string PerDiem { get; set; }
 
+        [Display(Name = "Tidigare angiven skattsedel")]
+        public TaxCard? InterpreterTaxCard { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Tidigare angiven specifikation")]
+        public string Message { get; set; }
+
         public PriceInformationModel ResultPriceInformationModel { get; set; }
 
         public static PreviousRequisitionViewModel GetViewModelFromPreviousRequisition(Requisition requisition)
@@ -56,7 +63,9 @@ namespace Tolk.Web.Models
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
                 Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price,
                 PerDiem = requisition.PerDiem,
-                CarCompensation = requisition.CarCompensation
+                CarCompensation = requisition.CarCompensation,
+                InterpreterTaxCard = requisition.InterpretersTaxCard,
+                Message = requisition.Message
             };
         }
     }

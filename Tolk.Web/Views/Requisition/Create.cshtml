@@ -49,6 +49,10 @@
                     <input asp-for="RequestId" type="hidden" />
                     <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
                     <input asp-for="FileGroupKey" type="hidden" />
+                    @if (Model.PreviousRequisition != null)
+                    {
+                        <display-entry asp-for="PreviousRequisition.InterpreterTaxCard" />
+                    }
                     <form-entry asp-for="InterpreterTaxCard" type="select" asp-items="SelectListService.TaxCards" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("tolkens-skattsedel")" />
                 </div>
             </div>
@@ -237,12 +241,15 @@
                     <br />
                 </div>
             </div>
-
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-8">
                     <form-entry asp-for="Message" help-link="@HelpLinkService.GenerateUrl("specifikation")" />
+                    @if (Model.PreviousRequisition != null)
+                    {
+                        <display-entry asp-for="PreviousRequisition.Message" />
+                    }
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
                 </div>
             </div>
