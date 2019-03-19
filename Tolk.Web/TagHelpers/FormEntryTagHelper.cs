@@ -792,7 +792,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
-                GenerateExtendedSelectList(_htmlGenerator, writer, selectList, placeholder);
+                GenerateExtendedSelectList(_htmlGenerator, writer, selectList, placeholder, modelExplorer);
             }
             else
             {
@@ -847,7 +847,7 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private void GenerateExtendedSelectList(IHtmlGenerator htmlGenerator, TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder)
+        private void GenerateExtendedSelectList(IHtmlGenerator htmlGenerator, TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
         {
             writer.WriteLine("<br>");
             TagBuilder tagBuilder = new TagBuilder("select");
@@ -860,24 +860,24 @@ namespace Tolk.Web.TagHelpers
             }
             tagBuilder.Attributes.Add("id", For.Name);
             tagBuilder.Attributes.Add("name", For.Name);
-
+            
             //this is for the default option -- Välj --  
             tagBuilder.InnerHtml.AppendHtml("<option value></option>");
 
             foreach (ExtendedSelectListItem item in selectList)
             {
-                tagBuilder.InnerHtml.AppendHtml(ListItemToOptionForExtendedListItem(item));
+                tagBuilder.InnerHtml.AppendHtml(ListItemToOptionForExtendedListItem(item, item.Value == modelExplorer.Model?.ToString()));
             }
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
 
-        private static IHtmlContentBuilder ListItemToOptionForExtendedListItem(ExtendedSelectListItem item)
+        private static IHtmlContentBuilder ListItemToOptionForExtendedListItem(ExtendedSelectListItem item, bool selectedValue)
         {
             TagBuilder builder = new TagBuilder("option");
             builder.Attributes["value"] = item.Value;
 
-            if (item.Selected)
+            if (selectedValue)
             {
                 builder.Attributes["selected"] = "selected";
             }
