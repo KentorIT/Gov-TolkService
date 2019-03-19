@@ -8,12 +8,13 @@
     ViewData["Title"] = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Byt ut tolk" : "Svara på bokningsförfrågan";
     var declineHeader = @Model.OrderModel.ReplacingOrderId.HasValue ? "Tacka nej till ersättningsuppdrag" : "Tacka nej till bokning";
     HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
+    var headerHelpLink = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? string.Empty : HelpLinkService.PageName;
 }
 <div class="row">
     <div class="col-sm-12">
         @await Html.PartialAsync("_OrderHeader", Model.OrderModel)
 
-        @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] } })
+        @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] }, { "helplink", headerHelpLink } })
 
         <div class="row">
             <div class="col-sm-4">

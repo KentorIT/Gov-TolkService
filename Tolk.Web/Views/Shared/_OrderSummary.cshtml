@@ -29,8 +29,15 @@
 }
 else
 {
-    <h2 class="normal-weight">@header @HelpLinkService.HeaderAnchor()</h2>
+    <h2 class="normal-weight">
+        @header
+        @if (!string.IsNullOrWhiteSpace(HelpLinkService.PageName))
+        {
+            @HelpLinkService.HeaderAnchor()
+        }
+    </h2>
 }
+
 <hr />
 <div id="@divId" class="@divClass">
     <div class="row">
