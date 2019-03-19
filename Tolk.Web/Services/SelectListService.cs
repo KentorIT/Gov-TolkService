@@ -258,7 +258,7 @@ namespace Tolk.Web.Services
                 var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier) : null;
                 yield return new SelectListItem()
                 {
-                    Text = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? currentUser.FindFirstValue(ClaimTypes.Name),
+                    Text = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? $"{currentUser.FindFirstValue(TolkClaimTypes.PersonalName)} (Inloggad)",
                     Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
                     Selected = impersonatedUserId == null
                 };
@@ -267,7 +267,7 @@ namespace Tolk.Web.Services
                     var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.Admin).Id;
 
                     items = _dbContext.Users
-                        .Where(u => u.IsActive && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
+                        .Where(u => u.IsActive && !u.IsApiUser && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
                         .Select(u => new SelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,

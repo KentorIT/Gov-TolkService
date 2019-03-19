@@ -19,7 +19,7 @@ namespace Tolk.Web.Helpers
             destination.AddClaim(new Claim(
                 TolkClaimTypes.ImpersonatingUserName,
                 source.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)
-                  ?? source.FindFirstValue(ClaimTypes.Name)));
+                  ?? $"{source.FindFirstValue(TolkClaimTypes.PersonalName)} (inloggad)"));
 
             destination.AddClaim(new Claim(ClaimTypes.Role, Roles.Impersonator));
 
