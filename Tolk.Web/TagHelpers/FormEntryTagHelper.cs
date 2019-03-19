@@ -325,7 +325,7 @@ namespace Tolk.Web.TagHelpers
                 For.Name,
                 value: For.Model,
                 format: null,
-                htmlAttributes: new { @class = IsNoAutoComplete ? "form-control no-auto-complete" : "form-control" });
+                htmlAttributes: new { @class = (IsNoAutoComplete && string.IsNullOrEmpty(For.Model?.ToString())) ? "form-control no-auto-complete" : "form-control" });
 
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
