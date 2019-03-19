@@ -81,14 +81,6 @@ function changeTab(element, path, tabPaneSelector) {
     }
 }
 
-function disableOnSubmit(selector) {
-    $(selector).disable();
-    var isValid = $(selector).closest("form").valid();
-    if (!isValid) {
-        $(selector).enable();
-    }
-}
-
 $.urlParam = function (name) {
     var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
     if (results != null) { //eslint-disable-line eqeqeq
@@ -244,7 +236,7 @@ $.fn.extend({
         }
     },
     hasValue: function (value) {
-        //Intentional use of == iso === since "1" and 1 needs to be seen as equal..
+        //Intentional use of == instead of === since "1" and 1 needs to be seen as equal..
         return $(this).is(":checkbox")
             ? $(this).is(":checked") === value
             : $(this).val() == value; //eslint-disable-line eqeqeq
@@ -254,6 +246,13 @@ $.fn.extend({
     },
     enable: function () {
         $(this).removeAttr("disabled");
+    },
+    disableOnSubmit: function () {
+        $(this).disable();
+        var isValid = $(this).closest("form").valid();
+        if (!isValid) {
+            $(this).enable();
+        }
     },
     // wizard
     tolkWizard: function (opts) {

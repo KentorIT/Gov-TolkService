@@ -17,6 +17,7 @@ function triggerValidator(message, button, validatorId, textArea) {
     var $form = button.parents(".modal-content").find("form");
     validatorId.empty();
     if ($form.valid() && $form.find(textArea).val().length > 0) {
+        button.disable();
         $form.submit();
     }
     else {
