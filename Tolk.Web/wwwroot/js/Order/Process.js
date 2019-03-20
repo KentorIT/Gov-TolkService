@@ -117,9 +117,6 @@ $(function () {
             event.preventDefault();
             validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, vänligen kontrollera sista svarstid.");
         }
-        else {
-            $("#updateLatestAnswerBy").disableOnSubmit();
-        }
     });
 });
 $.fn.extend({
