@@ -173,7 +173,6 @@ namespace Tolk.Web.Controllers
 
             var brokerId = User.TryGetBrokerId();
             var customerId = User.TryGetCustomerOrganisationId();
-            model.IsCustomer = customerId.HasValue;
             model.IsBroker = brokerId.HasValue;
 
             var requisitions = _dbContext.Requisitions
@@ -189,19 +188,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    if (!model.FilterByContact.HasValue)
-                    {
-                        requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId ||
-                            r.Request.Order.ContactPersonId == userId);
-                    }
-                    else if (model.FilterByContact.Value)
-                    {
-                        requisitions = requisitions.Where(r => r.Request.Order.ContactPersonId == userId);
-                    }
-                    else
-                    {
-                        requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId);
-                    }
+                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId || r.Request.Order.ContactPersonId == userId);
                 }
             }
             else if (brokerId.HasValue)

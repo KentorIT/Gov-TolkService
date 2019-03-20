@@ -21,22 +21,28 @@
             <div class="col-sm-4">
                 <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
             </div>
-            
+
         </div>
         <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="DateRange" />
-            </div>
-            <div class="col-sm-4">
-                @if (Model.IsCustomer)
-                {
-                    <form-entry asp-for="FilterByContact" type="checkbox" />
-                }
-                @if (Model.IsBroker)
-                {
-                    <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
-                }
-            </div>
+            @if (Model.IsBroker)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="DateRange" />
+                </div>
+                <div class="col-sm-4">
+                    @if (Model.IsBroker)
+                    {
+                        <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-6">
+                    <form-entry asp-for="DateRange" />
+                </div>
+            }
         </div>
+
     </form>
 </div>

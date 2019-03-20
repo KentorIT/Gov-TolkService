@@ -18,15 +18,10 @@ namespace Tolk.Web.Models
 
         public RequisitionStatus? Status { get; set; }
 
-        [Display(Name = "Rekvisitioner med person som har rätt att granska rekvisition ")]
-        public bool? FilterByContact { get; set; }
-
         public bool HasActiveFilters
         {
-            get => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue|| DateRange?.Start != null || DateRange?.End != null || Status.HasValue || (FilterByContact.HasValue && FilterByContact.Value); 
+            get => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue|| DateRange?.Start != null || DateRange?.End != null || Status.HasValue; 
         }
-
-        public bool IsCustomer { get; set; }
 
         public bool IsBroker { get; set; }
 
