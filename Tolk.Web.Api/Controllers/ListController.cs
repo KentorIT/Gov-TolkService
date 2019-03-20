@@ -156,6 +156,12 @@ namespace Tolk.Web.Api.Controllers
             return DescriptionsAsJson<ComplaintStatus>();
         }
 
+        [HttpGet]
+        public JsonResult RequisitionStatuses()
+        {
+            return DescriptionsAsJson<RequisitionStatus>();
+        }
+
         private JsonResult DescriptionsAsJson<T>()
         {
             return Json(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
