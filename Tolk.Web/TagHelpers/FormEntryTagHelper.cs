@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
@@ -326,10 +327,13 @@ namespace Tolk.Web.TagHelpers
                 value: For.Model,
                 format: null,
                 htmlAttributes: new { @class = (IsNoAutoComplete && string.IsNullOrEmpty(For.Model?.ToString())) ? "form-control no-auto-complete" : "form-control" });
+            var placeholderAttribute = (PlaceholderAttribute)AttributeHelper.GetAttribute<PlaceholderAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
 
-            if (!string.IsNullOrEmpty(For.Metadata.Description))
+            if (placeholderAttribute != null)
             {
-                tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
+                tagBuilder.Attributes.Add("placeholder", placeholderAttribute.Text);
             }
             //The regular expressions are not added as client side valdations for some reason.
             // Remove this code if this is fixed in future versions of .Net Core, or by some better setup of things that I have not found....
@@ -358,9 +362,13 @@ namespace Tolk.Web.TagHelpers
                 rows: 5,
                 columns: 80,
                 htmlAttributes: new { @class = "form-control" });
-            if (!string.IsNullOrEmpty(For.Metadata.Description))
+            var placeholderAttribute = (PlaceholderAttribute)AttributeHelper.GetAttribute<PlaceholderAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
+
+            if (placeholderAttribute != null)
             {
-                tagBuilder.Attributes.Add("placeholder", For.Metadata.Description);
+                tagBuilder.Attributes.Add("placeholder", placeholderAttribute.Text);
             }
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
