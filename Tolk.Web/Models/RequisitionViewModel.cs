@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -24,6 +25,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens kommentar")]
         [DataType(DataType.MultilineText)]
         [Required]
+        [Placeholder("Skriv kommentar.")]
         public string CustomerComment { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }

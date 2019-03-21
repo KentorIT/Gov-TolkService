@@ -6,6 +6,7 @@ using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
 
@@ -54,6 +55,7 @@ namespace Tolk.Web.Models
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Övrig information om uppdraget", Description = "Eventuell annan information som är viktig eller relevant för förmedling eller tolk, t ex vägbeskrivning, ärendeinformation eller förutsättningar i övrigt för tolkuppdragets genomförande. Här kan du även ange kontaktuppgifter till person som tolken skall kontakta. Beakta eventuell sekretess avseende informationen.")]
+        [Placeholder("T ex vägbeskrivning, ärendeinformation eller övriga förutsättningar för tolkuppdraget. Beakta eventuell sekretess avseende informationen.")]
         [StringLength(1000)]
         public string Description { get; set; }
 
@@ -241,12 +243,14 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [StringLength(1000)]
+        [Placeholder("Beskriv anledning till varför du inte godtar svaret.")]
         public string DenyMessage { get; set; }
 
         [Display(Name = "Anledning till att bokningen avbokas")]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [StringLength(1000)]
+        [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
         #endregion

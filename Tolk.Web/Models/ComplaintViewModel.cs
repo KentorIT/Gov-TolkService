@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -31,12 +32,14 @@ namespace Tolk.Web.Models
         [ClientRequired]
         [Display(Name = "Meddelande vid bestridande")]
         [StringLength(1000)]
+        [Placeholder("Beskriv anledning till bestridande.")]
         public string DisputeMessage { get; set; }
 
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [Display(Name = "Meddelande vid svar på bestridande")]
         [StringLength(1000)]
+        [Placeholder("Skriv svar angående bestridande.")]
         public string AnswerDisputedMessage { get; set; }
 
         public bool IsBroker { get; set; }

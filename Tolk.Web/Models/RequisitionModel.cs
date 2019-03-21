@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -66,15 +67,18 @@ namespace Tolk.Web.Models
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [DataType(DataType.Currency)]
+        [Placeholder("Utlägg i SEK")]
         public decimal? Outlay { get; set; }
 
         [Display(Name = "Bilersättning (antal km)", Description = "Ange uppgift om bilersättning ska utgå. Ange i antal hela kilometer.")]
         [Range(0, 100000, ErrorMessage = "Kontrollera värdet för bilersättning")]
+        [Placeholder("Bilersättning i km")]
         public int? CarCompensation { get; set; }
 
         [DataType(DataType.MultilineText)]
         [StringLength(1000)]
         [Display(Name = "Traktamente", Description = "Ange uppgift om traktamente (flerdygnsförrättning inkl. ev. måltidsavdrag) ska utgå. Ange i antal dagar eller i belopp i SEK")]
+        [Placeholder("Uppgift om hurvida traktamente ska utgå. Ange antal i dagar eller belopp i SEK.")]
         public string PerDiem { get; set; }
 
         [Display(Name = "Förväntad startid")]
@@ -85,10 +89,12 @@ namespace Tolk.Web.Models
 
         [Range(31, 600, ErrorMessage = "Kontrollera värdet för total tidsspillan")]
         [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
+        [Placeholder("Tidsspillan i min")]
         public int? TimeWasteTotalTime { get; set; }
 
         [Range(0, 600, ErrorMessage = "Kontrollera värdet för spilltid som inträffat under obekväm arbetstid")]
         [Display(Name = "Andel av total tidsspillan som inträffat under obekväm arbetstid", Description = "Avser tid i minuter av den totala tidsspillan som angetts och som inträffat utanför vardagar 07:00-18:00")]
+        [Placeholder("Tidsspillan i min")]
         public int? TimeWasteIWHTime { get; set; }
 
         [Display(Name = "Angiven tidsspillan")]
@@ -118,6 +124,7 @@ namespace Tolk.Web.Models
         [Required]
         [Display(Name = "Specifikation", Description = "Var tydlig med var alla tider och kostnader kommer ifrån.")]
         [StringLength(1000)]
+        [Placeholder("Information om angivna tider och kostnader.")]
         public string Message { get; set; }
 
         public string ViewedByUser { get; set; } = string.Empty;

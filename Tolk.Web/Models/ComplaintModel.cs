@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
@@ -46,6 +47,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Required]
         [Display(Name = "Reklamationsbeskrivning")]
+        [Placeholder("Orsak till reklamation. Beakta eventuell sekretess avseende informationen.")]
         [StringLength(1000)]
         public string Message { get; set; }
 

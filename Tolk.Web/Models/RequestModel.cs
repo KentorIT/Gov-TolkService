@@ -5,6 +5,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -58,6 +59,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Required]
         [StringLength(1000)]
+        [Placeholder("Beskriv anledning tydligt.")]
         public string DenyMessage { get; set; }
 
 
@@ -65,6 +67,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Required]
         [StringLength(1000)]
+        [Placeholder("Beskriv orsak till avbokning.")]
         public string CancelMessage { get; set; }
 
         public string Info48HCancelledByCustomer { get; set; }
@@ -115,6 +118,7 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange resekostnad (endast siffror, ange 0 om det inte finns någon kostnad)")]
         [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd.")]
         [DataType(DataType.Currency)]
+        [Placeholder("Förväntad resekostnad i SEK. Ange 0 om ingen kostnad förväntas.")]
         public decimal? ExpectedTravelCosts { get; set; }
 
         [ClientRequired]
