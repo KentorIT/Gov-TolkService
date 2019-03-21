@@ -62,7 +62,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.Currency)]
         public decimal TotalTravelCosts { get => Outlay ?? 0; }
 
-        [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Ange uppgift om utlägg om det finns")]
+        [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Ange uppgift om utlägg utöver kostnader för eventuell bilersättning och traktamente")]
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [DataType(DataType.Currency)]
