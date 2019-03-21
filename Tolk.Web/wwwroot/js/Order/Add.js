@@ -257,7 +257,6 @@ $(function () {
         }
         else {
             $(".allow-more-travel-cost").hide();
-            $(".allow-more-travel-cost-information").hide();
         }
     });
 
@@ -281,8 +280,13 @@ $(function () {
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
         if ($(this).val() === "YesShouldBeApproved") {
             $(".allow-more-travel-cost-information").show();
+            $(".allow-no-review-travel-cost-information").hide();
+        } else if ($(this).val() === "YesShouldNotBeApproved") {
+            $(".allow-more-travel-cost-information").hide();
+            $(".allow-no-review-travel-cost-information").show();
         } else {
             $(".allow-more-travel-cost-information").hide();
+            $(".allow-no-review-travel-cost-information").hide();
         }
     });
 
@@ -295,6 +299,7 @@ $(function () {
     $("#UseRankedInterpreterLocation").trigger("change");
     checkTimeAtStart();
     $("#SplitTimeRange_StartDate").trigger("change");
+    $(".allow-no-review-travel-cost-information").hide();
     $(".allow-more-travel-cost-information").hide();
 });
 
