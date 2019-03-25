@@ -227,7 +227,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && !request.IsAcceptedOrApproved)
                 {
                     var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
@@ -330,13 +330,13 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order.CreatedByUser)
-                .Include(r => r.Order.ContactPersonUser)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Single(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
-                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order.CreatedByUser)
+                    .Include(r => r.Order.ContactPersonUser)
+                    .Include(r => r.Interpreter)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .SingleOrDefault(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded && request != null)
                 {
                     _requestService.CancelByBroker(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                     _dbContext.SaveChanges();
@@ -360,7 +360,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter)
                 .Single(r => r.RequestId == model.RequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanDecline)
             {
                 try
                 {

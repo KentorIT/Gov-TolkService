@@ -449,7 +449,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking)
                 .Include(r => r.Requisitions)
                 .Include(r => r.PriceRows)
-                .Single(r => r.OrderId == model.OrderId &&
+                .SingleOrDefault(r => r.OrderId == model.OrderId &&
                     (
                         r.Status == RequestStatus.Created ||
                         r.Status == RequestStatus.Received ||
@@ -457,7 +457,7 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.Approved ||
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed
                 ));
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded && request != null)
             {
                 if (model.AddReplacementOrder)
                 {
@@ -518,11 +518,10 @@ namespace Tolk.Web.Controllers
             var order = await _dbContext.Orders.Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleAsync(o => o.OrderId == model.OrderId);
+            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded && request.CanDeny)
             {
-                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
-
                 request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
 
                 await _orderService.CreateRequest(order, request);

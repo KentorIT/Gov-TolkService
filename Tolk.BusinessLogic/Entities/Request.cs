@@ -187,6 +187,32 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
+        public bool IsAcceptedOrApproved
+        {
+            get { return Status == RequestStatus.Approved 
+                    || (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && Status == RequestStatus.Accepted); }
+        }
+
+        public bool CanCancel
+        {
+            get {
+                return (Order.Status == OrderStatus.Requested 
+                    || Order.Status == OrderStatus.RequestResponded 
+                    || Order.Status == OrderStatus.RequestRespondedNewInterpreter 
+                    || Order.Status == OrderStatus.ResponseAccepted)
+                && (Status == RequestStatus.Created 
+                    || Status == RequestStatus.Received 
+                    || Status == RequestStatus.Accepted 
+                    || Status == RequestStatus.Approved 
+                    || Status == RequestStatus.AcceptedNewInterpreterAppointed);
+            }
+        }
+
+        public bool CanDecline
+        {
+            get { return Status == RequestStatus.Created || Status == RequestStatus.Received; }
+        }
+
         public bool CanApprove
         {
             get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
@@ -195,6 +221,11 @@ namespace Tolk.BusinessLogic.Entities
         public bool CanChangeInterpreter
         {
             get { return Status == RequestStatus.Approved || Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
+        }
+
+        public bool CanDeny
+        {
+            get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
         }
 
         public void Accept(
@@ -260,7 +291,7 @@ namespace Tolk.BusinessLogic.Entities
             int? impersonatorId,
             string message)
         {
-            if (Status != RequestStatus.Created && Status != RequestStatus.Received)
+            if (!CanDecline)
             {
                 throw new InvalidOperationException($"Det gick inte att tacka nej till förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
@@ -366,7 +397,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
-            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
+            if (!CanDeny)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be denied.");
             }
@@ -381,17 +412,13 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false)
         {
-            if (Order.Status != OrderStatus.Requested && Order.Status != OrderStatus.RequestResponded && Order.Status != OrderStatus.RequestRespondedNewInterpreter && Order.Status != OrderStatus.ResponseAccepted)
+            if (!CanCancel)
             {
-                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}. Only Orders waiting to be delivered can be cancelled");
+                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}, and request {RequestId} is {Status}. Only Orders waiting to be delivered with active requests can be cancelled");
             }
             if (Order.StartAt < cancelledAt)
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started cannot be cancelled");
-            }
-            if (Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.Accepted && Status != RequestStatus.Approved && Status != RequestStatus.AcceptedNewInterpreterAppointed)
-            {
-                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only active requests can be cancelled.");
             }
             if (Status == RequestStatus.Approved && !isReplaced)
             {
