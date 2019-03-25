@@ -227,8 +227,12 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Single(o => o.RequestId == model.RequestId);
 
-                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && !request.IsAcceptedOrApproved)
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
+                    if (request.IsAcceptedOrApproved)
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                    }
                     var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
                         RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
@@ -336,6 +340,10 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Interpreter)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .SingleOrDefault(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
+                if (request == null)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Tillfället kunde inte avbokas" });
+                }
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded && request != null)
                 {
                     _requestService.CancelByBroker(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);

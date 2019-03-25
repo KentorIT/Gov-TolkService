@@ -457,7 +457,11 @@ namespace Tolk.Web.Controllers
                         r.Status == RequestStatus.Approved ||
                         r.Status == RequestStatus.AcceptedNewInterpreterAppointed
                 ));
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded && request != null)
+            if (request == null)
+            {
+                return RedirectToAction("Index", "Home", new { ErrorMessage = "Beställningen kunde inte avbokas" });
+            }
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
             {
                 if (model.AddReplacementOrder)
                 {
@@ -518,10 +522,14 @@ namespace Tolk.Web.Controllers
             var order = await _dbContext.Orders.Include(o => o.Requests)
                 .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleAsync(o => o.OrderId == model.OrderId);
-            var request = order.Requests.Single(r => r.RequestId == model.RequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded && request.CanDeny)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
             {
+                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
+                if (!request.CanDeny)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att neka denna tillsättningen" });
+                }
                 request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
 
                 await _orderService.CreateRequest(order, request);
