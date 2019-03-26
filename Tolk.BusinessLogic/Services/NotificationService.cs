@@ -714,7 +714,7 @@ Sammanställning:
             if (email != null)
             {
                 var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}.";
-                CreateEmail(request.Ranking.Broker.EmailAddress, $"Tolkuppdrag med boknings-ID {orderNumber} verifierat",
+                CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} verifierat",
                         body + GotoOrderPlain(request.Order.OrderId),
                         body + GotoOrderButton(request.Order.OrderId),
                         true);

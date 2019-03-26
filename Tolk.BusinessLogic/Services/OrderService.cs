@@ -333,7 +333,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task ReplaceOrder(Order order, Order replacementOrder, int userId, int? impersonatorId, string cancelMessage)
         {
             var request = order.ActiveRequest;
-            if (order.ActiveRequest == null)
+            if (request == null)
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
@@ -363,6 +363,59 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} replaced by customer {userId}.", order.OrderId, userId);
         }
 
+        public void ApproveRequestAnswer(Request request, int userId, int? impersonatorId)
+        {
+            bool isInterpreterChangeApproval = request.Status == RequestStatus.AcceptedNewInterpreterAppointed;
+            request.Approve(_clock.SwedenNow, userId, impersonatorId);
+
+            if (isInterpreterChangeApproval)
+            {
+                _notificationService.RequestChangedInterpreterAccepted(request, InterpereterChangeAcceptOrigin.User);
+            }
+            else
+            {
+                _notificationService.RequestAnswerApproved(request);
+            }
+        }
+
+        public async Task DenyRequestAnswer(Request request, int userId, int? impersonatorId, string message)
+        {
+            request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
+            await CreateRequest(request.Order, request);
+            _notificationService.RequestAnswerDenied(request);
+        }
+
+        public async Task ConfirmCancellationByBroker(Request request, int userId, int? impersonatorId)
+        {
+            if (request.Status != RequestStatus.CancelledByBroker)
+            {
+                throw new InvalidOperationException($"The order {request.OrderId} has not been cancelled");
+            }
+            await _tolkDbContext.AddAsync(new RequestStatusConfirmation
+            {
+                Request = request,
+                ConfirmedBy = userId,
+                ImpersonatingConfirmedBy = impersonatorId,
+                RequestStatus = request.Status,
+                ConfirmedAt = _clock.SwedenNow
+            });
+        }
+
+        public async Task ConfirmNoAnswer(Order order, int userId, int? impersonatorId)
+        {
+            if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
+            {
+                throw new InvalidOperationException($"The order {order.OrderId} has not been denied by all brokers");
+            }
+            await _tolkDbContext.AddAsync(new OrderStatusConfirmation {
+                Order= order,
+                ConfirmedBy = userId,
+                ImpersonatingConfirmedBy = impersonatorId,
+                OrderStatus = order.Status,
+                ConfirmedAt = _clock.SwedenNow
+            });
+        }
+
         public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
         {
             var request = order.ActiveRequest;
@@ -384,13 +437,16 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
         }
 
-        public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry)
+        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry)
         {
+            if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
+            {
+                throw new InvalidOperationException($"There is no request awaiting deadline form customer on this order {request.OrderId}");
+            }
+
             request.ExpiresAt = expiry;
             request.Order.Status = OrderStatus.Requested;
             request.Status = RequestStatus.Created;
-
-            await _tolkDbContext.SaveChangesAsync();
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");

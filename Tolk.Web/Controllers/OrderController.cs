@@ -210,7 +210,7 @@ namespace Tolk.Web.Controllers
         {
             var order = GetOrder(replacingOrderId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
                 ReplaceOrderModel model = Mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
                 model.ReplacedTimeRange = new TimeRange
@@ -387,22 +387,10 @@ namespace Tolk.Web.Controllers
                 if (!request.CanApprove)
                 {
                     _logger.LogWarning("Wrong status when trying to Approve request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
-
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
-
-                bool isInterpreterChangeApproval = request.Status == RequestStatus.AcceptedNewInterpreterAppointed;
-                request.Approve(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-
-                _dbContext.SaveChanges();
-                if (isInterpreterChangeApproval)
-                {
-                    _notificationService.RequestChangedInterpreterAccepted(request, InterpereterChangeAcceptOrigin.User);
-                }
-                else
-                {
-                    _notificationService.RequestAnswerApproved(request);
-                }
+                _orderService.ApproveRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId());
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
             return Forbid();
@@ -442,14 +430,18 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
-            var request = _dbContext.Requests
+            var request = await _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order)
-                .Single(r => r.RequestId == requestId);
+                .SingleAsync(r => r.RequestId == requestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded && request.Status == RequestStatus.CancelledByBroker)
+            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded)
             {
-                await _dbContext.AddAsync(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
+                if (request.Status != RequestStatus.CancelledByBroker)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det fanns ingen avbokning att bekräfta på denna bokning." });
+                }
+                await _orderService.ConfirmCancellationByBroker(request, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
             }
@@ -462,10 +454,14 @@ namespace Tolk.Web.Controllers
         {
             var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded && order.Status == OrderStatus.NoBrokerAcceptedOrder)
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                _dbContext.Add(new OrderStatusConfirmation { OrderId = orderId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), OrderStatus = order.Status, ConfirmedAt = _clock.SwedenNow });
-                _dbContext.SaveChanges();
+                if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna bokning var inte avböjd av samtliga förmedlingar." });
+                }
+                await _orderService.ConfirmNoAnswer(order, User.GetUserId(), User.TryGetImpersonatorId());
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
             }
             return Forbid();
@@ -486,10 +482,7 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att neka denna tillsättningen" });
                 }
-                request.Deny(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
-
-                await _orderService.CreateRequest(order, request);
-                _notificationService.RequestAnswerDenied(request);
+                await _orderService.DenyRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = order.OrderId });
             }
@@ -539,8 +532,14 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
-                var request = order.Requests.Single(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
-                await _orderService.SetRequestExpiryManually(request, latestAnswerBy);
+                var request = order.Requests.SingleOrDefault(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+                if (request == null)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna bokning behöver inte få sista svarstid satt." });
+                }
+
+                _orderService.SetRequestExpiryManually(request, latestAnswerBy);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för bokning {order.OrderNumber} är satt" });
             }
             return Forbid();
