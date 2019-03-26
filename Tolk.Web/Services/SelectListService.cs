@@ -142,6 +142,11 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
+        public static IEnumerable<SelectListItem> ReportTypes { get; } =
+            EnumHelper.GetAllDescriptions<ReportType>()
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+
         public IEnumerable<SelectListItem> Languages
         {
             get

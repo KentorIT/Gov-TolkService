@@ -1,9 +1,86 @@
-﻿@{
+﻿@model ReportSearchModel
+@using Tolk.Web.Services;
+@using Tolk.Web.Helpers;
+@{
     ViewData["Title"] = "Statistik och rapporter";
 }
 <h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-md-12">
-        Här kommer det komma möjlighet att söka fram och titta på statistik och rapporter.
+@if (!User.TryGetCustomerOrganisationId().HasValue)
+{
+    <div class="row">
+        <div class="col-md-12">
+            Här kommer det komma möjlighet att söka fram och titta på statistik och rapporter.
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            Välj rapport från listan, fyll i eventuellt datumintervall och tryck på Hämta rapport. Om ditt rapportuttag genererar ett antal träffar så kan du välja att exportera detta till Excel.
+        </div>
+    </div>
+    <form method="post">
+        <div class="row">
+            <div class="col-md-4">
+            </div>
+            <div class="col-md-8 pull-left">
+                <span class="important-info" id="ReportDateHolder">
+                    Typ av datum som gäller för vald rapport
+                </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportTypes" class="allow-clear" />
+            </div>
+            <div class="col-md-8 pull-left">
+                <div class="pull-left">
+                    <form-entry asp-for="ReportDate" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Rensa <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <button type="submit" class="btn btn-large btn-default pull-right">Hämta rapport <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+            </div>
+        </div>
+    </form>
+    @if (Model != null && Model.ReportItems != null)
+    {
+        @if (Model.ReportItems > 0)
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <display-entry asp-for="ReportResult" />
+                    <form method="post" asp-action="GenerateExcelResult">
+                        <input asp-for="ReportType" type="hidden" />
+                        <input asp-for="StartDate" type="hidden" />
+                        <input asp-for="EndDate" type="hidden" />
+                        <button class="btn-link">Exportera till Excel</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else
+        { <div class="row">
+                <div class="col-md-12">
+                    <display-entry asp-for="ReportResult" />
+                </div>
+            </div>
+        }
+    }
+}
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Statistics/Statistics.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Statistics/Statistics.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -98,6 +98,12 @@
     ]
   },
   {
+    "outputFileName": "wwwroot/js/Statistics/Statistics.min.js",
+    "inputFiles": [
+      "wwwroot/js/Statistics/Statistics.js"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/js/Order/Replace.min.js",
     "inputFiles": [
       "wwwroot/js/Order/Replace.js"
