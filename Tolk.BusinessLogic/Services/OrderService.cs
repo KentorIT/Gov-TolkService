@@ -330,6 +330,60 @@ namespace Tolk.BusinessLogic.Services
                 order.OrderId);
         }
 
+        public async Task ReplaceOrder(Order order, Order replacementOrder, int userId, int? impersonatorId, string cancelMessage)
+        {
+            var request = order.ActiveRequest;
+            if (order.ActiveRequest == null)
+            {
+                throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
+            }
+            var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
+            replacementOrder.Requests.Add(replacingRequest);
+            await _tolkDbContext.AddAsync(replacementOrder);
+            CancelOrder(order, userId, impersonatorId, cancelMessage, true);
+
+            replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
+            {
+                Description = r.Description,
+                IsRequired = r.IsRequired,
+                RequirementType = r.RequirementType,
+                RequirementAnswers = r.RequirementAnswers
+                .Where(a => a.RequestId == request.RequestId)
+                .Select(a => new OrderRequirementRequestAnswer
+                {
+                    Answer = a.Answer,
+                    CanSatisfyRequirement = a.CanSatisfyRequirement,
+                    RequestId = replacingRequest.RequestId
+                }).ToList(),
+            }).ToList();
+
+            //Generate new price rows from current times, might be subject to change!!!
+            CreatePriceInformation(replacementOrder);
+            _notificationService.OrderReplacementCreated(order);
+            _logger.LogInformation("Order {orderId} replaced by customer {userId}.", order.OrderId, userId);
+        }
+
+        public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
+        {
+            var request = order.ActiveRequest;
+            if (order.ActiveRequest == null)
+            {
+                throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
+            }
+            var now = _clock.SwedenNow;
+            //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
+            // But only if the order has not been replaced!
+            bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
+            request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced);
+
+            if (!isReplaced)
+            {
+                //Only notify if the order was not replaced.
+                _notificationService.OrderCancelledByCustomer(request, createFullCompensationRequisition);
+            }
+            _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
+        }
+
         public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry)
         {
             request.ExpiresAt = expiry;

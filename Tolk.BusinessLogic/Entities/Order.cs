@@ -11,6 +11,39 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class Order
     {
+        private Order() { }
+
+        public Order(Order order)
+            :this (order.CreatedBy, order.ImpersonatingCreator, order.CustomerOrganisationId, order.CreatedAt)
+        {
+            AllowExceedingTravelCost = order.AllowExceedingTravelCost;
+            AssignentType = order.AssignentType;
+            CustomerOrganisation = order.CustomerOrganisation;
+            Language = order.Language;
+            OtherLanguage = order.OtherLanguage;
+            Region = order.Region;
+            LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter;
+            SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired;
+            CompetenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank
+            }).ToList();
+        }
+        public Order(int createdBy, int? impersonator, int customerOrganisationId, DateTimeOffset createdAt)
+        {
+            CreatedBy = createdBy;
+            CreatedAt = createdAt;
+            CustomerOrganisationId = customerOrganisationId;
+            ImpersonatingCreator = impersonator;
+            Status = OrderStatus.Requested;
+            Requirements = new List<OrderRequirement>();
+            InterpreterLocations = new List<OrderInterpreterLocation>();
+            PriceRows = new List<OrderPriceRow>();
+            Requests = new List<Request>();
+            CompetenceRequirements = new List<OrderCompetenceRequirement>();
+        }
+
         private OrderStatus _status;
 
         #region base information
@@ -168,6 +201,19 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderStatusConfirmation> OrderStatusConfirmations { get; set; }
 
+        public Request ActiveRequest
+        {
+            get
+            {
+                return Requests.SingleOrDefault(r =>
+                        r.Status == RequestStatus.Created ||
+                        r.Status == RequestStatus.Received ||
+                        r.Status == RequestStatus.Accepted ||
+                        r.Status == RequestStatus.Approved ||
+                        r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+            }
+        }
+
         #endregion
 
         #region methods
@@ -203,34 +249,20 @@ namespace Tolk.BusinessLogic.Entities
             Status = OrderStatus.Delivered;
         }
 
-        public void MakeCopy(Order order)
-        {
-            order.AllowExceedingTravelCost = AllowExceedingTravelCost;
-            order.AssignentType = AssignentType;
-            order.CustomerOrganisation = CustomerOrganisation;
-            order.Language = Language;
-            order.OtherLanguage = OtherLanguage;
-            order.Region = Region;
-            order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter;
-            order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
-            order.CompetenceRequirements = CompetenceRequirements.Select(r => new OrderCompetenceRequirement
-            {
-                CompetenceLevel = r.CompetenceLevel,
-                Rank = r.Rank
-            }).ToList();
-        }
-
         public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, int? contactPersonId)
         {
             if (Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByBroker || Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.ResponseNotAnsweredByCreator)
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change contact person for orders with this status.");
             }
-            OrderContactPersonHistory.Add(new OrderContactPersonHistory {
+            OrderContactPersonHistory.Add(new OrderContactPersonHistory
+            {
                 ChangedAt = changedAt,
                 PreviousContactPersonId = ContactPersonId,
                 ChangedBy = userId,
-                ImpersonatingChangeUserId = impersonatingUserId, OrderId = OrderId }
+                ImpersonatingChangeUserId = impersonatingUserId,
+                OrderId = OrderId
+            }
             );
             ContactPersonId = contactPersonId;
         }

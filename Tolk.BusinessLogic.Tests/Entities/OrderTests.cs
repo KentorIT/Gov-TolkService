@@ -48,7 +48,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new Request() { Status = requestStatus.Value }
                 };
             }
-            var order = new Order()
+            var order = new Order(MockOrders.First())
             {
                 Status = status,
                 AllowExceedingTravelCost = allowExceedingTravelCost,
@@ -94,7 +94,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 requests = new List<Request>();
             }
-            var order = new Order()
+            var order = new Order(MockOrders.First())
             {
                 Status = status,
                 AllowExceedingTravelCost = allowExceedingTravelCost,
@@ -148,7 +148,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 currentStatus = OrderStatus.Requested;
             }
-            var order = new Order
+            var order = new Order(MockOrders.First())
             {
                 Status = currentStatus,
                 ContactPersonId = prevContactPersonId ?? null,
@@ -178,7 +178,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.ResponseNotAnsweredByCreator)]
         public void ChangeContactPerson_Invalid(OrderStatus invalidStatus)
         {
-            var order = new Order
+            var order = new Order(MockOrders.First())
             {
                 Status = invalidStatus
             };

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using System;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -15,13 +16,13 @@ namespace Tolk.Web.Tests.Filters
         {
             complaints = new[]
             {
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000000" } }, Status = ComplaintStatus.Confirmed },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000011"} }, Status = ComplaintStatus.Confirmed },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000305"} }, Status = ComplaintStatus.DisputePendingTrial },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000104"} }, Status = ComplaintStatus.TerminatedTrialConfirmedComplaint },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000331"} }, Status = ComplaintStatus.Created },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000502"} }, Status = ComplaintStatus.Created },
-                new Complaint { Request = new Request{ Order = new Order{ OrderNumber = "2018-000971"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000000" } }, Status = ComplaintStatus.Confirmed },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000011"} }, Status = ComplaintStatus.Confirmed },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000305"} }, Status = ComplaintStatus.DisputePendingTrial },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000104"} }, Status = ComplaintStatus.TerminatedTrialConfirmedComplaint },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000331"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000502"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order(1, null, 1, DateTimeOffset.Now){ OrderNumber = "2018-000971"} }, Status = ComplaintStatus.Created },
             };
         }
 

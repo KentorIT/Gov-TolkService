@@ -9,6 +9,20 @@ namespace Tolk.BusinessLogic.Tests.Entities
 {
     public class RequisitionTests
     {
+        private readonly Order MockOrder;
+
+        public RequisitionTests()
+        {
+            MockOrder = new Order(3, null, 6, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
+            {
+                OrderId = 8,
+                CustomerReferenceNumber = "EmptyOrder",
+                OrderNumber = "2018-000008",
+                Status = OrderStatus.Requested,
+                Requests = new List<Request>()
+            };
+        }
+
         [Theory]
         [InlineData(31, 15)]
         [InlineData(null, 15)]
@@ -44,10 +58,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Request = new Request
                 {
                     Status = RequestStatus.Approved,
-                    Order = new Order
+                    Order = new Order(MockOrder)
                     {
                         Status = OrderStatus.RequestResponded,
-                        Requests = new List<Request>(),
                     },
                 },
             };

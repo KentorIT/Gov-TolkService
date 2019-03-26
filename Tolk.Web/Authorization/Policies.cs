@@ -100,18 +100,14 @@ namespace Tolk.Web.Authorization
         {
             switch (context.Resource)
             {
+                case Order order:
+                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && 
+                        order.CreatedBy == context.User.GetUserId();
                 case Request request:
-                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
-                    {
-                        return request.Order.CreatedBy == context.User.GetUserId() &&
-                        (request.Order.Status == OrderStatus.Requested || request.Order.Status == OrderStatus.RequestResponded || request.Order.Status == OrderStatus.ResponseAccepted || request.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                        (request.IsToBeProcessedByBroker || request.IsAcceptedOrApproved);
-                    }
-                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
-                    {
-                        return request.Ranking.BrokerId == context.User.GetBrokerId() && request.Status == RequestStatus.Approved && request.Order.Status == OrderStatus.ResponseAccepted;
-                    }
-                    return false;
+                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && 
+                        request.Ranking.BrokerId == context.User.GetBrokerId() && 
+                        request.Status == RequestStatus.Approved && request.Order.Status == OrderStatus.ResponseAccepted;
+                    
                 default:
                     throw new NotImplementedException();
             }

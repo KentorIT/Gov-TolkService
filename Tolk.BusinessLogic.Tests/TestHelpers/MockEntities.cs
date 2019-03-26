@@ -32,7 +32,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         {
             var orders = new[]
             {
-                new Order {
+                new Order(1, null, 2, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 0,
                     CustomerReferenceNumber = "Number0",
                     OrderNumber = "2018-001337",
@@ -40,7 +41,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,06,07,15,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Stockholm").Single(),
                     Language = mockLanguages.Where(l => l.Name == "English").Single(),
-                    CustomerOrganisationId = 2,
                     Status = OrderStatus.RequestRespondedNewInterpreter,
                     Requests = new List<Request>
                     {
@@ -48,7 +48,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
-                new Order {
+                new Order(1, null, 2, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 1,
                     CustomerReferenceNumber = "Number1",
                     OrderNumber = "2018-000066", // execute order 66...
@@ -56,14 +57,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,07,07,17,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Stockholm").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
-                    CustomerOrganisationId = 2,
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
-                new Order {
+                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 2,
                     CustomerReferenceNumber = "Number2",
                     OrderNumber = "2018-000042",
@@ -71,7 +72,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,08,07,14,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Skåne").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
-                    CustomerOrganisationId = 1,
                     Status = OrderStatus.Requested,
                     Requests = new List<Request>
                     {
@@ -79,7 +79,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     }
                 },
 
-                new Order {
+                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 3,
                     CustomerReferenceNumber = "Number3",
                     OrderNumber = "2018-000654",
@@ -87,14 +88,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "Chinese").Single(),
-                    CustomerOrganisationId = 1,
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order {
+                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 4,
                     CustomerReferenceNumber = "Number4",
                     OrderNumber = "2018-000330",
@@ -102,14 +103,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,09,18,13,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
-                    CustomerOrganisationId = 1,
                     Status = OrderStatus.RequestResponded,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order {
+                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 5,
                     CustomerReferenceNumber = "Number5",
                     OrderNumber = "2018-000501",
@@ -117,7 +118,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,10,09,15,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Gotland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
-                    CustomerOrganisationId = 1,
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
@@ -125,7 +125,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order {
+                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
                     OrderId = 6,
                     CustomerReferenceNumber = "Number6",
                     OrderNumber = "2018-000006",
@@ -133,14 +134,13 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "Chinese").Single(),
-                    CustomerOrganisationId = 6,
                     Status = OrderStatus.CancelledByCreator,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order
+                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 7,
                     CustomerReferenceNumber = "Number7",
@@ -149,12 +149,21 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,08,15,19,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
-                    CustomerOrganisationId = 6,
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
+                },
+                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
+                    OrderId = 8,
+                    CustomerReferenceNumber = "EmptyOrder",
+                    OrderNumber = "2018-000008",
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    Status = OrderStatus.Requested,
+                    Requests = new List<Request>()
                 }
             };
 

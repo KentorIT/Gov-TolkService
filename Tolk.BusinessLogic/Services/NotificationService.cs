@@ -45,13 +45,13 @@ namespace Tolk.BusinessLogic.Services
             _cache = cache;
         }
 
-        public void OrderCancelledByCustomer(Request request, bool requestWasApproved, bool createFullCompensationRequisition)
+        public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
         {
             string orderNumber = request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                if (requestWasApproved)
+                if (request.Status == RequestStatus.Approved)
                 {
                     string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                          $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +

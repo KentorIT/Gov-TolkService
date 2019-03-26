@@ -20,12 +20,10 @@ namespace Tolk.BusinessLogic.Entities
             CreatedAt = creationTime;
             IsTerminalRequest = isTerminalRequest;
         }
+
         public Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
+            :this(originalRequest.Ranking, expiry, creationTime)
         {
-            Ranking = originalRequest.Ranking;
-            Status = RequestStatus.Created;
-            ExpiresAt = expiry;
-            CreatedAt = creationTime;
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
         }

@@ -128,8 +128,9 @@ namespace Tolk.Web.Controllers
                         r.Status != RequestStatus.DeclinedByBroker);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null &&
+                    request.CanCancel &&
                     order.StartAt > _clock.SwedenNow &&
-                    (await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded;
+                    (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
                     request.Status == RequestStatus.Approved &&
                     _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2 &&
@@ -245,42 +246,10 @@ namespace Tolk.Web.Controllers
                 {
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
-                        //TODO: Handle this better. Preferably with a list that you can use contains on,
-                        //OR a property on order!! Should probably throw null pointer exeption if Requests are not included.
-                        var request = order.Requests.SingleOrDefault(r =>
-                        r.Status == RequestStatus.Created ||
-                        r.Status == RequestStatus.Received ||
-                        r.Status == RequestStatus.Accepted ||
-                        r.Status == RequestStatus.Approved ||
-                        r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
-
-                        Order replacementOrder = CreateNewOrder();
-                        var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
-                        order.MakeCopy(replacementOrder);
+                        Order replacementOrder = new Order(order);
                         model.UpdateOrder(replacementOrder, true);
-                        replacementOrder.Requests.Add(replacingRequest);
-                        _dbContext.Add(replacementOrder);
-                        request.Cancel(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, isReplaced: true);
-
-                        replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
-                        {
-                            Description = r.Description,
-                            IsRequired = r.IsRequired,
-                            RequirementType = r.RequirementType,
-                            RequirementAnswers = r.RequirementAnswers
-                            .Where(a => a.RequestId == request.RequestId)
-                            .Select(a => new OrderRequirementRequestAnswer
-                            {
-                                Answer = a.Answer,
-                                CanSatisfyRequirement = a.CanSatisfyRequirement,
-                                RequestId = replacingRequest.RequestId
-                            }).ToList(),
-                        }).ToList();
-
-                        //Genarate new price rows from current times, might be subject to change!!!
-                        _orderService.CreatePriceInformation(replacementOrder);
-                        _notificationService.OrderReplacementCreated(order);
-                        _dbContext.SaveChanges();
+                        await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                        await _dbContext.SaveChangesAsync();
                         trn.Commit();
                         return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
                     }
@@ -443,40 +412,27 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Cancel(CancelOrderModel model)
         {
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Ranking)
-                .Include(r => r.Requisitions)
-                .Include(r => r.PriceRows)
-                .SingleOrDefault(r => r.OrderId == model.OrderId &&
-                    (
-                        r.Status == RequestStatus.Created ||
-                        r.Status == RequestStatus.Received ||
-                        r.Status == RequestStatus.Accepted ||
-                        r.Status == RequestStatus.Approved ||
-                        r.Status == RequestStatus.AcceptedNewInterpreterAppointed
-                ));
-            if (request == null)
+            var order = _dbContext.Orders
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
+                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
+                .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
+                .Single(o => o.OrderId == model.OrderId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded)
             {
-                return RedirectToAction("Index", "Home", new { ErrorMessage = "Beställningen kunde inte avbokas" });
-            }
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded)
-            {
+                if (order.ActiveRequest == null)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Beställningen kunde inte avbokas" });
+                }
                 if (model.AddReplacementOrder)
                 {
                     //Forward the message
                     return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
                 }
-                var now = _clock.SwedenNow;
-                //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
-                bool createFullCompensationRequisition = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, request.Order.StartAt.DateTime) < 2;
-                bool isApprovedRequest = request.Status == RequestStatus.Approved;
-                request.Cancel(now, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage, createFullCompensationRequisition);
-
-                _notificationService.OrderCancelledByCustomer(request, isApprovedRequest, createFullCompensationRequisition);
-
-                _dbContext.SaveChanges();
+                _orderService.CancelOrder(order, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = model.OrderId });
             }
             return Forbid();
@@ -493,8 +449,8 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded && request.Status == RequestStatus.CancelledByBroker)
             {
-                _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
-                _dbContext.SaveChanges();
+                await _dbContext.AddAsync(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
             }
             return Forbid();
@@ -550,7 +506,7 @@ namespace Tolk.Web.Controllers
             {
                 if (model.ContactPersonId == order.ContactPersonId)
                 {
-                    return RedirectToAction("View", new { id = order.OrderId });
+                    return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), model.ContactPersonId);
@@ -565,7 +521,7 @@ namespace Tolk.Web.Controllers
                 _notificationService.OrderContactPersonChanged(changedOrder);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
-                    return RedirectToAction("View", new { id = order.OrderId });
+                    return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
                 else
                 {
@@ -620,19 +576,7 @@ namespace Tolk.Web.Controllers
 
         private Order CreateNewOrder()
         {
-            return new Order
-            {
-                Status = OrderStatus.Requested,
-                CreatedBy = User.GetUserId(),
-                CreatedAt = _clock.SwedenNow,
-                CustomerOrganisationId = User.GetCustomerOrganisationId(),
-                ImpersonatingCreator = User.TryGetImpersonatorId(),
-                Requirements = new List<OrderRequirement>(),
-                InterpreterLocations = new List<OrderInterpreterLocation>(),
-                PriceRows = new List<OrderPriceRow>(),
-                Requests = new List<Request>(),
-                CompetenceRequirements = new List<OrderCompetenceRequirement>()
-            };
+            return new Order(User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), _clock.SwedenNow);
         }
 
         private Order GetOrder(int id)

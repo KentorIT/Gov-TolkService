@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 using Tolk.BusinessLogic.Utilities;
 using Xunit;
 
@@ -11,9 +12,13 @@ namespace Tolk.BusinessLogic.Tests.Entities
 {
     public class RequestTests
     {
+        private readonly Order MockOrder;
+
         public RequestTests()
         {
-
+            var mockLanguages = MockEntities.MockLanguages();
+            var mockRankings = MockEntities.MockRankings();
+            MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings).Single(o => o.OrderId == 8);
         }
 
         [Fact]
@@ -62,10 +67,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.RequestResponded,
-                    Requests = new List<Request>()
                 }
             };
             request.Order.Requests.Add(request);
@@ -118,7 +122,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Requests = requests
                 }
@@ -137,11 +141,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = RequestStatus.Received,
                 RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
                 PriceRows = new List<RequestPriceRow>(),
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
                     AllowExceedingTravelCost = allowExceedingTravelCost,
-                    Requests = new List<Request>(),
                 },
             };
             request.Order.Requests.Add(request);
@@ -234,7 +237,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     ReplacingOrderId = replacingOrderId
                 }
@@ -256,7 +259,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     ReplacingOrderId = replacingOrderId
                 }
@@ -311,7 +314,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     ReplacingOrderId = replacingOrderId
                 }
@@ -330,12 +333,11 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Status = RequestStatus.Received,
                 PriceRows = new List<RequestPriceRow>(),
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
                     AllowExceedingTravelCost = allowExceedingTravelCost,
                     ReplacingOrderId = 14,
-                    Requests = new List<Request>(),
                 }
             };
             request.Order.Requests.Add(request);
@@ -395,7 +397,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     ReplacingOrderId = replacingOrderId
                 }
@@ -416,10 +418,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = RequestStatus.AcceptedNewInterpreterAppointed,
                 RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
                 PriceRows = new List<RequestPriceRow>(),
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
-                    Requests = new List<Request>(),
                 },
             };
             var oldRequestRecievedBy = 66;
@@ -497,7 +498,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         {
             var request = new Request
             {
-                Order = new Order(),
+                Order = new Order(MockOrder),
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() => 
@@ -512,7 +513,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
                 },
@@ -597,12 +598,11 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Approved,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
-                    Status = OrderStatus.RequestResponded,
                     StartAt = startAt,
                     EndAt = endAt,
-                    Requests = new List<Request>(),
+                    ReplacingOrderId = (isReplaced ? (int?)66 : null)
                 },
                 Requisitions = new List<Requisition>(),
                 PriceRows = new List<RequestPriceRow>(),
@@ -690,12 +690,11 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Approved,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.RequestResponded,
                     StartAt = startAt,
                     EndAt = endAt,
-                    Requests = new List<Request>(),
                 },
                 Requisitions = new List<Requisition>(),
                 PriceRows = new List<RequestPriceRow>(),
@@ -716,11 +715,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Approved,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.RequestResponded,
                     StartAt = startAt,
-                    Requests = new List<Request>(),
                 },
             };
             request.Order.Requests.Add(request);
@@ -795,11 +793,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Approved,
-                Order = new Order()
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.RequestResponded,
                     StartAt = startAt,
-                    Requests = new List<Request>(),
                 },
             };
             request.Order.Requests.Add(request);
@@ -827,10 +824,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request
             {
                 Status = RequestStatus.Approved,
-                Order = new Order
+                Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.RequestResponded,
-                    Requests = new List<Request>(),
                 },
                 Requisitions = new List<Requisition>(),
             };
