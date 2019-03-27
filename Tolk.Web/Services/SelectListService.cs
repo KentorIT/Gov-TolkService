@@ -176,6 +176,20 @@ namespace Tolk.Web.Services
                         AdditionalDataAttribute = ReportType.DeliveredOrdersBrokers.GetCustomName()
                     });
                     break;
+                case UserType.SystemAdministrator:
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.OrdersForSystemAdministrator.ToString(),
+                        Text = ReportType.OrdersForSystemAdministrator.GetDescription(),
+                        AdditionalDataAttribute = ReportType.OrdersForSystemAdministrator.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.DeliveredOrdersSystemAdministrator.ToString(),
+                        Text = ReportType.DeliveredOrdersSystemAdministrator.GetDescription(),
+                        AdditionalDataAttribute = ReportType.DeliveredOrdersSystemAdministrator.GetCustomName()
+                    });
+                    break;
             }
             return reports;
         }

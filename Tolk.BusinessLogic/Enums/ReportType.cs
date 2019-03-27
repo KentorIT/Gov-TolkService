@@ -18,5 +18,11 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("Uppdragsdatum")]
         [Description("Utförda tolkuppdrag")]
         DeliveredOrdersBrokers = 4,
+        [CustomName("Uppdragsdatum")]
+        [Description("Utförda tolkuppdrag")]
+        DeliveredOrdersSystemAdministrator = 5,
+        [CustomName("Beställningsdatum")]
+        [Description("Bokningsförfrågningar")]
+        OrdersForSystemAdministrator = 6,
     }
 }

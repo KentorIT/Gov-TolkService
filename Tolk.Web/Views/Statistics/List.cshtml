@@ -6,67 +6,65 @@
 }
 <h2>@ViewData["Title"]</h2>
 
-@if (User.TryGetCustomerOrganisationId() != null || User.TryGetBrokerId() != null)
-{
+<div class="row">
+    <div class="col-md-12">
+        Välj rapport från listan, fyll i eventuellt datumintervall och tryck på Hämta rapport. Om ditt rapportuttag genererar ett antal träffar så kan du välja att exportera detta till Excel.
+    </div>
+</div>
+<form method="post">
     <div class="row">
-        <div class="col-md-12">
-            Välj rapport från listan, fyll i eventuellt datumintervall och tryck på Hämta rapport. Om ditt rapportuttag genererar ett antal träffar så kan du välja att exportera detta till Excel.
+        <div class="col-md-4">
+        </div>
+        <div class="col-md-8 pull-left">
+            <span class="important-info" id="ReportDateHolder">
+                Typ av datum som gäller för vald rapport
+            </span>
         </div>
     </div>
-    <form method="post">
-        <div class="row">
-            <div class="col-md-4">
-            </div>
-            <div class="col-md-8 pull-left">
-                <span class="important-info" id="ReportDateHolder">
-                    Typ av datum som gäller för vald rapport
-                </span>
+    <div class="row">
+        <div class="col-md-4">
+            <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportList(User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : User.TryGetCustomerOrganisationId() != null ? Tolk.BusinessLogic.Enums.UserType.OrderCreator : Tolk.BusinessLogic.Enums.UserType.SystemAdministrator)" class="allow-clear" />
+        </div>
+        <div class="col-md-8 pull-left">
+            <div class="pull-left">
+                <form-entry asp-for="ReportDate" />
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportList(User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : Tolk.BusinessLogic.Enums.UserType.OrderCreator)" class="allow-clear" />
-            </div>
-            <div class="col-md-8 pull-left">
-                <div class="pull-left">
-                    <form-entry asp-for="ReportDate" />
-                </div>
-            </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Rensa <span class="btn-remove-times">&times;</span></a>
         </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Rensa <span class="btn-remove-times">&times;</span></a>
-            </div>
-            <div class="col-sm-4">
-                <button type="submit" class="btn btn-large btn-default pull-right">Hämta rapport <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
-            </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-default pull-right">Hämta rapport <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
         </div>
-    </form>
-    @if (Model != null && Model.ReportItems != null)
+    </div>
+</form>
+@if (Model != null && Model.ReportItems != null)
+{
+    @if (Model.ReportItems > 0)
     {
-        @if (Model.ReportItems > 0)
-        {
-            <div class="row">
-                <div class="col-md-12">
-                    <display-entry asp-for="ReportResult" />
-                    <form method="post" asp-action="GenerateExcelResult">
-                        <input asp-for="ReportType" type="hidden" />
-                        <input asp-for="StartDate" type="hidden" />
-                        <input asp-for="EndDate" type="hidden" />
-                        <button class="btn-link">Exportera till Excel</button>
-                    </form>
-                </div>
+        <div class="row">
+            <div class="col-md-12">
+                <display-entry asp-for="ReportResult" />
+                <form method="post" asp-action="GenerateExcelResult">
+                    <input asp-for="ReportType" type="hidden" />
+                    <input asp-for="StartDate" type="hidden" />
+                    <input asp-for="EndDate" type="hidden" />
+                    <button class="btn-link">Exportera till Excel</button>
+                </form>
             </div>
-        }
-        else
-        { <div class="row">
-                <div class="col-md-12">
-                    <display-entry asp-for="ReportResult" />
-                </div>
+        </div>
+    }
+    else
+    { <div class="row">
+            <div class="col-md-12">
+                <display-entry asp-for="ReportResult" />
             </div>
-        }
+        </div>
     }
 }
+
 
 @section Scripts {
     <environment include="Development">
