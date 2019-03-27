@@ -5,15 +5,8 @@
     ViewData["Title"] = "Statistik och rapporter";
 }
 <h2>@ViewData["Title"]</h2>
-@if (!User.TryGetCustomerOrganisationId().HasValue)
-{
-    <div class="row">
-        <div class="col-md-12">
-            Här kommer det komma möjlighet att söka fram och titta på statistik och rapporter.
-        </div>
-    </div>
-}
-else
+
+@if (User.TryGetCustomerOrganisationId() != null || User.TryGetBrokerId() != null)
 {
     <div class="row">
         <div class="col-md-12">
@@ -32,7 +25,7 @@ else
         </div>
         <div class="row">
             <div class="col-md-4">
-                <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportTypes" class="allow-clear" />
+                <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportList(User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : Tolk.BusinessLogic.Enums.UserType.OrderCreator)" class="allow-clear" />
             </div>
             <div class="col-md-8 pull-left">
                 <div class="pull-left">

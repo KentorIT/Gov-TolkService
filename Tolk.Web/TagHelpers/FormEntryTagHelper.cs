@@ -864,7 +864,7 @@ namespace Tolk.Web.TagHelpers
             if (For.Metadata.IsRequired)
             {
                 tagBuilder.Attributes.Add("data-val", "true");
-                tagBuilder.Attributes.Add("data-val-required", "Språk måste anges.");
+                tagBuilder.Attributes.Add("data-val-required", $"{For.Metadata.DisplayName?? "Värde"} måste anges.");
             }
             tagBuilder.Attributes.Add("id", For.Name);
             tagBuilder.Attributes.Add("name", For.Name);

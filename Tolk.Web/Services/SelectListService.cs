@@ -47,7 +47,7 @@ namespace Tolk.Web.Services
             .ToList().AsReadOnly();
 
         public static IEnumerable<SelectListItem> SearchableRoles { get; } =
-            EnumHelper.GetAllDescriptions<SearchableRoles>()
+            EnumHelper.GetAllDescriptions<UserType>()
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
@@ -142,10 +142,43 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> ReportTypes { get; } =
-            EnumHelper.GetAllDescriptions<ReportType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<ExtendedSelectListItem> ReportList(UserType userType)
+        {
+            List<ExtendedSelectListItem> reports = new List<ExtendedSelectListItem>();
+
+            switch (userType)
+            {
+                case UserType.OrderCreator:
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.OrdersForCustomer.ToString(),
+                        Text = ReportType.OrdersForCustomer.GetDescription(),
+                        AdditionalDataAttribute = ReportType.OrdersForCustomer.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.DeliveredOrdersCustomer.ToString(),
+                        Text = ReportType.DeliveredOrdersCustomer.GetDescription(),
+                        AdditionalDataAttribute = ReportType.DeliveredOrdersCustomer.GetCustomName()
+                    });
+                    break;
+                case UserType.Broker:
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.RequestsForBrokers.ToString(),
+                        Text = ReportType.RequestsForBrokers.GetDescription(),
+                        AdditionalDataAttribute = ReportType.RequestsForBrokers.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.DeliveredOrdersBrokers.ToString(),
+                        Text = ReportType.DeliveredOrdersBrokers.GetDescription(),
+                        AdditionalDataAttribute = ReportType.DeliveredOrdersBrokers.GetCustomName()
+                    });
+                    break;
+            }
+            return reports;
+        }
 
         public IEnumerable<SelectListItem> Languages
         {

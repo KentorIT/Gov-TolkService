@@ -9,7 +9,7 @@ namespace Tolk.Web.Models
         public DateRange ReportDate { get; set; }
 
         [Required]
-        [Display(Name = "Välj rapport")]
+        [Display(Name = "Rapport")]
         public ReportType ReportType { get; set; }
 
         [Display(Name = "Rapportresultat")]

@@ -1,12 +1,12 @@
 ﻿using Tolk.BusinessLogic.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Web.Models
 {
-    public class ExcelReportRowModel
+    public class ReportRowModel
     {
+        [Display(Name = "Ordernummer")]
         public string OrderNumber { get; set; }
-
-        public string BrokerName { get; set; }
 
         public string ReportDate { get; set; }
 
@@ -21,12 +21,6 @@ namespace Tolk.Web.Models
         public CompetenceAndSpecialistLevel InterpreterCompetenceLevel { get; set; }
 
         public string InterpreterId { get; set; }
-
-        public string CreatedBy { get; set; }
-
-        public string ReferenceNumber { get; set; }
-
-        public string UnitName { get; set; }
 
         public string Status { get; set; }
 

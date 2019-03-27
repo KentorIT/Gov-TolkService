@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         public string OrganisationIdentifier { get; set; }
 
         [Display(Name = "Roll")]
-        public SearchableRoles? Roles { get; set; }
+        public UserType? Roles { get; set; }
 
         [Display(Name = "Status")]
         public UserStatus? Status { get; set; }
@@ -64,23 +64,23 @@ namespace Tolk.Web.Models
             }
             if (Roles.HasValue)
             {
-                if ((Roles.Value & SearchableRoles.Broker) == SearchableRoles.Broker)
+                if ((Roles.Value & UserType.Broker) == UserType.Broker)
                 {
                     users = users.Where(u => u.BrokerId != null);
                 }
-                if ((Roles.Value & SearchableRoles.OrderCreator) == SearchableRoles.OrderCreator)
+                if ((Roles.Value & UserType.OrderCreator) == UserType.OrderCreator)
                 {
                     users = users.Where(u => u.CustomerOrganisationId != null);
                 }
-                if ((Roles.Value & SearchableRoles.Interpreter) == SearchableRoles.Interpreter)
+                if ((Roles.Value & UserType.Interpreter) == UserType.Interpreter)
                 {
                     users = users.Where(u => u.InterpreterId != null);
                 }
-                if ((Roles.Value & SearchableRoles.SystemAdministrator) == SearchableRoles.SystemAdministrator)
+                if ((Roles.Value & UserType.SystemAdministrator) == UserType.SystemAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.Admin).Id));
                 }
-                if ((Roles.Value & SearchableRoles.OrganisationAdministrator) == SearchableRoles.OrganisationAdministrator)
+                if ((Roles.Value & UserType.OrganisationAdministrator) == UserType.OrganisationAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SuperUser).Id) &&
                         (u.CustomerOrganisationId != null || u.BrokerId != null));
@@ -121,22 +121,4 @@ namespace Tolk.Web.Models
         Owner = 3,
     }
 
-    [Flags]
-    public enum SearchableRoles
-    {
-        [Description("Avropare")]
-        OrderCreator = 1,
-
-        [Description("Tolkförmedlare")]
-        Broker = 2,
-
-        [Description("Administratör på organisation")]
-        OrganisationAdministrator = 4,
-
-        [Description("Tolk")]
-        Interpreter = 8,
-
-        [Description("Systemadministratör")]
-        SystemAdministrator = 16,
-    }
 }

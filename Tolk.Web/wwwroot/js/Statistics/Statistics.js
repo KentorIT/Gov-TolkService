@@ -1,5 +1,4 @@
-﻿
-$(document).ready(function () {
+﻿$(document).ready(function () {
     setReportDateText();
 });
 
@@ -8,13 +7,10 @@ $("body").on("change", "#ReportType", function() {
 });
 
 function setReportDateText() {
-    if ($('#ReportType').val() === "Orders") {
-        $("#ReportDateHolder").html("För denna rapport kan du göra urval med beställningsdatum");
-    }
-    else if ($('#ReportType').val() === "") {
+    if ($("#ReportType option:selected").val() === "") {
         $("#ReportDateHolder").html("Typ av datum som gäller för vald rapport");
     }
     else {
-        $("#ReportDateHolder").html("För denna rapport kan du göra urval med uppdragsdatum");
+        $("#ReportDateHolder").html("För denna rapport kan du göra urval med " + $("#ReportType option:selected").attr('data-additional'));
     }
 }
