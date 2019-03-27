@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -9,13 +10,13 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<ComplaintService> _logger;
 
         public ComplaintService(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            NotificationService notificationService,
+            INotificationService notificationService,
             ILogger<ComplaintService> logger
             )
         {
@@ -25,11 +26,11 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
         }
 
-        public Complaint Create(Request request, int userId, int? impersonatorId, string message, ComplaintType type)
+        public void Create(Request request, int userId, int? impersonatorId, string message, ComplaintType type)
         {
             var complaint = new Complaint
             {
-                RequestId = request.RequestId,
+                Request = request,
                 ComplaintType = type,
                 ComplaintMessage = message,
                 Status = ComplaintStatus.Created,
@@ -38,10 +39,8 @@ namespace Tolk.BusinessLogic.Services
                 ImpersonatingCreatedBy = impersonatorId
             };
             request.CreateComplaint(complaint);
-            _dbContext.SaveChanges();
-            _logger.LogDebug($"Created complaint {complaint.ComplaintId} for request {request.RequestId}");
             _notificationService.ComplaintCreated(complaint);
-            return complaint;
+            _logger.LogDebug($"Created complaint for request {request.RequestId}");
         }
 
         public void Accept(Complaint complaint, int userId, int? impersonatorId, string message)

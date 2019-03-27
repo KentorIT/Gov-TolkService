@@ -94,12 +94,13 @@ namespace Tolk.Web.Controllers
                         _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
                         return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
                     }
-                    var complaint = _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
-                    return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
+                    _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
+                    await _dbContext.SaveChangesAsync();
+                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
                 }
                 return Forbid();
             }
-            return View("Create", model);
+            return View(nameof(Create), model);
         }
 
         public IActionResult List(ComplaintFilterModel model)

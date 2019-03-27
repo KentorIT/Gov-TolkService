@@ -16,7 +16,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
-    public class NotificationService
+    public class NotificationService: INotificationService
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
@@ -756,7 +756,7 @@ Sammanställning:
             return BrokerNotificationSettings.SingleOrDefault(b => b.BrokerId == brokerId && b.NotificationType == type && b.NotificationChannel == channel);
         }
 
-        public IEnumerable<BrokerNotificationSettings> BrokerNotificationSettings
+        private IEnumerable<BrokerNotificationSettings> BrokerNotificationSettings
         {
             get
             {
