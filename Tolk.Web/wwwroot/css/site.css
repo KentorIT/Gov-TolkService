@@ -72,6 +72,17 @@ a.collapsible-section.disabled:hover,
 a.collapsible-section.disabled:focus {
   cursor: default;
 }
+.btn-link-color {
+  color: #587573;
+  text-decoration: underline;
+}
+.btn-link-color:hover,
+.btn-link-color:focus {
+  color: #445352;
+}
+.btn-link-color:active {
+  color: #445352;
+}
 .collapsible-div {
   height: auto;
 }
@@ -1308,7 +1319,4 @@ input.force-validation {
 }
 .neg-margin-top {
   margin-top: -45px;
-}
-.requisition-info {
-  background-color: lightyellow;
 }

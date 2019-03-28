@@ -161,6 +161,18 @@ namespace Tolk.Web.Services
                         Text = ReportType.DeliveredOrdersCustomer.GetDescription(),
                         AdditionalDataAttribute = ReportType.DeliveredOrdersCustomer.GetCustomName()
                     });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.RequisitionsForCustomer.ToString(),
+                        Text = ReportType.RequisitionsForCustomer.GetDescription(),
+                        AdditionalDataAttribute = ReportType.RequisitionsForCustomer.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.ComplaintsForCustomer.ToString(),
+                        Text = ReportType.ComplaintsForCustomer.GetDescription(),
+                        AdditionalDataAttribute = ReportType.ComplaintsForCustomer.GetCustomName()
+                    });
                     break;
                 case UserType.Broker:
                     reports.Add(new ExtendedSelectListItem
@@ -175,6 +187,18 @@ namespace Tolk.Web.Services
                         Text = ReportType.DeliveredOrdersBrokers.GetDescription(),
                         AdditionalDataAttribute = ReportType.DeliveredOrdersBrokers.GetCustomName()
                     });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.RequisitionsForBroker.ToString(),
+                        Text = ReportType.RequisitionsForBroker.GetDescription(),
+                        AdditionalDataAttribute = ReportType.RequisitionsForBroker.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.ComplaintsForBroker.ToString(),
+                        Text = ReportType.ComplaintsForBroker.GetDescription(),
+                        AdditionalDataAttribute = ReportType.ComplaintsForBroker.GetCustomName()
+                    });
                     break;
                 case UserType.SystemAdministrator:
                     reports.Add(new ExtendedSelectListItem
@@ -188,6 +212,18 @@ namespace Tolk.Web.Services
                         Value = ReportType.DeliveredOrdersSystemAdministrator.ToString(),
                         Text = ReportType.DeliveredOrdersSystemAdministrator.GetDescription(),
                         AdditionalDataAttribute = ReportType.DeliveredOrdersSystemAdministrator.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.RequisitionsForSystemAdministrator.ToString(),
+                        Text = ReportType.RequisitionsForSystemAdministrator.GetDescription(),
+                        AdditionalDataAttribute = ReportType.RequisitionsForSystemAdministrator.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.ComplaintsForSystemAdministrator.ToString(),
+                        Text = ReportType.ComplaintsForSystemAdministrator.GetDescription(),
+                        AdditionalDataAttribute = ReportType.ComplaintsForSystemAdministrator.GetCustomName()
                     });
                     break;
             }

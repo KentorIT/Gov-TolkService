@@ -7,9 +7,6 @@ namespace Tolk.Web.Models
 {
     public class ReportRequestRowModel : ReportRowModel
     {
-
-        public string CustomerName { get; set; }
-
         public string AnsweredBy { get; set; }
     }
 }

@@ -1,0 +1,23 @@
+﻿
+namespace Tolk.Web.Models
+{
+    public class ReportRequisitionRowModel : ReportRowModel
+    {
+        public bool HasMealbreaks { get; set; }
+
+        public int WaisteTime { get; set; }
+
+        public int WaisteTimeIWH { get; set; }
+
+        public decimal Outlay { get; set; }
+
+        public int CarCompensation { get; set; }
+
+        public string PerDiem { get; set; }
+
+        public decimal TotalPrice { get; set; }
+
+        public string TaxCard { get; set; }
+        
+    }
+}

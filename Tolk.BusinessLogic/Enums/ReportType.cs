@@ -24,5 +24,23 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("Beställningsdatum")]
         [Description("Bokningsförfrågningar")]
         OrdersForSystemAdministrator = 6,
+        [CustomName("Rekvisitionsdatum")]
+        [Description("Rekvisitioner")]
+        RequisitionsForCustomer = 7,
+        [CustomName("Rekvisitionsdatum")]
+        [Description("Rekvisitioner")]
+        RequisitionsForBroker = 8,
+        [CustomName("Rekvisitionsdatum")]
+        [Description("Rekvisitioner")]
+        RequisitionsForSystemAdministrator = 9,
+        [CustomName("Reklamationsdatum")]
+        [Description("Reklamationer")]
+        ComplaintsForCustomer = 10,
+        [CustomName("Reklamationsdatum")]
+        [Description("Reklamationer")]
+        ComplaintsForBroker = 11,
+        [CustomName("Reklamationsdatum")]
+        [Description("Reklamationer")]
+        ComplaintsForSystemAdministrator = 12,
     }
 }

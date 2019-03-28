@@ -11,9 +11,5 @@ namespace Tolk.Web.Models
 
         public string UnitName { get; set; }
 
-        public string BrokerName { get; set; }
-
-        public string CreatedBy { get; set; }
-
-    }
+     }
 }
