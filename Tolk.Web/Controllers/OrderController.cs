@@ -376,10 +376,10 @@ namespace Tolk.Web.Controllers
 
             //check reasonable duration time for order (more than 10h or less than 1h)
             int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
-            updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty;
+            updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty;
 
             //check if order is far in future (more than 2 years ahead)
-            updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på knappen Ändra." : string.Empty : updatedModel.WarningOrderTimeInfo;
+            updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
 
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
