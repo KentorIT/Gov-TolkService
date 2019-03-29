@@ -6,6 +6,11 @@
     int? actionReplacingId = isOrderDetailView ? Model.ReplacingOrderId : Model.ActiveRequest.ReplacingOrderRequestId;
     int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId;
 }
+<div class="row">
+    <div class="col-sm-12 order-header-contract-info">
+        Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+    </div>
+</div>
 @if (!string.IsNullOrEmpty(Model.ActiveRequest.ViewedByUser))
 {
     <span class="glyphicon glyphicon-user redcolor" title="@Model.ActiveRequest.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ActiveRequest.ViewedByUser</span>

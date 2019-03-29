@@ -1320,3 +1320,9 @@ input.force-validation {
 .neg-margin-top {
   margin-top: -45px;
 }
+.order-header-contract-info {
+  text-align: center;
+  font-size: 12px;
+  color: #979797;
+  letter-spacing: 1.8px;
+}
