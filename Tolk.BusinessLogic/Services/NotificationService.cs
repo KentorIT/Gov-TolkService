@@ -266,7 +266,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("HH:mm")}";
+                $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("HH:mm")}" +
+                GetPossibleInfoNotValidatedInterpreter(request);
 
             CreateEmail(GetRecipiantsFromOrder(request.Order),
                 $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
@@ -512,13 +513,21 @@ Sammanställning:
         public void RequestAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
+
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. Du behöver godkänna de beräknade resekostnaderna.\n\n" +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("HH:mm")}";
+                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("HH:mm")}" +
+                    GetPossibleInfoNotValidatedInterpreter(request);
 
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
                 body + GotoOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
+        }
+
+        private string GetPossibleInfoNotValidatedInterpreter(Request request)
+        {
+            bool? isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign.HasValue ? (bool?)(request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated) : null;
+            return (_options.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med tillsatt kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
         }
 
         public void RequestDeclinedByBroker(Request request)
@@ -581,7 +590,8 @@ Sammanställning:
                 (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
                     "Du behöver godkänna de beräknade resekostnaderna. Om byte av tolk för uppdraget inte godkänns eller underkänns så kommer systemet godkänna bokningsförfrågan automatiskt " +
                     $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att bokningsförfrågan tidigare haft status godkänd." :
-                    "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.");
+                    "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.") +
+                    GetPossibleInfoNotValidatedInterpreter(request);
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                 $"{body} {GotoOrderPlain(request.Order.OrderId)}",
                 $"{HtmlHelper.ToHtmlBreak(body)} {GotoOrderButton(request.Order.OrderId)}");
