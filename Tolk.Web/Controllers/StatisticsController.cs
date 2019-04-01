@@ -466,7 +466,7 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Spilltid OB-tid (min)";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.WaisteTimeIWH);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens skattsedel";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.TaxCard ?? string.Empty);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.TaxCard);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Utlägg (SEK)";
             rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Outlay);
@@ -555,11 +555,12 @@ namespace Tolk.Web.Controllers
                         InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         HasMealbreaks = r.MealBreaks.Any(),
                         WaisteTime = r.TimeWasteNormalTime ?? 0,
-                        WaisteTimeIWH = r.TimeWasteNormalTime ?? 0,
+                        WaisteTimeIWH = r.TimeWasteIWHTime ?? 0,
                         Outlay = r.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
                         CarCompensation = r.CarCompensation ?? 0,
                         PerDiem = r.PerDiem,
                         TotalPrice = r.PriceRows.Sum(p => p.TotalPrice),
+                        TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription()
                     }).ToList();
         }
 
