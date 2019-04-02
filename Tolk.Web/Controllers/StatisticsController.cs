@@ -385,21 +385,28 @@ namespace Tolk.Web.Controllers
                 {
                     CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRowModel>).Select(r => r), ref columnLetter);
                 }
-                //system administrator
-                if (reportType == ReportType.DeliveredOrdersSystemAdministrator || reportType == ReportType.OrdersForSystemAdministrator || reportType == ReportType.RequisitionsForSystemAdministrator)
+                switch (reportType)
                 {
-                    CreateColumnsForSystemAdministrator(rowsWorksheet, rows, ref columnLetter);
+                    case ReportType.OrdersForSystemAdministrator:
+                    case ReportType.RequisitionsForSystemAdministrator:
+                    case ReportType.ComplaintsForSystemAdministrator:
+                    case ReportType.DeliveredOrdersSystemAdministrator:
+                        CreateColumnsForSystemAdministrator(rowsWorksheet, rows, ref columnLetter);
+                        break;
+                    case ReportType.DeliveredOrdersBrokers:
+                    case ReportType.RequestsForBrokers:
+                    case ReportType.RequisitionsForBroker:
+                    case ReportType.ComplaintsForBroker:
+                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportRequestRowModel);
+                        break;
+                    case ReportType.DeliveredOrdersCustomer:
+                    case ReportType.OrdersForCustomer:
+                    case ReportType.RequisitionsForCustomer:
+                    case ReportType.ComplaintsForCustomer:
+                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRowModel);
+                        break;
                 }
-                //broker
-                else if (reportType == ReportType.DeliveredOrdersBrokers || reportType == ReportType.RequestsForBrokers || reportType == ReportType.RequisitionsForBroker)
-                {
-                    CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportRequestRowModel);
-                }
-                //customer
-                else if (reportType == ReportType.DeliveredOrdersCustomer || reportType == ReportType.OrdersForCustomer || reportType == ReportType.RequisitionsForCustomer)
-                {
-                    CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRowModel);
-                }
+
                 rowsWorksheet.Row(1).Style.Font.Bold = true;
                 rowsWorksheet.Columns().AdjustToContents();
                 MemoryStream memoryStream = new MemoryStream();
