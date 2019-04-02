@@ -185,6 +185,8 @@ namespace Tolk.Web.Controllers
                     }
 
                     _complaintService.Dispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.DisputeMessage);
+                    await _dbContext.SaveChangesAsync();
+
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();
@@ -208,6 +210,7 @@ namespace Tolk.Web.Controllers
                     }
 
                     _complaintService.AcceptDispute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
+                    await _dbContext.SaveChangesAsync();
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
                 return Forbid();
@@ -232,6 +235,8 @@ namespace Tolk.Web.Controllers
                     }
 
                     _complaintService.Refute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
+                    await _dbContext.SaveChangesAsync();
+
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
                 }
                 return Forbid();

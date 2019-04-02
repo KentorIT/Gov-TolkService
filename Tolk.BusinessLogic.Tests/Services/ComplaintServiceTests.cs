@@ -102,5 +102,83 @@ namespace Tolk.BusinessLogic.Tests.Services
             };
             service.Accept(complaint, 1, null);
         }
+
+        [Theory]
+        [InlineData(ComplaintStatus.TerminatedAsDisputeAccepted)]
+        [InlineData(ComplaintStatus.Disputed)]
+        public void Dispute_InvalidStatus(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            Assert.Throws<InvalidOperationException>(() =>
+                service.Dispute(complaint, 1, null, "Fulfel"));
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Created)]
+        public void Dispute(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            service.Dispute(complaint, 1, null, "detta är fel");
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Created)]
+        [InlineData(ComplaintStatus.Confirmed)]
+        public void AcceptDispute_InvalidStatus(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            Assert.Throws<InvalidOperationException>(() =>
+                service.AcceptDispute(complaint, 1, null, "får inte acceptera"));
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Disputed)]
+        public void AcceptDispute(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            service.AcceptDispute(complaint, 1, null, "detta är ok");
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.DisputePendingTrial)]
+        [InlineData(ComplaintStatus.TerminatedAsDisputeAccepted)]
+        public void Refute_InvalidStatus(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            Assert.Throws<InvalidOperationException>(() =>
+                service.Refute(complaint, 1, null, "nej, med fel"));
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Disputed)]
+        public void Refute(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            service.Refute(complaint, 1, null, "detta är INTE ok");
+        }
     }
 }

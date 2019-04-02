@@ -53,7 +53,6 @@ namespace Tolk.BusinessLogic.Services
         public void Dispute(Complaint complaint, int userId, int? impersonatorId, string message)
         {
             complaint.Answer(_clock.SwedenNow, userId, impersonatorId, message, ComplaintStatus.Disputed);
-            _dbContext.SaveChanges();
             _logger.LogDebug($"Disputed complaint {complaint.ComplaintId}");
             _notificationService.ComplaintDisputed(complaint);
         }
@@ -61,7 +60,6 @@ namespace Tolk.BusinessLogic.Services
         public void AcceptDispute(Complaint complaint, int userId, int? impersonatorId, string message)
         {
             complaint.AnswerDispute(_clock.SwedenNow, userId, impersonatorId, message, ComplaintStatus.TerminatedAsDisputeAccepted);
-            _dbContext.SaveChanges();
             _logger.LogDebug($"Accepted dispute on complaint {complaint.ComplaintId}");
             _notificationService.ComplaintTerminatedAsDisputeAccepted(complaint);
         }
@@ -69,7 +67,6 @@ namespace Tolk.BusinessLogic.Services
         public void Refute(Complaint complaint, int userId, int? impersonatorId, string message)
         {
             complaint.AnswerDispute(_clock.SwedenNow, userId, impersonatorId, message, ComplaintStatus.DisputePendingTrial);
-            _dbContext.SaveChanges();
             _logger.LogDebug($"Refuted complaint {complaint.ComplaintId}, pending trial");
             _notificationService.ComplaintDisputePendingTrial(complaint);
         }
