@@ -184,7 +184,7 @@ namespace Tolk.BusinessLogic.Services
         {
             _logger.LogInformation("Start Sending Reminder Emails");
             List<Request> notAcceptedRequests = await _tolkDbContext.Requests
-                .Where(req => req.Status == RequestStatus.Accepted || req.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                .Where(req => req.IsAccepted)
                  .Include(req => req.Order)
                     .ThenInclude(order => order.CreatedByUser)
                  .Include(req => req.Order)

@@ -95,7 +95,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
                     || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestId)
                 .ToListAsync();
@@ -114,7 +114,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                             .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
-                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                                ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestId == requestId);
 
@@ -197,73 +197,12 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleExpiredReplacedInterpreterRequests()
-        {
-            var replacedInterpreterRequestsId = await _tolkDbContext.Requests
-                .Where(r => r.Order.Status == OrderStatus.RequestRespondedNewInterpreter && r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow)
-                .Where(r => r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                .Select(r => r.RequestId)
-                .ToListAsync();
-
-            _logger.LogDebug("Found {count} to be approved for replaced interpreter: {requestIds}",
-                replacedInterpreterRequestsId.Count, string.Join(", ", replacedInterpreterRequestsId));
-
-            foreach (var requestId in replacedInterpreterRequestsId)
-            {
-                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                {
-                    try
-                    {
-                        var request = await _tolkDbContext.Requests
-                            .Include(r => r.Ranking)
-                            .ThenInclude(r => r.Broker)
-                            .Include(r => r.Interpreter)
-                            .Include(r => r.Order)
-                            .ThenInclude(o => o.Requests)
-                            .Include(r => r.Order)
-                            .ThenInclude(o => o.CustomerOrganisation)
-                            .Include(r => r.Order)
-                            .ThenInclude(o => o.CreatedByUser)
-                            .SingleOrDefaultAsync(
-                            r => r.Order.StartAt.AddHours(-_options.HoursToApproveChangeInterpreterRequests) <= _clock.SwedenNow && r.Order.Status == OrderStatus.RequestRespondedNewInterpreter
-                            && (r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                            && r.RequestId == requestId);
-
-                        if (request == null)
-                        {
-                            _logger.LogDebug("Request {requestId} was in list to be approved for replaced interpreter, but doesn't match criteria when re-read from database - skipping.",
-                                requestId);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Approving replaced interpreter request {requestId} for Order {orderId}.",
-                                request.RequestId, request.OrderId);
-
-                            //TODO set a system user that is AnswerProcessedBy, probably needed for info and for display in system 
-                            request.Status = RequestStatus.Approved;
-                            request.AnswerProcessedAt = _clock.SwedenNow;
-                            request.Order.Status = OrderStatus.ResponseAccepted;
-
-                            _notificationService.RequestChangedInterpreterAccepted(request, InterpereterChangeAcceptOrigin.SystemRule);
-
-                            _tolkDbContext.SaveChanges();
-                            trn.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing {methodName} {requestId}", nameof(HandleExpiredReplacedInterpreterRequests), requestId);
-                    }
-                }
-            }
-        }
-
         public async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
                 .Where(r => (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
                 && r.Order.StartAt <= _clock.SwedenNow)
-                .Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                .Where(r => r.IsAccepted)
                 .Select(r => r.RequestId).ToListAsync();
 
             _logger.LogDebug("Found {count} non answered responded requests that expires: {requestIds}",
@@ -279,7 +218,7 @@ namespace Tolk.BusinessLogic.Services
                         .Include(r => r.Order)
                         .SingleOrDefaultAsync(r => r.Order.StartAt <= _clock.SwedenNow
                         && (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
-                        && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        && (r.IsAccepted)
                         && r.RequestId == requestId);
                         if (request == null)
                         {
@@ -414,10 +353,7 @@ namespace Tolk.BusinessLogic.Services
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
                 order.CustomerOrganisation.PriceListType,
                 order.Requests.Single(r =>
-                    r.Status == RequestStatus.Created ||
-                    r.Status == RequestStatus.Accepted ||
-                    r.Status == RequestStatus.Received ||
-                    r.Status == RequestStatus.Approved).RankingId
+                    r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
                 );
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
             _tolkDbContext.SaveChanges();

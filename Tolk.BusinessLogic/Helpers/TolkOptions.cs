@@ -19,8 +19,6 @@ namespace Tolk.BusinessLogic.Helpers
 
         public int MonthsToApproveComplaints { get; set; }
 
-        public int HoursToApproveChangeInterpreterRequests { get; set; }
-
         public long CombinedMaxSizeAttachments { get; set; }
 
         public Environment Env { get; set; } = new Environment { Name = string.Empty, Background = "background: rgba(255, 0, 0, 0.5)", Foreground = "color: #f1f1f1" };

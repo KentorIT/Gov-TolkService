@@ -119,7 +119,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                if (request.Status == RequestStatus.Created || request.Status == RequestStatus.Received)
+                if (request.IsToBeProcessedByBroker)
                 {
                     return RedirectToAction(nameof(Process), new { id = request.RequestId });
                 }
@@ -153,7 +153,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
-                if (!request.CanProcess)
+                if (!request.IsToBeProcessedByBroker)
                 {
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("View", new { id });
@@ -195,7 +195,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReplacedByRequest)
                 .Include(r => r.Requisitions)
                 .Single(o => o.RequestId == id);
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = GetModel(request);
                 model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
@@ -229,9 +229,13 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    if (request.IsAcceptedOrApproved)
+                    if (!request.IsToBeProcessedByBroker && model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
                     {
                         return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                    }
+                    else if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed && !request.CanChangeInterpreter(_clock.SwedenNow))
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Det gick inte att byta tolk, kontrollera tiden för uppdragsstart" });
                     }
                     var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
@@ -249,7 +253,7 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
-                        //if change interpreter or else if not a replacementorder
+                        //if change interpreter or normal accept (no replacementorder)
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
                             var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
@@ -464,7 +468,7 @@ namespace Tolk.Web.Controllers
                 model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
             }
             model.BrokerId = request.Ranking.BrokerId;
-            model.AllowInterpreterChange = request.CanChangeInterpreter && request.Order.StartAt > _clock.SwedenNow;
+            model.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
             model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);

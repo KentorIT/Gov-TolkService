@@ -111,12 +111,7 @@ namespace Tolk.BusinessLogic.Services
                     HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(order.OrderId));
             }
             //Broker
-            var request = order.Requests.SingleOrDefault(r =>
-                            r.Status == RequestStatus.Created ||
-                            r.Status == RequestStatus.Received ||
-                            r.Status == RequestStatus.Accepted ||
-                            r.Status == RequestStatus.Approved ||
-                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
+            var request = order.Requests.SingleOrDefault(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved);
             if (request != null)
             {
                 //if the contact person is changed on a order with no currently active request, no notification should be sent to broker
@@ -588,8 +583,7 @@ Sammanställning:
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                 (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
-                    "Du behöver godkänna de beräknade resekostnaderna. Om byte av tolk för uppdraget inte godkänns eller underkänns så kommer systemet godkänna bokningsförfrågan automatiskt " +
-                    $"{_options.HoursToApproveChangeInterpreterRequests} timmar före uppdraget startar förutsatt att bokningsförfrågan tidigare haft status godkänd." :
+                    "Du behöver godkänna de beräknade resekostnaderna." :
                     "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.") +
                     GetPossibleInfoNotValidatedInterpreter(request);
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
@@ -627,16 +621,6 @@ Sammanställning:
             //Creator
             switch (changeOrigin)
             {
-                case InterpereterChangeAcceptOrigin.SystemRule:
-                    var body = $"Svar på bokningsförfrågan {request.Order.OrderNumber} där tolk har bytts ut har godkänts av systemet då uppdraget " +
-                        $"startar inom {_options.HoursToApproveChangeInterpreterRequests} timmar. " +
-                        $"Uppdraget startar {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}.";
-                    CreateEmail(request.Order.CreatedByUser.Email,
-                        $"Svar på bokningsförfrågan med boknings-ID {request.Order.OrderNumber} har godkänts av systemet",
-                        $"{body} {GotoOrderPlain(request.Order.OrderId)}",
-                        $"{HtmlHelper.ToHtmlBreak(body)} {GotoOrderButton(request.Order.OrderId)}"
-                    );
-                    break;
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
                     var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                         "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.";

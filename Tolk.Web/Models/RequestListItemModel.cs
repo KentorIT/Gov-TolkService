@@ -58,7 +58,7 @@ namespace Tolk.Web.Models
                 },
                 ExpiresAt = r.ExpiresAt,
                 Status = r.Status,
-                Action = (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) ? nameof(RequestController.Process) : nameof(RequestController.View)
+                Action = r.IsToBeProcessedByBroker ? nameof(RequestController.Process) : nameof(RequestController.View)
             });
         }
     }

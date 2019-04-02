@@ -169,7 +169,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if (Status != RequestStatus.Accepted && Status != RequestStatus.AcceptedNewInterpreterAppointed)
+            if (!IsAccepted)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
             }
@@ -189,43 +189,41 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsAcceptedOrApproved
         {
-            get { return Status == RequestStatus.Approved 
-                    || (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && Status == RequestStatus.Accepted); }
+            get => IsAccepted || Status == RequestStatus.Approved;
+        }
+
+        public bool IsAccepted
+        {
+            get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
         }
 
         public bool CanCancel
         {
-            get {
-                return (Order.Status == OrderStatus.Requested 
-                    || Order.Status == OrderStatus.RequestResponded 
-                    || Order.Status == OrderStatus.RequestRespondedNewInterpreter 
-                    || Order.Status == OrderStatus.ResponseAccepted)
-                && (Status == RequestStatus.Created 
-                    || Status == RequestStatus.Received 
-                    || Status == RequestStatus.Accepted 
-                    || Status == RequestStatus.Approved 
-                    || Status == RequestStatus.AcceptedNewInterpreterAppointed);
-            }
+            get => (Order.Status == OrderStatus.Requested || 
+                    Order.Status == OrderStatus.RequestResponded ||
+                    Order.Status == OrderStatus.RequestRespondedNewInterpreter || 
+                    Order.Status == OrderStatus.ResponseAccepted) &&
+                    (IsToBeProcessedByBroker || IsAcceptedOrApproved);
         }
 
         public bool CanDecline
         {
-            get { return Status == RequestStatus.Created || Status == RequestStatus.Received; }
+            get => IsToBeProcessedByBroker;
         }
 
         public bool CanApprove
         {
-            get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
+            get => IsAccepted;
         }
 
-        public bool CanChangeInterpreter
+        public bool CanChangeInterpreter(DateTimeOffset swedenNow)
         {
-            get { return Status == RequestStatus.Approved || Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
+           return IsAcceptedOrApproved && Order.StartAt > swedenNow;
         }
 
         public bool CanDeny
         {
-            get { return Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed; }
+            get => IsAccepted;
         }
 
         public void Accept(
@@ -240,7 +238,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceInformation priceInformation, 
             VerificationResult? verificationResult = null)
         {
-            if (Status != RequestStatus.Received)
+            if (!IsToBeProcessedByBroker)
             {
                 throw new InvalidOperationException($"Det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
@@ -318,7 +316,7 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterLocation interpreterLocation,
             PriceInformation priceInformation)
         {
-            if (Status != RequestStatus.Received)
+            if (!IsToBeProcessedByBroker)
             {
                 throw new InvalidOperationException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} har redan blivit besvarad");
             }
@@ -500,7 +498,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCreateRequisition
         {
-            get { return !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved); }
+            get => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
         }
 
         public void CreateComplaint(Complaint complaint)
@@ -514,12 +512,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCreateComplaint
         {
-            get { return !Complaints.Any() && Status == RequestStatus.Approved; }
+            get => !Complaints.Any() && Status == RequestStatus.Approved;
         }
 
-        public bool CanProcess
+        public bool IsToBeProcessedByBroker
         {
-            get { return Status == RequestStatus.Created || Status == RequestStatus.Received; }
+            get => Status == RequestStatus.Created || Status == RequestStatus.Received;
         }
     }
 }

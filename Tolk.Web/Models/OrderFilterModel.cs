@@ -61,11 +61,7 @@ namespace Tolk.Web.Models
                 : orders.Where(o => o.Status == Status) : orders;
             orders = BrokerId.HasValue 
                 ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (
-                        req.Status == RequestStatus.Created ||
-                        req.Status == RequestStatus.Received ||
-                        req.Status == RequestStatus.Accepted ||
-                        req.Status == RequestStatus.Approved ||
-                        req.Status == RequestStatus.AcceptedNewInterpreterAppointed))) 
+                        req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved))) 
                 : orders;
 
             orders = DateRange?.Start != null
