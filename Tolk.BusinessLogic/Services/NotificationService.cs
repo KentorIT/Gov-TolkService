@@ -656,18 +656,9 @@ Sammanställning:
         public void RemindUnhandledRequest(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            string body = string.Empty;
-
-            if (request.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-            {
-                body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har ändrats med ny tolk.
-Du behöver godkänna de beräknade resekostnaderna.";
-            }
-            else
-            {
-                body = $@"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats.
-Du behöver godkänna de beräknade resekostnaderna.";
-            }
+            string body =  $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
+            + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk." : "accepterats.")
+            + " Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
 
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
                 body + GotoOrderPlain(request.Order.OrderId),
