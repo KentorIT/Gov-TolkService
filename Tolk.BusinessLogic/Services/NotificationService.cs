@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyPlain = $"En ny bokningsförfrågan har kommit in från {order.CustomerOrganisation.Name}.\n" +
+                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}\n" +
                     $"\tRegion: {order.Region.Name}\n" +
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
@@ -217,7 +217,7 @@ namespace Tolk.BusinessLogic.Services
                     $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSvara senast: {request.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     GotoRequestPlain(request.RequestId);
-                string bodyHtml = $@"En ny bokningsförfrågan har kommit in från {order.CustomerOrganisation.Name}.<br />
+                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
 <ul>
 <li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}</li>
 <li>Region: {order.Region.Name}</li>
