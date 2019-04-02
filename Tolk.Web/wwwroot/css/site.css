@@ -852,6 +852,56 @@ li.placeholder::before {
   font-size: 13px;
   font-weight: 200;
 }
+.statistics-box {
+  background-color: #E6F1ED;
+  margin: 0px 0px 10px 0px;
+  padding-top: 10px;
+  font-size: 13px;
+  font-weight: 200;
+  border: 1px solid #587573;
+  color: black;
+  box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.5);
+}
+.statistics-box-header {
+  border: 1px solid #587573;
+  background-color: #587573;
+  font-size: 20px;
+  padding: 4px 4px 4px 14px;
+  color: white;
+  box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.5);
+}
+.statistics-number-header {
+  font-size: 16px;
+  text-align: center;
+}
+.statistics-number {
+  font-size: 34px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  color: #767676;
+  text-align: center;
+  box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.5);
+}
+.statistics-up {
+  margin-top: 2px;
+  font-size: 13px;
+  padding: 4px 4px 4px 4px;
+  color: black;
+  text-align: center;
+}
+.statistics-arrow-up {
+  color: #77CB7F;
+}
+.statistics-arrow-down {
+  color: #E45C5C;
+}
+.statistics-down {
+  margin-top: 2px;
+  font-size: 13px;
+  padding: 4px 4px 4px 4px;
+  color: black;
+  text-align: center;
+}
 .to-accept-info {
   background-color: #E6F1ED;
   border: none;

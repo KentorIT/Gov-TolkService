@@ -42,6 +42,12 @@ namespace Tolk.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = Roles.Admin)]
+        public ActionResult Dashboard()
+        {
+            return View();
+        }
+
         [Authorize(Roles = Roles.AdminRoles)]
         [ValidateAntiForgeryToken]
         [HttpPost]
