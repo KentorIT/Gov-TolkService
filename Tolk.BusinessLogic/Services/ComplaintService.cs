@@ -43,11 +43,11 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogDebug($"Created complaint for request {request.RequestId}");
         }
 
-        public void Accept(Complaint complaint, int userId, int? impersonatorId, string message)
+        public void Accept(Complaint complaint, int userId, int? impersonatorId, string message = null)
         {
             complaint.Answer(_clock.SwedenNow, userId, impersonatorId, message, ComplaintStatus.Confirmed);
-            _dbContext.SaveChanges();
             _logger.LogDebug($"Accepted complaint {complaint.ComplaintId}");
+            _notificationService.ComplaintConfirmed(complaint);
         }
 
         public void Dispute(Complaint complaint, int userId, int? impersonatorId, string message)

@@ -18,11 +18,11 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly IAuthorizationService _authorizationService;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
         public WebhookController(TolkDbContext dbContext,
             IAuthorizationService authorizationService,
-            NotificationService notificationService)
+            INotificationService notificationService)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;

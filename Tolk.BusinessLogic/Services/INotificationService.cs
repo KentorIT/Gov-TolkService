@@ -6,11 +6,13 @@ namespace Tolk.BusinessLogic.Services
     public interface INotificationService
     {
         void ComplaintCreated(Complaint complaint);
+        void ComplaintConfirmed(Complaint complaint);
         void ComplaintDisputed(Complaint complaint);
         void ComplaintDisputePendingTrial(Complaint complaint);
         void ComplaintTerminatedAsDisputeAccepted(Complaint complaint);
         void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false);
         void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false);
+        void FlushNotificationSettings();
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
         void OrderContactPersonChanged(Order order);
         void OrderNoBrokerAccepted(Order order);
@@ -32,5 +34,6 @@ namespace Tolk.BusinessLogic.Services
         void RequisitionCommented(Requisition requisition);
         void RequisitionCreated(Requisition requisition);
         void RequisitionReviewed(Requisition requisition);
+        bool ResendWebHook(OutboundWebHookCall failedCall);
     }
 }

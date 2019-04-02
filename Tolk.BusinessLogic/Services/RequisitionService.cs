@@ -13,14 +13,14 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<RequisitionService> _logger;
         private readonly PriceCalculationService _priceCalculationService;
 
         public RequisitionService(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            NotificationService notificationService,
+            INotificationService notificationService,
             ILogger<RequisitionService> logger,
             PriceCalculationService priceCalculationService
             )

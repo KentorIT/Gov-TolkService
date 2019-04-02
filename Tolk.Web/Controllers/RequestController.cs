@@ -31,7 +31,7 @@ namespace Tolk.Web.Controllers
         private readonly DateCalculationService _dateCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly RequestService _requestService;
         private readonly InterpreterService _interpreterService;
 
@@ -44,7 +44,7 @@ namespace Tolk.Web.Controllers
             DateCalculationService dateCalculationService,
             ILogger<RequestController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService,
+            INotificationService notificationService,
             RequestService requestService,
             InterpreterService interpreterService
         )

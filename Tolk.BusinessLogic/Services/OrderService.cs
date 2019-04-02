@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
         private readonly TolkOptions _options;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly VerificationService _verificationService;
 
         public OrderService(
@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Services
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService,
+            INotificationService notificationService,
             VerificationService verificationService
             )
         {

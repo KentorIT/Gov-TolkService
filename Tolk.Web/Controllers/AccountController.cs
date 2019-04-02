@@ -34,7 +34,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -47,7 +47,7 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
-            NotificationService notificationService)
+            INotificationService notificationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;

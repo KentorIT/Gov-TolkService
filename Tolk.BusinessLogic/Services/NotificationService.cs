@@ -369,6 +369,15 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
+        public void ComplaintConfirmed(Complaint complaint)
+        {
+            string orderNumber = complaint.Request.Order.OrderNumber;
+            CreateEmail(complaint.CreatedByUser.Email, $"Reklamation kopplad till tolkuppdrag {orderNumber} har godtagits",
+                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GotoOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
+                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GotoOrderButton(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}"
+            );
+        }
+
         public void ComplaintDisputed(Complaint complaint)
         {
             string orderNumber = complaint.Request.Order.OrderNumber;
@@ -780,7 +789,7 @@ Sammanställning:
         }
 
         //SHOULD PROBABLY NOT BE HERE AT ALL...
-        public void FlushNotifictionSettings()
+        public void FlushNotificationSettings()
         {
             _cache.Remove(brokerSettingsCacheKey);
         }

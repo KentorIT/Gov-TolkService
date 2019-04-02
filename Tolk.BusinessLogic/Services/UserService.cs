@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly UserManager<AspNetUser> _userManager;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger _logger;
 
         public UserService(
@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Services
             UserManager<AspNetUser> userManager,
             IOptions<TolkOptions> options,
             ISwedishClock clock,
-            NotificationService notificationService,
+            INotificationService notificationService,
             ILogger<UserService> logger)
         {
             _dbContext = dbContext;

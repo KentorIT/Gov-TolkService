@@ -7,6 +7,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
     public class StubNotificationService : INotificationService
     {
+        public void ComplaintConfirmed(Complaint complaint) { }
+
         public void ComplaintCreated(Complaint complaint) { }
 
         public void ComplaintDisputed(Complaint complaint) { }
@@ -18,6 +20,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false) { }
 
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false) { }
+
+        public void FlushNotificationSettings() { }
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
 
@@ -60,5 +64,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequisitionCreated(Requisition requisition) { }
 
         public void RequisitionReviewed(Requisition requisition) { }
+
+        public bool ResendWebHook(OutboundWebHookCall failedCall) { return true; }
     }
 }

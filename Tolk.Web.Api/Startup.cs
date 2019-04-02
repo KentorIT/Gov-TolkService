@@ -27,7 +27,7 @@ namespace Tolk.Web.Api
 
             services.AddScoped<DateCalculationService>();
             services.AddScoped<RankingService>();
-            services.AddScoped<NotificationService>();
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<OrderService>();
             services.AddScoped<RequestService>();

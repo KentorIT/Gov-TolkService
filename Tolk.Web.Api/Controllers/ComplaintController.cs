@@ -61,14 +61,17 @@ namespace Tolk.Web.Api.Controllers
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
 
-            var complaint = order.Requests
-                .Where(r => apiUser.BrokerId == r.Ranking.BrokerId)
-                .SingleOrDefault(r => r.Complaints.Any())?.Complaints.SingleOrDefault(c => c.Status == ComplaintStatus.Created);
+            var complaint = _dbContext.Complaints
+                .Include(c => c.CreatedByUser)
+                .Include(c => c.Request).ThenInclude(r => r.Order)
+                .Where(c => c.Request.Order.OrderNumber == model.OrderNumber &&
+                   c.Request.Ranking.BrokerId == apiUser.BrokerId).ToList()
+                .SingleOrDefault(c => c.Status == ComplaintStatus.Created);
             if (complaint == null)
             {
                 return ReturError("COMPLAINT_NOT_FOUND");
             }
-            _complaintService.Accept(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), null);
+            _complaintService.Accept(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
 
             await _dbContext.SaveChangesAsync();
             //End of service

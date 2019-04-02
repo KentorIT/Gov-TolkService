@@ -29,7 +29,7 @@ namespace Tolk.Web.Controllers
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly HashService _hashService;
 
         public UserController(
@@ -39,7 +39,7 @@ namespace Tolk.Web.Controllers
             RoleManager<IdentityRole<int>> roleManager,
             UserService userService,
             IAuthorizationService authorizationService,
-            NotificationService notificationService,
+            INotificationService notificationService,
             HashService hashService
 )
         {
@@ -353,7 +353,7 @@ namespace Tolk.Web.Controllers
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();
-                            _notificationService.FlushNotifictionSettings();
+                            _notificationService.FlushNotificationSettings();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                         }
                         return View(model);

@@ -28,7 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly RequisitionService _requisitionService;
 
         public RequisitionController(
@@ -39,7 +39,7 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService,
+            INotificationService notificationService,
             RequisitionService requisitionService
             )
         {

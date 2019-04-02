@@ -20,7 +20,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly ComplaintService _complaintService;
 
         public ComplaintController(
@@ -28,7 +28,7 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             IAuthorizationService authorizationService,
             ILogger<ComplaintController> logger,
-            NotificationService notificationService,
+            INotificationService notificationService,
             ComplaintService complaintService
             )
         {
@@ -38,69 +38,6 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _notificationService = notificationService;
             _complaintService = complaintService;
-        }
-
-        public async Task<IActionResult> View(int id, bool returnPartial = false)
-        {
-            var complaint = GetComplaint(id);
-            if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
-            {
-                var isCustomer = User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId);
-                ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint, isCustomer);
-                model.AllowAnwserOnDispute = complaint.Status == ComplaintStatus.Disputed && isCustomer && (await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded;
-                if (returnPartial) { return PartialView(model); }
-                return View(model);
-            }
-            return Forbid();
-        }
-
-        /// <summary>
-        /// Create a complaint
-        /// </summary>
-        /// <param name="id">The Request to connect the complaint to</param>
-        /// <returns></returns>
-        public async Task<IActionResult> Create(int id)
-        {
-            Request request = GetRequest(id);
-
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
-            {
-                if (!request.CanCreateComplaint)
-                {
-                    _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
-                }
-                //Get request model from db
-                return View(ComplaintModel.GetModelFromRequest(request));
-            }
-            return Forbid();
-        }
-
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Create(ComplaintModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var request = _dbContext.Requests
-                .Include(r => r.Order)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Complaints)
-                .Single(o => o.RequestId == model.RequestId);
-                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
-                {
-                    if (!request.CanCreateComplaint)
-                    {
-                        _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
-                        return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
-                    }
-                    _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
-                    await _dbContext.SaveChangesAsync();
-                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
-                }
-                return Forbid();
-            }
-            return View(nameof(Create), model);
         }
 
         public IActionResult List(ComplaintFilterModel model)
@@ -145,6 +82,69 @@ namespace Tolk.Web.Controllers
                 });
         }
 
+        public async Task<IActionResult> View(int id, bool returnPartial = false)
+        {
+            var complaint = GetComplaint(id);
+            if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
+            {
+                var isCustomer = User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId);
+                ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint, isCustomer);
+                model.AllowAnwserOnDispute = complaint.Status == ComplaintStatus.Disputed && isCustomer && (await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded;
+                if (returnPartial) { return PartialView(model); }
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        /// <summary>
+        /// Create a complaint
+        /// </summary>
+        /// <param name="id">The Request to connect the complaint to</param>
+        /// <returns></returns>
+        public async Task<IActionResult> Create(int id)
+        {
+            Request request = GetRequest(id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
+            {
+                if (!request.CanCreateComplaint)
+                {
+                    _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                }
+                //Get request model from db
+                return View(ComplaintModel.GetModelFromRequest(request));
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Create(ComplaintModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var request = await _dbContext.Requests
+                    .Include(r => r.Order)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.Complaints)
+                    .SingleAsync(o => o.RequestId == model.RequestId);
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
+                {
+                    if (!request.CanCreateComplaint)
+                    {
+                        _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                        return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                    }
+                    _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
+                    await _dbContext.SaveChangesAsync();
+                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                }
+                return Forbid();
+            }
+            return View(nameof(Create), model);
+        }
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Accept(int complaintId)
@@ -160,7 +160,8 @@ namespace Tolk.Web.Controllers
                         return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                     }
 
-                    _complaintService.Accept(complaint, User.GetUserId(), User.TryGetImpersonatorId(), null);
+                    _complaintService.Accept(complaint, User.GetUserId(), User.TryGetImpersonatorId());
+                    await _dbContext.SaveChangesAsync();
                     return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                 }
                 return Forbid();

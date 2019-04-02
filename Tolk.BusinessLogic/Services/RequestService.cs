@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<RequestService> _logger;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly OrderService _orderService;
         private readonly RankingService _rankingService;
         private readonly TolkDbContext _tolkDbContext;
@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Services
         public RequestService(
             PriceCalculationService priceCalculationService,
             ILogger<RequestService> logger,
-            NotificationService notificationService,
+            INotificationService notificationService,
             OrderService orderService,
             RankingService rankingService,
             TolkDbContext tolkDbContext,

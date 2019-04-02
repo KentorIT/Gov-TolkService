@@ -33,7 +33,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly UserManager<AspNetUser> _userManager;
 
         public OrderController(
@@ -46,7 +46,7 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
-            NotificationService notificationService,
+            INotificationService notificationService,
             UserManager<AspNetUser> usermanager
             )
         {

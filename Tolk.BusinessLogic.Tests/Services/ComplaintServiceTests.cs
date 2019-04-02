@@ -76,5 +76,31 @@ namespace Tolk.BusinessLogic.Tests.Services
             };
             service.Create(request, 1, null, "apa", ComplaintType.BadDelivery);
         }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Confirmed)]
+        [InlineData(ComplaintStatus.Disputed)]
+        public void Accept_InvalidStatus(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            Assert.Throws<InvalidOperationException>(() =>
+                service.Accept(complaint, 1, null));
+        }
+
+        [Theory]
+        [InlineData(ComplaintStatus.Created)]
+        public void Accept(ComplaintStatus status)
+        {
+            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
+            var complaint = new Complaint
+            {
+                Status = status
+            };
+            service.Accept(complaint, 1, null);
+        }
     }
 }
