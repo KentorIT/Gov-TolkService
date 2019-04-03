@@ -178,24 +178,26 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        // Invalid status
+        //Invalid status
         [InlineData(RequestStatus.Accepted, false, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false, true)]
         [InlineData(RequestStatus.Approved, false, true)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, false, true)]
         [InlineData(RequestStatus.CancelledByBroker, false, true)]
         [InlineData(RequestStatus.CancelledByCreator, false, true)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved, false, true)]
-        [InlineData(RequestStatus.Created, false, true)]
         [InlineData(RequestStatus.DeclinedByBroker, false, true)]
         [InlineData(RequestStatus.DeniedByCreator, false, true)]
         [InlineData(RequestStatus.DeniedByTimeLimit, false, true)]
         [InlineData(RequestStatus.InterpreterReplaced, false, true)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer, false, true)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator, false, true)]
         [InlineData(RequestStatus.ToBeProcessedByBroker, false, true)]
-        // Replacing order has value
+        //// Replacing order has value
         [InlineData(RequestStatus.Accepted, true, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true, true)]
         [InlineData(RequestStatus.Approved, true, true)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, true, true)]
         [InlineData(RequestStatus.CancelledByBroker, true, true)]
         [InlineData(RequestStatus.CancelledByCreator, true, true)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved, true, true)]
@@ -204,6 +206,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.DeniedByCreator, true, true)]
         [InlineData(RequestStatus.DeniedByTimeLimit, true, true)]
         [InlineData(RequestStatus.InterpreterReplaced, true, true)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer, true, true)]
         [InlineData(RequestStatus.Received, true, true)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator, true, true)]
         [InlineData(RequestStatus.ToBeProcessedByBroker, true, true)]
@@ -211,6 +214,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Accepted, true, false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true, false)]
         [InlineData(RequestStatus.Approved, true, false)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, true, false)]
         [InlineData(RequestStatus.CancelledByBroker, true, false)]
         [InlineData(RequestStatus.CancelledByCreator, true, false)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved, true, false)]
@@ -219,6 +223,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.DeniedByCreator, true, false)]
         [InlineData(RequestStatus.DeniedByTimeLimit, true, false)]
         [InlineData(RequestStatus.InterpreterReplaced, true, false)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer, true, false)]
         [InlineData(RequestStatus.Received, true, false)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator, true, false)]
         [InlineData(RequestStatus.ToBeProcessedByBroker, true, false)]
