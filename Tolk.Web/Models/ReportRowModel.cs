@@ -28,11 +28,13 @@ namespace Tolk.Web.Models
 
         public bool HasComplaint{ get; set; }
 
-        public string CreatedBy { get; set; }
+        public string ReportPersonToDisplay { get; set; }
 
         public string CustomerName { get; set; }
 
         public decimal Price { get; set; }
+
+        public string ReferenceNumber { get; set; }
 
     }
 }

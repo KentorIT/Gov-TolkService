@@ -60,40 +60,40 @@ namespace Tolk.Web.Controllers
                 switch (model.ReportType)
                 {
                     case ReportType.OrdersForCustomer:
-                        model.ReportItems = GetOrdersForCustomer(start, end).Count();
+                        model.ReportItems = GetOrders(start, end, false).Count();
                         break;
                     case ReportType.DeliveredOrdersCustomer:
-                        model.ReportItems = GetDeliveredOrdersForCustomer(start, end).Count();
+                        model.ReportItems = GetDeliveredOrders(start, end, false).Count();
                         break;
                     case ReportType.RequestsForBrokers:
-                        model.ReportItems = GetRequestsForBrokers(start, end).Count();
+                        model.ReportItems = GetRequestsForBroker(start, end).Count();
                         break;
                     case ReportType.DeliveredOrdersBrokers:
-                        model.ReportItems = GetDeliveredOrderForBrokers(start, end).Count();
+                        model.ReportItems = GetDeliveredRequestsForBroker(start, end).Count();
                         break;
                     case ReportType.OrdersForSystemAdministrator:
-                        model.ReportItems = GetOrdersForSystemAdministrator(start, end).Count();
+                        model.ReportItems = GetOrders(start, end, true).Count();
                         break;
                     case ReportType.DeliveredOrdersSystemAdministrator:
-                        model.ReportItems = GetDeliveredOrdersForSystemAdministrator(start, end).Count();
+                        model.ReportItems = GetDeliveredOrders(start, end, true).Count();
                         break;
                     case ReportType.RequisitionsForCustomer:
-                        model.ReportItems = GetRequisitionsForCustomer(start, end).Count();
+                        model.ReportItems = GetRequisitionsForCustomerAndSysAdmin(start, end, false).Count();
                         break;
                     case ReportType.RequisitionsForBroker:
                         model.ReportItems = GetRequisitionsForBroker(start, end).Count();
                         break;
                     case ReportType.RequisitionsForSystemAdministrator:
-                        model.ReportItems = GetRequisitionsForSystemAdministrator(start, end).Count();
+                        model.ReportItems = GetRequisitionsForCustomerAndSysAdmin(start, end, true).Count();
                         break;
                     case ReportType.ComplaintsForCustomer:
-                        model.ReportItems = GetComplaintsForCustomer(start, end).Count();
+                        model.ReportItems = GetComplaintsForCustomerAndSysAdmin(start, end, false).Count();
                         break;
                     case ReportType.ComplaintsForBroker:
                         model.ReportItems = GetComplaintsForBroker(start, end).Count();
                         break;
                     case ReportType.ComplaintsForSystemAdministrator:
-                        model.ReportItems = GetComplaintsForSystemAdministrator(start, end).Count();
+                        model.ReportItems = GetComplaintsForCustomerAndSysAdmin(start, end, true).Count();
                         break;
                 }
                 model.StartDate = start.ToString();
@@ -113,46 +113,46 @@ namespace Tolk.Web.Controllers
             switch (model.ReportType)
             {
                 case ReportType.OrdersForCustomer:
-                    var orders = GetOrdersForCustomer(start, end);
+                    var orders = GetOrders(start, end, false);
                     return CreateExcelFile(GetOrderExcelFileRows(orders, model.ReportType), orders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersCustomer:
-                    var deliveredOrders = GetDeliveredOrdersForCustomer(start, end);
+                    var deliveredOrders = GetDeliveredOrders(start, end, false);
                     return CreateExcelFile(GetOrderExcelFileRows(deliveredOrders, model.ReportType), deliveredOrders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersBrokers:
-                    var deliveredOrdersBrokers = GetDeliveredOrderForBrokers(start, end);
+                    var deliveredOrdersBrokers = GetDeliveredRequestsForBroker(start, end);
                     return CreateExcelFile(GetRequestExcelFileRows(deliveredOrdersBrokers, model.ReportType), deliveredOrdersBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequestsForBrokers:
-                    var requestsForBrokers = GetRequestsForBrokers(start, end);
+                    var requestsForBrokers = GetRequestsForBroker(start, end);
                     return CreateExcelFile(GetRequestExcelFileRows(requestsForBrokers, model.ReportType), requestsForBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.OrdersForSystemAdministrator:
-                    var ordersForSystemAdministrator = GetOrdersForSystemAdministrator(start, end);
+                    var ordersForSystemAdministrator = GetOrders(start, end, true);
                     return CreateExcelFile(GetOrderExcelFileRows(ordersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.DeliveredOrdersSystemAdministrator:
-                    var deliveredOrdersForSystemAdministrator = GetDeliveredOrdersForSystemAdministrator(start, end);
+                    var deliveredOrdersForSystemAdministrator = GetDeliveredOrders(start, end, true);
                     return CreateExcelFile(GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.RequisitionsForSystemAdministrator:
-                    var requisitionsForSystemAdministrator = GetRequisitionsForSystemAdministrator(start, end);
-                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForSystemAdministrator), string.Empty, model.ReportType);
+                    var requisitionsForSystemAdministrator = GetRequisitionsForCustomerAndSysAdmin(start, end, true);
+                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.RequisitionsForBroker:
                     var requisitionsForBroker= GetRequisitionsForBroker(start, end);
-                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForBroker), requisitionsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
+                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForBroker, model.ReportType), requisitionsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequisitionsForCustomer:
-                    var requisitionsForCustomer = GetRequisitionsForCustomer(start, end);
-                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForCustomer), requisitionsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
+                    var requisitionsForCustomer = GetRequisitionsForCustomerAndSysAdmin(start, end, false);
+                    return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForCustomer, model.ReportType), requisitionsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
                 case ReportType.ComplaintsForSystemAdministrator:
-                    var complaintsForSystemAdministrator = GetComplaintsForSystemAdministrator(start, end);
-                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForSystemAdministrator), string.Empty, model.ReportType);
+                    var complaintsForSystemAdministrator = GetComplaintsForCustomerAndSysAdmin(start, end, true);
+                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.ComplaintsForBroker:
                     var complaintsForBroker = GetComplaintsForBroker(start, end);
-                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForBroker), complaintsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
+                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForBroker, model.ReportType), complaintsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.ComplaintsForCustomer:
-                    var complaintsForCustomer = GetComplaintsForCustomer(start, end);
-                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForCustomer), complaintsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
+                    var complaintsForCustomer = GetComplaintsForCustomerAndSysAdmin(start, end, false);
+                    return CreateExcelFile(GetComplaintsExcelFileRows(complaintsForCustomer, model.ReportType), complaintsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
             }
             return RedirectToAction(nameof(List));
         }
 
-        private List<Request> GetRequestsForBrokers(DateTimeOffset start, DateTimeOffset end)
+        private List<Request> GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end)
         {
             return _dbContext.Requests
                       .Include(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -169,7 +169,7 @@ namespace Tolk.Web.Controllers
                           && !r.StatusNotToBeDisplayedForBroker).ToList();
         }
 
-        private List<Request> GetDeliveredOrderForBrokers(DateTimeOffset start, DateTimeOffset end)
+        private List<Request> GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end)
         {
             return _dbContext.Requests
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -186,26 +186,7 @@ namespace Tolk.Web.Controllers
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)).ToList();
         }
-
-        private List<Order> GetDeliveredOrdersForCustomer(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Orders
-                    .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                    .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                    .Include(o => o.Requests).ThenInclude(r => r.Complaints)
-                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.Language)
-                    .Include(o => o.Region)
-                    .Include(o => o.CreatedByUser)
-                    .OrderBy(o => o.OrderNumber)
-                    .Where(o => o.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                        && o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
-                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).ToList();
-        }
-
-        private List<Order> GetOrdersForCustomer(DateTimeOffset start, DateTimeOffset end)
+        private List<Order> GetOrders(DateTimeOffset start, DateTimeOffset end, bool isSysAdmin)
         {
             return _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -217,10 +198,11 @@ namespace Tolk.Web.Controllers
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .OrderBy(o => o.OrderNumber)
-                    .Where(o => o.CustomerOrganisationId == User.GetCustomerOrganisationId() && o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date).ToList();
+                    .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
+                        && (!isSysAdmin ? o.CustomerOrganisationId == User.TryGetCustomerOrganisationId() : isSysAdmin)).ToList();
         }
 
-        private List<Order> GetDeliveredOrdersForSystemAdministrator(DateTimeOffset start, DateTimeOffset end)
+        private List<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, bool isSysAdmin)
         {
             return _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -234,25 +216,11 @@ namespace Tolk.Web.Controllers
                     .Include(o => o.CreatedByUser)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
-                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).ToList();
+                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
+                        && (!isSysAdmin ? o.CustomerOrganisationId == User.TryGetCustomerOrganisationId() : isSysAdmin)).ToList();
         }
 
-        private List<Order> GetOrdersForSystemAdministrator(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Orders
-                    .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                    .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                    .Include(o => o.Requests).ThenInclude(r => r.Complaints)
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.Language)
-                    .Include(o => o.Region)
-                    .Include(o => o.CreatedByUser)
-                    .OrderBy(o => o.OrderNumber)
-                    .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date).ToList();
-        }
-
-        private List<Requisition> GetRequisitionsForCustomer(DateTimeOffset start, DateTimeOffset end)
+        private List<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, bool isSysAdmin)
         {
             return _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -261,11 +229,12 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                     .Include(r => r.MealBreaks)
+                    .Include(r => r.ProcessedUser)
                     .Include(r => r.CreatedByUser)
                     .Include(r => r.PriceRows)
                     .OrderBy(r => r.Request.Order.OrderNumber)
-                    .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date 
-                    && r.Request.Order.CustomerOrganisationId == User.GetCustomerOrganisationId() && r.ReplacedByRequisitionId == null).ToList();
+                    .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
+                        && (!isSysAdmin ? r.Request.Order.CustomerOrganisationId == User.TryGetCustomerOrganisationId() : isSysAdmin)).ToList();
         }
 
         private List<Requisition> GetRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end)
@@ -281,25 +250,10 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.PriceRows)
                     .OrderBy(r => r.Request.Order.OrderNumber)
                     .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date 
-                    && r.Request.Ranking.BrokerId == User.GetBrokerId() && r.ReplacedByRequisitionId == null).ToList();
+                        && r.Request.Ranking.BrokerId == User.GetBrokerId() && r.ReplacedByRequisitionId == null).ToList();
         }
 
-        private List<Requisition> GetRequisitionsForSystemAdministrator(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Request).ThenInclude(r => r.Interpreter)
-                    .Include(r => r.MealBreaks)
-                    .Include(r => r.CreatedByUser)
-                    .Include(r => r.PriceRows)
-                    .OrderBy(r => r.Request.Order.OrderNumber)
-                    .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null).ToList();
-        }
-
-        private List<Complaint> GetComplaintsForSystemAdministrator(DateTimeOffset start, DateTimeOffset end)
+        private List<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, bool isSysAdmin)
         {
             return _dbContext.Complaints
                     .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -310,21 +264,8 @@ namespace Tolk.Web.Controllers
                     .Include(c => c.Request).ThenInclude(r => r.Requisitions)
                     .Include(c => c.CreatedByUser)
                     .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date).ToList();
-        }
-
-        private List<Complaint> GetComplaintsForCustomer(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Complaints
-                    .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(c => c.Request).ThenInclude(r => r.Interpreter)
-                    .Include(c => c.Request).ThenInclude(r => r.Requisitions)
-                    .Include(c => c.CreatedByUser)
-                    .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date && c.Request.Order.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+                    .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date 
+                        && (!isSysAdmin ? c.Request.Order.CustomerOrganisationId == User.TryGetCustomerOrganisationId() : isSysAdmin)).ToList();
         }
 
         private List<Complaint> GetComplaintsForBroker(DateTimeOffset start, DateTimeOffset end)
@@ -336,7 +277,7 @@ namespace Tolk.Web.Controllers
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(c => c.Request).ThenInclude(r => r.Interpreter)
                     .Include(c => c.Request).ThenInclude(r => r.Requisitions)
-                    .Include(c => c.CreatedByUser)
+                    .Include(c => c.AnsweringUser)
                     .OrderBy(c => c.Request.Order.OrderNumber)
                     .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == User.GetBrokerId()).ToList();
         }
@@ -363,6 +304,8 @@ namespace Tolk.Web.Controllers
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate.ToString());
+                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
                 switch (reportType)
                 {
                     case ReportType.RequestsForBrokers:
@@ -391,11 +334,11 @@ namespace Tolk.Web.Controllers
                 }
                 if (rows.FirstOrDefault() is ReportRequisitionRowModel)
                 {
-                    CreateColumnsForRequisition(rowsWorksheet, (rows as IEnumerable<ReportRequisitionRowModel>).Select(r => r), ref columnLetter);
+                    CreateColumnsForRequisition(rowsWorksheet, (rows as IEnumerable<ReportRequisitionRowModel>).Select(r => r), ref columnLetter, reportType);
                 }
                 else if (rows.FirstOrDefault() is ReportComplaintRowModel)
                 {
-                    CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRowModel>).Select(r => r), ref columnLetter);
+                    CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRowModel>).Select(r => r), ref columnLetter, reportType);
                 }
                 switch (reportType)
                 {
@@ -409,7 +352,7 @@ namespace Tolk.Web.Controllers
                     case ReportType.RequestsForBrokers:
                     case ReportType.RequisitionsForBroker:
                     case ReportType.ComplaintsForBroker:
-                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportRequestRowModel);
+                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, !(rows.FirstOrDefault() is ReportRequisitionRowModel || rows.FirstOrDefault() is ReportComplaintRowModel));
                         break;
                     case ReportType.DeliveredOrdersCustomer:
                     case ReportType.OrdersForCustomer:
@@ -418,7 +361,6 @@ namespace Tolk.Web.Controllers
                         CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRowModel);
                         break;
                 }
-
                 rowsWorksheet.Row(1).Style.Font.Bold = true;
                 rowsWorksheet.Columns().AdjustToContents();
                 MemoryStream memoryStream = new MemoryStream();
@@ -443,9 +385,7 @@ namespace Tolk.Web.Controllers
         private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRowModel> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CreatedBy);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Ärendenummer";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet/Avdelning";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.UnitName);
         }
@@ -456,14 +396,13 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
             if (isRequest)
             {
-                CreateColumnsForBrokerRequest(rowsWorksheet, (rows as IEnumerable<ReportRequestRowModel>).Select(r => r), ref columnLetter);
+                CreateColumnsForBrokerRequest(rowsWorksheet, rows, ref columnLetter);
             }
         }
-        private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequestRowModel> rows, ref char columnLetter)
+        private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportRowModel> rows, ref char columnLetter)
         {
-            //rows as 
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AnsweredBy);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
         }
 
         private void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportRowModel> rows, ref char columnLetter)
@@ -474,12 +413,21 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
         }
 
-        private void CreateColumnsForRequisition(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequisitionRowModel> rows, ref char columnLetter)
+        private void CreateColumnsForRequisition(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequisitionRowModel> rows, ref char columnLetter, ReportType reportType)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Måltidspauser finns";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasMealbreaks ? "Ja" : "Nej");
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CreatedBy);
+            switch (reportType)
+            {
+                case ReportType.RequisitionsForBroker:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+                    break;
+                case ReportType.RequisitionsForCustomer:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Granskad/kommenterad av";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay ?? "");
+                    break;
+            }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Spilltid normaltid (min)";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.WaisteTime);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Spilltid OB-tid (min)";
@@ -498,16 +446,21 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
         }
 
-        private void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRowModel> rows, ref char columnLetter)
+        private void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRowModel> rows, ref char columnLetter, ReportType reportType)
         {
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CreatedBy);
+            switch (reportType)
+            {
+                case ReportType.ComplaintsForBroker:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay ?? "");
+                    break;
+                case ReportType.ComplaintsForCustomer:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+                    break;
+            }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Typ av reklamation";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ComplaintType);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamationsbeskrivning";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ComplaintMessage);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Svar på reklamation";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ComplaintAnswerMessage);
         }
 
         private static IEnumerable<ReportOrderRowModel> GetOrderExcelFileRows(List<Order> listItems, ReportType reportType)
@@ -523,7 +476,7 @@ namespace Tolk.Web.Controllers
                         AssignmentType = o.AssignentType.GetDescription(),
                         InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.OrderBy(r => r.RequestId).Last().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         InterpreterId = o.Requests.OrderBy(r => r.RequestId).Last().Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        CreatedBy = o.CreatedByUser.FullName,
+                        ReportPersonToDisplay = o.CreatedByUser.FullName,
                         AssignmentDate = $"{o.StartAt.ToString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToString("HH:mm")}",
                         Status = o.Status.GetDescription(),
                         ReferenceNumber = o.CustomerReferenceNumber ?? string.Empty,
@@ -535,10 +488,10 @@ namespace Tolk.Web.Controllers
                     }).ToList();
         }
 
-        private static IEnumerable<ReportRequestRowModel> GetRequestExcelFileRows(List<Request> listItems, ReportType reportType)
+        private static IEnumerable<ReportRowModel> GetRequestExcelFileRows(List<Request> listItems, ReportType reportType)
         {
             return listItems
-                    .Select(r => new ReportRequestRowModel
+                    .Select(r => new ReportRowModel
                     {
                         OrderNumber = r.Order.OrderNumber,
                         ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.Order.Requests.OrderBy(r1 => r1.RequestId).First(r1 => r.RankingId == r1.RankingId).CreatedAt.ToString("yyyy-MM-dd HH:mm"),
@@ -548,16 +501,17 @@ namespace Tolk.Web.Controllers
                         AssignmentType = r.Order.AssignentType.GetDescription(),
                         InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         InterpreterId = r.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        AnsweredBy = r.AnsweringUser?.FullName ?? string.Empty,
+                        ReportPersonToDisplay = r.AnsweringUser?.FullName ?? string.Empty,
                         AssignmentDate = $"{r.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{r.Order.EndAt.ToString("HH:mm")}",
                         Status = r.Status.GetDescription(),
+                        ReferenceNumber = r.Order.CustomerReferenceNumber ?? string.Empty,
                         HasRequisition = r.Requisitions.Any(),
                         HasComplaint = r.Complaints.Any(),
                         Price = r.PriceRows != null ?  r.PriceRows.Sum(p => p.TotalPrice) : 0,
                     }).ToList();
         }
 
-        private static IEnumerable<ReportRequisitionRowModel> GetRequisitionsExcelFileRows(List<Requisition> listItems)
+        private static IEnumerable<ReportRequisitionRowModel> GetRequisitionsExcelFileRows(List<Requisition> listItems, ReportType reportType)
         {
             return listItems
                     .Select(r => new ReportRequisitionRowModel
@@ -568,7 +522,7 @@ namespace Tolk.Web.Controllers
                         Language = r.Request.Order.Language.Name,
                         Region = r.Request.Order.Region.Name,
                         InterpreterId = r.Request.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        CreatedBy = r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ? "Systemet" : r.CreatedByUser.FullName,
+                        ReportPersonToDisplay = r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ? "Systemet" : reportType == ReportType.RequisitionsForCustomer ? r.ProcessedUser?.FullName : r.CreatedByUser?.FullName,
                         AssignmentDate = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{r.Request.Order.EndAt.ToString("HH:mm")}",
                         Status = r.Status.GetDescription(),
                         CustomerName = r.Request.Order.CustomerOrganisation.Name,
@@ -581,11 +535,12 @@ namespace Tolk.Web.Controllers
                         CarCompensation = r.CarCompensation ?? 0,
                         PerDiem = r.PerDiem,
                         Price = r.PriceRows.Sum(p => p.TotalPrice),
-                        TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription()
+                        TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription(),
+                        ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
                     }).ToList();
         }
 
-        private static IEnumerable<ReportComplaintRowModel> GetComplaintsExcelFileRows(List<Complaint> listItems)
+        private static IEnumerable<ReportComplaintRowModel> GetComplaintsExcelFileRows(List<Complaint> listItems, ReportType reportType)
         {
             return listItems
                     .Select(c => new ReportComplaintRowModel
@@ -596,17 +551,15 @@ namespace Tolk.Web.Controllers
                         Language = c.Request.Order.Language.Name,
                         Region = c.Request.Order.Region.Name,
                         InterpreterId = c.Request.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        CreatedBy = c.CreatedByUser.FullName,
+                        ReportPersonToDisplay = reportType == ReportType.ComplaintsForCustomer ? c.CreatedByUser.FullName : c.AnsweringUser?.FullName, 
                         AssignmentDate = $"{c.Request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{c.Request.Order.EndAt.ToString("HH:mm")}",
                         Status = c.Status.GetDescription(),
                         CustomerName = c.Request.Order.CustomerOrganisation.Name,
                         AssignmentType = c.Request.Order.AssignentType.GetDescription(),
                         InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         HasRequisition = c.Request.Requisitions.Any(),
-                        ComplaintMessage = c.ComplaintMessage,
-                        ComplaintAnswerMessage = c.AnswerMessage ?? string.Empty,
                         ComplaintType = c.ComplaintType.GetDescription(),
-
+                        ReferenceNumber = c.Request.Order.CustomerReferenceNumber ?? string.Empty,
                     }).ToList();
         }
 
