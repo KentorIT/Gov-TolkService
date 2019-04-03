@@ -374,6 +374,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<SystemMessage> SystemMessages { get; set; }
 
+        public DbSet<UserLoginLogEntry> UserLoginLogEntries { get; set; }
+
         public DbSet<RequestView> RequestViews { get; set; }
 
         public DbSet<FailedWebHookCall> FailedWebHookCalls { get; set; }

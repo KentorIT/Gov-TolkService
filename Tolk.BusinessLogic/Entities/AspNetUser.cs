@@ -76,7 +76,10 @@ namespace Tolk.BusinessLogic.Entities
         public List<UserNotificationSetting> NotificationSettings { get; set; }
 
         public List<UserAuditLogEntry> AuditLogEntries { get; set; }
+
         public TemporaryChangedEmailEntry TemporaryChangedEmailEntry { get; set; }
+
+        public List<UserLoginLogEntry> LoginLogEntries { get; set; }
 
         #endregion
     }

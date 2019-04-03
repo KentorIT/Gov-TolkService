@@ -286,6 +286,9 @@ namespace Tolk.Web.Controllers
                     }
                     user.LastLoginAt = _clock.SwedenNow;
                     await _userManager.UpdateAsync(user);
+                    await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = user.Id });
+                    await _dbContext.SaveChangesAsync();
+
                     _logger.LogInformation("User {userName} logged in.", model.UserName);
                     return RedirectToLocal(returnUrl);
                 }
