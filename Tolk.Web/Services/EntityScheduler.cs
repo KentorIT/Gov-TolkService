@@ -80,8 +80,7 @@ namespace Tolk.Web.Services
                         tasksToRun = new Task[]
                         {
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().DeleteRequestViews()
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
                         };
                     }
                     else
@@ -92,6 +91,7 @@ namespace Tolk.Web.Services
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredRequests(),
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredComplaints(),
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredNonAnsweredRespondedRequests(),
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().DeleteRequestViews(),
                             serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
                             serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
                         };

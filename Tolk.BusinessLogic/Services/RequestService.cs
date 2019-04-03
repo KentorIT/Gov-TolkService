@@ -203,17 +203,20 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation($"{notAcceptedRequests.Count} email reminders sent");
         }
 
+        /// <summary>
+        /// Deletes RequestViews that remain in database if session ends for user (session is set to 120 min)
+        /// </summary>
+        /// <returns></returns>
         public async Task DeleteRequestViews()
         {
             _logger.LogInformation("Start checking for RequestViews to delete");
-            List<RequestView> nonDeletedRequestViews = await _tolkDbContext.RequestViews
-                .Where(rv => rv.ViewedAt.Date < _clock.SwedenNow.Date)
-                .ToListAsync();
+            List<RequestView> requestViewsToDelete = await _tolkDbContext.RequestViews
+                .Where(rv => rv.ViewedAt < _clock.SwedenNow.AddMinutes(-121)).ToListAsync();
 
-            if (nonDeletedRequestViews.Any())
+            if (requestViewsToDelete.Any())
             {
-                _logger.LogInformation($"{nonDeletedRequestViews.Count} RequestViews deleted");
-                _tolkDbContext.RemoveRange(nonDeletedRequestViews);
+                _logger.LogInformation($"{requestViewsToDelete.Count} RequestViews deleted");
+                _tolkDbContext.RemoveRange(requestViewsToDelete);
                 _tolkDbContext.SaveChanges();
                 return;
             }
