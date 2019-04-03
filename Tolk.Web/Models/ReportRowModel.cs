@@ -32,5 +32,7 @@ namespace Tolk.Web.Models
 
         public string CustomerName { get; set; }
 
+        public decimal Price { get; set; }
+
     }
 }

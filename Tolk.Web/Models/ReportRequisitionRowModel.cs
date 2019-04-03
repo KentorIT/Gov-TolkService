@@ -15,8 +15,6 @@ namespace Tolk.Web.Models
 
         public string PerDiem { get; set; }
 
-        public decimal TotalPrice { get; set; }
-
         public string TaxCard { get; set; }
         
     }

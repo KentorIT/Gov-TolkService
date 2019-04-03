@@ -114,22 +114,22 @@ namespace Tolk.Web.Controllers
             {
                 case ReportType.OrdersForCustomer:
                     var orders = GetOrdersForCustomer(start, end);
-                    return CreateExcelFile(GetOrderExcelFileRows(orders), orders.First().CustomerOrganisation.Name, model.ReportType);
+                    return CreateExcelFile(GetOrderExcelFileRows(orders, model.ReportType), orders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersCustomer:
                     var deliveredOrders = GetDeliveredOrdersForCustomer(start, end);
-                    return CreateExcelFile(GetOrderExcelFileRows(deliveredOrders), deliveredOrders.First().CustomerOrganisation.Name, model.ReportType);
+                    return CreateExcelFile(GetOrderExcelFileRows(deliveredOrders, model.ReportType), deliveredOrders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersBrokers:
                     var deliveredOrdersBrokers = GetDeliveredOrderForBrokers(start, end);
-                    return CreateExcelFile(GetRequestExcelFileRows(deliveredOrdersBrokers), deliveredOrdersBrokers.First().Ranking.Broker.Name, model.ReportType);
+                    return CreateExcelFile(GetRequestExcelFileRows(deliveredOrdersBrokers, model.ReportType), deliveredOrdersBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequestsForBrokers:
                     var requestsForBrokers = GetRequestsForBrokers(start, end);
-                    return CreateExcelFile(GetRequestExcelFileRows(requestsForBrokers), requestsForBrokers.First().Ranking.Broker.Name, model.ReportType);
+                    return CreateExcelFile(GetRequestExcelFileRows(requestsForBrokers, model.ReportType), requestsForBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.OrdersForSystemAdministrator:
                     var ordersForSystemAdministrator = GetOrdersForSystemAdministrator(start, end);
-                    return CreateExcelFile(GetOrderExcelFileRows(ordersForSystemAdministrator), string.Empty, model.ReportType);
+                    return CreateExcelFile(GetOrderExcelFileRows(ordersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.DeliveredOrdersSystemAdministrator:
                     var deliveredOrdersForSystemAdministrator = GetDeliveredOrdersForSystemAdministrator(start, end);
-                    return CreateExcelFile(GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator), string.Empty, model.ReportType);
+                    return CreateExcelFile(GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.RequisitionsForSystemAdministrator:
                     var requisitionsForSystemAdministrator = GetRequisitionsForSystemAdministrator(start, end);
                     return CreateExcelFile(GetRequisitionsExcelFileRows(requisitionsForSystemAdministrator), string.Empty, model.ReportType);
@@ -176,6 +176,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Interpreter)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Complaints)
+                    .Include(r => r.PriceRows)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
@@ -192,6 +193,7 @@ namespace Tolk.Web.Controllers
                     .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
                     .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
                     .Include(o => o.Requests).ThenInclude(r => r.Complaints)
+                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                     .Include(o => o.CustomerOrganisation)
                     .Include(o => o.Language)
                     .Include(o => o.Region)
@@ -224,6 +226,7 @@ namespace Tolk.Web.Controllers
                     .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
                     .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
                     .Include(o => o.Requests).ThenInclude(r => r.Complaints)
+                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                     .Include(o => o.CustomerOrganisation)
                     .Include(o => o.Language)
                     .Include(o => o.Region)
@@ -381,6 +384,9 @@ namespace Tolk.Web.Controllers
                         rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasRequisition ? "Ja" : "Nej");
                         rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamation finns";
                         rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasComplaint ? "Ja" : "Nej");
+                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Preliminär kostnad (SEK)";
+                        rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+                        rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
                         break;
                 }
                 if (rows.FirstOrDefault() is ReportRequisitionRowModel)
@@ -487,9 +493,9 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CarCompensation);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Traktamente";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PerDiem ?? string.Empty);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Totalt summa (SEK)";
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
             rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.TotalPrice);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
         }
 
         private void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRowModel> rows, ref char columnLetter)
@@ -504,13 +510,13 @@ namespace Tolk.Web.Controllers
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ComplaintAnswerMessage);
         }
 
-        private static IEnumerable<ReportOrderRowModel> GetOrderExcelFileRows(List<Order> listItems)
+        private static IEnumerable<ReportOrderRowModel> GetOrderExcelFileRows(List<Order> listItems, ReportType reportType)
         {
             return listItems
                     .Select(o => new ReportOrderRowModel
                     {
                         OrderNumber = o.OrderNumber,
-                        ReportDate = o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                        ReportDate = (reportType == ReportType.DeliveredOrdersSystemAdministrator || reportType == ReportType.DeliveredOrdersCustomer) ? o.StartAt.ToString("yyyy-MM-dd HH:mm") : o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
                         BrokerName = o.Requests.OrderBy(r => r.RequestId).Last().Ranking.Broker.Name,
                         Language = o.Language.Name,
                         Region = o.Region.Name,
@@ -524,17 +530,18 @@ namespace Tolk.Web.Controllers
                         UnitName = o.UnitName ?? string.Empty,
                         HasRequisition = o.Requests.OrderBy(r => r.RequestId).Last().Requisitions.Any(),
                         HasComplaint = o.Requests.OrderBy(r => r.RequestId).Last().Complaints.Any(),
-                        CustomerName = o.CustomerOrganisation.Name
+                        CustomerName = o.CustomerOrganisation.Name,
+                        Price = o.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null ? o.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Sum(p => p.TotalPrice) : 0,
                     }).ToList();
         }
 
-        private static IEnumerable<ReportRequestRowModel> GetRequestExcelFileRows(List<Request> listItems)
+        private static IEnumerable<ReportRequestRowModel> GetRequestExcelFileRows(List<Request> listItems, ReportType reportType)
         {
             return listItems
                     .Select(r => new ReportRequestRowModel
                     {
                         OrderNumber = r.Order.OrderNumber,
-                        ReportDate = r.Order.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                        ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
                         CustomerName = r.Order.CustomerOrganisation.Name,
                         Language = r.Order.Language.Name,
                         Region = r.Order.Region.Name,
@@ -546,6 +553,7 @@ namespace Tolk.Web.Controllers
                         Status = r.Status.GetDescription(),
                         HasRequisition = r.Requisitions.Any(),
                         HasComplaint = r.Complaints.Any(),
+                        Price = r.PriceRows != null ?  r.PriceRows.Sum(p => p.TotalPrice) : 0,
                     }).ToList();
         }
 
@@ -572,7 +580,7 @@ namespace Tolk.Web.Controllers
                         Outlay = r.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
                         CarCompensation = r.CarCompensation ?? 0,
                         PerDiem = r.PerDiem,
-                        TotalPrice = r.PriceRows.Sum(p => p.TotalPrice),
+                        Price = r.PriceRows.Sum(p => p.TotalPrice),
                         TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription()
                     }).ToList();
         }
