@@ -67,9 +67,7 @@ namespace Tolk.Web.Controllers
             }
             var items = _dbContext.Requests
                 .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId()
-                && r.Status != RequestStatus.InterpreterReplaced
-                && r.Status != RequestStatus.AwaitingDeadlineFromCustomer
-                && r.Status != RequestStatus.NoDeadlineFromCustomer);
+                && !r.StatusNotToBeDisplayedForBroker);
             // Filters
             items = model.Apply(items);
 

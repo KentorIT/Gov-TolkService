@@ -197,6 +197,11 @@ namespace Tolk.BusinessLogic.Entities
             get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
         }
 
+        public bool StatusNotToBeDisplayedForBroker
+        {
+            get => Status == RequestStatus.NoDeadlineFromCustomer || Status == RequestStatus.AwaitingDeadlineFromCustomer || Status == RequestStatus.InterpreterReplaced;
+        }
+
         public bool CanCancel
         {
             get => (Order.Status == OrderStatus.Requested || 

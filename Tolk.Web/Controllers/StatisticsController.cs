@@ -163,9 +163,10 @@ namespace Tolk.Web.Controllers
                       .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                       .Include(r => r.Order).ThenInclude(o => o.Language)
                       .Include(r => r.Order).ThenInclude(o => o.Region)
+                      .Include(r => r.Order).ThenInclude(o => o.Requests)
                       .OrderBy(r => r.Order.OrderNumber)
                       .Where(r => r.Ranking.BrokerId == User.GetBrokerId() && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                          && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer)).ToList();
+                          && !r.StatusNotToBeDisplayedForBroker).ToList();
         }
 
         private List<Request> GetDeliveredOrderForBrokers(DateTimeOffset start, DateTimeOffset end)
@@ -232,7 +233,6 @@ namespace Tolk.Web.Controllers
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .OrderBy(o => o.OrderNumber)
-
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
                         && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).ToList();
         }
@@ -541,7 +541,7 @@ namespace Tolk.Web.Controllers
                     .Select(r => new ReportRequestRowModel
                     {
                         OrderNumber = r.Order.OrderNumber,
-                        ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                        ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.Order.Requests.OrderBy(r1 => r1.RequestId).First(r1 => r.RankingId == r1.RankingId).CreatedAt.ToString("yyyy-MM-dd HH:mm"),
                         CustomerName = r.Order.CustomerOrganisation.Name,
                         Language = r.Order.Language.Name,
                         Region = r.Order.Region.Name,
