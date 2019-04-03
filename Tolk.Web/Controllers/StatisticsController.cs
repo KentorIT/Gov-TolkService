@@ -182,7 +182,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
                     .OrderBy(r => r.Order.OrderNumber)
-                    .Where(r => r.Ranking.BrokerId == User.GetBrokerId()
+                    .Where(r => r.Ranking.BrokerId == User.GetBrokerId() && !r.StatusNotToBeDisplayedForBroker
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)).ToList();
         }
