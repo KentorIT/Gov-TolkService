@@ -61,6 +61,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ProcessedUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows).ThenInclude(plr => plr.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).Include(r => r.ProcessedUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -75,11 +76,18 @@ namespace Tolk.Web.Controllers
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var customerId = User.TryGetCustomerOrganisationId();
-                model.AllowCreation = !customerId.HasValue && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented);
+                model.AllowCreation = !customerId.HasValue 
+                    && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)
+                    && requisition.Request.Requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == requisition.RequisitionId;
                 model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
+                model.PreviousRequisitionView = GetPreviousRequisitionView(requisition.Request);
+                model.RelatedRequisitions = requisition.Request.Requisitions
+                    .OrderBy(r => r.CreatedAt)
+                    .Select(r => r.RequisitionId)
+                    .ToList();
                 model.EventLog = new EventLogModel
                 {
                     Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name, requisition.Request.Ranking.Broker.Name)
@@ -368,6 +376,28 @@ namespace Tolk.Web.Controllers
                 UseDisplayHideInfo = true,
                 Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
             };
+        }
+
+        private RequisitionViewModel GetPreviousRequisitionView(Request request)
+        {
+            if (request.Requisitions == null || request.Requisitions.Count() < 2)
+            {
+                return null;
+            }
+            var requisition = request.Requisitions
+                .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
+                .OrderByDescending(r => r.CreatedAt)
+                .First();
+            // Requisition view crashes on next line if Attachments is null
+            if (requisition.Attachments == null)
+            {
+                requisition.Attachments = new List<RequisitionAttachment>();
+            }
+            var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
+            model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
+            model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
+            model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
+            return model;
         }
     }
 }

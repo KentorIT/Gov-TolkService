@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
@@ -36,11 +37,15 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Total summa")]
         [DataType(DataType.Currency)]
-        public decimal TotalPrice { get => ResultPriceInformationModel.TotalPriceToDisplay; }
+        public decimal TotalPrice { get => ResultPriceInformationModel?.TotalPriceToDisplay ?? 0; }
 
         public EventLogModel EventLog { get; set; }
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
+
+        public RequisitionViewModel PreviousRequisitionView { get; set; }
+
+        public List<int> RelatedRequisitions { get; set; }
 
         #region methods
 

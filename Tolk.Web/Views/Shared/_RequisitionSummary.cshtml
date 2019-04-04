@@ -2,8 +2,8 @@
 @{
     string header = (string)ViewData["header"] ?? "Rekvisitionssammanfattning";
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
-    var divClass = isCollapsible ? "collapse" : "";
-    var divId = (string)ViewData["id"] ?? "RequisitionSummary";
+    string divClass = isCollapsible ? "collapse" : "";
+    string divId = (string)ViewData["id"] ?? "RequisitionSummary";
 }
 
 @if (isCollapsible)

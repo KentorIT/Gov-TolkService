@@ -1,4 +1,27 @@
 ﻿@model Tolk.Web.Models.RequisitionViewModel
+@using Tolk.BusinessLogic.Enums
+
+@if (Model.RelatedRequisitions != null && Model.RelatedRequisitions.Count() > 1)
+{
+    <div class="row">
+        <div class="col-xs-12" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @for (int i = 0; i < Model.RelatedRequisitions.Count; i++)
+                {
+                    @if (Model.RequisitionId == Model.RelatedRequisitions[i])
+                    {
+                        <li class="active">Rekv @(i + 1)</li>
+                    }
+                    else
+                    {
+                        <li><a href="#" onclick="changeRequisition(this, 'Requisition/View?id=@Model.RelatedRequisitions[i]&returnPartial=true', '#requisition')">Rekv @(i + 1)</a></li>
+                    }
+                }
+            </ol>
+        </div>
+    </div>
+}
+
 <div class="row">
     <div class="col-sm-4">
         <br />
@@ -30,7 +53,7 @@
     </div>
 }
 
-@await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Sammanställning" } })
+@await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Sammanställning" }, { "showBreadcrumbs", true } })
 <div class="important-info">
     Observera att rekvisitionen inte alltid visar slutlig kostnad för eventuell bilersättning eller traktamente. Exakta summor för denna typ av poster är inte alltid kända vid tillfället för registrering av rekvisitionen. Dessa kostnader ska beräknas enligt särskilda tabeller i tolktaxan eller enligt Skatteverkets regler.
 </div>
@@ -50,6 +73,14 @@
         </div>
     }
 </div>
+@if (Model.PreviousRequisitionView != null && (Model.Status != RequisitionStatus.Commented && Model.Status != RequisitionStatus.DeniedByCustomer))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            @await Html.PartialAsync("_RequisitionSummary", Model.PreviousRequisitionView, new ViewDataDictionary(ViewData) { { "header", "Förra rekvisitionen" }, { "isCollapsible", true }, { "id", "PreviousRequisitionSummary" } })
+        </div>
+    </div>
+}
 <div class="row">
     <div class="col-sm-12">
         @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" }, { "id", "EventLog_Requisition" } })

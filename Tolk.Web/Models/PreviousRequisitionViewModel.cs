@@ -6,47 +6,47 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class PreviousRequisitionViewModel
+    public class PreviousRequisitionViewModel : RequisitionViewModel
     {
-        public int RequisitionId { get; set; }
+        public new int RequisitionId { get; set; }
 
         [Display(Name = "Tidigare angiven tidsspillan")]
-        public string TimeWasteInfo
+        public new string TimeWasteInfo
         {
             get => (TimeWasteTotalTime != null && TimeWasteTotalTime > 0) ? $"{TimeWasteTotalTime} min varav {TimeWasteIWHTime ?? 0} min obekväm tid" : "Ingen tidsspillan har angivits";
         }
 
-        public int? TimeWasteIWHTime { get; set; }
+        public new int? TimeWasteIWHTime { get; set; }
 
         public int? TimeWasteNormalTime { get; set; }
 
-        public int? TimeWasteTotalTime { get => (TimeWasteNormalTime ?? 0) + (TimeWasteIWHTime ?? 0); }
+        public new int? TimeWasteTotalTime { get => (TimeWasteNormalTime ?? 0) + (TimeWasteIWHTime ?? 0); }
 
         [Display(Name = "Tidigare angiven starttid")]
-        public DateTimeOffset SessionStartedAt { get; set; }
+        public new DateTimeOffset SessionStartedAt { get; set; }
 
         [Display(Name = "Tidigare angiven sluttid")]
-        public DateTimeOffset SessionEndedAt { get; set; }
+        public new DateTimeOffset SessionEndedAt { get; set; }
 
         [Display(Name = "Tidigare angivet utlägg")]
         [DataType(DataType.Currency)]
-        public decimal? Outlay { get; set; }
+        public new decimal? Outlay { get; set; }
 
         [Display(Name = "Tidigare angiven bilersättning")]
-        public int? CarCompensation { get; set; }
+        public new int? CarCompensation { get; set; }
 
         [Display(Name = "Tidigare angivet traktamente")]
         [DataType(DataType.MultilineText)]
-        public string PerDiem { get; set; }
+        public new string PerDiem { get; set; }
 
         [Display(Name = "Tidigare angiven skattsedel")]
-        public TaxCard? InterpreterTaxCard { get; set; }
+        public new TaxCard? InterpreterTaxCard { get; set; }
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Tidigare angiven specifikation")]
-        public string Message { get; set; }
+        public new string Message { get; set; }
 
-        public PriceInformationModel ResultPriceInformationModel { get; set; }
+        public new PriceInformationModel ResultPriceInformationModel { get; set; }
 
         public static PreviousRequisitionViewModel GetViewModelFromPreviousRequisition(Requisition requisition)
         {
@@ -65,7 +65,7 @@ namespace Tolk.Web.Models
                 PerDiem = requisition.PerDiem,
                 CarCompensation = requisition.CarCompensation,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,
-                Message = requisition.Message
+                Message = requisition.Message,
             };
         }
     }

@@ -81,6 +81,23 @@ function changeTab(element, path, tabPaneSelector) {
     }
 }
 
+function changeRequisition(element, path, tabPaneSelector) {
+    $(tabPaneSelector).html('<div class="text-align-center"><span class="loading-text">Laddar...</span></div>');
+    $.ajax({
+        url: tolkBaseUrl + path,
+        type: 'GET',
+        dataType: 'html',
+        success: function (data) {
+            $(tabPaneSelector).html(data);
+            $('.form-entry-information').tooltip();
+            refreshCollapsibles();
+        },
+        error: function (t2) {
+            alert(t2);
+        }
+    });
+}
+
 $.urlParam = function (name) {
     var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
     if (results != null) { //eslint-disable-line eqeqeq

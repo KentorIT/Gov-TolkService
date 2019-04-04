@@ -13,6 +13,8 @@ namespace Tolk.Web.Models
     {
         public int RequestId { get; set; }
 
+        public int OrderId { get; set; }
+
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 
@@ -155,6 +157,7 @@ namespace Tolk.Web.Models
             return new RequisitionModel
             {
                 RequestId = request.RequestId,
+                OrderId = request.OrderId,
                 BrokerName = request.Ranking.Broker.Name,
                 CustomerOrganizationName = request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
