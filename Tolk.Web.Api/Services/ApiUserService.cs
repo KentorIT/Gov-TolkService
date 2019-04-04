@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -21,6 +22,7 @@ namespace Tolk.Web.Api.Services
         private readonly TolkOptions _options;
         private readonly IMemoryCache _cache;
         private readonly HashService _hashService;
+        private readonly InterpreterService _interpreterService;
 
         private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
@@ -28,6 +30,7 @@ namespace Tolk.Web.Api.Services
             ILogger<ApiUserService> logger,
             IOptions<TolkOptions> options,
             HashService hashService,
+            InterpreterService interpreterService,
             IMemoryCache cache = null
             )
         {
@@ -36,6 +39,7 @@ namespace Tolk.Web.Api.Services
             _options = options.Value;
             _cache = cache;
             _hashService = hashService;
+            _interpreterService = interpreterService;
         }
 
         public AspNetUser GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
@@ -45,8 +49,8 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             _logger.LogInformation("User retrieved using certificate");
-            return _dbContext.Users.SingleOrDefault(u => 
-                u.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication") && 
+            return _dbContext.Users.SingleOrDefault(u =>
+                u.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication") &&
                 u.Claims.Any(c => c.ClaimType == "CertificateSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
         }
 
@@ -60,7 +64,7 @@ namespace Tolk.Web.Api.Services
             //Need a lot more security here
             var user = _dbContext.Users
                 .Include(u => u.Claims)
-                .SingleOrDefault(u => 
+                .SingleOrDefault(u =>
                 u.NormalizedUserName == userName.ToUpper() &&
                 u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"));
             var secret = user?.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue;
@@ -93,15 +97,23 @@ namespace Tolk.Web.Api.Services
                         .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
                     break;
                 case InterpreterInformationType.NewInterpreter:
-                    //Create the new interpreter, connected to the provided broker
-                    return new InterpreterBroker(
-                        interpreterModel.FirstName,
-                        interpreterModel.LastName,
-                        brokerId,
-                        interpreterModel.Email,
-                        interpreterModel.PhoneNumber,
-                        interpreterModel.OfficialInterpreterId
-                    );
+                    //check if unique officialInterpreterId for broker 
+                    if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
+                    {
+                        //Create the new interpreter, connected to the provided broker
+                        return new InterpreterBroker(
+                            interpreterModel.FirstName,
+                            interpreterModel.LastName,
+                            brokerId,
+                            interpreterModel.Email,
+                            interpreterModel.PhoneNumber,
+                            interpreterModel.OfficialInterpreterId
+                        );
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
                 default:
                     return null;
             }

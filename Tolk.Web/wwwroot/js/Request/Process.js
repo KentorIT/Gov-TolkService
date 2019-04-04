@@ -24,23 +24,36 @@ $(function () {
         validateInterpreter();
     });
 
+    $(document).ready(function () {
+        setInterpreter();
+        setExpectedTravelcost();
+    });
+
     $('#InterpreterId').change(function () {
-        if ($(this).val() === "-1") {
+        setInterpreter();
+    });
+
+    function setInterpreter() {
+        if ($("#InterpreterId option:selected").val() === "-1") {
             $('#new-interpreter').collapse('show');
         }
         else {
             $('#new-interpreter').collapse('hide');
             validateInterpreter();
         }
-    });
+    }
 
-    $('#InterpreterLocation').change(function () {
-        if ($(this).val() === "OffSitePhone" || $(this).val() === "OffSiteVideo") {
+    function setExpectedTravelcost() {
+        if ($("#InterpreterLocation option:selected").val() === "OffSitePhone" || $("#InterpreterLocation option:selected").val() === "OffSiteVideo" || $("#InterpreterLocation option:selected").val() === "") {
             $('#set-expected-travel-costs').collapse('hide');
         }
         else {
             $('#set-expected-travel-costs').collapse('show');
         }
+    }
+
+    $('#InterpreterLocation').change(function () {
+        setExpectedTravelcost();
     });
 
     $('.checkbox').change(function () {

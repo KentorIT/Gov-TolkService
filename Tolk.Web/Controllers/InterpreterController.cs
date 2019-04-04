@@ -90,9 +90,9 @@ namespace Tolk.Web.Controllers
                 var interpreter = _dbContext.InterpreterBrokers.SingleOrDefault(u => u.InterpreterBrokerId == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, interpreter, Policies.Edit)).Succeeded)
                 {
-                    if (!string.IsNullOrWhiteSpace(model.OfficialInterpreterId) && !_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId(), model.Id))
+                    if (!_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId(), model.Id))
                     {
-                        ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-Id i tjänsten.");
+                        ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
                     }
                     else
                     {
@@ -116,9 +116,9 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!string.IsNullOrWhiteSpace(model.OfficialInterpreterId) && !_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId()))
+                if (!_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId()))
                 {
-                    ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-Id i tjänsten.");
+                    ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
                 }
                 else
                 {
@@ -131,5 +131,6 @@ namespace Tolk.Web.Controllers
             }
             return View(model);
         }
+
     }
 }

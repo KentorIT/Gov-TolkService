@@ -33,6 +33,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly NotificationService _notificationService;
         private readonly RequestService _requestService;
+        private readonly InterpreterService _interpreterService;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -44,7 +45,8 @@ namespace Tolk.Web.Controllers
             ILogger<RequestController> logger,
             IOptions<TolkOptions> options,
             NotificationService notificationService,
-            RequestService requestService
+            RequestService requestService,
+            InterpreterService interpreterService
         )
         {
             _dbContext = dbContext;
@@ -57,6 +59,7 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _notificationService = notificationService;
             _requestService = requestService;
+            _interpreterService = interpreterService;
         }
 
         public IActionResult List(RequestFilterModel model)
@@ -128,26 +131,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Process(int id)
         {
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Ranking)
-                .Include(r => r.PriceRows)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Single(o => o.RequestId == id);
+            var request = GetRequestToProcess(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
@@ -173,31 +157,11 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Change(int id)
         {
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(r => r.PriceRows)
-                .Include(r => r.Order).ThenInclude(r => r.Requirements)
-                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(r => r.Language)
-                .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.Ranking)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Interpreter)
-                .Include(r => r.ReplacingRequest)
-                .Include(r => r.ReplacedByRequest)
-                .Include(r => r.Requisitions)
-                .Single(o => o.RequestId == id);
+            var request = GetRequestToProcess(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = GetModel(request);
                 model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
-                model.ExpectedTravelCosts = 0;
                 model.OldInterpreterId = request.InterpreterBrokerId;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
@@ -255,10 +219,37 @@ namespace Tolk.Web.Controllers
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
                             var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
+                            //if no interpreter was created we want to return model with error message
+                            if (interpreter == null)
+                            {
+                                request = GetRequestToProcess(model.RequestId);
+                                RequestModel requestModel = GetModel(request);
+                                requestModel.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                                if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                                {
+                                    requestModel.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+                                    requestModel.OldInterpreterId = request.InterpreterBrokerId;
+                                }
 
+                                //Set the temporarly saved Files if any
+                                if (model.Files != null && model.Files.Any())
+                                {
+                                    List<FileModel> files = _dbContext.Attachments.
+                                        Where(a => model.Files.Select(f => f.Id).Contains(a.AttachmentId)).ToList()
+                                        .Select(a => new FileModel
+                                        {
+                                            Id = a.AttachmentId,
+                                            FileName = a.FileName,
+                                            Size = a.Blob.Length
+                                        }).ToList();
+                                    requestModel.Files = files.Count() > 0 ? files : null;
+                                }
+                                ModelState.AddModelError(nameof(requestModel.InterpreterId), "Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
+                                return View(nameof(Process), requestModel);
+                            }
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
-                            	await _requestService.ChangeInterpreter(
+                                await _requestService.ChangeInterpreter(
                                     request,
                                     _clock.SwedenNow,
                                     User.GetUserId(),
@@ -273,7 +264,7 @@ namespace Tolk.Web.Controllers
                             }
                             else
                             {
-                            	await _requestService.Accept(
+                                await _requestService.Accept(
                                     request,
                                     _clock.SwedenNow,
                                     User.GetUserId(),
@@ -311,10 +302,39 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
+        private Request GetRequestToProcess(int requestId)
+        {
+            return _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Interpreter)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
+                .Include(r => r.Requisitions)
+                .Include(r => r.Ranking)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.RequirementAnswers)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Single(o => o.RequestId == requestId);
+        }
+
         private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
         {
             if (interpreterBrokerId == SelectListService.NewInterpreterId)
             {
+                if (!_interpreterService.IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
+                {
+                    return null;
+                }
                 var interpreter = new InterpreterBroker(
                     interpreterInformation.FirstName,
                     interpreterInformation.LastName,

@@ -76,8 +76,16 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("REQUEST_NOT_FOUND");
             }
+            InterpreterBroker interpreter;
+            try
+            {
+                interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+            }
+            catch (InvalidOperationException)
+            {
+                return ReturError("INTERPRETER_OFFICIALID_ALREADY_SAVED");
+            }
 
-            var interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
             //Does not handle Tolk-Id
             if (interpreter == null)
             {
@@ -266,7 +274,15 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturError("REQUEST_NOT_FOUND");
             }
-            var interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+            InterpreterBroker interpreter;
+            try
+            {
+                interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+            }
+            catch (InvalidOperationException)
+            {
+                return ReturError("INTERPRETER_OFFICIALID_ALREADY_SAVED");
+            }
             if (interpreter == null)
             {
                 //Possibly the interpreter should be added, if not found?? 
@@ -461,6 +477,7 @@ namespace Tolk.Web.Api.Controllers
                     new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_FOUND", ErrorMessage = "The provided order number has no request in the correct state for the call." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_NOT_FOUND", ErrorMessage = "The provided interpreter was not found." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_OFFICIALID_ALREADY_SAVED", ErrorMessage = "The official interpreterId for the provided new interpreter was already saved." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
                };
