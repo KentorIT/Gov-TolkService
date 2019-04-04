@@ -17,7 +17,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
         {
             var mockLanguages = MockEntities.MockLanguages();
             var mockRankings = MockEntities.MockRankings();
-            MockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            MockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
         }
 
         [Theory]

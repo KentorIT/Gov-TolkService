@@ -291,9 +291,6 @@ namespace Tolk.Web.Controllers
                     model.UpdateOrder(order);
                     _dbContext.Add(order);
                     _dbContext.SaveChanges(); // Save changes to get id for event log
-                    var user = _dbContext.Users
-                        .Include(u => u.CustomerOrganisation)
-                        .Single(u => u.Id == order.CreatedBy);
 
                     await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
 
@@ -321,7 +318,7 @@ namespace Tolk.Web.Controllers
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
 
             //get pricelisttype for customer and get calculated price
-            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisationId).PriceListType;
+            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel { Header = "Beräknat preliminärt pris", PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType), UseDisplayHideInfo = true, Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering." };
 
             if (order.Attachments?.Count() > 0)
@@ -575,7 +572,16 @@ namespace Tolk.Web.Controllers
 
         private Order CreateNewOrder()
         {
-            return new Order(User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), _clock.SwedenNow);
+            var user = _dbContext.Users
+               .Include(u => u.CustomerOrganisation)
+               .Single(u => u.Id == User.GetUserId());
+            var impersonator = User.TryGetImpersonatorId();
+            AspNetUser impersonatingUser = null;
+            if (impersonator.HasValue)
+            {
+                impersonatingUser = _dbContext.Users.Single(u => u.Id == impersonator);
+            }
+            return new Order(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow);
         }
 
         private Order GetOrder(int id)

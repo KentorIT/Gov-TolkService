@@ -36,7 +36,7 @@ namespace Tolk.Web.Api
             services.AddScoped<ApiUserService>();
             services.AddSingleton<ISwedishClock, TimeService>();
             services.AddScoped<TimeService>();
-            services.AddScoped<ITellusConnection, Services.TellusConnectionService>();
+            services.AddScoped<ITolkBaseOptions, Services.TolkBaseOptionsService>();
             services.AddScoped<HashService>();
             services.AddScoped<VerificationService>();
 

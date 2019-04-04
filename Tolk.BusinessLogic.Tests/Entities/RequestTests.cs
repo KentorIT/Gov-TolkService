@@ -18,7 +18,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
         {
             var mockLanguages = MockEntities.MockLanguages();
             var mockRankings = MockEntities.MockRankings();
-            MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings).Single(o => o.OrderId == 8);
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers).Single(o => o.OrderId == 8);
         }
 
         [Fact]

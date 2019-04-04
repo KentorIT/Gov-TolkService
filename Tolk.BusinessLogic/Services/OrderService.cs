@@ -22,9 +22,9 @@ namespace Tolk.BusinessLogic.Services
         private readonly DateCalculationService _dateCalculationService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger<OrderService> _logger;
-        private readonly TolkOptions _options;
         private readonly INotificationService _notificationService;
         private readonly VerificationService _verificationService;
+        private readonly ITolkBaseOptions _tolkBaseOptions;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -33,9 +33,9 @@ namespace Tolk.BusinessLogic.Services
             DateCalculationService dateCalculationService,
             PriceCalculationService priceCalculationService,
             ILogger<OrderService> logger,
-            IOptions<TolkOptions> options,
             INotificationService notificationService,
-            VerificationService verificationService
+            VerificationService verificationService,
+            ITolkBaseOptions tolkBaseOptions
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -44,9 +44,9 @@ namespace Tolk.BusinessLogic.Services
             _dateCalculationService = dateCalculationService;
             _priceCalculationService = priceCalculationService;
             _logger = logger;
-            _options = options.Value;
             _notificationService = notificationService;
             _verificationService = verificationService;
+            _tolkBaseOptions = tolkBaseOptions;
         }
 
         public async Task HandleStartedOrders()
@@ -76,7 +76,7 @@ namespace Tolk.BusinessLogic.Services
                     }
                     else
                     {
-                        if (_options.Tellus.IsActivated)
+                        if (_tolkBaseOptions.Tellus.IsActivated)
                         {
                             _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
                                 startedRequest.RequestId, startedRequest.OrderId);
@@ -155,7 +155,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredComplaints()
         {
             var expiredComplaintIds = await _tolkDbContext.Complaints
-                .Where(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow && c.Status == ComplaintStatus.Created)
+                .Where(c => c.CreatedAt.AddMonths(_tolkBaseOptions.MonthsToApproveComplaints) <= _clock.SwedenNow && c.Status == ComplaintStatus.Created)
                 .Select(c => c.ComplaintId)
                 .ToListAsync();
 
@@ -169,7 +169,7 @@ namespace Tolk.BusinessLogic.Services
                     try
                     {
                         var expiredComplaint = await _tolkDbContext.Complaints
-                            .SingleOrDefaultAsync(c => c.CreatedAt.AddMonths(_options.MonthsToApproveComplaints) <= _clock.SwedenNow
+                            .SingleOrDefaultAsync(c => c.CreatedAt.AddMonths(_tolkBaseOptions.MonthsToApproveComplaints) <= _clock.SwedenNow
                         && c.Status == ComplaintStatus.Created && c.ComplaintId == complaintId);
 
                         if (expiredComplaint == null)
@@ -184,7 +184,7 @@ namespace Tolk.BusinessLogic.Services
 
                             expiredComplaint.Status = ComplaintStatus.Confirmed;
                             expiredComplaint.AnsweredAt = _clock.SwedenNow;
-                            expiredComplaint.AnswerMessage = $"Systemet har efter {_options.MonthsToApproveComplaints} månader automatiskt accepterat reklamationen då svar uteblivit.";
+                            expiredComplaint.AnswerMessage = $"Systemet har efter {_tolkBaseOptions.MonthsToApproveComplaints} månader automatiskt accepterat reklamationen då svar uteblivit.";
                             _tolkDbContext.SaveChanges();
                             trn.Commit();
                         }

@@ -20,7 +20,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<VerificationService>();
             services.AddTransient<InterpreterService>();
-            services.AddTransient<ITellusConnection, TellusConnectionService>();
+            services.AddTransient<ITolkBaseOptions, TolkBaseOptionsService>();
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<RequestService>();
             services.AddScoped<RequisitionService>();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Entities
@@ -13,7 +14,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         public RequisitionTests()
         {
-            MockOrder = new Order(3, null, 6, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+
+            MockOrder = new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
             {
                 OrderId = 8,
                 CustomerReferenceNumber = "EmptyOrder",

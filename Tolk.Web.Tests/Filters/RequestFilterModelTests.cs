@@ -20,7 +20,8 @@ namespace Tolk.Web.Tests.Filters
         public RequestFilterModelTests()
         {
             var mockRankings = MockEntities.MockRankings();
-            var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
             requests = MockEntities.MockRequests(mockOrders);
         }
 

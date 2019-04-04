@@ -17,15 +17,15 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
-        private readonly ITellusConnection _tellusConnection;
+        private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly ILogger<VerificationService> _logger;
         private const string EmptyResult = "[]";
 
-        public VerificationService(TolkDbContext dbContext, ISwedishClock clock, ITellusConnection tellusConnection, ILogger<VerificationService> logger)
+        public VerificationService(TolkDbContext dbContext, ISwedishClock clock, ITolkBaseOptions tolkBaseOptions, ILogger<VerificationService> logger)
         {
             _dbContext = dbContext;
             _clock = clock;
-            _tellusConnection = tellusConnection;
+            _tolkBaseOptions = tolkBaseOptions;
             _logger = logger;
         }
 
@@ -43,7 +43,7 @@ namespace Tolk.BusinessLogic.Services
                 using (var client = new HttpClient())
                 {
                     client.DefaultRequestHeaders.Accept.Clear();
-                    var response = await client.GetAsync($"{_tellusConnection.Uri}{interpreterId}");
+                    var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                     string content = await response.Content.ReadAsStringAsync();
                     var information = content != EmptyResult ? JsonConvert.DeserializeObject<TellusInterpreterModel>(content) : null;
                     if (information == null)
@@ -65,7 +65,7 @@ namespace Tolk.BusinessLogic.Services
             }
             catch(Exception e)
             {
-                _logger.LogError(e, $"Failed to verify the interpreter against {_tellusConnection.Uri}");
+                _logger.LogError(e, $"Failed to verify the interpreter against {_tolkBaseOptions.Tellus.Uri}");
                 return VerificationResult.UnknownError;
             }
         }

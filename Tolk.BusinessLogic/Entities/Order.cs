@@ -14,11 +14,10 @@ namespace Tolk.BusinessLogic.Entities
         private Order() { }
 
         public Order(Order order)
-            :this (order.CreatedBy, order.ImpersonatingCreator, order.CustomerOrganisationId, order.CreatedAt)
+            :this (order.CreatedByUser, order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
         {
             AllowExceedingTravelCost = order.AllowExceedingTravelCost;
             AssignentType = order.AssignentType;
-            CustomerOrganisation = order.CustomerOrganisation;
             Language = order.Language;
             OtherLanguage = order.OtherLanguage;
             Region = order.Region;
@@ -30,12 +29,12 @@ namespace Tolk.BusinessLogic.Entities
                 Rank = r.Rank
             }).ToList();
         }
-        public Order(int createdBy, int? impersonator, int customerOrganisationId, DateTimeOffset createdAt)
+        public Order(AspNetUser createdByUser, AspNetUser createdByImpersonator, CustomerOrganisation customerOrganisation, DateTimeOffset createdAt)
         {
-            CreatedBy = createdBy;
+            CreatedByUser = createdByUser;
             CreatedAt = createdAt;
-            CustomerOrganisationId = customerOrganisationId;
-            ImpersonatingCreator = impersonator;
+            CustomerOrganisation = customerOrganisation;
+            CreatedByImpersonator = createdByImpersonator;
             Status = OrderStatus.Requested;
             Requirements = new List<OrderRequirement>();
             InterpreterLocations = new List<OrderInterpreterLocation>();

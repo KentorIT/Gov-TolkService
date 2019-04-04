@@ -8,6 +8,26 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
     public static class MockEntities
     {
+        public static CustomerOrganisation[] MockCustomers()
+        {
+            return new[]
+            {
+                new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A" },
+                new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B" },
+                new CustomerOrganisation{CustomerOrganisationId = 3, Name = "Myndighet C" },
+            };
+        }
+
+        public static AspNetUser[] MockCustomerUsers(CustomerOrganisation[] mockCustomers)
+        {
+            return new[]
+            {
+                new AspNetUser("Arne@a.se", "Arne", "Arne", "Aronson", mockCustomers[0]),
+                new AspNetUser("Berit@b.se", "Berit", "Berit", "Bryntesson", mockCustomers[1]),
+                new AspNetUser("Ceasar@c.se", "Ceasar", "Ceasar", "Claesson", mockCustomers[2]),
+            };
+        }
+
         public static Language[] MockLanguages()
         {
             return new[]
@@ -28,13 +48,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             };
         }
 
-        public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings)
+        public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {
             var orders = new[]
             {
-                new Order(1, null, 2, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 0,
+                    CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number0",
                     OrderNumber = "2018-001337",
                     StartAt = new DateTimeOffset(2018,06,07,13,00,00, new TimeSpan(02,00,00)),
@@ -48,9 +69,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
-                new Order(1, null, 2, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 1,
+                    CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number1",
                     OrderNumber = "2018-000066", // execute order 66...
                     StartAt = new DateTimeOffset(2018,07,07,08,30,00, new TimeSpan(02,00,00)),
@@ -63,9 +85,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     },
                 },
-                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 2,
+                    CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number2",
                     OrderNumber = "2018-000042",
                     StartAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
@@ -79,9 +102,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     }
                 },
 
-                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 3,
+                    CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number3",
                     OrderNumber = "2018-000654",
                     StartAt = new DateTimeOffset(2018,09,03,13,00,00, new TimeSpan(02,00,00)),
@@ -94,9 +118,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 4,
+                    CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number4",
                     OrderNumber = "2018-000330",
                     StartAt = new DateTimeOffset(2018,09,18,09,00,00, new TimeSpan(02,00,00)),
@@ -109,10 +134,11 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order(2, null, 1, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 5,
                     CustomerReferenceNumber = "Number5",
+                    CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     OrderNumber = "2018-000501",
                     StartAt = new DateTimeOffset(2018,10,09,10,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,10,09,15,00,00, new TimeSpan(02,00,00)),
@@ -125,9 +151,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 6,
+                    CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number6",
                     OrderNumber = "2018-000006",
                     StartAt = new DateTimeOffset(2018,09,03,00,00,00, new TimeSpan(02,00,00)),
@@ -140,9 +167,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 7,
+                    CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number7",
                     OrderNumber = "2018-000007",
                     StartAt = new DateTimeOffset(2018,08,15,00,00,00, new TimeSpan(02,00,00)),
@@ -155,9 +183,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
                     }
                 },
-                new Order(3, null, 6, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 8,
+                    CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "EmptyOrder",
                     OrderNumber = "2018-000008",
                     Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),

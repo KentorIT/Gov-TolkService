@@ -21,9 +21,10 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
-        private readonly TolkOptions _options;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IMemoryCache _cache;
+        private readonly ITolkBaseOptions _tolkBaseOptions;
+
         private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
         private static readonly HttpClient client = new HttpClient();
@@ -34,15 +35,16 @@ namespace Tolk.BusinessLogic.Services
             ISwedishClock clock,
             IOptions<TolkOptions> options,
             PriceCalculationService priceCalculationService,
-            IMemoryCache cache
+            IMemoryCache cache,
+            ITolkBaseOptions tolkBaseOptions
         )
         {
             _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
-            _options = options.Value;
             _priceCalculationService = priceCalculationService;
             _cache = cache;
+            _tolkBaseOptions = tolkBaseOptions;
         }
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
@@ -154,8 +156,8 @@ namespace Tolk.BusinessLogic.Services
                    $"\tErsättning Start: {replacementOrder.StartAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tErsättning Slut: {replacementOrder.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tSvara senast: {replacementRequest.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
-                   $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, replacementRequest.RequestId)}\n" +
-                   $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, oldRequest.RequestId)}";
+                   $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, replacementRequest.RequestId)}\n" +
+                   $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, oldRequest.RequestId)}";
                 var bodyHtml = $@"
 <ul>
 <li>Orginal Start: {order.StartAt.ToString("yyyy-MM-dd HH:mm")}</li>
@@ -531,7 +533,7 @@ Sammanställning:
         private string GetPossibleInfoNotValidatedInterpreter(Request request)
         {
             bool? isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign.HasValue ? (bool?)(request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated) : null;
-            return (_options.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med tillsatt kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
+            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med tillsatt kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
         }
 
         public void RequestDeclinedByBroker(Request request)
@@ -676,9 +678,9 @@ Sammanställning:
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false)
         {
             string subjectPrepend = string.Empty;
-            if (!string.IsNullOrEmpty(_options.Env.Name) && _options.Env.Name.ToLower() != "production")
+            if (!string.IsNullOrEmpty(TolkBaseOptions.Env.Name) && _tolkBaseOptions.Env.Name.ToLower() != "production")
             {
-                subjectPrepend = $"({_options.Env.Name}) ";
+                subjectPrepend = $"({_tolkBaseOptions.Env.Name}) ";
             }
 
             string noReply = "Detta e-postmeddelande går inte att svara på.";
@@ -788,6 +790,8 @@ Sammanställning:
             }
         }
 
+        public ITolkBaseOptions TolkBaseOptions => _tolkBaseOptions;
+
         //SHOULD PROBABLY NOT BE HERE AT ALL...
         public void FlushNotificationSettings()
         {
@@ -811,11 +815,11 @@ Sammanställning:
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return $"\n\n\nGå till bokning: {HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId)}";
+                    return $"\n\n\nGå till bokning: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}";
                 case HtmlHelper.ViewTab.Requisition:
-                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId)}?tab=requisition";
+                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition";
                 case HtmlHelper.ViewTab.Complaint:
-                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId)}?tab=complaint";
+                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=complaint";
             }
         }
 
@@ -825,11 +829,11 @@ Sammanställning:
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}";
+                    return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}";
                 case HtmlHelper.ViewTab.Requisition:
-                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}?tab=requisition";
+                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=requisition";
                 case HtmlHelper.ViewTab.Complaint:
-                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}?tab=complaint";
+                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint";
             }
         }
 
@@ -838,17 +842,17 @@ Sammanställning:
             string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
             if (!string.IsNullOrEmpty(textOverride))
             {
-                return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId), textOverride);
+                return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), textOverride);
             }
             switch (tab)
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId), "Till bokning");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Till bokning");
                 case HtmlHelper.ViewTab.Requisition:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId)}?tab=requisition", "Till rekvisition");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition", "Till rekvisition");
                 case HtmlHelper.ViewTab.Complaint:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_options.PublicOrigin, orderId)}?tab=complaint", "Till reklamation");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=complaint", "Till reklamation");
             }
         }
 
@@ -857,17 +861,17 @@ Sammanställning:
             string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
             if (!string.IsNullOrEmpty(textOverride))
             {
-                return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId), textOverride);
+                return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), textOverride);
             }
             switch (tab)
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId), "Till bokning");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), "Till bokning");
                 case HtmlHelper.ViewTab.Requisition:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}?tab=requisition", "Till rekvisition");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=requisition", "Till rekvisition");
                 case HtmlHelper.ViewTab.Complaint:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_options.PublicOrigin, requestId)}?tab=complaint", "Till reklamation");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint", "Till reklamation");
             }
         }
 

@@ -21,7 +21,8 @@ namespace Tolk.Web.Tests.Filters
         {
             var mockRankings = MockEntities.MockRankings();
             mockLanguages = MockEntities.MockLanguages();
-            mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings);
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
 
             // Modify request statuses
             mockOrders[0].Requests[0].Status = RequestStatus.DeniedByCreator;
