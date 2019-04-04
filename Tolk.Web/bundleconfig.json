@@ -120,5 +120,11 @@
     "inputFiles": [
       "wwwroot/js/validation.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/User/EditNotificationSettings.min.js",
+    "inputFiles": [
+      "wwwroot/js/User/EditNotificationSettings.js"
+    ]
   }
 ]
