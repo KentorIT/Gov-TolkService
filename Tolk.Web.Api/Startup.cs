@@ -39,6 +39,7 @@ namespace Tolk.Web.Api
             services.AddScoped<ITolkBaseOptions, Services.TolkBaseOptionsService>();
             services.AddScoped<HashService>();
             services.AddScoped<VerificationService>();
+            services.AddScoped<InterpreterService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
