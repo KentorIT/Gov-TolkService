@@ -33,7 +33,6 @@ namespace Tolk.BusinessLogic.Services
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
             ISwedishClock clock,
-            IOptions<TolkOptions> options,
             PriceCalculationService priceCalculationService,
             IMemoryCache cache,
             ITolkBaseOptions tolkBaseOptions

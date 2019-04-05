@@ -250,12 +250,18 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
             ////TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
+            ValidateRequirements(Order.Requirements, requirementAnswers);
+
             ////Add validation for interperter location
-            //if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
-            //{
-            //    throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
-            //}
+            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
+            {
+                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
+            }
             ////Add Validation for competencelevel, if required
+            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c =>c.CompetenceLevel == competenceLevel))
+            {
+                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
+            }
 
             bool requiresAccept = Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
@@ -521,6 +527,21 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsToBeProcessedByBroker
         {
             get => Status == RequestStatus.Created || Status == RequestStatus.Received;
+        }
+
+        private void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
+        {
+            if (requirements.Count() != requirementAnswers.Count() ||
+                !requirements.Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.Select(a => a.OrderRequirementId)))
+            {
+                throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
+            }
+            if (requirements.Any(r => r.IsRequired &&
+                 requirementAnswers.Any(a => a.OrderRequirementId == r.OrderRequirementId &&
+                     !a.CanSatisfyRequirement)))
+            {
+                throw new InvalidOperationException($"Negative answer on required requirement");
+            }
         }
     }
 }

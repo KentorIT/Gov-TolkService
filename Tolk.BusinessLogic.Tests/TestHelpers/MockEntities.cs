@@ -192,7 +192,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
                     Language = mockLanguages.Where(l => l.Name == "French").Single(),
                     Status = OrderStatus.Requested,
-                    Requests = new List<Request>()
+                    Requests = new List<Request>(),
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
                 }
             };
 

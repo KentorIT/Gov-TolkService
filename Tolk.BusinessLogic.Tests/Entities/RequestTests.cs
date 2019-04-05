@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
@@ -13,6 +12,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
     public class RequestTests
     {
         private readonly Order MockOrder;
+        private readonly InterpreterBroker MockInterpreter;
 
         public RequestTests()
         {
@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var mockRankings = MockEntities.MockRankings();
             var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
             MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers).Single(o => o.OrderId == 8);
+            MockInterpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
         }
 
         [Fact]
@@ -64,7 +65,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Accepted)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         public void Approve_Valid(RequestStatus status)
-        { 
+        {
             var request = new Request()
             {
                 Status = status,
@@ -146,6 +147,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 {
                     Status = OrderStatus.Requested,
                     AllowExceedingTravelCost = allowExceedingTravelCost,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
                 },
             };
             request.Order.Requests.Add(request);
@@ -244,8 +246,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 }
             };
             Assert.Throws<InvalidOperationException>(() => request.Accept(DateTime.Now, 10, null,
-                interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter, 
-                new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), 
+                interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter,
+                new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(),
                 new PriceInformation()));
         }
 
@@ -403,7 +405,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     ReplacingOrderId = replacingOrderId
                 }
             };
-            Assert.Throws<InvalidOperationException>(() => 
+            Assert.Throws<InvalidOperationException>(() =>
                 request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation()));
         }
 
@@ -502,7 +504,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Order = new Order(MockOrder),
                 Status = status,
             };
-            Assert.Throws<InvalidOperationException>(() => 
+            Assert.Throws<InvalidOperationException>(() =>
                 request.ReplaceInterpreter(DateTime.Now, 10, null, null, null, null, null, null, null, false, null));
         }
 
@@ -948,6 +950,707 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 }
             };
             Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint()));
+        }
+
+        //REQUIREMENTS
+
+        [Fact]
+        public void AcceptWithOneRequiredRequirement_Valid()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = true } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } };
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Fact]
+        public void AcceptWithOneRequiredRequirement_NegativeAnswer()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = true } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        [Fact]
+        public void AcceptWithOneRequiredRequirement_NoAnswer()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = true } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        [Fact]
+        public void AcceptWithOneRequiredRequirement_WrongId()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = true } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 2, CanSatisfyRequirement = true } },
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+        // no on not required
+        [Fact]
+        public void AcceptWithOneNOTRequiredRequirement_NegativeAnswer()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Fact]
+        public void AcceptWithOneNOTRequiredRequirement_PositiveAnswer()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+        // no answer on not required
+        [Fact]
+        public void AcceptWithOneNOTRequiredRequirement_NoAnswer()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() { new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false } }
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        [Fact]
+        public void AcceptWithSeveralRequirementsMixedRequired_CanSatisfyAll()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() {
+                        new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false },
+                        new OrderRequirement { OrderRequirementId = 2, RequirementType = RequirementType.DeniedInterpreter, IsRequired = true },
+                        new OrderRequirement { OrderRequirementId = 3, RequirementType = RequirementType.HasSecurityClearence, IsRequired = true },
+                    }
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>()
+                {
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 1, CanSatisfyRequirement = true },
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 2, CanSatisfyRequirement = true },
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
+                },
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        // yes and no on required
+        [Fact]
+        public void AcceptWithSeveralRequirementsMixedRequired_CanSatisfyAllRequired()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() {
+                        new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false },
+                        new OrderRequirement { OrderRequirementId = 2, RequirementType = RequirementType.DeniedInterpreter, IsRequired = true },
+                        new OrderRequirement { OrderRequirementId = 3, RequirementType = RequirementType.HasSecurityClearence, IsRequired = true },
+                    }
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>()
+                {
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 1, CanSatisfyRequirement = false },
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 2, CanSatisfyRequirement = true },
+                    new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
+                },
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Fact]
+        public void AcceptWithSeveralRequirementsMixedRequired_CanNOTSatisfyAllRequired()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    Requirements = new List<OrderRequirement>() {
+                        new OrderRequirement { OrderRequirementId = 1, RequirementType = RequirementType.SpecifiedInterpreter, IsRequired = false },
+                        new OrderRequirement { OrderRequirementId = 2, RequirementType = RequirementType.DeniedInterpreter, IsRequired = true },
+                        new OrderRequirement { OrderRequirementId = 3, RequirementType = RequirementType.HasSecurityClearence, IsRequired = true },
+                    }
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>()
+                    {
+                        new OrderRequirementRequestAnswer {OrderRequirementId = 1, CanSatisfyRequirement = true },
+                        new OrderRequirementRequestAnswer {OrderRequirementId = 2, CanSatisfyRequirement = false },
+                        new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
+                    },
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        //COMPETENCE LEVELS
+        [Theory]
+        [InlineData(CompetenceAndSpecialistLevel.OtherInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.EducatedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.AuthorizedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.HealthCareSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.CourtSpecialist)]
+        public void AcceptWithNoRequestedCompetenceLevels(CompetenceAndSpecialistLevel level)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                level,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+
+        }
+
+        [Theory]
+        [InlineData(CompetenceAndSpecialistLevel.OtherInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.EducatedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.AuthorizedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.HealthCareSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.CourtSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.OtherInterpreter, true)]
+        [InlineData(CompetenceAndSpecialistLevel.EducatedInterpreter, true)]
+        [InlineData(CompetenceAndSpecialistLevel.AuthorizedInterpreter, true)]
+        [InlineData(CompetenceAndSpecialistLevel.HealthCareSpecialist, true)]
+        [InlineData(CompetenceAndSpecialistLevel.CourtSpecialist, true)]
+        public void AcceptWithRequestedCompetenceLevelsNOTRequired(CompetenceAndSpecialistLevel level, bool multiple = false)
+        {
+            var competenceLevels = new List<OrderCompetenceRequirement> {
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter}
+            };
+            if (multiple)
+            {
+                competenceLevels.Add(new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.HealthCareSpecialist });
+            }
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    CompetenceRequirements = competenceLevels,
+                    SpecificCompetenceLevelRequired = false
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                level,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+
+        }
+
+        [Fact]
+        public void AcceptWithOneRequiredCompetenceLevel_Valid()
+        {
+            var competenceLevels = new List<OrderCompetenceRequirement> {
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter}
+            };
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    CompetenceRequirements = new List<OrderCompetenceRequirement> {
+                        new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter}
+                    },
+                    SpecificCompetenceLevelRequired = true
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Theory]
+        [InlineData(CompetenceAndSpecialistLevel.EducatedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.AuthorizedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.HealthCareSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.CourtSpecialist)]
+        public void AcceptWithOneRequiredCompetenceLevel_Invalid(CompetenceAndSpecialistLevel level)
+        {
+            var competenceLevels = new List<OrderCompetenceRequirement> {
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter}
+            };
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    CompetenceRequirements = competenceLevels,
+                    SpecificCompetenceLevelRequired = true
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    level,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        [Theory]
+        [InlineData(CompetenceAndSpecialistLevel.EducatedInterpreter)]
+        [InlineData(CompetenceAndSpecialistLevel.AuthorizedInterpreter)]
+        public void AcceptWithTwoRequiredCompetenceLevel_Valid(CompetenceAndSpecialistLevel level)
+        {
+            var competenceLevels = new List<OrderCompetenceRequirement> {
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.EducatedInterpreter},
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter}
+            };
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    CompetenceRequirements = competenceLevels,
+                    SpecificCompetenceLevelRequired = true
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                InterpreterLocation.OffSitePhone,
+                level,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Theory]
+        [InlineData(CompetenceAndSpecialistLevel.HealthCareSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.CourtSpecialist)]
+        [InlineData(CompetenceAndSpecialistLevel.OtherInterpreter)]
+        public void AcceptWithTwoRequiredCompetenceLevel_Invalid(CompetenceAndSpecialistLevel level)
+        {
+            var competenceLevels = new List<OrderCompetenceRequirement> {
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.EducatedInterpreter},
+                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter}
+            };
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    CompetenceRequirements = competenceLevels,
+                    SpecificCompetenceLevelRequired = true
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    InterpreterLocation.OffSitePhone,
+                    level,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        //INTERPRETER LOCATIONS
+        [Theory]
+        [InlineData(InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(InterpreterLocation.OffSitePhone)]
+        [InlineData(InterpreterLocation.OffSiteVideo)]
+        public void AcceptWithOneLocation_Invalid(InterpreterLocation location)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation= InterpreterLocation.OnSite } },
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    location,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+
+        [Theory]
+        [InlineData(InterpreterLocation.OnSite)]
+        [InlineData(InterpreterLocation.OffSiteDesignatedLocation)]
+        public void AcceptWithTwoLocations_Valid(InterpreterLocation location)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    InterpreterLocations = new List<OrderInterpreterLocation>() {
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation }
+                },
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                location,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Theory]
+        [InlineData(InterpreterLocation.OffSitePhone)]
+        [InlineData(InterpreterLocation.OffSiteVideo)]
+        public void AcceptWithTwoLocations_Invalid(InterpreterLocation location)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    InterpreterLocations = new List<OrderInterpreterLocation>() {
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation }
+                },
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    location,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
+        }
+        // three locations test all ok
+        // three locations test fail
+
+        [Theory]
+        [InlineData(InterpreterLocation.OnSite)]
+        [InlineData(InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(InterpreterLocation.OffSitePhone)]
+        public void AcceptWithThreeLocations_Valid(InterpreterLocation location)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    InterpreterLocations = new List<OrderInterpreterLocation>() {
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSitePhone }
+                },
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            request.Accept(
+                DateTimeOffset.Now,
+                1,
+                null,
+                MockInterpreter,
+                location,
+                CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>(),
+                new List<RequestAttachment>(),
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+        }
+
+        [Theory]
+        [InlineData(InterpreterLocation.OffSitePhone)]
+        public void AcceptWithThreeLocations_Invalid(InterpreterLocation location)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    InterpreterLocations = new List<OrderInterpreterLocation>() {
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation },
+                        new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteVideo }
+
+                },
+                    Status = OrderStatus.Requested,
+                },
+            };
+            request.Order.Requests.Add(request);
+            Assert.Throws<InvalidOperationException>(() =>
+                request.Accept(
+                    DateTimeOffset.Now,
+                    1,
+                    null,
+                    MockInterpreter,
+                    location,
+                    CompetenceAndSpecialistLevel.OtherInterpreter,
+                    new List<OrderRequirementRequestAnswer>(),
+                    new List<RequestAttachment>(),
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+            );
         }
     }
 }

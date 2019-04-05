@@ -61,7 +61,6 @@ namespace BrokerMock.Controllers
                 if (extraInstructions.Contains("DECLINE"))
                 {
                     await Decline(payload.OrderNumber, "Vill inte, kan inte bör inte...");
-
                 }
                 else
                 {
@@ -80,18 +79,39 @@ namespace BrokerMock.Controllers
                                 InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
                             };
                         }
-                        await AssignInterpreter(
-                            payload.OrderNumber,
-                            interpreter,
-                            payload.Locations.First().Key,
-                            payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                            payload.Requirements.Select(r => new RequirementAnswerModel
-                            {
-                                Answer = "Japp",
-                                CanMeetRequirement = true,
-                                RequirementId = r.RequirementId
-                            })
-                        );
+                        if (extraInstructions.Contains("BADLOCATION"))
+                        {
+                            var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
+                            //Find a location that is not present in payload
+                            
+                            await AssignInterpreter(
+                                payload.OrderNumber,
+                                interpreter,
+                                badLocation,
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                                payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                })
+                            );
+                        }
+                        else
+                        {
+                            await AssignInterpreter(
+                                payload.OrderNumber,
+                                interpreter,
+                                payload.Locations.First().Key,
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                                payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                })
+                            );
+                        }
                     }
                     if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
                     {

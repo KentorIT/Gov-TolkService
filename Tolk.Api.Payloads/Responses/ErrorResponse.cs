@@ -15,5 +15,15 @@ namespace Tolk.Api.Payloads.Responses
         /// This always should return false...
         /// </summary>
         public override bool Success { get => false; }
+
+        public  ErrorResponse Copy()
+        {
+            return new ErrorResponse
+            {
+                ErrorCode = ErrorCode,
+                ErrorMessage = ErrorMessage,
+                StatusCode = StatusCode
+            };
+        }
     }
 }

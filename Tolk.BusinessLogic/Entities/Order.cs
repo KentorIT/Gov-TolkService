@@ -28,6 +28,14 @@ namespace Tolk.BusinessLogic.Entities
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank
             }).ToList();
+            InterpreterLocations = order.InterpreterLocations.Select(l => new OrderInterpreterLocation
+            {
+                City = l.City,
+                InterpreterLocation = l.InterpreterLocation,
+                OffSiteContactInformation = l.OffSiteContactInformation,
+                Rank = l.Rank,
+                Street = l.Street
+            }).ToList();
         }
         public Order(AspNetUser createdByUser, AspNetUser createdByImpersonator, CustomerOrganisation customerOrganisation, DateTimeOffset createdAt)
         {

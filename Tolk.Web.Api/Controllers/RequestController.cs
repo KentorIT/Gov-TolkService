@@ -58,6 +58,9 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
+                .Include(o => o.Requirements)
+                .Include(o => o.InterpreterLocations)
+                .Include(o => o.CompetenceRequirements)
                 .Include(o => o.Language)
                 .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
@@ -97,27 +100,34 @@ namespace Tolk.Web.Api.Controllers
             {
                 request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
             }
-            await _requestService.Accept(
-                request,
-                now,
-                user?.Id ?? apiUser.Id,
-                (user != null ? (int?)apiUser.Id : null),
-                interpreter,
-                EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
-                model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                {
-                    Answer = ra.Answer,
-                    CanSatisfyRequirement = ra.CanMeetRequirement,
-                    OrderRequirementId = ra.RequirementId,
-                }).ToList(),
-                //Does not handle attachments yet.
-                new List<RequestAttachment>(),
-                model.ExpectedTravelCosts
-            );
-            await _dbContext.SaveChangesAsync();
-            //End of service
-            return Json(new ResponseBase());
+            try
+            {
+                await _requestService.Accept(
+                    request,
+                    now,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null),
+                    interpreter,
+                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                    EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                    model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement,
+                        OrderRequirementId = ra.RequirementId,
+                    }).ToList(),
+                    //Does not handle attachments yet.
+                    new List<RequestAttachment>(),
+                    model.ExpectedTravelCosts
+                );
+                await _dbContext.SaveChangesAsync();
+                //End of service
+                return Json(new ResponseBase());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ReturError("REQUEST_NOT_CORRECTLY_ANSWERED", ex.Message);
+            }
         }
 
         [HttpPost]
@@ -446,11 +456,15 @@ namespace Tolk.Web.Api.Controllers
         #region private methods
 
         //Break out to error generator service...
-        private JsonResult ReturError(string errorCode)
+        private JsonResult ReturError(string errorCode,string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
-            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
             Response.StatusCode = message.StatusCode;
+            if (!string.IsNullOrEmpty(specifiedErrorMessage))
+            {
+                message.ErrorMessage = specifiedErrorMessage;
+            }
             return Json(message);
         }
 
@@ -480,6 +494,7 @@ namespace Tolk.Web.Api.Controllers
                     new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_OFFICIALID_ALREADY_SAVED", ErrorMessage = "The official interpreterId for the provided new interpreter was already saved." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_CORRECTLY_ANSWERED", ErrorMessage = "The request or the underlying order was not correctly answered" },
                };
             }
         }
