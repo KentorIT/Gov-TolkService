@@ -139,7 +139,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> DesireTypes { get; } =
             EnumHelper.GetAllDescriptions<DesireType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .OrderByDescending(e => e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
         public static IEnumerable<ExtendedSelectListItem> ReportList(UserType userType)

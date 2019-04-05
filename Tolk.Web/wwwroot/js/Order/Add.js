@@ -148,15 +148,15 @@ $(function () {
 
     $("body").on("change", "input[name=CompetenceLevelDesireType]", function () {
         var items = $(this).filter('input:checked');
-        if ($(items[0]).val() === 'Requirement') {
-            // Is requirement
-            $("#competence-requested").hide();
-            $("#competence-required").show();
-        }
-        else {
+        if ($(items[0]).val() === 'Request') {
             // Is request
             $("#competence-required").hide();
             $("#competence-requested").show();
+        }
+        else {
+            // Is requirement
+            $("#competence-requested").hide();
+            $("#competence-required").show();
         }
     });
 
