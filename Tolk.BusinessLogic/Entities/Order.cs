@@ -256,8 +256,12 @@ namespace Tolk.BusinessLogic.Entities
             Status = OrderStatus.Delivered;
         }
 
-        public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, int? contactPersonId)
+        public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, AspNetUser contactPerson)
         {
+            if (contactPerson != null && contactPerson.CustomerOrganisationId != CustomerOrganisationId)
+            {
+                throw new InvalidOperationException($"Cannot assign User {contactPerson.Id} as contact person on Order {OrderId}, since this user belongs to CustomerOrganization {contactPerson.CustomerOrganisationId}");
+            }
             if (Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByBroker || Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.ResponseNotAnsweredByCreator)
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change contact person for orders with this status.");
@@ -269,9 +273,8 @@ namespace Tolk.BusinessLogic.Entities
                 ChangedBy = userId,
                 ImpersonatingChangeUserId = impersonatingUserId,
                 OrderId = OrderId
-            }
-            );
-            ContactPersonId = contactPersonId;
+            });
+            ContactPersonId = contactPerson?.Id;
         }
 
         #endregion

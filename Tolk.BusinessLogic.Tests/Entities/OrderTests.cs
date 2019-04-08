@@ -135,12 +135,12 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(OrderStatus.Requested, "2019-01-25 10:00:00", 1, null, 101, null)]
-        [InlineData(OrderStatus.RequestResponded, "2019-01-25 10:00:00", 1, null, 101, null)]
-        [InlineData(OrderStatus.ResponseAccepted, "2019-01-25 10:00:00", 1, null, 101, null)]
-        [InlineData(OrderStatus.Delivered, "2019-01-25 10:00:00", 1, null, 101, null)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, "2019-01-25 10:00:00", 1, null, 101, null)]
-        public void ChangeContactPerson_Valid(OrderStatus currentStatus, string changedAt, int userId, int? impersonatorId, int contactPersonId, int? prevContactPersonId)
+        [InlineData(OrderStatus.Requested, "2019-01-25 10:00:00", 1, null, null)]
+        [InlineData(OrderStatus.RequestResponded, "2019-01-25 10:00:00", 1, null, null)]
+        [InlineData(OrderStatus.ResponseAccepted, "2019-01-25 10:00:00", 1, null, null)]
+        [InlineData(OrderStatus.Delivered, "2019-01-25 10:00:00", 1, null, null)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, "2019-01-25 10:00:00", 1, null, null)]
+        public void ChangeContactPerson_Valid(OrderStatus currentStatus, string changedAt, int userId, int? impersonatorId, int? prevContactPersonId)
         {
             var changedAtDateTime = DateTime.Parse(changedAt);
 
@@ -155,17 +155,22 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 ContactPersonId = prevContactPersonId ?? null,
                 OrderContactPersonHistory = new List<OrderContactPersonHistory>(),
                 AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                CustomerOrganisationId = 0,
                 Requests = new List<Request>()
                 {
                     new Request() { Status = RequestStatus.Approved }
                 }
             };
+            var newContactPerson = new AspNetUser("", "", "", "")
+            {
+                CustomerOrganisationId = 0,
+            };
             if (conditionalStatus.HasValue)
             {
                 order.Status = conditionalStatus.Value;
             }
-            order.ChangeContactPerson(changedAtDateTime, userId, impersonatorId, contactPersonId);
-            Assert.Equal(contactPersonId, order.ContactPersonId);
+            order.ChangeContactPerson(changedAtDateTime, userId, impersonatorId, newContactPerson);
+            Assert.Equal(newContactPerson.Id, order.ContactPersonId);
             Assert.Equal(changedAtDateTime, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ChangedAt);
             Assert.Equal(userId, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ChangedBy);
             Assert.Equal(impersonatorId, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ImpersonatingChangeUserId);
@@ -173,17 +178,32 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(OrderStatus.CancelledByCreator)]
-        [InlineData(OrderStatus.CancelledByBroker)]
-        [InlineData(OrderStatus.NoBrokerAcceptedOrder)]
-        [InlineData(OrderStatus.ResponseNotAnsweredByCreator)]
-        public void ChangeContactPerson_Invalid(OrderStatus invalidStatus)
+        // Invalid status
+        [InlineData(OrderStatus.CancelledByCreator, 0)]
+        [InlineData(OrderStatus.CancelledByBroker, 0)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder, 0)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, 0)]
+        // Invalid CustomerOrganization
+        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer, 1)]
+        [InlineData(OrderStatus.Delivered, 1)]
+        [InlineData(OrderStatus.DeliveryAccepted, 1)]
+        [InlineData(OrderStatus.NoDeadlineFromCustomer, 1)]
+        [InlineData(OrderStatus.Requested, 1)]
+        [InlineData(OrderStatus.RequestResponded, 1)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, 1)]
+        [InlineData(OrderStatus.ToBeProcessedByCustomer, 1)]
+        public void ChangeContactPerson_Invalid(OrderStatus invalidStatus, int ContactPersonCustomerOrganizationId)
         {
             var order = new Order(MockOrders.First())
             {
-                Status = invalidStatus
+                Status = invalidStatus,
+                CustomerOrganisationId = 0,
             };
-            Assert.Throws<InvalidOperationException>(() => order.ChangeContactPerson(DateTimeOffset.Now, 1, null, 1));
+            var newContactPerson = new AspNetUser("", "", "", "")
+            {
+                CustomerOrganisationId = ContactPersonCustomerOrganizationId,
+            };
+            Assert.Throws<InvalidOperationException>(() => order.ChangeContactPerson(DateTimeOffset.Now, 1, null, newContactPerson));
         }
     }
 }
