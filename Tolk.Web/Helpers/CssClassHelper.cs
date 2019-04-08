@@ -1,5 +1,4 @@
-﻿using System;
-using Tolk.BusinessLogic.Enums;
+﻿using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Helpers
 {
@@ -52,6 +51,11 @@ namespace Tolk.Web.Helpers
                 : (status == StartListItemStatus.OrderApproved || status == StartListItemStatus.RequisitionToBeCreated) ? "green-border-left" 
                 : (status == StartListItemStatus.RequisitionAwaited || status == StartListItemStatus.OrderCreated || status == StartListItemStatus.ReplacementOrderCreated || status == StartListItemStatus.RequisitionCreated) ? "gray-border-left" 
                 : "yellow-border-left";
+        }
+
+        public static string GetClassNamesForStatisticsChangeType(StatisticsChangeType changeType)
+        {
+            return changeType == StatisticsChangeType.Increasing ? "color-green glyphicon glyphicon-arrow-up" : changeType == StatisticsChangeType.Decreasing ? "color-red glyphicon glyphicon-arrow-down" : string.Empty;
         }
     }
 }

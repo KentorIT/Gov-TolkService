@@ -44,7 +44,19 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.Admin)]
         public ActionResult Dashboard()
         {
-            return View();
+            StatisticsDashboardModel model = new StatisticsDashboardModel
+            {
+                WeeklyStatisticsModels = new List<WeeklyStatisticsModel>
+                {
+                _statService.GetWeeklyOrderStatistics(),
+                _statService.GetWeeklyDeliveredOrderStatistics(),
+                _statService.GetWeeklyRequisitionStatistics(),
+                _statService.GetWeeklyComplaintStatistics(),
+                _statService.GetWeeklyLoggedOnUsers(),
+                _statService.GetWeeklyNewUsers()
+                }
+            };
+            return View(model);
         }
 
         [Authorize(Roles = Roles.AdminRoles)]

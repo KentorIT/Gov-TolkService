@@ -25,7 +25,102 @@ namespace Tolk.BusinessLogic.Services
             _dbContext = dbContext;
             _clock = clock;
         }
-               
+
+        #region Statistics dashboard
+
+        public WeeklyStatisticsModel GetWeeklyOrderStatistics()
+        {
+            int lastWeek = GetOrders(StartDate, BreakDate);
+            int thisWeek = GetOrders(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Bokningar");
+        }
+
+        public WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics()
+        {
+            int lastWeek = GetDeliveredOrders(StartDate, BreakDate);
+            int thisWeek = GetDeliveredOrders(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Utförda uppdrag");
+        }
+
+        public WeeklyStatisticsModel GetWeeklyRequisitionStatistics()
+        {
+            int lastWeek = GetRequisitions(StartDate, BreakDate);
+            int thisWeek = GetRequisitions(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Rekvisitioner");
+        }
+
+        public WeeklyStatisticsModel GetWeeklyComplaintStatistics()
+        {
+            int lastWeek = GetComplaints(StartDate, BreakDate);
+            int thisWeek = GetComplaints(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Reklamationer");
+        }
+
+        public WeeklyStatisticsModel GetWeeklyLoggedOnUsers()
+        {
+            int lastWeek = GetLoggedOnUsers(StartDate, BreakDate);
+            int thisWeek = GetLoggedOnUsers(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Inloggade anv.");
+        }
+
+        public WeeklyStatisticsModel GetWeeklyNewUsers()
+        {
+            int lastWeek = GetNewUsers(StartDate, BreakDate);
+            int thisWeek = GetNewUsers(BreakDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(lastWeek, thisWeek, "Nya användare");
+        }
+
+        private DateTimeOffset StartDate { get => _clock.SwedenNow.AddDays(-14); }
+
+        private DateTimeOffset BreakDate { get => _clock.SwedenNow.AddDays(-7); }
+
+        private int GetOrders(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _dbContext.Orders.Where(o => o.CreatedAt >= start && o.CreatedAt < end).Count();
+        }
+
+        private int GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _dbContext.Orders.Where(o => o.EndAt >= start && o.EndAt < end
+                    && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).Count();
+        }
+
+        private int GetRequisitions(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _dbContext.Requisitions.Where(r => r.CreatedAt >= start && r.CreatedAt < end
+                    && !r.ReplacedByRequisitionId.HasValue).Count();
+        }
+
+        private int GetComplaints(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).Count();
+        }
+
+        private int GetLoggedOnUsers(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start && u.LoggedInAt < end).Select(u => u.UserId).Distinct().Count();
+        }
+
+        private int GetNewUsers(DateTimeOffset start, DateTimeOffset end)
+        {
+            var userLoggedOnBeforeWeekStarted = _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt < start).Select(u => u.UserId).Distinct();
+            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start && u.LoggedInAt < end && !userLoggedOnBeforeWeekStarted.Contains(u.UserId)).Select(u => u.UserId).Distinct().Count();
+        }
+
+        private WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
+        {
+            decimal diff = (lastWeek == 0 || thisWeek == 0) ? 0 : (Convert.ToDecimal(thisWeek) - Convert.ToDecimal(lastWeek)) * 100/ lastWeek;
+            return new WeeklyStatisticsModel
+            {
+                NoOfItems = thisWeek,
+                DiffPercentage = Math.Round(Math.Abs(diff), 2),
+                ChangeType = diff == 0 ? lastWeek == thisWeek ? StatisticsChangeType.Unchanged : StatisticsChangeType.NotApplicable : thisWeek > lastWeek ? StatisticsChangeType.Increasing : StatisticsChangeType.Decreasing,
+                Name = name
+            };
+        }
+
+        #endregion
+
         #region Broker reports
 
         public IEnumerable<Request> GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)

@@ -1,69 +1,41 @@
-﻿@{
+﻿@using Tolk.BusinessLogic.Enums;
+@using Tolk.BusinessLogic.Utilities;
+@using Tolk.Web.Helpers;
+@model Tolk.Web.Models.StatisticsDashboardModel
+@{
     ViewData["Title"] = "Statistik";
 }
 <h2>@ViewData["Title"]</h2>
 
 <div class="row">
     <div class="col-md-12">
-        <h3>Veckostatistik</h3>
+        <h3>Veckostatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Veckostatistiken uppdateras löpande och tittar sju dagar tillbaka i tiden och jämför siffrorna med ytterligare sju dagar tillbaka i tiden."></span></h3>
         <hr />
     </div>
 </div>
 <div class="row">
-    <div class="col-md-2">
-        <div class="statistics-number-header">Bokningar</div>
-        <div class="statistics-number">
-            302
+    @foreach (var weeklyStatistic in Model.WeeklyStatisticsModels)
+    {
+        <div class="col-md-2">
+            <div class="statistics-number-header">@weeklyStatistic.Name</div>
+            <div class="statistics-number">
+                @weeklyStatistic.NoOfItems
+            </div>
+            <div class="statistics-differ">
+                @if (weeklyStatistic.ChangeType != StatisticsChangeType.NotApplicable)
+                {
+                    <span>
+                        @EnumHelper.GetDescription(weeklyStatistic.ChangeType)@weeklyStatistic.DiffPercentage %
+                        <span class="@CssClassHelper.GetClassNamesForStatisticsChangeType(weeklyStatistic.ChangeType)"></span>
+                    </span>
+                }
+                else
+                {
+                    @EnumHelper.GetDescription(weeklyStatistic.ChangeType)
+                }
+            </div>
         </div>
-        <div class="statistics-up">
-            + 3 % <span class="statistics-arrow-up glyphicon glyphicon-arrow-up"></span>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="statistics-number-header">Utförda uppdrag</div>
-        <div class="statistics-number">
-            189
-        </div>
-        <div class="statistics-down">
-            - 2 % <span class="statistics-arrow-down glyphicon glyphicon-arrow-down"></span>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="statistics-number-header">Rekvisitioner</div>
-        <div class="statistics-number">
-            57
-        </div>
-        <div class="statistics-up">
-            + 5 % <span class="statistics-arrow-up glyphicon glyphicon-arrow-up"></span>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="statistics-number-header">Reklamationer</div>
-        <div class="statistics-number">
-            4
-        </div>
-        <div class="statistics-down">
-            - 20 % <span class="statistics-arrow-down glyphicon glyphicon-arrow-down"></span>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="statistics-number-header">Inloggade anv.</div>
-        <div class="statistics-number">
-            784
-        </div>
-        <div class="statistics-up">
-            + 4 % <span class="statistics-arrow-up glyphicon glyphicon-arrow-up"></span>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="statistics-number-header">Nya användare</div>
-        <div class="statistics-number">
-            23
-        </div>
-        <div class="statistics-up">
-            + 2 % <span class="statistics-arrow-up glyphicon glyphicon-arrow-up"></span>
-        </div>
-    </div>
+    }
 </div>
 
 <div class="row">
