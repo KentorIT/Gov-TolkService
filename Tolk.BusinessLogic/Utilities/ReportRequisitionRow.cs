@@ -1,7 +1,7 @@
 ﻿
-namespace Tolk.Web.Models
+namespace Tolk.BusinessLogic.Utilities
 {
-    public class ReportRequisitionRowModel : ReportRowModel
+    public class ReportRequisitionRow : ReportRow
     {
         public bool HasMealbreaks { get; set; }
 
@@ -16,6 +16,5 @@ namespace Tolk.Web.Models
         public string PerDiem { get; set; }
 
         public string TaxCard { get; set; }
-        
     }
 }

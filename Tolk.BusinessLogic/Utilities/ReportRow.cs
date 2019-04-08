@@ -1,8 +1,8 @@
 ﻿using Tolk.BusinessLogic.Enums;
 
-namespace Tolk.Web.Models
+namespace Tolk.BusinessLogic.Utilities
 {
-    public class ReportRowModel
+    public class ReportRow
     {
         public string OrderNumber { get; set; }
 
@@ -26,7 +26,7 @@ namespace Tolk.Web.Models
 
         public bool HasRequisition { get; set; }
 
-        public bool HasComplaint{ get; set; }
+        public bool HasComplaint { get; set; }
 
         public string ReportPersonToDisplay { get; set; }
 
