@@ -416,6 +416,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(true, true)]
         public void ReplaceInterpreter_Valid(bool isAutoAccepted, bool isOldRequestApproved)
         {
+            var interpreterLocation = InterpreterLocation.OnSite;
             var request = new Request()
             {
                 Status = RequestStatus.AcceptedNewInterpreterAppointed,
@@ -424,6 +425,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+
+                
                 },
             };
             var oldRequestRecievedBy = 66;
@@ -454,7 +458,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var answeredBy = 10;
             var impersonatingAnsweredBy = (int?)null;
             var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
-            var interpreterLocation = InterpreterLocation.OnSite;
             var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
             var requirementAnswers = new List<OrderRequirementRequestAnswer>();
             var attachments = new List<RequestAttachment>();
@@ -505,7 +508,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.ReplaceInterpreter(DateTime.Now, 10, null, null, null, null, null, null, null, false, null));
+                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null));
         }
 
         [Theory]
@@ -1581,8 +1584,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() })
             );
         }
-        // three locations test all ok
-        // three locations test fail
 
         [Theory]
         [InlineData(InterpreterLocation.OnSite)]

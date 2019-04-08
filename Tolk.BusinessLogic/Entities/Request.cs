@@ -249,19 +249,8 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
-            ////TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
-            ValidateRequirements(Order.Requirements, requirementAnswers);
 
-            ////Add validation for interperter location
-            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
-            {
-                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
-            }
-            ////Add Validation for competencelevel, if required
-            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c =>c.CompetenceLevel == competenceLevel))
-            {
-                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
-            }
+            ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
 
             bool requiresAccept = Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
@@ -277,6 +266,21 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
 
             Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+        }
+
+        private void ValidateAgainstOrder(InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
+        {
+            ValidateRequirements(Order.Requirements, requirementAnswers);
+
+            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
+            {
+                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
+            }
+
+            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
+            {
+                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
+            }
         }
 
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
@@ -356,8 +360,8 @@ namespace Tolk.BusinessLogic.Entities
             int userId,
             int? impersonatorId,
             InterpreterBroker interperter,
-            InterpreterLocation? interpreterLocation,
-            CompetenceAndSpecialistLevel? competenceLevel,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachments,
             PriceInformation priceInformation,
@@ -365,11 +369,12 @@ namespace Tolk.BusinessLogic.Entities
             Request oldRequest,
             VerificationResult? verificationResult = null)
         {
-            //TODO: Add validation of RequirementAnswers, to make sure that the caller has answered true to all required!!!
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}");
             }
+            ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
+
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;

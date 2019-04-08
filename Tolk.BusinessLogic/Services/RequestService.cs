@@ -154,8 +154,8 @@ namespace Tolk.BusinessLogic.Services
             {
                 //Only check if the selected level is other than other.
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
-
             }
+
             newRequest.ReplaceInterpreter(changedAt,
                 userId,
                 impersonatorId,
