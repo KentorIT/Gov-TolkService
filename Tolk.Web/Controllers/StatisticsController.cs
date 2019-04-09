@@ -48,15 +48,7 @@ namespace Tolk.Web.Controllers
             StatisticsDashboardModel model = new StatisticsDashboardModel
             {
                 TotalNoOfOrders = totalNoOfOrders,
-                WeeklyStatisticsModels = new List<WeeklyStatisticsModel>
-                {
-                    _statService.GetWeeklyOrderStatistics(),
-                    _statService.GetWeeklyDeliveredOrderStatistics(),
-                    _statService.GetWeeklyRequisitionStatistics(),
-                    _statService.GetWeeklyComplaintStatistics(),
-                    _statService.GetWeeklyLoggedOnUsers(),
-                    _statService.GetWeeklyNewUsers()
-                },
+                WeeklyStatisticsModels = _statService.GetWeeklyStatistics(),
                 OrderStatisticsModels = totalNoOfOrders > 0 ? _statService.GetOrderStatistics() : null
             };
             return View(model);

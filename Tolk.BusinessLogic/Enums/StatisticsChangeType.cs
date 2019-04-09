@@ -13,7 +13,10 @@ namespace Tolk.BusinessLogic.Enums
         [Description("+/-")]
         Unchanged = 3,
 
-        [Description("N/A")]
-        NotApplicable = 4,
+        [Description("Inget data förra perioden")]
+        NA_NoDataLastWeek = 4,
+
+        [Description("Inget data denna period")]
+        NA_NoDataThisWeek = 5,
     }
 }

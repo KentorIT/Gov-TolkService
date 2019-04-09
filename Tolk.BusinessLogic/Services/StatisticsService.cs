@@ -28,45 +28,56 @@ namespace Tolk.BusinessLogic.Services
 
         #region Dashboard Weekly Statistics
 
-        public WeeklyStatisticsModel GetWeeklyOrderStatistics()
+        public IEnumerable<WeeklyStatisticsModel> GetWeeklyStatistics()
         {
-            int lastWeek = GetOrders(StartDate, BreakDate);
-            int thisWeek = GetOrders(BreakDate, _clock.SwedenNow);
+            DateTimeOffset breakDate = BreakDate;
+            yield return GetWeeklyOrderStatistics(BreakDate);
+            yield return GetWeeklyDeliveredOrderStatistics(BreakDate);
+            yield return GetWeeklyRequisitionStatistics(BreakDate);
+            yield return GetWeeklyComplaintStatistics(BreakDate);
+            yield return GetWeeklyLoggedOnUsers(BreakDate);
+            yield return GetWeeklyNewUsers(BreakDate);
+        }
+
+        private WeeklyStatisticsModel GetWeeklyOrderStatistics(DateTimeOffset breakDate)
+        {
+            int lastWeek = GetOrders(StartDate, breakDate);
+            int thisWeek = GetOrders(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Bokningar");
         }
 
-        public WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics()
+        private WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetDeliveredOrders(StartDate, BreakDate);
-            int thisWeek = GetDeliveredOrders(BreakDate, _clock.SwedenNow);
+            int lastWeek = GetDeliveredOrders(StartDate, breakDate);
+            int thisWeek = GetDeliveredOrders(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Utförda uppdrag");
         }
 
-        public WeeklyStatisticsModel GetWeeklyRequisitionStatistics()
+        private WeeklyStatisticsModel GetWeeklyRequisitionStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetRequisitions(StartDate, BreakDate);
-            int thisWeek = GetRequisitions(BreakDate, _clock.SwedenNow);
+            int lastWeek = GetRequisitions(StartDate, breakDate);
+            int thisWeek = GetRequisitions(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Rekvisitioner");
         }
 
-        public WeeklyStatisticsModel GetWeeklyComplaintStatistics()
+        private WeeklyStatisticsModel GetWeeklyComplaintStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetComplaints(StartDate, BreakDate);
-            int thisWeek = GetComplaints(BreakDate, _clock.SwedenNow);
+            int lastWeek = GetComplaints(StartDate, breakDate);
+            int thisWeek = GetComplaints(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Reklamationer");
         }
 
-        public WeeklyStatisticsModel GetWeeklyLoggedOnUsers()
+        private WeeklyStatisticsModel GetWeeklyLoggedOnUsers(DateTimeOffset breakDate)
         {
-            int lastWeek = GetLoggedOnUsers(StartDate, BreakDate);
-            int thisWeek = GetLoggedOnUsers(BreakDate, _clock.SwedenNow);
+            int lastWeek = GetLoggedOnUsers(StartDate, breakDate);
+            int thisWeek = GetLoggedOnUsers(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Inloggade anv.");
         }
 
-        public WeeklyStatisticsModel GetWeeklyNewUsers()
+        private WeeklyStatisticsModel GetWeeklyNewUsers(DateTimeOffset breakDate)
         {
-            int lastWeek = GetNewUsers(StartDate, BreakDate);
-            int thisWeek = GetNewUsers(BreakDate, _clock.SwedenNow);
+            int lastWeek = GetNewUsers(StartDate, breakDate);
+            int thisWeek = GetNewUsers(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Nya användare");
         }
 
@@ -113,8 +124,8 @@ namespace Tolk.BusinessLogic.Services
             return new WeeklyStatisticsModel
             {
                 NoOfItems = thisWeek,
-                DiffPercentage = Math.Round(Math.Abs(diff), 2),
-                ChangeType = diff == 0 ? lastWeek == thisWeek ? StatisticsChangeType.Unchanged : StatisticsChangeType.NotApplicable : thisWeek > lastWeek ? StatisticsChangeType.Increasing : StatisticsChangeType.Decreasing,
+                DiffPercentage = Math.Round(Math.Abs(diff), 1),
+                ChangeType = diff == 0 ? lastWeek == thisWeek ? StatisticsChangeType.Unchanged : lastWeek == 0 ? StatisticsChangeType.NA_NoDataLastWeek : StatisticsChangeType.NA_NoDataThisWeek : thisWeek > lastWeek ? StatisticsChangeType.Increasing : StatisticsChangeType.Decreasing,
                 Name = name
             };
         }
