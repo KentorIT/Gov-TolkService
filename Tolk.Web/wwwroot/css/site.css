@@ -864,6 +864,7 @@ li.placeholder::before {
   border: 1px solid #587573;
   color: black;
   box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.5);
+  min-height: 120px;
 }
 .statistics-box-header {
   border: 1px solid #587573;

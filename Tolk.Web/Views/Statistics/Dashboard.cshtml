@@ -37,55 +37,52 @@
         </div>
     }
 </div>
+@if (Model.TotalNoOfOrders > 0)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Bokningsstatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Bokningsstatistiken uppdateras löpande och tittar på alla beställda bokningar som gjorts i systemet."></span></h3>
+            <hr />
+        </div>
+    </div>
+    <div class="row">
+        @foreach (var orderStatistic in Model.OrderStatisticsModels)
+        {
+            <div class="col-md-4">
+                <div class="statistics-box-header center-block">
+                    <h4>@orderStatistic.Name</h4>
+                </div>
+                <div class="statistics-box wrap-report-info">
+                    @if (orderStatistic.TotalListItems.Count() > orderStatistic.TopListItems.Count())
+                    {
+                        <a class="more-info-report right-padding pull-right" href="#more-info">Visa alla</a>
+                        <ol class="collapse total-report">
+                            @foreach (var listItem in orderStatistic.TotalListItems)
+                            {
+                                <li>@listItem.Key @(Math.Round(listItem.Value * 100 / Model.TotalNoOfOrders, 1)) %</li>
+                            }
+                        </ol>
+                    }
+                    <ol class="in less-report">
+                        @foreach (var listItem in orderStatistic.TopListItems)
+                        {
+                            <li>@listItem.Key @(Math.Round(listItem.Value * 100 / Model.TotalNoOfOrders, 1)) %</li>
+                        }
+                    </ol>
+                </div>
+            </div>
+        }
+    </div>
+}
 
-<div class="row">
-    <div class="col-md-12">
-        <h3>Bokningsstatistik</h3>
-        <hr />
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="statistics-box-header center-block">
-            <h4>Mest beställda län</h4>
-        </div>
-        <div class="statistics-box">
-            <ol>
-                <li>Stockholm 27 %</li>
-                <li>Västra Götaland 23 %</li>
-                <li>Skåne 17 %</li>
-                <li>Örebro 11 %</li>
-                <li>Uppsala 8 %</li>
-            </ol>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="statistics-box-header center-block">
-            <h4>Mest beställda språk</h4>
-        </div>
-        <div class="statistics-box">
-            <ol>
-                <li>Arabiska 14 %</li>
-                <li>Bulgariska 9 %</li>
-                <li>Arameiska 6 %</li>
-                <li>Finska 6 %</li>
-                <li>Rikskinesiska 5 %</li>
-            </ol>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="statistics-box-header center-block">
-            <h4>Myndigheter</h4>
-        </div>
-        <div class="statistics-box">
-            <ol>
-                <li>Polismyndigheten 17 %</li>
-                <li>Pensionsmyndigheten 12 %</li>
-                <li>Förvaltningsrätten i Stockholm 11 %</li>
-                <li>Migrationsverket 9 %</li>
-                <li>Kriminalvården 7 %</li>
-            </ol>
-        </div>
-    </div>
-</div>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Statistics/Statistics.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Statistics/Statistics.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+

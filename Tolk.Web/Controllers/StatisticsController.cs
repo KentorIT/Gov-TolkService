@@ -44,17 +44,20 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.Admin)]
         public ActionResult Dashboard()
         {
+            int totalNoOfOrders = _statService.TotalNoOfOrders;
             StatisticsDashboardModel model = new StatisticsDashboardModel
             {
+                TotalNoOfOrders = totalNoOfOrders,
                 WeeklyStatisticsModels = new List<WeeklyStatisticsModel>
                 {
-                _statService.GetWeeklyOrderStatistics(),
-                _statService.GetWeeklyDeliveredOrderStatistics(),
-                _statService.GetWeeklyRequisitionStatistics(),
-                _statService.GetWeeklyComplaintStatistics(),
-                _statService.GetWeeklyLoggedOnUsers(),
-                _statService.GetWeeklyNewUsers()
-                }
+                    _statService.GetWeeklyOrderStatistics(),
+                    _statService.GetWeeklyDeliveredOrderStatistics(),
+                    _statService.GetWeeklyRequisitionStatistics(),
+                    _statService.GetWeeklyComplaintStatistics(),
+                    _statService.GetWeeklyLoggedOnUsers(),
+                    _statService.GetWeeklyNewUsers()
+                },
+                OrderStatisticsModels = totalNoOfOrders > 0 ? _statService.GetOrderStatistics() : null
             };
             return View(model);
         }

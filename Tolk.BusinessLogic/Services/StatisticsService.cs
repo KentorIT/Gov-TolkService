@@ -26,7 +26,7 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
         }
 
-        #region Statistics dashboard
+        #region Dashboard Weekly Statistics
 
         public WeeklyStatisticsModel GetWeeklyOrderStatistics()
         {
@@ -109,7 +109,7 @@ namespace Tolk.BusinessLogic.Services
 
         private WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
         {
-            decimal diff = (lastWeek == 0 || thisWeek == 0) ? 0 : (Convert.ToDecimal(thisWeek) - Convert.ToDecimal(lastWeek)) * 100/ lastWeek;
+            decimal diff = (lastWeek == 0 || thisWeek == 0) ? 0 : (Convert.ToDecimal(thisWeek) - Convert.ToDecimal(lastWeek)) * 100 / lastWeek;
             return new WeeklyStatisticsModel
             {
                 NoOfItems = thisWeek,
@@ -120,6 +120,49 @@ namespace Tolk.BusinessLogic.Services
         }
 
         #endregion
+
+        #region Dashboard Order Statistics
+
+        public IEnumerable<OrderStatisticsModel> GetOrderStatistics()
+        {
+            IQueryable<Order> orders = _dbContext.Orders
+                .Include(o => o.Region)
+                .Include(o => o.Language)
+                .Include(o => o.CustomerOrganisation);
+
+            yield return GetOrderRegionStatistics(orders);
+            yield return GetOrderLanguageStatistics(orders);
+            yield return GetOrderCustomerStatistics(orders);
+        }
+
+        private OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
+        {
+            return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
+        }
+
+        private OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
+        {
+            return GetOrderStats("Mest beställda språk", orders.GroupBy(o => o.Language.Name));
+        }
+
+        private OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
+        {
+            return GetOrderStats("Myndigheter", orders.GroupBy(o => o.CustomerOrganisation.Name));
+        }
+
+        private OrderStatisticsModel GetOrderStats(string name, IQueryable<IGrouping<string, Order>> orders)
+        {
+            return new OrderStatisticsModel
+            {
+                Name = name,
+                TotalListItems = orders.OrderByDescending(o => o.Count()).Select(n => new KeyValuePair<string, decimal>(n.Key, n.Count())).ToDictionary(n => n.Key, n => n.Value)
+            };
+        }
+
+        public int TotalNoOfOrders { get => _dbContext.Orders.Count(); }
+
+        #endregion
+
 
         #region Broker reports
 
