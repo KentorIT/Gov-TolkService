@@ -145,7 +145,7 @@ namespace Tolk.Web.Models
         }
 
         [Display(Name = "Kompetensnivå är ett krav")]
-        public bool SpecificCompetenceLevelRequired { get => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement; }
+        public bool SpecificCompetenceLevelRequired { get => (RequiredCompetenceLevels == null || CompetenceLevelDesireType == null) ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement; }
 
         public bool DisplayExpectedTravelcost { get => (AllowExceedingTravelCost == null || AllowExceedingTravelCost.SelectedItem == null) ? false : DisplayForBroker ? EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes : (EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved); }
 

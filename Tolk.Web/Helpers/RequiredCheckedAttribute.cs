@@ -25,10 +25,10 @@ namespace Tolk.Web.Helpers
             {
                 var minText = Min != 0 ? $"minst {Min} val" : "";
                 var maxText = Max != int.MaxValue ? $"max {Max} val" : "";
-                var bridge = Min != 0 && Max != int.MaxValue ? ", samt " : "";
+                var bridge = Min != 0 && Max != int.MaxValue ? " och " : "";
 
                 MergeAttribute(context.Attributes, "data-val", "true");
-                MergeAttribute(context.Attributes, "data-val-requiredchecked", $"{context.ModelMetadata.DisplayName} får ha {minText}{bridge}{maxText} ifyllda");
+                MergeAttribute(context.Attributes, "data-val-requiredchecked", $"{context.ModelMetadata.DisplayName} måste ha {minText}{bridge}{maxText} ifyllt");
                 MergeAttribute(context.Attributes, "data-val-requiredchecked-min", Min.ToString());
                 MergeAttribute(context.Attributes, "data-val-requiredchecked-max", Max.ToString());
                 MergeAttribute(context.Attributes, "data-val-requiredchecked-maxchecked", int.MaxValue.ToString());
