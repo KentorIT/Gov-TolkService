@@ -390,11 +390,6 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
                 .OrderByDescending(r => r.CreatedAt)
                 .First();
-            // Requisition view crashes on next line if Attachments is null
-            if (requisition.Attachments == null)
-            {
-                requisition.Attachments = new List<RequisitionAttachment>();
-            }
             var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
             model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
             model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
