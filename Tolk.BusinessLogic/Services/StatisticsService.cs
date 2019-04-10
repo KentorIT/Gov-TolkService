@@ -114,8 +114,7 @@ namespace Tolk.BusinessLogic.Services
 
         private int GetNewUsers(DateTimeOffset start, DateTimeOffset end)
         {
-            var userLoggedOnBeforeWeekStarted = _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt < start).Select(u => u.UserId).Distinct();
-            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start && u.LoggedInAt < end && !userLoggedOnBeforeWeekStarted.Contains(u.UserId)).Select(u => u.UserId).Distinct().Count();
+            return _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).Select(u => u.UserId).Distinct().Count();
         }
 
         private WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
