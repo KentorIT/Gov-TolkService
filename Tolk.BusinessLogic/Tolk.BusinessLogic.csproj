@@ -34,8 +34,4 @@
     <ProjectReference Include="..\Tolk.BusinessLogic.Utilities\Tolk.BusinessLogic.Utilities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BaseData\Update data script\Next test release\" />
-  </ItemGroup>
-
 </Project>

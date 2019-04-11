@@ -54,9 +54,18 @@ namespace Tolk.Web.Models
                 LastName = interpreter.LastName,
                 PhoneNumber = interpreter.PhoneNumber,
                 OfficialInterpreterId = interpreter.OfficialInterpreterId,
-                //IsActive = user.IsActive
+                IsActive = interpreter.IsActive
             };
         }
+        public void UpdateAndChangeStatusInterpreter(InterpreterBroker interpreter, int? userId, int? impersonatorId, DateTimeOffset? inactivatedAt)
+        {
+            UpdateInterpreter(interpreter);
+            interpreter.InactivatedAt = inactivatedAt;
+            interpreter.InactivatedBy = userId;
+            interpreter.ImpersonatingInactivatedBy = impersonatorId;
+            interpreter.IsActive = IsActive;
+        }
+
         public void UpdateInterpreter(InterpreterBroker interpreter)
         {
             interpreter.Email = Email;

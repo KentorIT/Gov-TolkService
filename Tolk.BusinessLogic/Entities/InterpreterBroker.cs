@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tolk.BusinessLogic.Entities
@@ -18,6 +19,7 @@ namespace Tolk.BusinessLogic.Entities
         public InterpreterBroker(int brokerId)
         {
             BrokerId = brokerId;
+            IsActive = true;
         }
 
         public int InterpreterBrokerId { get; set; }
@@ -37,6 +39,20 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         [MaxLength(255)]
         public string PhoneNumber { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public DateTimeOffset? InactivatedAt { get; set; }
+
+        public int? InactivatedBy { get; set; }
+
+        [ForeignKey(nameof(InactivatedBy))]
+        public AspNetUser InactivatedByUser { get; set; }
+
+        public int? ImpersonatingInactivatedBy { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingInactivatedBy))]
+        public AspNetUser InactivatedByImpersonator { get; set; }
 
         public string FullName { get => $"{FirstName} {LastName}"; }
 

@@ -298,6 +298,16 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.ViewedByImpersonator)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<InterpreterBroker>()
+                .HasOne(o => o.InactivatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<InterpreterBroker>()
+                .HasOne(o => o.InactivatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

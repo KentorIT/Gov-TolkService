@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -21,17 +22,20 @@ namespace Tolk.Web.Controllers
         private readonly ILogger<InterpreterController> _logger;
         private readonly IAuthorizationService _authorizationService;
         private readonly InterpreterService _interpreterService;
+        private readonly ISwedishClock _clock;
 
         public InterpreterController(
             TolkDbContext dbContext,
             ILogger<InterpreterController> logger,
             IAuthorizationService authorizationService,
-            InterpreterService interpreterService)
+            InterpreterService interpreterService,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _logger = logger;
             _authorizationService = authorizationService;
             _interpreterService = interpreterService;
+            _clock = clock;
         }
 
         public IActionResult List(InterpreterFilterModel model)
@@ -54,7 +58,7 @@ namespace Tolk.Web.Controllers
                         Email = i.Email,
                         Name = i.FullName,
                         OfficialInterpreterId = i.OfficialInterpreterId,
-                        IsActive = true
+                        IsActive = i.IsActive
                     }),
                     FilterModel = model,
                     Message = model.Message
@@ -96,7 +100,14 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        model.UpdateInterpreter(interpreter);
+                        if (interpreter.IsActive != model.IsActive)
+                        {
+                            model.UpdateAndChangeStatusInterpreter(interpreter, interpreter.IsActive ? (int?)User.GetUserId() : null, interpreter.IsActive ? User.TryGetImpersonatorId() : null, interpreter.IsActive ? (DateTimeOffset?)_clock.SwedenNow : null);
+                        }
+                        else
+                        {
+                            model.UpdateInterpreter(interpreter);
+                        }
                         await _dbContext.SaveChangesAsync();
                         return RedirectToAction(nameof(List), new InterpreterFilterModel { Message = "Tolkinformation har sparats" });
                     }

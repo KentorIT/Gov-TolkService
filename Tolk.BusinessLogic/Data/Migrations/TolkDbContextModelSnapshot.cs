@@ -492,7 +492,15 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(255);
 
+                    b.Property<int?>("ImpersonatingInactivatedBy");
+
+                    b.Property<DateTimeOffset?>("InactivatedAt");
+
+                    b.Property<int?>("InactivatedBy");
+
                     b.Property<int?>("InterpreterId");
+
+                    b.Property<bool>("IsActive");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -507,6 +515,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasKey("InterpreterBrokerId");
 
                     b.HasIndex("BrokerId");
+
+                    b.HasIndex("ImpersonatingInactivatedBy");
+
+                    b.HasIndex("InactivatedBy");
 
                     b.HasIndex("InterpreterId");
 
@@ -1696,6 +1708,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("BrokerId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "InactivatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingInactivatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "InactivatedByUser")
+                        .WithMany()
+                        .HasForeignKey("InactivatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Interpreter", "Interpreter")
                         .WithMany("Brokers")
