@@ -21,7 +21,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policy = Policies.Customer)]
+    [Authorize(Policy = Policies.CustomerOrAdmin)]
     public class OrderController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -69,14 +69,19 @@ namespace Tolk.Web.Controllers
             {
                 model = new OrderFilterModel();
             }
+            var isAdmin = User.IsInRole(Roles.Admin);
             var isSuperUser = User.IsInRole(Roles.SuperUser);
             model.IsSuperUser = isSuperUser;
-            var orders = _dbContext.Orders
-                .Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
+            model.IsAdmin = isAdmin;
+            var orders = _dbContext.Orders.Select(o => o);
 
-            if (!isSuperUser)
+            if (!isAdmin)
             {
-                orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
+                orders = orders.Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
+                if (!isSuperUser)
+                {
+                    orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
+                }
             }
 
             // Filters
@@ -107,6 +112,7 @@ namespace Tolk.Web.Controllers
                             r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
                             r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
                             .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
+                        CustomerName = o.CustomerOrganisation.Name,
                         Action = nameof(View)
                     })
                 });
@@ -206,6 +212,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
             var order = GetOrder(replacingOrderId);
@@ -237,6 +244,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
         {
             if (ModelState.IsValid)
@@ -258,6 +266,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create()
         {
             var now = _clock.SwedenNow.DateTime;
@@ -281,6 +290,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
             if (ModelState.IsValid)
@@ -304,6 +314,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public ActionResult Confirm(OrderModel model)
         {
             Order order = CreateNewOrder();
@@ -354,6 +365,7 @@ namespace Tolk.Web.Controllers
             return PartialView("Confirm", updatedModel);
         }
 
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Sent(int id)
         {
             Order order = GetOrder(id);
@@ -370,6 +382,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
             var order = _dbContext.Orders
@@ -395,6 +408,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Cancel(CancelOrderModel model)
         {
             var order = _dbContext.Orders
@@ -425,6 +439,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
             var request = await _dbContext.Requests
@@ -447,6 +462,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderId)
         {
             var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
@@ -466,6 +482,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
             var order = await _dbContext.Orders.Include(o => o.Requests)
@@ -488,6 +505,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = GetOrder(model.OrderId);
@@ -518,6 +536,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> UpdateExpiry(int orderId, DateTimeOffset latestAnswerBy)
         {
             var order = GetOrder(orderId);

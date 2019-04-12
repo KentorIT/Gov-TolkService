@@ -27,15 +27,20 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public int? BrokerId { get; set; }
 
+        [Display(Name = "Myndighet")]
+        public int? CustomerOrganisationId { get; set; }
+
         [Display(Name = "Skapad av")]
         public int? CreatedBy { get; set; }
 
         public bool IsSuperUser { get; set; }
 
+        public bool IsAdmin { get; set; }
+
         public bool HasActiveFilters
         {
             get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(CustomerReferenceNumber) || 
-                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue; 
+                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue || CustomerOrganisationId.HasValue; 
         }
 
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
@@ -62,6 +67,9 @@ namespace Tolk.Web.Models
             orders = BrokerId.HasValue 
                 ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (
                         req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved))) 
+                : orders;
+            orders = CustomerOrganisationId.HasValue
+                ? orders.Where(o => o.CustomerOrganisationId == CustomerOrganisationId)
                 : orders;
 
             orders = DateRange?.Start != null

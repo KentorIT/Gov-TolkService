@@ -64,67 +64,67 @@
                     <ul class="nav navbar-nav">
                         @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
                         {
-                        <li><a asp-area="" asp-controller="Order" asp-action="Create">Ny bokning</a></li>
-                        <li><a asp-area="" asp-controller="Home" asp-action="Index">Aktiva bokningar</a></li>
+                            <li><a asp-area="" asp-controller="Order" asp-action="Create">Ny bokning</a></li>
+                            <li><a asp-area="" asp-controller="Home" asp-action="Index">Aktiva bokningar</a></li>
 
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Historik <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="submenu" asp-area="" asp-controller="Order" asp-action="List">Bokningar</a></li>
-                                <li><a class="submenu" asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
-                                <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
-                            </ul>
-                        </li>
-                        if (User.IsInRole(Roles.SuperUser))
-                        {
-                        <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
-                        <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
-                        }
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Historik <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="submenu" asp-area="" asp-controller="Order" asp-action="List">Bokningar</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
+                                </ul>
+                            </li>
+                            if (User.IsInRole(Roles.SuperUser))
+                            {
+                                <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
+                            }
                         }
                         else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
                         {
-                        <li><a asp-area="" asp-controller="Home" asp-action="Index">Aktiva bokningar</a></li>
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Historik <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="submenu" asp-area="" asp-controller="Request" asp-action="List">Bokningar</a></li>
-                                <li><a class="submenu" asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
-                                <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
-                                @if (User.IsInRole(Roles.SuperUser))
-                                {
-                                <li><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
-                                }
-                            </ul>
-                        </li>
-                        if (User.IsInRole(Roles.SuperUser))
-                        {
-                        <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
-                        <li><a asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
-                        <li><a asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
-                        <li><a asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
-                        <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
-                        }
+                            <li><a asp-area="" asp-controller="Home" asp-action="Index">Aktiva bokningar</a></li>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Historik <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="submenu" asp-area="" asp-controller="Request" asp-action="List">Bokningar</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
+                                    @if (User.IsInRole(Roles.SuperUser))
+                                    {
+                                        <li><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
+                                    }
+                                </ul>
+                            </li>
+                            if (User.IsInRole(Roles.SuperUser))
+                            {
+                                <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                <li><a asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
+                                <li><a asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
+                                <li><a asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
+                                <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
+                            }
 
                         }
                         else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Interpreter)).Succeeded)
                         {
-                        <li><a asp-area="" asp-controller="Assignment" asp-action="List">Tilldelningar</a></li>
-                        <li><a asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
+                            <li><a asp-area="" asp-controller="Assignment" asp-action="List">Tilldelningar</a></li>
+                            <li><a asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
 
                         }
                         else if (User.IsInRole(Roles.Admin))
                         {
-                        <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
-                        <li><a asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Statistik och rapporter <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="Dashboard">Statistik</a></li>
-                                <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Rapporter</a></li>
-                            </ul>
-                        </li>
-                        <li><a asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
-
+                            <li><a asp-area="" asp-controller="Order" asp-action="List">Sök bokningar</a></li>
+                            <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                            <li><a asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Statistik och rapporter <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="Dashboard">Statistik</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Rapporter</a></li>
+                                </ul>
+                            </li>
+                            <li><a asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
                         }
 
                     </ul>

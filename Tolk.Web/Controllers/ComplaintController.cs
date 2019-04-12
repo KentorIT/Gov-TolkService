@@ -14,6 +14,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class ComplaintController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -101,6 +102,7 @@ namespace Tolk.Web.Controllers
         /// </summary>
         /// <param name="id">The Request to connect the complaint to</param>
         /// <returns></returns>
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create(int id)
         {
             Request request = GetRequest(id);
@@ -120,6 +122,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create(ComplaintModel model)
         {
             if (ModelState.IsValid)
@@ -147,6 +150,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Accept(int complaintId)
         {
             var complaint = GetComplaint(complaintId);
@@ -171,6 +175,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Dispute(DisputeComplaintModel model)
         {
             var complaint = GetComplaint(model.ComplaintId);
@@ -196,6 +201,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> AcceptDispute(AnswerDisputeComplaintModel model)
         {
             var complaint = GetComplaint(model.ComplaintId);
@@ -220,6 +226,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Refute(AnswerDisputeComplaintModel model)
         {
             var complaint = GetComplaint(model.ComplaintId);

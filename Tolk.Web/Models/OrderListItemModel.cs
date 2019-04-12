@@ -15,6 +15,8 @@ namespace Tolk.Web.Models
 
         public string BrokerName { get; set; }
 
+        public string CustomerName { get; set; }
+
         public string OrderNumber { get; set; }
 
         public string RegionName { get; set; }

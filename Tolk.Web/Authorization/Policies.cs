@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
@@ -25,6 +23,7 @@ namespace Tolk.Web.Authorization
         public const string TimeTravel = nameof(TimeTravel);
         public const string ViewMenuAndStartLists = nameof(ViewMenuAndStartLists);
         public const string HasPassword = nameof(HasPassword);
+        public const string CustomerOrAdmin = nameof(CustomerOrAdmin);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
         {
@@ -45,6 +44,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(TimeTravel, builder =>
                     builder.RequireRole(Roles.Admin)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
+                opt.AddPolicy(CustomerOrAdmin, builder => builder.RequireAssertion(CustomerOrAdminHandler));
             });
 
             services.AddSingleton<IAuthorizationHandler, TolkOptionsRequirementHandler>();
@@ -58,6 +58,12 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet);
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> CustomerOrAdminHandler = (context) =>
+        {
+            return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ||
+                context.User.IsInRole(Roles.Admin);
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
@@ -200,22 +206,22 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return user.IsInRole(Roles.SuperUser) ?
+                    return user.IsInRole(Roles.Admin) || (user.IsInRole(Roles.SuperUser) ?
                         order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
-                        order.CreatedBy == userId || order.ContactPersonId == userId;
+                        order.CreatedBy == userId || order.ContactPersonId == userId);
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
                         return requisition.Request.Ranking.BrokerId == user.GetBrokerId();
                     }
-                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
                         return user.IsInRole(Roles.SuperUser) ?
                             requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             requisition.Request.Order.CreatedBy == userId ||
                             requisition.Request.Order.ContactPersonId == userId;
                     }
-                    return false;
+                    return user.IsInRole(Roles.Admin);
                 case Request request:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -241,7 +247,7 @@ namespace Tolk.Web.Authorization
                             complaint.Request.Order.CreatedBy == userId ||
                             complaint.Request.Order.ContactPersonId == userId;
                     }
-                    return false;
+                    return user.IsInRole(Roles.Admin);
                 case Attachment attachment:
                     if (!attachment.Requisitions.Any() && !attachment.Requests.Any() && !attachment.Orders.Any())
                     {
@@ -271,7 +277,7 @@ namespace Tolk.Web.Authorization
                                      attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                         }
                     }
-                    return false;
+                    return user.IsInRole(Roles.Admin);
                 case AspNetUser viewUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {

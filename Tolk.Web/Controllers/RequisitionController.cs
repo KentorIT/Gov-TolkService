@@ -19,6 +19,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class RequisitionController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -52,6 +53,63 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _notificationService = notificationService;
             _requisitionService = requisitionService;
+        }
+
+        public IActionResult List(RequisitionFilterModel model)
+        {
+            if (model == null)
+            {
+                model = new RequisitionFilterModel();
+            }
+
+            var brokerId = User.TryGetBrokerId();
+            var customerId = User.TryGetCustomerOrganisationId();
+            model.IsBroker = brokerId.HasValue;
+
+            var requisitions = _dbContext.Requisitions
+                .Where(r => !r.ReplacedByRequisitionId.HasValue);
+            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
+            var userId = User.GetUserId();
+
+            if (customerId.HasValue)
+            {
+                if (User.IsInRole(Roles.SuperUser))
+                {
+                    requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerId);
+                }
+                else
+                {
+                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId || r.Request.Order.ContactPersonId == userId);
+                }
+            }
+            else if (brokerId.HasValue)
+            {
+                requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == brokerId);
+            }
+            else
+            {
+                return Forbid();
+            }
+
+            requisitions = model.Apply(requisitions);
+            return View(
+                new RequisitionListModel
+                {
+                    FilterModel = model,
+                    Items = requisitions.Select(r => new RequisitionListItemModel
+                    {
+                        OrderRequestId = customerId.HasValue ? r.Request.OrderId : r.RequestId,
+                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
+                        OrderNumber = r.Request.Order.OrderNumber.ToString(),
+                        OrderDateAndTime = new TimeRange
+                        {
+                            StartDateTime = r.Request.Order.StartAt,
+                            EndDateTime = r.Request.Order.EndAt,
+                        },
+                        Status = r.Status,
+                        Controller = customerId.HasValue ? "Order" : "Request",
+                    })
+                });
         }
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)
@@ -105,6 +163,7 @@ namespace Tolk.Web.Controllers
         /// Create a requisition
         /// </summary>
         /// <param name="id">The Request to connect the requisition to</param>
+        [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Create(int id)
         {
             var request = _dbContext.Requests
@@ -174,65 +233,9 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public IActionResult List(RequisitionFilterModel model)
-        {
-            if (model == null)
-            {
-                model = new RequisitionFilterModel();
-            }
-
-            var brokerId = User.TryGetBrokerId();
-            var customerId = User.TryGetCustomerOrganisationId();
-            model.IsBroker = brokerId.HasValue;
-
-            var requisitions = _dbContext.Requisitions
-                .Where(r => !r.ReplacedByRequisitionId.HasValue);
-            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
-            var userId = User.GetUserId();
-
-            if (customerId.HasValue)
-            {
-                if (User.IsInRole(Roles.SuperUser))
-                {
-                    requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerId);
-                }
-                else
-                {
-                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId || r.Request.Order.ContactPersonId == userId);
-                }
-            }
-            else if (brokerId.HasValue)
-            {
-                requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == brokerId);
-            }
-            else
-            {
-                return Forbid();
-            }
-
-            requisitions = model.Apply(requisitions);
-            return View(
-                new RequisitionListModel
-                {
-                    FilterModel = model,
-                    Items = requisitions.Select(r => new RequisitionListItemModel
-                    {
-                        OrderRequestId = customerId.HasValue ? r.Request.OrderId : r.RequestId,
-                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                        OrderNumber = r.Request.Order.OrderNumber.ToString(),
-                        OrderDateAndTime = new TimeRange
-                        {
-                            StartDateTime = r.Request.Order.StartAt,
-                            EndDateTime = r.Request.Order.EndAt,
-                        },
-                        Status = r.Status,
-                        Controller = customerId.HasValue ? "Order" : "Request",
-                    })
-                });
-        }
-
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Create(RequisitionModel model)
         {
             if (ModelState.IsValid)
@@ -280,6 +283,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Review(int requisitionId)
         {
             var requisition = _dbContext.Requisitions
@@ -308,6 +312,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Comment(CommentRequisitionModel model)
         {
             if (ModelState.IsValid)
