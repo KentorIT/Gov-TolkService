@@ -146,7 +146,7 @@ namespace Tolk.BusinessLogic.Services
         }
 
         public OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
-        {
+        { 
             return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
         }
 
@@ -165,7 +165,7 @@ namespace Tolk.BusinessLogic.Services
             return new OrderStatisticsModel
             {
                 Name = name,
-                TotalListItems = orders.OrderByDescending(o => o.Count()).Select(n => new KeyValuePair<string, decimal>(n.Key, n.Count())).ToDictionary(n => n.Key, n => n.Value)
+                TotalListItems = orders.OrderByDescending(o => o.Count()).Select(n => new OrderStatisticsListItemModel { Name = n.Key, NoOfItems = n.Count(), PercentageValueToDisplay = Math.Round((double)n.Count() * 100 / orders.Sum(o => o.Count()), 1) })
             };
         }
 

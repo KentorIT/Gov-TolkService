@@ -335,8 +335,9 @@ namespace Tolk.BusinessLogic.Tests.Services
             int count = 0;
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(MockEntities.MockLanguages[count].Name, item.Key);
-                Assert.Equal(listValues[count], item.Value);
+                Assert.Equal(MockEntities.MockLanguages[count].Name, item.Name);
+                Assert.Equal(listValues[count], item.NoOfItems);
+                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
                 count++;
             }
         }
@@ -417,8 +418,9 @@ namespace Tolk.BusinessLogic.Tests.Services
             int count = 0;
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(Region.Regions[count].Name, item.Key);
-                Assert.Equal(listValues[count], item.Value);
+                Assert.Equal(Region.Regions[count].Name, item.Name);
+                Assert.Equal(listValues[count], item.NoOfItems);
+                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
                 count++;
             }
         }
@@ -498,10 +500,12 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Where(o => o.CustomerOrganisationId != customerNotIncludedInTest).Include(o => o.CustomerOrganisation));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;
+
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(MockEntities.MockCustomers[count].Name, item.Key);
-                Assert.Equal(listValues[count], item.Value);
+                Assert.Equal(MockEntities.MockCustomers[count].Name, item.Name);
+                Assert.Equal(listValues[count], item.NoOfItems);
+                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
                 count++;
             }
         }

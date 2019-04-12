@@ -5,12 +5,15 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public class OrderStatisticsModel
     {
+
         private static readonly int MaxNoOfOrderToDisplayDefault = 5;
 
-        public IDictionary<string, decimal> TopListItems { get => TotalListItems.Take(MaxNoOfOrderToDisplayDefault).ToDictionary(n => n.Key, n => n.Value); }
+        public IEnumerable<OrderStatisticsListItemModel> TotalListItems { get; set; }
 
-        public IDictionary<string, decimal> TotalListItems { get; set; }
+        public IEnumerable<OrderStatisticsListItemModel> TopListItems { get => TotalListItems.Take(MaxNoOfOrderToDisplayDefault); }
 
         public string Name { get; set; }
+
+        public bool MoreToDisplay { get => TotalListItems.Count() > TopListItems.Count(); }
     }
 }

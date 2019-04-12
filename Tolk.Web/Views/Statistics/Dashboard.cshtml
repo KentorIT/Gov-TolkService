@@ -53,20 +53,20 @@
                     <h4>@orderStatistic.Name</h4>
                 </div>
                 <div class="statistics-box wrap-report-info">
-                    @if (orderStatistic.TotalListItems.Count() > orderStatistic.TopListItems.Count())
+                    @if (orderStatistic.MoreToDisplay)
                     {
                         <a class="more-info-report right-padding pull-right" href="#more-info">Visa alla</a>
                         <ol class="collapse total-report">
                             @foreach (var listItem in orderStatistic.TotalListItems)
                             {
-                                <li>@listItem.Key @(Math.Round(listItem.Value * 100 / Model.TotalNoOfOrders, 1)) %</li>
+                                <li>@listItem.Name @listItem.PercentageValueToDisplay %</li>
                             }
                         </ol>
                     }
                     <ol class="in less-report">
                         @foreach (var listItem in orderStatistic.TopListItems)
                         {
-                            <li>@listItem.Key @(Math.Round(listItem.Value * 100 / Model.TotalNoOfOrders, 1)) %</li>
+                            <li>@listItem.Name @listItem.PercentageValueToDisplay %</li>
                         }
                     </ol>
                 </div>
