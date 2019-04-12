@@ -1,3 +1,3 @@
 
 
-UPDATE InterpreterBrokers SET IsActive = 1
+UPDATE InterpreterBrokers SET IsActive = 1, InactivatedAt = NULL 
