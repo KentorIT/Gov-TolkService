@@ -274,7 +274,7 @@ namespace Tolk.BusinessLogic.Entities
                 ImpersonatingChangeUserId = impersonatingUserId,
                 OrderId = OrderId
             });
-            ContactPersonId = contactPerson?.Id;
+            ContactPersonUser = contactPerson;
         }
 
         #endregion
