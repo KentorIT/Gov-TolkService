@@ -373,6 +373,11 @@ namespace Tolk.Web.Models
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
             order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
+            if (isReplace)
+            {
+                // need to be able to change the locations after getting the replaced order´s information copied...
+                order.InterpreterLocations.Clear();
+            }
             var location = RankedInterpreterLocationFirst.Value;
             order.InterpreterLocations.Add(GetInterpreterLocation(location, 1, RankedInterpreterLocationFirstAddressModel));
             if (RankedInterpreterLocationSecond.HasValue)
