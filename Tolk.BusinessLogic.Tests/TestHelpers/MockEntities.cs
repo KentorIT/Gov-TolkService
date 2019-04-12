@@ -8,13 +8,16 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
     public static class MockEntities
     {
-        public static CustomerOrganisation[] MockCustomers()
+        public static CustomerOrganisation[] MockCustomers
         {
-            return new[]
+            get => new[]
             {
                 new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A" },
                 new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B" },
                 new CustomerOrganisation{CustomerOrganisationId = 3, Name = "Myndighet C" },
+                new CustomerOrganisation{CustomerOrganisationId = 4, Name = "Myndighet D" },
+                new CustomerOrganisation{CustomerOrganisationId = 5, Name = "Myndighet E" },
+                new CustomerOrganisation{CustomerOrganisationId = 6, Name = "Myndighet F" },
             };
         }
 
@@ -28,23 +31,27 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             };
         }
 
-        public static Language[] MockLanguages()
+        public static Language[] MockLanguages
         {
-            return new[]
+            get => new[]
             {
-                new Language { LanguageId = 0, Name = "English" },
-                new Language { LanguageId = 1, Name = "German" },
-                new Language { LanguageId = 2, Name = "French" },
-                new Language { LanguageId = 3, Name = "Chinese" },
+                new Language { LanguageId = 1, Name = "English" },
+                new Language { LanguageId = 2, Name = "German" },
+                new Language { LanguageId = 3, Name = "French" },
+                new Language { LanguageId = 4, Name = "Chinese" },
+                new Language { LanguageId = 5, Name = "Danish" },
+                new Language { LanguageId = 6, Name = "Spanish" },
+                new Language { LanguageId = 7, Name = "Arabic" },
+                new Language { LanguageId = 8, Name = "Italian" },
             };
         }
 
-        public static Ranking[] MockRankings()
+        public static Ranking[] MockRankings
         {
-            return new[]
+            get => new[]
             {
-                new Ranking { RankingId = 0, BrokerId = 0, Rank = 1 },
-                new Ranking { RankingId = 1, BrokerId = 1, Rank = 2 },
+                new Ranking { RankingId = 1, BrokerId = 1, Rank = 1 },
+                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2 },
             };
         }
 
@@ -54,9 +61,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 0,
+                    OrderId = 1,
                     CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number0",
+                    CustomerReferenceNumber = "Number1",
                     OrderNumber = "2018-001337",
                     StartAt = new DateTimeOffset(2018,06,07,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,06,07,15,00,00, new TimeSpan(02,00,00)),
@@ -71,9 +78,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 1,
+                    OrderId = 2,
                     CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number1",
+                    CustomerReferenceNumber = "Number2",
                     OrderNumber = "2018-000066", // execute order 66...
                     StartAt = new DateTimeOffset(2018,07,07,08,30,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,07,07,17,00,00, new TimeSpan(02,00,00)),
@@ -87,9 +94,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 2,
+                    OrderId = 3,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number2",
+                    CustomerReferenceNumber = "Number3",
                     OrderNumber = "2018-000042",
                     StartAt = new DateTimeOffset(2018,08,07,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,08,07,14,00,00, new TimeSpan(02,00,00)),
@@ -104,9 +111,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 3,
+                    OrderId = 4,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number3",
+                    CustomerReferenceNumber = "Number4",
                     OrderNumber = "2018-000654",
                     StartAt = new DateTimeOffset(2018,09,03,13,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
@@ -120,9 +127,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 4,
+                    OrderId = 5,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number4",
+                    CustomerReferenceNumber = "Number5",
                     OrderNumber = "2018-000330",
                     StartAt = new DateTimeOffset(2018,09,18,09,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,18,13,00,00, new TimeSpan(02,00,00)),
@@ -136,8 +143,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 5,
-                    CustomerReferenceNumber = "Number5",
+                    OrderId = 6,
+                    CustomerReferenceNumber = "Number6",
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     OrderNumber = "2018-000501",
                     StartAt = new DateTimeOffset(2018,10,09,10,00,00, new TimeSpan(02,00,00)),
@@ -153,9 +160,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 6,
+                    OrderId = 7,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number6",
+                    CustomerReferenceNumber = "Number7",
                     OrderNumber = "2018-000006",
                     StartAt = new DateTimeOffset(2018,09,03,00,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,09,03,19,00,00, new TimeSpan(02,00,00)),
@@ -169,9 +176,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 7,
+                    OrderId = 8,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
-                    CustomerReferenceNumber = "Number7",
+                    CustomerReferenceNumber = "Number8",
                     OrderNumber = "2018-000007",
                     StartAt = new DateTimeOffset(2018,08,15,00,00,00, new TimeSpan(02,00,00)),
                     EndAt = new DateTimeOffset(2018,08,15,19,00,00, new TimeSpan(02,00,00)),
@@ -185,7 +192,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
-                    OrderId = 8,
+                    OrderId = 9,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "EmptyOrder",
                     OrderNumber = "2018-000008",
@@ -302,6 +309,48 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             return requisitions.ToArray();
         }
 
+        public static Complaint[] MockComplaints(Order[] orders)
+        {
+            var complaints = new List<Complaint>
+            {
+                new Complaint
+                {
+                    Status = ComplaintStatus.Created,
+                    Request = orders[0].Requests[1]
+                },
+
+                new Complaint
+                {
+                    Status = ComplaintStatus.Created,
+                    Request = orders[1].Requests[0]
+                },
+
+                new Complaint
+                {
+                    Status = ComplaintStatus.Created,
+                    Request = orders[3].Requests[0]
+                },
+
+                new Complaint
+                {
+                    Status = ComplaintStatus.Created,
+                    Request = orders[5].Requests[1]
+                },
+
+            };
+
+            foreach (Complaint c in complaints)
+            {
+                if (c.Request.Complaints == null)
+                {
+                    c.Request.Complaints = new List<Complaint>();
+                }
+                c.Request.Complaints.Add(c);
+            }
+
+            return complaints.ToArray();
+        }
+
         public static Order[] LinkRequisitionsInOrdersRequests(Order[] orders, Requisition[] requisitions)
         {
             foreach (Order o in orders)
@@ -321,69 +370,56 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public static Holiday[] Holidays
         {
-            get
-            {
-                return
-                    new[]
+            get => new[]
                     {
-                        new Holiday() { Date = new DateTime(2018,03,29), DateType=DateType.DayBeforeBigHoliday},
-                        new Holiday() { Date = new DateTime(2018,03,30), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,04,01), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,04,02), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,04,03), DateType=DateType.DayAfterBigHoliday},
-                        new Holiday() { Date = new DateTime(2018,05,01), DateType=DateType.Holiday},
-                        new Holiday() { Date = new DateTime(2018,05,10), DateType=DateType.Holiday},
-                        new Holiday() { Date = new DateTime(2018,05,18), DateType=DateType.DayBeforeBigHoliday},
-                        new Holiday() { Date = new DateTime(2018,05,19), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,06,06), DateType=DateType.Holiday},
-                        new Holiday() { Date = new DateTime(2018,12,23), DateType=DateType.DayBeforeBigHoliday},
-                        new Holiday() { Date = new DateTime(2018,12,24), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,12,25), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,12,26), DateType=DateType.BigHolidayFullDay},
-                        new Holiday() { Date = new DateTime(2018,12,27), DateType=DateType.DayAfterBigHoliday},
-                        new Holiday() { Date = new DateTime(2020,06,06), DateType=DateType.Holiday},
-                        new Holiday() { Date = new DateTime(2019,12,23), DateType=DateType.DayBeforeBigHoliday},
-                        new Holiday() { Date = new DateTime(2020,12,27), DateType=DateType.DayAfterBigHoliday},
-                        new Holiday() { Date = new DateTime(2022,06,06), DateType=DateType.DayAfterBigHoliday},
-                        new Holiday() { Date = new DateTime(2022,06,06), DateType=DateType.Holiday},
-                        new Holiday() { Date = new DateTime(2025,06,06), DateType=DateType.DayBeforeBigHoliday},
-                        new Holiday() { Date = new DateTime(2025,06,06), DateType=DateType.Holiday}
+                        new Holiday() { Date = new DateTime(2018, 03, 29), DateType = DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2018, 03, 30), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 04, 01), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 04, 02), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 04, 03), DateType = DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2018, 05, 01), DateType = DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2018, 05, 10), DateType = DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2018, 05, 18), DateType = DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2018, 05, 19), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 06, 06), DateType = DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2018, 12, 23), DateType = DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2018, 12, 24), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 12, 25), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 12, 26), DateType = DateType.BigHolidayFullDay},
+                        new Holiday() { Date = new DateTime(2018, 12, 27), DateType = DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2020, 06, 06), DateType = DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2019, 12, 23), DateType = DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2020, 12, 27), DateType = DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2022, 06, 06), DateType = DateType.DayAfterBigHoliday},
+                        new Holiday() { Date = new DateTime(2022, 06, 06), DateType = DateType.Holiday},
+                        new Holiday() { Date = new DateTime(2025, 06, 06), DateType = DateType.DayBeforeBigHoliday},
+                        new Holiday() { Date = new DateTime(2025, 06, 06), DateType = DateType.Holiday}
                     };
-            }
         }
 
         public static PriceCalculationCharge[] PriceCalculationCharges
         {
-            get
-            {
-                return
+            get =>
                     new[]
                     {
                         new PriceCalculationCharge() { PriceCalculationChargeId = 1, ChargePercentage =  (decimal)31.42, ChargeTypeId = ChargeType.SocialInsuranceCharge, StartDate = new DateTime(2018,01,01), EndDate =  new DateTime(2099,01,01)},
                         new PriceCalculationCharge() { PriceCalculationChargeId = 2, ChargePercentage =  (decimal)0.7, ChargeTypeId = ChargeType.AdministrativeCharge, StartDate = new DateTime(2018,01,01), EndDate =  new DateTime(2099,01,01)},
                     };
-            }
+
         }
 
         public static Ranking[] Rankings
         {
-            get
-            {
-                return
-                    new[]
+            get => new[]
                     {
                         new Ranking { RankingId = 1, Rank = 1, FirstValidDate = new DateTime(2018,01,01), LastValidDate = new DateTime(2099,01,01), BrokerFee = (decimal)0.1, BrokerId = 1, RegionId = 1}
                     };
-            }
         }
 
         public static PriceListRow[] PriceListRows
         {
-            get
-            {
-                return
-                    new[]
-                    {
+            get => new[]
+                   {
                         new PriceListRow() { PriceListRowId = 1001, CompetenceLevel = CompetenceLevel.OtherInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 352, MaxMinutes = 60, PriceListType = PriceListType.Court, PriceListRowType = PriceListRowType.BasePrice },
                         new PriceListRow() { PriceListRowId = 1002, CompetenceLevel = CompetenceLevel.EducatedInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 409, MaxMinutes = 60, PriceListType = PriceListType.Court, PriceListRowType = PriceListRowType.BasePrice },
                         new PriceListRow() { PriceListRowId = 1003, CompetenceLevel = CompetenceLevel.AuthorizedInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 480, MaxMinutes = 60, PriceListType = PriceListType.Court, PriceListRowType = PriceListRowType.BasePrice },
@@ -513,7 +549,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                         new PriceListRow() { PriceListRowId = 1127, CompetenceLevel = CompetenceLevel.AuthorizedInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 119, MaxMinutes = 30, PriceListType = PriceListType.Other, PriceListRowType = PriceListRowType.LostTimeIWH },
                         new PriceListRow() { PriceListRowId = 1128, CompetenceLevel = CompetenceLevel.SpecializedInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 136, MaxMinutes = 30, PriceListType = PriceListType.Other, PriceListRowType = PriceListRowType.LostTimeIWH }
                     };
-            }
         }
 
     }

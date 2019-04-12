@@ -16,10 +16,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         public RequestTests()
         {
-            var mockLanguages = MockEntities.MockLanguages();
-            var mockRankings = MockEntities.MockRankings();
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
-            MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers).Single(o => o.OrderId == 8);
+            var mockLanguages = MockEntities.MockLanguages;
+            var mockRankings = MockEntities.MockRankings;
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
+            MockOrder = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers).Single(o => o.OrderId == 9);
             MockInterpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
         }
 

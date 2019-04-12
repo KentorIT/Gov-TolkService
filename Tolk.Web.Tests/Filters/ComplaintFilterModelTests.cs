@@ -15,7 +15,7 @@ namespace Tolk.Web.Tests.Filters
 
         public ComplaintFilterModelTests()
         {
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
 
             complaints = new[]
             {

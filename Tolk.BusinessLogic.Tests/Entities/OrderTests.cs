@@ -15,9 +15,9 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         public OrderTests()
         {
-            var mockLanguages = MockEntities.MockLanguages();
-            var mockRankings = MockEntities.MockRankings();
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            var mockLanguages = MockEntities.MockLanguages;
+            var mockRankings = MockEntities.MockRankings;
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
             MockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
         }
 
@@ -106,10 +106,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(1)]
-        [InlineData(3)]
-        [InlineData(5)]
-        [InlineData(7)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        [InlineData(8)]
         public void DeliverRequisition_Pass(int mockOrderId)
         {
             var order = MockOrders.Where(o => o.OrderId == mockOrderId).Single();
@@ -118,10 +118,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(2)]
-        [InlineData(4)]
-        [InlineData(6)]
+        [InlineData(1)]
+        [InlineData(3)]
+        [InlineData(5)]
+        [InlineData(7)]
         public void DeliverRequisition_Fail(int mockOrderId)
         {
             Assert.Throws<InvalidOperationException>(() => 
@@ -155,7 +155,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 ContactPersonId = prevContactPersonId ?? null,
                 OrderContactPersonHistory = new List<OrderContactPersonHistory>(),
                 AllowExceedingTravelCost = AllowExceedingTravelCost.No,
-                CustomerOrganisationId = 0,
+                CustomerOrganisationId = 1,
                 Requests = new List<Request>()
                 {
                     new Request() { Status = RequestStatus.Approved }
@@ -163,7 +163,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             var newContactPerson = new AspNetUser("", "", "", "")
             {
-                CustomerOrganisationId = 0,
+                CustomerOrganisationId = 1,
             };
             if (conditionalStatus.HasValue)
             {
@@ -179,25 +179,25 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Invalid status
-        [InlineData(OrderStatus.CancelledByCreator, 0)]
-        [InlineData(OrderStatus.CancelledByBroker, 0)]
-        [InlineData(OrderStatus.NoBrokerAcceptedOrder, 0)]
-        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, 0)]
+        [InlineData(OrderStatus.CancelledByCreator, 1)]
+        [InlineData(OrderStatus.CancelledByBroker, 1)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder, 1)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator, 1)]
         // Invalid CustomerOrganization
-        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer, 1)]
-        [InlineData(OrderStatus.Delivered, 1)]
-        [InlineData(OrderStatus.DeliveryAccepted, 1)]
-        [InlineData(OrderStatus.NoDeadlineFromCustomer, 1)]
-        [InlineData(OrderStatus.Requested, 1)]
-        [InlineData(OrderStatus.RequestResponded, 1)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, 1)]
-        [InlineData(OrderStatus.ToBeProcessedByCustomer, 1)]
+        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer, 2)]
+        [InlineData(OrderStatus.Delivered, 2)]
+        [InlineData(OrderStatus.DeliveryAccepted, 2)]
+        [InlineData(OrderStatus.NoDeadlineFromCustomer, 2)]
+        [InlineData(OrderStatus.Requested, 2)]
+        [InlineData(OrderStatus.RequestResponded, 2)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, 2)]
+        [InlineData(OrderStatus.ToBeProcessedByCustomer, 2)]
         public void ChangeContactPerson_Invalid(OrderStatus invalidStatus, int ContactPersonCustomerOrganizationId)
         {
             var order = new Order(MockOrders.First())
             {
                 Status = invalidStatus,
-                CustomerOrganisationId = 0,
+                CustomerOrganisationId = 1,
             };
             var newContactPerson = new AspNetUser("", "", "", "")
             {

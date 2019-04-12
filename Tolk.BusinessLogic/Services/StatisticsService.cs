@@ -35,46 +35,46 @@ namespace Tolk.BusinessLogic.Services
             yield return GetWeeklyDeliveredOrderStatistics(BreakDate);
             yield return GetWeeklyRequisitionStatistics(BreakDate);
             yield return GetWeeklyComplaintStatistics(BreakDate);
-            yield return GetWeeklyLoggedOnUsers(BreakDate);
+            yield return GetWeeklyUserLogins(BreakDate);
             yield return GetWeeklyNewUsers(BreakDate);
         }
 
-        private WeeklyStatisticsModel GetWeeklyOrderStatistics(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyOrderStatistics(DateTimeOffset breakDate)
         {
             int lastWeek = GetOrders(StartDate, breakDate);
             int thisWeek = GetOrders(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Bokningar");
         }
 
-        private WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics(DateTimeOffset breakDate)
         {
             int lastWeek = GetDeliveredOrders(StartDate, breakDate);
             int thisWeek = GetDeliveredOrders(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Utförda uppdrag");
         }
 
-        private WeeklyStatisticsModel GetWeeklyRequisitionStatistics(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyRequisitionStatistics(DateTimeOffset breakDate)
         {
             int lastWeek = GetRequisitions(StartDate, breakDate);
             int thisWeek = GetRequisitions(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Rekvisitioner");
         }
 
-        private WeeklyStatisticsModel GetWeeklyComplaintStatistics(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyComplaintStatistics(DateTimeOffset breakDate)
         {
             int lastWeek = GetComplaints(StartDate, breakDate);
             int thisWeek = GetComplaints(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Reklamationer");
         }
 
-        private WeeklyStatisticsModel GetWeeklyLoggedOnUsers(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyUserLogins(DateTimeOffset breakDate)
         {
-            int lastWeek = GetLoggedOnUsers(StartDate, breakDate);
-            int thisWeek = GetLoggedOnUsers(breakDate, _clock.SwedenNow);
+            int lastWeek = GetUserLogins(StartDate, breakDate);
+            int thisWeek = GetUserLogins(breakDate, _clock.SwedenNow);
             return GetWeeklyStatistics(lastWeek, thisWeek, "Inloggade anv.");
         }
 
-        private WeeklyStatisticsModel GetWeeklyNewUsers(DateTimeOffset breakDate)
+        public WeeklyStatisticsModel GetWeeklyNewUsers(DateTimeOffset breakDate)
         {
             int lastWeek = GetNewUsers(StartDate, breakDate);
             int thisWeek = GetNewUsers(breakDate, _clock.SwedenNow);
@@ -107,7 +107,7 @@ namespace Tolk.BusinessLogic.Services
             return _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).Count();
         }
 
-        private int GetLoggedOnUsers(DateTimeOffset start, DateTimeOffset end)
+        private int GetUserLogins(DateTimeOffset start, DateTimeOffset end)
         {
             return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start && u.LoggedInAt < end).Select(u => u.UserId).Distinct().Count();
         }
@@ -117,7 +117,7 @@ namespace Tolk.BusinessLogic.Services
             return _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).Select(u => u.UserId).Distinct().Count();
         }
 
-        private WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
+        public WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
         {
             decimal diff = (lastWeek == 0 || thisWeek == 0) ? 0 : (Convert.ToDecimal(thisWeek) - Convert.ToDecimal(lastWeek)) * 100 / lastWeek;
             return new WeeklyStatisticsModel
@@ -145,17 +145,17 @@ namespace Tolk.BusinessLogic.Services
             yield return GetOrderCustomerStatistics(orders);
         }
 
-        private OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
         }
 
-        private OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Mest beställda språk", orders.GroupBy(o => o.Language.Name));
         }
 
-        private OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Myndigheter", orders.GroupBy(o => o.CustomerOrganisation.Name));
         }

@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         public RequisitionTests()
         {
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
 
             MockOrder = new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
             {

@@ -19,9 +19,9 @@ namespace Tolk.Web.Tests.Filters
 
         public OrderFilterModelTests()
         {
-            var mockRankings = MockEntities.MockRankings();
-            mockLanguages = MockEntities.MockLanguages();
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers());
+            var mockRankings = MockEntities.MockRankings;
+            mockLanguages = MockEntities.MockLanguages;
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
             mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
 
             // Modify request statuses
@@ -170,8 +170,8 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void OrderFilter_ByBroker()
         {
-            var brokerFirst = 0;
-            var brokerSecond = 1;
+            var brokerFirst = 1;
+            var brokerSecond = 2;
             var filterFirst = new OrderFilterModel
             {
                 BrokerId = brokerFirst
@@ -241,12 +241,12 @@ namespace Tolk.Web.Tests.Filters
             var filterFirst = new OrderFilterModel
             {
                 DateRange = new DateRange { Start = new DateTime(2018,09,01), End = new DateTime(2018,10,30) },
-                BrokerId = 0
+                BrokerId = 1
             };
             var filterSecond = new OrderFilterModel
             {
                 DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 08, 31) },
-                BrokerId = 1
+                BrokerId = 2
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
