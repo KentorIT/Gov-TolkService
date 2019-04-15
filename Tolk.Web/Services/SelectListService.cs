@@ -46,15 +46,15 @@ namespace Tolk.Web.Services
             })
             .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> SearchableRoles { get; } =
-            EnumHelper.GetAllDescriptions<UserType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserType>();
 
-        public static IEnumerable<SelectListItem> ComplaintStatuses { get; } =
-            EnumHelper.GetAllDescriptions<ComplaintStatus>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> SearchableRolesForCustomers => 
+            GetList(new List<UserType>(){UserType.OrderCreator, UserType.OrganisationAdministrator});
+
+        public static IEnumerable<SelectListItem> SearchableRolesForBrokers => 
+            GetList(new List<UserType>() { UserType.Broker, UserType.OrganisationAdministrator });
+
+        public static IEnumerable<SelectListItem> ComplaintStatuses => GetList<ComplaintStatus>();
 
         public static IEnumerable<SelectListItem> RequestStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequestStatus>()
@@ -63,10 +63,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> ComplaintTypes { get; } =
-            EnumHelper.GetAllDescriptions<ComplaintType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> ComplaintTypes => GetList<ComplaintType>();
 
         public static IEnumerable<SelectListItem> RequisitionStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequisitionStatus>()
@@ -80,44 +77,21 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> AssignmentStatuses { get; } =
-            EnumHelper.GetAllDescriptions<AssignmentStatus>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> AssignmentStatuses => GetList<AssignmentStatus>();
 
-        public static IEnumerable<SelectListItem> AssignmentTypes { get; } =
-            EnumHelper.GetAllDescriptions<AssignmentType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
-        public static IEnumerable<SelectListItem> SystemMessageTypes { get; } =
-            EnumHelper.GetAllDescriptions<SystemMessageType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> AssignmentTypes => GetList<AssignmentType>();
 
-        public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups { get; } =
-          EnumHelper.GetAllDescriptions<SystemMessageUserTypeGroup>()
-              .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-              .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> SystemMessageTypes => GetList<SystemMessageType>();
 
-        public static IEnumerable<SelectListItem> Genders { get; } =
-            EnumHelper.GetAllDescriptions<Gender>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups => GetList<SystemMessageUserTypeGroup>();
 
-        public static IEnumerable<SelectListItem> BoolList { get; } =
-            EnumHelper.GetAllDescriptions<TrueFalse>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> Genders => GetList<Gender>();
 
-        public static IEnumerable<SelectListItem> AllowExceedingTravelCost { get; } =
-           EnumHelper.GetAllDescriptions<AllowExceedingTravelCost>()
-               .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-               .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> BoolList => GetList<TrueFalse>();
 
-        public static IEnumerable<SelectListItem> InterpreterLocations { get; } =
-            EnumHelper.GetAllDescriptions<InterpreterLocation>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> AllowExceedingTravelCost => GetList<AllowExceedingTravelCost>();
+
+        public static IEnumerable<SelectListItem> InterpreterLocations => GetList<InterpreterLocation>();
 
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
@@ -132,10 +106,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> TaxCards { get; } =
-            EnumHelper.GetAllDescriptions<TaxCard>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> TaxCards => GetList<TaxCard>();
 
         public static IEnumerable<SelectListItem> DesireTypes { get; } =
             EnumHelper.GetAllDescriptions<DesireType>()
@@ -462,23 +433,17 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> UserStatuses
-        { get; } =
-            EnumHelper.GetAllDescriptions<UserStatus>()
+        public IEnumerable<SelectListItem> UserStatuses => GetList<UserStatus>();
+
+        public static IEnumerable<SelectListItem> NotificationTypes => GetList<NotificationType>();
+
+        public static IEnumerable<SelectListItem> WebhookStatuses => GetList<WebhookStatus>();
+
+        private static IEnumerable<SelectListItem> GetList<T>(IEnumerable<T> filterValues = null)
+        {
+            return EnumHelper.GetAllDescriptions(filterValues)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
-
-        public IEnumerable<SelectListItem> NotificationTypes
-        { get; } =
-            EnumHelper.GetAllDescriptions<NotificationType>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
-
-        public IEnumerable<SelectListItem> WebhookStatuses
-        { get; } =
-            EnumHelper.GetAllDescriptions<WebhookStatus>()
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
-
+        }
     }
 }

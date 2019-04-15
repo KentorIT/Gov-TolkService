@@ -19,9 +19,24 @@
             <div class="col-sm-4">
                 <form-entry asp-for="Status" type="select" asp-items="SelectListService.UserStatuses" class="allow-clear" />
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
-            </div>
+            @if (Model.IsSystemAdministrator)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
+                </div>
+            }
+            else if (Model.IsBroker)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
+                </div>
+            }
+            else if (Model.IsCustomer)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
+                </div>
+            }
         </div>
         @if (Model.IsSystemAdministrator)
         {

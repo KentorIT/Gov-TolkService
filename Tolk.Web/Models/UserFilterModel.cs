@@ -26,12 +26,13 @@ namespace Tolk.Web.Models
 
         public string Email { get; set; }
 
-        public bool IsSystemAdministrator { get; set; }
+        public bool IsSystemAdministrator { get; set; } = false;
 
-        public bool HasActiveFilters
-        {
-            get => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
-        }
+        public bool IsBroker { get; set; } = false;
+
+        public bool IsCustomer { get; set; } = false;
+
+        public bool HasActiveFilters => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {

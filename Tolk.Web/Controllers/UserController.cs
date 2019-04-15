@@ -67,10 +67,12 @@ namespace Tolk.Web.Controllers
             var users = _dbContext.Users.Where(u => !u.IsApiUser).Select(u => u);
             if (customerId.HasValue)
             {
+                model.IsCustomer = true;
                 users = users.Where(u => u.CustomerOrganisationId == customerId);
             }
             else if (brokerId.HasValue)
             {
+                model.IsBroker = true;
                 users = users.Where(u => u.BrokerId == brokerId);
             }
             else if (!User.IsInRole(Roles.Admin))
