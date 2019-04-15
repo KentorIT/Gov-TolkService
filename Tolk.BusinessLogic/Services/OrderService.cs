@@ -342,6 +342,7 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.AddAsync(replacementOrder);
             CancelOrder(order, userId, impersonatorId, cancelMessage, true);
 
+            replacementOrder.CreatedAt = _clock.SwedenNow;
             replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
             {
                 Description = r.Description,
