@@ -66,6 +66,17 @@ $(function () {
         $("#cancelMessageDialog").openDialog();
     });
 
+    //handle cancel/back to previous page
+    $("body").on("click", "#cancel-go-back", function (event) {
+        //if from link in email it can be first page (no history) or login page - then don't go back, go to start page 
+        if (document.referrer === "" || document.referrer.indexOf("Login") > 0) {
+            window.location.href = tolkBaseUrl + "Home/Index";
+        }
+        else {
+            history.back();
+        }
+    });
+
     $("body").on("click", "#cancelMessageDialog .send-message", function (event) {
         event.preventDefault();
         //Before we start, validate the form!
