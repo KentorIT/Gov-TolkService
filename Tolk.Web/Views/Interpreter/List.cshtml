@@ -1,8 +1,11 @@
 ﻿@model InterpreterListModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Tolkar";
+    HelpLinkService.PageName = "Tolkar";
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
 @if (!string.IsNullOrEmpty(@Model.Message))
 {
     <div class="row">

@@ -1,10 +1,19 @@
 ﻿@model ReportSearchModel
 @using Tolk.Web.Services;
 @using Tolk.Web.Helpers;
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Rapporter";
+    @if (User.TryGetBrokerId() != null)
+    {
+        HelpLinkService.PageName = "formedling-rapporter/";
+    }
+    else
+    {
+        HelpLinkService.PageName = "myndighet-rapporter/";
+    }
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
 
 <div class="row">
     <div class="col-md-12">

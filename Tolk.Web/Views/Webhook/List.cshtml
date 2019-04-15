@@ -1,10 +1,14 @@
 ﻿@model WebHookListModel
 @using Tolk.BusinessLogic.Utilities
+@using Tolk.Web.Services;
+@inject HelpLinkService HelpLinkService
 
 @{
-    ViewData["Title"] = "Webhooks";
+    ViewData["Title"] = "Historik - Webhooks";
+    HelpLinkService.PageName = "formedling-historik/";
+
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-webhooks")</h2>
 <div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>

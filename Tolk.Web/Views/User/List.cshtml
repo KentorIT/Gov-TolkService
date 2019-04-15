@@ -1,8 +1,18 @@
 ﻿@model UserListModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Användare";
+    if (Model.FilterModel.IsBroker)
+    {
+        HelpLinkService.PageName = "formedling-anvandare/";
+    }
+    else
+    {
+        HelpLinkService.PageName = "myndighet-anvandare/";
+    }
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
 <div class="row">
     @await Html.PartialAsync("_Filter", Model.FilterModel)
 </div>
