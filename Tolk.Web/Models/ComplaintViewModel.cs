@@ -46,13 +46,9 @@ namespace Tolk.Web.Models
 
         public bool IsCustomer { get; set; }
 
-        public bool AllowAnwser
-        {
-            get
-            {
-                return Status == ComplaintStatus.Created && IsBroker;
-            }
-        }
+        public bool AllowAnwser => Status == ComplaintStatus.Created && IsBroker;
+
+        public bool IsAdmin { get; set; } = false;
 
         public bool AllowAnwserOnDispute { get; set; } = false;
 
@@ -60,14 +56,15 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, bool isCustomer)
+        public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint)
         {
             string customerName = complaint.Request.Order.CustomerOrganisation.Name;
+            string brokerName = complaint.Request.Ranking.Broker.Name;
             return new ComplaintViewModel
             {
                 ComplaintId = complaint.ComplaintId,
-                BrokerName = complaint.Request.Ranking.Broker.Name,
-                CustomerName = complaint.Request.Order.CustomerOrganisation.Name,
+                BrokerName = brokerName,
+                CustomerName = customerName,
                 CustomerReferenceNumber = complaint.Request.Order.CustomerReferenceNumber,
                 InterpreterName = complaint.Request.Interpreter.CompleteContactInformation,
                 CreatedBy = complaint.CreatedByUser.CompleteContactInformation,
@@ -77,8 +74,7 @@ namespace Tolk.Web.Models
                 Status = complaint.Status,
                 DisputeMessage = complaint.AnswerMessage,
                 AnswerDisputedMessage = complaint.AnswerDisputedMessage,
-                IsBroker = !isCustomer,
-                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint, customerName, complaint.Request.Ranking.Broker.Name).OrderBy(e => e.Timestamp).ToList() },
+                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint, customerName, brokerName).OrderBy(e => e.Timestamp).ToList() },
             };
         }
 

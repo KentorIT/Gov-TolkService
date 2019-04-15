@@ -135,8 +135,9 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
+                var isAdmin = User.IsInRole(Roles.Admin);
                 var customerId = User.TryGetCustomerOrganisationId();
-                model.AllowCreation = !customerId.HasValue 
+                model.AllowCreation = !isAdmin && !customerId.HasValue 
                     && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)
                     && requisition.Request.Requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == requisition.RequisitionId;
                 model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;

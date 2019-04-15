@@ -13,11 +13,11 @@
             </div>
             <div class="col-sm-4">
                 <br />
-                @if (Model.IsBroker)
+                @if (Model.IsBroker || Model.IsAdmin)
                 {
                     <display-entry asp-for="CustomerName" />
                 }
-                else
+                @if (Model.IsCustomer || Model.IsAdmin)
                 {
                     <display-entry asp-for="BrokerName" />
                 }

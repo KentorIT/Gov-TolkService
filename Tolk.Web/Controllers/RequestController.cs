@@ -471,6 +471,7 @@ namespace Tolk.Web.Controllers
 
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
+            bool isAdmin = User.IsInRole(Roles.Admin);
             var model = RequestModel.GetModelFromRequest(request);
             model.OrderModel.ActiveRequest = model; //We're only interested in the request we have access to
             model.RequestCalculatedPriceInformationModel = GetPriceinformationToDisplay(request);
@@ -488,11 +489,11 @@ namespace Tolk.Web.Controllers
                 model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
             }
             model.BrokerId = request.Ranking.BrokerId;
-            model.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
-            model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
-            model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
-            model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
-            model.AllowConfirmCancellation = request.Status == RequestStatus.CancelledByCreatorWhenApproved && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
+            model.AllowInterpreterChange = !isAdmin && request.CanChangeInterpreter(_clock.SwedenNow);
+            model.AllowRequisitionRegistration = !isAdmin && (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
+            model.AllowCancellation = !isAdmin && request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
+            model.AllowConfirmationDenial = !isAdmin && request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
+            model.AllowConfirmCancellation = !isAdmin && request.Status == RequestStatus.CancelledByCreatorWhenApproved && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
             if (includeLog)
             {
                 model.EventLog = new EventLogModel

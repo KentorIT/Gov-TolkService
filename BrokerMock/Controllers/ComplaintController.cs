@@ -57,7 +57,7 @@ namespace BrokerMock.Controllers
                 //dispute
                 await Dispute(payload.OrderNumber, "Han var inte alls full!");
             }
-            else
+            else if(!extraInstructions.Contains("LEAVEUNHANDLED"))
             {
                 //accept
                 await Accept(payload.OrderNumber);
