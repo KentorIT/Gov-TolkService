@@ -98,11 +98,16 @@
                             </li>
                             if (User.IsInRole(Roles.SuperUser))
                             {
-                                <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
-                                <li><a asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
-                                <li><a asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
-                                <li><a asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
                                 <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
+                                    </ul>
+                                </li>
                             }
 
                         }
