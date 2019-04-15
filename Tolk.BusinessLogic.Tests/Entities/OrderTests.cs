@@ -170,7 +170,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 order.Status = conditionalStatus.Value;
             }
             order.ChangeContactPerson(changedAtDateTime, userId, impersonatorId, newContactPerson);
-            Assert.Equal(newContactPerson.Id, order.ContactPersonId);
+            Assert.Equal(newContactPerson.Id, order.ContactPersonUser.Id);
             Assert.Equal(changedAtDateTime, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ChangedAt);
             Assert.Equal(userId, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ChangedBy);
             Assert.Equal(impersonatorId, order.OrderContactPersonHistory.OrderBy(ch => ch.ChangedAt).Last().ImpersonatingChangeUserId);
