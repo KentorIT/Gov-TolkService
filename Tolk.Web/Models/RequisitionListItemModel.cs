@@ -19,5 +19,9 @@ namespace Tolk.Web.Models
         public string Controller { get; set; }
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
+
+        public string CustomerName { get; set; }
+
+        public string BrokerName { get; set; }
     }
 }

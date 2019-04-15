@@ -108,6 +108,8 @@ namespace Tolk.Web.Controllers
                         },
                         Status = r.Status,
                         Controller = customerId.HasValue ? "Order" : "Request",
+                        BrokerName = r.Request.Ranking.Broker.Name,
+                        CustomerName = r.Request.Order.CustomerOrganisation.Name,
                     })
                 });
         }

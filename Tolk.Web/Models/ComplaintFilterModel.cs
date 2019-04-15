@@ -16,6 +16,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapad av")]
         public int? CustomerContactId { get; set; }
 
+        [Display(Name = "Myndighet")]
+        public int? CustomerOrganisationId { get; set; }
+
+        [Display(Name = "Förmedling")]
+        public int? BrokerId { get; set; }
+
         [Display(Name = "Besvarad av")]
         public int? BrokerContactId { get; set; }
 
@@ -23,10 +29,7 @@ namespace Tolk.Web.Models
 
         public bool IsBrokerUser { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => CustomerContactId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || BrokerContactId.HasValue || Status.HasValue; 
-        }
+        public bool HasActiveFilters => CustomerContactId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || BrokerContactId.HasValue || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
 
         internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
@@ -39,6 +42,8 @@ namespace Tolk.Web.Models
 
             items = CustomerContactId.HasValue ? items.Where(c => c.CreatedBy == CustomerContactId) : items;
             items = BrokerContactId.HasValue ? items.Where(c => c.AnsweredBy == BrokerContactId) : items;
+            items = BrokerId.HasValue ? items.Where(c => c.Request.Ranking.BrokerId == BrokerId) : items;
+            items = CustomerOrganisationId.HasValue ? items.Where(c => c.Request.Order.CustomerOrganisationId == CustomerOrganisationId) : items;
             return items;
         }
     }

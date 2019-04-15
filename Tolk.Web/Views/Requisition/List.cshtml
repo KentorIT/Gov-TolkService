@@ -35,6 +35,14 @@
                             <th>Status</th>
                             <th>Språk</th>
                             <th>Datum för uppdrag</th>
+                            @if (Model.FilterModel.IsBroker)
+                            {
+                                <th>Myndighet</th>
+                            }
+                            else
+                            {
+                                <th>Förmedling</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -44,7 +52,15 @@
                                 <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
                                 <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
                                 <td class="gray-border-bottom">@item.Language</td>
-                                <td class="gray-border-bottom gray-border-right"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                @if (Model.FilterModel.IsBroker)
+                                {
+                                    <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
+                                }
+                                else
+                                {
+                                    <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                }
                             </tr>
                         }
                     </tbody>

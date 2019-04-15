@@ -18,10 +18,13 @@ namespace Tolk.Web.Models
 
         public RequisitionStatus? Status { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue|| DateRange?.Start != null || DateRange?.End != null || Status.HasValue; 
-        }
+        [Display(Name = "Myndighet")]
+        public int? CustomerOrganisationId { get; set; }
+
+        [Display(Name = "Förmedling")]
+        public int? BrokerId { get; set; }
+
+        public bool HasActiveFilters => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
 
         public bool IsBroker { get; set; }
 
@@ -48,6 +51,12 @@ namespace Tolk.Web.Models
             requisitions = CreatedById.HasValue
                 ? requisitions = requisitions.Where(r => r.CreatedBy == CreatedById)
                 : requisitions;
+            requisitions = CustomerOrganisationId.HasValue
+                ? requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == CustomerOrganisationId)
+                : requisitions;
+            requisitions = BrokerId.HasValue
+                  ? requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == BrokerId)
+                  : requisitions;
 
             return requisitions;
         }

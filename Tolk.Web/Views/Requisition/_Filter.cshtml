@@ -24,22 +24,22 @@
 
         </div>
         <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="DateRange" />
+            </div>
             @if (Model.IsBroker)
             {
                 <div class="col-sm-4">
-                    <form-entry asp-for="DateRange" />
+                    <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
                 </div>
                 <div class="col-sm-4">
-                    @if (Model.IsBroker)
-                    {
-                        <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
-                    }
+                    <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" Class="allow-clear" />
                 </div>
             }
             else
             {
-                <div class="col-sm-6">
-                    <form-entry asp-for="DateRange" />
+                <div class="col-sm-4">
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" Class="allow-clear" />
                 </div>
             }
         </div>

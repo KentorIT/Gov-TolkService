@@ -27,11 +27,17 @@
                         <tr>
                             <th class="defaultSortDesc">BokningsID</th>
                             <th>Län</th>
-                            <th>Myndighet</th>
-                            <th>Förmedling</th>
                             <th>Skapad</th>
                             <th>Typ av reklamation</th>
                             <th>Status</th>
+                            @if (Model.FilterModel.IsBrokerUser)
+                            {
+                                <th>Myndighet</th>
+                            }
+                            else
+                            {
+                                <th>Förmedling</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -40,11 +46,17 @@
                             <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "complaint"})">
                                 <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
                                 <td class="gray-border-bottom">@item.RegionName</td>
-                                <td class="gray-border-bottom">@item.CustomerName</td>
-                                <td class="gray-border-bottom">@item.BrokerName</td>
                                 <td class="gray-border-bottom">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td class="gray-border-bottom">@EnumHelper.GetDescription(item.ComplaintType)</td>
-                                <td class="gray-border-bottom gray-border-right">@EnumHelper.GetDescription(item.Status)</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                                @if (Model.FilterModel.IsBrokerUser)
+                                {
+                                    <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
+                                }
+                                else
+                                {
+                                    <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                }
                             </tr>
                         }
                     </tbody>
