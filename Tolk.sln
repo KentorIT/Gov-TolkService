@@ -13,6 +13,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47F89FBF-8EFB-4A35-A869-6C7139AF51AF}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE.txt = LICENSE.txt
+		Tolk.runsettings = Tolk.runsettings
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tolk.BusinessLogic.Tests", "Tolk.BusinessLogic.Tests\Tolk.BusinessLogic.Tests.csproj", "{022DEC81-1BAA-479B-AE02-C3645EDF3E8D}"
