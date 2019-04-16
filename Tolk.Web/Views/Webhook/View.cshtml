@@ -38,22 +38,24 @@
 @if (Model.FailedTries.Any())
 {
     <div class="row">
-        <table>
-            <thead>
-                <tr>
-                    <th>Tidpunkt</th>
-                    <th>Felmeddelande</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (FailedTryModel failedTry in Model.FailedTries)
-                {
+        <div class="col-sm-12">
+            <table>
+                <thead>
                     <tr>
-                        <td>@failedTry.FailedAt</td>
-                        <td>@failedTry.ErrorMessage</td>
+                        <th class="webhook-view col-sm-2">Tidpunkt</th>
+                        <th class="webhook-view col-sm-10">Felmeddelande</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (FailedTryModel failedTry in Model.FailedTries)
+                    {
+                        <tr>
+                            <td class="webhook-view col-sm-2">@failedTry.FailedAt</td>
+                            <td class="webhook-view col-sm-10">@failedTry.ErrorMessage</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

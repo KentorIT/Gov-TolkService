@@ -1,34 +1,40 @@
 ﻿@model List<NotificationSettingsModel>
+@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Organisationens notifieringsinställningar";
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"] </h2>
+<div class="row">
+    <div class="col-md-12">
+        Välj om er förmedling vill notifieras via e-post och/eller webhooks för respektive notifieringstyp.
+    </div>
+</div>
 <form method="post">
     <div class="row">
         <div class="col-sm-12">
-            <div class="col-sm-12">
-                <div class="zebra">
+            <div class="col-sm-12 notifcationsettings-table">
+                <div>
                     @for (int i = 0; i < Model.Count(); ++i)
                     {
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <input asp-for="@Model[i].Type" type="hidden" />
-                                <display-entry asp-for="@Model[i].Type" />
-                                <div class="col-sm-12">
-                                    <div class="col-sm-2 selection-box">
-                                        <form-entry asp-for="@Model[i].UseEmail" />
-                                    </div>
-                                    <div class="col-sm-10 selection-textbox">
-                                        <form-entry asp-for="@Model[i].SpecificEmail" />
-                                    </div>
+                        <div class="row col-sm-12 notifcationsettings">
+                            <input asp-for="@Model[i].Type" type="hidden" />
+                            <div class="notifcationsettings-header">
+                                @EnumHelper.GetDescription(Model[i].Type)
+                            </div>
+                            <div>
+                                <div class="col-sm-2 selection-box">
+                                    <form-entry asp-for="@Model[i].UseEmail" />
                                 </div>
-                                <div class="col-sm-12">
-                                    <div class="col-sm-2 selection-box">
-                                        <form-entry asp-for="@Model[i].UseWebHook" />
-                                    </div>
-                                    <div class="col-sm-10 selection-textbox">
-                                        <form-entry asp-for="@Model[i].WebHookUrl" />
-                                    </div>
+                                <div class="col-sm-4 selection-textbox">
+                                    <form-entry asp-for="@Model[i].SpecificEmail" />
+                                </div>
+                            </div>
+                            <div>
+                                <div class="col-sm-2 selection-box">
+                                    <form-entry asp-for="@Model[i].UseWebHook" />
+                                </div>
+                                <div class="col-sm-4 selection-textbox">
+                                    <form-entry asp-for="@Model[i].WebHookUrl" />
                                 </div>
                             </div>
                         </div>

@@ -12,18 +12,16 @@
     <div class="row">
         <div class="col-xs-12">
             <br />
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <span class="glyphicon glyphicon-ok"></span>
-                    <span class="info-message">
-                        @Model.Message
-                    </span>
-                </div>
+            <div class="system-action-info">
+                <span class="glyphicon glyphicon-ok"></span>
+                <span class="info-message">
+                    @Model.Message
+                </span>
             </div>
         </div>
     </div>
 }
-
+<h3>Allmänna inställningar</h3>
 <div class="row">
     <div class="col-sm-12">
         <div class="col-sm-4">
@@ -51,6 +49,7 @@
         </div>
     </div>
 </div>
+<h3>Notifieringsinställningar</h3>
 <div class="row">
     <div class="col-md-12">
         <table class="table table-hover search-table">
@@ -80,7 +79,7 @@
         <a class="btn btn-primary btn-large" asp-action="ChangeApiKey">Api-nyckel</a>
     </div>
     <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="EditOrganisationSettings">Kontaktuppgifter</a>
+        <a class="btn btn-primary btn-large" asp-action="EditOrganisationSettings">Inställningar</a>
     </div>
     <div class="col-sm-4">
         <a class="btn btn-primary btn-large" asp-action="EditNotificationSettings">Notifieringsinställningar</a>

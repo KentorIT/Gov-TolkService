@@ -1194,7 +1194,7 @@ input.force-validation {
   padding-left: 5px;
 }
 .gray-border-left {
-  border-left: 4px solid #646464;
+  border-left: 4px solid #767676;
   padding-left: 5px;
 }
 .gray-border-right {
@@ -1202,6 +1202,16 @@ input.force-validation {
 }
 .gray-border-bottom {
   border-bottom: 1px solid #DDD;
+}
+.gray-border-top {
+  border-top: 1px solid #DDD;
+}
+.gray-border-list-element {
+  border-bottom: 1px solid #DDD;
+  border-left: 4px solid #767676;
+  padding-left: 5px;
+  border-right: 1px solid #DDD;
+  border-top: 1px solid #DDD;
 }
 .sorting {
   color: #767676;
@@ -1269,6 +1279,31 @@ input.force-validation {
   vertical-align: top;
   font-weight: 300;
   width: 100%;
+}
+.selection-textbox {
+  padding-top: 10px;
+}
+.notifcationsettings-table {
+  padding-bottom: 15px;
+}
+.notifcationsettings {
+  vertical-align: top;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #DDD;
+  border-left: 4px solid #767676;
+  padding-left: 5px;
+  border-right: 1px solid #DDD;
+  border-top: 1px solid #DDD;
+}
+.notifcationsettings-header {
+  font-size: 16px;
+  font-weight: normal;
+  padding-bottom: 5px;
+}
+.webhook-view {
+  vertical-align: top;
+  padding-bottom: 15px;
 }
 .submenu {
   font-size: 17px;
