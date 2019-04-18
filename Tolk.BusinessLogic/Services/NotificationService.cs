@@ -52,7 +52,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                if (request.Status == RequestStatus.Approved)
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
                 {
                     string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                          $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}." +
