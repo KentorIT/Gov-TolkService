@@ -16,5 +16,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string PerDiem { get; set; }
 
         public string TaxCard { get; set; }
+
+        public decimal PreliminaryCost { get; set; }
     }
 }

@@ -173,7 +173,6 @@ namespace Tolk.BusinessLogic.Services
 
         #endregion
 
-
         #region Broker reports
 
         public IEnumerable<Request> GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
@@ -219,6 +218,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Request).ThenInclude(r => r.Interpreter)
+                    .Include(r => r.Request).ThenInclude(r => r.PriceRows)
                     .Include(r => r.MealBreaks)
                     .Include(r => r.CreatedByUser)
                     .Include(r => r.PriceRows)
@@ -287,6 +287,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Request).ThenInclude(r => r.Interpreter)
+                    .Include(r => r.Request).ThenInclude(r => r.PriceRows)
                     .Include(r => r.MealBreaks)
                     .Include(r => r.ProcessedUser)
                     .Include(r => r.CreatedByUser)
@@ -310,7 +311,6 @@ namespace Tolk.BusinessLogic.Services
                     .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
                         && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue));
         }
-
 
         #endregion
 
@@ -477,6 +477,9 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
             rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Prel.kostnad bekräftelse (SEK)";
+            rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PreliminaryCost);
         }
 
         private void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRow> rows, ref char columnLetter, ReportType reportType)
@@ -575,6 +578,7 @@ namespace Tolk.BusinessLogic.Services
                         Price = r.PriceRows.Sum(p => p.TotalPrice),
                         TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription(),
                         ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
+                        PreliminaryCost = r.Request.PriceRows.Sum(p => p.TotalPrice),
                     });
         }
 
