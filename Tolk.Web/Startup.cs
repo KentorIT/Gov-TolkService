@@ -142,17 +142,17 @@ namespace Tolk.Web
                 dbContext.Database.Migrate();
             }
 
-            if (!roleManager.RoleExistsAsync(Roles.Admin).Result)
+            if (!roleManager.RoleExistsAsync(Roles.SystemAdministrator).Result)
             {
-                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Admin)).Result;
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.SystemAdministrator)).Result;
             }
             if (!roleManager.RoleExistsAsync(Roles.Impersonator).Result)
             {
                 IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.Impersonator)).Result;
             }
-            if (!roleManager.RoleExistsAsync(Roles.SuperUser).Result)
+            if (!roleManager.RoleExistsAsync(Roles.CentralAdministrator).Result)
             {
-                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.SuperUser)).Result;
+                IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.CentralAdministrator)).Result;
             }
             app.UseStaticFiles();
 

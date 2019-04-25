@@ -72,7 +72,7 @@ namespace Tolk.Web.Controllers
             }
             return View(new StartViewModel
             {
-                PageTitle = User.IsInRole(Roles.Admin) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
+                PageTitle = User.IsInRole(Roles.SystemAdministrator) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
@@ -86,9 +86,9 @@ namespace Tolk.Web.Controllers
         {
             get
             {
-                bool displayBrokerMessages = !User.TryGetBrokerId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
-                bool displayCustomerMessages = !User.TryGetCustomerOrganisationId().HasValue ? User.IsInRole(Roles.Admin) ? true : false : true;
-                bool displaySuperUserMessages = !User.IsInRole(Roles.SuperUser) ? User.IsInRole(Roles.Admin) ? true : false : true;
+                bool displayBrokerMessages = !User.TryGetBrokerId().HasValue ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
+                bool displayCustomerMessages = !User.TryGetCustomerOrganisationId().HasValue ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
+                bool displayCentralAdministratorMessages = !User.IsInRole(Roles.CentralAdministrator) ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
 
                 return _dbContext.SystemMessages
                     .Where(s => s.ActiveFrom < _clock.SwedenNow
@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
                     && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
                     || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
                     || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
-                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.SuperUsers && displaySuperUserMessages)))
+                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CentralAdministrators && displayCentralAdministratorMessages)))
                     .ToList().OrderByDescending(s => s.SystemMessageType)
                 .ThenByDescending(s => s.LastUpdatedCreatedAt);
             }

@@ -471,7 +471,7 @@ namespace Tolk.Web.Controllers
 
         private RequestModel GetModel(Request request, bool includeLog = false)
         {
-            bool isAdmin = User.IsInRole(Roles.Admin);
+            bool isAdmin = User.IsInRole(Roles.SystemAdministrator);
             var model = RequestModel.GetModelFromRequest(request);
             model.OrderModel.ActiveRequest = model; //We're only interested in the request we have access to
             model.RequestCalculatedPriceInformationModel = GetPriceinformationToDisplay(request);

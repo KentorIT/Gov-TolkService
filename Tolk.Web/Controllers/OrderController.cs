@@ -69,16 +69,16 @@ namespace Tolk.Web.Controllers
             {
                 model = new OrderFilterModel();
             }
-            var isAdmin = User.IsInRole(Roles.Admin);
-            var isSuperUser = User.IsInRole(Roles.SuperUser);
-            model.IsSuperUser = isSuperUser;
+            var isAdmin = User.IsInRole(Roles.SystemAdministrator);
+            var isCentralAdministrator = User.IsInRole(Roles.CentralAdministrator);
+            model.IsCentralAdministrator = isCentralAdministrator;
             model.IsAdmin = isAdmin;
             var orders = _dbContext.Orders.Select(o => o);
 
             if (!isAdmin)
             {
                 orders = orders.Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
-                if (!isSuperUser)
+                if (!isCentralAdministrator)
                 {
                     orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
                 }

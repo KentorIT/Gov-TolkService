@@ -12,7 +12,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.SuperUser)]
+    [Authorize(Roles = Roles.CentralAdministrator)]
     [Authorize(Policy = Policies.Broker)]
     public class WebhookController : Controller
     {
@@ -35,7 +35,7 @@ namespace Tolk.Web.Controllers
                 model = new WebHookFilterModel();
             }
 
-            if (!User.IsInRole(Roles.SuperUser))
+            if (!User.IsInRole(Roles.CentralAdministrator))
             {
                 return Forbid();
             }
@@ -72,7 +72,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult View(int id)
         {
-            if (!User.IsInRole(Roles.SuperUser))
+            if (!User.IsInRole(Roles.CentralAdministrator))
             {
                 return Forbid();
             }
@@ -110,7 +110,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Resend(int WebHookId)
         {
-            if (!User.IsInRole(Roles.SuperUser))
+            if (!User.IsInRole(Roles.CentralAdministrator))
             {
                 return Forbid();
             }

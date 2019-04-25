@@ -41,7 +41,7 @@ namespace Tolk.Web.Controllers
             return View();
         }
 
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = Roles.SystemAdministrator)]
         public ActionResult Dashboard()
         {
             int totalNoOfOrders = _statService.TotalNoOfOrders;
@@ -168,7 +168,7 @@ namespace Tolk.Web.Controllers
             return File(_statService.CreateExcelFile(rows, organisationName, reportType), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         [Authorize(Policy = Policies.Broker)]
         public ActionResult ListLanguages()
         {

@@ -50,14 +50,14 @@ namespace Tolk.Web.Controllers
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
             var userId = User.GetUserId();
-            model.IsCustomerSuperUser = User.IsInRole(Roles.SuperUser) && customerId.HasValue;
+            model.IsCustomerCentralAdministrator = User.IsInRole(Roles.CentralAdministrator) && customerId.HasValue;
             model.IsBrokerUser = brokerId.HasValue;
 
             var items = _dbContext.Complaints
                 .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
                      c.Request.Order.CustomerOrganisationId == customerId);
 
-            if (customerId.HasValue && !model.IsCustomerSuperUser)
+            if (customerId.HasValue && !model.IsCustomerCentralAdministrator)
             {
                 items = items.Where(c => c.Request.Order.CreatedBy == userId || c.Request.Order.ContactPersonId == userId);
             }
@@ -92,7 +92,7 @@ namespace Tolk.Web.Controllers
                 ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint);
                 model.IsBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId);
                 model.IsCustomer = isCustomer;
-                model.IsAdmin = User.IsInRole(Roles.Admin);
+                model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
                 model.AllowAnwserOnDispute = !model.IsAdmin && 
                     complaint.Status == ComplaintStatus.Disputed && 
                     isCustomer && 

@@ -1,5 +1,5 @@
 
--- Create a superUser
+-- Create system admin with impersonator role
 
 DECLARE @userId INT
 
@@ -10,7 +10,7 @@ VALUES
 
 SELECT @userId = SCOPE_IDENTITY()
 
- --lägg in roller för superuser
+ --lägg in roller för impersonator och system admin
 	INSERT INTO AspNetUserRoles (UserId, RoleId)
 	VALUES (@userId, 1), (@userId,2)
 	
@@ -23,7 +23,7 @@ SELECT @userId = SCOPE_IDENTITY()
 
 -- SELECT @userId = SCOPE_IDENTITY()
 
- -- --lägg in roller för superuser
+ -- --lägg in roller för impersonator och system admin
 	-- INSERT INTO AspNetUserRoles (UserId, RoleId)
 	-- VALUES (@userId, 1), (@userId,2)
 	

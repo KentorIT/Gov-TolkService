@@ -25,7 +25,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Besvarad av")]
         public int? BrokerContactId { get; set; }
 
-        public bool IsCustomerSuperUser { get; set; }
+        public bool IsCustomerCentralAdministrator { get; set; }
 
         public bool IsBrokerUser { get; set; }
 

@@ -33,7 +33,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapad av")]
         public int? CreatedBy { get; set; }
 
-        public bool IsSuperUser { get; set; }
+        public bool IsCentralAdministrator { get; set; }
 
         public bool IsAdmin { get; set; }
 

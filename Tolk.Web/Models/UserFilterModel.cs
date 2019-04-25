@@ -79,11 +79,11 @@ namespace Tolk.Web.Models
                 }
                 if ((Roles.Value & UserType.SystemAdministrator) == UserType.SystemAdministrator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.Admin).Id));
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SystemAdministrator).Id));
                 }
                 if ((Roles.Value & UserType.OrganisationAdministrator) == UserType.OrganisationAdministrator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SuperUser).Id) &&
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.CentralAdministrator).Id) &&
                         (u.CustomerOrganisationId != null || u.BrokerId != null));
                 }
             }

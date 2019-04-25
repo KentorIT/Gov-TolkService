@@ -6,7 +6,7 @@
 @inject Tolk.Web.Services.SelectListService SelectListService
 @if (SignInManager.IsSignedIn(User))
 {
-    string infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? "Inloggad superuser: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : "Visa mitt konto";
+    string infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? "Inloggad SystemAdmin: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : "Visa mitt konto";
 <ul class="nav navbar-nav navbar-right">
     <li>
         <a asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>

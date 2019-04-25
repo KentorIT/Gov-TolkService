@@ -13,7 +13,7 @@ using Tolk.Web.Helpers;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = Roles.SystemAdministrator)]
     public class ContractController : Controller
     {
         private readonly TolkDbContext _dbContext;

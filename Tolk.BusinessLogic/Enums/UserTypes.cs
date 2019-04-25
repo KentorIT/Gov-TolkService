@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolkförmedlare")]
         Broker = 2,
 
-        [Description("Administratör på organisation")]
+        [Description("Central administratör på organisation")]
         OrganisationAdministrator = 4,
 
         [Description("Tolk")]

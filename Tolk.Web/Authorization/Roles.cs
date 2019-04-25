@@ -7,9 +7,9 @@ namespace Tolk.Web.Authorization
 {
     public static class Roles
     {
-        public const string Admin = nameof(Admin);
+        public const string SystemAdministrator = nameof(SystemAdministrator);
         public const string Impersonator = nameof(Impersonator);
-        public const string SuperUser = nameof(SuperUser);
-        public const string AdminRoles = nameof(Admin) + ", " + nameof(SuperUser);
+        public const string CentralAdministrator = nameof(CentralAdministrator);
+        public const string AdminRoles = nameof(SystemAdministrator) + ", " + nameof(CentralAdministrator);
     }
 }

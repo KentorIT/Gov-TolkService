@@ -28,7 +28,7 @@
                                 <th>Myndighet</th>
                             }
                             <th>Förmedling</th>
-                            @if (Model.FilterModel.IsSuperUser)
+                            @if (Model.FilterModel.IsCentralAdministrator)
                             {
                                 <th>Skapad av</th>
                             }
@@ -48,7 +48,7 @@
                                 <td class="gray-border-bottom">@item.CustomerName</td>
                             }
 
-                            @if (Model.FilterModel.IsSuperUser)
+                            @if (Model.FilterModel.IsCentralAdministrator)
                             {
                                 <td class="gray-border-bottom">@item.BrokerName</td>
                                 <td class="gray-border-bottom gray-border-right">@item.CreatorName</td>

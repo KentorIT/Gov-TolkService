@@ -75,7 +75,7 @@
                                     <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
                                 </ul>
                             </li>
-                            if (User.IsInRole(Roles.SuperUser))
+                            if (User.IsInRole(Roles.CentralAdministrator))
                             {
                                 <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                 <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
@@ -90,13 +90,13 @@
                                     <li><a class="submenu" asp-area="" asp-controller="Request" asp-action="List">Bokningar</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
-                                    @if (User.IsInRole(Roles.SuperUser))
+                                    @if (User.IsInRole(Roles.CentralAdministrator))
                                     {
                                         <li><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
                                     }
                                 </ul>
                             </li>
-                            if (User.IsInRole(Roles.SuperUser))
+                            if (User.IsInRole(Roles.CentralAdministrator))
                             {
                                 <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                 <li class="dropdown">
@@ -117,7 +117,7 @@
                             <li><a asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
 
                         }
-                        else if (User.IsInRole(Roles.Admin))
+                        else if (User.IsInRole(Roles.SystemAdministrator))
                         {
                             <li><a asp-area="" asp-controller="Order" asp-action="List">Sök bokningar</a></li>
                             <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>

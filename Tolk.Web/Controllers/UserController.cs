@@ -60,7 +60,7 @@ namespace Tolk.Web.Controllers
                 model = new UserFilterModel();
             }
 
-            model.IsSystemAdministrator = User.IsInRole(Roles.Admin);
+            model.IsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator);
 
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
@@ -75,7 +75,7 @@ namespace Tolk.Web.Controllers
                 model.IsBroker = true;
                 users = users.Where(u => u.BrokerId == brokerId);
             }
-            else if (!User.IsInRole(Roles.Admin))
+            else if (!User.IsInRole(Roles.SystemAdministrator))
             {
                 return Forbid();
             }
@@ -104,7 +104,7 @@ namespace Tolk.Web.Controllers
             .SingleOrDefault(u => u.Id == id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
-                int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
+                int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
                 var model = new UserModel
                 {
                     Id = id,
@@ -114,7 +114,7 @@ namespace Tolk.Web.Controllers
                     Email = user.Email,
                     PhoneWork = user.PhoneNumber ?? "-",
                     PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                    IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
+                    IsCentralAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive
@@ -127,7 +127,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> Edit(int id)
         {
-            int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
+            int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
             var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
@@ -140,7 +140,7 @@ namespace Tolk.Web.Controllers
                     NameFamily = user.NameFamily,
                     PhoneWork = user.PhoneNumber,
                     PhoneCellphone = user.PhoneNumberCellphone,
-                    IsSuperUser = user.Roles.Any(r => r.RoleId == superUserId),
+                    IsCentralAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
                     IsActive = user.IsActive
                 };
                 return View(model);
@@ -154,7 +154,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                int superUserId = _roleManager.Roles.Single(r => r.Name == Roles.SuperUser).Id;
+                int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
                 var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
@@ -164,13 +164,13 @@ namespace Tolk.Web.Controllers
                     user.PhoneNumber = model.PhoneWork;
                     user.PhoneNumberCellphone = model.PhoneCellphone;
                     user.IsActive = model.IsActive;
-                    if (model.IsSuperUser && !user.Roles.Any(r => r.RoleId == superUserId))
+                    if (model.IsCentralAdministrator && !user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
-                        await _userManager.AddToRoleAsync(user, Roles.SuperUser);
+                        await _userManager.AddToRoleAsync(user, Roles.CentralAdministrator);
                     }
-                    else if (!model.IsSuperUser && user.Roles.Any(r => r.RoleId == superUserId))
+                    else if (!model.IsCentralAdministrator && user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
-                        await _userManager.RemoveFromRoleAsync(user, Roles.SuperUser);
+                        await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
                     }
                     await _userManager.UpdateAsync(user);
                 }
@@ -180,7 +180,7 @@ namespace Tolk.Web.Controllers
 
         public ActionResult Create()
         {
-            return View(new UserModel { EditorIsSystemAdministrator = User.IsInRole(Roles.Admin) });
+            return View(new UserModel { EditorIsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator) });
         }
 
         [HttpPost]
@@ -191,7 +191,7 @@ namespace Tolk.Web.Controllers
             {
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    model.EditorIsSystemAdministrator = User.IsInRole(Roles.Admin);
+                    model.EditorIsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator);
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
                 }
                 else
@@ -202,7 +202,7 @@ namespace Tolk.Web.Controllers
                         var organisationPrefix = string.Empty;
                         int? customerId = null;
                         int? brokerId = null;
-                        if (!User.IsInRole(Roles.Admin))
+                        if (!User.IsInRole(Roles.SystemAdministrator))
                         {
                             customerId = User.TryGetCustomerOrganisationId();
                             brokerId = User.TryGetBrokerId();
@@ -223,7 +223,7 @@ namespace Tolk.Web.Controllers
                                         brokerId = id;
                                         break;
                                     case OrganisationType.Owner:
-                                        additionalRoles.Add(Roles.Admin);
+                                        additionalRoles.Add(Roles.SystemAdministrator);
                                         organisationPrefix = "KamK";
                                         break;
                                     default:
@@ -248,9 +248,9 @@ namespace Tolk.Web.Controllers
                             CustomerOrganisationId = customerId,
                             BrokerId = brokerId,
                         };
-                        if (model.IsSuperUser)
+                        if (model.IsCentralAdministrator)
                         {
-                            additionalRoles.Add(Roles.SuperUser);
+                            additionalRoles.Add(Roles.CentralAdministrator);
                         }
                         var result = await _userManager.CreateAsync(user);
 
@@ -258,7 +258,7 @@ namespace Tolk.Web.Controllers
                         {
                             if (additionalRoles.Any())
                             {
-                                //Make another admin user
+                                //Make another system administrator user
                                 var roleResult = await _userManager.AddToRolesAsync(user, additionalRoles);
                                 if (!roleResult.Succeeded)
                                 {
@@ -279,7 +279,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public ActionResult ViewOrganisationSettings(string message)
         {
             var brokerId = User.TryGetBrokerId();
@@ -313,7 +313,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public ActionResult EditNotificationSettings()
         {
             var brokerId = User.TryGetBrokerId();
@@ -332,7 +332,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> EditNotificationSettings(IEnumerable<NotificationSettingsModel> model)
         {
             var brokerId = User.TryGetBrokerId();
@@ -365,7 +365,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public ActionResult ChangeApiKey()
         {
             var brokerId = User.TryGetBrokerId();
@@ -386,7 +386,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> ChangeApiKey(ChangeApiKeyModel model)
         {
             if (ModelState.IsValid)
@@ -429,7 +429,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public ActionResult EditOrganisationSettings()
         {
             var brokerId = User.TryGetBrokerId();
@@ -458,7 +458,7 @@ namespace Tolk.Web.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        [Authorize(Roles = Roles.SuperUser)]
+        [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> EditOrganisationSettings(OrganisationSettingsModel model)
         {
             if (ModelState.IsValid)

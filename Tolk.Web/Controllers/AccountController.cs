@@ -501,10 +501,10 @@ namespace Tolk.Web.Controllers
                         {
                             _logger.LogInformation("Created initial user account {0}", user.UserName);
 
-                            result = await _userManager.AddToRolesAsync(user, new[] { Roles.Admin, Roles.Impersonator });
+                            result = await _userManager.AddToRolesAsync(user, new[] { Roles.SystemAdministrator, Roles.Impersonator });
                             if (result.Succeeded)
                             {
-                                _logger.LogInformation("Added {0} to Admin and Impersonator roles", user.UserName);
+                                _logger.LogInformation("Added {0} to System administrator and Impersonator roles", user.UserName);
                                 transaction.Complete();
                                 return RedirectToAction("Index", "Home");
                             }
@@ -528,9 +528,9 @@ namespace Tolk.Web.Controllers
 
             if (model.UserId != User.FindFirstValue(TolkClaimTypes.ImpersonatingUserId))
             {
-                if (newPrincipal.IsInRole(Roles.Admin))
+                if (newPrincipal.IsInRole(Roles.SystemAdministrator))
                 {
-                    throw new InvalidOperationException("Cannot impersonate an admin user");
+                    throw new InvalidOperationException("Cannot impersonate a system administrator user");
                 }
 
                 var newIdentity = newPrincipal.Identities.Single();

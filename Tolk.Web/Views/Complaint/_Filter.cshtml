@@ -25,7 +25,7 @@
                     <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
                 </div>
             }
-            @if (Model.IsCustomerSuperUser)
+            @if (Model.IsCustomerCentralAdministrator)
             {
                 <div class="col-sm-3">
                     <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />

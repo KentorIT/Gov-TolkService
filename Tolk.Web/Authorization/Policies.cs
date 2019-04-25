@@ -42,7 +42,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(ViewMenuAndStartLists, builder => builder.RequireAssertion(ViewMenuAndStartListsHandler));
                 opt.AddPolicy(HasPassword, builder => builder.RequireAssertion(HasPasswordHandler));
                 opt.AddPolicy(TimeTravel, builder =>
-                    builder.RequireRole(Roles.Admin)
+                    builder.RequireRole(Roles.SystemAdministrator)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
                 opt.AddPolicy(CustomerOrAdmin, builder => builder.RequireAssertion(CustomerOrAdminHandler));
             });
@@ -63,7 +63,7 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> CustomerOrAdminHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ||
-                context.User.IsInRole(Roles.Admin);
+                context.User.IsInRole(Roles.SystemAdministrator);
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
@@ -74,17 +74,17 @@ namespace Tolk.Web.Authorization
                 case Order order:
                     return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == context.User.GetUserId();
                 case InterpreterBroker interpreter:
-                    return user.IsInRole(Roles.SuperUser) && interpreter.BrokerId == context.User.TryGetBrokerId();
+                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == context.User.TryGetBrokerId();
                 case AspNetUser editedUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
-                        return user.IsInRole(Roles.SuperUser) && editedUser.BrokerId == user.GetBrokerId();
+                        return user.IsInRole(Roles.CentralAdministrator) && editedUser.BrokerId == user.GetBrokerId();
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.SuperUser) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return user.IsInRole(Roles.CentralAdministrator) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
-                    return user.IsInRole(Roles.Admin);
+                    return user.IsInRole(Roles.SystemAdministrator);
                 default:
                     throw new NotImplementedException();
             }
@@ -206,7 +206,7 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return user.IsInRole(Roles.Admin) || (user.IsInRole(Roles.SuperUser) ?
+                    return user.IsInRole(Roles.SystemAdministrator) || (user.IsInRole(Roles.CentralAdministrator) ?
                         order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                         order.CreatedBy == userId || order.ContactPersonId == userId);
                 case Requisition requisition:
@@ -216,12 +216,12 @@ namespace Tolk.Web.Authorization
                     }
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.SuperUser) ?
+                        return user.IsInRole(Roles.CentralAdministrator) ?
                             requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             requisition.Request.Order.CreatedBy == userId ||
                             requisition.Request.Order.ContactPersonId == userId;
                     }
-                    return user.IsInRole(Roles.Admin);
+                    return user.IsInRole(Roles.SystemAdministrator);
                 case Request request:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -229,7 +229,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.SuperUser) ?
+                        return user.IsInRole(Roles.CentralAdministrator) ?
                             request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             request.Order.CreatedBy == userId ||
                             request.Order.ContactPersonId == userId;
@@ -242,12 +242,12 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.SuperUser) ?
+                        return user.IsInRole(Roles.CentralAdministrator) ?
                             complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             complaint.Request.Order.CreatedBy == userId ||
                             complaint.Request.Order.ContactPersonId == userId;
                     }
-                    return user.IsInRole(Roles.Admin);
+                    return user.IsInRole(Roles.SystemAdministrator);
                 case Attachment attachment:
                     if (!attachment.Requisitions.Any() && !attachment.Requests.Any() && !attachment.Orders.Any())
                     {
@@ -261,7 +261,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        if (user.IsInRole(Roles.SuperUser))
+                        if (user.IsInRole(Roles.CentralAdministrator))
                         {
                             var customerOrganisationId = user.GetCustomerOrganisationId();
                             return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CustomerOrganisationId == customerOrganisationId) ||
@@ -277,19 +277,19 @@ namespace Tolk.Web.Authorization
                                      attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
                         }
                     }
-                    return user.IsInRole(Roles.Admin);
+                    return user.IsInRole(Roles.SystemAdministrator);
                 case AspNetUser viewUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
-                        return user.IsInRole(Roles.SuperUser) && viewUser.BrokerId == user.GetBrokerId();
+                        return user.IsInRole(Roles.CentralAdministrator) && viewUser.BrokerId == user.GetBrokerId();
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.SuperUser) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return user.IsInRole(Roles.CentralAdministrator) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
-                    return user.IsInRole(Roles.Admin);
+                    return user.IsInRole(Roles.SystemAdministrator);
                 case InterpreterBroker interpreter:
-                    return user.IsInRole(Roles.SuperUser) && interpreter.BrokerId == context.User.TryGetBrokerId();
+                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == context.User.TryGetBrokerId();
                 default:
                     throw new NotImplementedException();
             }

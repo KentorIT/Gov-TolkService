@@ -73,7 +73,7 @@ namespace Tolk.Web.Controllers
 
             if (customerId.HasValue)
             {
-                if (User.IsInRole(Roles.SuperUser))
+                if (User.IsInRole(Roles.CentralAdministrator))
                 {
                     requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerId);
                 }
@@ -137,7 +137,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
-                var isAdmin = User.IsInRole(Roles.Admin);
+                var isAdmin = User.IsInRole(Roles.SystemAdministrator);
                 var customerId = User.TryGetCustomerOrganisationId();
                 model.AllowCreation = !isAdmin && !customerId.HasValue 
                     && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)

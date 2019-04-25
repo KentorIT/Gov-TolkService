@@ -323,7 +323,7 @@ namespace Tolk.Web.Services
                 };
                 if (!_cache.TryGetValue(impersonationTargets, out IEnumerable<SelectListItem> items))
                 {
-                    var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.Admin).Id;
+                    var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.SystemAdministrator).Id;
 
                     items = _dbContext.Users
                         .Where(u => u.IsActive && !u.IsApiUser && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))

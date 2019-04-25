@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Myndighetsanvändare")]
         CustomerUsers = 3,
 
-        [Description("Lokala administratörer")]
-        SuperUsers = 4,
+        [Description("Centrala administratörer")]
+        CentralAdministrators = 4,
     }
 }
