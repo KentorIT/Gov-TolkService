@@ -1,14 +1,19 @@
 ﻿@model OrderModel
-
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     string isOrderDetailViewKey = "IsOrderDetailView";
     bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
     int? actionReplacingId = isOrderDetailView ? Model.ReplacingOrderId : Model.ActiveRequest.ReplacingOrderRequestId;
     int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId;
+    HelpLinkService.PageName = isOrderDetailView ? "myndighet-detaljvyer-av-bokningar/" : "formedling-detaljvyer-av-bokningar/";
 }
 <div class="row">
     <div class="col-sm-12 order-header-contract-info">
         Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+        <div class="help-sign-big">
+            @HelpLinkService.HeaderAnchor()
+        </div>
     </div>
 </div>
 @if (!string.IsNullOrEmpty(Model.ActiveRequest.ViewedByUser))

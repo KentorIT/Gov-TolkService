@@ -52,8 +52,7 @@
         }
     </div>
 }
-
-@await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Sammanställning" }, { "showBreadcrumbs", true } })
+@await Html.PartialAsync("_RequisitionSummary", Model, new ViewDataDictionary(ViewData) { { "header", "Sammanställning" }, { "showBreadcrumbs", true }, { "helplink", Model.AllowProcessing ? "myndighet-hantera-rekvisition" : string.Empty } })
 <div class="important-info">
     Observera att rekvisitionen inte alltid visar slutlig kostnad för eventuell bilersättning eller traktamente. Exakta summor för denna typ av poster är inte alltid kända vid tillfället för registrering av rekvisitionen. Dessa kostnader ska beräknas enligt särskilda tabeller i tolktaxan eller enligt Skatteverkets regler.
 </div>
