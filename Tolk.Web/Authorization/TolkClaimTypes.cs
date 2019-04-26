@@ -24,5 +24,9 @@ namespace Tolk.Web.Authorization
         public const string PersonalName = nameof(PersonalName);
 
         public const string IsPasswordSet = nameof(IsPasswordSet);
+
+        public const string AllCustomerUnits = nameof(AllCustomerUnits);
+
+        public const string LocalAdminCustomerUnits = nameof(LocalAdminCustomerUnits);
     }
 }

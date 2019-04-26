@@ -72,5 +72,23 @@ namespace Tolk.Web.Helpers
             }
             return null;
         }
+
+        public static IEnumerable<int> TryGetAllCustomerUnits(this ClaimsPrincipal user)
+        {
+            if (TryGetCustomerOrganisationId(user) != null)
+            {
+                return user.FindAll(TolkClaimTypes.AllCustomerUnits).Select(c => int.Parse(c.Value));
+            }
+            return null;
+        }
+
+        public static IEnumerable<int> TryGetLocalAdminCustomerUnits(this ClaimsPrincipal user)
+        {
+            if (TryGetCustomerOrganisationId(user) != null)
+            {
+                return user.FindAll(TolkClaimTypes.LocalAdminCustomerUnits).Select(c => int.Parse(c.Value));
+            }
+            return null;
+        }
     }
 }

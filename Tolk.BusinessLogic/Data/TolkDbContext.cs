@@ -308,6 +308,40 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(o => o.InactivatedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.Entity<CustomerUnit>()
+                         .HasOne(c => c.CreatedByUser)
+                         .WithMany()
+                         .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CustomerUnit>()
+                .HasOne(c => c.CreatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CustomerUnit>()
+                .HasOne(c => c.InactivatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CustomerUnit>()
+                .HasOne(c => c.InactivatedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CustomerUnitUser>()
+                .HasKey(cu => new { cu.CustomerUnitId, cu.UserId });
+
+            builder.Entity<CustomerUnitUser>()
+                .HasOne(cu => cu.User)
+                .WithMany(g => g.CustomerUnits)
+                .HasForeignKey(map => map.UserId);
+
+            builder.Entity<CustomerUnitUser>()
+                .HasOne(cu => cu.CustomerUnit)
+                .WithMany(g => g.CustomerUnitUsers)
+                .HasForeignKey(map => map.CustomerUnitId);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -389,6 +423,11 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RequestView> RequestViews { get; set; }
 
         public DbSet<FailedWebHookCall> FailedWebHookCalls { get; set; }
+
+        public DbSet<CustomerUnit> CustomerUnits { get; set; }
+
+        public DbSet<CustomerUnitUser> CustomerUnitUsers { get; set; }
+
 
         public static bool isUserStoreInitialized = false;
 

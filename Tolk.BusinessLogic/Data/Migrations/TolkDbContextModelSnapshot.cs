@@ -430,6 +430,66 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerOrganisations");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>
+                {
+                    b.Property<int>("CustomerUnitId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<int>("CreatedBy");
+
+                    b.Property<int>("CustomerOrganisationId");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255);
+
+                    b.Property<int?>("ImpersonatingCreator");
+
+                    b.Property<int?>("ImpersonatingInactivatedBy");
+
+                    b.Property<DateTimeOffset?>("InactivatedAt");
+
+                    b.Property<int?>("InactivatedBy");
+
+                    b.Property<bool>("IsActive");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255);
+
+                    b.HasKey("CustomerUnitId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CustomerOrganisationId");
+
+                    b.HasIndex("ImpersonatingCreator");
+
+                    b.HasIndex("ImpersonatingInactivatedBy");
+
+                    b.HasIndex("InactivatedBy");
+
+                    b.ToTable("CustomerUnits");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUser", b =>
+                {
+                    b.Property<int>("CustomerUnitId");
+
+                    b.Property<int>("UserId");
+
+                    b.Property<bool>("IsLocalAdmin");
+
+                    b.HasKey("CustomerUnitId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomerUnitUsers");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
                 {
                     b.Property<int>("FailedWebHookCallId")
@@ -1692,6 +1752,47 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
                         .WithMany("SubCustomerOrganisations")
                         .HasForeignKey("ParentCustomerOrganisationId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany()
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreator")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "InactivatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingInactivatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "InactivatedByUser")
+                        .WithMany()
+                        .HasForeignKey("InactivatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUser", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerUnit", "CustomerUnit")
+                        .WithMany("CustomerUnitUsers")
+                        .HasForeignKey("CustomerUnitId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
+                        .WithMany("CustomerUnits")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>

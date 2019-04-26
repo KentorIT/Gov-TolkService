@@ -81,6 +81,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<UserLoginLogEntry> LoginLogEntries { get; set; }
 
+        public List<CustomerUnitUser> CustomerUnits { get; set; }
+
+        [NotMapped]
+        public IEnumerable<CustomerUnitUser> CustomerUnitsLocalAdmin => CustomerUnits.Where(cu => cu.IsLocalAdmin);
+
         #endregion
     }
 }

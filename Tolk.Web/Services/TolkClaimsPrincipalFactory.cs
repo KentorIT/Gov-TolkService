@@ -21,7 +21,7 @@ namespace Tolk.Web.Services
             UserManager<AspNetUser> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             IOptions<IdentityOptions> optionsAccessor,
-            TolkDbContext dbContext) 
+            TolkDbContext dbContext)
             : base(userManager, roleManager, optionsAccessor)
         {
             _dbContext = dbContext;
@@ -31,17 +31,17 @@ namespace Tolk.Web.Services
         {
             var identity = await base.GenerateClaimsAsync(user);
 
-            if(user.CustomerOrganisationId.HasValue)
+            if (user.CustomerOrganisationId.HasValue)
             {
                 identity.AddClaim(new Claim(TolkClaimTypes.CustomerOrganisationId, user.CustomerOrganisationId.ToString()));
             }
 
-            if(user.BrokerId.HasValue)
+            if (user.BrokerId.HasValue)
             {
                 identity.AddClaim(new Claim(TolkClaimTypes.BrokerId, user.BrokerId.ToString()));
             }
 
-            if(user.InterpreterId.HasValue)
+            if (user.InterpreterId.HasValue)
             {
                 identity.AddClaim(new Claim(TolkClaimTypes.InterpreterId, user.InterpreterId.ToString()));
             }
@@ -54,6 +54,22 @@ namespace Tolk.Web.Services
             if (!string.IsNullOrEmpty(user.PasswordHash))
             {
                 identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToString()));
+            }
+
+            if (user.CustomerOrganisationId.HasValue)
+            {
+                var customerUnits = _dbContext.CustomerUnitUsers.Where(cu => cu.UserId == user.Id);
+                if (customerUnits.Any())
+                {
+                    foreach (CustomerUnitUser cu in customerUnits)
+                    {
+                        identity.AddClaim(new Claim(TolkClaimTypes.AllCustomerUnits, cu.CustomerUnitId.ToString()));
+                        if (cu.IsLocalAdmin)
+                        {
+                            identity.AddClaim(new Claim(TolkClaimTypes.LocalAdminCustomerUnits, cu.CustomerUnitId.ToString()));
+                        }
+                    }
+                }
             }
 
             return identity;
