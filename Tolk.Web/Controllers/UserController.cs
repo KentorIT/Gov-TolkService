@@ -163,6 +163,10 @@ namespace Tolk.Web.Controllers
                     user.NameFamily = model.NameFamily;
                     user.PhoneNumber = model.PhoneWork;
                     user.PhoneNumberCellphone = model.PhoneCellphone;
+                    if (user.IsActive && !model.IsActive)
+                    {
+                        await _userManager.UpdateSecurityStampAsync(user);
+                    }
                     user.IsActive = model.IsActive;
                     if (model.IsCentralAdministrator && !user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
@@ -172,6 +176,7 @@ namespace Tolk.Web.Controllers
                     {
                         await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
                     }
+
                     await _userManager.UpdateAsync(user);
                 }
             }

@@ -63,11 +63,16 @@ namespace Tolk.Web
                 options.Tokens.EmailConfirmationTokenProvider = EmailConfirmationTokenProviderName;
                 options.Tokens.ChangeEmailTokenProvider = EmailConfirmationTokenProviderName;
             });
+            services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.FromMinutes(5);
+            });
 
             services.Configure<ConfirmEmailDataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromDays(7);
             });
+
             services.AddIdentity<AspNetUser, IdentityRole<int>>(opt =>
             {
                 opt.SignIn.RequireConfirmedEmail = true;
