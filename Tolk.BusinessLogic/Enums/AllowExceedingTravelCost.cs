@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Enums
         YesShouldBeApproved= 1,
 
         [Parent(TrueFalse.Yes)]
-        [Description("Ja, men jag vill inte godkänna bedömd resekostnad i förväg")]
+        [Description("Ja, men jag behöver inte godkänna bedömd resekostnad i förväg")]
         YesShouldNotBeApproved = 2,
 
         [Parent(TrueFalse.No)]
