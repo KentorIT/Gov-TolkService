@@ -1,0 +1,51 @@
+﻿@model CustomerModel
+@{
+    ViewData["Title"] = "Detaljer för " + Model.Name;
+}
+<h2>@ViewData["Title"]</h2>
+@if (!string.IsNullOrEmpty(@Model.Message))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <br />
+            <div class="system-action-info">
+                <span class="glyphicon glyphicon-ok"></span>
+                <span class="info-message">
+                    @Model.Message
+                </span>
+            </div>
+        </div>
+    </div>
+}
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="Name" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="ParentName" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <display-entry asp-for="EmailDomain" />
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="OrganizationPrefix" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        &nbsp;
+    </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="ParentName" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+    </div>
+    <div class="col-sm-4">
+        <a class="btn btn-large btn-default" asp-action="@nameof(Tolk.Web.Controllers.CustomerController.Edit)" asp-route-id="@Model.CustomerId">Ändra</a>
+    </div>
+</div>

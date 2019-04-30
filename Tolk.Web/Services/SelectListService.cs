@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
@@ -76,6 +77,7 @@ namespace Tolk.Web.Services
             .Where(e => e.Value != OrderStatus.DeliveryAccepted)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> PriceListTypes => GetList<PriceListType>();
 
         public static IEnumerable<SelectListItem> AssignmentStatuses => GetList<AssignmentStatus>();
 
@@ -286,6 +288,21 @@ namespace Tolk.Web.Services
                         Value = c.CustomerOrganisationId.ToString(),
                     })
                 .ToList().AsReadOnly();
+        }
+        public IEnumerable<SelectListItem> ParentOrganisations
+        {
+            get
+            {
+                return _dbContext.CustomerOrganisations
+                    .Where(co => co.SubCustomerOrganisations.Any())
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Text = c.Name,
+                        Value = c.CustomerOrganisationId.ToString(),
+                    })
+                .ToList().AsReadOnly();
+            }
         }
 
         public IEnumerable<SelectListItem> CustomerOrganisations

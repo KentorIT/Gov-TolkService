@@ -94,6 +94,8 @@ namespace Tolk.Web.Authorization
                         return user.IsInRole(Roles.CentralAdministrator) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
+                case CustomerOrganisation organisation:
+                    return user.IsInRole(Roles.SystemAdministrator);
                 default:
                     throw new NotImplementedException();
             }
@@ -299,6 +301,8 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.SystemAdministrator);
                 case InterpreterBroker interpreter:
                     return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == context.User.TryGetBrokerId();
+                case CustomerOrganisation organisation:
+                    return user.IsInRole(Roles.SystemAdministrator);
                 default:
                     throw new NotImplementedException();
             }

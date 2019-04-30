@@ -1,0 +1,45 @@
+﻿@model CustomerModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "Skapa myndighet";
+}
+<h2>@ViewData["Title"]</h2>
+@using (Html.BeginForm(FormMethod.Post))
+{
+    <div class="row">
+        <div class="col-sm-4">
+            <form-entry asp-for="Name" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <form-entry asp-for="EmailDomain" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="OrganizationPrefix" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            &nbsp;
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="PriceListType" type="select" asp-items="SelectListService.PriceListTypes" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-default pull-right">Skapa</button>
+        </div>
+    </div>
+}
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

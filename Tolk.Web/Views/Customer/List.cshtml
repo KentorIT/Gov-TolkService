@@ -1,0 +1,52 @@
+﻿@model CustomerListModel
+@using Tolk.BusinessLogic.Utilities
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "Myndigheter i systemet";
+    HelpLinkService.PageName = "myndighet-historik/";
+}
+<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h2>
+<div class="row">
+    @await Html.PartialAsync("_Filter", Model.FilterModel)
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <a class="btn btn-default pull-right" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.Create))">Skapa myndighet</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive table-paging table-datatable">
+                <table class="table table-hover clickable-rows-with-action search-table">
+                    <thead>
+                        <tr>
+                            <th>Namn</th>
+                            <th>Prislista</th>
+                            <th>Föräldermyndighet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr data-id="@item.CustomerId" data-click-action-url="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = item.CustomerId })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.PriceListType)</td>
+                                <td class="gray-border-bottom  gray-border-right">@item.ParentName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (Model.FilterModel.HasActiveFilters)
+        {
+            <span class="no-result-message">
+                Sökningen gav inget resultat.
+            </span>
+        }
+    </div>
+</div>
