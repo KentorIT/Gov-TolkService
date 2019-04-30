@@ -17,7 +17,7 @@
                 <form-entry asp-for="Name" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.UserStatuses" class="allow-clear" />
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
             </div>
             @if (Model.IsSystemAdministrator)
             {

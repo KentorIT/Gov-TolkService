@@ -22,7 +22,7 @@ namespace Tolk.Web.Models
         public UserType? Roles { get; set; }
 
         [Display(Name = "Status")]
-        public UserStatus? Status { get; set; }
+        public ActiveStatus? Status { get; set; }
 
         public string Email { get; set; }
 
@@ -89,7 +89,7 @@ namespace Tolk.Web.Models
             }
             if (Status.HasValue)
             {
-                if (Status.Value == UserStatus.Active)
+                if (Status.Value == ActiveStatus.Active)
                 {
                     users = users.Where(u => u.IsActive);
                 }

@@ -433,7 +433,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> UserStatuses => GetList<UserStatus>();
+        public IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>();
 
         public static IEnumerable<SelectListItem> NotificationTypes => GetList<NotificationType>();
 

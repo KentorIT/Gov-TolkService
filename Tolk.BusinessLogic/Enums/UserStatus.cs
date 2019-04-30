@@ -2,7 +2,7 @@
 
 namespace Tolk.BusinessLogic.Enums
 {
-    public enum UserStatus
+    public enum ActiveStatus
     {
         [Description("Inaktiva")]
         Inactive = 0,

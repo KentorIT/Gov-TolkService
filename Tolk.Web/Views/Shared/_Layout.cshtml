@@ -77,9 +77,20 @@
                             </li>
                             if (User.IsInRole(Roles.CentralAdministrator))
                             {
-                                <li><a asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                                    </ul>
+                                </li>
                                 <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                             }
+                            else if (User.TryGetLocalAdminCustomerUnits().Any())
+                            {
+                                <li><a asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                            }
+
                         }
                         else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
                         {

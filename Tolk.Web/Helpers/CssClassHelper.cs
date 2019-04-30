@@ -39,7 +39,7 @@ namespace Tolk.Web.Helpers
                 : "blue-border-left";
         }
 
-        public static string GetColorClassNameForUserStatus(bool isActive)
+        public static string GetColorClassNameForActiveStatus(bool isActive)
         {
             return isActive ? "green-border-left" : "gray-border-left";
         }

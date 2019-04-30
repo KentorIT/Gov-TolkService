@@ -14,6 +14,6 @@ namespace Tolk.Web.Models
 
         public string OfficialInterpreterId { get; set; }
 
-        public string ColorClassName { get => CssClassHelper.GetColorClassNameForUserStatus(IsActive); }
+        public string ColorClassName { get => CssClassHelper.GetColorClassNameForActiveStatus(IsActive); }
     }
 }
