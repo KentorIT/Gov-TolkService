@@ -7,5 +7,7 @@ namespace Tolk.Web.Models
         public UnitFilterModel FilterModel { get; set; }
 
         public IEnumerable<UnitListItemModel> Items { get; set; }
+
+        public bool AllowCreation { get; set; }
     }
 }

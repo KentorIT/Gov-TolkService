@@ -450,7 +450,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>();
+        public IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>().OrderBy(li => li.Text);
 
         public static IEnumerable<SelectListItem> NotificationTypes => GetList<NotificationType>();
 

@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
@@ -15,49 +14,32 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize(Policies.CentralOrLocalAdmin)]
     public class UnitController : Controller
     {
-        private readonly UserManager<AspNetUser> _userManager;
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger _logger;
-        private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly UserService _userService;
-        private readonly IAuthorizationService _authorizationService;
-        private readonly INotificationService _notificationService;
-        private readonly HashService _hashService;
+        private readonly ISwedishClock _clock;
 
         public UnitController(
-            UserManager<AspNetUser> userManager,
             TolkDbContext dbContext,
-            ILogger<UserController> logger,
-            RoleManager<IdentityRole<int>> roleManager,
-            UserService userService,
-            IAuthorizationService authorizationService,
-            INotificationService notificationService,
-            HashService hashService
+            ISwedishClock clock
         )
         {
-            _userManager = userManager;
             _dbContext = dbContext;
-            _logger = logger;
-            _roleManager = roleManager;
-            _userService = userService;
-            _authorizationService = authorizationService;
-            _notificationService = notificationService;
-            _hashService = hashService;
+            _clock = clock;
         }
 
-        [Authorize(Policies.CentralOrLocalAdmin)]
         public ActionResult List(UnitFilterModel model)
         {
             if (model == null)
             {
                 model = new UnitFilterModel();
             }
-            IEnumerable<int> localAdminUnits = User.TryGetLocalAdminCustomerUnits()?? new List<int>();
+
+            IEnumerable<int> localAdminUnits = User.TryGetLocalAdminCustomerUnits() ?? new List<int>();
             var units = _dbContext.CustomerUnits
                .Include(s => s.CreatedByUser)
-               .Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId() 
+               .Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()
                && (localAdminUnits.Contains(cu.CustomerUnitId) || User.IsInRole(Roles.CentralAdministrator)));
 
             units = model.Apply(units);
@@ -74,8 +56,55 @@ namespace Tolk.Web.Controllers
                     IsActive = cu.IsActive,
                     CustomerUnitId = cu.CustomerUnitId,
                     Email = cu.Email
-                })
+                }),
+                AllowCreation = User.IsInRole(Roles.CentralAdministrator)
             });
+        }
+
+        [Authorize(Roles = Roles.CentralAdministrator)]
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.CentralAdministrator)]
+        public async Task<ActionResult> Create(CustomerUnitModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (!IsUniqueName(model.Name))
+                {
+                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet.");
+                }
+                else if (!IsUniqueEmail(model.Email))
+                {
+                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan för en annan enhet för denna myndighet.");
+                }
+                else
+                {
+                    int? customerId = User.TryGetCustomerOrganisationId();
+                    var unit = new CustomerUnit();
+                    unit.Create(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), model.Name, model.Email, model.LocalAdministrator);
+                    await _dbContext.AddAsync(unit);
+                    await _dbContext.SaveChangesAsync();
+                    return RedirectToAction(nameof(List), new UserFilterModel { });
+                }
+            }
+            return View(model);
+        }
+
+        private bool IsUniqueEmail(string email)
+        {
+            return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
+                && u.Email.ToUpper() == email.ToUpper());
+        }
+
+        private bool IsUniqueName(string name)
+        {
+            return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
+                && u.Name.ToUpper() == name.ToUpper());
         }
     }
 }

@@ -52,5 +52,19 @@ namespace Tolk.BusinessLogic.Entities
         public AspNetUser InactivatedByImpersonator { get; set; }
 
         public List<CustomerUnitUser> CustomerUnitUsers { get; set; }
+
+        public void Create(DateTimeOffset swedenNow, int userId, int? impersonatorId, int customerOrganisationId, string name, string email, int localAdministratorId)
+        {
+            List<CustomerUnitUser> customerUnitUser = new List<CustomerUnitUser>();
+            customerUnitUser.Add(new CustomerUnitUser { IsLocalAdmin = true, UserId = localAdministratorId });
+            CreatedAt = swedenNow;
+            CreatedBy = userId;
+            ImpersonatingCreator = impersonatorId;
+            CustomerOrganisationId = customerOrganisationId;
+            IsActive = true;
+            Name = name;
+            Email = email;
+            CustomerUnitUsers = customerUnitUser;
+        }
     }
 }

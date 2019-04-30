@@ -1,0 +1,39 @@
+﻿@model CustomerUnitModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "Skapa enhet";
+}
+<h2>@ViewData["Title"]</h2>
+
+<form method="post">
+    <div class="row">
+        <div class="col-sm-4">
+            <form-entry asp-for="Name" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="Email" />
+        </div>
+        <div class="col-sm-3">
+            <form-entry asp-for="LocalAdministrator" type="select" asp-items="SelectListService.CustomerUsers" />
+        </div>
+    </div>
+    @*<div class="row">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="col-sm-8 text-danger">@Model.ErrorMessage</div>
+        }
+    </div>*@
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
