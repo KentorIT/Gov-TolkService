@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -648,6 +648,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("CustomerReferenceNumber")
                         .HasMaxLength(100);
 
+                    b.Property<int?>("CustomerUnitId");
+
                     b.Property<string>("Description")
                         .HasMaxLength(1000);
 
@@ -687,6 +689,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("CustomerOrganisationId");
+
+                    b.HasIndex("CustomerUnitId");
 
                     b.HasIndex("ImpersonatingCreator");
 
@@ -1848,6 +1852,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerUnit", "CustomerUnit")
+                        .WithMany()
+                        .HasForeignKey("CustomerUnitId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()

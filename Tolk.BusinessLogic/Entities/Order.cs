@@ -96,6 +96,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(CustomerOrganisationId))]
         public CustomerOrganisation CustomerOrganisation { get; set; }
 
+        public int? CustomerUnitId { get; set; }
+
+        [ForeignKey(nameof(CustomerUnitId))]
+        public CustomerUnit CustomerUnit { get; set; }
+
         public int RegionId { get; set; }
 
         [ForeignKey(nameof(RegionId))]
