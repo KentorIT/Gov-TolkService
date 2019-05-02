@@ -19,14 +19,18 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
+        private readonly IAuthorizationService _authorizationService;
+
 
         public UnitController(
             TolkDbContext dbContext,
-            ISwedishClock clock
+            ISwedishClock clock,
+            IAuthorizationService authorizationService
         )
         {
             _dbContext = dbContext;
             _clock = clock;
+            _authorizationService = authorizationService;
         }
 
         public ActionResult List(UnitFilterModel model)
@@ -93,6 +97,30 @@ namespace Tolk.Web.Controllers
                 }
             }
             return View(model);
+        }
+
+        public async Task<ActionResult> View(int id)
+        {
+            var unit = _dbContext.CustomerUnits
+               .Include(s => s.CreatedByUser)
+               .Include(s => s.InactivatedByUser)
+               .SingleOrDefault(cu => cu.CustomerUnitId == id);
+            if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
+            {
+                var model = new CustomerUnitModel
+                {
+                    Id = id,
+                    Name = unit.Name,
+                    Email = unit.Email,
+                    CreatedAt = unit.CreatedAt,
+                    CreatedBy = unit.CreatedByUser.FullName,
+                    IsActive = unit.IsActive,
+                    InactivatedAt = unit.InactivatedAt,
+                    InactivatedBy = unit.InactivatedByUser?.FullName?? string.Empty
+                };
+                return View(model);
+            }
+            return Forbid();
         }
 
         private bool IsUniqueEmail(string email)

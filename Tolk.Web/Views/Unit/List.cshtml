@@ -31,7 +31,7 @@
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
-                            <tr data-id="@item.CustomerUnitId" data-click-action-url="@Url.Action("Edit", "SystemMessage", new { id = item.CustomerUnitId})">
+                            <tr data-id="@item.CustomerUnitId" data-click-action-url="@Url.Action("View", new { id = item.CustomerUnitId})">
                                 <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
                                 <td class="gray-border-bottom">@item.Email</td>
                                 <td class="gray-border-bottom">@item.CreatedBy</td>

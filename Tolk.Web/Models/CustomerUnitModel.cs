@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Tolk.Web.Helpers;
+using System;
 
 namespace Tolk.Web.Models
 {
     public class CustomerUnitModel
     {
+        public int Id { get; set; }
 
         [Display(Name = "Namn")]
         [Required]
@@ -21,5 +22,20 @@ namespace Tolk.Web.Models
         [Display(Name = "Lokal administratör")]
         [Required]
         public int LocalAdministrator { get; set; }
+
+        [Display(Name = "Skapad")]
+        public DateTimeOffset CreatedAt { get; set; }
+
+        [Display(Name = "Skapad av")]
+        public string CreatedBy { get; set; }
+
+        [Display(Name = "Aktiv")]
+        public bool IsActive { get; set; }
+
+        [Display(Name = "Inkativerad")]
+        public DateTimeOffset? InactivatedAt { get; set; }
+
+        [Display(Name = "Inaktiverad av")]
+        public string InactivatedBy { get; set; }
     }
 }
