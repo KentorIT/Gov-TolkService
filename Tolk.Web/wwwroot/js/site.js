@@ -275,7 +275,7 @@ $.fn.extend({
     tolkWizard: function (opts) {
         var $wizard = $(".wizard");
         var options = $.extend({}, opts);
-        opts.validationFalseHandler = function (result) { result.focusInvalid(); }
+        opts.validationFalseHandler = function (result) { result.focusInvalid(); };
         opts.onloadHandler = function () {
             $wizard.find(".wizard-step:not(.wizard-step-hidden)").each(function () {
                 if (options.onloadHandler !== undefined) {
