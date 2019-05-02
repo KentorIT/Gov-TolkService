@@ -10,6 +10,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.Collections.Generic;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -65,6 +66,14 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            IEnumerable<CustomerUnit> customerUnits = null;
+            if (customerOrganisationId != null)
+            {
+                customerUnits = _dbContext.CustomerUnits
+                    .Include(cu => cu.CustomerUnitUsers)
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id));
+            }
 
             var model = new AccountViewModel
             {
@@ -75,6 +84,12 @@ namespace Tolk.Web.Controllers
                 Email = user.Email ?? "-",
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
+                CustomerUnits = customerUnits == null ? null : customerUnits.Select(cu => new Models.UnitUserModel
+                {
+                    IsActive = cu.IsActive,
+                    Name = cu.Name,
+                    IsLocalAdmin = cu.CustomerUnitUsers.SingleOrDefault(cuu => cuu.UserId == User.GetUserId()).IsLocalAdmin
+                })
             };
 
             return View(model);

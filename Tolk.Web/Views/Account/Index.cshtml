@@ -2,9 +2,7 @@
 @{
     ViewData["Title"] = "Mitt konto";
 }
-
 <h2>@Model.NameFull</h2>
-
 <div class="row">
     <div class="col-sm-4">
         <display-entry asp-for="NameFirst" />
@@ -30,3 +28,34 @@
         <a class="btn btn-primary btn-large" asp-action="Edit">Ändra uppgifter</a>
     </div>
 </div>
+@if (Model.CustomerUnits != null && Model.CustomerUnits.Any())
+{
+    <div class="row">
+        <div class="col-sm-12">
+            <h3>Mina enheter</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table search-table">
+                        <thead>
+                            <tr>
+                                <th>Enhetens namn</th>
+                                <th>Är lokal administratör</th>
+                                <th>Enhet aktiv</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.CustomerUnits)
+                            {
+                                <tr>
+                                    <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                    <td class="gray-border-bottom">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
+                                    <td class="gray-border-bottom gray-border-right">@(item.IsActive ? "Ja" : "Nej")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
