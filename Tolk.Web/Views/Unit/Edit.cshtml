@@ -1,0 +1,42 @@
+﻿@model CustomerUnitModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@{
+    ViewData["Title"] = "Ändra enhetsuppgifter";
+}
+<h2>@ViewData["Title"]</h2>
+
+<form method="post">
+    <div class="row">
+        <div class="col-sm-4">
+            <input asp-for="Id" type="hidden" />
+            <form-entry asp-for="Name" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="Email" />
+        </div>
+        <div class="col-sm-4">
+            @if (Model.IsCentralAdministrator)
+            {
+                <form-entry asp-for="IsActive" />
+            }
+            else
+            {
+                <input asp-for="IsActive" type="hidden" />
+                <display-entry asp-for="IsActive" />
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

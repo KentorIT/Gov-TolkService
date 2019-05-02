@@ -66,5 +66,18 @@ namespace Tolk.BusinessLogic.Entities
             Email = email;
             CustomerUnitUsers = customerUnitUser;
         }
+
+        public void Update(DateTimeOffset swedenNow, int userId, int? impersonatorId, string name, string email, bool isActive)
+        {
+            if (!isActive && IsActive)
+            {
+                InactivatedAt = swedenNow;
+                InactivatedBy = userId;
+                ImpersonatingInactivatedBy = impersonatorId;
+            }
+            IsActive = isActive;
+            Name = name;
+            Email = email;
+        }
     }
 }

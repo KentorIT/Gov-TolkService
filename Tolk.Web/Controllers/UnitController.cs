@@ -93,7 +93,7 @@ namespace Tolk.Web.Controllers
                     unit.Create(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), model.Name, model.Email, model.LocalAdministrator);
                     await _dbContext.AddAsync(unit);
                     await _dbContext.SaveChangesAsync();
-                    return RedirectToAction(nameof(List), new UserFilterModel { });
+                    return RedirectToAction(nameof(List));
                 }
             }
             return View(model);
@@ -116,23 +116,75 @@ namespace Tolk.Web.Controllers
                     CreatedBy = unit.CreatedByUser.FullName,
                     IsActive = unit.IsActive,
                     InactivatedAt = unit.InactivatedAt,
-                    InactivatedBy = unit.InactivatedByUser?.FullName?? string.Empty
+                    InactivatedBy = unit.InactivatedByUser?.FullName ?? string.Empty
                 };
                 return View(model);
             }
             return Forbid();
         }
 
-        private bool IsUniqueEmail(string email)
+        public async Task<ActionResult> Edit(int id)
         {
-            return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Email.ToUpper() == email.ToUpper());
+            var unit = _dbContext.CustomerUnits
+               .Include(s => s.CreatedByUser)
+               .Include(s => s.InactivatedByUser)
+               .SingleOrDefault(cu => cu.CustomerUnitId == id);
+            if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
+            {
+                var model = new CustomerUnitModel
+                {
+                    Id = id,
+                    Name = unit.Name,
+                    Email = unit.Email,
+                    IsActive = unit.IsActive,
+                    IsCentralAdministrator = User.IsInRole(Roles.CentralAdministrator)
+                };
+                return View(model);
+            }
+            return Forbid();
         }
 
-        private bool IsUniqueName(string name)
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Edit(CustomerUnitModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (!IsUniqueName(model.Name, model.Id))
+                {
+                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet.");
+                }
+                else if (!IsUniqueEmail(model.Email, model.Id))
+                {
+                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan för en annan enhet för denna myndighet.");
+                }
+                else
+                {
+                    var unit = _dbContext.CustomerUnits
+                    .SingleOrDefault(cu => cu.CustomerUnitId == model.Id);
+                    if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
+                    {
+                        unit.Update(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Name, model.Email, model.IsActive);
+                        await _dbContext.SaveChangesAsync();
+                        return RedirectToAction(nameof(View), new { id = model.Id });
+                    }
+                    return Forbid();
+                }
+                model.IsCentralAdministrator = User.IsInRole(Roles.CentralAdministrator);
+            }
+            return View(model);
+        }
+
+        private bool IsUniqueEmail(string email, int? customerUnitId = null)
         {
             return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Name.ToUpper() == name.ToUpper());
+                && u.Email.ToUpper() == email.ToUpper() && u.CustomerUnitId != customerUnitId);
+        }
+
+        private bool IsUniqueName(string name, int? customerUnitId = null)
+        {
+            return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
+                && u.Name.ToUpper() == name.ToUpper() && u.CustomerUnitId != customerUnitId);
         }
     }
 }

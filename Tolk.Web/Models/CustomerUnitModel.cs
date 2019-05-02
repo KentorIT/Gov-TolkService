@@ -37,5 +37,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Inaktiverad av")]
         public string InactivatedBy { get; set; }
+
+        public bool IsCentralAdministrator { get; set; }
     }
 }

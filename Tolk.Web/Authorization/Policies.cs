@@ -96,6 +96,8 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator);
+                case CustomerUnit unit:
+                    return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId)) && unit.CustomerOrganisationId == context.User.TryGetCustomerOrganisationId();
                 default:
                     throw new NotImplementedException();
             }
