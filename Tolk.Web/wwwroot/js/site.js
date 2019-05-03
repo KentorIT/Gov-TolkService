@@ -159,7 +159,7 @@ $(function () {
         $(this).closest("form").submit();
     });
 
-    $(".table-paging table").DataTable({
+    $(".standard-table table").DataTable({
         searching: false,
         order: [[0, 'desc']],
         language: {
@@ -175,6 +175,35 @@ $(function () {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }
     });
+
+    $(".ajax-listing table").each(
+        function () {
+            var $table = $(this);
+            $.ajax({
+                dataType: 'json',
+                url: tolkBaseUrl + $table.data("ajax-column-definition"),
+                success: function (json) {
+                    var $columnDefinition = json;
+                    $table.DataTable({
+                        serverSide: true,
+                        searching: true,
+                        paging: true,
+                        dom:"lrtip",
+                        autoWidth: false,
+                        createdRow: function (row, data, dataIndex) {
+                            $(row).data("id", data.id);
+                            $(row).data("click-action-url", $table.data("click-action-url") + "/" + data.id);
+                        },
+                        ajax: tolkBaseUrl + $table.data("ajax-path"),
+                        columns: $columnDefinition,
+                        language: {
+                            url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+                        }
+                    });
+                }
+            });
+        });
+
 
     $("body").on("click", ".btn-datatable", function (e) {
         e.stopPropagation();

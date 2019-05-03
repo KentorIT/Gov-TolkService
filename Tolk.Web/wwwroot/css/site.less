@@ -1306,7 +1306,7 @@ input.force-validation {
     border: none;
 }
 
-.startlist-row > tbody > tr, .clickable-rows-with-action > tbody > tr {
+.startlist-row > tbody > tr, .full-row-height > tbody > tr {
     font-weight: 300;
     height: 70px;
 }
@@ -1372,6 +1372,23 @@ input.force-validation {
     .gray-border-left;
     .gray-border-right;
     .gray-border-top;
+}
+
+.ajax-listing table {
+    tbody > tr {
+
+        td {
+            &:last-child {
+                .gray-border-right;
+            }
+
+            &:first-child {
+                .gray-border-left;
+            }
+
+            .gray-border-bottom
+        }
+    }
 }
 
 .sorting {
