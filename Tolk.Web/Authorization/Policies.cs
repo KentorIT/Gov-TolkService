@@ -24,7 +24,8 @@ namespace Tolk.Web.Authorization
         public const string ViewMenuAndStartLists = nameof(ViewMenuAndStartLists);
         public const string HasPassword = nameof(HasPassword);
         public const string CustomerOrAdmin = nameof(CustomerOrAdmin);
-        public const string CentralOrLocalAdmin = nameof(CentralOrLocalAdmin);
+        public const string CentralLocalAdminCustomer = nameof(CentralLocalAdminCustomer);
+        public const string SystemCentralLocalAdmin = nameof(SystemCentralLocalAdmin);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
         {
@@ -46,7 +47,8 @@ namespace Tolk.Web.Authorization
                     builder.RequireRole(Roles.SystemAdministrator)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
                 opt.AddPolicy(CustomerOrAdmin, builder => builder.RequireAssertion(CustomerOrAdminHandler));
-                opt.AddPolicy(CentralOrLocalAdmin, builder => builder.RequireAssertion(CentralOrLocalAdminHandler));
+                opt.AddPolicy(CentralLocalAdminCustomer, builder => builder.RequireAssertion(CentralLocalAdminHandler));
+                opt.AddPolicy(SystemCentralLocalAdmin, builder => builder.RequireAssertion(SystemCentralLocalAdminHandler));
             });
 
             services.AddSingleton<IAuthorizationHandler, TolkOptionsRequirementHandler>();
@@ -68,12 +70,18 @@ namespace Tolk.Web.Authorization
                 context.User.IsInRole(Roles.SystemAdministrator);
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CentralOrLocalAdminHandler = (context) =>
+        private readonly static Func<AuthorizationHandlerContext, bool> CentralLocalAdminHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) &&
                (context.User.IsInRole(Roles.CentralAdministrator) || context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits));
         };
 
+        private readonly static Func<AuthorizationHandlerContext, bool> SystemCentralLocalAdminHandler = (context) =>
+        {
+            return (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits)) 
+            || context.User.IsInRole(Roles.CentralAdministrator) 
+            || context.User.IsInRole(Roles.SystemAdministrator);
+        };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
         {

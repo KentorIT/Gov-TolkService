@@ -126,5 +126,11 @@
     "inputFiles": [
       "wwwroot/js/User/EditNotificationSettings.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/User/UnitUser.min.js",
+    "inputFiles": [
+      "wwwroot/js/User/UnitUser.js"
+    ]
   }
 ]

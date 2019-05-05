@@ -20,7 +20,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.AdminRoles)]
+    [Authorize(Policies.SystemCentralLocalAdmin)]
     public class UserController : Controller
     {
         private readonly UserManager<AspNetUser> _userManager;
@@ -185,7 +185,38 @@ namespace Tolk.Web.Controllers
 
         public ActionResult Create()
         {
-            return View(new UserModel { EditorIsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator) });
+            IEnumerable<CustomerUnit> customerUnits = null;
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            if (customerOrganisationId.HasValue)
+            {
+                customerUnits = GetCustomerUnits(customerOrganisationId.Value);
+            }
+            List<UnitUserModel> unitUsers = null;
+            if (customerUnits != null && customerUnits.Any())
+            {
+                unitUsers = customerUnits.OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu =>
+                    new UnitUserModel
+                    {
+                        IsActive = cu.IsActive,
+                        IsLocalAdmin = false,
+                        Name = cu.Name,
+                        UserIsConnected = (customerUnits.Count() == 1 && GetUserType() == UserType.LocalAdministrator) ? true : false,
+                        CustomerUnitId = cu.CustomerUnitId
+                    }).ToList();
+            }
+            return View(new UserModel { UserType = GetUserType(), UnitUsers = unitUsers });
+        }
+
+        private UserType GetUserType()
+        {
+            return User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator : User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
+        }
+
+        private IEnumerable<CustomerUnit> GetCustomerUnits(int customerOrganisationId)
+        {
+            return User.IsInRole(Roles.CentralAdministrator) ?
+                   _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId) :
+                   _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == User.GetUserId() && cuu.IsLocalAdmin));
         }
 
         [HttpPost]
@@ -194,10 +225,38 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                bool serversideValid = true;
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    model.EditorIsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator);
+                    serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
+                }
+                else if (GetUserType() == UserType.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet.");
+                }
+                if (!serversideValid)
+                { 
+                if (model.UnitUsers != null && model.UnitUsers.Any())
+                    {
+                        List<CustomerUnit> customerUnits = GetCustomerUnits(User.GetCustomerOrganisationId()).ToList();
+
+                        var unitUsers = (from unitUser in model.UnitUsers
+                                        join customerUnit in customerUnits on unitUser.CustomerUnitId
+                                        equals customerUnit.CustomerUnitId
+                                        select
+                                        new UnitUserModel
+                                        {
+                                            IsActive = customerUnit.IsActive,
+                                            IsLocalAdmin = unitUser.IsLocalAdmin,
+                                            Name = customerUnit.Name,
+                                            UserIsConnected = unitUser.UserIsConnected,
+                                            CustomerUnitId = customerUnit.CustomerUnitId
+                                        }).ToList();
+                        model.UnitUsers = unitUsers;
+                    }
+                    model.UserType = GetUserType();
                 }
                 else
                 {
@@ -244,6 +303,15 @@ namespace Tolk.Web.Controllers
                         {
                             organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganizationPrefix;
                         }
+                        List<CustomerUnitUser> unitUsers = new List<CustomerUnitUser>();
+
+                        if (model.UnitUsers != null)
+                        {
+                            foreach (UnitUserModel um in model.UnitUsers.Where(mu => mu.UserIsConnected))
+                            {
+                                unitUsers.Add(new CustomerUnitUser { IsLocalAdmin = um.IsLocalAdmin, CustomerUnitId = um.CustomerUnitId });
+                            }
+                        }
 
                         var user = new AspNetUser(model.Email,
                             _userService.GenerateUserName(model.NameFirst, model.NameFamily, organisationPrefix),
@@ -252,6 +320,7 @@ namespace Tolk.Web.Controllers
                         {
                             CustomerOrganisationId = customerId,
                             BrokerId = brokerId,
+                            CustomerUnits = unitUsers.Any() ? unitUsers : null
                         };
                         if (model.IsCentralAdministrator)
                         {
@@ -271,7 +340,6 @@ namespace Tolk.Web.Controllers
                                 }
                             }
                             await _userService.SendInviteAsync(user);
-
                             await _userService.LogCreateAsync(user.Id, User.GetUserId());
 
                             trn.Commit();
@@ -423,7 +491,7 @@ namespace Tolk.Web.Controllers
                             }
 
                             var salt = _hashService.CreateSalt(32);
-                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", _hashService.GenerateHash( model.ApiKey, salt)));
+                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", _hashService.GenerateHash(model.ApiKey, salt)));
                             await _userManager.AddClaimAsync(apiUser, new Claim("Salt", salt));
                             transaction.Complete();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });

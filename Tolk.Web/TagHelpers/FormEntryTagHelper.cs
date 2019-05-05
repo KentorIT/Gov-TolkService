@@ -381,7 +381,10 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteCheckBoxInLabel(TextWriter writer, ModelExplorer modelExplorer, string name)
         {
-            var labelBuilder = GenerateLabel();
+            bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItem>(
+                modelExplorer.Metadata.ContainerType,
+                modelExplorer.Metadata.PropertyName);
+            var labelBuilder = GenerateLabel(IsSubItem);
 
             var checkboxBuilder = _htmlGenerator.GenerateCheckBox(
                 ViewContext,

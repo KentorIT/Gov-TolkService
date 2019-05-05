@@ -20,5 +20,8 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Systemadministratör")]
         SystemAdministrator = 16,
+
+        [Description("Lokal administratör")]
+        LocalAdministrator = 32,
     }
 }

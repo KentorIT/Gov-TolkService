@@ -72,7 +72,8 @@ namespace Tolk.Web.Controllers
             {
                 customerUnits = _dbContext.CustomerUnits
                     .Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id));
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId 
+                    && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id)).OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
             }
 
             var model = new AccountViewModel

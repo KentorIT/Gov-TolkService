@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using Tolk.Web.Helpers;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
@@ -59,7 +57,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
 
-        public bool EditorIsSystemAdministrator { get; set; }
+        public UserType UserType { get; set; }
+
+        public List<UnitUserModel> UnitUsers { get; set; }
 
         /// <summary>
         /// If set, the server code found some error that slipped through the client sides fingers.

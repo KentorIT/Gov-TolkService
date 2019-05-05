@@ -14,7 +14,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policies.CentralOrLocalAdmin)]
+    [Authorize(Policies.CentralLocalAdminCustomer)]
     public class UnitController : Controller
     {
         private readonly TolkDbContext _dbContext;
