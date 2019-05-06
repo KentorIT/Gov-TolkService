@@ -33,5 +33,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<AspNetUserClaimHistoryEntry> ClaimsHistory { get; set; }
 
         public List<UserNotificationSettingHistoryEntry> NotificationsHistory { get; set; }
+
+        public List<CustomerUnitUserHistoryEntry> CustomerunitUsersHistory { get; set; }
     }
 }

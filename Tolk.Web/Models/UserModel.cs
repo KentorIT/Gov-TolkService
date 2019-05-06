@@ -61,6 +61,8 @@ namespace Tolk.Web.Models
 
         public List<UnitUserModel> UnitUsers { get; set; }
 
+        public List<UnitUserModel> NonEditableUnitUsers { get; set; }
+
         public bool HasSelectedOrganisation { get; set; }
 
         /// <summary>

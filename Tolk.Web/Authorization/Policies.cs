@@ -99,7 +99,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.CentralAdministrator) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Any()) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerOrganisation organisation:
@@ -306,7 +306,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.CentralAdministrator) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Any()) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case InterpreterBroker interpreter:

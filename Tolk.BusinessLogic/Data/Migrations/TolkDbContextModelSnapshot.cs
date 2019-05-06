@@ -490,6 +490,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerUnitUsers");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUserHistoryEntry", b =>
+                {
+                    b.Property<int>("CustomerUnitUserHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CustomerUnitId");
+
+                    b.Property<bool>("IsLocalAdmin");
+
+                    b.Property<int>("UserAuditLogEntryId");
+
+                    b.HasKey("CustomerUnitUserHistoryEntryId");
+
+                    b.HasIndex("UserAuditLogEntryId");
+
+                    b.ToTable("CustomerUnitUserHistoryEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
                 {
                     b.Property<int>("FailedWebHookCallId")
@@ -1796,6 +1815,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("CustomerUnits")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUserHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
+                        .WithMany("CustomerunitUsersHistory")
+                        .HasForeignKey("UserAuditLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

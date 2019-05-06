@@ -153,6 +153,11 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
+                CustomerunitUsersHistory = currentUserInformation.CustomerUnits.Select(c => new CustomerUnitUserHistoryEntry
+                {
+                    CustomerUnitId = c.CustomerUnitId,
+                    IsLocalAdmin = c.IsLocalAdmin,
+                }).ToList(),
             });
             await _dbContext.SaveChangesAsync();
         }

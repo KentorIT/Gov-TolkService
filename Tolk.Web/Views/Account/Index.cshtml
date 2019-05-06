@@ -39,18 +39,18 @@
                         <thead>
                             <tr>
                                 <th>Enhetens namn</th>
+                                <th>Enhetens status</th>
                                 <th>Är lokal administratör</th>
-                                <th>Enhet aktiv</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model.CustomerUnits)
                             {
-                                <tr>
-                                    <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
-                                    <td class="gray-border-bottom">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
-                                    <td class="gray-border-bottom gray-border-right">@(item.IsActive ? "Ja" : "Nej")</td>
-                                </tr>
+                            <tr>
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                <td class="gray-border-bottom">@(item.IsActive ? "Aktiv" : "Inaktiv")</td>
+                                <td class="gray-border-bottom gray-border-right">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
+                            </tr>
                             }
                         </tbody>
                     </table>

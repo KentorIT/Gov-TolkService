@@ -128,7 +128,34 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Edit(int id)
         {
             int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
-            var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == id);
+            var user = _userManager.Users.Include(u => u.Roles)
+                .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit).SingleOrDefault(u => u.Id == id);
+            IEnumerable<CustomerUnit> customerUnits = LoggedInCustomerUnits;
+
+            var unitUsers = customerUnits?.Select(cu => new UnitUserModel
+            {
+                UserIsConnected = user.CustomerUnits.Any(c => c.CustomerUnitId == cu.CustomerUnitId),
+                CustomerUnitId = cu.CustomerUnitId,
+                IsActive = cu.IsActive,
+                Name = cu.Name,
+                IsLocalAdmin = user.CustomerUnitsLocalAdmin.Any(c => c.CustomerUnitId == cu.CustomerUnitId),
+            });
+
+            //get non editable list with unit users where editor user is not localadmin
+            IEnumerable<UnitUserModel> nonEditableUnitUsers = null;
+            if (unitUsers != null && LoggedInUserType == UserType.LocalAdministrator)
+            {
+                nonEditableUnitUsers = user.CustomerUnits.Where(c => !unitUsers.Select(uu => uu.CustomerUnitId).Contains(c.CustomerUnitId))
+                    .Select(cu => new UnitUserModel
+                {
+                    UserIsConnected = true,
+                    CustomerUnitId = cu.CustomerUnitId,
+                    IsActive = cu.CustomerUnit.IsActive,
+                    Name = cu.CustomerUnit.Name,
+                    IsLocalAdmin = cu.IsLocalAdmin
+                });
+            }
+
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
                 var model = new UserModel
@@ -141,7 +168,11 @@ namespace Tolk.Web.Controllers
                     PhoneWork = user.PhoneNumber,
                     PhoneCellphone = user.PhoneNumberCellphone,
                     IsCentralAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    UserType = LoggedInUserType,
+                    UnitUsers = unitUsers?.OrderByDescending(uu => uu.UserIsConnected).ThenByDescending(uu => uu.IsLocalAdmin)
+                        .ThenByDescending(uu => uu.IsActive).ThenBy(uu => uu.Name).ToList(),
+                    NonEditableUnitUsers = nonEditableUnitUsers?.OrderBy(n => n.IsActive).ThenBy(n => n.Name).ToList()
                 };
                 return View(model);
             }
@@ -155,7 +186,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
-                var user = _userManager.Users.Include(u => u.Roles).SingleOrDefault(u => u.Id == model.Id);
+                var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
                     await _userService.LogOnUpdateAsync(model.Id.Value);
@@ -176,7 +207,33 @@ namespace Tolk.Web.Controllers
                     {
                         await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
                     }
-
+                    if (model.UnitUsers != null)
+                    {
+                        List<CustomerUnitUser> unitsToRemove = new List<CustomerUnitUser>();
+                        foreach (CustomerUnitUser cu in user.CustomerUnits)
+                        {
+                            var tempUnitUser = model.UnitUsers.Where(mu => mu.UserIsConnected).ToList().SingleOrDefault(c => c.CustomerUnitId == cu.CustomerUnitId);
+                            //if still connected update IsLocalAdmin
+                            if (tempUnitUser != null)
+                            {
+                                cu.IsLocalAdmin = tempUnitUser.IsLocalAdmin;
+                            }
+                            //else check if CustomerUnitId exixts in model list - if so remove it
+                            else if (model.UnitUsers.Select(mu => mu.CustomerUnitId).Contains(cu.CustomerUnitId))
+                            {
+                                unitsToRemove.Add(cu);
+                            }
+                        }
+                        //check if any new connected units that should be added
+                        foreach (UnitUserModel uum in model.UnitUsers.Where(mu => mu.UserIsConnected && !user.CustomerUnits.Select(cu => cu.CustomerUnitId).Contains(mu.CustomerUnitId)))
+                        {
+                            user.CustomerUnits.Add(new CustomerUnitUser { IsLocalAdmin = uum.IsLocalAdmin, CustomerUnitId = uum.CustomerUnitId });
+                        }
+                        if (unitsToRemove.Any())
+                        {
+                            _dbContext.CustomerUnitUsers.RemoveRange(unitsToRemove);
+                        }
+                    }
                     await _userManager.UpdateAsync(user);
                 }
             }
@@ -185,7 +242,6 @@ namespace Tolk.Web.Controllers
 
         public ActionResult Create(int? customerId = null)
         {
-            IEnumerable<CustomerUnit> customerUnits = null;
             bool hasSelectedCustomer = false;
             string customerName = string.Empty;
             var customerOrganisationId = User.TryGetCustomerOrganisationId();
@@ -198,10 +254,7 @@ namespace Tolk.Web.Controllers
                 //I.e. hidden field for OrganisationIdentifier and a display field for Organisation
 
             }
-            if (customerOrganisationId.HasValue)
-            {
-                customerUnits = GetCustomerUnits(customerOrganisationId.Value);
-            }
+            IEnumerable<CustomerUnit> customerUnits = LoggedInCustomerUnits;
             List<UnitUserModel> unitUsers = null;
             if (customerUnits != null && customerUnits.Any())
             {
@@ -211,13 +264,13 @@ namespace Tolk.Web.Controllers
                         IsActive = cu.IsActive,
                         IsLocalAdmin = false,
                         Name = cu.Name,
-                        UserIsConnected = (customerUnits.Count() == 1 && GetUserType() == UserType.LocalAdministrator) ? true : false,
+                        UserIsConnected = (customerUnits.Count() == 1 && LoggedInUserType == UserType.LocalAdministrator) ? true : false,
                         CustomerUnitId = cu.CustomerUnitId
                     }).ToList();
             }
             return View(new UserModel
             {
-                UserType = GetUserType(),
+                UserType = LoggedInUserType,
                 UnitUsers = unitUsers,
                 HasSelectedOrganisation = hasSelectedCustomer,
                 OrganisationIdentifier = hasSelectedCustomer ? $"{customerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}" : null,
@@ -225,17 +278,15 @@ namespace Tolk.Web.Controllers
             });
         }
 
-        private UserType GetUserType()
-        {
-            return User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator : User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
-        }
+        private UserType LoggedInUserType => User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator
+            : User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
 
-        private IEnumerable<CustomerUnit> GetCustomerUnits(int customerOrganisationId)
-        {
-            return User.IsInRole(Roles.CentralAdministrator) ?
-                   _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId) :
-                   _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == User.GetUserId() && cuu.IsLocalAdmin));
-        }
+
+        private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?
+            User.IsInRole(Roles.CentralAdministrator) ?
+            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()) :
+            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()
+            && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == User.GetUserId() && cuu.IsLocalAdmin)) : null;
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -249,7 +300,7 @@ namespace Tolk.Web.Controllers
                     serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
                 }
-                else if (GetUserType() == UserType.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
+                else if (LoggedInUserType == UserType.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
                 {
                     serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet.");
@@ -258,7 +309,7 @@ namespace Tolk.Web.Controllers
                 {
                     if (model.UnitUsers != null && model.UnitUsers.Any())
                     {
-                        List<CustomerUnit> customerUnits = GetCustomerUnits(User.GetCustomerOrganisationId()).ToList();
+                        List<CustomerUnit> customerUnits = LoggedInCustomerUnits.ToList();
 
                         var unitUsers = (from unitUser in model.UnitUsers
                                          join customerUnit in customerUnits on unitUser.CustomerUnitId
@@ -274,7 +325,7 @@ namespace Tolk.Web.Controllers
                                          }).ToList();
                         model.UnitUsers = unitUsers;
                     }
-                    model.UserType = GetUserType();
+                    model.UserType = LoggedInUserType;
                 }
                 else
                 {
@@ -472,7 +523,6 @@ namespace Tolk.Web.Controllers
                 }
             }
             return Forbid();
-
         }
 
         [ValidateAntiForgeryToken]
