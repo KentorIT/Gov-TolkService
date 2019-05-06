@@ -29,7 +29,15 @@
         <div class="col-sm-4">
             @if (Model.UserType == UserType.SystemAdministrator)
             {
-                <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                if (Model.HasSelectedOrganisation)
+                {
+                    <input asp-for="OrganisationIdentifier" type="hidden" />
+                    <display-entry asp-for="Organisation" />
+                }
+                else
+                {
+                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                }
             }
         </div>
         <div class="col-sm-4">

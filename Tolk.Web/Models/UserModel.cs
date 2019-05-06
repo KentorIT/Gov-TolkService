@@ -61,6 +61,8 @@ namespace Tolk.Web.Models
 
         public List<UnitUserModel> UnitUsers { get; set; }
 
+        public bool HasSelectedOrganisation { get; set; }
+
         /// <summary>
         /// If set, the server code found some error that slipped through the client sides fingers.
         /// </summary>

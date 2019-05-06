@@ -48,6 +48,9 @@
     <div class="col-sm-4">
         <a class="btn btn-large btn-default" asp-action="@nameof(Tolk.Web.Controllers.CustomerController.Edit)" asp-route-id="@Model.CustomerId">Ändra</a>
     </div>
+    <div class="col-sm-4">
+        <a class="btn btn-large btn-warning" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerId="@Model.CustomerId">Skapa användare</a>
+    </div>
 </div>
 <div class="row">
     <div class="col-sm-12">

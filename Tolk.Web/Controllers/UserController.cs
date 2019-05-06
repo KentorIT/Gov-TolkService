@@ -183,10 +183,21 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), model);
         }
 
-        public ActionResult Create()
+        public ActionResult Create(int? customerId = null)
         {
             IEnumerable<CustomerUnit> customerUnits = null;
+            bool hasSelectedCustomer = false;
+            string customerName = string.Empty;
             var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            if (!customerOrganisationId.HasValue && customerId.HasValue)
+            {
+                customerOrganisationId = customerId;
+                hasSelectedCustomer = true;
+                customerName = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).Name;
+                //Set the OrganisationIdentifier, and make the ui just show the name of the organisation instead.
+                //I.e. hidden field for OrganisationIdentifier and a display field for Organisation
+
+            }
             if (customerOrganisationId.HasValue)
             {
                 customerUnits = GetCustomerUnits(customerOrganisationId.Value);
@@ -204,7 +215,14 @@ namespace Tolk.Web.Controllers
                         CustomerUnitId = cu.CustomerUnitId
                     }).ToList();
             }
-            return View(new UserModel { UserType = GetUserType(), UnitUsers = unitUsers });
+            return View(new UserModel
+            {
+                UserType = GetUserType(),
+                UnitUsers = unitUsers,
+                HasSelectedOrganisation = hasSelectedCustomer,
+                OrganisationIdentifier = hasSelectedCustomer ? $"{customerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}" : null,
+                Organisation = customerName,
+            });
         }
 
         private UserType GetUserType()
@@ -237,23 +255,23 @@ namespace Tolk.Web.Controllers
                     ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet.");
                 }
                 if (!serversideValid)
-                { 
-                if (model.UnitUsers != null && model.UnitUsers.Any())
+                {
+                    if (model.UnitUsers != null && model.UnitUsers.Any())
                     {
                         List<CustomerUnit> customerUnits = GetCustomerUnits(User.GetCustomerOrganisationId()).ToList();
 
                         var unitUsers = (from unitUser in model.UnitUsers
-                                        join customerUnit in customerUnits on unitUser.CustomerUnitId
-                                        equals customerUnit.CustomerUnitId
-                                        select
-                                        new UnitUserModel
-                                        {
-                                            IsActive = customerUnit.IsActive,
-                                            IsLocalAdmin = unitUser.IsLocalAdmin,
-                                            Name = customerUnit.Name,
-                                            UserIsConnected = unitUser.UserIsConnected,
-                                            CustomerUnitId = customerUnit.CustomerUnitId
-                                        }).ToList();
+                                         join customerUnit in customerUnits on unitUser.CustomerUnitId
+                                         equals customerUnit.CustomerUnitId
+                                         select
+                                         new UnitUserModel
+                                         {
+                                             IsActive = customerUnit.IsActive,
+                                             IsLocalAdmin = unitUser.IsLocalAdmin,
+                                             Name = customerUnit.Name,
+                                             UserIsConnected = unitUser.UserIsConnected,
+                                             CustomerUnitId = customerUnit.CustomerUnitId
+                                         }).ToList();
                         model.UnitUsers = unitUsers;
                     }
                     model.UserType = GetUserType();
