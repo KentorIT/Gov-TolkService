@@ -52,10 +52,10 @@ namespace Tolk.BusinessLogic.Enums
         // 2xx = not valid
         // Interpreter is undoubtedly not found or not valid
         //Tolken finns ej i Kammarkollegiets tolkregister.
-        [Description("Tolk finns ej i registret")]
+        [Description("Kompetens kunde ej verifieras")]
         NotFound = 200,
         //Tolken finns i Kammarkollegiets tolkregister, men saknar den eftersökta kompetensen.
-        [Description("Tolk har ej förväntad kompetens")]
+        [Description("Kompetens kunde ej verifieras")]
         NotCorrectCompetence = 201,
         [Description("Språk ej registrerat")]
         LanguageNotRegistered = 202,
@@ -64,12 +64,12 @@ namespace Tolk.BusinessLogic.Enums
         #region Validity undetermined
         // 3xx = validity undetermined
         // Interpreter found and has competence, but validity can't be determined
-        [Description("Kompetens har ingen fastställd utgångstid")]
+        [Description("Kompetens kunde ej verifieras")]
         CompetenceValidityExpiryUndefined = 300,
         //Tolken är eller har varit giltig, men giltigheten kommer preliminärt att vara utgången vid bokningstillfället.
-        [Description("Kompetens inte giltig vid bokat tillfälle")]
+        [Description("Kompetens kunde ej verifieras")]
         CompetenceExpiredAtAssignment = 301,
-        [Description("Kompetens inte giltig vid bokat tillfälle")]
+        [Description("Kompetens kunde ej verifieras")]
         CompetenceValidAfterAssignment = 302,
         #endregion
 
