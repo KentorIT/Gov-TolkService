@@ -17,25 +17,24 @@ namespace Tolk.BusinessLogic.Enums
         OtherInterpreter = 1,
 
         [CustomName("educated_interpreter")]
-        [TellusName("Educated")]
         [Parent(CompetenceLevel.EducatedInterpreter)]
         [Description("Utbildad tolk")]
         EducatedInterpreter = 2,
 
         [CustomName("authorized_interpreter")]
-        [TellusName("Authorized")]
+        [TellusName("1")]
         [Parent(CompetenceLevel.AuthorizedInterpreter)]
         [Description("Auktoriserad tolk")]
         AuthorizedInterpreter = 3,
 
         [CustomName("health_care_specialist_interpreter")]
-        [TellusName("Medical")]
+        [TellusName("3")]
         [Parent(CompetenceLevel.SpecializedInterpreter)]
         [Description("Sjukvårdstolk")]
         HealthCareSpecialist = 4,
 
         [CustomName("legal_specialist_interpreter")]
-        [TellusName("Legal")]
+        [TellusName("2")]
         [Parent(CompetenceLevel.SpecializedInterpreter)]
         [Description("Rättstolk")]
         CourtSpecialist = 5,

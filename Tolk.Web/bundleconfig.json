@@ -132,5 +132,17 @@
     "inputFiles": [
       "wwwroot/js/User/UnitUser.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Request/ValidateInterpreter.min.js",
+    "inputFiles": [
+      "wwwroot/js/Request/ValidateInterpreter.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Request/View.min.js",
+    "inputFiles": [
+      "wwwroot/js/Request/View.js"
+    ]
   }
 ]

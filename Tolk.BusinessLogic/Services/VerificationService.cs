@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -45,29 +45,44 @@ namespace Tolk.BusinessLogic.Services
                     client.DefaultRequestHeaders.Accept.Clear();
                     var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                     string content = await response.Content.ReadAsStringAsync();
-                    var information = content != EmptyResult ? JsonConvert.DeserializeObject<TellusInterpreterModel>(content) : null;
-                    if (information == null)
+                    var information = JsonConvert.DeserializeObject<TellusResponse>(content);
+
+                    if (information.TotalMatching < 1)
                     {
                         return VerificationResult.NotFound;
                     }
-                    var competences = information.Competences.Where(c => c.Language == order.Language.TellusName);
-                    if (competences.Any(c => c.CompetenceLevel == competenceLevel.GetTellusName()))
+                    var interpreter = information.Result.First();
+                    if (competenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter)
                     {
-                        var competence = competences.Single(c => c.CompetenceLevel == competenceLevel.GetTellusName());
-                        if (competence.IsValidAt(order.StartAt))
-                        {
-                            return VerificationResult.Validated;
-                        }
-                        return VerificationResult.CompetenceExpiredAtAssignment;
+                        return VerifyInterpreter(order.StartAt,
+                            interpreter.Educations.Where(c => c.Language == order.Language.TellusName));
                     }
-                    return VerificationResult.NotCorrectCompetence;
+                    else
+                    {
+                        return VerifyInterpreter(order.StartAt,
+                            interpreter.Competences.Where(c => c.Language == order.Language.TellusName &&
+                                c.Competencelevel.Id == competenceLevel.GetTellusName()));
+                    }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e, $"Failed to verify the interpreter against {_tolkBaseOptions.Tellus.Uri}");
                 return VerificationResult.UnknownError;
             }
+        }
+
+        public static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)
+        {
+            if (levels.Any())
+            {
+                if (levels.Any(e => e.IsValidAt(startAt)))
+                {
+                    return VerificationResult.Validated;
+                }
+                return VerificationResult.CompetenceExpiredAtAssignment;
+            }
+            return VerificationResult.NotCorrectCompetence;
         }
     }
 }

@@ -18,13 +18,7 @@ namespace Tolk.Web.Controllers
         [Route("Get")]
         public JsonResult Get(string id)
         {
-            dynamic result = _tellusService.GetInterpreter(id);
-            if (result == null)
-            {
-                // Actual API returns an empty array if no result was found
-                result = new int[] { };
-            }
-            return Json(result);
+            return Json(_tellusService.GetInterpreter(id));
         }
     }
 }
