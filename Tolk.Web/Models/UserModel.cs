@@ -65,6 +65,8 @@ namespace Tolk.Web.Models
 
         public bool HasSelectedOrganisation { get; set; }
 
+        public bool HasSelectedCustomerunit { get; set; }
+
         /// <summary>
         /// If set, the server code found some error that slipped through the client sides fingers.
         /// </summary>

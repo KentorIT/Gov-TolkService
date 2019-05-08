@@ -47,12 +47,12 @@ namespace Tolk.Web.Services
             })
             .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString());  
+        public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString());
 
-        public static IEnumerable<SelectListItem> SearchableRolesForCustomers => 
-            GetList(new List<UserType>(){UserType.OrderCreator, UserType.OrganisationAdministrator});
+        public static IEnumerable<SelectListItem> SearchableRolesForCustomers =>
+            GetList(new List<UserType>() { UserType.OrderCreator, UserType.OrganisationAdministrator });
 
-        public static IEnumerable<SelectListItem> SearchableRolesForBrokers => 
+        public static IEnumerable<SelectListItem> SearchableRolesForBrokers =>
             GetList(new List<UserType>() { UserType.Broker, UserType.OrganisationAdministrator });
 
         public static IEnumerable<SelectListItem> ComplaintStatuses => GetList<ComplaintStatus>();
@@ -387,6 +387,20 @@ namespace Tolk.Web.Services
                         Value = u.Id.ToString(),
                     }).ToList();
             }
+        }
+
+        public IEnumerable<SelectListItem> CustomerUsersNotForCurrentUnit(int customerUnitId)
+        {
+            var currentUser = _httpContextAccessor.HttpContext.User;
+            return _dbContext.Users
+                .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId() 
+                && u.Id != currentUser.GetUserId() 
+                && !u.CustomerUnits.Any(cu => cu.CustomerUnitId == customerUnitId))
+                .Select(u => new SelectListItem
+                {
+                    Text = $"{u.FullName} ({u.Email})",
+                    Value = u.Id.ToString(),
+                }).OrderBy(e => e.Text).ToList();
         }
 
         public IEnumerable<SelectListItem> BrokerUsers

@@ -153,7 +153,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
-                CustomerunitUsersHistory = currentUserInformation.CustomerUnits.Select(c => new CustomerUnitUserHistoryEntry
+                CustomerunitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
                 {
                     CustomerUnitId = c.CustomerUnitId,
                     IsLocalAdmin = c.IsLocalAdmin,
@@ -178,6 +178,26 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ConnectionInformation = n.ConnectionInformation,
                     NotificationChannel = n.NotificationChannel,
                     NotificationType = n.NotificationType,
+                }).ToList(),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null)
+        {
+            AspNetUser currentUserInformation = _dbContext.Users
+                            .Include(u => u.NotificationSettings)
+                            .SingleOrDefault(u => u.Id == userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UserChangeType = UserChangeType.UpdatedCustomerUnitUserOnly,
+                CustomerunitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
+                {
+                    CustomerUnitId = c.CustomerUnitId,
+                    IsLocalAdmin = c.IsLocalAdmin,
                 }).ToList(),
             });
             await _dbContext.SaveChangesAsync();

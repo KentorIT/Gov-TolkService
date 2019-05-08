@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
@@ -127,7 +128,7 @@ namespace Tolk.Web.Controllers
         public IActionResult ListUsers(int id, IDataTablesRequest request)
         {
             // NEED TO APPLY SORT ORDER?
-            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == id).Select(u => new UserListItem
+            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == id).Select(u => new DynamicUserListItemModel
             {
                 Id = u.Id,
                 FirstName = u.NameFirst,
@@ -211,15 +212,7 @@ namespace Tolk.Web.Controllers
         public bool Sortable { get; set; } = true;
         public bool Searchable { get; set; } = false;
         public bool Visible { get; set; } = true;
-
     }
 
-    public class UserListItem
-    {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
 
-        public string Email { get; set; }
-    }
 }

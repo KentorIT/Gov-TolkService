@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
+using System.Collections.Generic;
+using Tolk.Web.Controllers;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class CustomerUnitModel
     {
-        public int Id { get; set; }
+        public int CustomerUnitId { get; set; }
 
         [Display(Name = "Namn")]
         [Required]
@@ -39,5 +42,18 @@ namespace Tolk.Web.Models
         public string InactivatedBy { get; set; }
 
         public bool IsCentralAdministrator { get; set; }
+
+        public IEnumerable<DynamicUserListItemModel> UnitUsers { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public string Message { get; set; }
+
+        [ClientRequired]
+        [Display(Name = "Användare att koppla till enhet")]
+        public int? ConnectUserId { get; set; }
+
+        [Display(Name = "Sätt som lokal administratör")]
+        public bool IsLocalAdministrator { get; set; }
     }
 }

@@ -433,6 +433,11 @@ select:-webkit-autofill:focus {
   vertical-align: middle;
   line-height: normal;
 }
+.btn-remove-times-small {
+  font-size: 20px;
+  vertical-align: middle;
+  line-height: normal;
+}
 .btn-small-remove-times {
   font-size: 20px;
   vertical-align: middle;

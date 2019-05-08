@@ -70,7 +70,15 @@
                                 </td>
                                 <td class="gray-border-bottom gray-border-right col-sm-4">
                                     <div class="select-connect col-sm-6">
-                                        <form-entry asp-for="UnitUsers[i].UserIsConnected" />
+                                        @if (Model.HasSelectedCustomerunit)
+                                        {
+                                            <input asp-for="UnitUsers[i].UserIsConnected" type="hidden" />
+                                            <div>Användare kopplad</div>
+                                        }
+                                        else
+                                        {
+                                            <form-entry asp-for="UnitUsers[i].UserIsConnected" />
+                                        }
                                     </div>
                                     <div class="select-localadmin col-sm-6">
                                         <form-entry asp-for="UnitUsers[i].IsLocalAdmin" />

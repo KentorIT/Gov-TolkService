@@ -97,11 +97,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> View(int id)
         {
-            var user = _userManager.Users
-            .Include(u => u.Roles)
-            .Include(u => u.CustomerOrganisation)
-            .Include(u => u.Broker)
-            .SingleOrDefault(u => u.Id == id);
+            var user = GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
                 int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
@@ -147,13 +143,13 @@ namespace Tolk.Web.Controllers
             {
                 nonEditableUnitUsers = user.CustomerUnits.Where(c => !unitUsers.Select(uu => uu.CustomerUnitId).Contains(c.CustomerUnitId))
                     .Select(cu => new UnitUserModel
-                {
-                    UserIsConnected = true,
-                    CustomerUnitId = cu.CustomerUnitId,
-                    IsActive = cu.CustomerUnit.IsActive,
-                    Name = cu.CustomerUnit.Name,
-                    IsLocalAdmin = cu.IsLocalAdmin
-                });
+                    {
+                        UserIsConnected = true,
+                        CustomerUnitId = cu.CustomerUnitId,
+                        IsActive = cu.CustomerUnit.IsActive,
+                        Name = cu.CustomerUnit.Name,
+                        IsLocalAdmin = cu.IsLocalAdmin
+                    });
             }
 
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
@@ -189,6 +185,7 @@ namespace Tolk.Web.Controllers
                 var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
+                    //shouldn't we send editor user to LogOnUpdateAsync below?
                     await _userService.LogOnUpdateAsync(model.Id.Value);
                     user.NameFirst = model.NameFirst;
                     user.NameFamily = model.NameFamily;
@@ -240,7 +237,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), model);
         }
 
-        public ActionResult Create(int? customerId = null)
+        public ActionResult Create(int? customerId = null, int? customerUnitId = null)
         {
             bool hasSelectedCustomer = false;
             string customerName = string.Empty;
@@ -258,15 +255,16 @@ namespace Tolk.Web.Controllers
             List<UnitUserModel> unitUsers = null;
             if (customerUnits != null && customerUnits.Any())
             {
-                unitUsers = customerUnits.OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu =>
+                customerUnits = customerUnitId.HasValue ? customerUnits.Where(cu => cu.CustomerUnitId == customerUnitId) : customerUnits;
+                unitUsers = customerUnits.OrderByDescending(items => items.IsActive).ThenBy(items => items.Name).Select(cu =>
                     new UnitUserModel
                     {
                         IsActive = cu.IsActive,
                         IsLocalAdmin = false,
                         Name = cu.Name,
-                        UserIsConnected = (customerUnits.Count() == 1 && LoggedInUserType == UserType.LocalAdministrator) ? true : false,
+                        UserIsConnected = (customerUnitId.HasValue && customerUnitId == cu.CustomerUnitId) ? true : (customerUnits.Count() == 1 && LoggedInUserType == UserType.LocalAdministrator) ? true : false,
                         CustomerUnitId = cu.CustomerUnitId
-                    }).ToList();
+                    }).OrderByDescending(items => items.UserIsConnected).ToList();
             }
             return View(new UserModel
             {
@@ -275,6 +273,7 @@ namespace Tolk.Web.Controllers
                 HasSelectedOrganisation = hasSelectedCustomer,
                 OrganisationIdentifier = hasSelectedCustomer ? $"{customerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}" : null,
                 Organisation = customerName,
+                HasSelectedCustomerunit = customerUnitId.HasValue
             });
         }
 
@@ -568,6 +567,97 @@ namespace Tolk.Web.Controllers
                 }
             }
             return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
+        public async Task<ActionResult> DisconnectUser(string combinedId)
+        {
+            var unitUser = GetUnitUser(combinedId);
+            var user = GetUserToHandle(unitUser.UserId);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            {
+                if (unitUser != null)
+                {
+                    if (IfLastUserWithLocalAdmin(unitUser))
+                    {
+                        return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, errorMessage = $"Det går inte att ta bort {user.FullName} som lokal administratör då enheten måste ha minst en användare som lokal administratör. Gör en annan användare till lokal administratör före borttag." });
+                    }
+                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
+                    _dbContext.CustomerUnitUsers.Remove(unitUser);
+                    _dbContext.SaveChanges();
+                    return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = $"{user.FullName} är bortkopplad från enheten" });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
+        public async Task<ActionResult> ChangeLocalAdmin(string combinedId)
+        {
+            var unitUser = GetUnitUser(combinedId);
+            var user = GetUserToHandle(unitUser.UserId);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            {
+                if (unitUser != null)
+                {
+                    if (IfLastUserWithLocalAdmin(unitUser))
+                    {
+                        return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, errorMessage = $"Det går inte att ta bort {user.FullName} som lokal administratör då enheten måste ha minst en användare som lokal administratör. Gör en annan användare till lokal administratör före borttag." });
+                    }
+                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
+                    unitUser.IsLocalAdmin = !unitUser.IsLocalAdmin;
+                    _dbContext.SaveChanges();
+                }
+                return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = $"Lokal administratör ändrad för {user.FullName}" });
+            }
+            return Forbid();
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
+        public async Task<ActionResult> ConnectUserToUnit(ConnectUserUnitModel model)
+        {
+            if (!model.ConnectUserId.HasValue)
+            {
+                return RedirectToAction("Users", "Unit", new { id = model.CustomerUnitId, errorMessage = "Du valde ingen befintlig användare att koppla till enheten, försök igen" });
+            }
+            var user = GetUserToHandle(model.ConnectUserId.Value);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
+            {
+                await _userService.LogCustomerUnitUserUpdateAsync(model.ConnectUserId.Value, User.GetUserId());
+                _dbContext.CustomerUnitUsers.Add(new CustomerUnitUser { CustomerUnitId = model.CustomerUnitId, UserId = model.ConnectUserId.Value, IsLocalAdmin = model.IsLocalAdministrator });
+                _dbContext.SaveChanges();
+                return RedirectToAction("Users", "Unit", new { id = model.CustomerUnitId, message = $"{user.FullName} är nu kopplad till enheten" });
+            }
+            return Forbid();
+        }
+
+        private AspNetUser GetUserToHandle(int userId)
+        {
+            return _userManager.Users
+            .Include(u => u.Roles)
+            .Include(u => u.CustomerOrganisation)
+            .Include(u => u.Broker)
+            .SingleOrDefault(u => u.Id == userId);
+        }
+
+        private CustomerUnitUser GetUnitUser(string combinedId)
+        {
+            int userId = Convert.ToInt32(combinedId.Split("_")[0]);
+            int customerUnitId = Convert.ToInt32(combinedId.Split("_")[1]);
+            return _dbContext.CustomerUnitUsers
+                .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
+        }
+
+        private bool IfLastUserWithLocalAdmin(CustomerUnitUser unitUser)
+        {
+            return unitUser.IsLocalAdmin && !_dbContext.CustomerUnitUsers.Where(cu => cu.CustomerUnitId == unitUser.CustomerUnitId && cu.UserId != unitUser.UserId && cu.IsLocalAdmin).Any();
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]

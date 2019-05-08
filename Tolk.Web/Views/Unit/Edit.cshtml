@@ -9,7 +9,7 @@
 <form method="post">
     <div class="row">
         <div class="col-sm-4">
-            <input asp-for="Id" type="hidden" />
+            <input asp-for="CustomerUnitId" type="hidden" />
             <form-entry asp-for="Name" />
         </div>
         <div class="col-sm-4">
@@ -29,7 +29,7 @@
     </div>
     <div class="row">
         <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.CustomerUnitId })">Avbryt <span class="btn-remove-times">&times;</span></a>
         </div>
         <div class="col-sm-4">
             <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>

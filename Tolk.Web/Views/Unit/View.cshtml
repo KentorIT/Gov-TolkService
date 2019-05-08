@@ -26,15 +26,10 @@
         <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
     </div>
     <div class="col-sm-4">
-        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id">Ändra enhetsuppgifter</a>
+        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.CustomerUnitId">Ändra enhetsuppgifter</a>
     </div>
     <div class="col-sm-4">
-        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id">Lägg till/ta bort användare</a>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-8">
-        <h3>Användare</h3>
+        <a class="btn btn-large btn-default" asp-action="Users" asp-route-id="@Model.CustomerUnitId">Hantera användare</a>
     </div>
 </div>
 

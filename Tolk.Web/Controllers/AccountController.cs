@@ -85,7 +85,7 @@ namespace Tolk.Web.Controllers
                 Email = user.Email ?? "-",
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                CustomerUnits = customerUnits == null ? null : customerUnits.Select(cu => new Models.UnitUserModel
+                CustomerUnits = customerUnits?.Select(cu => new Models.UnitUserModel
                 {
                     IsActive = cu.IsActive,
                     Name = cu.Name,
