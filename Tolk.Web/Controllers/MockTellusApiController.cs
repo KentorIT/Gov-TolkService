@@ -20,5 +20,12 @@ namespace Tolk.Web.Controllers
         {
             return Json(_tellusService.GetInterpreter(id));
         }
+
+        [HttpGet]
+        [Route("Languages")]
+        public JsonResult Languages()
+        {
+            return Json(_tellusService.GetLanguages());
+        }
     }
 }

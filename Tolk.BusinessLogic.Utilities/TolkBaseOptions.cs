@@ -15,6 +15,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             public bool IsActivated { get; set; }
             public string Uri { get; set; }
+            public string LanguagesUri { get; set; }
         }
 
         public class Environment

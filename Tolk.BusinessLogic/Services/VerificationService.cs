@@ -45,7 +45,7 @@ namespace Tolk.BusinessLogic.Services
                     client.DefaultRequestHeaders.Accept.Clear();
                     var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                     string content = await response.Content.ReadAsStringAsync();
-                    var information = JsonConvert.DeserializeObject<TellusResponse>(content);
+                    var information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
 
                     if (information.TotalMatching < 1)
                     {
@@ -72,7 +72,35 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)
+        public async Task<ValidateTellusLanguageListResult> ValidateTellusLanguageList()
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
+                string content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+
+                if (result.Status != 200)
+                {
+                    // Make sure that a mail is sent, maybe by throwing?
+                    throw new HttpRequestException("Det gick inte bra att nå tellus!");
+                }
+                var tellusLanguages = result.Result;
+                var currentLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) ).ToList();
+                return new ValidateTellusLanguageListResult
+                {
+                    NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id)),
+                    RemovedLanguages = currentLanguages.Where(l => !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
+                    {
+                        Id = l.TellusName,
+                        Value = l.Name
+                    })
+                };
+            }
+        }
+
+        private static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)
         {
             if (levels.Any())
             {
@@ -84,5 +112,12 @@ namespace Tolk.BusinessLogic.Services
             }
             return VerificationResult.NotCorrectCompetence;
         }
+    }
+    public class ValidateTellusLanguageListResult
+    {
+        public IEnumerable<TellusLanguageModel> NewLanguages { get; set; }
+        public IEnumerable<TellusLanguageModel> RemovedLanguages { get; set; }
+
+        public bool FoundChanges => NewLanguages.Any() || RemovedLanguages.Any();
     }
 }

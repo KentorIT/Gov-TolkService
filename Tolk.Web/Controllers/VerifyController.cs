@@ -47,6 +47,14 @@ namespace Tolk.Web.Controllers
             return WrapResultInJson(await _verificationService.VerifyInterpreter(officialInterpreterId, orderId, competenceLevel));
         }
 
+#warning REMOVE, JUST FOR TEST!!!
+        [HttpGet]
+        public async Task<JsonResult> VerifyLanguages()
+        {
+            return Json(await _verificationService.ValidateTellusLanguageList());
+        }
+
+
         private JsonResult WrapResultInJson(VerificationResult result)
         {
             return Json(new VerificationResultModel

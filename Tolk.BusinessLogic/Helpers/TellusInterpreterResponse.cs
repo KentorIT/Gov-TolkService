@@ -2,10 +2,10 @@
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public class TellusResponse
+    public class TellusInterpreterResponse
     {
-        public IEnumerable<TellusInterpreterModel> Result { get; set; }
         public int Status { get; set; }
         public int TotalMatching { get; set; }
+        public IEnumerable<TellusInterpreterModel> Result { get; set; }
     }
 }
