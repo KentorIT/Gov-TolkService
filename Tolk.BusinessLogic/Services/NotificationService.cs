@@ -27,6 +27,8 @@ namespace Tolk.BusinessLogic.Services
 
         private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
+        private const string requireApprovementText = "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
+
         private static readonly HttpClient client = new HttpClient();
 
         public NotificationService(
@@ -518,8 +520,7 @@ Sammanställning:
         public void RequestAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-
-            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. Du behöver godkänna de beräknade resekostnaderna.\n\n" +
+            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {requireApprovementText}\n\n" +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToString("HH:mm")}" +
                     GetPossibleInfoNotValidatedInterpreter(request);
@@ -559,7 +560,7 @@ Sammanställning:
             switch (request.Status)
             {
                 case RequestStatus.Accepted:
-                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. Du behöver godkänna de beräknade resekostnaderna.";
+                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {requireApprovementText}";
                     CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         body + GotoOrderPlain(request.Order.OrderId),
                         HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
@@ -593,7 +594,7 @@ Sammanställning:
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                 (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
-                    "Du behöver godkänna de beräknade resekostnaderna." :
+                    requireApprovementText :
                     "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.") +
                     GetPossibleInfoNotValidatedInterpreter(request);
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
@@ -651,8 +652,8 @@ Sammanställning:
         {
             string orderNumber = request.Order.OrderNumber;
             string body =  $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
-            + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk." : "accepterats.")
-            + " Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
+            + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
+            + requireApprovementText;
 
             CreateEmail(GetRecipiantsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
                 body + GotoOrderPlain(request.Order.OrderId),
