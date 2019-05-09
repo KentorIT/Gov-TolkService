@@ -43,7 +43,6 @@ namespace Tolk.Web.Controllers
                 model = new UnitFilterModel();
             }
 
-
             IEnumerable<int> localAdminUnits = User.TryGetLocalAdminCustomerUnits() ?? new List<int>();
             var units = _dbContext.CustomerUnits
                .Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()
@@ -104,47 +103,55 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> View(int id)
         {
-            var unit = _dbContext.CustomerUnits
-               .Include(s => s.CreatedByUser)
-               .Include(s => s.InactivatedByUser)
-               .SingleOrDefault(cu => cu.CustomerUnitId == id);
-            if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
+            var unit = GetUnitToHandle(id);
+            if (unit != null)
             {
-                var model = new CustomerUnitModel
+                if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
                 {
-                    CustomerUnitId = id,
-                    Name = unit.Name,
-                    Email = unit.Email,
-                    CreatedAt = unit.CreatedAt,
-                    CreatedBy = unit.CreatedByUser.FullName,
-                    IsActive = unit.IsActive,
-                    InactivatedAt = unit.InactivatedAt,
-                    InactivatedBy = unit.InactivatedByUser?.FullName ?? string.Empty
-                };
-                return View(model);
+                    var model = new CustomerUnitModel
+                    {
+                        CustomerUnitId = id,
+                        Name = unit.Name,
+                        Email = unit.Email,
+                        CreatedAt = unit.CreatedAt,
+                        CreatedBy = unit.CreatedByUser.FullName,
+                        IsActive = unit.IsActive,
+                        InactivatedAt = unit.InactivatedAt,
+                        InactivatedBy = unit.InactivatedByUser?.FullName ?? string.Empty
+                    };
+                    return View(model);
+                }
             }
             return Forbid();
         }
 
         public async Task<ActionResult> Edit(int id)
         {
-            var unit = _dbContext.CustomerUnits
+            var unit = GetUnitToHandle(id);
+            if (unit != null)
+            {
+                if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
+                {
+                    var model = new CustomerUnitModel
+                    {
+                        CustomerUnitId = id,
+                        Name = unit.Name,
+                        Email = unit.Email,
+                        IsActive = unit.IsActive,
+                        IsCentralAdministrator = User.IsInRole(Roles.CentralAdministrator)
+                    };
+                    return View(model);
+                }
+            }
+            return Forbid();
+        }
+
+        private CustomerUnit GetUnitToHandle(int id)
+        {
+            return _dbContext.CustomerUnits
                .Include(s => s.CreatedByUser)
                .Include(s => s.InactivatedByUser)
                .SingleOrDefault(cu => cu.CustomerUnitId == id);
-            if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
-            {
-                var model = new CustomerUnitModel
-                {
-                    CustomerUnitId = id,
-                    Name = unit.Name,
-                    Email = unit.Email,
-                    IsActive = unit.IsActive,
-                    IsCentralAdministrator = User.IsInRole(Roles.CentralAdministrator)
-                };
-                return View(model);
-            }
-            return Forbid();
         }
 
         //public IActionResult ListUsers(int id, IDataTablesRequest request)

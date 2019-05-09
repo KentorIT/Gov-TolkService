@@ -23,7 +23,7 @@
         <div class="col-sm-4">
             @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
             {
-                <form-entry asp-for="IsCentralAdministrator" />
+                <form-entry asp-for="IsOrganisationAdministrator" />
             }
         </div>
         <div class="col-sm-4">

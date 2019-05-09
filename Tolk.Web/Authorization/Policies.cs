@@ -78,8 +78,8 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> SystemCentralLocalAdminHandler = (context) =>
         {
-            return (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits)) 
-            || context.User.IsInRole(Roles.CentralAdministrator) 
+            return (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits))
+            || context.User.IsInRole(Roles.CentralAdministrator)
             || context.User.IsInRole(Roles.SystemAdministrator);
         };
 
@@ -89,9 +89,9 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == context.User.GetUserId();
+                    return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == user.GetUserId();
                 case InterpreterBroker interpreter:
-                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == context.User.TryGetBrokerId();
+                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case AspNetUser editedUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -99,13 +99,26 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Any()) && editedUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        if (user.IsInRole(Roles.CentralAdministrator))
+                        {
+                            return editedUser.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
+                        }
+                        //check that edited user has at least one of the same units as users localadminunits
+                        else if (user.TryGetLocalAdminCustomerUnits().Any())
+                        {
+                            var editedUsersCustomerUnits = editedUser.CustomerUnits.Select(cu => cu.CustomerUnitId);
+                            return editedUsersCustomerUnits.Intersect(user.TryGetLocalAdminCustomerUnits()).Any();
+                        }
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerUnit unit:
-                    return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId)) && unit.CustomerOrganisationId == context.User.TryGetCustomerOrganisationId();
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) || 
+                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId));
+                case CustomerUnitUser unituser:
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unituser.CustomerUnit.CustomerOrganisationId) || 
+                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unituser.CustomerUnitId));
                 default:
                     throw new NotImplementedException();
             }
@@ -128,13 +141,13 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && 
+                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) &&
                         order.CreatedBy == context.User.GetUserId();
                 case Request request:
-                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && 
-                        request.Ranking.BrokerId == context.User.GetBrokerId() && 
+                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) &&
+                        request.Ranking.BrokerId == context.User.GetBrokerId() &&
                         request.Status == RequestStatus.Approved && request.Order.Status == OrderStatus.ResponseAccepted;
-                    
+
                 default:
                     throw new NotImplementedException();
             }
@@ -306,15 +319,18 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Any()) && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        return (user.IsInRole(Roles.CentralAdministrator) || user.TryGetLocalAdminCustomerUnits().Any()) 
+                            && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case InterpreterBroker interpreter:
-                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == context.User.TryGetBrokerId();
+                    return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerUnit unit:
-                    return (user.IsInRole(Roles.CentralAdministrator) || context.User.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId)) && unit.CustomerOrganisationId == context.User.TryGetCustomerOrganisationId();
+                    return (user.IsInRole(Roles.CentralAdministrator) || 
+                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId))) 
+                    && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
                 default:
                     throw new NotImplementedException();
             }

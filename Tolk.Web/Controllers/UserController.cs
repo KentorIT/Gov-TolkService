@@ -110,7 +110,7 @@ namespace Tolk.Web.Controllers
                     Email = user.Email,
                     PhoneWork = user.PhoneNumber ?? "-",
                     PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                    IsCentralAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
+                    IsOrganisationAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive
@@ -163,7 +163,7 @@ namespace Tolk.Web.Controllers
                     NameFamily = user.NameFamily,
                     PhoneWork = user.PhoneNumber,
                     PhoneCellphone = user.PhoneNumberCellphone,
-                    IsCentralAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
+                    IsOrganisationAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
                     IsActive = user.IsActive,
                     UserType = LoggedInUserType,
                     UnitUsers = unitUsers?.OrderByDescending(uu => uu.UserIsConnected).ThenByDescending(uu => uu.IsLocalAdmin)
@@ -196,11 +196,11 @@ namespace Tolk.Web.Controllers
                         await _userManager.UpdateSecurityStampAsync(user);
                     }
                     user.IsActive = model.IsActive;
-                    if (model.IsCentralAdministrator && !user.Roles.Any(r => r.RoleId == centralAdministratorId))
+                    if (model.IsOrganisationAdministrator && !user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
                         await _userManager.AddToRoleAsync(user, Roles.CentralAdministrator);
                     }
-                    else if (!model.IsCentralAdministrator && user.Roles.Any(r => r.RoleId == centralAdministratorId))
+                    else if (!model.IsOrganisationAdministrator && user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
                         await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
                     }
@@ -279,7 +279,6 @@ namespace Tolk.Web.Controllers
 
         private UserType LoggedInUserType => User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator
             : User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
-
 
         private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?
             User.IsInRole(Roles.CentralAdministrator) ?
@@ -390,7 +389,7 @@ namespace Tolk.Web.Controllers
                             BrokerId = brokerId,
                             CustomerUnits = unitUsers.Any() ? unitUsers : null
                         };
-                        if (model.IsCentralAdministrator)
+                        if (model.IsOrganisationAdministrator)
                         {
                             additionalRoles.Add(Roles.CentralAdministrator);
                         }
@@ -576,7 +575,7 @@ namespace Tolk.Web.Controllers
         {
             var unitUser = GetUnitUser(combinedId);
             var user = GetUserToHandle(unitUser.UserId);
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
             {
                 if (unitUser != null)
                 {
@@ -600,7 +599,7 @@ namespace Tolk.Web.Controllers
         {
             var unitUser = GetUnitUser(combinedId);
             var user = GetUserToHandle(unitUser.UserId);
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
             {
                 if (unitUser != null)
                 {
@@ -651,7 +650,7 @@ namespace Tolk.Web.Controllers
         {
             int userId = Convert.ToInt32(combinedId.Split("_")[0]);
             int customerUnitId = Convert.ToInt32(combinedId.Split("_")[1]);
-            return _dbContext.CustomerUnitUsers
+            return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
                 .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
         }
 

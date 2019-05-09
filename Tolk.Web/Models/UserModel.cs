@@ -41,7 +41,7 @@ namespace Tolk.Web.Models
         public string PhoneCellphone { get; set; }
 
         [Display(Name = "Central administratör")]
-        public bool IsCentralAdministrator { get; set; }
+        public bool IsOrganisationAdministrator { get; set; }
 
         [Display(Name = "Aktiv")]
         public bool IsActive { get; set; }

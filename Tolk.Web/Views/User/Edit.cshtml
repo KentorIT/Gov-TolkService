@@ -17,13 +17,25 @@
             <form-entry asp-for="NameFamily" />
             @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
             {
-                <form-entry asp-for="IsCentralAdministrator" />
+                <form-entry asp-for="IsOrganisationAdministrator" />
+            }
+            else
+            {
+                <display-entry asp-for="IsOrganisationAdministrator" />
             }
         </div>
         <div class="col-sm-4">
             <form-entry asp-for="PhoneWork" />
             <form-entry asp-for="PhoneCellphone" />
-            <form-entry asp-for="IsActive" />
+            @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+            {
+
+                <form-entry asp-for="IsActive" />
+            }
+            else
+            {
+                <display-entry asp-for="IsActive" />
+            }
         </div>
         <div class="col-sm-4">
             <div asp-validation-summary="All" class="text-danger"></div>
