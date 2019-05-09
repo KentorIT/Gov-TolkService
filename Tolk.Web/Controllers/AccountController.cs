@@ -859,7 +859,9 @@ supporten på {_options.SupportEmail}.</div>";
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",
                 bodyPlain,
-                bodyHtml);
+                bodyHtml, 
+                false,
+                false);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",
@@ -899,7 +901,9 @@ supporten på {_options.SupportEmail}.</div>";
                 newEmailAddress,
                 $"Ändring av e-postadress för {Constants.SystemName}",
                 bodyPlain,
-                bodyHtml);
+                bodyHtml, 
+                false, 
+                false);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",

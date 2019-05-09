@@ -660,22 +660,17 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
         }
 
-        public void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false)
+        public void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false, bool addContractInfo = true)
         {
-            CreateEmail(new[] { recipient }, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody), isBrokerMail);
+            CreateEmail(new[] { recipient }, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody), isBrokerMail, addContractInfo);
         }
 
-        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false)
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
         {
-            CreateEmail(new[] { recipient }, subject, plainBody, htmlBody, isBrokerMail);
+            CreateEmail(new[] { recipient }, subject, plainBody, htmlBody, isBrokerMail, addContractInfo);
         }
 
-        private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, bool isBrokerMail = false)
-        {
-            CreateEmail(recipients, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody), isBrokerMail);
-        }
-
-        private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false)
+        private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
         {
             string subjectPrepend = string.Empty;
             if (!string.IsNullOrEmpty(TolkBaseOptions.Env.Name) && _tolkBaseOptions.Env.Name.ToLower() != "production")
@@ -685,14 +680,15 @@ Sammanställning:
 
             string noReply = "Detta e-postmeddelande går inte att svara på.";
             string handledBy = "Detta ärende hanteras i Kammarkollegiets Tolktjänst.";
+            string contractInfo = "Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16";
 
             foreach (string recipient in recipients)
             {
                 _dbContext.Add(new OutboundEmail(
                     recipient,
                     subjectPrepend + subject,
-                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : ""),
-                    $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : ""),
+                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}": ""),
+                    $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
                     _clock.SwedenNow));
             }
             _dbContext.SaveChanges();
