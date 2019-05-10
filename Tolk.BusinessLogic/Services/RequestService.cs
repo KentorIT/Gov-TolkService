@@ -148,6 +148,7 @@ namespace Tolk.BusinessLogic.Services
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
             };
+            bool noNeedForUserAccept = NoNeedForUserAccept(request, expectedTravelCosts);
             request.Order.Requests.Add(newRequest);
             VerificationResult? verificationResult = null;
             if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
@@ -165,11 +166,11 @@ namespace Tolk.BusinessLogic.Services
                 requirementAnswers,
                 attachedFiles.Select(f => new RequestAttachment { AttachmentId = f.AttachmentId }),
                 _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
-                request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved,
+                noNeedForUserAccept,
                 request,
                 verificationResult
             );
-            if (request.Status == RequestStatus.Approved && request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
+            if (request.Status == RequestStatus.Approved && noNeedForUserAccept)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
             }
@@ -178,6 +179,23 @@ namespace Tolk.BusinessLogic.Services
                 _notificationService.RequestChangedInterpreter(newRequest);
             }
             request.Status = RequestStatus.InterpreterReplaced;
+        }
+
+        private bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
+        {
+            if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
+            {
+                return true;
+            }
+            decimal largestApprovedAmount = 0;
+            var requestsToCheck = request.Order.Requests.Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced);
+            //check the largest amount of previous approved requests
+            foreach (Request r in requestsToCheck)
+            {
+                decimal reqCost = r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price);
+                largestApprovedAmount = reqCost > largestApprovedAmount ? reqCost : largestApprovedAmount;
+            }
+            return largestApprovedAmount >= expectedTravelCosts.Value;
         }
 
         public async Task SendEmailReminders()

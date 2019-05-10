@@ -270,6 +270,7 @@ namespace Tolk.Web.Api.Controllers
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
             var request = _dbContext.Requests
             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
             .Include(r => r.Order.CreatedByUser)
             .Include(r => r.Order.ContactPersonUser)
             .Include(r => r.Ranking).ThenInclude(r => r.Broker)

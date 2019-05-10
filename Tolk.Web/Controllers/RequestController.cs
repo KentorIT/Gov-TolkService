@@ -178,6 +178,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
