@@ -10,12 +10,14 @@ namespace Tolk.BusinessLogic.Utilities
 
         public Environment Env { get; set; } = new Environment { Name = string.Empty, Background = "background: rgba(255, 0, 0, 0.5)", Foreground = "color: #f1f1f1" };
         public TellusApi Tellus { get; set; }
+        public string SupportEmail { get; set; }
 
         public class TellusApi
         {
             public bool IsActivated { get; set; }
             public string Uri { get; set; }
             public string LanguagesUri { get; set; }
+            public IEnumerable<string> UnusedIsoCodes { get; set; }
         }
 
         public class Environment

@@ -80,7 +80,8 @@ namespace Tolk.Web.Services
                         tasksToRun = new Task[]
                         {
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders()
+                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
+                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().ValidateTellusLanguageList(true)
                         };
                     }
                     else

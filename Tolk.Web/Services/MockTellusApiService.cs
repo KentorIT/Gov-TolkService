@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Services
 {
     public class MockTellusApiService
     {
+        private readonly TolkDbContext _dbContext;
         private readonly List<TellusInterpreterModel> _interpreterModels = new List<TellusInterpreterModel>
         {
             new TellusInterpreterModel
@@ -154,329 +156,46 @@ namespace Tolk.Web.Services
                 }
             }
         };
-        private readonly List<TellusLanguageModel> _languageModels = new List<TellusLanguageModel>
+        private readonly List<MockTellusLanguageModel> _languageModels = new List<MockTellusLanguageModel>
         {
-            new TellusLanguageModel
+            new MockTellusLanguageModel
             {
-                Id = "sqi",
-                Value ="albanska"
+                Id = "swe",
+                Value ="svenska",
+                AllwaysAdd = true
             },
-             new TellusLanguageModel
+            new MockTellusLanguageModel
             {
-            Id = "ara",
-            Value ="arabiska"
+                Id = "swl",
+                Value ="teckenspråk",
+                AllwaysAdd = true
             },
-             new TellusLanguageModel
+            new MockTellusLanguageModel
             {
-            Id = "bos,hrv,srp",
-            Value ="bosniska, kroatiska, serbiska"
+                Id = "abk",
+                Value ="oromo",
+                AddOnTest = true
             },
-             new TellusLanguageModel
+            new MockTellusLanguageModel
             {
-            Id = "bul",
-            Value ="bulgariska"
+                Id = "xxx",
+                Value ="nytt språk",
+                AddOnTest = true
             },
-             new TellusLanguageModel
+            new MockTellusLanguageModel
             {
-            Id = "dan",
-            Value ="danska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "prs",
-            Value ="dari"
-            },
-             new TellusLanguageModel
-            {
-            Id = "eng",
-            Value ="engelska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "est",
-            Value ="estniska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "fin",
-            Value ="finska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "fra",
-            Value ="franska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "gre",
-            Value ="grekiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "hin",
-            Value ="hindi"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ita",
-            Value ="italienska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "jpn",
-            Value ="japanska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "yue",
-            Value ="kantonesiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "lav",
-            Value ="lettiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "lit",
-            Value ="litauiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "mkd",
-            Value ="makedonska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "fit",
-            Value ="meänkieli"
-            },
-             new TellusLanguageModel
-            {
-            Id = "nld",
-            Value ="nederländska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "kmr",
-            Value ="kurdiska (kurmanji)"
-            },
-             new TellusLanguageModel
-            {
-            Id = "pes",
-            Value ="persiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "pol",
-            Value ="polska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "por",
-            Value ="portugisiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "cmn",
-            Value ="rikskinesiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ron",
-            Value ="rumänska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "rus",
-            Value ="ryska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "sme",
-            Value ="samiska (nordsamiska)"
-            },
-             new TellusLanguageModel
-            {
-            Id = "som",
-            Value ="somaliska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "spa",
-            Value ="spanska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ckb",
-            Value ="kurdiska (sorani)"
-            },
-             new TellusLanguageModel
-            {
-            Id = "swa",
-            Value ="swahili"
-            },
-             new TellusLanguageModel
-            {
-            Id = "swl",
-            Value ="teckenspråk"
-            },
-             new TellusLanguageModel
-            {
-            Id = "tha",
-            Value ="thai"
-            },
-             new TellusLanguageModel
-            {
-            Id = "tir",
-            Value ="tigrinska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ces",
-            Value ="tjeckiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "tur",
-            Value ="turkiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "deu",
-            Value ="tyska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "hun",
-            Value ="ungerska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "vie",
-            Value ="vietnamesiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "aze",
-            Value ="azerbajdzjanska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "zho",
-            Value ="kinesiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ukr",
-            Value ="ukrainska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "bel",
-            Value ="vitryska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "nor",
-            Value ="norska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "swe",
-            Value ="svenska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "mon",
-            Value ="mongoliska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "slk",
-            Value ="slovakiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "isl",
-            Value ="isländska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "heb",
-            Value ="hebreiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ind",
-            Value ="indonesiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "kor",
-            Value ="koreanska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "slv",
-            Value ="slovenska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "run",
-            Value ="kirundi"
-            },
-             new TellusLanguageModel
-            {
-            Id = "nep",
-            Value ="nepali"
-            },
-             new TellusLanguageModel
-            {
-            Id = "uzb",
-            Value ="uzbekiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "rom",
-            Value ="romska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "hye",
-            Value ="armeniska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "pus",
-            Value ="pashto"
-            },
-             new TellusLanguageModel
-            {
-            Id = "kat",
-            Value ="georgiska"
-            },
-             new TellusLanguageModel
-            {
-            Id = "tgl",
-            Value ="tagalog"
-            },
-             new TellusLanguageModel
-            {
-            Id = "urd",
-            Value ="urdu"
-            },
-             new TellusLanguageModel
-            {
-            Id = "ben",
-            Value ="bengali"
-            },
-             new TellusLanguageModel
-            {
-            Id = "fey",
-            Value ="feyli"
+                Id = "deu",
+                Value ="tyska",
+                RemoveOnTest = true
             }
+
+
         };
+        public MockTellusApiService( TolkDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public TellusInterpreterResponse GetInterpreter(string id)
         {
             var result = _interpreterModels.Where(i => i.InterpreterId.ToString() == id);
@@ -487,11 +206,24 @@ namespace Tolk.Web.Services
                 TotalMatching = result.Count()
             };
         }
+
         public TellusLanguagesResponse GetLanguages()
         {
+            var tellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) && 
+                !_languageModels.Any(t => t.RemoveOnTest && t.Id == l.TellusName))
+                .Select(l => new TellusLanguageModel
+                {
+                    Id = l.TellusName,
+                    Value = l.Name.ToLower()
+                }).Concat(_languageModels.Where(l => l.AllwaysAdd || l.AddOnTest)
+                    .Select(l => new TellusLanguageModel
+                    {
+                        Id = l.Id,
+                        Value = l.Value
+                    }));
             return new TellusLanguagesResponse
             {
-                Result = _languageModels,
+                Result = tellusLanguages,
                 Status = 200,
             };
         }

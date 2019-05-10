@@ -7,8 +7,6 @@ namespace Tolk.BusinessLogic.Helpers
     {
         public string PublicOrigin { get; set; }
 
-        public string SupportEmail { get; set; }
-
         public string AllowedFileExtensions { get; set; }
 
         public SmtpSettings Smtp { get; set; }

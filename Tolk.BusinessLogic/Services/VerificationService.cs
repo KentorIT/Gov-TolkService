@@ -19,14 +19,20 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly ILogger<VerificationService> _logger;
-        private const string EmptyResult = "[]";
+        private readonly INotificationService _notificationService;
 
-        public VerificationService(TolkDbContext dbContext, ISwedishClock clock, ITolkBaseOptions tolkBaseOptions, ILogger<VerificationService> logger)
+        public VerificationService(
+            TolkDbContext dbContext, 
+            ISwedishClock clock, 
+            ITolkBaseOptions tolkBaseOptions, 
+            ILogger<VerificationService> logger,
+            INotificationService notificationService)
         {
             _dbContext = dbContext;
             _clock = clock;
             _tolkBaseOptions = tolkBaseOptions;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         public async Task<VerificationResult> VerifyInterpreter(string interpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel)
@@ -72,8 +78,16 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task<ValidateTellusLanguageListResult> ValidateTellusLanguageList()
+        public async Task<ValidateTellusLanguageListResult> ValidateTellusLanguageList(bool notify = false)
         {
+            if (!_tolkBaseOptions.Tellus.IsActivated)
+            {
+                return new ValidateTellusLanguageListResult
+                {
+                    NewLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                    RemovedLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                };
+            }
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Clear();
@@ -83,20 +97,48 @@ namespace Tolk.BusinessLogic.Services
 
                 if (result.Status != 200)
                 {
-                    // Make sure that a mail is sent, maybe by throwing?
-                    throw new HttpRequestException("Det gick inte bra att nå tellus!");
+                    if (notify)
+                    {
+                        _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                            $"Verifieringen av språklistan mot Tellus misslyckades!",
+                            "Det borde stå vad som gick fel här, om vi vet det...");
+                    }
+                    _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
+                    return null;
                 }
-                var tellusLanguages = result.Result;
-                var currentLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) ).ToList();
-                return new ValidateTellusLanguageListResult
+                var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodes.Contains(t.Id)).ToList();
+                var currentLanguages = _dbContext.Languages.ToList();
+                var validationResult = new ValidateTellusLanguageListResult
                 {
-                    NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id)),
-                    RemovedLanguages = currentLanguages.Where(l => !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
+                    NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id && l.Active)).Select(t => new TellusLanguageModel
+                    {
+                        Id = t.Id,
+                        Value = t.Value,
+                        ExistsInSystemWithoutTellusConnection = currentLanguages.Any(l => l.ISO_639_Code == t.Id && string.IsNullOrEmpty(l.TellusName)),
+                        InactiveInSystem = currentLanguages.Any(l => (l.ISO_639_Code == t.Id || l.TellusName == t.Id) && !l.Active)
+                    }),
+                    RemovedLanguages = currentLanguages.Where(l => !string.IsNullOrEmpty(l.TellusName) && !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
                     {
                         Id = l.TellusName,
                         Value = l.Name
                     })
                 };
+                if (notify)
+                {
+                    if (validationResult.FoundChanges)
+                    {
+                        _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                            "Det finns skillnader i systemets språklista och den i Tellus.",
+                            $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Home/VerifyLanguages");
+                        _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.SupportEmail}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("There were no differences between this system's and tellus' language lists.");
+                    }
+                }
+
+                return validationResult;
             }
         }
 
@@ -112,12 +154,5 @@ namespace Tolk.BusinessLogic.Services
             }
             return VerificationResult.NotCorrectCompetence;
         }
-    }
-    public class ValidateTellusLanguageListResult
-    {
-        public IEnumerable<TellusLanguageModel> NewLanguages { get; set; }
-        public IEnumerable<TellusLanguageModel> RemovedLanguages { get; set; }
-
-        public bool FoundChanges => NewLanguages.Any() || RemovedLanguages.Any();
     }
 }
