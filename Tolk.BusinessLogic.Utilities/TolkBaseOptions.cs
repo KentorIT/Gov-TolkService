@@ -17,7 +17,12 @@ namespace Tolk.BusinessLogic.Utilities
             public bool IsActivated { get; set; }
             public string Uri { get; set; }
             public string LanguagesUri { get; set; }
-            public IEnumerable<IsoCode> UnusedIsoCodes { get; set; }
+            public string UnusedIsoCodes { get; set; }
+            public IEnumerable<string> UnusedIsoCodesList { get
+                {
+                    return UnusedIsoCodes.Split(';');
+                }
+            }
         }
 
         public class Environment
