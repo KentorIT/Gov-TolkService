@@ -227,7 +227,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 }
             }
             _logger.LogWarning("There are at least 100 users starting with the string {userName}.", userNameStart);
-            _notificationService.CreateEmail(_options.SupportEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", false, false);
+            _notificationService.CreateEmail(_options.SupportEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", addContractInfo: false);
             for (int i = 1; i < 1000; ++i)
             {
                 var userName = $"{userNameStart}{i.ToString("D3")}";

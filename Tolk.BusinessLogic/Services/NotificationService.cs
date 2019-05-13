@@ -660,14 +660,9 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
         }
 
-        public void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false, bool addContractInfo = true)
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody = null, bool isBrokerMail = false, bool addContractInfo = true)
         {
-            CreateEmail(new[] { recipient }, subject, plainBody, HtmlHelper.ToHtmlBreak(plainBody), isBrokerMail, addContractInfo);
-        }
-
-        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
-        {
-            CreateEmail(new[] { recipient }, subject, plainBody, htmlBody, isBrokerMail, addContractInfo);
+            CreateEmail(new[] { recipient }, subject, plainBody, string.IsNullOrEmpty(htmlBody) ? HtmlHelper.ToHtmlBreak(plainBody) : htmlBody, isBrokerMail, addContractInfo);
         }
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
