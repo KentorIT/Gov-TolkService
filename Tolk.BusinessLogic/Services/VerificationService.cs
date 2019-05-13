@@ -106,7 +106,7 @@ namespace Tolk.BusinessLogic.Services
                     _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
                     return null;
                 }
-                var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodes.Contains(t.Id)).ToList();
+                var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodes.Any(u => u.Value == t.Id)).ToList();
                 var currentLanguages = _dbContext.Languages.ToList();
                 var validationResult = new ValidateTellusLanguageListResult
                 {
