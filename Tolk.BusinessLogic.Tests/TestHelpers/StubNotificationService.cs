@@ -21,6 +21,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false) { }
 
+        public void CreateEmail(string recipient, string subject, string plainBody, bool isBrokerMail = false, bool addContractInfo = true) { }
+
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true) { }
+
         public void FlushNotificationSettings() { }
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
