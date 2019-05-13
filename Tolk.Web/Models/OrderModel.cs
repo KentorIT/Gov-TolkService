@@ -32,6 +32,10 @@ namespace Tolk.Web.Models
         [Required]
         public int? RegionId { get; set; }
 
+        [Display(Name = "Enhet")]
+        [ClientRequired]
+        public int? CustomerUnitId { get; set; }
+
         [Display(Name = "Språk", Description = "Om önskat språk inte finns i listan, välj Övrigt språk och ange själv språk i textfältet som visas.")]
         [ClientRequired]
         public int? LanguageId { get; set; }
@@ -63,9 +67,9 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string LanguageAndDialect => $"{LanguageName}\n{DialectDescription}";
 
-        [Display(Name = "Myndighetens enhet/avdelning")]
+        [Display(Name = "Myndighetens avdelning")]
         [StringLength(100)]
-        public string UnitName { get; set; }
+        public string UnitName { get; set; }   
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         [ClientRequired(ErrorMessage = "Ange datum")]
@@ -186,6 +190,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Språk")]
         public string LanguageName { get; set; }
 
+        [Display(Name = "Myndighetens enhet")]
+        public string CustomerUnitName { get; set; }
+
         [Display(Name = "Bokning skapad")]
         public DateTimeOffset CreatedAt { get; set; }
 
@@ -253,6 +260,7 @@ namespace Tolk.Web.Models
         [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
+ 
         #endregion
 
         #region extra requirements
@@ -292,8 +300,8 @@ namespace Tolk.Web.Models
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
         public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
-            || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
-            || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
+        || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
+        || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
 
         public EventLogModel EventLog { get; set; }
 
@@ -399,6 +407,7 @@ namespace Tolk.Web.Models
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
                 order.RegionId = RegionId.Value;
                 order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
+                order.CustomerUnitId = (CustomerUnitId.HasValue && CustomerUnitId > 0) ? CustomerUnitId : null;
                 if (HasOnsiteLocation && AllowExceedingTravelCost != null)
                 {
                     order.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
@@ -544,7 +553,7 @@ namespace Tolk.Web.Models
                 competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
                 competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
             }
-            
+
             return new OrderModel
             {
                 DisplayForBroker = displayForBroker,
@@ -561,11 +570,12 @@ namespace Tolk.Web.Models
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
+                CustomerUnitName = order.CustomerUnit?.Name ?? string.Empty,
                 Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 RegionName = order.Region.Name,
                 LanguageId = order.LanguageId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
-                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } :  new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
+                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
@@ -673,6 +683,7 @@ namespace Tolk.Web.Models
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
+                CustomerUnitId = order.CustomerUnitId,
                 TimeRange = new TimeRange
                 {
                     StartDateTime = order.StartAt,

@@ -324,6 +324,12 @@ namespace Tolk.Web.Controllers
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
 
+            if (model.CustomerUnitId.HasValue)
+            {
+                updatedModel.CustomerUnitName = model.CustomerUnitId == 0 ? "Beställningen ska inte kopplas till någon enhet" : _dbContext.CustomerUnits
+                    .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name;
+            }
+
             updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
             .Single(l => l.LanguageId == model.LanguageId).Name;
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
@@ -350,7 +356,6 @@ namespace Tolk.Web.Controllers
                 };
             }
 
-
             //check reasonable duration time for order (more than 10h or less than 1h)
             int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
             updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty;
@@ -362,7 +367,7 @@ namespace Tolk.Web.Controllers
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
-            return PartialView("Confirm", updatedModel);
+            return PartialView(nameof(Confirm), updatedModel);
         }
 
         [Authorize(Policy = Policies.Customer)]
@@ -610,6 +615,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.Language)
+                .Include(o => o.CustomerUnit)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
                 .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)

@@ -25,7 +25,16 @@ else
 <div id="@divId" class="@divClass">
     <div class="row">
         <div class="col-sm-4">
+            <display-entry asp-for="CustomerName" />
             <display-entry asp-for="CreatedBy" />
+        </div>
+        <div class="col-sm-4">
+            @if (!string.IsNullOrEmpty(Model.CustomerUnitName))
+            {
+                <display-entry asp-for="CustomerUnitName" />
+            }
+            <display-entry asp-for="UnitName" />
+            <display-entry asp-for="CustomerReferenceNumber" />
         </div>
         <div class="col-sm-4">
             <display-entry asp-for="ContactPerson" />
@@ -34,19 +43,6 @@ else
                 <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
                 <br /><br />
             }
-        </div>
-        <div class="col-sm-4">
-            <div class="col-sm-12">
-                <div class="row">
-                    <display-entry asp-for="CustomerName" />
-                </div>
-                <div class="row">
-                    <display-entry asp-for="UnitName" />
-                </div>
-                <div class="row">
-                    <display-entry asp-for="CustomerReferenceNumber" />
-                </div>
-            </div>
         </div>
     </div>
 </div>

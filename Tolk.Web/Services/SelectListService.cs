@@ -209,7 +209,7 @@ namespace Tolk.Web.Services
             {
                 if (!_cache.TryGetValue(languagesSelectListKey, out IEnumerable<SelectListItem> items))
                 {
-                    items = _dbContext.Languages.Where(l => l.Active == true)
+                    items = _dbContext.Languages.Where(l => l.Active)
                         .OrderBy(l => l.Name).Select(l => new ExtendedSelectListItem
                         {
                             Value = l.LanguageId.ToString(),
@@ -222,6 +222,34 @@ namespace Tolk.Web.Services
                 }
 
                 return items;
+            }
+        }
+
+        public IEnumerable<SelectListItem> ActiveCustomerUnitsForUser
+        {
+            get
+            {
+                var customerUnitsIds = _httpContextAccessor.HttpContext.User.TryGetAllCustomerUnits();
+                if (customerUnitsIds.Any())
+                {
+                    var items = _dbContext.CustomerUnits.Where(cu => cu.IsActive && customerUnitsIds.Contains(cu.CustomerUnitId))
+                        .OrderBy(cu => cu.Name).Select(cu => new SelectListItem
+                        {
+                            Value = cu.CustomerUnitId.ToString(),
+                            Text = cu.Name
+                        }).ToList();
+                    if (items.Any())
+                    {
+                        items[0].Selected = items.Count == 1;
+                        items.Add(new SelectListItem
+                        {
+                            Value = "0",
+                            Text = "Koppla INTE till någon enhet"
+                        });
+                    }
+                    return items.AsReadOnly();
+                }
+                return null;
             }
         }
 
@@ -393,8 +421,8 @@ namespace Tolk.Web.Services
         {
             var currentUser = _httpContextAccessor.HttpContext.User;
             return _dbContext.Users
-                .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId() 
-                && u.Id != currentUser.GetUserId() 
+                .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId()
+                && u.Id != currentUser.GetUserId()
                 && !u.CustomerUnits.Any(cu => cu.CustomerUnitId == customerUnitId))
                 .Select(u => new SelectListItem
                 {

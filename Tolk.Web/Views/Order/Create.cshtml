@@ -1,6 +1,9 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
+@{
+    var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser;
+}
 @using Tolk.Web.Services
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
 {
@@ -140,67 +143,67 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="d-none" id="divCompetenceLevel">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-8">
-                                        <span id="competence-required">
-                                            <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
-                                        </span>
-                                        <span id="competence-requested">
-                                            <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
-                                            <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
-                                            <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                        </span>
-                                    </div>
-                                    <div class="col-sm-4 important-info">
-                                        <ul>
-                                            <li>Rättstolk/sjukvårdstolk (nivå 4): Tolkar i Kammarkollegiets register över auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
-                                            <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
-                                            <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets nationella tolkregister över utbildade tolkar</li>
-                                            <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
-                                        </ul>
-                                    </div>
+                        <div class="d-none" id="divCompetenceLevel">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-6">
-                                    <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
+                                <div class="col-sm-8">
+                                    <span id="competence-required">
+                                        <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
+                                    </span>
+                                    <span id="competence-requested">
+                                        <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
+                                        <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
+                                        <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
+                                    </span>
+                                </div>
+                                <div class="col-sm-4 important-info">
+                                    <ul>
+                                        <li>Rättstolk/sjukvårdstolk (nivå 4): Tolkar i Kammarkollegiets register över auktoriserade tolkar som har erhållit bevis om speciell kompetens som rättstolk/sjukvårdstolk för aktuellt språk</li>
+                                        <li>Auktoriserad tolk (nivå 3): Finns i Kammarkollegiets register över auktoriserade tolkar</li>
+                                        <li>Utbildad tolk (nivå 2): Finns i Kammarkollegiets nationella tolkregister över utbildade tolkar</li>
+                                        <li>Övrig tolk (nivå 1): Finns ej i Kammarkollegiets register</li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span> @HelpLinkService.Anchor("nybokning_krav")</label>
+                                <br />
+                                <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
+                                <br /><br />
+                                <div class="d-none order-requirement-list no-padding">
+                                    <table class="table order-requirement-table">
+                                        <tbody></tbody>
+                                    </table>
                                 </div>
-                                <div class="col-sm-4">
-                                    <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span> @HelpLinkService.Anchor("nybokning_krav")</label>
-                                    <br />
-                                    <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
-                                    <br /><br />
-                                    <div class="d-none order-requirement-list no-padding">
-                                        <table class="table order-requirement-table">
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen"></span> @HelpLinkService.Anchor("nybokning_onskemal")</label>
-                                    <br />
-                                    <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
-                                    <br /> <br />
-                                    <div class="d-none order-desiredRequirement-list no-padding">
-                                        <table class="table order-desiredRequirement-table">
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen"></span> @HelpLinkService.Anchor("nybokning_onskemal")</label>
+                                <br />
+                                <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
+                                <br /> <br />
+                                <div class="d-none order-desiredRequirement-list no-padding">
+                                    <table class="table order-desiredRequirement-table">
+                                        <tbody></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
                 <h2 class="normal-weight">Myndighetens uppgifter</h2>
                 <hr />
                 <div class="row">
@@ -220,6 +223,12 @@
                             <div class="col-sm-6">
                                 <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />
                             </div>
+                            @if (customerUnitItems != null && customerUnitItems.Any())
+                            {
+                                <div class="col-sm-6">
+                                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
