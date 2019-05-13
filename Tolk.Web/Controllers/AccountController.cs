@@ -785,7 +785,9 @@ namespace Tolk.Web.Controllers
                             user.NameFamily = model.NameFamily;
                             user.PhoneNumber = model.PhoneWork;
                             user.PhoneNumberCellphone = model.PhoneCellphone;
-
+                            user.LastLoginAt = _clock.SwedenNow;
+                            await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = user.Id });
+                            await _dbContext.SaveChangesAsync();
                             result = await _userManager.UpdateAsync(user);
                             if (result.Succeeded)
                             {
