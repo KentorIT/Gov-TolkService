@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -9,7 +10,7 @@ namespace Tolk.Web.Models
     {
         public int? CustomerId { get; set; }
 
-        public string Message{ get; set; }
+        public string Message { get; set; }
 
         [Display(Name = "Namn")]
         [Required]
@@ -32,6 +33,9 @@ namespace Tolk.Web.Models
         [Required]
         public string EmailDomain { get; set; }
 
+        public UserPageMode UserPageMode { get; set; }
+
+
         public static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
         {
             return new CustomerModel
@@ -43,7 +47,14 @@ namespace Tolk.Web.Models
                 PriceListType = customer.PriceListType,
                 EmailDomain = customer.EmailDomain,
                 OrganizationPrefix = customer.OrganizationPrefix,
-                Message = message
+                Message = message,
+                UserPageMode = new UserPageMode
+                {
+                    BackController = "Customer",
+                    BackAction = "View",
+                    BackId = customer.CustomerOrganisationId.ToString()
+                }
+                
             };
         }
 

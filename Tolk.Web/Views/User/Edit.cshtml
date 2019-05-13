@@ -21,6 +21,7 @@
             }
             else
             {
+                <input asp-for="IsOrganisationAdministrator" type="hidden" />
                 <display-entry asp-for="IsOrganisationAdministrator" />
             }
         </div>
@@ -34,6 +35,7 @@
             }
             else
             {
+                <input asp-for="IsActive" type="hidden"/>
                 <display-entry asp-for="IsActive" />
             }
         </div>
@@ -117,7 +119,7 @@
     }
     <div class="row">
         <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
         </div>
         @if ((Model.NonEditableUnitUsers != null && Model.NonEditableUnitUsers.Any()) || (Model.UnitUsers != null && Model.UnitUsers.Any()))
         {
@@ -125,6 +127,9 @@
             </div>
         }
         <div class="col-sm-4">
+            <input asp-for="UserPageMode.BackController" type="hidden" />
+            <input asp-for="UserPageMode.BackId" type="hidden" />
+            <input asp-for="UserPageMode.BackAction" type="hidden" />
             <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
         </div>
     </div>

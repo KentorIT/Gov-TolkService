@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
 using System.Collections.Generic;
-using Tolk.Web.Controllers;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -55,5 +54,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Sätt som lokal administratör")]
         public bool IsLocalAdministrator { get; set; }
+
+        public UserPageMode UserPageMode { get; set; }
     }
 }

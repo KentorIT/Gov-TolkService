@@ -84,7 +84,7 @@
                                         <form-entry asp-for="UnitUsers[i].IsLocalAdmin" />
                                     </div>
                                     <div class="col-sm-6 non-unit-local-admin">
-                                        
+
                                     </div>
                                 </td>
                             </tr>
@@ -102,11 +102,14 @@
     </div>
     <div class="row">
         <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="@Model.UserPageMode.BackAction" asp-controller="@Model.UserPageMode.BackController" asp-route-id="@Model.UserPageMode.BackId">Avbryt <span class="btn-remove-times">&times;</span></a>
         </div>
         <div class="col-sm-4">
         </div>
         <div class="col-sm-4">
+            <input asp-for="UserPageMode.BackController" type="hidden" />
+            <input asp-for="UserPageMode.BackId" type="hidden" />
+            <input asp-for="UserPageMode.BackAction" type="hidden" />
             <button type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
         </div>
     </div>

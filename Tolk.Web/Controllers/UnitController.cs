@@ -24,7 +24,6 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
 
-
         public UnitController(
             TolkDbContext dbContext,
             ISwedishClock clock,
@@ -276,7 +275,13 @@ namespace Tolk.Web.Controllers
                     ErrorMessage = errorMessage,
                     CustomerUnitId = id,
                     Name = unit.Name,
-                    UnitUsers = users
+                    UnitUsers = users,
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = "Unit",
+                        BackAction = nameof(Users),
+                        BackId = id.ToString()
+                    }
                 };
                 return View(model);
             }

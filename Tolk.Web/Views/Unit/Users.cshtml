@@ -114,7 +114,7 @@
     <div class="col-md-6">
         <label>Skapa ny användare kopplad till enheten</label>
         <br /><br />
-        <a class="btn btn-large btn-default" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerUnitId="@Model.CustomerUnitId">Skapa ny användare</a>
+        <a class="btn btn-large btn-default" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerUnitId="@Model.CustomerUnitId" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa ny användare</a>
     </div>
 </div>
 <div class="row">

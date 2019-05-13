@@ -91,11 +91,17 @@ namespace Tolk.Web.Controllers
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-",
                     IsActive = u.IsActive
                 }),
-                FilterModel = model
+                FilterModel = model,
+                UserPageMode = new UserPageMode
+                {
+                    BackAction = nameof(List),
+                    BackController = "User",
+                    BackId = string.Empty
+                }
             });
         }
 
-        public async Task<ActionResult> View(int id)
+        public async Task<ActionResult> View(int id, string bc = null, string ba = null, string bi = null)
         {
             var user = GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
@@ -113,7 +119,13 @@ namespace Tolk.Web.Controllers
                     IsOrganisationAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = bc ?? BackController,
+                        BackAction = ba ?? BackAction,
+                        BackId = bi ?? BackId
+                    }
                 };
 
                 return View(model);
@@ -121,7 +133,25 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        public async Task<ActionResult> Edit(int id)
+        private string BackController => HttpContext.Request.Headers["Referer"].ToString().Contains("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().Contains("Unit") ? "Unit" : "User";
+
+        private string BackAction => BackController == "User" ? "List" : BackController == "Unit" ? "Users" : "View";
+
+        private string BackId
+        {
+            get
+            {
+                var referer = HttpContext.Request.Headers["Referer"].ToString();
+                if (!(referer.Contains("Unit") || referer.Contains("Customer")))
+                {
+                    return string.Empty;
+                }
+                var id = referer.Split("/").Last();
+                return id.Contains("?") ? id.Split("?").First() : id;
+            }
+        }
+
+        public async Task<ActionResult> Edit(int id, string bc, string ba, string bi)
         {
             int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
             var user = _userManager.Users.Include(u => u.Roles)
@@ -168,7 +198,13 @@ namespace Tolk.Web.Controllers
                     UserType = LoggedInUserType,
                     UnitUsers = unitUsers?.OrderByDescending(uu => uu.UserIsConnected).ThenByDescending(uu => uu.IsLocalAdmin)
                         .ThenByDescending(uu => uu.IsActive).ThenBy(uu => uu.Name).ToList(),
-                    NonEditableUnitUsers = nonEditableUnitUsers?.OrderBy(n => n.IsActive).ThenBy(n => n.Name).ToList()
+                    NonEditableUnitUsers = nonEditableUnitUsers?.OrderBy(n => n.IsActive).ThenBy(n => n.Name).ToList(),
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = bc,
+                        BackAction = ba,
+                        BackId = bi
+                    }
                 };
                 return View(model);
             }
@@ -234,10 +270,10 @@ namespace Tolk.Web.Controllers
                     await _userManager.UpdateAsync(user);
                 }
             }
-            return RedirectToAction(nameof(View), model);
+            return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId });
         }
 
-        public ActionResult Create(int? customerId = null, int? customerUnitId = null)
+        public ActionResult Create(string bc, string ba, string bi, int? customerId = null, int? customerUnitId = null)
         {
             bool hasSelectedCustomer = false;
             string customerName = string.Empty;
@@ -273,7 +309,13 @@ namespace Tolk.Web.Controllers
                 HasSelectedOrganisation = hasSelectedCustomer,
                 OrganisationIdentifier = hasSelectedCustomer ? $"{customerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}" : null,
                 Organisation = customerName,
-                HasSelectedCustomerunit = customerUnitId.HasValue
+                HasSelectedCustomerunit = customerUnitId.HasValue,
+                UserPageMode = new UserPageMode
+                {
+                    BackController = bc,
+                    BackAction = ba,
+                    BackId = bi
+                }
             });
         }
 
@@ -410,7 +452,7 @@ namespace Tolk.Web.Controllers
                             await _userService.LogCreateAsync(user.Id, User.GetUserId());
 
                             trn.Commit();
-                            return RedirectToAction(nameof(List), new UserFilterModel { Email = user.Email });
+                            return RedirectToAction(model.UserPageMode.BackAction, model.UserPageMode.BackController, new { id = model.UserPageMode.BackId });
                         }
                         model.ErrorMessage = GetErrors(result);
                     }

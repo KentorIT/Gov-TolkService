@@ -71,5 +71,7 @@ namespace Tolk.Web.Models
         /// If set, the server code found some error that slipped through the client sides fingers.
         /// </summary>
         public string ErrorMessage { get; set; }
+
+        public UserPageMode UserPageMode { get; set; }
     }
 }

@@ -18,7 +18,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <a class="btn btn-default btn-large pull-right" href="@Url.Action("Create")">Skapa användare</a>
+        <a class="btn btn-default btn-large pull-right" asp-action="Create" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa användare</a>
     </div>
 </div>
 <div class="row">
