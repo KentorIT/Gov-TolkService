@@ -236,7 +236,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     return userName;
                 }
             }
-            _logger.LogWarning("There are at least 1100 users starting with the string {userName}.", userNameStart);
+            _logger.LogWarning("There are at least 1000 users starting with the string {userName}.", userNameStart);
 
             throw new NotSupportedException("Too many users starting with the string {userNameStart}.");
         }
