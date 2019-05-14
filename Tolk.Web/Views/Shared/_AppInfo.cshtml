@@ -1,4 +1,7 @@
 ﻿@using Tolk.BusinessLogic
+@using Tolk.BusinessLogic.Helpers
+@using Microsoft.Extensions.Options
+@inject IOptions<TolkOptions> options
 @{
     ViewData["Title"] = Constants.SystemName;
 }
@@ -9,8 +12,20 @@
 <p>
     I Kammarkollegiets tolkavropstjänst kan avropsberättigade myndigheter boka tolktjänster, och ramavtalsleverantörer (tolkförmedlingar) kan hantera bokningsförfrågningar.
 </p>
+
 <br />
 <h4>Registrera användarkonto</h4>
-<p>
-    Som användare hos en avropsberättigad myndighet eller tolkförmedling är det möjligt att själv registrera ett användarkonto.
-</p>
+
+@if (options.Value.EnableRegisterUser)
+{
+    <p>
+        Som användare hos en avropsberättigad myndighet eller tolkförmedling är det möjligt att själv registrera ett användarkonto.
+    </p>
+}
+else
+{
+    <p>
+        Just nu pågår pilotdrift av avropstjänsten och det är inte möjligt att registrera sig själv.
+        För frågor eller önskemål om att bli pilotanvändare kontakta <a href="mailto:@options.Value.SupportEmail">@options.Value.SupportEmail</a>
+    </p>
+}
