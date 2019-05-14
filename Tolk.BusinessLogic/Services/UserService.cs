@@ -203,7 +203,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogUpdatePassword(int userId)
+        public async Task LogUpdatePasswordAsync(int userId)
         {
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
@@ -211,6 +211,12 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 UserId = userId,
                 UserChangeType = UserChangeType.ChangedPassword
             });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LogLoginAsync(int userId)
+        {
+            await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = userId });
             await _dbContext.SaveChangesAsync();
         }
 

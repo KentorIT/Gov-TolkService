@@ -243,7 +243,7 @@ namespace Tolk.Web.Controllers
 
                     if (result.Succeeded)
                     {
-                        await _userService.LogUpdatePassword(user.Id);
+                        await _userService.LogUpdatePasswordAsync(user.Id);
                         return RedirectToAction(nameof(ResetPasswordConfirmation));
                     }
                     AddErrors(result);
@@ -302,8 +302,8 @@ namespace Tolk.Web.Controllers
                     }
                     user.LastLoginAt = _clock.SwedenNow;
                     await _userManager.UpdateAsync(user);
-                    await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = user.Id });
                     await _dbContext.SaveChangesAsync();
+                    await _userService.LogLoginAsync(user.Id);
 
                     _logger.LogInformation("User {userName} logged in.", model.UserName);
                     return RedirectToLocal(returnUrl);
@@ -457,10 +457,11 @@ namespace Tolk.Web.Controllers
                 var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    await _userService.LogUpdatePassword(user.Id);
+                    await _userService.LogUpdatePasswordAsync(user.Id);
                     if (!User.Identity.IsAuthenticated && user.IsActive)
                     {
                         await _signInManager.SignInAsync(user, true);
+                        await _userService.LogLoginAsync(user.Id);
                     }
                     return RedirectToAction(nameof(ResetPasswordConfirmation));
                 }
@@ -772,7 +773,7 @@ namespace Tolk.Web.Controllers
 
                     if (user != null)
                     {
-                        await _userService.LogUpdatePassword(user.Id);
+                        await _userService.LogUpdatePasswordAsync(user.Id);
                         var result = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.NewPassword);
                         if (result.Succeeded)
                         {
@@ -786,9 +787,8 @@ namespace Tolk.Web.Controllers
                             user.PhoneNumber = model.PhoneWork;
                             user.PhoneNumberCellphone = model.PhoneCellphone;
                             user.LastLoginAt = _clock.SwedenNow;
-                            await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = user.Id });
-                            await _dbContext.SaveChangesAsync();
                             result = await _userManager.UpdateAsync(user);
+                            await _userService.LogLoginAsync(user.Id);
                             if (result.Succeeded)
                             {
                                 _logger.LogInformation("Successfully created new user {userId}", user.Id);
