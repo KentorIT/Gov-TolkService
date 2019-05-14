@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
@@ -14,6 +16,7 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string EditContact = nameof(EditContact);
         public const string CreateRequisition = nameof(CreateRequisition);
         public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
@@ -34,6 +37,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
+                opt.AddPolicy(EditContact, builder => builder.RequireAssertion(EditContactHandler));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
@@ -86,10 +90,12 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
         {
             var user = context.User;
+            var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == context.User.GetUserId() || order.ContactPersonId == user.GetUserId();
+                    return IsOrderCreatedByUserNoUnit(order, user)
+                    || IsOrderConnectedToUsersCustomerUnits(order, user.TryGetAllCustomerUnits());
                 case InterpreterBroker interpreter:
                     return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case AspNetUser editedUser:
@@ -104,21 +110,34 @@ namespace Tolk.Web.Authorization
                             return editedUser.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
                         }
                         //check that edited user has at least one of the same units as users localadminunits
-                        else if (user.TryGetLocalAdminCustomerUnits().Any())
+                        else if (localAdminCustomerUnits.Any())
                         {
                             var editedUsersCustomerUnits = editedUser.CustomerUnits.Select(cu => cu.CustomerUnitId);
-                            return editedUsersCustomerUnits.Intersect(user.TryGetLocalAdminCustomerUnits()).Any();
+                            return editedUsersCustomerUnits.Intersect(localAdminCustomerUnits).Any();
                         }
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerUnit unit:
-                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) || 
-                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId));
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) ||
+                        IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 case CustomerUnitUser unituser:
-                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unituser.CustomerUnit.CustomerOrganisationId) || 
-                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unituser.CustomerUnitId));
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unituser.CustomerUnit.CustomerOrganisationId) ||
+                        IsUserLocalAdminOfCustomerUnit(unituser.CustomerUnitId, localAdminCustomerUnits);
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> EditContactHandler = (context) =>
+        {
+            var user = context.User;
+            switch (context.Resource)
+            {
+                case Order order:
+                    return IsOrderCreatedByUserNoUnit(order, user) || order.ContactPersonId == user.GetUserId()
+                    || IsOrderConnectedToUsersCustomerUnits(order, user.TryGetAllCustomerUnits());
                 default:
                     throw new NotImplementedException();
             }
@@ -130,7 +149,8 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == context.User.GetUserId();
+                    return IsOrderCreatedByUserNoUnit(order, user)
+                    || IsOrderConnectedToUsersCustomerUnits(order, user.TryGetAllCustomerUnits());
                 default:
                     throw new NotImplementedException();
             }
@@ -138,16 +158,16 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> CancelHandler = (context) =>
         {
+            var user = context.User;
             switch (context.Resource)
             {
                 case Order order:
-                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) &&
-                        order.CreatedBy == context.User.GetUserId();
+                    return IsOrderCreatedByUserNoUnit(order, user) ||
+                        IsOrderConnectedToUsersCustomerUnits(order, user.TryGetAllCustomerUnits());
                 case Request request:
-                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) &&
-                        request.Ranking.BrokerId == context.User.GetBrokerId() &&
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) &&
+                        request.Ranking.BrokerId == user.GetBrokerId() &&
                         request.Status == RequestStatus.Approved && request.Order.Status == OrderStatus.ResponseAccepted;
-
                 default:
                     throw new NotImplementedException();
             }
@@ -158,11 +178,7 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Request request:
-                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
-                    {
-                        return request.Ranking.BrokerId == context.User.GetBrokerId();
-                    }
-                    return false;
+                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == context.User.GetBrokerId();
                 default:
                     throw new NotImplementedException();
             }
@@ -170,33 +186,12 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
         {
+            var user = context.User;
             switch (context.Resource)
             {
                 case Request request:
-                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
-                    {
-                        return request.Order.CreatedBy == context.User.GetUserId() || request.Order.ContactPersonId == context.User.GetUserId();
-                    }
-                    return false;
-                default:
-                    throw new NotImplementedException();
-            }
-        };
-
-        private readonly static Func<AuthorizationHandlerContext, bool> CreatorHandler = (context) =>
-        {
-            int userId = context.User.GetUserId();
-
-            switch (context.Resource)
-            {
-                case Order order:
-                    return order.CreatedBy == userId;
-                case Request request:
-                    //TODO: Validate that the has the correct state, is connected to the user
-                    return request.Ranking.BrokerId == context.User.GetBrokerId();
-                case Requisition requisition:
-                    return requisition.Request.Order.CreatedBy == userId ||
-                        requisition.Request.Order.ContactPersonId == userId;
+                    return IsOrderCreatedByUserNoUnit(request.Order, user) || request.Order.ContactPersonId == user.GetUserId()
+                    || IsOrderConnectedToUsersCustomerUnits(request.Order, user.TryGetAllCustomerUnits());
                 default:
                     throw new NotImplementedException();
             }
@@ -204,26 +199,28 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> AcceptHandler = (context) =>
         {
-            int userId = context.User.GetUserId();
-
+            var user = context.User;
+            int userId = user.GetUserId();
+            var customerUnits = user.TryGetAllCustomerUnits();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.CreatedBy == userId;
+                    return IsOrderCreatedByUserNoUnit(order, user) || IsOrderConnectedToUsersCustomerUnits(order, customerUnits);
                 case Request request:
-                    //TODO: Validate that the has the correct state, is connected to the user
-                    return request.Ranking.BrokerId == context.User.GetBrokerId();
+                    return request.Ranking.BrokerId == user.GetBrokerId();
                 case Requisition requisition:
-                    return requisition.Request.Order.CreatedBy == userId ||
+                    return IsOrderCreatedByUserNoUnit(requisition.Request.Order, user) ||
+                        IsOrderConnectedToUsersCustomerUnits(requisition.Request.Order, customerUnits) ||
                         requisition.Request.Order.ContactPersonId == userId;
                 case Complaint complaint:
-                    if (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
-                        return complaint.Request.Ranking.BrokerId == context.User.GetBrokerId();
+                        return complaint.Request.Ranking.BrokerId == user.GetBrokerId();
                     }
-                    else if (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.CreatedBy == context.User.GetUserId();
+                        return IsOrderCreatedByUserNoUnit(complaint.Request.Order, user) || complaint.Request.Order.ContactPersonId == userId
+                        || IsOrderConnectedToUsersCustomerUnits(complaint.Request.Order, customerUnits);
                     }
                     return false;
                 default:
@@ -234,15 +231,17 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> ViewHandler = (context) =>
         {
             var user = context.User;
-
             int userId = user.GetUserId();
+            var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
+            var customerUnits = user.TryGetAllCustomerUnits();
 
             switch (context.Resource)
             {
                 case Order order:
                     return user.IsInRole(Roles.SystemAdministrator) || (user.IsInRole(Roles.CentralAdministrator) ?
                         order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
-                        order.CreatedBy == userId || order.ContactPersonId == userId);
+                        IsOrderCreatedByUserNoUnit(order, user) || order.ContactPersonId == userId
+                        || IsOrderConnectedToUsersCustomerUnits(order, customerUnits));
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -252,23 +251,12 @@ namespace Tolk.Web.Authorization
                     {
                         return user.IsInRole(Roles.CentralAdministrator) ?
                             requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
-                            requisition.Request.Order.CreatedBy == userId ||
-                            requisition.Request.Order.ContactPersonId == userId;
+                            IsOrderCreatedByUserNoUnit(requisition.Request.Order, user) || requisition.Request.Order.ContactPersonId == userId
+                            || IsOrderConnectedToUsersCustomerUnits(requisition.Request.Order, customerUnits);
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case Request request:
-                    if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
-                    {
-                        return request.Ranking.BrokerId == user.GetBrokerId();
-                    }
-                    else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
-                    {
-                        return user.IsInRole(Roles.CentralAdministrator) ?
-                            request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
-                            request.Order.CreatedBy == userId ||
-                            request.Order.ContactPersonId == userId;
-                    }
-                    return false;
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId();
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -278,8 +266,8 @@ namespace Tolk.Web.Authorization
                     {
                         return user.IsInRole(Roles.CentralAdministrator) ?
                             complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
-                            complaint.Request.Order.CreatedBy == userId ||
-                            complaint.Request.Order.ContactPersonId == userId;
+                            IsOrderCreatedByUserNoUnit(complaint.Request.Order, user) || complaint.Request.Order.ContactPersonId == userId
+                            || IsOrderConnectedToUsersCustomerUnits(complaint.Request.Order, customerUnits);
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case Attachment attachment:
@@ -304,11 +292,12 @@ namespace Tolk.Web.Authorization
                         else
                         {
                             return attachment.Requisitions.Any(a =>
-                                    a.Requisition.Request.Order.CreatedBy == userId ||
-                                    a.Requisition.Request.Order.ContactPersonId == userId) ||
-                                attachment.Requests.Any(a => a.Request.Order.CreatedBy == userId ||
-                                    a.Request.Order.ContactPersonId == userId) ||
-                                     attachment.Orders.Any(oa => oa.Order.CreatedBy == userId || oa.Order.ContactPersonId == userId);
+                                    IsOrderCreatedByUserNoUnit(a.Requisition.Request.Order, user) || a.Requisition.Request.Order.ContactPersonId == userId
+                                    || IsOrderConnectedToUsersCustomerUnits(a.Requisition.Request.Order, customerUnits)) ||
+                                    attachment.Requests.Any(a => IsOrderCreatedByUserNoUnit(a.Request.Order, user) || a.Request.Order.ContactPersonId == userId
+                                    || IsOrderConnectedToUsersCustomerUnits(a.Request.Order, customerUnits)) ||
+                                    attachment.Orders.Any(oa => IsOrderCreatedByUserNoUnit(oa.Order, user) || oa.Order.ContactPersonId == userId
+                                    || IsOrderConnectedToUsersCustomerUnits(oa.Order, customerUnits));
                         }
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
@@ -319,7 +308,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return (user.IsInRole(Roles.CentralAdministrator) || user.TryGetLocalAdminCustomerUnits().Any()) 
+                        return (user.IsInRole(Roles.CentralAdministrator) || localAdminCustomerUnits.Any())
                             && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
@@ -328,12 +317,25 @@ namespace Tolk.Web.Authorization
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator);
                 case CustomerUnit unit:
-                    return (user.IsInRole(Roles.CentralAdministrator) || 
-                        (user.TryGetLocalAdminCustomerUnits().Any() && user.TryGetLocalAdminCustomerUnits().Contains(unit.CustomerUnitId))) 
-                    && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
+                    return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
+                        IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 default:
                     throw new NotImplementedException();
             }
         };
+
+        private static bool IsUserLocalAdminOfCustomerUnit(int customerUnitId, IEnumerable<int> localAdmincustomerUnits)
+        {
+            return localAdmincustomerUnits.Any() && localAdmincustomerUnits.Contains(customerUnitId);
+        }
+
+        private static bool IsOrderConnectedToUsersCustomerUnits(Order order, IEnumerable<int> customerUnits)
+        {
+            return order.CustomerUnitId.HasValue && customerUnits.Any() && customerUnits.Contains(order.CustomerUnitId.Value);
+        }
+        private static bool IsOrderCreatedByUserNoUnit(Order order, ClaimsPrincipal user)
+        {
+            return order.CustomerOrganisationId == user.TryGetCustomerOrganisationId() && !order.CustomerUnitId.HasValue && order.CreatedBy == user.GetUserId();
+        }
     }
 }
