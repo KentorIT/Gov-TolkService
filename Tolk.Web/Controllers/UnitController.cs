@@ -253,7 +253,7 @@ namespace Tolk.Web.Controllers
             var unitUsersId = _dbContext.CustomerUnits
                 .Include(cu => cu.CustomerUnitUsers).ThenInclude(cuu => cuu.User)
                 .Where(cu => cu.CustomerUnitId == id).Single().CustomerUnitUsers
-                .Where(cu => cu.UserId != User.GetUserId()).Select(cuu => cuu.User.Id);
+                .Select(cuu => cuu.User.Id);
 
             var users = _dbContext.Users.Include(u => u.CustomerUnits).Where(u => unitUsersId.Contains(u.Id)).Select(u => new DynamicUserListItemModel
             {

@@ -244,7 +244,7 @@ namespace Tolk.Web.Services
                         items.Add(new SelectListItem
                         {
                             Value = "0",
-                            Text = "Koppla INTE till någon enhet"
+                            Text = "Koppla inte till någon enhet"
                         });
                     }
                     return items.AsReadOnly();
@@ -422,7 +422,6 @@ namespace Tolk.Web.Services
             var currentUser = _httpContextAccessor.HttpContext.User;
             return _dbContext.Users
                 .Where(u => u.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId()
-                && u.Id != currentUser.GetUserId()
                 && !u.CustomerUnits.Any(cu => cu.CustomerUnitId == customerUnitId))
                 .Select(u => new SelectListItem
                 {

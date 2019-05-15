@@ -617,6 +617,7 @@ namespace Tolk.Web.Controllers
         {
             var unitUser = GetUnitUser(combinedId);
             var user = GetUserToHandle(unitUser.UserId);
+            bool removeOneSelfAsLocalAdmin = user.Id == User.GetUserId() && !User.IsInRole(Roles.CentralAdministrator);
             if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
             {
                 if (unitUser != null)
@@ -628,7 +629,9 @@ namespace Tolk.Web.Controllers
                     await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
                     _dbContext.CustomerUnitUsers.Remove(unitUser);
                     _dbContext.SaveChanges();
-                    return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = $"{user.FullName} är bortkopplad från enheten" });
+                    return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = removeOneSelfAsLocalAdmin ? 
+                        "Du är nu bortkopplad från enheten, dina rättigheter för enheten försvinner om fem minuter." : 
+                        $"{user.FullName} är bortkopplad från enheten" });
                 }
             }
             return Forbid();
@@ -641,6 +644,7 @@ namespace Tolk.Web.Controllers
         {
             var unitUser = GetUnitUser(combinedId);
             var user = GetUserToHandle(unitUser.UserId);
+            bool removeOneSelfAsLocalAdmin = user.Id == User.GetUserId() && !User.IsInRole(Roles.CentralAdministrator) && unitUser.IsLocalAdmin;
             if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
             {
                 if (unitUser != null)
@@ -653,7 +657,9 @@ namespace Tolk.Web.Controllers
                     unitUser.IsLocalAdmin = !unitUser.IsLocalAdmin;
                     _dbContext.SaveChanges();
                 }
-                return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = $"Lokal administratör ändrad för {user.FullName}" });
+                return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = removeOneSelfAsLocalAdmin ? 
+                    "Du är inte längre lokal administratör för enheten, dina administratörsrättigheter för enheten försvinner om fem minuter." : 
+                    $"Lokal administratör ändrad för {user.FullName}" });
             }
             return Forbid();
         }
