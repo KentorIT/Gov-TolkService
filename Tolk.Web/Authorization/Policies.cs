@@ -331,7 +331,7 @@ namespace Tolk.Web.Authorization
 
         private static bool IsOrderConnectedToUsersCustomerUnits(Order order, IEnumerable<int> customerUnits)
         {
-            return order.CustomerUnitId.HasValue && customerUnits.Any() && customerUnits.Contains(order.CustomerUnitId.Value);
+            return order.CustomerUnitId.HasValue && customerUnits != null && customerUnits.Any() && customerUnits.Contains(order.CustomerUnitId.Value);
         }
         private static bool IsOrderCreatedByUserNoUnit(Order order, ClaimsPrincipal user)
         {
