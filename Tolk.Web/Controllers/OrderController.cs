@@ -71,17 +71,27 @@ namespace Tolk.Web.Controllers
             }
             var isAdmin = User.IsInRole(Roles.SystemAdministrator);
             var isCentralAdministrator = User.IsInRole(Roles.CentralAdministrator);
+            var userId = User.GetUserId();
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            IEnumerable<int> customerUnits = null;
+            if (customerOrganisationId.HasValue)
+            {
+                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
+                        (isCentralAdministrator || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                    .Select(cu => cu.CustomerUnitId).ToList();
+            }
             model.IsCentralAdministrator = isCentralAdministrator;
             model.IsAdmin = isAdmin;
+            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
+
             var orders = _dbContext.Orders.Select(o => o);
 
             if (!isAdmin)
             {
-                orders = orders.Where(o => o.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
-                if (!isCentralAdministrator)
-                {
-                    orders = orders.Where(o => o.CreatedBy == User.GetUserId() || o.ContactPersonId == User.GetUserId());
-                }
+                orders = isCentralAdministrator ?
+                     orders.Where(o => o.CustomerOrganisationId == customerOrganisationId) :
+                     orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
             }
 
             // Filters
@@ -521,7 +531,7 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
-                order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(), 
+                order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                     User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == model.ContactPersonId));
                 _notificationService.OrderContactPersonChanged(order);
 

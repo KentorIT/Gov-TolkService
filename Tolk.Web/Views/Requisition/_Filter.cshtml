@@ -41,6 +41,13 @@
                 <div class="col-sm-4">
                     <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" Class="allow-clear" />
                 </div>
+                if (Model.HasCustomerUnits)
+                {
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                    <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                </div>
+                }
             }
         </div>
 

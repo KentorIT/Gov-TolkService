@@ -282,6 +282,31 @@ namespace Tolk.BusinessLogic.Entities
             ContactPersonUser = contactPerson;
         }
 
+        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId)
+        {
+            return CreatedByUserWithoutUnit(customerOrganisationId, userId) || CreatedByUsersUnit(customerUnits);
+        }
+
+        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId)
+        {
+            return IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId) || UserIsContact(userId);
+        }
+
+        private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId)
+        {
+            return CustomerOrganisationId == customerOrganisationId && !CustomerUnitId.HasValue && CreatedBy == userId;
+        }
+
+        private bool UserIsContact(int userId)
+        {
+            return ContactPersonId == userId;
+        }
+
+        private bool CreatedByUsersUnit(IEnumerable<int> customerUnits)
+        {
+            return CustomerUnitId.HasValue && customerUnits != null && customerUnits.Any() && customerUnits.Contains(CustomerUnitId.Value);
+        }
+
         #endregion
     }
 }

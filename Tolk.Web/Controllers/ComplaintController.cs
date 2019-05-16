@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -50,16 +51,27 @@ namespace Tolk.Web.Controllers
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
             var userId = User.GetUserId();
-            model.IsCustomerCentralAdministrator = User.IsInRole(Roles.CentralAdministrator) && customerId.HasValue;
+            var isCustomerCentralAdministrator = User.IsInRole(Roles.CentralAdministrator) && customerId.HasValue;
+            model.IsCustomerCentralAdministrator = isCustomerCentralAdministrator;
+
+            IEnumerable<int> customerUnits = null;
+            if (customerId.HasValue)
+            {
+                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
+                    .Where(cu => cu.CustomerOrganisationId == customerId &&
+                        (isCustomerCentralAdministrator || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                    .Select(cu => cu.CustomerUnitId).ToList();
+            }
             model.IsBrokerUser = brokerId.HasValue;
+            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
 
             var items = _dbContext.Complaints
-                .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId ||
-                     c.Request.Order.CustomerOrganisationId == customerId);
+                .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId || c.Request.Order.CustomerOrganisationId == customerId);
 
-            if (customerId.HasValue && !model.IsCustomerCentralAdministrator)
+            if (customerId.HasValue)
             {
-                items = items.Where(c => c.Request.Order.CreatedBy == userId || c.Request.Order.ContactPersonId == userId);
+                items = model.IsCustomerCentralAdministrator ? items : 
+                    items.Where(c => c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerId.Value, userId));
             }
 
             items = model.Apply(items);
@@ -93,9 +105,9 @@ namespace Tolk.Web.Controllers
                 model.IsBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId);
                 model.IsCustomer = isCustomer;
                 model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
-                model.AllowAnwserOnDispute = !model.IsAdmin && 
-                    complaint.Status == ComplaintStatus.Disputed && 
-                    isCustomer && 
+                model.AllowAnwserOnDispute = !model.IsAdmin &&
+                    complaint.Status == ComplaintStatus.Disputed &&
+                    isCustomer &&
                     (await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded;
                 if (returnPartial) { return PartialView(model); }
                 return View(model);

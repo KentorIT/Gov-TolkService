@@ -24,6 +24,13 @@
                 <div class="col-sm-3">
                     <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
                 </div>
+                if (Model.HasCustomerUnits)
+                {
+                <div class="col-sm-3">
+                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                    <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                </div>
+                }
             }
             @if (Model.IsCustomerCentralAdministrator)
             {

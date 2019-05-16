@@ -61,26 +61,24 @@ namespace Tolk.Web.Controllers
             {
                 model = new RequisitionFilterModel();
             }
-
+            var isCentralAdmin = User.IsInRole(Roles.CentralAdministrator);
             var brokerId = User.TryGetBrokerId();
-            var customerId = User.TryGetCustomerOrganisationId();
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
             model.IsBroker = brokerId.HasValue;
 
-            var requisitions = _dbContext.Requisitions
-                .Where(r => !r.ReplacedByRequisitionId.HasValue);
-            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
+            var requisitions = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue);
             var userId = User.GetUserId();
-
-            if (customerId.HasValue)
+            IEnumerable<int> customerUnits = null;
+            if (customerOrganisationId.HasValue)
             {
-                if (User.IsInRole(Roles.CentralAdministrator))
-                {
-                    requisitions = requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerId);
-                }
-                else
-                {
-                    requisitions = requisitions.Where(r => r.Request.Order.CreatedBy == userId || r.Request.Order.ContactPersonId == userId);
-                }
+                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
+                        (isCentralAdmin || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                    .Select(cu => cu.CustomerUnitId).ToList();
+
+                requisitions = isCentralAdmin ?
+                    requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerOrganisationId) :
+                    requisitions.Where(r => r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
             }
             else if (brokerId.HasValue)
             {
@@ -91,6 +89,8 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
 
+            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
+
             requisitions = model.Apply(requisitions);
             return View(
                 new RequisitionListModel
@@ -98,7 +98,7 @@ namespace Tolk.Web.Controllers
                     FilterModel = model,
                     Items = requisitions.Select(r => new RequisitionListItemModel
                     {
-                        OrderRequestId = customerId.HasValue ? r.Request.OrderId : r.RequestId,
+                        OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                         Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                         OrderNumber = r.Request.Order.OrderNumber.ToString(),
                         OrderDateAndTime = new TimeRange
@@ -107,7 +107,7 @@ namespace Tolk.Web.Controllers
                             EndDateTime = r.Request.Order.EndAt,
                         },
                         Status = r.Status,
-                        Controller = customerId.HasValue ? "Order" : "Request",
+                        Controller = customerOrganisationId.HasValue ? "Order" : "Request",
                         BrokerName = r.Request.Ranking.Broker.Name,
                         CustomerName = r.Request.Order.CustomerOrganisation.Name,
                     })
@@ -139,7 +139,7 @@ namespace Tolk.Web.Controllers
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
                 var isAdmin = User.IsInRole(Roles.SystemAdministrator);
                 var customerId = User.TryGetCustomerOrganisationId();
-                model.AllowCreation = !isAdmin && !customerId.HasValue 
+                model.AllowCreation = !isAdmin && !customerId.HasValue
                     && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)
                     && requisition.Request.Requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == requisition.RequisitionId;
                 model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;

@@ -21,6 +21,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Län")]
         public int? RegionId { get; set; }
 
+        [Display(Name = "Myndighetens enhet")]
+        public int? CustomerUnitId { get; set; }
+
+        [Display(Name = "Visa inte bokningar för inaktiva enheter")]
+        public bool? FilterByInactiveUnits { get; set; }
+
         [Display(Name = "Språk")]
         public int? LanguageId { get; set; }
 
@@ -34,6 +40,8 @@ namespace Tolk.Web.Models
         public int? CreatedBy { get; set; }
 
         public bool IsCentralAdministrator { get; set; }
+
+        public bool HasCustomerUnits { get; set; }
 
         public bool IsAdmin { get; set; }
 
@@ -54,6 +62,9 @@ namespace Tolk.Web.Models
             orders = RegionId.HasValue 
                 ? orders.Where(o => o.RegionId == RegionId) 
                 : orders;
+            orders = CustomerUnitId.HasValue
+                ? orders.Where(o => o.CustomerUnitId == CustomerUnitId)
+                : orders;
             orders = LanguageId.HasValue 
                 ? orders.Where(o => o.LanguageId == LanguageId) 
                 : orders;
@@ -65,13 +76,14 @@ namespace Tolk.Web.Models
                     ? orders.Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter) 
                 : orders.Where(o => o.Status == Status) : orders;
             orders = BrokerId.HasValue 
-                ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (
-                        req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved))) 
+                ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved))) 
                 : orders;
             orders = CustomerOrganisationId.HasValue
                 ? orders.Where(o => o.CustomerOrganisationId == CustomerOrganisationId)
                 : orders;
-
+            orders = FilterByInactiveUnits.HasValue
+                ? orders.Where(o => o.CustomerUnit == null || o.CustomerUnit.IsActive)
+                : orders;
             orders = DateRange?.Start != null
                     ? orders.Where(o => o.StartAt.Date >= DateRange.Start)
                     : orders;

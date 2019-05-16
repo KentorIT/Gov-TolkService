@@ -430,6 +430,24 @@ namespace Tolk.Web.Services
                 }).OrderBy(e => e.Text).ToList();
         }
 
+        public IEnumerable<SelectListItem> CustomerUnitsForCurrentUser
+        {
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                var organisationAdmin = currentUser.IsInRole(Roles.CentralAdministrator);
+                return _dbContext.CustomerUnits
+                        .Include(cu => cu.CustomerUnitUsers)
+                        .Where(cu => cu.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId()
+                        && (organisationAdmin || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == currentUser.GetUserId())))
+                    .OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu => new SelectListItem
+                    {
+                        Text = $"{cu.Name} {(cu.IsActive ? string.Empty : "(Inaktiv)")}",
+                        Value = cu.CustomerUnitId.ToString(),
+                    }).ToList();
+            }
+        }
+
         public IEnumerable<SelectListItem> BrokerUsers
         {
             get

@@ -128,12 +128,13 @@ namespace Tolk.Web.Controllers
         {
             var actionList = new List<StartListItemModel>();
             var userId = User.GetUserId();
+            var customerOrganisationId = User.GetCustomerOrganisationId();
             var customerUnits = User.TryGetAllCustomerUnits();
             //Accepted orders to approve, Cancelled by broker, Non-answered-orders
             var ordersCorrectStatusAndUser = _dbContext.Orders.Include(o => o.Requests).Include(o => o.Language)
                 .Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter
                 || o.Status == OrderStatus.NoBrokerAcceptedOrder || o.Status == OrderStatus.CancelledByBroker || o.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-                && IsOrderToBeDisplayedForUser(o, customerUnits, User, false)).ToList();
+                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId)).ToList();
 
             actionList.AddRange(ordersCorrectStatusAndUser
                 .Where(os => !_dbContext.RequestStatusConfirmation.Where(rs => rs.RequestStatus == RequestStatus.CancelledByBroker)
@@ -159,7 +160,7 @@ namespace Tolk.Web.Controllers
             //Requisitions to review
             actionList.AddRange(_dbContext.Requisitions
                 .Where(r => r.Status == RequisitionStatus.Created && r.Request.Order.Status == OrderStatus.Delivered &&
-                    IsOrderToBeDisplayedForUser(r.Request.Order, customerUnits, User, true))
+                    r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId))
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
@@ -180,7 +181,8 @@ namespace Tolk.Web.Controllers
 
             //Disputed complaints
             actionList.AddRange(_dbContext.Complaints
-                .Where(c => c.Status == ComplaintStatus.Disputed && IsOrderToBeDisplayedForUser(c.Request.Order, customerUnits, User, true))
+                .Where(c => c.Status == ComplaintStatus.Disputed &&
+                c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId))
                 .Select(c => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt },
@@ -212,7 +214,7 @@ namespace Tolk.Web.Controllers
             //Sent and approved orders
             var sentAndApprovedOrders = _dbContext.Orders.Include(o => o.Requests).Include(o => o.Language)
                 .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted)
-                && IsOrderToBeDisplayedForUser(o, customerUnits, User, false)
+                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId)
                 && o.EndAt > _clock.SwedenNow).ToList();
 
             //Sent orders
@@ -266,8 +268,8 @@ namespace Tolk.Web.Controllers
 
             // Awaiting requisition
             var awaitRequisition = _dbContext.Orders
-            .Where(o => o.Status == OrderStatus.ResponseAccepted &&
-                IsOrderToBeDisplayedForUser(o, customerUnits, User, true)
+            .Where(o => o.Status == OrderStatus.ResponseAccepted && 
+                o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId)
                 && o.EndAt < _clock.SwedenNow &&
                 !o.Requests.Any(r => r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed ||
                 req.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder || req.Status == RequisitionStatus.Created)))
@@ -293,22 +295,6 @@ namespace Tolk.Web.Controllers
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som inväntar rekvisition",
                 StartListObjects = awaitRequisition
             };
-        }
-
-        private static bool IsOrderToBeDisplayedForUser(Order order, IEnumerable<int> customerUnits, ClaimsPrincipal user, bool checkContactPerson)
-        {
-            return IsOrderCreatedByUserNoUnit(order, user) || IsOrderConnectedToUsersCustomerUnits(order, customerUnits)
-                || (checkContactPerson ? order.ContactPersonId == user.GetUserId() : checkContactPerson);
-        }
-
-        private static bool IsOrderConnectedToUsersCustomerUnits(Order order, IEnumerable<int> customerUnits)
-        {
-            return order.CustomerUnitId.HasValue && customerUnits.Any() && customerUnits.Contains(order.CustomerUnitId.Value);
-        }
-
-        private static bool IsOrderCreatedByUserNoUnit(Order order, ClaimsPrincipal user)
-        {
-            return order.CustomerOrganisationId == user.TryGetCustomerOrganisationId() && !order.CustomerUnitId.HasValue && order.CreatedBy == user.GetUserId();
         }
 
         private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)

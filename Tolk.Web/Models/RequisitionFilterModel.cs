@@ -21,8 +21,16 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighet")]
         public int? CustomerOrganisationId { get; set; }
 
+        [Display(Name = "Myndighetens enhet")]
+        public int? CustomerUnitId { get; set; }
+
+        [Display(Name = "Visa inte rekvisitioner för inaktiva enheter")]
+        public bool? FilterByInactiveUnits { get; set; }
+
         [Display(Name = "Förmedling")]
         public int? BrokerId { get; set; }
+
+        public bool HasCustomerUnits { get; set; }
 
         public bool HasActiveFilters => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
 
@@ -57,6 +65,12 @@ namespace Tolk.Web.Models
             requisitions = BrokerId.HasValue
                   ? requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == BrokerId)
                   : requisitions;
+            requisitions = CustomerUnitId.HasValue
+                ? requisitions.Where(r => r.Request.Order.CustomerUnitId == CustomerUnitId)
+                : requisitions;
+            requisitions = FilterByInactiveUnits.HasValue 
+                ? requisitions.Where(r => r.Request.Order.CustomerUnit == null || r.Request.Order.CustomerUnit.IsActive) 
+                : requisitions;
 
             return requisitions;
         }

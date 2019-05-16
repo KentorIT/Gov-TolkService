@@ -52,6 +52,13 @@
                 <div class="col-sm-2">
                     <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
                 </div>
+                if (Model.HasCustomerUnits)
+                {
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                    <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                </div>
+                }
             }
             else
             {
@@ -61,6 +68,13 @@
                 <div class="col-sm-4">
                     <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
                 </div>
+                if (Model.HasCustomerUnits)
+                {
+                <div class="col-sm-4">
+                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                    <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                </div>
+                }
             }
         </div>
     </form>
