@@ -29,10 +29,7 @@ else
             <display-entry asp-for="CreatedBy" />
         </div>
         <div class="col-sm-4">
-            @if (!string.IsNullOrEmpty(Model.CustomerUnitName))
-            {
-                <display-entry asp-for="CustomerUnitName" />
-            }
+            <display-entry asp-for="CustomerUnitName" />
             <display-entry asp-for="UnitName" />
             <display-entry asp-for="CustomerReferenceNumber" />
         </div>

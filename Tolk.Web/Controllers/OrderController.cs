@@ -334,11 +334,8 @@ namespace Tolk.Web.Controllers
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
 
-            if (model.CustomerUnitId.HasValue)
-            {
-                updatedModel.CustomerUnitName = model.CustomerUnitId == 0 ? "Beställningen ska inte kopplas till någon enhet" : _dbContext.CustomerUnits
-                    .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name;
-            }
+            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ? model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" : _dbContext.CustomerUnits
+                .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name : "Du tillhör ingen enhet i systemet";
 
             updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
             .Single(l => l.LanguageId == model.LanguageId).Name;
