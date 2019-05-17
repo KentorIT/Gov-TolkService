@@ -56,6 +56,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                 .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Requirements)
@@ -186,6 +187,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser)
+                .Include(r => r.Order.CustomerUnit)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                 .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
@@ -222,6 +224,7 @@ namespace Tolk.Web.Api.Controllers
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
             var request = _dbContext.Requests
             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
             .Include(r => r.Order.CreatedByUser)
             .Include(r => r.Order.ContactPersonUser)
             .Include(r => r.Interpreter)
@@ -270,6 +273,7 @@ namespace Tolk.Web.Api.Controllers
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
             var request = _dbContext.Requests
             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
             .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
             .Include(r => r.Order.CreatedByUser)
             .Include(r => r.Order.ContactPersonUser)
@@ -342,6 +346,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                 .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&

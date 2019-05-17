@@ -247,6 +247,7 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Order.ContactPersonUser)
+                    .Include(r => r.Order.CustomerUnit)
                     .Include(r => r.Requisitions)
                     .Include(r => r.Ranking)
                     .Include(r => r.PriceRows)

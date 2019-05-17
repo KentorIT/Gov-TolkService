@@ -272,6 +272,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 var newRequest = _tolkDbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
@@ -324,6 +325,7 @@ namespace Tolk.BusinessLogic.Services
             var terminatedOrder = await _tolkDbContext.Orders
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
+                .Include(o => o.CustomerUnit)
                 .SingleAsync(o => o.OrderId == order.OrderId);
             _notificationService.OrderNoBrokerAccepted(terminatedOrder);
             _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",

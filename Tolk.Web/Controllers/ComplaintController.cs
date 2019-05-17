@@ -289,6 +289,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.AnswerDisputingUser)
                 .Include(r => r.TerminatingUser)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Request).ThenInclude(r => r.Interpreter)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)

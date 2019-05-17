@@ -64,6 +64,7 @@ namespace Tolk.Web.Api.Controllers
             var complaint = _dbContext.Complaints
                 .Include(c => c.CreatedByUser)
                 .Include(c => c.Request).ThenInclude(r => r.Order)
+                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Where(c => c.Request.Order.OrderNumber == model.OrderNumber &&
                    c.Request.Ranking.BrokerId == apiUser.BrokerId).ToList()
                 .SingleOrDefault(c => c.Status == ComplaintStatus.Created);
@@ -99,6 +100,7 @@ namespace Tolk.Web.Api.Controllers
             var complaint = _dbContext.Complaints
                 .Include(c => c.CreatedByUser)
                 .Include(c => c.Request).ThenInclude(r => r.Order)
+                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Where(c => c.Request.Order.OrderNumber == model.OrderNumber &&
                    c.Request.Ranking.BrokerId == apiUser.BrokerId).ToList()
                 .SingleOrDefault(c => c.Status == ComplaintStatus.Created);

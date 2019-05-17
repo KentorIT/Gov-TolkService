@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -209,6 +207,8 @@ namespace Tolk.BusinessLogic.Services
                     .ThenInclude(order => order.ContactPersonUser)
                 .Include(req => req.Ranking)
                     .ThenInclude(rank => rank.Broker)
+                .Include(req => req.Order)
+                    .ThenInclude(order => order.CustomerUnit)
                 .Include(req => req.Interpreter)
                 .Where(req => req.Order.StartAt > _clock.SwedenNow)
                 .ToListAsync();

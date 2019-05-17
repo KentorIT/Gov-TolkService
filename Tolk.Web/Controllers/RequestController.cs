@@ -178,6 +178,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.Order).ThenInclude(o => o.Requirements)
@@ -360,6 +361,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Order.ContactPersonUser)
                     .Include(r => r.Interpreter)
@@ -388,6 +390,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser)
+                .Include(r => r.Order.CustomerUnit)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                 .Include(r => r.Interpreter)

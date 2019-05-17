@@ -56,6 +56,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
                 .Include(o => o.ReplacingOrder)
                 .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
                    //Must have a request connected to the order for the broker, any status...
