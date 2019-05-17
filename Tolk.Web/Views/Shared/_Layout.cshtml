@@ -4,12 +4,20 @@
 @using Tolk.Web.Helpers
 @using Tolk.BusinessLogic.Services
 @using Microsoft.Extensions.Options;
+@using System.Security.Claims
 @inject Tolk.Web.Services.SelectListService SelectListService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
+    string name = string.Empty;
+    string infoTextUser = string.Empty;
     bool userHasPassword = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.HasPassword)).Succeeded) || User.IsInRole(Roles.Impersonator);
+    if (userHasPassword)
+    {
+        name = User.FindFirstValue(TolkClaimTypes.PersonalName) ?? User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? User.FindFirstValue(ClaimTypes.Name);
+        infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? $"Visa konto ({name})\nInloggad SystemAdmin: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : $"Visa mitt konto({name})";
+    }
 }
 <!DOCTYPE html>
 <html>
@@ -78,18 +86,18 @@
                             </li>
                             if (User.IsInRole(Roles.CentralAdministrator))
                             {
-                                <li class="dropdown">
+                                <li class="dropdown visible-xs hidden-sm visible-md visible-lg">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                                     </ul>
                                 </li>
-                                <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                             }
                             else if (User.TryGetLocalAdminCustomerUnits().Any())
                             {
-                                <li><a asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                                <li class="visible-xs hidden-sm visible-md visible-lg"><a asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                             }
 
                         }
@@ -110,10 +118,10 @@
                             </li>
                             if (User.IsInRole(Roles.CentralAdministrator))
                             {
-                                <li><a asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
-                                <li class="dropdown">
+                                <li class="dropdown visible-xs hidden-sm visible-md visible-lg">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
@@ -139,7 +147,7 @@
                                     <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Rapporter</a></li>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li class="dropdown visible-xs hidden-sm visible-md visible-lg">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                 <ul class="dropdown-menu">
                                     <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
@@ -151,7 +159,70 @@
                         }
 
                     </ul>
-                    @await Html.PartialAsync("_LoginPartial")
+                    <ul class="nav navbar-nav navbar-right visible-xs hidden-sm hidden-md visible-lg" style="margin-right:5px">
+                        <li>
+                            <a style="max-width:200px; text-overflow:ellipsis; white-space:nowrap;overflow:hidden;" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
+                                <span class="glyphicon glyphicon-user"></span> @name
+                            </a>
+                        </li>
+                        <li>
+                            <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                <button type="submit" class="btn-logout">Logga ut</button>
+                            </form>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right hidden-xs visible-sm visible-md hidden-lg">
+                        <li class="dropdown">
+                            <button type="button" class="dropdown-toggle user-toggle" data-toggle="dropdown">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
+                                {
+                                    @if (User.IsInRole(Roles.CentralAdministrator))
+                                    {
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                    }
+                                    else if (User.TryGetLocalAdminCustomerUnits().Any())
+                                    {
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                                    }
+                                }
+                                else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
+                                {
+                                    @if (User.IsInRole(Roles.CentralAdministrator))
+                                    {
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
+                                    }
+                                }
+                                else if (User.IsInRole(Roles.SystemAdministrator))
+                                {
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                }
+                                <li>
+                                    <a class="submenu" style="max-width:200px; text-overflow:ellipsis; white-space:nowrap;overflow:hidden;" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
+                                        <span class="glyphicon glyphicon-user"></span> @name
+                                    </a>
+                                </li>
+                                <li>
+                                    <form asp-area=" " asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                        <button type="submit" class="btn-logout submenu">Logga ut</button>
+                                    </form>
+                                </li>
+                            </ul>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -213,14 +284,14 @@
                     </div>
                     @if (Options.Value.EnableTimeTravel)
                     {
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <span id="now_display"></span>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <span id="now_display"></span>
+                            </div>
+                            <div class="col-sm-8">
+                                @await Html.PartialAsync("_TimeTravelPartial")
+                            </div>
                         </div>
-                        <div class="col-sm-8">
-                            @await Html.PartialAsync("_TimeTravelPartial")
-                        </div>
-                    </div>
                     }
                 </div>
             </div>

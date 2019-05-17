@@ -1090,6 +1090,28 @@ input.force-validation {
 .navbar > .container {
   width: 100%;
 }
+.user-toggle {
+  position: relative;
+  float: right;
+  padding: 9px 10px;
+  margin-top: 8px;
+  margin-right: 15px;
+  margin-bottom: 8px;
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.user-toggle .icon-bar {
+  background-color: #888;
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+}
+.user-toggle .icon-bar + .icon-bar {
+  margin-top: 4px;
+}
 .navbar-nav > li > a {
   padding-left: 0px;
   padding-right: 0px;
