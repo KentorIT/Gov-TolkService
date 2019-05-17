@@ -101,6 +101,9 @@ hr {
   margin-top: 70px;
   padding: 40px 15px;
 }
+.kamk-footer .time-travel {
+  color: black;
+}
 .kamk-footer a {
   color: white;
   text-decoration: none;
@@ -1086,11 +1089,6 @@ input.force-validation {
 }
 .navbar > .container {
   width: 100%;
-}
-@media (min-width: 1200px) {
-  ul.nav.navbar-nav > li {
-    padding: 0px 10px;
-  }
 }
 .navbar-nav > li > a {
   padding-left: 0px;

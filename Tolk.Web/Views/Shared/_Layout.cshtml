@@ -4,6 +4,7 @@
 @using Tolk.Web.Helpers
 @using Tolk.BusinessLogic.Services
 @using Microsoft.Extensions.Options;
+@inject Tolk.Web.Services.SelectListService SelectListService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
@@ -194,17 +195,33 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-sm-6">
+                        <div class="col-md-6">
                             &copy; 2018-@(((TimeTravelClock)Clock).SwedenNow.Year) - Kammarkollegiet
                             <small>(Version @GitHelper.Version)</small>
-                            @if (Options.Value.EnableTimeTravel)
-                            {
-                                <div class="col-sm-pull-1" id="now_display">
-                                </div>
-                            }
                             <input type="hidden" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks / 10000)" />
                         </div>
+                        @if (User.IsInRole(Roles.Impersonator))
+                        {
+                            <div class="col-md-6">
+                                <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post">
+                                    <div class="form-group">
+                                        <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control" data-ays-ignore="true"></select>
+                                    </div>
+                                </form>
+                            </div>
+                        }
                     </div>
+                    @if (Options.Value.EnableTimeTravel)
+                    {
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <span id="now_display"></span>
+                        </div>
+                        <div class="col-sm-8">
+                            @await Html.PartialAsync("_TimeTravelPartial")
+                        </div>
+                    </div>
+                    }
                 </div>
             </div>
             <div class="row kamk-footer-logo">
