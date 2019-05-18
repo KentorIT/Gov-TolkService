@@ -1112,6 +1112,12 @@ input.force-validation {
 .user-toggle .icon-bar + .icon-bar {
   margin-top: 4px;
 }
+.name-display-box {
+  max-width: 200px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
 .navbar-nav > li > a {
   padding-left: 0px;
   padding-right: 0px;

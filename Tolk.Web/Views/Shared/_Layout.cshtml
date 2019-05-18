@@ -20,7 +20,7 @@
     }
 }
 <!DOCTYPE html>
-<html>
+<html lang="sv-se">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -159,9 +159,9 @@
                         }
 
                     </ul>
-                    <ul class="nav navbar-nav navbar-right visible-xs hidden-sm hidden-md visible-lg" style="margin-right:5px">
+                    <ul class="nav navbar-nav navbar-right visible-xs hidden-sm hidden-md visible-lg">
                         <li>
-                            <a style="max-width:200px; text-overflow:ellipsis; white-space:nowrap;overflow:hidden;" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
+                            <a class="name-display-box" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
                                 <span class="glyphicon glyphicon-user"></span> @name
                             </a>
                         </li>
@@ -212,7 +212,7 @@
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                 }
                                 <li>
-                                    <a class="submenu" style="max-width:200px; text-overflow:ellipsis; white-space:nowrap;overflow:hidden;" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
+                                    <a class="submenu" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
                                         <span class="glyphicon glyphicon-user"></span> @name
                                     </a>
                                 </li>
