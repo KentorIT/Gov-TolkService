@@ -18,7 +18,7 @@ using Tolk.Web.Helpers;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.SystemAdministrator)]
+    [Authorize(Roles = Roles.ApplicationAdministrator)]
     public class CustomerController : Controller
     {
         private readonly TolkDbContext _dbContext;

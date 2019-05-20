@@ -83,7 +83,8 @@ namespace Tolk.Web.Authorization
         {
             return (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits))
             || context.User.IsInRole(Roles.CentralAdministrator)
-            || context.User.IsInRole(Roles.SystemAdministrator);
+            || context.User.IsInRole(Roles.SystemAdministrator)
+            || context.User.IsInRole(Roles.ApplicationAdministrator);
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
@@ -114,9 +115,9 @@ namespace Tolk.Web.Authorization
                             return editedUsersCustomerUnits.Intersect(localAdminCustomerUnits).Any();
                         }
                     }
-                    return user.IsInRole(Roles.SystemAdministrator);
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerOrganisation organisation:
-                    return user.IsInRole(Roles.SystemAdministrator);
+                    return user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
@@ -295,11 +296,11 @@ namespace Tolk.Web.Authorization
                         return (user.IsInRole(Roles.CentralAdministrator) || localAdminCustomerUnits.Any())
                             && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
                     }
-                    return user.IsInRole(Roles.SystemAdministrator);
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case InterpreterBroker interpreter:
                     return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case CustomerOrganisation organisation:
-                    return user.IsInRole(Roles.SystemAdministrator);
+                    return user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);

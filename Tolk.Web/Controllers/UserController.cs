@@ -60,7 +60,7 @@ namespace Tolk.Web.Controllers
                 model = new UserFilterModel();
             }
 
-            model.IsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator);
+            model.IsSystemAdministrator = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator);
 
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
@@ -75,7 +75,7 @@ namespace Tolk.Web.Controllers
                 model.IsBroker = true;
                 users = users.Where(u => u.BrokerId == brokerId);
             }
-            else if (!User.IsInRole(Roles.SystemAdministrator))
+            else if (!model.IsSystemAdministrator)
             {
                 return Forbid();
             }
@@ -319,7 +319,7 @@ namespace Tolk.Web.Controllers
             });
         }
 
-        private UserType LoggedInUserType => User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator
+        private UserType LoggedInUserType => User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator) ? UserType.SystemAdministrator
             : User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
 
         private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?

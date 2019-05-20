@@ -19,7 +19,7 @@ using Tolk.Web.Services;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.SystemAdministrator)]
+    [Authorize(Roles = Roles.AppOrSysAdmin)]
     public class SystemMessageController : Controller
     {
         private readonly TolkDbContext _dbContext;
