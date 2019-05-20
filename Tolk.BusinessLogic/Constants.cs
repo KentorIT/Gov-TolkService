@@ -6,6 +6,6 @@ namespace Tolk.BusinessLogic
 {
     public static class Constants
     {
-        public static readonly string SystemName = "Kammarkollegiets tolktjänst";
+        public static readonly string SystemName = "Kammarkollegiets tolkavropstjänst";
     }
 }
