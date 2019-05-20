@@ -137,23 +137,32 @@
                             <li><a asp-area="" asp-controller="Requisition" asp-action="List">Rekvisitioner</a></li>
 
                         }
-                        else if (User.IsInRole(Roles.SystemAdministrator))
+                        else if (User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator))
                         {
-                            <li><a asp-area="" asp-controller="Order" asp-action="List">Sök bokningar</a></li>
-                            <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Statistik och rapporter <span class="caret"></span></a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="Dashboard">Statistik</a></li>
-                                    <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Rapporter</a></li>
-                                </ul>
-                            </li>
+                            if (User.IsInRole(Roles.SystemAdministrator))
+                            {
+                                <li><a asp-area="" asp-controller="Order" asp-action="List">Sök bokningar</a></li>
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Statistik och rapporter <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="Dashboard">Statistik</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Rapporter</a></li>
+                                    </ul>
+                                </li>
+                            }
                             <li class="dropdown visible-xs hidden-sm visible-md visible-lg">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                 <ul class="dropdown-menu">
                                     <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
-                                    <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
-                                    <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                    @if (User.IsInRole(Roles.SystemAdministrator))
+                                    {
+                                        <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
+                                    }
+                                    @if (User.IsInRole(Roles.ApplicationAdministrator))
+                                    {
+                                        <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                    }
                                 </ul>
                             </li>
                         }
@@ -204,12 +213,18 @@
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
                                     }
                                 }
-                                else if (User.IsInRole(Roles.SystemAdministrator))
+                                else if (User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator))
                                 {
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
-                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
-                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                    if (User.IsInRole(Roles.SystemAdministrator))
+                                    {
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
+                                    }
+                                    if (User.IsInRole(Roles.ApplicationAdministrator))
+                                    {
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                    }
                                 }
                                 <li>
                                     <a class="submenu" asp-area="" asp-controller="Account" asp-action="Index" title=@infoTextUser>
