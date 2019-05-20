@@ -4,8 +4,8 @@
 @using Microsoft.Extensions.Options
 @inject IOptions<TolkOptions> options
 
-<h2>Logga in</h2>
 <section>
+    <h2>Logga in</h2>
     <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" asp-action="Login" asp-controller="Account" class="do-not-check-dirty">
         <div class="row padding-bottom-30px">
             <div class="col-xs-12">
