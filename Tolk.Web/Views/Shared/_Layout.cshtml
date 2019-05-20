@@ -84,22 +84,20 @@
                                     <li><a class="submenu" asp-area="" asp-controller="Complaint" asp-action="List">Reklamationer</a></li>
                                 </ul>
                             </li>
-                            if (User.IsInRole(Roles.CentralAdministrator))
+                            if (User.IsInRole(Roles.CentralAdministrator) || User.TryGetLocalAdminCustomerUnits().Any())
                             {
                                 <li class="dropdown visible-xs hidden-sm visible-md visible-lg">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
-                                        <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        @if (User.IsInRole(Roles.CentralAdministrator))
+                                        {
+                                            <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        }
                                         <li><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                     </ul>
                                 </li>
                             }
-                            else if (User.TryGetLocalAdminCustomerUnits().Any())
-                            {
-                                <li class="visible-xs hidden-sm visible-md visible-lg"><a asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
-                            }
-
                         }
                         else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)
                         {
@@ -166,7 +164,6 @@
                                 </ul>
                             </li>
                         }
-
                     </ul>
                     <ul class="nav navbar-nav navbar-right visible-xs hidden-sm hidden-md visible-lg">
                         <li>
@@ -191,15 +188,14 @@
                             <ul class="dropdown-menu">
                                 @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
                                 {
-                                    @if (User.IsInRole(Roles.CentralAdministrator))
+                                    if (User.IsInRole(Roles.CentralAdministrator) || User.TryGetLocalAdminCustomerUnits().Any())
                                     {
+                                        @if (User.IsInRole(Roles.CentralAdministrator))
+                                        {
+                                            <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                        }
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
-                                    }
-                                    else if (User.TryGetLocalAdminCustomerUnits().Any())
-                                    {
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                                     }
                                 }
                                 else if ((await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded)

@@ -245,7 +245,7 @@ namespace Tolk.BusinessLogic.Services
 
         #region Customer and SysAdmin reports
 
-        public IEnumerable<Order> GetOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId)
+        public IEnumerable<Order> GetOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -253,15 +253,17 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
                     .Include(o => o.Requests).ThenInclude(r => r.Complaints)
                     .Include(o => o.CustomerOrganisation)
+                    .Include(o => o.CustomerUnit)
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue));
+                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue) 
+                        && (localAdminCustomerUnits != null ? (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
         }
 
-        public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId)
+        public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -270,20 +272,23 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Requests).ThenInclude(r => r.Complaints)
                     .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                     .Include(o => o.CustomerOrganisation)
+                    .Include(o => o.CustomerUnit)
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
                         && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue));
+                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits != null ? (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
         }
 
-        public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId)
+        public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Request).ThenInclude(r => r.Interpreter)
@@ -294,14 +299,16 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.PriceRows)
                     .OrderBy(r => r.Request.Order.OrderNumber)
                     .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
-                        && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue));
+                        && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits != null ? (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
         }
 
-        public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId)
+        public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Complaints
                     .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
                     .Include(c => c.Request).ThenInclude(r => r.Interpreter)
@@ -309,7 +316,8 @@ namespace Tolk.BusinessLogic.Services
                     .Include(c => c.CreatedByUser)
                     .OrderBy(c => c.Request.Order.OrderNumber)
                     .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue));
+                        && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits != null ? (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
         }
 
         #endregion
@@ -392,7 +400,7 @@ namespace Tolk.BusinessLogic.Services
                     case ReportType.OrdersForCustomer:
                     case ReportType.RequisitionsForCustomer:
                     case ReportType.ComplaintsForCustomer:
-                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
+                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, !(rows.FirstOrDefault() is ReportRequisitionRow || rows.FirstOrDefault() is ReportComplaintRow));
                         break;
                 }
                 rowsWorksheet.Row(1).Style.Font.Bold = true;
@@ -407,21 +415,24 @@ namespace Tolk.BusinessLogic.Services
 
         private void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
         {
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerUnitName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avdelning";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Department);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Förmedling";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
             if (isOrder)
             {
-                CreateColumnsForOrderCustomer(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
+                CreateColumnsForOrderCustomer(rowsWorksheet, (rows as IEnumerable<ReportRow>).Select(r => r), ref columnLetter);
             }
         }
 
-        private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
+        private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet/Avdelning";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.UnitName);
         }
+
 
         private void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
         {
@@ -504,10 +515,10 @@ namespace Tolk.BusinessLogic.Services
             return $"{columnLetter}{index}";
         }
 
-        public static IEnumerable<ReportOrderRow> GetOrderExcelFileRows(IEnumerable<Order> listItems, ReportType reportType)
+        public static IEnumerable<ReportRow> GetOrderExcelFileRows(IEnumerable<Order> listItems, ReportType reportType)
         {
             return listItems
-                    .Select(o => new ReportOrderRow
+                    .Select(o => new ReportRow
                     {
                         OrderNumber = o.OrderNumber,
                         ReportDate = (reportType == ReportType.DeliveredOrdersSystemAdministrator || reportType == ReportType.DeliveredOrdersCustomer) ? o.StartAt.ToString("yyyy-MM-dd HH:mm") : o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
@@ -521,7 +532,8 @@ namespace Tolk.BusinessLogic.Services
                         AssignmentDate = $"{o.StartAt.ToString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToString("HH:mm")}",
                         Status = o.Status.GetDescription(),
                         ReferenceNumber = o.CustomerReferenceNumber ?? string.Empty,
-                        UnitName = o.UnitName ?? string.Empty,
+                        Department = o.UnitName ?? string.Empty,
+                        CustomerUnitName = o.CustomerUnit?.Name ?? string.Empty,
                         HasRequisition = o.Requests.OrderBy(r => r.RequestId).Last().Requisitions.Any(),
                         HasComplaint = o.Requests.OrderBy(r => r.RequestId).Last().Complaints.Any(),
                         CustomerName = o.CustomerOrganisation.Name,
@@ -576,6 +588,8 @@ namespace Tolk.BusinessLogic.Services
                         CarCompensation = r.CarCompensation ?? 0,
                         PerDiem = r.PerDiem,
                         Price = r.PriceRows.Sum(p => p.TotalPrice),
+                        Department = r.Request.Order.UnitName ?? string.Empty,
+                        CustomerUnitName = r.Request.Order.CustomerUnit?.Name ?? string.Empty,
                         TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription(),
                         ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
                         PreliminaryCost = r.Request.PriceRows.Sum(p => p.TotalPrice),
@@ -601,6 +615,8 @@ namespace Tolk.BusinessLogic.Services
                         InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         HasRequisition = c.Request.Requisitions.Any(),
                         ComplaintType = c.ComplaintType.GetDescription(),
+                        CustomerUnitName = c.Request.Order.CustomerUnit?.Name ?? string.Empty,
+                        Department = c.Request.Order.UnitName ?? string.Empty,
                         ReferenceNumber = c.Request.Order.CustomerReferenceNumber ?? string.Empty,
                     });
         }

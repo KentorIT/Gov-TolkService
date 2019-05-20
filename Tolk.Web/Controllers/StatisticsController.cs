@@ -15,7 +15,7 @@ using Tolk.BusinessLogic.Services;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.AdminRoles)]
+    [Authorize(Policies.SystemCentralLocalAdmin)]
     public class StatisticsController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -35,7 +35,6 @@ namespace Tolk.Web.Controllers
             _statService = statService;
         }
 
-        [Authorize(Roles = Roles.AdminRoles)]
         public ActionResult List()
         {
             return View();
@@ -54,7 +53,6 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = Roles.AdminRoles)]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public ActionResult List(ReportSearchModel model)
@@ -65,13 +63,14 @@ namespace Tolk.Web.Controllers
                 DateTimeOffset end = model.ReportDate.End ?? DateTime.MaxValue.Date;
                 var brokerId = User.TryGetBrokerId();
                 var organisationId = User.TryGetCustomerOrganisationId();
+                var customerUnits = User.IsInRole(Roles.CentralAdministrator) ? null : User.TryGetLocalAdminCustomerUnits();
                 switch (model.ReportType)
                 {
                     case ReportType.OrdersForCustomer:
-                        model.ReportItems = _statService.GetOrders(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetOrders(start, end, organisationId, customerUnits).Count();
                         break;
                     case ReportType.DeliveredOrdersCustomer:
-                        model.ReportItems = _statService.GetDeliveredOrders(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits).Count();
                         break;
                     case ReportType.RequestsForBrokers:
                         model.ReportItems = _statService.GetRequestsForBroker(start, end, brokerId.Value).Count();
@@ -86,7 +85,7 @@ namespace Tolk.Web.Controllers
                         model.ReportItems = _statService.GetDeliveredOrders(start, end, organisationId).Count();
                         break;
                     case ReportType.RequisitionsForCustomer:
-                        model.ReportItems = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).Count();
                         break;
                     case ReportType.RequisitionsForBroker:
                         model.ReportItems = _statService.GetRequisitionsForBroker(start, end, brokerId.Value).Count();
@@ -95,7 +94,7 @@ namespace Tolk.Web.Controllers
                         model.ReportItems = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId).Count();
                         break;
                     case ReportType.ComplaintsForCustomer:
-                        model.ReportItems = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).Count();
                         break;
                     case ReportType.ComplaintsForBroker:
                         model.ReportItems = _statService.GetComplaintsForBroker(start, end, brokerId.Value).Count();
@@ -111,7 +110,6 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = Roles.AdminRoles)]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public ActionResult GenerateExcelResult(GenerateExcelModel model)
@@ -120,13 +118,14 @@ namespace Tolk.Web.Controllers
             DateTimeOffset end = Convert.ToDateTime(model.EndDate);
             var brokerId = User.TryGetBrokerId();
             var organisationId = User.TryGetCustomerOrganisationId();
+            var customerUnits = User.IsInRole(Roles.CentralAdministrator) ? null : User.TryGetLocalAdminCustomerUnits();
             switch (model.ReportType)
             {
                 case ReportType.OrdersForCustomer:
-                    var orders = _statService.GetOrders(start, end, organisationId);
+                    var orders = _statService.GetOrders(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(orders, model.ReportType), orders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersCustomer:
-                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId);
+                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrders, model.ReportType), deliveredOrders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersBrokers:
                     var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value);
@@ -147,7 +146,7 @@ namespace Tolk.Web.Controllers
                     var requisitionsForBroker = _statService.GetRequisitionsForBroker(start, end, brokerId.Value);
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForBroker, model.ReportType), requisitionsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequisitionsForCustomer:
-                    var requisitionsForCustomer = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId);
+                    var requisitionsForCustomer = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForCustomer, model.ReportType), requisitionsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
                 case ReportType.ComplaintsForSystemAdministrator:
                     var complaintsForSystemAdministrator = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId);
@@ -156,7 +155,7 @@ namespace Tolk.Web.Controllers
                     var complaintsForBroker = _statService.GetComplaintsForBroker(start, end, brokerId.Value);
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForBroker, model.ReportType), complaintsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.ComplaintsForCustomer:
-                    var complaintsForCustomer = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId);
+                    var complaintsForCustomer = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForCustomer, model.ReportType), complaintsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
             }
             return RedirectToAction(nameof(List));

@@ -36,5 +36,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public string ReferenceNumber { get; set; }
 
+        public string Department { get; set; }
+
+        public string CustomerUnitName { get; set; }
+
     }
 }

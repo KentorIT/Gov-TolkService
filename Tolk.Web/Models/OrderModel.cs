@@ -109,11 +109,6 @@ namespace Tolk.Web.Models
         [StringLength(100)]
         public string CustomerReferenceNumber { get; set; }
 
-        [Display(Name = "Myndighet")]
-        [DataType(DataType.MultilineText)]
-        public string CustomerCompactInfo
-        { get => CustomerName + "\nEnhet/avdelning: " + UnitName + (string.IsNullOrWhiteSpace(CustomerReferenceNumber) ? string.Empty : "\nReferensnummer: " + CustomerReferenceNumber); }
-
         [NoDisplayName]
         public RadioButtonGroup CompetenceLevelDesireType { get; set; }
 
