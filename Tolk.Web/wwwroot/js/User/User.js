@@ -26,12 +26,13 @@
     });
 
     function toggleCentralOrderHandler(selectedItem) {
-
-        if (selectedItem.attr('data-additional') === "GovernmentBody") {
-            $('.CentralOrderHandlerCheckBox').show();
-        }
-        else {
-            $('.CentralOrderHandlerCheckBox').hide();
+        if (selectedItem.attr('value') !== undefined) {
+            if (selectedItem.attr('data-additional') === "GovernmentBody") {
+                $('.CentralOrderHandlerCheckBox').show();
+            }
+            else {
+                $('.CentralOrderHandlerCheckBox').hide();
+            }
         }
     };
 
