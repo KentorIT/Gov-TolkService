@@ -19,6 +19,10 @@
     <div class="col-sm-4">
         <display-entry asp-for="PhoneCellphone" />
         <display-entry asp-for="IsOrganisationAdministrator" />
+        @if (Model.DisplayCentralOrderHandler)
+        {
+            <display-entry asp-for="IsCentralOrderHandler" />
+        }
         <display-entry asp-for="IsActive" />
         <display-entry asp-for="LastLoginAt" />
     </div>

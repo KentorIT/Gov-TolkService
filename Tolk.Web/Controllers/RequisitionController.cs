@@ -61,7 +61,8 @@ namespace Tolk.Web.Controllers
             {
                 model = new RequisitionFilterModel();
             }
-            var isCentralAdmin = User.IsInRole(Roles.CentralAdministrator);
+
+            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             var brokerId = User.TryGetBrokerId();
             var customerOrganisationId = User.TryGetCustomerOrganisationId();
             model.IsBroker = brokerId.HasValue;
@@ -73,10 +74,10 @@ namespace Tolk.Web.Controllers
             {
                 customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
                     .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
-                        (isCentralAdmin || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
                     .Select(cu => cu.CustomerUnitId).ToList();
 
-                requisitions = isCentralAdmin ?
+                requisitions = isCentralAdminOrOrderHandler ?
                     requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerOrganisationId) :
                     requisitions.Where(r => r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
             }

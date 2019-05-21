@@ -91,10 +91,12 @@ namespace Tolk.Web.Authorization
         {
             var user = context.User;
             var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), user.GetUserId());
+                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId()) 
+                    || (user.IsInRole(Roles.CentralOrderHandler) && order.CustomerOrganisationId == customerOrganisationId.Value);
                 case InterpreterBroker interpreter:
                     return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case AspNetUser editedUser:
@@ -132,10 +134,13 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> EditContactHandler = (context) =>
         {
             var userId = context.User.GetUserId();
+            var customerOrganisationId = context.User.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreatorOrContact(context.User.TryGetAllCustomerUnits(), context.User.TryGetCustomerOrganisationId(), userId);
+                    return order.IsAuthorizedAsCreatorOrContact(context.User.TryGetAllCustomerUnits(), customerOrganisationId, userId)
+                        || (context.User.IsInRole(Roles.CentralOrderHandler) && order.CustomerOrganisationId == customerOrganisationId.Value);
+
                 default:
                     throw new NotImplementedException();
             }
@@ -144,10 +149,13 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> ReplaceHandler = (context) =>
         {
             var user = context.User;
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), user.GetUserId());
+                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId())
+                        || (user.IsInRole(Roles.CentralOrderHandler) && order.CustomerOrganisationId == customerOrganisationId.Value);
+
                 default:
                     throw new NotImplementedException();
             }
@@ -156,10 +164,12 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> CancelHandler = (context) =>
         {
             var user = context.User;
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), user.GetUserId());
+                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId())
+                        || (user.IsInRole(Roles.CentralOrderHandler) && order.CustomerOrganisationId == customerOrganisationId.Value);
                 case Request request:
                     return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) &&
                         request.Ranking.BrokerId == user.GetBrokerId() &&
@@ -183,10 +193,12 @@ namespace Tolk.Web.Authorization
         private readonly static Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
         {
             var user = context.User;
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Request request:
-                    return request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), user.GetUserId());
+                    return request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId())
+                        || (user.IsInRole(Roles.CentralOrderHandler) && request.Order.CustomerOrganisationId == customerOrganisationId.Value);
                 default:
                     throw new NotImplementedException();
             }
@@ -196,15 +208,18 @@ namespace Tolk.Web.Authorization
         {
             var user = context.User;
             int userId = user.GetUserId();
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             var customerUnits = user.TryGetAllCustomerUnits();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), userId);
+                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, userId)
+                        || (user.IsInRole(Roles.CentralOrderHandler) && order.CustomerOrganisationId == customerOrganisationId.Value);
                 case Request request:
                     return request.Ranking.BrokerId == user.GetBrokerId();
                 case Requisition requisition:
-                    return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), userId);
+                    return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, userId)
+                    || (user.IsInRole(Roles.CentralOrderHandler) && requisition.Request.Order.CustomerOrganisationId == customerOrganisationId.Value);
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -212,7 +227,8 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), user.TryGetCustomerOrganisationId(), userId);
+                        return complaint.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, userId)
+                            || (user.IsInRole(Roles.CentralOrderHandler) && complaint.Request.Order.CustomerOrganisationId == customerOrganisationId.Value);
                     }
                     return false;
                 default:
@@ -230,7 +246,8 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return user.IsInRole(Roles.SystemAdministrator) || (user.IsInRole(Roles.CentralAdministrator) ?
+                    return user.IsInRole(Roles.SystemAdministrator) || 
+                        ((user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)) ?
                         order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                         order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId));
                 case Requisition requisition:
@@ -240,7 +257,7 @@ namespace Tolk.Web.Authorization
                     }
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.CentralAdministrator) ?
+                        return (user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)) ?
                             requisition.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             requisition.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId);
                     }
@@ -254,7 +271,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return user.IsInRole(Roles.CentralAdministrator) ?
+                        return (user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)) ?
                             complaint.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId() :
                             complaint.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId);
                     }
@@ -272,7 +289,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        if (user.IsInRole(Roles.CentralAdministrator))
+                        if (user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler))
                         {
                             var customerOrganisationId = user.GetCustomerOrganisationId();
                             return attachment.Requisitions.Any(a => a.Requisition.Request.Order.CustomerOrganisationId == customerOrganisationId) ||

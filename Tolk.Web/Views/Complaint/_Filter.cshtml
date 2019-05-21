@@ -32,7 +32,7 @@
                 </div>
                 }
             }
-            @if (Model.IsCustomerCentralAdministrator)
+            @if (Model.IsCustomerCentralAdminOrOrderHandler)
             {
                 <div class="col-sm-3">
                     <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />

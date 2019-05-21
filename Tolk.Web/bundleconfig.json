@@ -128,9 +128,9 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/js/User/UnitUser.min.js",
+    "outputFileName": "wwwroot/js/User/User.min.js",
     "inputFiles": [
-      "wwwroot/js/User/UnitUser.js"
+      "wwwroot/js/User/User.js"
     ]
   },
   {

@@ -69,8 +69,8 @@ namespace Tolk.Web.Controllers
             {
                 model = new OrderFilterModel();
             }
-            var isAdmin = User.IsInRole(Roles.SystemAdministrator);
-            var isCentralAdministrator = User.IsInRole(Roles.CentralAdministrator);
+            var isSysAdmin = User.IsInRole(Roles.SystemAdministrator);
+            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             var userId = User.GetUserId();
             var customerOrganisationId = User.TryGetCustomerOrganisationId();
             IEnumerable<int> customerUnits = null;
@@ -78,18 +78,18 @@ namespace Tolk.Web.Controllers
             {
                 customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
                     .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
-                        (isCentralAdministrator || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
                     .Select(cu => cu.CustomerUnitId).ToList();
             }
-            model.IsCentralAdministrator = isCentralAdministrator;
-            model.IsAdmin = isAdmin;
+            model.IsCentralAdminOrOrderHandler = isCentralAdminOrOrderHandler;
+            model.IsAdmin = isSysAdmin;
             model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
 
             var orders = _dbContext.Orders.Select(o => o);
 
-            if (!isAdmin)
+            if (!isSysAdmin)
             {
-                orders = isCentralAdministrator ?
+                orders = isCentralAdminOrOrderHandler ?
                      orders.Where(o => o.CustomerOrganisationId == customerOrganisationId) :
                      orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
             }

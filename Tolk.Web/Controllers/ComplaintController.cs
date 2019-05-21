@@ -51,15 +51,15 @@ namespace Tolk.Web.Controllers
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
             var userId = User.GetUserId();
-            var isCustomerCentralAdministrator = User.IsInRole(Roles.CentralAdministrator) && customerId.HasValue;
-            model.IsCustomerCentralAdministrator = isCustomerCentralAdministrator;
+            var isCustomerCentralAdminOrOrderHandler = (User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler)) && customerId.HasValue;
+            model.IsCustomerCentralAdminOrOrderHandler = isCustomerCentralAdminOrOrderHandler;
 
             IEnumerable<int> customerUnits = null;
             if (customerId.HasValue)
             {
                 customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
                     .Where(cu => cu.CustomerOrganisationId == customerId &&
-                        (isCustomerCentralAdministrator || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                        (isCustomerCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
                     .Select(cu => cu.CustomerUnitId).ToList();
             }
             model.IsBrokerUser = brokerId.HasValue;
@@ -70,7 +70,7 @@ namespace Tolk.Web.Controllers
 
             if (customerId.HasValue)
             {
-                items = model.IsCustomerCentralAdministrator ? items : 
+                items = model.IsCustomerCentralAdminOrOrderHandler ? items : 
                     items.Where(c => c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerId.Value, userId));
             }
 

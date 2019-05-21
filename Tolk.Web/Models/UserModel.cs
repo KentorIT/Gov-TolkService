@@ -43,6 +43,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Central administratör")]
         public bool IsOrganisationAdministrator { get; set; }
 
+        [Display(Name = "Rätt att hantera alla myndighetens avrop")]
+        public bool IsCentralOrderHandler { get; set; }
+
         [Display(Name = "Aktiv")]
         public bool IsActive { get; set; }
 
@@ -66,6 +69,8 @@ namespace Tolk.Web.Models
         public bool HasSelectedOrganisation { get; set; }
 
         public bool HasSelectedCustomerunit { get; set; }
+
+        public bool DisplayCentralOrderHandler { get; set; }
 
         /// <summary>
         /// If set, the server code found some error that slipped through the client sides fingers.

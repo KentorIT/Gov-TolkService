@@ -274,33 +274,34 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> Organisations
+        public IEnumerable<ExtendedSelectListItem> Organisations
         {
             get
             {
-                if (!_cache.TryGetValue(organisationsSelectListKey, out IEnumerable<SelectListItem> items))
+                if (!_cache.TryGetValue(organisationsSelectListKey, out IEnumerable<ExtendedSelectListItem> items))
                 {
                     items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
-                        .Select(c => new SelectListItem
+                        .Select(c => new ExtendedSelectListItem
                         {
                             Text = $"{c.Name} ({OrganisationType.GovernmentBody.GetDescription()})",
                             Value = $"{c.CustomerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}",
+                            AdditionalDataAttribute = OrganisationType.GovernmentBody.ToString(),
                         }).Union(_dbContext.Brokers.OrderBy(c => c.Name)
-                        .Select(b => new SelectListItem
+                        .Select(b => new ExtendedSelectListItem
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
                             Value = $"{b.BrokerId.ToString()}_{OrganisationType.Broker }",
-                        }).Union(new SelectListItem
+                            AdditionalDataAttribute = OrganisationType.Broker.ToString(),
+                        }).Union(new ExtendedSelectListItem
                         {
                             Text = "Kammarkollegiet",
-                            Value = $"0_{OrganisationType.Owner }"
+                            Value = $"0_{OrganisationType.Owner }",
+                            AdditionalDataAttribute = OrganisationType.Owner.ToString(),
                         }.WrapInEnumerable()
                         ))
                         .ToList().AsReadOnly();
-
                     _cache.Set(organisationsSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
                 }
-
                 return items;
             }
         }
@@ -435,7 +436,7 @@ namespace Tolk.Web.Services
             get
             {
                 var currentUser = _httpContextAccessor.HttpContext.User;
-                var organisationAdmin = currentUser.IsInRole(Roles.CentralAdministrator);
+                var organisationAdmin = (currentUser.IsInRole(Roles.CentralAdministrator) || currentUser.IsInRole(Roles.CentralOrderHandler));
                 return _dbContext.CustomerUnits
                         .Include(cu => cu.CustomerUnitUsers)
                         .Where(cu => cu.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId()

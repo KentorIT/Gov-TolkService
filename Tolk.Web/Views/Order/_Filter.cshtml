@@ -41,7 +41,7 @@
                     <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
                 </div>
             }
-            else if (Model.IsCentralAdministrator)
+            else if (Model.IsCentralAdminOrOrderHandler)
             {
                 <div class="col-sm-3">
                     <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />

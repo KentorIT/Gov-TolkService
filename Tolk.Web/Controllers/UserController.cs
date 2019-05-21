@@ -107,6 +107,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
                 int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
+                int centralOrderHandlerId = _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
                 var model = new UserModel
                 {
                     Id = id,
@@ -117,6 +118,8 @@ namespace Tolk.Web.Controllers
                     PhoneWork = user.PhoneNumber ?? "-",
                     PhoneCellphone = user.PhoneNumberCellphone ?? "-",
                     IsOrganisationAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
+                    IsCentralOrderHandler = user.Roles.Any(r => r.RoleId == centralOrderHandlerId),
+                    DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive,
@@ -154,6 +157,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Edit(int id, string bc, string ba, string bi)
         {
             int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
+            int centralOrderHandlerId = _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
             var user = _userManager.Users.Include(u => u.Roles)
                 .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit).SingleOrDefault(u => u.Id == id);
             IEnumerable<CustomerUnit> customerUnits = LoggedInCustomerUnits;
@@ -194,6 +198,8 @@ namespace Tolk.Web.Controllers
                     PhoneWork = user.PhoneNumber,
                     PhoneCellphone = user.PhoneNumberCellphone,
                     IsOrganisationAdministrator = user.Roles.Any(r => r.RoleId == centralAdministratorId),
+                    IsCentralOrderHandler = user.Roles.Any(r => r.RoleId == centralOrderHandlerId),
+                    DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     IsActive = user.IsActive,
                     UserType = LoggedInUserType,
                     UnitUsers = unitUsers?.OrderByDescending(uu => uu.UserIsConnected).ThenByDescending(uu => uu.IsLocalAdmin)
@@ -218,6 +224,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
+                int centralOrderHandlerId = _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
                 var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
@@ -239,6 +246,17 @@ namespace Tolk.Web.Controllers
                     else if (!model.IsOrganisationAdministrator && user.Roles.Any(r => r.RoleId == centralAdministratorId))
                     {
                         await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
+                    }
+                    if (user.CustomerOrganisationId.HasValue)
+                    {
+                        if (model.IsCentralOrderHandler && !user.Roles.Any(r => r.RoleId == centralOrderHandlerId))
+                        {
+                            await _userManager.AddToRoleAsync(user, Roles.CentralOrderHandler);
+                        }
+                        else if (!model.IsCentralOrderHandler && user.Roles.Any(r => r.RoleId == centralOrderHandlerId))
+                        {
+                            await _userManager.RemoveFromRoleAsync(user, Roles.CentralOrderHandler);
+                        }
                     }
                     if (model.UnitUsers != null)
                     {
@@ -309,6 +327,7 @@ namespace Tolk.Web.Controllers
                 HasSelectedOrganisation = hasSelectedCustomer,
                 OrganisationIdentifier = hasSelectedCustomer ? $"{customerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}" : null,
                 Organisation = customerName,
+                DisplayCentralOrderHandler = !User.TryGetBrokerId().HasValue,
                 HasSelectedCustomerunit = customerUnitId.HasValue,
                 UserPageMode = new UserPageMode
                 {
@@ -366,6 +385,7 @@ namespace Tolk.Web.Controllers
                         model.UnitUsers = unitUsers;
                     }
                     model.UserType = LoggedInUserType;
+                    model.DisplayCentralOrderHandler = !User.TryGetBrokerId().HasValue;
                 }
                 else
                 {
@@ -434,6 +454,13 @@ namespace Tolk.Web.Controllers
                         if (model.IsOrganisationAdministrator)
                         {
                             additionalRoles.Add(Roles.CentralAdministrator);
+                        }
+                        if (customerId.HasValue)
+                        {
+                            if (model.IsCentralOrderHandler)
+                            {
+                                additionalRoles.Add(Roles.CentralOrderHandler);
+                            }
                         }
                         var result = await _userManager.CreateAsync(user);
 
@@ -629,9 +656,13 @@ namespace Tolk.Web.Controllers
                     await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
                     _dbContext.CustomerUnitUsers.Remove(unitUser);
                     _dbContext.SaveChanges();
-                    return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = removeOneSelfAsLocalAdmin ? 
-                        "Du är nu bortkopplad från enheten, dina rättigheter för enheten försvinner om fem minuter." : 
-                        $"{user.FullName} är bortkopplad från enheten" });
+                    return RedirectToAction("Users", "Unit", new
+                    {
+                        id = unitUser.CustomerUnitId,
+                        message = removeOneSelfAsLocalAdmin ?
+                        "Du är nu bortkopplad från enheten, dina rättigheter för enheten försvinner om fem minuter." :
+                        $"{user.FullName} är bortkopplad från enheten"
+                    });
                 }
             }
             return Forbid();
@@ -657,9 +688,13 @@ namespace Tolk.Web.Controllers
                     unitUser.IsLocalAdmin = !unitUser.IsLocalAdmin;
                     _dbContext.SaveChanges();
                 }
-                return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, message = removeOneSelfAsLocalAdmin ? 
-                    "Du är inte längre lokal administratör för enheten, dina administratörsrättigheter för enheten försvinner om fem minuter." : 
-                    $"Lokal administratör ändrad för {user.FullName}" });
+                return RedirectToAction("Users", "Unit", new
+                {
+                    id = unitUser.CustomerUnitId,
+                    message = removeOneSelfAsLocalAdmin ?
+                    "Du är inte längre lokal administratör för enheten, dina administratörsrättigheter för enheten försvinner om fem minuter." :
+                    $"Lokal administratör ändrad för {user.FullName}"
+                });
             }
             return Forbid();
         }
