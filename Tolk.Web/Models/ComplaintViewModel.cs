@@ -24,10 +24,6 @@ namespace Tolk.Web.Models
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForComplaintStatus(Status); }
 
-        [Display(Name = "Typ av tolkuppdrag")]
-        [Required]
-        public AssignmentType AssignmentType { get; set; }
-
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [Display(Name = "Meddelande vid bestridande")]

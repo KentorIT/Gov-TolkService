@@ -9,7 +9,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolkning")]
         Interpretation = 1,
         [CustomName("avista")]
-        [Description("Avista")]
+        [Description("Tolkning inkl. avista")]
         Avista = 2
     }
 }

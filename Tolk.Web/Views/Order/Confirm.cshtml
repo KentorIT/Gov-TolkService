@@ -2,7 +2,7 @@
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @{
-    ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.SelectedItem.Text.ToLower()}";
+    ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.SelectedItem.Text}";
     ViewData["OrderSummary_ShowCalculatedPrice"] = true;
 }
 
@@ -26,12 +26,12 @@
         </div>
         @if (!string.IsNullOrEmpty(Model.WarningOrderTimeInfo))
         {
-        <div class="row warning-info-confirm">
-            <div class="col-sm-8"><span class="glyphicon glyphicon-exclamation-sign"></span> @Model.WarningOrderTimeInfo</div>
-            <div class="col-sm-4">
-                <display-entry asp-for="TimeRange" />
+            <div class="row warning-info-confirm">
+                <div class="col-sm-8"><span class="glyphicon glyphicon-exclamation-sign"></span> @Model.WarningOrderTimeInfo</div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="TimeRange" />
+                </div>
             </div>
-        </div>
         }
     </div>
 </div>
