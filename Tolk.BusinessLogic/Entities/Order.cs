@@ -21,6 +21,7 @@ namespace Tolk.BusinessLogic.Entities
             Language = order.Language;
             OtherLanguage = order.OtherLanguage;
             Region = order.Region;
+            CustomerUnitId = order.CustomerUnitId;
             LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter;
             SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired;
             CompetenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
