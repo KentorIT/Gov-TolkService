@@ -1438,9 +1438,15 @@ input.force-validation {
 }
 .environment-banner {
   position: absolute;
-  font-size: 10px;
+  font-size: 16px;
   top: 0px;
   left: 100px;
+  width: 150px;
+  text-align: center;
+}
+.environment-stripe {
+  width: 8px;
+  height: 52px;
 }
 .neg-margin-top {
   margin-top: -45px;
