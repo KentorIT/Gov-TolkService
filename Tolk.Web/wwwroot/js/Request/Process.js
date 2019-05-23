@@ -27,6 +27,8 @@ $(function () {
         setInterpreter();
     });
 
+    $("#Accept").closest("form").on("submit", function () { $("#Accept").disableOnSubmit(); });
+
     function setInterpreter() {
         if ($("#InterpreterId option:selected").val() === "-1") {
             $('#new-interpreter').collapse('show');
