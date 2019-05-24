@@ -108,6 +108,16 @@ namespace Tolk.Web.Controllers
             {
                 int centralAdministratorId = _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
                 int centralOrderHandlerId = _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
+
+
+                IEnumerable<CustomerUnit> customerUnits = null;
+                if (user.CustomerOrganisationId.HasValue)
+                {
+                    customerUnits = _dbContext.CustomerUnits
+                        .Include(cu => cu.CustomerUnitUsers)
+                        .Where(cu => cu.CustomerOrganisationId == user.CustomerOrganisationId
+                        && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id)).OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
+                }
                 var model = new UserModel
                 {
                     Id = id,
@@ -123,6 +133,12 @@ namespace Tolk.Web.Controllers
                     LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive,
+                    UnitUsers = customerUnits?.Select(cu => new UnitUserModel
+                    {
+                        IsActive = cu.IsActive,
+                        Name = cu.Name,
+                        IsLocalAdmin = cu.CustomerUnitUsers.SingleOrDefault(cuu => cuu.UserId == user.Id).IsLocalAdmin
+                    }).ToList(),
                     UserPageMode = new UserPageMode
                     {
                         BackController = bc ?? BackController,
