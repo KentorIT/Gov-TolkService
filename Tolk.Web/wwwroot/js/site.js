@@ -211,7 +211,7 @@ $(function () {
     
     $("select").each(function () {
         var allowClear = $(this).parents().hasClass("allow-clear");
-        $(this).select2({ minimumResultsForSearch: 10, allowClear: allowClear });
+        $(this).selectWoo({ minimumResultsForSearch: 10, allowClear: allowClear, language: "sv" });
     });
 
     $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
