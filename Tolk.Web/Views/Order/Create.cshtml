@@ -226,7 +226,7 @@
                             @if (customerUnitItems != null && customerUnitItems.Any())
                             {
                                 <div class="col-sm-6">
-                                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" />
+                                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" help-link="@HelpLinkService.GenerateUrl("nybokning_enhet")" />
                                 </div>
                             }
                         </div>
