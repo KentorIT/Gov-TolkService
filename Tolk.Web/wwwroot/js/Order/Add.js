@@ -402,8 +402,8 @@ $(function () {
             $("[data-valmsg-for]").empty();
             if (!LastAnswerByIsShowing) {
                 $("#LatestAnswerBy_Date").val("");
-                $("#LatestAnswerBy_Hour").select2("val", "");
-                $("#LatestAnswerBy_Minute").select2("val", "");
+                $("#LatestAnswerBy_Hour").val("").trigger('change');
+                $("#LatestAnswerBy_Minute").val("").trigger('change');
             }
             if (!validateAllowExceedingTravelCost()) {
                 validatorMessage("AllowExceedingTravelCost", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");

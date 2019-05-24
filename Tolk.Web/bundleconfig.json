@@ -144,5 +144,17 @@
     "inputFiles": [
       "wwwroot/js/Request/View.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/selectwoo/selectwoo.min.js",
+    "inputFiles": [
+      "wwwroot/lib/selectwoo/selectwoo.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/selectwoo/selectwoo.min.css",
+    "inputFiles": [
+      "wwwroot/lib/selectwoo/selectwoo.css"
+    ]
   }
 ]
