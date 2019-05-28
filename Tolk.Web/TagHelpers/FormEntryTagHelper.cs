@@ -633,6 +633,7 @@ namespace Tolk.Web.TagHelpers
                     placeholder = "ÅÅÅÅ-MM-DD",
                     type = "text",
                     data_val_required = "Datum måste anges.",
+                    title = "Datum"
                 });
             if (extraAttributes != null)
             {
