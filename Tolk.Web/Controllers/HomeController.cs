@@ -267,34 +267,7 @@ namespace Tolk.Web.Controllers
             };
 
             // Awaiting requisition
-            var awaitRequisition = _dbContext.Orders
-            .Where(o => o.Status == OrderStatus.ResponseAccepted && 
-                o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId)
-                && o.EndAt < _clock.SwedenNow &&
-                !o.Requests.Any(r => r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed ||
-                req.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder || req.Status == RequisitionStatus.Created)))
-            .Select(o => new StartListItemModel
-            {
-                Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
-                DefaulListAction = "View",
-                DefaulListController = "Order",
-                DefaultItemId = o.OrderId,
-                InfoDate = o.EndAt.DateTime,
-                InfoDateDescription = "Utfört: ",
-                CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
-                Language = o.OtherLanguage ?? o.Language.Name,
-                OrderNumber = o.OrderNumber,
-                Status = StartListItemStatus.RequisitionAwaited
-            }).ToList();
-
-            count = awaitRequisition.Any() ? awaitRequisition.Count() : 0;
-
-            yield return new StartViewModel.StartList
-            {
-                Header = count > 0 ? $"Inväntar rekvisition ({count} st)" : "Inväntar rekvisition",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som inväntar rekvisition",
-                StartListObjects = awaitRequisition
-            };
+            //Was removed 2019-05-28 because the requisitions are not in us yet.
         }
 
         private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
