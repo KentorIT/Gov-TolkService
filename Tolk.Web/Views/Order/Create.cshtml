@@ -146,7 +146,8 @@
                         <div class="d-none" id="divCompetenceLevel">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" />
+                                    <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" checked-index="none" />
+                                    <div id="CompetenceLevelDesireTypeValidator" class="d-none text-danger body"></div>
                                 </div>
                             </div>
                             <div class="row">
@@ -159,6 +160,10 @@
                                         <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
                                         <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                     </span>
+                                    <div class="important-info" id="competence-info">
+                                        Om inget krav eller önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå, 
+                                        i enlighet med ramavtalets kompetensprioritering
+                                    </div>
                                 </div>
                                 <div class="col-sm-4 important-info">
                                     <ul>

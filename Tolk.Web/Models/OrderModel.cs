@@ -110,6 +110,7 @@ namespace Tolk.Web.Models
         public string CustomerReferenceNumber { get; set; }
 
         [NoDisplayName]
+        [ClientRequired]
         public RadioButtonGroup CompetenceLevelDesireType { get; set; }
 
         [Display(Name = "Krav på kompetensnivå tolk", Description = "OBS! Ingen prioritetsordning")]

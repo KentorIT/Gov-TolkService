@@ -152,11 +152,18 @@ $(function () {
             // Is request
             $("#competence-required").hide();
             $("#competence-requested").show();
+            $("#competence-info").hide();
         }
-        else {
+        else if ($(items[0]).val() === 'Requirement') {
             // Is requirement
             $("#competence-requested").hide();
             $("#competence-required").show();
+            $("#competence-info").hide();
+        }
+        else {
+            $("#competence-requested").hide();
+            $("#competence-required").hide();
+            $("#competence-info").show();
         }
     });
 
@@ -386,6 +393,10 @@ $(function () {
         }
         return true;
     };
+    var validateSelectedCompetenceLevelDesireType = function () {
+        return $("#CompetenceLevelDesireType").is(":hidden") ||
+            $("[name=CompetenceLevelDesireType]").filter(":checked").length > 0;
+    };
 
     var validateAllowExceedingTravelCost = function () {
         if ($("#AllowExceedingTravelCost").is(":hidden")) {
@@ -404,6 +415,10 @@ $(function () {
                 $("#LatestAnswerBy_Date").val("");
                 $("#LatestAnswerBy_Hour").val("").trigger('change');
                 $("#LatestAnswerBy_Minute").val("").trigger('change');
+            }
+            if (!validateSelectedCompetenceLevelDesireType()) {
+                validatorMessage("CompetenceLevelDesireType", "Ange om kompetensnivå är krav eller önskemål");
+                errors++;
             }
             if (!validateAllowExceedingTravelCost()) {
                 validatorMessage("AllowExceedingTravelCost", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
