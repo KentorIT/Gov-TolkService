@@ -37,6 +37,10 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<VerificationResult> VerifyInterpreter(string interpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel)
         {
+            if (string.IsNullOrWhiteSpace(interpreterId))
+            {
+                return VerificationResult.NotFound;
+            }
             try
             {
                 var order = await _dbContext.Orders
