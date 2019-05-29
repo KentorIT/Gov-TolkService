@@ -167,7 +167,7 @@ $(function () {
         }
     });
 
-    $(".startlist-table").DataTable({
+    $(".sortable-only-table").DataTable({
         paging: false,
         searching: false,
         info: false,
