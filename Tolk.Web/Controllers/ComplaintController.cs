@@ -68,11 +68,7 @@ namespace Tolk.Web.Controllers
             var items = _dbContext.Complaints
                 .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId || c.Request.Order.CustomerOrganisationId == customerId);
 
-            if (customerId.HasValue)
-            {
-                items = model.IsCustomerCentralAdminOrOrderHandler ? items : 
-                    items.Where(c => c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerId.Value, userId));
-            }
+            items = customerId.HasValue ? items.Where(c => c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerId.Value, userId, model.IsCustomerCentralAdminOrOrderHandler)) : items;
 
             items = model.Apply(items);
 

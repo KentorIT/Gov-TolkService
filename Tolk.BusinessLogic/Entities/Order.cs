@@ -283,14 +283,22 @@ namespace Tolk.BusinessLogic.Entities
             ContactPersonUser = contactPerson;
         }
 
-        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId)
+        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
         {
-            return CreatedByUserWithoutUnit(customerOrganisationId, userId) || CreatedByUsersUnit(customerUnits);
+            return HasCorrectAdminRoleForCustomer(customerOrganisationId, hasCorrectAdminRole) 
+                || CreatedByUserWithoutUnit(customerOrganisationId, userId) 
+                || CreatedByUsersUnit(customerUnits);
         }
 
-        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId)
+        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
         {
-            return IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId) || UserIsContact(userId);
+            return IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole) 
+                || UserIsContact(userId);
+        }
+
+        private bool HasCorrectAdminRoleForCustomer(int? customerOrganisationId, bool hasCorrectAdminRole = false)
+        {
+            return hasCorrectAdminRole && CustomerOrganisationId == customerOrganisationId;
         }
 
         private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId)

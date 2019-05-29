@@ -86,13 +86,7 @@ namespace Tolk.Web.Controllers
             model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
 
             var orders = _dbContext.Orders.Select(o => o);
-
-            if (!isSysAdmin)
-            {
-                orders = isCentralAdminOrOrderHandler ?
-                     orders.Where(o => o.CustomerOrganisationId == customerOrganisationId) :
-                     orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
-            }
+            orders = !isSysAdmin ? orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler)) : orders;
 
             // Filters
             orders = model.Apply(orders);

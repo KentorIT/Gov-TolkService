@@ -77,9 +77,7 @@ namespace Tolk.Web.Controllers
                         (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
                     .Select(cu => cu.CustomerUnitId).ToList();
 
-                requisitions = isCentralAdminOrOrderHandler ?
-                    requisitions.Where(r => r.Request.Order.CustomerOrganisationId == customerOrganisationId) :
-                    requisitions.Where(r => r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId));
+                requisitions = requisitions.Where(r => r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler));
             }
             else if (brokerId.HasValue)
             {

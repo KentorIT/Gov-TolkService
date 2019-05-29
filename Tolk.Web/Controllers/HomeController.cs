@@ -134,7 +134,7 @@ namespace Tolk.Web.Controllers
             var ordersCorrectStatusAndUser = _dbContext.Orders.Include(o => o.Requests).Include(o => o.Language)
                 .Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter
                 || o.Status == OrderStatus.NoBrokerAcceptedOrder || o.Status == OrderStatus.CancelledByBroker || o.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId)).ToList();
+                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, false)).ToList();
 
             actionList.AddRange(ordersCorrectStatusAndUser
                 .Where(os => !_dbContext.RequestStatusConfirmation.Where(rs => rs.RequestStatus == RequestStatus.CancelledByBroker)
@@ -160,7 +160,7 @@ namespace Tolk.Web.Controllers
             //Requisitions to review
             actionList.AddRange(_dbContext.Requisitions
                 .Where(r => r.Status == RequisitionStatus.Created && r.Request.Order.Status == OrderStatus.Delivered &&
-                    r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId))
+                    r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, false))
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
@@ -182,7 +182,7 @@ namespace Tolk.Web.Controllers
             //Disputed complaints
             actionList.AddRange(_dbContext.Complaints
                 .Where(c => c.Status == ComplaintStatus.Disputed &&
-                c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId))
+                c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, false))
                 .Select(c => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt },
@@ -214,7 +214,7 @@ namespace Tolk.Web.Controllers
             //Sent and approved orders
             var sentAndApprovedOrders = _dbContext.Orders.Include(o => o.Requests).Include(o => o.Language)
                 .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted)
-                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId)
+                && o.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, false)
                 && o.EndAt > _clock.SwedenNow).ToList();
 
             //Sent orders
