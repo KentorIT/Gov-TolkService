@@ -12,6 +12,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_created")]
         RequestCreated = 1,
 
+        //This is not used for the moment, but will probably be used later
         [Description("Uppdaterad information på förfrågan")]
         [CustomName("request_information_updated")]
         RequestInformationUpdated = 2,

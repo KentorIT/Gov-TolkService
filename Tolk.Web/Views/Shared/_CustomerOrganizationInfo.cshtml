@@ -1,7 +1,7 @@
 ﻿@model OrderModel
 @{
-    const string IsDetailViewKey = "IsOrderDetailView";
-    bool IsDetailView = ViewData.ContainsKey(IsDetailViewKey) ? (bool)ViewData[IsDetailViewKey] : false;
+    const string IsOrderDetailViewKey = "IsOrderDetailView";
+    bool IsOrderDetailView = ViewData.ContainsKey(IsOrderDetailViewKey) ? (bool)ViewData[IsOrderDetailViewKey] : false;
     string header = (string)ViewData["header"] ?? "Myndighetens uppgifter";
 
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
@@ -28,18 +28,31 @@ else
             <display-entry asp-for="CustomerName" />
             <display-entry asp-for="CreatedBy" />
         </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="CustomerUnitName" />
-            <display-entry asp-for="UnitName" />
-            <display-entry asp-for="CustomerReferenceNumber" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="ContactPerson" />
-            @if (IsDetailView && Model.AllowEditContactPerson)
-            {
-                <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
-                <br /><br />
-            }
-        </div>
+        @if (IsOrderDetailView)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerUnitName" />
+                <display-entry asp-for="UnitName" />
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="ContactPerson" />
+                @if (Model.AllowEditContactPerson)
+                {
+                    <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
+                    <br /><br />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerUnitName" />
+                <display-entry asp-for="UnitName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerReferenceNumber" />
+            </div>
+        }
     </div>
 </div>

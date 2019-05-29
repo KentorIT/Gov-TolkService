@@ -113,34 +113,6 @@ namespace Tolk.BusinessLogic.Services
                     body + GotoOrderPlain(order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(order.OrderId));
             }
-            //Broker
-            var request = order.Requests.SingleOrDefault(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved);
-            if (request != null)
-            {
-                //if the contact person is changed on a order with no currently active request, no notification should be sent to broker
-                var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
-                if (email != null)
-                {
-                    string bodyBroker = $"Person som har rätt att granska rekvisition har ändrats för bokning {orderNumber}.";
-                    CreateEmail(email.ContactInformation, $"Bokning {order.OrderNumber} har uppdaterats",
-                        bodyBroker + GotoRequestPlain(request.RequestId),
-                        HtmlHelper.ToHtmlBreak(bodyBroker) + GotoRequestButton(request.RequestId),
-                        true);
-                }
-                var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
-                if (webhook != null)
-                {
-                    CreateWebHookCall(
-                       new RequestInformationUpdatedModel
-                       {
-                           OrderNumber = orderNumber,
-                       },
-                       webhook.ContactInformation,
-                       NotificationType.RequestInformationUpdated,
-                       webhook.RecipientUserId
-                   );
-                }
-            }
         }
 
         public void OrderReplacementCreated(Order order)
