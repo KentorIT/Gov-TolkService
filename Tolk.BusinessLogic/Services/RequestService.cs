@@ -185,14 +185,10 @@ namespace Tolk.BusinessLogic.Services
             {
                 return true;
             }
-            decimal largestApprovedAmount = 0;
-            var requestsToCheck = request.Order.Requests.Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced);
-            //check the largest amount of previous approved requests
-            foreach (Request r in requestsToCheck)
-            {
-                decimal reqCost = r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price);
-                largestApprovedAmount = reqCost > largestApprovedAmount ? reqCost : largestApprovedAmount;
-            }
+            decimal largestApprovedAmount = request.Order.Requests
+                .Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced)
+                .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
+                .Max() ?? 0;
             return largestApprovedAmount >= expectedTravelCosts.Value;
         }
 
