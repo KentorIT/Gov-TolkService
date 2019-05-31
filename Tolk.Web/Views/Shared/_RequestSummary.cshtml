@@ -190,6 +190,12 @@
                 <display-entry asp-for="AnsweredBy" />
             </div>
         }
+        else if (!requestIsAnswered && !isBroker)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="ExpiresAt" label-override="Senaste svarstid" />
+            </div>
+        }
         <div class="col-sm-4">
             <display-entry asp-for="BrokerName" />
         </div>
