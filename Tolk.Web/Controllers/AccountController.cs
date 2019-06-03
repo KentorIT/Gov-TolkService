@@ -72,7 +72,7 @@ namespace Tolk.Web.Controllers
             {
                 customerUnits = _dbContext.CustomerUnits
                     .Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId 
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId
                     && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id)).OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
             }
 
@@ -458,17 +458,20 @@ namespace Tolk.Web.Controllers
                 if (result.Succeeded)
                 {
                     await _userService.LogUpdatePasswordAsync(user.Id);
-                    if (!User.Identity.IsAuthenticated && user.IsActive)
+                    if ((!User.Identity.IsAuthenticated && user.IsActive) ||
+                        (User.Identity.IsAuthenticated && !User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet)))
                     {
                         await _signInManager.SignInAsync(user, true);
+                        user.LastLoginAt = _clock.SwedenNow;
+                        await _userManager.UpdateAsync(user);
                         await _userService.LogLoginAsync(user.Id);
                     }
                     return RedirectToAction(nameof(ResetPasswordConfirmation));
                 }
-                AddErrors(result);
+                    AddErrors(result);
+                }
+                return View();
             }
-            return View();
-        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -861,7 +864,7 @@ supporten på {_options.SupportEmail}.</div>";
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",
                 bodyPlain,
-                bodyHtml, 
+                bodyHtml,
                 false,
                 false);
             _dbContext.SaveChanges();
@@ -903,8 +906,8 @@ supporten på {_options.SupportEmail}.</div>";
                 newEmailAddress,
                 $"Ändring av e-postadress för {Constants.SystemName}",
                 bodyPlain,
-                bodyHtml, 
-                false, 
+                bodyHtml,
+                false,
                 false);
             _dbContext.SaveChanges();
 
