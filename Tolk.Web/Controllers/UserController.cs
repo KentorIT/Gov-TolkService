@@ -244,8 +244,7 @@ namespace Tolk.Web.Controllers
                 var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
-                    //shouldn't we send editor user to LogOnUpdateAsync below?
-                    await _userService.LogOnUpdateAsync(model.Id.Value);
+                    await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId());
                     user.NameFirst = model.NameFirst;
                     user.NameFamily = model.NameFamily;
                     user.PhoneNumber = model.PhoneWork;
