@@ -186,8 +186,8 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
         public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
-                            .Include(u => u.NotificationSettings)
-                            .SingleOrDefault(u => u.Id == userId);
+                .Include(u => u.CustomerUnits)
+                .SingleOrDefault(u => u.Id == userId);
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
