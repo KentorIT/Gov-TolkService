@@ -152,7 +152,7 @@ $(function () {
             // Is request
             $("#competence-required").hide();
             $("#competence-requested").show();
-            $("#competence-info").hide();
+            $("#competence-info").show();
         }
         else if ($(items[0]).val() === 'Requirement') {
             // Is requirement

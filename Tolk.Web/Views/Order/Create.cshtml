@@ -155,13 +155,13 @@
                                     <span id="competence-required">
                                         <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
                                     </span>
-                                    <span id="competence-requested">
+                                    <div id="competence-requested" class="padding-bottom-30px">
                                         <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
                                         <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
                                         <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
-                                    </span>
+                                    </div>
                                     <div class="important-info" id="competence-info">
-                                        Om inget krav eller önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå, 
+                                        Om inga specifika önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå, 
                                         i enlighet med ramavtalets kompetensprioritering
                                     </div>
                                 </div>
