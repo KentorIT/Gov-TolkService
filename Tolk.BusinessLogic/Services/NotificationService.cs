@@ -508,7 +508,7 @@ Sammanställning:
         private string GetPossibleInfoNotValidatedInterpreter(Request request)
         {
             bool? isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign.HasValue ? (bool?)(request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated) : null;
-            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med tillsatt kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
+            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
         }
 
         public void RequestDeclinedByBroker(Request request)
