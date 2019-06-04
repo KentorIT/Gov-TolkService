@@ -83,8 +83,8 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> AssignmentTypes => GetList<AssignmentType>();
 
-        public static IEnumerable<SelectListItem> SystemMessageTypes => GetList<SystemMessageType>();
-
+        public static IEnumerable<SelectListItem> SystemMessageTypes { get; } = GetList<SystemMessageType>();
+   
         public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups => GetList<SystemMessageUserTypeGroup>();
 
         public static IEnumerable<SelectListItem> Genders => GetList<Gender>();
@@ -522,5 +522,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
         }
+
     }
+
 }
