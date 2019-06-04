@@ -1,11 +1,16 @@
 ﻿var isValidatingInterpreter = false;
+var $interpreterId;
+var $officialInterpreterId;
+var $competenceLevel;
+
 var validateInterpreter = function (interpreterId, officialInterpreterId, competenceLevel, orderId) {
     if (competenceLevel === "" || competenceLevel === "OtherInterpreter" || interpreterId === "") {
         $('.interpreter-information').addClass("d-none");
     } else {
+        $interpreterId = interpreterId;
+        $officialInterpreterId = officialInterpreterId;
+        $competenceLevel = competenceLevel;
         if (isValidatingInterpreter) {
-            //Save the interpreter id/official-id and CompetenceLevel
-            // Makes it possible to recheck if the set is different than the set that the previous validation run used.
             return;
         } else {
             isValidatingInterpreter = true;
@@ -42,6 +47,11 @@ var validateInterpreter = function (interpreterId, officialInterpreterId, compet
                     $('.interpreter-information > span.form-entry-information').removeClass("d-none");
                 }
                 isValidatingInterpreter = false;
+                if ($interpreterId !== interpreterId ||
+                    $officialInterpreterId !== officialInterpreterId ||
+                    $competenceLevel !== competenceLevel) {
+                    validateInterpreter($interpreterId, $officialInterpreterId, $competenceLevel, orderId);
+                }
             },
             error: function (t2) {
                 $('.interpreter-information').addClass("d-none");
