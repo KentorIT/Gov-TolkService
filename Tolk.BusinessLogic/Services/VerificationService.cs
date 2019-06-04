@@ -95,58 +95,54 @@ namespace Tolk.BusinessLogic.Services
                     RemovedLanguages = Enumerable.Empty<TellusLanguageModel>(),
                 };
             }
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Accept.Clear();
-                var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
-                string content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+            var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
+            string content = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
 
-                if (result.Status != 200)
-                {
-                    if (notify)
-                    {
-                        _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
-                            $"Verifieringen av språklistan mot Tellus misslyckades!",
-                            "Det borde stå vad som gick fel här, om vi vet det...");
-                    }
-                    _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
-                    return null;
-                }
-                var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodesList.Contains(t.Id)).ToList();
-                var currentLanguages = _dbContext.Languages.ToList();
-                var validationResult = new ValidateTellusLanguageListResult
-                {
-                    NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id && l.Active)).Select(t => new TellusLanguageModel
-                    {
-                        Id = t.Id,
-                        Value = t.Value,
-                        ExistsInSystemWithoutTellusConnection = currentLanguages.Any(l => l.ISO_639_Code == t.Id && string.IsNullOrEmpty(l.TellusName)),
-                        InactiveInSystem = currentLanguages.Any(l => (l.ISO_639_Code == t.Id || l.TellusName == t.Id) && !l.Active)
-                    }),
-                    RemovedLanguages = currentLanguages.Where(l => !string.IsNullOrEmpty(l.TellusName) && !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
-                    {
-                        Id = l.TellusName,
-                        Value = l.Name
-                    })
-                };
+            if (result.Status != 200)
+            {
                 if (notify)
                 {
-                    if (validationResult.FoundChanges)
-                    {
-                        _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
-                            "Det finns skillnader i systemets språklista och den i Tellus.",
-                            $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Home/VerifyLanguages");
-                        _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.SupportEmail}");
-                    }
-                    else
-                    {
-                        _logger.LogInformation("There were no differences between this system's and tellus' language lists.");
-                    }
+                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                        $"Verifieringen av språklistan mot Tellus misslyckades!",
+                        "Det borde stå vad som gick fel här, om vi vet det...");
                 }
-
-                return validationResult;
+                _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
+                return null;
             }
+            var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodesList.Contains(t.Id)).ToList();
+            var currentLanguages = _dbContext.Languages.ToList();
+            var validationResult = new ValidateTellusLanguageListResult
+            {
+                NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id && l.Active)).Select(t => new TellusLanguageModel
+                {
+                    Id = t.Id,
+                    Value = t.Value,
+                    ExistsInSystemWithoutTellusConnection = currentLanguages.Any(l => l.ISO_639_Code == t.Id && string.IsNullOrEmpty(l.TellusName)),
+                    InactiveInSystem = currentLanguages.Any(l => (l.ISO_639_Code == t.Id || l.TellusName == t.Id) && !l.Active)
+                }),
+                RemovedLanguages = currentLanguages.Where(l => !string.IsNullOrEmpty(l.TellusName) && !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
+                {
+                    Id = l.TellusName,
+                    Value = l.Name
+                })
+            };
+            if (notify)
+            {
+                if (validationResult.FoundChanges)
+                {
+                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                        "Det finns skillnader i systemets språklista och den i Tellus.",
+                        $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Home/VerifyLanguages");
+                    _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.SupportEmail}");
+                }
+                else
+                {
+                    _logger.LogInformation("There were no differences between this system's and tellus' language lists.");
+                }
+            }
+
+            return validationResult;
         }
 
         private static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)

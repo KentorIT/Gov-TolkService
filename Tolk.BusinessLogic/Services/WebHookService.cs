@@ -19,6 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<WebHookService> _logger;
         private readonly TolkOptions.SmtpSettings _options;
         private readonly ISwedishClock _clock;
+        private static HttpClient client = new HttpClient();
 
         public WebHookService(
             TolkDbContext dbContext,
@@ -65,8 +66,6 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
-                            using (var client = new HttpClient()) //new HttpClient(handler) 
-                            {
                                 client.DefaultRequestHeaders.Accept.Clear();
                                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
                                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
@@ -82,7 +81,6 @@ namespace Tolk.BusinessLogic.Services
                                     errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}";
                                 }
                             }
-                        }
                     }
                     catch (Exception ex)
                     {

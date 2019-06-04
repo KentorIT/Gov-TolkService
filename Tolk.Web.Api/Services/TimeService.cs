@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.Net.Http;
-using Tolk.Web.Api.Helpers;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
+using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Services
 {
@@ -11,6 +11,7 @@ namespace Tolk.Web.Api.Services
 
     {
         private readonly TolkApiOptions _options;
+        private static HttpClient client = new HttpClient();
 
         public TimeService(IOptions<TolkApiOptions> options)
         {
@@ -22,12 +23,8 @@ namespace Tolk.Web.Api.Services
         private async Task<DateTimeOffset> GetTimeAsync()
         {
             //Also add cert to call
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Accept.Clear();
-                var response = await client.GetAsync($"{_options.TolkWebBaseUrl}/Time/");
-                return await response.Content.ReadAsAsync<DateTimeOffset>();
-            }
+            var response = await client.GetAsync($"{_options.TolkWebBaseUrl}/Time/");
+            return await response.Content.ReadAsAsync<DateTimeOffset>();
         }
     }
 }
