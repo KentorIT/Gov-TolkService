@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly ILogger<VerificationService> _logger;
         private readonly INotificationService _notificationService;
+        private static HttpClient client = new HttpClient();
         public VerificationService(
             TolkDbContext dbContext,
             ISwedishClock clock,
@@ -51,14 +52,10 @@ namespace Tolk.BusinessLogic.Services
                 }
                 TellusInterpreterResponse information;
 
-                using (var client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Accept.Clear();
-                    var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
-                    string content = await response.Content.ReadAsStringAsync();
-                    information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
-                }
-                
+                var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
+                string content = await response.Content.ReadAsStringAsync();
+                information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
+
                 return CheckInterpreter(competenceLevel, order, information);
             }
             catch (Exception e)
