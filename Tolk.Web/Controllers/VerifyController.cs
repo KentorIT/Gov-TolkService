@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
@@ -16,11 +17,13 @@ namespace Tolk.Web.Controllers
     public class VerifyController : Controller
     {
         private readonly VerificationService _verificationService;
+        private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
 
-        public VerifyController(VerificationService verificationService, TolkDbContext dbContext)
+        public VerifyController(VerificationService verificationService, ILogger<OrderController> logger, TolkDbContext dbContext)
         {
             _verificationService = verificationService;
+            _logger = logger;
             _dbContext = dbContext;
         }
 
@@ -44,6 +47,7 @@ namespace Tolk.Web.Controllers
         [HttpGet]
         public async Task<JsonResult> InterpreterByOfficialId(string officialInterpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel)
         {
+            _logger.LogInformation($"Verifying interpreterId {officialInterpreterId} for competence {competenceLevel} on order {orderId}");
             return WrapResultInJson(await _verificationService.VerifyInterpreter(officialInterpreterId, orderId, competenceLevel));
         }
 
