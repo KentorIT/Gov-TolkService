@@ -58,7 +58,14 @@
                                 <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" help-link="@HelpLinkService.GenerateUrl("nybokning_lan")" />
                             </div>
                         </div>
-                        <form-entry asp-for="SplitTimeRange" class="order-datepicker" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
+                        <div class="row">
+                            <div class="col-sm-12 no-padding">
+                                <form-entry asp-for="SplitTimeRange" class="order-datepicker" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
+                                <div class="col-sm-3">
+                                    <form-entry asp-for="ExtraInterpreter" />
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-sm-8">
                                 <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" help-link="@HelpLinkService.GenerateUrl("nybokning_svarstid")" />
@@ -161,7 +168,7 @@
                                         <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                     </div>
                                     <div class="important-info" id="competence-info">
-                                        Om inga specifika önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå, 
+                                        Om inga specifika önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå,
                                         i enlighet med ramavtalets kompetensprioritering
                                     </div>
                                 </div>

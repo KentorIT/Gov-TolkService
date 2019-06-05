@@ -185,9 +185,9 @@ $(function () {
         }
     });
 
-    $("body").on("change", "#LatestAnswerBy_Hour", function () {
+    $("body").on("change", "#LatestAnswerBy_Hour", function () {    
         if ($("#LatestAnswerBy_Minute").val() === "") {
-            $("#LatestAnswerBy_Minute").val(0).trigger("change");
+            $("#LatestAnswerBy_Minute").val(0).trigger("change").trigger("select2:select");
         }
     });
 

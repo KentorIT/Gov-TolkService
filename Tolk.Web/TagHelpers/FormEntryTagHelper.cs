@@ -485,9 +485,6 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteDateTimeOffsetBlock(TextWriter writer)
         {
-            // First write a label
-            WriteLabelWithoutFor(writer);
-
             // Then open the inline form
             writer.WriteLine("<div class=\"form-inline\">");
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
@@ -512,14 +509,13 @@ namespace Tolk.Web.TagHelpers
             }
 
             WritePrefix(writer, PrefixAttribute.Position.Value);
-            writer.WriteLine("<div class=\"col-sm-6 no-padding\">");
+            // First write a label
+            WriteLabelWithoutFor(writer);
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true,false);
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false, false);
             writer.WriteLine("</div>");
-            writer.WriteLine("<div class=\"col-sm-6\">");
-            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
-            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false);
-            writer.WriteLine("</div>");
-
             writer.WriteLine("</div>"); // form-inline
 
             WriteValidation(writer, dateModelExplorer, dateFieldName);
@@ -559,12 +555,15 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour, bool writeValidation = true)
         {
             writer.WriteLine("<div class=\"input-group time timesplit\">");
             WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
             writer.WriteLine("</div>");
-            WriteValidation(writer, timeModelExplorer, timeFieldName);
+            if (writeValidation)
+            {
+                WriteValidation(writer, timeModelExplorer, timeFieldName);
+            }
         }
 
         private IEnumerable<SelectListItem> GetSplitTImeValues(bool hour)
@@ -758,32 +757,43 @@ namespace Tolk.Web.TagHelpers
             }
 
             writer.WriteLine("<div class=\"form-inline\">");
-            writer.WriteLine("<div class=\"row\">");
 
-            writer.WriteLine("<div class=\"col-sm-4\">");
+            writer.WriteLine("<div class=\"col-sm-3\">");
             WriteLabelWithoutFor(dateModelExplorer, writer);
-            writer.WriteLine("<br \\>");
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
+            writer.WriteLine("</div>");
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine("</div>");
-
-            writer.WriteLine("<div class=\"col-sm-4\">");
-            WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
-            writer.WriteLine("<br \\>");
-            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
-            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
             writer.WriteLine("</div>");
 
-            writer.WriteLine("<div class=\"col-sm-4\">");
+            writer.WriteLine("<div class=\"col-sm-3\">");
+            WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true, false);
+            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false, false);
+            writer.WriteLine("</div>");
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteValidation(writer, startTimeHourModelExplorer, startTimeHourFieldName);
+            WriteValidation(writer, startTimeMinutesModelExplorer, startTimeMinutesFieldName);
+            writer.WriteLine("</div>");
+            writer.WriteLine("</div>");
+
+            writer.WriteLine("<div class=\"col-sm-3\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
             WriteInfoIfDescription(writer);
             WriteHelpIfHelpLink(writer);
-            writer.WriteLine("<br \\>");
-            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
-            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true, false);
+            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false, false);
+            writer.WriteLine("</div>");
+            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteValidation(writer, endTimeHourModelExplorer, endTimeHourFieldName);
+            WriteValidation(writer, endTimeMinutesModelExplorer, endTimeMinutesFieldName);
+            writer.WriteLine("</div>");
             writer.WriteLine("</div>");
 
-            writer.WriteLine("</div>"); //row
             writer.WriteLine("</div>"); //form-inline.
         }
 
