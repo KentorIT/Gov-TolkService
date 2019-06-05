@@ -175,13 +175,13 @@ $(function () {
         //only set minutes and endhour if not selected yet
         if (chosenEndHour === "") {
             var nextHour = parseInt($(this).val()) === 23 ? 0 : chosenStartHour + 1;
-            $("#SplitTimeRange_EndTimeHour").val(nextHour).trigger("change");
+            $("#SplitTimeRange_EndTimeHour").val(nextHour).trigger("change").trigger("select2:select");
         }
         if (chosenStartMinutes === "") {
-            $("#SplitTimeRange_StartTimeMinutes").val(0).trigger("change");
+            $("#SplitTimeRange_StartTimeMinutes").val(0).trigger("change").trigger("select2:select");
         }
         if (chosenEndMinutes === "") {
-            $("#SplitTimeRange_EndTimeMinutes").val(0).trigger("change");
+            $("#SplitTimeRange_EndTimeMinutes").val(0).trigger("change").trigger("select2:select");
         }
     });
 

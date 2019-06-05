@@ -188,7 +188,7 @@ $(function () {
                         serverSide: true,
                         searching: true,
                         paging: true,
-                        dom:"lrtip",
+                        dom: "lrtip",
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
                             $(row).data("id", data.id);
@@ -208,10 +208,15 @@ $(function () {
     $("body").on("click", ".btn-datatable", function (e) {
         e.stopPropagation();
     });
-    
+
     $("select").each(function () {
         var allowClear = $(this).parents().hasClass("allow-clear");
-        $(this).selectWoo({ minimumResultsForSearch: 10, allowClear: allowClear, language: "sv" });
+        $(this).selectWoo({ minimumResultsForSearch: 10, allowClear: allowClear, language: "sv" })
+            .on("select2:select select2:unselect unselect", function (e) {
+                if ($(this).valid !== undefined) {
+                    $(this).valid(); //jquery validation script validate on change
+                }
+            });
     });
 
     $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
