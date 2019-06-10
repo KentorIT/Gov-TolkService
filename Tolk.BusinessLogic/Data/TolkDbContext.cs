@@ -309,11 +309,10 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-
             builder.Entity<CustomerUnit>()
-                         .HasOne(c => c.CreatedByUser)
-                         .WithMany()
-                         .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(c => c.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<CustomerUnit>()
                 .HasOne(c => c.CreatedByImpersonator)
@@ -342,6 +341,19 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(cu => cu.CustomerUnit)
                 .WithMany(g => g.CustomerUnitUsers)
                 .HasForeignKey(map => map.CustomerUnitId);
+
+            builder.Entity<FaqDisplayUserRole>()
+                .HasKey(h => new { h.FaqId, h.DisplayUserRole });
+
+            builder.Entity<Faq>()
+                .HasOne(f => f.CreatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Faq>()
+                .HasOne(f => f.LastUpdatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

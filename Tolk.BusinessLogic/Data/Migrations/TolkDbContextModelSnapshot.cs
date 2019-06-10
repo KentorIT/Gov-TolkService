@@ -528,6 +528,48 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("FailedWebHookCalls");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.Faq", b =>
+                {
+                    b.Property<int>("FaqId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Answer")
+                        .HasMaxLength(2000);
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<int>("CreatedBy");
+
+                    b.Property<bool>("IsDisplayed");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedAt");
+
+                    b.Property<int?>("LastUpdatedBy");
+
+                    b.Property<string>("Question")
+                        .HasMaxLength(255);
+
+                    b.HasKey("FaqId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("LastUpdatedBy");
+
+                    b.ToTable("Faq");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FaqDisplayUserRole", b =>
+                {
+                    b.Property<int>("FaqId");
+
+                    b.Property<int>("DisplayUserRole");
+
+                    b.HasKey("FaqId", "DisplayUserRole");
+
+                    b.ToTable("FaqDisplayUserRole");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Holiday", b =>
                 {
                     b.Property<DateTime>("Date")
@@ -1831,6 +1873,27 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "OutboundWebHookCall")
                         .WithMany("FailedCalls")
                         .HasForeignKey("OutboundWebHookCallId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.Faq", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "LastUpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastUpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FaqDisplayUserRole", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Faq", "Faq")
+                        .WithMany("FaqDisplayUserRole")
+                        .HasForeignKey("FaqId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
