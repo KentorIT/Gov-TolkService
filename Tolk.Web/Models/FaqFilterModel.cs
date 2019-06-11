@@ -1,0 +1,41 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Attributes;
+
+namespace Tolk.Web.Models
+{
+    public class FaqFilterModel
+    {
+        [Display(Name = "Innehåll i fråga/svar")]
+        [Placeholder("Sök på del av text")]
+        public string QuestionAnswer { get; set; }
+
+        [Display(Name = "Visas")]
+        public TrueFalse? IsDisplayed { get; set; }
+
+        [Display(Name = "Visas för")]
+        public DisplayUserRole? DisplayedFor { get; set; }
+
+        public bool HasActiveFilters
+        {
+            get => IsDisplayed.HasValue || !string.IsNullOrWhiteSpace(QuestionAnswer) || DisplayedFor.HasValue;
+        }
+
+        internal IQueryable<Faq> Apply(IQueryable<Faq> faqs)
+        {
+            faqs = !string.IsNullOrWhiteSpace(QuestionAnswer)
+                ? faqs.Where(f => f.Answer.Contains(QuestionAnswer) || f.Question.Contains(QuestionAnswer))
+                : faqs;
+            faqs = IsDisplayed.HasValue
+                ? faqs.Where(f => f.IsDisplayed == (IsDisplayed == TrueFalse.No) ? false : true)
+                : faqs;
+            faqs = DisplayedFor.HasValue
+                ? faqs.Where(f => f.FaqDisplayUserRoles.Any(fr => fr.DisplayUserRole == DisplayedFor.Value))
+                : faqs;
+            return faqs;
+        }
+
+    }
+}

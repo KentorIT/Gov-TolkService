@@ -1,0 +1,62 @@
+﻿@model FaqListModel
+@using Tolk.BusinessLogic.Utilities
+@{
+    ViewData["Title"] = "FAQ - Vanliga frågor";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="row">
+    @await Html.PartialAsync("_Filter", Model.FilterModel)
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a class="btn btn-default btn-large pull-right" href="@Url.Action("Create")">Skapa ny fråga</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive standard-table table-paging table-datatable">
+                <table class="table table-hover full-row-height clickable-rows-with-action search-table">
+                    <thead>
+                        <tr>
+                            <th>Visas</th>
+                            <th>Fråga</th>
+                            <th>Svar</th>
+                            <th>Visas för</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr data-id="@item.FaqId" data-click-action-url="@Url.Action("Edit", new { id = item.FaqId})">
+                                <td class="gray-border-bottom @item.ColorClassName">@(item.IsDisplayed ? "Ja" : "Nej")</td>
+                                <td class="gray-border-bottom">@item.Question</td>
+                                <td class="gray-border-bottom">@(item.Answer.Substring(0, 100) + "...")</td>
+                                <td class="gray-border-bottom gray-border-right">
+                                    @foreach (var df in item.DisplayedFor)
+                                    {
+                                        @df.GetDescription();
+                                        <br />
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (Model.FilterModel.HasActiveFilters)
+        {
+            <span class="no-result-message">
+                Sökningen gav inget resultat.
+            </span>
+        }
+        else
+        {
+            <span class="no-result-message">
+                Det finns inga sparade frågor
+            </span>
+        }
+    </div>
+</div>

@@ -516,6 +516,8 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> WebhookStatuses => GetList<WebhookStatus>();
 
+        public static IEnumerable<SelectListItem> DisplayForUserRoles => GetList<DisplayUserRole>();
+
         private static IEnumerable<SelectListItem> GetList<T>(IEnumerable<T> filterValues = null)
         {
             return EnumHelper.GetAllDescriptions(filterValues)

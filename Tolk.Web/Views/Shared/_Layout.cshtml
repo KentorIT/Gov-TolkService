@@ -157,6 +157,7 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
                                     @if (User.IsInRole(Roles.SystemAdministrator))
                                     {
                                         <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
@@ -225,6 +226,7 @@
                                 {
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
                                     if (User.IsInRole(Roles.SystemAdministrator))
                                     {
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>

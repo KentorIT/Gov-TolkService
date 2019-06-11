@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset? LastUpdatedAt { get; set; }
 
-        public List<FaqDisplayUserRole> FaqDisplayUserRole { get; set; }
+        public List<FaqDisplayUserRole> FaqDisplayUserRoles { get; set; }
 
     }
 }
