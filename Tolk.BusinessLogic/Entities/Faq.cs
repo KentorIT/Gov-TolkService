@@ -51,5 +51,18 @@ namespace Tolk.BusinessLogic.Entities
 
         }
 
+        public void Update(DateTimeOffset swedenNow, int userId, bool isDisplayed, string question, string answer, IEnumerable<DisplayUserRole> displayedForUserRole)
+        {
+            LastUpdatedAt = swedenNow;
+            LastUpdatedBy = userId;
+            IsDisplayed = isDisplayed;
+            Question = question;
+            Answer = answer;
+            FaqDisplayUserRoles = displayedForUserRole.Select(r => new FaqDisplayUserRole
+            {
+                DisplayUserRole = r
+            }).ToList();
+        }
+
     }
 }

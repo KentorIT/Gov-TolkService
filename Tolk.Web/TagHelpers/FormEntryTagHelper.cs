@@ -966,12 +966,16 @@ namespace Tolk.Web.TagHelpers
 
             var itemsArr = Items.ToArray();
 
+            var selectedItems = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems;
+
             for (var i = 0; i < itemsArr.Count(); i++)
             {
                 var item = itemsArr[i];
                 var itemName = $"{id}_{i}";
-                bool isChecked = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems?.Contains(item) ?? false;
+
+                bool isChecked = selectedItems != null ? selectedItems.Select(s => s.Value).Contains(item.Value) : false;
                 var checkedAttr = isChecked ? "checked=\"checked\"" : "";
+
                 // Done manually because GenerateCheckbox automatically sets id=For.Name, which it shouldn't
                 var inputElem = $"<input data-checkbox-group=\"{For.Name}\" id=\"{itemName}\" name=\"{For.Name}\" type=\"checkbox\" value=\"{item.Value}\" {checkedAttr}/>";
 
