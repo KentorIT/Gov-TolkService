@@ -29,7 +29,7 @@ namespace Tolk.Web.Models
                 ? faqs.Where(f => f.Answer.Contains(QuestionAnswer) || f.Question.Contains(QuestionAnswer))
                 : faqs;
             faqs = IsDisplayed.HasValue
-                ? faqs.Where(f => f.IsDisplayed == (IsDisplayed == TrueFalse.No) ? false : true)
+                ? faqs.Where(f => f.IsDisplayed == (IsDisplayed == TrueFalse.Yes))
                 : faqs;
             faqs = DisplayedFor.HasValue
                 ? faqs.Where(f => f.FaqDisplayUserRoles.Any(fr => fr.DisplayUserRole == DisplayedFor.Value))

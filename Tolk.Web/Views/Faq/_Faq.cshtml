@@ -1,0 +1,20 @@
+﻿@model Tolk.Web.Models.FaqModel
+@using Tolk.Web.Services
+@inject SelectListService SelectListService
+
+<div class="row">
+    <div class="col-sm-6">
+        <form-entry asp-for="Question" />
+    </div>
+    <div class="col-sm-6">
+        <form-entry asp-for="Answer" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6 padding-top-10">
+        <form-entry asp-for="DisplayForRoles" asp-items="SelectListService.DisplayForUserRoles" />
+    </div>
+    <div class="col-sm-6">
+        <form-entry asp-for="IsDisplayed" />
+    </div>
+</div>

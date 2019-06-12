@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -35,6 +36,20 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset? LastUpdatedAt { get; set; }
 
         public List<FaqDisplayUserRole> FaqDisplayUserRoles { get; set; }
+
+        public void Create(DateTimeOffset swedenNow, int userId, bool isDisplayed, string question, string answer, IEnumerable<DisplayUserRole> displayedForUserRole)
+        {
+            CreatedAt = swedenNow;
+            CreatedBy = userId;
+            IsDisplayed = isDisplayed;
+            Question = question;
+            Answer = answer;
+            FaqDisplayUserRoles = displayedForUserRole.Select(r => new FaqDisplayUserRole
+            {
+                DisplayUserRole = r
+            }).ToList();
+
+        }
 
     }
 }

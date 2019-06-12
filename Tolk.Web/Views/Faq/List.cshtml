@@ -9,7 +9,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <a class="btn btn-default btn-large pull-right" href="@Url.Action("Create")">Skapa ny fråga</a>
+        <a class="btn btn-default btn-large pull-right" href="@Url.Action("Create")">Skapa FAQ-fråga</a>
     </div>
 </div>
 <div class="row">
@@ -32,7 +32,7 @@
                             <tr data-id="@item.FaqId" data-click-action-url="@Url.Action("Edit", new { id = item.FaqId})">
                                 <td class="gray-border-bottom @item.ColorClassName">@(item.IsDisplayed ? "Ja" : "Nej")</td>
                                 <td class="gray-border-bottom">@item.Question</td>
-                                <td class="gray-border-bottom">@(item.Answer.Substring(0, 100) + "...")</td>
+                                <td class="gray-border-bottom">@item.DisplayListAnswer</td>
                                 <td class="gray-border-bottom gray-border-right">
                                     @foreach (var df in item.DisplayedFor)
                                     {
@@ -49,7 +49,7 @@
         else if (Model.FilterModel.HasActiveFilters)
         {
             <span class="no-result-message">
-                Sökningen gav inget resultat.
+                Sökningen gav inget resultat
             </span>
         }
         else

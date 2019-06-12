@@ -1073,7 +1073,7 @@ ul.pagination > li.paginate_button.active > a {
   margin-top: -12px;
   height: 40px;
 }
-.logo-footer {
+.padding-top-10 {
   padding-top: 10px;
 }
 .logo-login {
@@ -1469,4 +1469,7 @@ input.force-validation {
 }
 ol.breadcrumb > li + li:before {
   content: ">";
+}
+#DisplayForRoles {
+  padding-top: 5px;
 }

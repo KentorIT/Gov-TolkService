@@ -1,11 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
-using Tolk.Web.Authorization;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Enums;
 using Microsoft.EntityFrameworkCore;
 using Tolk.Web.Models;
 using Tolk.BusinessLogic.Services;
+using Tolk.Web.Helpers;
+using Tolk.Web.Authorization;
+
 
 namespace Tolk.Web.Controllers
 {
@@ -45,5 +52,28 @@ namespace Tolk.Web.Controllers
                 })
             });
         }
+
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Create(FaqModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var faq = new Faq();
+                var displayForRoles = model.DisplayForRoles.SelectedItems.Select(r => EnumHelper.Parse<DisplayUserRole>(r.Value));
+
+                faq.Create(_clock.SwedenNow, User.GetUserId(), model.IsDisplayed, model.Question, model.Answer, displayForRoles);
+                await _dbContext.AddAsync(faq);
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("List");
+            }
+            return View(model);
+        }
+
     }
 }

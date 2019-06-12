@@ -64,7 +64,7 @@ namespace Tolk.Web.Helpers
 
             var checkboxGroup = (CheckboxGroup)value;
 
-            if (checkboxGroup != null && (checkboxGroup.SelectedItems.Count < Min || checkboxGroup.SelectedItems.Count > Max))
+            if (checkboxGroup != null && (checkboxGroup.SelectedItems.Count() < Min || checkboxGroup.SelectedItems.Count() > Max))
             {
                 return new ValidationResult(ErrorMessageString);
             }

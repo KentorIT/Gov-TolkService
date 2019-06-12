@@ -14,25 +14,16 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            var value = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
+            var selectedValues = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
 
-            if (value == ValueProviderResult.None)
+            if (selectedValues == ValueProviderResult.None)
             {
                 return Task.CompletedTask;
             }
 
-            var selectedItems = new HashSet<string>();
-            foreach (var val in value)
-            {
-                selectedItems.Add(val);
-            }
-
             var model = new CheckboxGroup
             {
-                SelectedItems = SelectListService.CompetenceLevels
-                    .Where(item => selectedItems
-                        .Contains(item.Value)
-                    ).ToHashSet()
+                SelectedItems = selectedValues.Select(sv => new SelectListItem { Value = sv })
             };
 
             bindingContext.Result = ModelBindingResult.Success(model);

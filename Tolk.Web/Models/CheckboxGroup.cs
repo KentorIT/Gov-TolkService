@@ -8,6 +8,6 @@ namespace Tolk.Web.Models
 {
     public class CheckboxGroup
     {
-        public HashSet<SelectListItem> SelectedItems { get; set; }
+        public IEnumerable<SelectListItem> SelectedItems { get; set; }
     }
 }
