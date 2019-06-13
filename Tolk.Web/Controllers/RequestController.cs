@@ -103,6 +103,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Interpreter)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
                 .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
                 .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
                 .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
