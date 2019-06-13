@@ -3,8 +3,145 @@
 $(function () {
     var currentId = 0;
     var currentDesiredId = 0;
+    var currentOccasionId = 0;
+    var hasToggledLastTimeForRequiringLatestAnswerBy = false;
+    var allowLatestAnswerBy = true;
 
-    $(".allow-more-travel-cost").hide();
+    var occasionButtons = '<div class="pull-right">' +
+        '<a class="btn btn-warning table-button change">Ändra <span class="glyphicon glyphicon-edit"></span></a>&nbsp;' +
+        '<a class="btn btn-danger table-button remove">Ta bort <span class="glyphicon glyphicon-remove"></span></a>' +
+        '</div>';
+
+    var requiredModal = $("#req").parents(".modal-content");
+    var desiredModal = $("#des").parents(".modal-content");
+
+    var toggleLanguage = function (selectedItem) {
+        if (selectedItem.attr('value') === $("#OtherLanguageId").val()) {
+            $('#other-language').collapse('show');
+        }
+        else {
+            $('#other-language').collapse('hide');
+        }
+        if (selectedItem.attr('data-additional') === "") {
+            $('#divNonCompetenceLevel').show();
+            $('#divCompetenceLevel').hide();
+            $('#LanguageHasAuthorizedInterpreter').val('false');
+        }
+        else {
+            $('#divNonCompetenceLevel').hide();
+            $('#divCompetenceLevel').show();
+            $('#LanguageHasAuthorizedInterpreter').val('true');
+        }
+    };
+
+    var toggleGender = function (reqType, genderRbl, description) {
+        if (reqType.val() === "Gender") {
+            genderRbl.show();
+            description.hide();
+        }
+        else {
+            genderRbl.hide();
+            description.show();
+            description.find("#RequirementDescription").val("");
+        }
+    };
+
+    var addOccasion = function () {
+        if (!allowLatestAnswerBy) {
+            alert("Det går inte att lägga till tillfällen för nära i tiden när man vill beställa flera tillfällen.");
+            return;
+        }
+        var $form = $('.order-datepicker').closest('form');
+        var validator = $form.validate();
+        var valid = true;
+        $('.order-datepicker input, .order-datepicker select').each(function (i, v) {
+            valid = validator.element(v) && valid;
+        });
+
+        if (!valid) {
+            return;
+        }
+        var hasExtra = $("#ExtraInterpreter").is(":checked") ? 'Ja' : 'Nej';
+        var $hidden = $("#baseOccasion").clone();
+        //Change the ids for the cloned inputs
+        $hidden.find("input").each(function () {
+            $(this).prop("id", $(this).prop("id").replace("0", currentOccasionId));
+            $(this).prop("name", $(this).prop("name").replace("0", currentOccasionId));
+        });
+        currentOccasionId++;
+        var date =
+            $("#SplitTimeRange_StartDate").val() +
+            ' ' +
+            zeroPrefix($("#SplitTimeRange_StartTimeHour").val()) +
+            ':' +
+            zeroPrefix($("#SplitTimeRange_StartTimeMinutes").val()) +
+            '-' +
+            zeroPrefix($("#SplitTimeRange_EndTimeHour").val()) +
+            ':' +
+            zeroPrefix($("#SplitTimeRange_EndTimeMinutes").val());
+
+        var start = new Date($("#SplitTimeRange_StartDate").val());
+        start.setHours($("#SplitTimeRange_StartTimeHour").val());
+        start.setMinutes($("#SplitTimeRange_StartTimeMinutes").val());
+        $hidden.find("input[name$='OccasionStartDateTime']").val($("#SplitTimeRange_StartDate").val() +
+            ' ' +
+            zeroPrefix($("#SplitTimeRange_StartTimeHour").val()) +
+            ':' +
+            zeroPrefix($("#SplitTimeRange_StartTimeMinutes").val()));
+        var end = new Date($("#SplitTimeRange_StartDate").val());
+        end.setHours($("#SplitTimeRange_EndTimeHour").val());
+        end.setMinutes($("#SplitTimeRange_EndTimeMinutes").val());
+        if (end <= start) {
+            end.addDays(1);
+        }
+        $hidden.find("input[name$='OccasionEndDateTime']").val(end.toLocaleDateString("sv-SE").replace(/&lrm;|\u200E/gi, '') +
+            ' ' +
+            zeroPrefix($("#SplitTimeRange_EndTimeHour").val()) +
+            ':' +
+            zeroPrefix($("#SplitTimeRange_EndTimeMinutes").val()));
+        $hidden.find("input[name$='ExtraInterpreter']").val($("#ExtraInterpreter").is(":checked") ? "true" : "false");
+
+        var table = $('.several-occasions-table table').DataTable();
+        table.row.add([date + $hidden.html(), hasExtra, occasionButtons]).draw();
+
+        $('.order-datepicker input').val('');
+        $(".order-datepicker select").each(function (i, v) {
+            $(this).val("").trigger("change");
+        });
+        $("#ExtraInterpreter").prop('checked', false);
+
+    };
+
+    var zeroPrefix = function (val) {
+        return val < 10 ? "0" + val : "" + val;
+    };
+
+    var checkTimeAtStart = function () {
+        var now = new Date($("#now").val());
+        hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13 || now.getHours() === 23);
+    };
+
+    var toggleSeveralOccasions = function () {
+        //if date is set, and hasToggledLastTimeForRequiringLatestAnswerBy is false and SeveralOccasions is false
+        if (LastAnswerByIsShowing || $("#SeveralOccasions").is(":checked")) {
+            return;
+        }
+        var $disabled = !allowLatestAnswerBy || !hasValidOccasion();
+        $("#SeveralOccasions").prop('disabled', $disabled);
+        if ($disabled) {
+            $("#SeveralOccasions").parents(".checkbox").addClass("checkbox-disabled");
+        } else {
+            $("#SeveralOccasions").parents(".checkbox").removeClass("checkbox-disabled");
+        }
+    };
+
+    var hasValidOccasion = function () {
+        return !($("#SplitTimeRange_StartDate").val() === "" ||
+            $("#SplitTimeRange_StartTimeHour").val() === "" ||
+            $("#SplitTimeRange_StartTimeMinutes").val() === "" ||
+            $("#SplitTimeRange_EndTimeHour").val() === "" ||
+            $("#SplitTimeRange_EndTimeMinutes").val() === "");
+    };
 
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
@@ -131,9 +268,6 @@ $(function () {
         }
     });
 
-    var requiredModal = $("#req").parents(".modal-content");
-    var desiredModal = $("#des").parents(".modal-content");
-
     requiredModal.find("#RequirementType").on("change", function () {
         toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("#GenderRequirement"), requiredModal.find("#RequirementDescription").parents(".form-group"));
     });
@@ -153,17 +287,20 @@ $(function () {
             $("#competence-required").hide();
             $("#competence-requested").show();
             $("#competence-info").show();
+            $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
         }
         else if ($(items[0]).val() === 'Requirement') {
             // Is requirement
             $("#competence-requested").hide();
             $("#competence-required").show();
             $("#competence-info").hide();
+            $("#RequiredCompetenceLevels_cbHidden").removeClass("ignore-validation");
         }
         else {
             $("#competence-requested").hide();
             $("#competence-required").hide();
             $("#competence-info").show();
+            $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
         }
     });
 
@@ -185,13 +322,15 @@ $(function () {
         }
     });
 
-    $("body").on("change", "#LatestAnswerBy_Hour", function () {    
+    $("body").on("change", "#SplitTimeRange_StartTimeHour, #SplitTimeRange_StartTimeMinutes, #SplitTimeRange_EndTimeHour, #SplitTimeRange_EndTimeMinutes", function () {
+        toggleSeveralOccasions();
+    });
+
+    $("body").on("change", "#LatestAnswerBy_Hour", function () {
         if ($("#LatestAnswerBy_Minute").val() === "") {
             $("#LatestAnswerBy_Minute").val(0).trigger("change").trigger("select2:select");
         }
     });
-
-    var hasToggledLastTimeForRequiringLatestAnswerBy = false;
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var now = new Date($("#now").val());
@@ -201,7 +340,14 @@ $(function () {
         }
         var lastTimeForRequiringLatestAnswerBy = new Date($("#LastTimeForRequiringLatestAnswerBy").val());
         var chosenDate = new Date($(this).val());
+        allowLatestAnswerBy = true;
         if (chosenDate <= lastTimeForRequiringLatestAnswerBy) {
+            if ($("#SeveralOccasions").is(":checked")) {
+                //NOT ALLOWED!!! Mark date as invalid, with the message that occasions cannot be to close in time if one wants to register several occasions...
+                //POSSIBLY CHANGE THE FIRST ALLOWED DATE?
+                allowLatestAnswerBy = false;
+                return;
+            }
             $("#LatestAnswerBy").show();
             $("#LatestAnswerBy_Date").datepicker("setStartDate", now.zeroTime());
             $("#LatestAnswerBy_Date").datepicker("setEndDate", chosenDate);
@@ -213,38 +359,8 @@ $(function () {
             $("#LatestAnswerBy").hide();
             LastAnswerByIsShowing = false;
         }
+        toggleSeveralOccasions();
     });
-
-    var toggleLanguage = function (selectedItem) {
-        if (selectedItem.attr('value') === $("#OtherLanguageId").val()) {
-            $('#other-language').collapse('show');
-        }
-        else {
-            $('#other-language').collapse('hide');
-        }
-        if (selectedItem.attr('data-additional') === "") {
-            $('#divNonCompetenceLevel').show();
-            $('#divCompetenceLevel').hide();
-            $('#LanguageHasAuthorizedInterpreter').val('false');
-        }
-        else {
-            $('#divNonCompetenceLevel').hide();
-            $('#divCompetenceLevel').show();
-            $('#LanguageHasAuthorizedInterpreter').val('true');
-        }
-    };
-
-    var toggleGender = function (reqType, genderRbl, description) {
-        if (reqType.val() === "Gender") {
-            genderRbl.show();
-            description.hide();
-        }
-        else {
-            genderRbl.hide();
-            description.show();
-            description.find("#RequirementDescription").val("");
-        }
-    };
 
     $("body").on("change", ".location-group", function () {
         var isOnsiteSelected = false;
@@ -297,29 +413,74 @@ $(function () {
         }
     });
 
-    var checkTimeAtStart = function () {
-        var now = new Date($("#now").val());
-        hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13 || now.getHours() === 23);
-    };
+    $("body").on("click", "tr > td > div > a.table-button.change", function () {
+        alert("add functionality for taking the info in the row reading into the occasion input above the row...");
+    });
 
+    $("body").on("click", "tr > td > div > a.table-button.remove", function () {
+        var table = $('.several-occasions-table table').DataTable();
+        table.row($(this).parents('tr')).remove().draw();
+        //if last row was removed, uncheck the severaloccasions
+        currentOccasionId = 0;
+        if (!table.data().any()) {
+            $("#SeveralOccasions").prop("checked", false).trigger("change");
+            toggleSeveralOccasions();
+        } else {
+            $('.several-occasions-table table tbody tr').each(function () {
+                $(this).find("input").each(function () {
+                    var $id = $(this).prop("id").match(/\d+/);
+                    $(this).prop("id", $(this).prop("id").replace($id, currentOccasionId));
+                    $(this).prop("name", $(this).prop("name").replace($id, currentOccasionId));
+                });
+                currentOccasionId++;
+            });
+        }
+    });
+
+    $("body").on("change", "#SeveralOccasions", function () {
+        if ($(this).is(":checked")) {
+            $(".several-occasions-table").show();
+            $(".add-date-button-row").show();
+            addOccasion();
+        } else {
+            $(".several-occasions-table").hide();
+            $(".add-date-button-row").hide();
+            var table = $('.several-occasions-table table').DataTable();
+            table.clear().draw();
+
+            if ($("#SplitTimeRange_StartDate").val() !== "") {
+                //Check if last answer by should be shown...
+                $("#SplitTimeRange_StartDate").trigger("change");
+            }
+            toggleSeveralOccasions();
+        }
+    });
+
+    $("body").on("click", ".add-occasion", function () {
+        addOccasion();
+    });
+
+    //At start 
+    $(".allow-more-travel-cost").hide();
     $("input[name=CompetenceLevelDesireType]").trigger("change");
     $("#UseRankedInterpreterLocation").trigger("change");
     checkTimeAtStart();
     $("#SplitTimeRange_StartDate").trigger("change");
     $(".allow-no-review-travel-cost-information").hide();
     $(".allow-more-travel-cost-information").hide();
-});
+    $("#SeveralOccasions").trigger("change");
+    $(".extra-interpreter-part").detach().appendTo(".date-and-time-part");
+    $("#SeveralOccasions").prop('disabled', true);
 
-function AddRequirement(target) {
-    target.find("#RequirementDescription").val("");
-    var $form = target.find('form:first');
-    target.bindEnterKey('form:first input', '.btn-default');
-    $form.find(".field-validation-error")
-        .addClass("field-validation-valid")
-        .removeClass("field-validation-error").html("");
-}
+    function AddRequirement(target) {
+        target.find("#RequirementDescription").val("");
+        var $form = target.find('form:first');
+        target.bindEnterKey('form:first input', '.btn-default');
+        $form.find(".field-validation-error")
+            .addClass("field-validation-valid")
+            .removeClass("field-validation-error").html("");
+    }
 
-$(function () {
     var validateLastAnswerBy = function () {
         if (!$("#LatestAnswerBy_Date").is(":visible")) {
             return true;
@@ -393,6 +554,7 @@ $(function () {
         }
         return true;
     };
+
     var validateSelectedCompetenceLevelDesireType = function () {
         return $("#CompetenceLevelDesireType").is(":hidden") ||
             $("[name=CompetenceLevelDesireType]").filter(":checked").length > 0;
@@ -406,6 +568,12 @@ $(function () {
         return checked !== undefined;
     };
 
+    function validatorMessage(forName, message) {
+        var validatorQuery = "[data-valmsg-for=\"" + forName + "\"]";
+        $(validatorQuery).empty();
+        $(validatorQuery).append(message);
+        $(validatorQuery).show();
+    }
     var $this = $(".wizard");
     $this.tolkWizard({
         nextHandler: function (event) {
@@ -424,21 +592,30 @@ $(function () {
                 validatorMessage("AllowExceedingTravelCost", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
                 errors++;
             }
-            if (!validateStartTime()) {
-                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en starttid som redan har passerats, var god ändra detta.");
-                errors++;
-            }
-            if (!validateStartTimeAndEndTime()) {
-                validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdragets start- och sluttid har samma värde, var god ändra detta.");
-                errors++;
-            }
-            if (!validateLastAnswerBy()) {
-                validatorMessage("LatestAnswerBy.Date", "Sista svarstid har redan passerats, var god ändra detta.");
-                errors++;
-            }
-            if (!validateLastAnswerByAgainstStartTime()) {
-                validatorMessage("LatestAnswerBy.Date", "Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
-                errors++;
+            if (!$("#SeveralOccasions").is(":checked")) {
+                if (!validateStartTime()) {
+                    validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en starttid som redan har passerats, var god ändra detta.");
+                    errors++;
+                }
+                if (!validateStartTimeAndEndTime()) {
+                    validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdragets start- och sluttid har samma värde, var god ändra detta.");
+                    errors++;
+                }
+                if (!validateLastAnswerBy()) {
+                    validatorMessage("LatestAnswerBy.Date", "Sista svarstid har redan passerats, var god ändra detta.");
+                    errors++;
+                }
+                if (!validateLastAnswerByAgainstStartTime()) {
+                    validatorMessage("LatestAnswerBy.Date", "Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
+                    errors++;
+                }
+            } else {
+                //Check if there is a valid, not yet added, occasion, and if ask if the user wants to add it or not.
+                if (hasValidOccasion()) {
+                    if (!confirm("Det finns ett fullständigt tillfälle som inte är tillagt än. Vill du fortsätta?")) {
+                        return false;
+                    }
+                }
             }
             if (errors !== 0) {
                 return false;
@@ -475,11 +652,20 @@ $(function () {
             $("#send").blur();
         }
     });
-});
 
-function validatorMessage(forName, message) {
-    var validatorQuery = "[data-valmsg-for=\"" + forName + "\"]";
-    $(validatorQuery).empty();
-    $(validatorQuery).append(message);
-    $(validatorQuery).show();
-}
+    $("body").on("mousedown", ".wizard-forward-button", function () {
+        //This is done to make sure that the wizard validation does not validate date add stuff when it shouldn't
+        //This would be better handled with a beforeNextHandler in wizard, or some other name...
+        if ($("#SeveralOccasions").is(":checked")) {
+            $('.order-datepicker input, .order-datepicker select').each(function (i, v) {
+                $(this).addClass("ignore-validation");
+            });
+        }
+    });
+
+    $("body").on("click", ".wizard-forward-button", function () {
+        $('.order-datepicker input, .order-datepicker select').each(function (i, v) {
+            $(this).removeClass("ignore-validation");
+        });
+    });
+});

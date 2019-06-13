@@ -20,16 +20,19 @@ namespace Tolk.Web.Models
         [Required(ErrorMessage = "Ange sluttid")]
         public int EndTimeMinutes { get; set; }
 
-        public DateTimeOffset StartAt
+        public DateTimeOffset? StartAt
         {
             get
             {
-                DateTimeOffset test = StartDate.AddHours(StartTimeHour).AddMinutes(StartTimeMinutes).ToDateTimeOffsetSweden();
+                if (StartDate.Year < 2)
+                {
+                    return null;
+                }
                 return StartDate.AddHours(StartTimeHour).AddMinutes(StartTimeMinutes).ToDateTimeOffsetSweden();
             }
             set
             {
-                var valueSweden = value.ToDateTimeOffsetSweden();
+                var valueSweden = value.Value.ToDateTimeOffsetSweden();
                 StartDate = valueSweden.Date;
                 StartTimeHour = valueSweden.Hour;
                 StartTimeMinutes = valueSweden.Minute;
@@ -41,12 +44,20 @@ namespace Tolk.Web.Models
             return StartDate.AddDays((endHour < StartTimeHour) || (endHour == StartTimeHour && endMinute < StartTimeMinutes) ? 1 : 0);
         }
 
-        public DateTimeOffset EndAt
+        public DateTimeOffset? EndAt
         {
-            get => GetEndDate(EndTimeHour, EndTimeMinutes).AddHours(EndTimeHour).AddMinutes(EndTimeMinutes).ToDateTimeOffsetSweden();
+            get
+            {
+                if (StartDate.Year < 2)
+                {
+                    return null;
+                }
+
+                return GetEndDate(EndTimeHour, EndTimeMinutes).AddHours(EndTimeHour).AddMinutes(EndTimeMinutes).ToDateTimeOffsetSweden();
+            }
             set
             {
-                var valueSweden = value.ToDateTimeOffsetSweden();
+                var valueSweden = value.Value.ToDateTimeOffsetSweden();
 
                 var endDateFromTime = GetEndDate(valueSweden.Hour, valueSweden.Minute);
 
@@ -54,7 +65,7 @@ namespace Tolk.Web.Models
                 {
                     throw new InvalidOperationException("TimeRange can only express positive ranges of up to 24 hours. "
                         + $"Automatically calculated end date {endDateFromTime.ToShortDateString()} "
-                        + $"doesn't match supplied end date {value.Date.ToShortDateString()}");
+                        + $"doesn't match supplied end date {value.Value.Date.ToShortDateString()}");
                 }
 
                 EndTimeHour = valueSweden.Hour;

@@ -22,7 +22,7 @@ namespace Tolk.Web.Tests
                 EndTime = TimeSpan.Parse(endTime)
             };
 
-            subject.EndDateTime.Date.ToShortDateString().Should().Be(expectedEndDate);
+            subject.EndDateTime.Value.Date.ToShortDateString().Should().Be(expectedEndDate);
 
             subject.StartDateTime.ToString().Should().Be("2018-04-19 15:00:00 +02:00");
         }

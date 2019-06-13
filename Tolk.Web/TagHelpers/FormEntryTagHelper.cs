@@ -229,6 +229,7 @@ namespace Tolk.Web.TagHelpers
                         WriteTimeRangeBlock(writer);
                         break;
                     case InputTypeSplitTimeRange:
+                        className = "split-time-area";
                         WriteSplitTimeRangeBlock(writer);
                         break;
                     case InputTypeHiddenTimeRangeHidden:
@@ -513,8 +514,8 @@ namespace Tolk.Web.TagHelpers
             WriteLabelWithoutFor(writer);
             writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true,false);
-            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false, false);
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false);
             writer.WriteLine("</div>");
             writer.WriteLine("</div>"); // form-inline
 
@@ -555,15 +556,12 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour, bool writeValidation = true)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
         {
-            writer.WriteLine("<div class=\"input-group time timesplit\">");
+            string hourClass = hour ? "hour" : string.Empty;
+            writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
             WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
             writer.WriteLine("</div>");
-            if (writeValidation)
-            {
-                WriteValidation(writer, timeModelExplorer, timeFieldName);
-            }
         }
 
         private IEnumerable<SelectListItem> GetSplitTImeValues(bool hour)
@@ -755,46 +753,27 @@ namespace Tolk.Web.TagHelpers
                 endTimeHourValue = endTimeHourModelExplorer.Model;
                 endTimeMinutesValue = endTimeMinutesModelExplorer.Model;
             }
-
-            writer.WriteLine("<div class=\"form-inline\">");
-
-            writer.WriteLine("<div class=\"col-sm-3\">");
+            writer.WriteLine("<div class=\"date-part\">");
             WriteLabelWithoutFor(dateModelExplorer, writer);
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteInfoIfDescription(writer);
+            WriteHelpIfHelpLink(writer);
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-            writer.WriteLine("</div>");
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             writer.WriteLine("</div>");
-            writer.WriteLine("</div>");
-
-            writer.WriteLine("<div class=\"col-sm-3\">");
+            writer.WriteLine("<div class=\"starttime-part\">");
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
-            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true, false);
-            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false, false);
-            writer.WriteLine("</div>");
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
+            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
             WriteValidation(writer, startTimeHourModelExplorer, startTimeHourFieldName);
             WriteValidation(writer, startTimeMinutesModelExplorer, startTimeMinutesFieldName);
             writer.WriteLine("</div>");
-            writer.WriteLine("</div>");
-
-            writer.WriteLine("<div class=\"col-sm-3\">");
+            writer.WriteLine("<div class=\"endtime-part\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
-            WriteInfoIfDescription(writer);
-            WriteHelpIfHelpLink(writer);
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
-            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true, false);
-            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false, false);
-            writer.WriteLine("</div>");
-            writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
+            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
+            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
             WriteValidation(writer, endTimeHourModelExplorer, endTimeHourFieldName);
             WriteValidation(writer, endTimeMinutesModelExplorer, endTimeMinutesFieldName);
             writer.WriteLine("</div>");
-            writer.WriteLine("</div>");
-
-            writer.WriteLine("</div>"); //form-inline.
         }
 
         private void RemoveRequiredIfNullable(TagBuilder tagBuilder)
@@ -878,11 +857,11 @@ namespace Tolk.Web.TagHelpers
             if (For.Metadata.IsRequired)
             {
                 tagBuilder.Attributes.Add("data-val", "true");
-                tagBuilder.Attributes.Add("data-val-required", $"{For.Metadata.DisplayName?? "Värde"} måste anges.");
+                tagBuilder.Attributes.Add("data-val-required", $"{For.Metadata.DisplayName ?? "Värde"} måste anges.");
             }
             tagBuilder.Attributes.Add("id", For.Name);
             tagBuilder.Attributes.Add("name", For.Name);
-            
+
             //this is for the default option -- Välj --  
             tagBuilder.InnerHtml.AppendHtml("<option value></option>");
 
@@ -994,11 +973,12 @@ namespace Tolk.Web.TagHelpers
                 htmlBuilder.AppendHtml("<br/>");
             }
 
-            var hiddenBuilder = _htmlGenerator.GenerateCheckBox(
+            var hiddenBuilder = _htmlGenerator.GenerateHidden(
                 ViewContext,
                 For.ModelExplorer,
                 $"{For.Name}_cbHidden",
                 null,
+                false,
                 new { @class = "force-validation" });
 
             htmlBuilder.AppendHtml(hiddenBuilder.RenderSelfClosingTag());

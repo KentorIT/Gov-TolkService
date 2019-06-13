@@ -9,7 +9,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
-
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -78,6 +78,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om denna checkbox kryssas i så betyder det att man vill ha två tolkar till samma tillfälle. Det innebär självklart arvode och förmedlingsavgift för båda tolkarna för hela tilfället.")]
         public bool ExtraInterpreter { get; set; }
 
+        [Display(Name = "Boka flera tillfällen", Description = "Om denna checkbox kryssas i så kan man lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär självklart arvode och förmedlingsavgift för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler.")]
+        public bool SeveralOccasions { get; set; }
+
         [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet &quotÖvrig information om uppdraget&quot nedan.")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
@@ -101,6 +104,9 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Andra hand")]
         public InterpreterLocation? RankedInterpreterLocationSecond { get; set; }
+
+        public List<OrderOccasionModel> Occasions { get; set; }
+        
 
         [Display(Name = "Tredje hand")]
         public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
@@ -374,8 +380,9 @@ namespace Tolk.Web.Models
         public void UpdateOrder(Order order, bool isReplace = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = SplitTimeRange?.StartAt ?? TimeRange.StartDateTime;
-            order.EndAt = SplitTimeRange?.EndAt ?? TimeRange.EndDateTime;
+            //TODO: TEMPORARY!!!
+            order.StartAt = SeveralOccasions ? Occasions.First().OccasionStartDateTime.ToDateTimeOffsetSweden() : SplitTimeRange?.StartAt ?? TimeRange.StartDateTime.Value;
+            order.EndAt = SeveralOccasions ? Occasions.First().OccasionEndDateTime.ToDateTimeOffsetSweden() : SplitTimeRange?.EndAt ?? TimeRange.EndDateTime.Value;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;

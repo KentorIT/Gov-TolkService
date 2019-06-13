@@ -107,6 +107,7 @@ $.urlParam = function (name) {
 };
 
 $(function () {
+
     var dirty = "dirty";
     switch ($.urlParam('tab')) {
         case 'requisition':
@@ -171,8 +172,12 @@ $(function () {
         paging: false,
         searching: false,
         info: false,
+        dom: "rt",
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+        },
+        "rowCallback": function (row, data) {
+            $(row).addClass('table-row');
         }
     });
 

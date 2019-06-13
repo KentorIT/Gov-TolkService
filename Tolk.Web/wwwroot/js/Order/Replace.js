@@ -8,12 +8,6 @@
     }
     return value;
 }
-
-$(function () {
-    $.validator.setDefaults({
-        ignore: ":hidden:not(.force-validation)"
-    });
-
     $.validator.addMethod("staywithin", function (value, element, options) {
         var thisPrefix = element.id.split('_')[0];
         return test(thisPrefix, $(element).data("rule-otherproperty"));

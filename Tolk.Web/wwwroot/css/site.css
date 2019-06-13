@@ -631,6 +631,52 @@ input[type='checkbox']:checked:after {
 .d-none {
   display: none;
 }
+.table-button {
+  padding-bottom: 1px;
+  padding-top: 3px;
+  vertical-align: middle;
+}
+.order-datepicker .date-part {
+  width: 170px;
+  padding-bottom: 10px;
+  float: left;
+}
+.order-datepicker .input-group.time.timesplit {
+  float: left;
+}
+.order-datepicker .input-group.time.timesplit.hour {
+  margin-right: 10px;
+}
+.order-datepicker .starttime-part {
+  width: 175px;
+  float: left;
+  padding-bottom: 10px;
+}
+.order-datepicker .starttime-part label {
+  display: block;
+}
+.order-datepicker .endtime-part {
+  width: 175px;
+  float: left;
+  padding-bottom: 10px;
+}
+.order-datepicker .endtime-part label {
+  display: block;
+}
+.order-datepicker .extra-interpreter-part {
+  padding-top: 20px;
+  float: left;
+}
+table.styled-row tr.table-row td {
+  border-bottom: 1px solid #DDD;
+}
+table.styled-row tr.table-row td:first-child {
+  border-left: 4px solid #77CB7F;
+  padding-left: 5px;
+}
+table.styled-row tr.table-row td:last-child {
+  border-right: 1px solid #DDD;
+}
 .table-button-column,
 .table-remove-column {
   cursor: pointer;
@@ -1085,14 +1131,12 @@ ul.pagination > li.paginate_button.active > a {
   padding: 0px;
   margin: 0px;
 }
-input.force-validation {
-  opacity: 0;
-  position: absolute;
-  left: -15px;
-  pointer-events: none;
-}
 .navbar > .container {
   width: 100%;
+}
+.checkbox.checkbox-disabled label {
+  font-style: italic;
+  color: gray;
 }
 .user-toggle {
   position: relative;

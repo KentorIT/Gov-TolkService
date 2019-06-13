@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.1.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.1.1" />
     <PackageReference Include="DataTables.AspNet.AspNetCore" Version="2.0.2" />
@@ -180,6 +184,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\lib\datatables\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>

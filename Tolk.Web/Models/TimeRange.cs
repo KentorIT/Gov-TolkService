@@ -14,16 +14,20 @@ namespace Tolk.Web.Models
 
         public TimeSpan EndTime { get; set; }
 
-        public DateTimeOffset StartDateTime
+        public DateTimeOffset? StartDateTime
         {
             get
             {
+                if (StartDate.Year < 2)
+                {
+                    return null;
+                }
                 return StartDate.Add(StartTime).ToDateTimeOffsetSweden();
             }
             set
             {
-                StartDate = value.Date;
-                StartTime = value.TimeOfDay;
+                StartDate = value.Value.Date;
+                StartTime = value.Value.TimeOfDay;
             }
         }
 
@@ -33,17 +37,21 @@ namespace Tolk.Web.Models
                 endTime < StartTime ? 1 : 0);
         }
 
-        public DateTimeOffset EndDateTime
+        public DateTimeOffset? EndDateTime
         {
             get
             {
+                if (StartDate.Year < 2)
+                {
+                    return null;
+                }
                 var endDate = GetEndDate(EndTime);
 
                 return endDate.Add(EndTime).ToDateTimeOffsetSweden();
             }
             set
             {
-                var valueSweden = value.ToDateTimeOffsetSweden();
+                var valueSweden = value.Value.ToDateTimeOffsetSweden();
 
                 var endDateFromTime = GetEndDate(valueSweden.TimeOfDay);
 
@@ -51,7 +59,7 @@ namespace Tolk.Web.Models
                 {
                     throw new InvalidOperationException("TimeRange can only express positive ranges of up to 24 hours. "
                         + $"Automatically calculated end date {endDateFromTime.ToShortDateString()} "
-                        + $"doesn't match supplied end date {value.Date.ToShortDateString()}");
+                        + $"doesn't match supplied end date {value.Value.Date.ToShortDateString()}");
                 }
 
                 EndTime = valueSweden.TimeOfDay;

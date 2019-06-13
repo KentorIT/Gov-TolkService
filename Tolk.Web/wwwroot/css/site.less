@@ -28,6 +28,8 @@
 @border-yellow: #F5971C;
 @light-blue: rgb(240, 247, 255);
 @border-blue: rgb(100, 174, 225);
+@date-input-width: 170px;
+@time-input-width: 175px;
 
 .bg-gray {
     background-color: @lightestgray;
@@ -720,6 +722,69 @@ input[type='checkbox']:checked:after {
     display: none;
 }
 
+.table-button {
+    padding-bottom: 1px;
+    padding-top: 3px;
+    vertical-align: middle;
+}
+
+.order-datepicker {
+    .date-part {
+        width: @date-input-width;
+        padding-bottom: 10px;
+        float: left;
+    }
+
+    .input-group.time.timesplit {
+        &.hour {
+            margin-right: 10px;
+        }
+
+        float: left;
+    }
+
+    .starttime-part {
+
+        label {
+            display: block;
+        }
+
+        width: @time-input-width;
+        float: left;
+        padding-bottom: 10px;
+    }
+
+    .endtime-part {
+
+        label {
+            display: block;
+        }
+
+        width: @time-input-width;
+        float: left;
+        padding-bottom: 10px;
+    }
+
+    .extra-interpreter-part {
+        padding-top: 20px;
+        float: left;
+    }
+}
+
+table.styled-row tr.table-row {
+    td {
+        .gray-border-bottom;
+    }
+
+    td:first-child {
+        .green-border-left;
+    }
+
+    td:last-child {
+        .gray-border-right;
+    }
+}
+
 .table-button-column, .table-remove-column {
     cursor: pointer;
 }
@@ -1219,17 +1284,16 @@ ul.pagination > li.paginate_button.active > a {
     margin: 0px;
 }
 
-input.force-validation {
-    opacity: 0;
-    position: absolute;
-    left: -15px;
-    pointer-events: none;
-}
-
 .navbar > .container {
     width: 100%;
 }
 
+.checkbox.checkbox-disabled {
+    label {
+        font-style: italic;
+        color: gray;
+    }
+}
 
 .user-toggle {
     position: relative;

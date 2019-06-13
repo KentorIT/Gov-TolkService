@@ -29,7 +29,6 @@
             @*step 1 fill form*@
             <div class="wizard-step" data-forward-button-text="Gå vidare ">
                 @{ HelpLinkService.PageName = "myndighet-skapa-bokning/";}
-
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="col-sm-12 text-center">
@@ -59,13 +58,41 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-12 no-padding">
-                                <form-entry asp-for="SplitTimeRange" class="order-datepicker" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
-                                <div class="col-sm-3">
-                                    <form-entry asp-for="ExtraInterpreter" />
-                                </div>
+                            <div class="col-sm-12 order-datepicker">
+                                <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
+                                <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
                             </div>
                         </div>
+                        <div class="row add-date-button-row">
+                            <div class="col-sm-12">
+                                <a class="btn btn-warning table-button add-occasion">Lägg till <span class="glyphicon glyphicon-plus"></span></a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <form-entry asp-for="SeveralOccasions" />
+                            </div>
+                        </div>
+                        <div class="row several-occasions-table">
+                            <div class="col-sm-12 col-md-10 col-lg-8">
+                                <div class="table-responsive table-datatable">
+                                    <table class="table sortable-only-table styled-row">
+                                        <thead>
+                                            <tr>
+                                                <th>Tillfälle</th>
+                                                <th>Extra tolk</th>
+                                                <th data-sortable="false"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 important-info">
+                                Observera att detta innebär ett krav på förmedlingen att tillsätta samma tolk på alla tillfällen. Om den första förmedlingen inte kan tillsätta alla tillfällen så går förfrågan vidare till nästa förmedling.
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-sm-8">
                                 <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" help-link="@HelpLinkService.GenerateUrl("nybokning_svarstid")" />
@@ -267,6 +294,12 @@
 }
 <span id="basefile" class="d-none">
     <input asp-for="Files[0].Id" type="hidden" />
+</span>
+<span id="baseOccasion" class="d-none">
+    <input asp-for="Occasions[0].OrderOccasionId" type="hidden" />
+    <input asp-for="Occasions[0].OccasionStartDateTime" type="hidden" />
+    <input asp-for="Occasions[0].OccasionEndDateTime" type="hidden" />
+    <input asp-for="Occasions[0].ExtraInterpreter" type="hidden" />
 </span>
 <span id="baseRequirement" class="d-none">
     <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
