@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Utilities;
@@ -16,7 +17,7 @@ using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.AppOrSysAdmin)]
+
     public class FaqController : Controller
     {
 
@@ -31,6 +32,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
         }
 
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
         public IActionResult List(FaqFilterModel model)
         {
             if (model == null)
@@ -54,11 +56,32 @@ namespace Tolk.Web.Controllers
             });
         }
 
+        public IActionResult Faqs()
+        {
+            var faqIds = _dbContext.FaqDisplayUserRole
+                .Where(f => DisplayUserRoleForCurrentUser.Contains(f.DisplayUserRole))
+                .Select(f => f.FaqId).Distinct();
+
+            return View(new FaqListModel
+            {
+                IsBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId),
+                Items = _dbContext.Faq
+                .Where(f => faqIds.Contains(f.FaqId) && f.IsDisplayed)
+                .Select(f => new FaqListItemModel
+                {
+                    Question = f.Question,
+                    Answer = f.Answer
+                })
+            });
+        }
+
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
         public ActionResult Create()
         {
             return View();
         }
 
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(FaqModel model)
@@ -70,6 +93,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
         public ActionResult Edit(int id)
         {
             var faq = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles)
@@ -92,6 +116,7 @@ namespace Tolk.Web.Controllers
             });
         }
 
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Edit(FaqModel model)
@@ -120,6 +145,26 @@ namespace Tolk.Web.Controllers
             }
             await _dbContext.SaveChangesAsync();
             return RedirectToAction("List");
+        }
+
+        private IEnumerable<DisplayUserRole> DisplayUserRoleForCurrentUser
+        {
+            get
+            {
+                var list = new List<DisplayUserRole>();
+                var isBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId);
+
+                if (!isBroker && !User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                {
+                    return list;
+                }
+                list.Add(isBroker ? DisplayUserRole.BrokerUsers : DisplayUserRole.CustomerUsers);
+                if (User.IsInRole(Roles.CentralAdministrator))
+                {
+                    list.Add(isBroker ? DisplayUserRole.BrokerUserAdministrators : DisplayUserRole.CustomerUsersAdministrators);
+                }
+                return list;
+            }
         }
 
     }

@@ -390,11 +390,6 @@ namespace Tolk.Web.Controllers
             return View();
         }
 
-        public IActionResult FAQ()
-        {
-            return View();
-        }
-
         public IActionResult Contract()
         {
             return View();

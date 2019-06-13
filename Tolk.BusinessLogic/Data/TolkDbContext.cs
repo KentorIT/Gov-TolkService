@@ -444,6 +444,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<Faq> Faq { get; set; }
 
+        public DbSet<FaqDisplayUserRole> FaqDisplayUserRole { get; set; }
+
         public static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized

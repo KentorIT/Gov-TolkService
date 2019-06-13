@@ -6,6 +6,8 @@ namespace Tolk.Web.Models
     {
         public FaqFilterModel FilterModel { get; set; }
 
+        public bool IsBroker { get; set; }
+
         public IEnumerable<FaqListItemModel> Items { get; set; }
     }
 }

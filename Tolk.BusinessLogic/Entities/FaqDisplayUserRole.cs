@@ -6,9 +6,6 @@ namespace Tolk.BusinessLogic.Entities
     public class FaqDisplayUserRole
     {
 
-        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        //public int FaqDisplayUserRoleId { get; set; }
-
         public int FaqId { get; set; }
 
         [ForeignKey(nameof(FaqId))]

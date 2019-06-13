@@ -181,6 +181,17 @@ $(function () {
         }
     });
 
+    $(".searchable-only-table").DataTable({
+        paging: false,
+        info: false,
+        searching: true,
+        sorting: false,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+        },
+    });
+
+
     $(".ajax-listing table").each(
         function () {
             var $table = $(this);

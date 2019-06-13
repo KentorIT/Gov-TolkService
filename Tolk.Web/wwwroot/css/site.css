@@ -1247,7 +1247,8 @@ ul.pagination > li.paginate_button.active > a {
   height: 70px;
 }
 .sortable-only-table,
-.search-table {
+.search-table,
+.searchable-only-table {
   border-collapse: separate;
   border-spacing: 0px 5px;
 }
@@ -1516,4 +1517,20 @@ ol.breadcrumb > li + li:before {
 }
 #DisplayForRoles {
   padding-top: 5px;
+}
+.faq-question {
+  color: #333333;
+  font-weight: bold;
+  padding-bottom: 7px;
+}
+.faq-answer {
+  color: #333333;
+  padding-left: 3px;
+}
+.faq-row {
+  background-color: #F4F4F4;
+  padding-left: 10px;
+}
+.faq-row:hover {
+  background-color: #E6F1ED;
 }
