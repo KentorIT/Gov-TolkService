@@ -1,6 +1,7 @@
-﻿using Tolk.Web.Helpers;
-using Tolk.BusinessLogic.Enums;
+﻿using System;
 using System.Collections.Generic;
+using Tolk.Web.Helpers;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
@@ -17,6 +18,8 @@ namespace Tolk.Web.Models
         public bool IsDisplayed { get; set; }
 
         public IEnumerable<DisplayUserRole> DisplayedFor { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForItemStatus(IsDisplayed);
     }

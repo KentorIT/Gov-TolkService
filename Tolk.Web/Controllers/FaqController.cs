@@ -48,6 +48,7 @@ namespace Tolk.Web.Controllers
                 Items = faqs.Select(f => new FaqListItemModel
                 {
                     FaqId = f.FaqId,
+                    CreatedAt = f.CreatedAt,
                     DisplayedFor = f.FaqDisplayUserRoles.Select(fd => fd.DisplayUserRole),
                     Question = f.Question,
                     Answer = f.Answer,
@@ -78,7 +79,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public ActionResult Create()
         {
-            return View();
+            return View(new FaqModel { IsDisplayed = true });
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]

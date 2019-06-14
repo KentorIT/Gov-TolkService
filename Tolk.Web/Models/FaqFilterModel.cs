@@ -12,7 +12,7 @@ namespace Tolk.Web.Models
         [Placeholder("Sök på del av text")]
         public string QuestionAnswer { get; set; }
 
-        [Display(Name = "Visas")]
+        [Display(Name = "Publicerad")]
         public TrueFalse? IsDisplayed { get; set; }
 
         [Display(Name = "Visas för")]

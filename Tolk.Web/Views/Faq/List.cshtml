@@ -20,7 +20,8 @@
                 <table class="table table-hover full-row-height clickable-rows-with-action search-table">
                     <thead>
                         <tr>
-                            <th>Visas</th>
+                            <th>Skapad</th>
+                            <th>Publicerad</th>
                             <th>Fråga</th>
                             <th>Svar</th>
                             <th>Visas för</th>
@@ -30,7 +31,8 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr data-id="@item.FaqId" data-click-action-url="@Url.Action("Edit", new { id = item.FaqId})">
-                                <td class="gray-border-bottom @item.ColorClassName">@(item.IsDisplayed ? "Ja" : "Nej")</td>
+                                <td class="gray-border-bottom min-date-width @item.ColorClassName">@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td class="gray-border-bottom">@(item.IsDisplayed ? "Ja" : "Nej")</td>
                                 <td class="gray-border-bottom">@item.Question</td>
                                 <td class="gray-border-bottom">@item.DisplayListAnswer</td>
                                 <td class="gray-border-bottom gray-border-right">

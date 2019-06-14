@@ -17,7 +17,7 @@ namespace Tolk.Web.Models
         [Required]
         public string Answer { get; set; }
 
-        [Display(Name = "Visa frågan för användare", Description = "Kryssa ur rutan om du inte vill att den ska visas för användarna")]
+        [Display(Name = "Publicera frågan för användare", Description = "Kryssa ur rutan om du inte vill att den ska publiceras för användarna")]
         public bool IsDisplayed { get; set; }
 
         [Display(Name = "Visa för följande användargrupper")]
