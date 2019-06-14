@@ -20,9 +20,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Visa frågan för användare", Description = "Kryssa ur rutan om du inte vill att den ska visas för användarna")]
         public bool IsDisplayed { get; set; }
 
-        [Display(Name = "Visa för följande användargrupper:")]
+        [Display(Name = "Visa för följande användargrupper")]
         [RequiredChecked(Min = 1)]
-        [Required]
         public CheckboxGroup DisplayForRoles { get; set; }
         
     }

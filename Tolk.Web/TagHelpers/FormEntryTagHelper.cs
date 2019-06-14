@@ -281,6 +281,13 @@ namespace Tolk.Web.TagHelpers
                 {
                     tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
                 }
+                else if (((RequiredCheckedAttribute)AttributeHelper.GetAttribute<RequiredCheckedAttribute>(
+                    For.ModelExplorer.Metadata.ContainerType,
+                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0)
+                {
+                    tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
+                }
+
                 WritePrefix(writer, PrefixAttribute.Position.Label);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
 
