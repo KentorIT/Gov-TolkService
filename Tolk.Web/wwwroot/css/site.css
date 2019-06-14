@@ -1534,3 +1534,6 @@ ol.breadcrumb > li + li:before {
 .faq-row:hover {
   background-color: #E6F1ED;
 }
+.min-date-width {
+  min-width: 90px;
+}
