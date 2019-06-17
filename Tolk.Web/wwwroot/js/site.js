@@ -249,6 +249,7 @@ $(function () {
             $(this).html($(this).html().replace("Dölj", "Visa"));
         }
     });
+
     $("body").on("click", ".table-price-toggle-price-info", function () {
         $(this).closest("tr.table-row").next("tr.table-price-row").find(".detail-price-info").collapse("toggle");
         if ($(this).text().indexOf("Visa") !== -1) {
