@@ -24,6 +24,7 @@ namespace Tolk.BusinessLogic.Entities
             CustomerUnitId = order.CustomerUnitId;
             LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter;
             SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired;
+            Group = order.Group;
             CompetenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
@@ -68,6 +69,11 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
+
+        public int? OrderGroupId { get; set; }
+
+        [ForeignKey(nameof(OrderGroupId))]
+        public OrderGroup Group { get; set; }
 
         public OrderStatus Status
         {

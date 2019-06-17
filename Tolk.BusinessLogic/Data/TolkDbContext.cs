@@ -27,6 +27,10 @@ namespace Tolk.BusinessLogic.Data
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
+            builder.Entity<OrderGroup>()
+            .Property(p => p.OrderGroupNumber)
+            .HasComputedColumnSql("'G-' + CAST(YEAR([CreatedAt]) AS NVARCHAR(100)) + '-' + CAST(([OrderGroupId]+(100000)) AS NVARCHAR(100))");
+
             builder.Entity<UserAuditLogEntry>()
                 .HasOne(uale => uale.User)
                 .WithMany(u => u.AuditLogEntries)
@@ -443,6 +447,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerUnitUser> CustomerUnitUsers { get; set; }
 
         public DbSet<Faq> Faq { get; set; }
+
+        public DbSet<OrderGroup> OrderGroups { get; set; }
 
         public DbSet<FaqDisplayUserRole> FaqDisplayUserRole { get; set; }
 
