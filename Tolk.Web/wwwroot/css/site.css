@@ -667,6 +667,10 @@ input[type='checkbox']:checked:after {
   padding-top: 20px;
   float: left;
 }
+table.styled-row th.currency,
+table.styled-row td.currency {
+  text-align: right;
+}
 table.styled-row tr.table-row td {
   border-bottom: 1px solid #DDD;
 }
@@ -676,6 +680,13 @@ table.styled-row tr.table-row td:first-child {
 }
 table.styled-row tr.table-row td:last-child {
   border-right: 1px solid #DDD;
+}
+table.styled-row tr.table-price-row td {
+  padding: 0;
+  border-top: none;
+}
+table.styled-row tfoot th {
+  border-top-width: 3px;
 }
 .table-button-column,
 .table-remove-column {

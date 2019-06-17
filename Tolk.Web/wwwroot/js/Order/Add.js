@@ -104,7 +104,7 @@ $(function () {
         var table = $('.several-occasions-table table').DataTable();
         table.row.add([date + $hidden.html(), hasExtra, occasionButtons]).draw();
 
-        $('.order-datepicker input').val('');
+        $('.order-datepicker input:text').val('');
         $(".order-datepicker select").each(function (i, v) {
             $(this).val("").trigger("change");
         });
@@ -447,6 +447,7 @@ $(function () {
             $(".add-date-button-row").hide();
             var table = $('.several-occasions-table table').DataTable();
             table.clear().draw();
+            currentOccasionId = 0;
 
             if ($("#SplitTimeRange_StartDate").val() !== "") {
                 //Check if last answer by should be shown...

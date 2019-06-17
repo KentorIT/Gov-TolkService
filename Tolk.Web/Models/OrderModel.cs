@@ -375,14 +375,51 @@ namespace Tolk.Web.Models
             }
         }
 
+        public bool IsMultipleOrders
+        {
+            get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count() > 1 || Occasions.Single().ExtraInterpreter));
+        }
+
+        public IEnumerable<OrderOccasionModel> UniqueOrdersFromOccasions
+        {
+            get
+            {
+                if (SeveralOccasions)
+                {
+                    foreach (var occasion in Occasions)
+                    {
+                        yield return occasion;
+                        if (occasion.ExtraInterpreter)
+                        {
+                            yield return occasion;
+                        }
+                    }
+                }
+                else
+                {
+                    yield return new OrderOccasionModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
+                    if (ExtraInterpreter)
+                    {
+                        yield return new OrderOccasionModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<OrderOccasionDisplayModel> OrderOccasionDisplayModels { get; set; }
+
+        public decimal TotalPrice
+        {
+            get => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
+        }
+
         #region methods
 
-        public void UpdateOrder(Order order, bool isReplace = false)
+        public void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            //TODO: TEMPORARY!!!
-            order.StartAt = SeveralOccasions ? Occasions.First().OccasionStartDateTime.ToDateTimeOffsetSweden() : SplitTimeRange?.StartAt ?? TimeRange.StartDateTime.Value;
-            order.EndAt = SeveralOccasions ? Occasions.First().OccasionEndDateTime.ToDateTimeOffsetSweden() : SplitTimeRange?.EndAt ?? TimeRange.EndDateTime.Value;
+            order.StartAt = startAt;
+            order.EndAt = endAt;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;

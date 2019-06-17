@@ -1,0 +1,50 @@
+﻿@model Tolk.Web.Models.PriceInformationModel
+<div class="price-body col-sm-12 collapse detail-price-info">
+    @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>@dpi.SubPriceHeader</th>
+                    <th class="price-column">Pris, SEK</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in dpi.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
+                {
+                    <tr>
+                        <td>@item.DescriptionToUse</td>
+                        <td class="price-column">@item.Price.ToString("#,0.00")</td>
+                    </tr>
+                }
+                <tr>
+                    <td class="bold">Summa @dpi.SubPriceHeader.ToLower():</td>
+                    <td class="price-column bold">@dpi.TotalPrice.ToString("#,0.00")</td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+    }
+    <table>
+        <thead>
+            <tr>
+                <th>Total kostnad</th>
+                <th class="price-column">Pris, SEK</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
+            {
+                <tr>
+                    <td>@item.DescriptionToUse</td>
+                    <td class="price-column">@item.Price.ToString("#,0.00")</td>
+                </tr>
+            }
+            <tr>
+                <td class="bold">Total summa:</td>
+                <td class="price-column bold">@Model.TotalPriceToDisplay.ToString("#,0.00")</td>
+            </tr>
+            <tr><td colspan="2"><br /></td></tr>
+        </tbody>
+    </table>
+</div>

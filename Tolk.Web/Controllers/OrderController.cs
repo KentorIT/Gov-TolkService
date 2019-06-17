@@ -259,7 +259,7 @@ namespace Tolk.Web.Controllers
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
                         Order replacementOrder = new Order(order);
-                        model.UpdateOrder(replacementOrder, true);
+                        model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, true);
                         await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                         await _dbContext.SaveChangesAsync();
                         trn.Commit();
@@ -301,14 +301,24 @@ namespace Tolk.Web.Controllers
             {
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
+                    if (model.IsMultipleOrders)
+                    {
+                        List<Order> orders = new List<Order>();
+                        // create an OrderGroup, and then create the instanses of order needed.
+                        foreach (var occasion in model.UniqueOrdersFromOccasions)
+                        {
+                        }
+                        return RedirectToAction(nameof(HomeController.Index), "Home", new { ErrorMessage = "Det finns inte stöd för sammanhållna bokningar än." });
+                        
+                    }
                     Order order = CreateNewOrder();
-                    model.UpdateOrder(order);
-                    _dbContext.Add(order);
-                    _dbContext.SaveChanges(); // Save changes to get id for event log
+                    model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
+                    await _dbContext.AddAsync(order);
+                    await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
 
                     await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
 
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                     trn.Commit();
                     return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
@@ -322,8 +332,39 @@ namespace Tolk.Web.Controllers
         public ActionResult Confirm(OrderModel model)
         {
             Order order = CreateNewOrder();
-            model.UpdateOrder(order);
-            var updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
+            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
+            OrderModel updatedModel = null;
+            if (model.IsMultipleOrders)
+            {
+                var firstOccasion = model.UniqueOrdersFromOccasions.First();
+                model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
+                updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
+
+                updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
+                updatedModel.SeveralOccasions = true;
+                //TODO: THERE ARE WARNINGS TO ADD HERE, TOO!!
+            }
+            else
+            {
+                model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
+                updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
+
+                //get pricelisttype for customer and get calculated price
+                updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel
+                {
+                    Header = "Beräknat preliminärt pris",
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType),
+                    UseDisplayHideInfo = true,
+                    Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
+                };
+
+                //check reasonable duration time for order (more than 10h or less than 1h)
+                int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
+                updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty;
+
+                //check if order is far in future (more than 2 years ahead)
+                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
+            }
 
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
@@ -332,12 +373,8 @@ namespace Tolk.Web.Controllers
                 .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name : "Du tillhör ingen enhet i systemet";
 
             updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
-            .Single(l => l.LanguageId == model.LanguageId).Name;
+                .Single(l => l.LanguageId == model.LanguageId).Name;
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
-
-            //get pricelisttype for customer and get calculated price
-            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
-            updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel { Header = "Beräknat preliminärt pris", PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType), UseDisplayHideInfo = true, Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering." };
 
             if (order.Attachments?.Count() > 0)
             {
@@ -357,18 +394,32 @@ namespace Tolk.Web.Controllers
                 };
             }
 
-            //check reasonable duration time for order (more than 10h or less than 1h)
-            int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
-            updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty;
-
-            //check if order is far in future (more than 2 years ahead)
-            updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
-
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
             return PartialView(nameof(Confirm), updatedModel);
+        }
+
+        private IEnumerable<OrderOccasionDisplayModel> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        {
+            foreach (var occasion in model.UniqueOrdersFromOccasions)
+            {
+                Order groupOrder = CreateNewOrder();
+                // Add list of occasions, with the price information
+                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
+                yield return new OrderOccasionDisplayModel(occasion)
+                {
+                    PriceInformationModel = new PriceInformationModel
+                    {
+                        Header = "Beräknat preliminärt pris",
+                        PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
+                        UseDisplayHideInfo = true,
+                        Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
+                    }
+                };
+
+            }
         }
 
         [Authorize(Policy = Policies.Customer)]
