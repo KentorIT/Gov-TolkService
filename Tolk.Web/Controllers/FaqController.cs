@@ -18,6 +18,7 @@ using Tolk.Web.Services;
 namespace Tolk.Web.Controllers
 {
 
+    [Authorize]
     public class FaqController : Controller
     {
 
@@ -152,19 +153,16 @@ namespace Tolk.Web.Controllers
         {
             get
             {
-                var list = new List<DisplayUserRole>();
                 var isBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId);
 
-                if (!isBroker && !User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                if (isBroker || User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                 {
-                    return list;
+                    yield return isBroker ? DisplayUserRole.BrokerUsers : DisplayUserRole.CustomerUsers;
                 }
-                list.Add(isBroker ? DisplayUserRole.BrokerUsers : DisplayUserRole.CustomerUsers);
                 if (User.IsInRole(Roles.CentralAdministrator))
                 {
-                    list.Add(isBroker ? DisplayUserRole.BrokerUserAdministrators : DisplayUserRole.CustomerUsersAdministrators);
+                    yield return isBroker ? DisplayUserRole.BrokerUserAdministrators : DisplayUserRole.CustomerUsersAdministrators;
                 }
-                return list;
             }
         }
 
