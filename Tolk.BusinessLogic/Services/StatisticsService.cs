@@ -187,6 +187,7 @@ namespace Tolk.BusinessLogic.Services
                       .Include(r => r.Order).ThenInclude(o => o.Language)
                       .Include(r => r.Order).ThenInclude(o => o.Region)
                       .Include(r => r.Order).ThenInclude(o => o.Requests)
+                      .Include(r => r.Order).ThenInclude(o => o.Requirements)
                       .OrderBy(r => r.Order.OrderNumber)
                       .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
                           && !r.StatusNotToBeDisplayedForBroker);
@@ -204,6 +205,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
+                      .Include(r => r.Order).ThenInclude(o => o.Requirements)
                     .OrderBy(r => r.Order.OrderNumber)
                     .Where(r => r.Ranking.BrokerId == brokerId && !r.StatusNotToBeDisplayedForBroker
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
@@ -257,6 +259,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
+                    .Include(o => o.Requirements)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
                         && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue) 
@@ -276,6 +279,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
+                    .Include(o => o.Requirements)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
                         && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
@@ -382,6 +386,10 @@ namespace Tolk.BusinessLogic.Services
                 {
                     CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRow>).Select(r => r), ref columnLetter, reportType);
                 }
+                else if (rows.FirstOrDefault() is ReportOrderRow)
+                {
+                    CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter, reportType);
+                }
                 switch (reportType)
                 {
                     case ReportType.OrdersForSystemAdministrator:
@@ -394,13 +402,13 @@ namespace Tolk.BusinessLogic.Services
                     case ReportType.RequestsForBrokers:
                     case ReportType.RequisitionsForBroker:
                     case ReportType.ComplaintsForBroker:
-                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, !(rows.FirstOrDefault() is ReportRequisitionRow || rows.FirstOrDefault() is ReportComplaintRow));
+                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
                         break;
                     case ReportType.DeliveredOrdersCustomer:
                     case ReportType.OrdersForCustomer:
                     case ReportType.RequisitionsForCustomer:
                     case ReportType.ComplaintsForCustomer:
-                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, !(rows.FirstOrDefault() is ReportRequisitionRow || rows.FirstOrDefault() is ReportComplaintRow));
+                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
                         break;
                 }
                 rowsWorksheet.Row(1).Style.Font.Bold = true;
@@ -413,6 +421,14 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        private void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter, ReportType reportType)
+        {
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt är krav";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
+        }
+
         private void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet";
@@ -423,11 +439,11 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
             if (isOrder)
             {
-                CreateColumnsForOrderCustomer(rowsWorksheet, (rows as IEnumerable<ReportRow>).Select(r => r), ref columnLetter);
+                CreateColumnsForOrderCustomer(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
             }
         }
 
-        private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
+        private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
@@ -440,10 +456,10 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
             if (isRequest)
             {
-                CreateColumnsForBrokerRequest(rowsWorksheet, rows, ref columnLetter);
+                CreateColumnsForBrokerRequest(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
             }
         }
-        private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
+        private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
@@ -518,7 +534,7 @@ namespace Tolk.BusinessLogic.Services
         public static IEnumerable<ReportRow> GetOrderExcelFileRows(IEnumerable<Order> listItems, ReportType reportType)
         {
             return listItems
-                    .Select(o => new ReportRow
+                    .Select(o => new ReportOrderRow
                     {
                         OrderNumber = o.OrderNumber,
                         ReportDate = (reportType == ReportType.DeliveredOrdersSystemAdministrator || reportType == ReportType.DeliveredOrdersCustomer) ? o.StartAt.ToString("yyyy-MM-dd HH:mm") : o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
@@ -538,13 +554,15 @@ namespace Tolk.BusinessLogic.Services
                         HasComplaint = o.Requests.OrderBy(r => r.RequestId).Last().Complaints.Any(),
                         CustomerName = o.CustomerOrganisation.Name,
                         Price = o.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null ? o.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Sum(p => p.TotalPrice) : 0,
+                        Dialect = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
+                        DialectIsRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
                     });
         }
 
         public static IEnumerable<ReportRow> GetRequestExcelFileRows(IEnumerable<Request> listItems, ReportType reportType)
         {
             return listItems
-                    .Select(r => new ReportRow
+                    .Select(r => new ReportOrderRow
                     {
                         OrderNumber = r.Order.OrderNumber,
                         ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.Order.Requests.OrderBy(r1 => r1.RequestId).First(r1 => r.RankingId == r1.RankingId).CreatedAt.ToString("yyyy-MM-dd HH:mm"),
@@ -561,6 +579,8 @@ namespace Tolk.BusinessLogic.Services
                         HasRequisition = r.Requisitions.Any(),
                         HasComplaint = r.Complaints.Any(),
                         Price = r.PriceRows != null ? r.PriceRows.Sum(p => p.TotalPrice) : 0,
+                        Dialect = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
+                        DialectIsRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
                     });
         }
 
