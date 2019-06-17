@@ -277,17 +277,13 @@ namespace Tolk.Web.TagHelpers
 
                 TagBuilder tagBuilder = GenerateLabel(IsSubItem);
 
-                if (For.ModelExplorer.Metadata.IsRequired)
+                if (For.ModelExplorer.Metadata.IsRequired ||
+                    (((RequiredCheckedAttribute)AttributeHelper
+                    .GetAttribute<RequiredCheckedAttribute>(For.ModelExplorer.Metadata.ContainerType,
+                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0))
                 {
                     tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
                 }
-                else if (((RequiredCheckedAttribute)AttributeHelper.GetAttribute<RequiredCheckedAttribute>(
-                    For.ModelExplorer.Metadata.ContainerType,
-                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0)
-                {
-                    tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
-                }
-
                 WritePrefix(writer, PrefixAttribute.Position.Label);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
 
