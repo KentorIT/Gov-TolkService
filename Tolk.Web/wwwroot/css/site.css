@@ -152,7 +152,8 @@ hr {
 .select2-container--classic .select2-selection--multiple .select2-selection__choice {
   height: 34px;
 }
-div.form-group .select2-container--default .select2-selection--single .select2-selection__placeholder {
+div.form-group .select2-container--default .select2-selection--single .select2-selection__placeholder,
+div.input-group .select2-container--default .select2-selection--single .select2-selection__placeholder {
   color: #767676;
 }
 .select2-container--default .select2-selection--single .select2-selection__rendered {
