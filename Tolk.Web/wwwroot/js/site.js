@@ -278,6 +278,8 @@ $(function () {
     refreshCollapsibles();
 });
 
+$("#create").closest("form").on("submit", function () { $("#create").disableOnSubmit(); });
+
 $(document).ready(function () {
     $('.no-auto-complete').val("");
 });

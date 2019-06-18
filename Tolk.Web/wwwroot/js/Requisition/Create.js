@@ -168,8 +168,6 @@ function triggerValidator(message, validatorId) {
 $(function () {
     var currentId = 0;
 
-    $("#create").closest("form").on("submit", function () { $("#create").disableOnSubmit(); });
-
     $("body").on("click", ".add-mealbreak-button", function () {
         var target = $($(this).data("target"));
         AddMealbreak(target);
