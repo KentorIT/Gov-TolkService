@@ -188,6 +188,7 @@ namespace Tolk.BusinessLogic.Services
                       .Include(r => r.Order).ThenInclude(o => o.Region)
                       .Include(r => r.Order).ThenInclude(o => o.Requests)
                       .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                      .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                       .OrderBy(r => r.Order.OrderNumber)
                       .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
                           && !r.StatusNotToBeDisplayedForBroker);
@@ -205,7 +206,8 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
-                      .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .OrderBy(r => r.Order.OrderNumber)
                     .Where(r => r.Ranking.BrokerId == brokerId && !r.StatusNotToBeDisplayedForBroker
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
@@ -260,6 +262,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .Include(o => o.Requirements)
+                    .Include(o => o.InterpreterLocations)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
                         && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue) 
@@ -280,6 +283,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
                     .Include(o => o.Requirements)
+                    .Include(o => o.InterpreterLocations)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
                         && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
@@ -348,6 +352,8 @@ namespace Tolk.BusinessLogic.Services
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevel.GetDescription());
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolk-ID";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
+                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate.ToString());
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
@@ -427,6 +433,12 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt är krav";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 1:a hand";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation1);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 2:a hand";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation2);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 3:e hand";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation3);
         }
 
         private void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
@@ -556,6 +568,10 @@ namespace Tolk.BusinessLogic.Services
                         Price = o.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null ? o.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Sum(p => p.TotalPrice) : 0,
                         Dialect = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
                         DialectIsRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
+                        OrderedInterpreterLocation1 = o.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation2 = o.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation3 = o.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        InterpreterLocation = o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.HasValue ? ((InterpreterLocation)o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.Value).GetDescription() : string.Empty,
                     });
         }
 
@@ -581,6 +597,11 @@ namespace Tolk.BusinessLogic.Services
                         Price = r.PriceRows != null ? r.PriceRows.Sum(p => p.TotalPrice) : 0,
                         Dialect = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
                         DialectIsRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
+                        OrderedInterpreterLocation1 = r.Order.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation2 = r.Order.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation3 = r.Order.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
+
                     });
         }
 
@@ -613,6 +634,7 @@ namespace Tolk.BusinessLogic.Services
                         TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription(),
                         ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
                         PreliminaryCost = r.Request.PriceRows.Sum(p => p.TotalPrice),
+                        InterpreterLocation = ((InterpreterLocation)r.Request.InterpreterLocation.Value).GetDescription(),
                     });
         }
 
@@ -638,6 +660,7 @@ namespace Tolk.BusinessLogic.Services
                         CustomerUnitName = c.Request.Order.CustomerUnit?.Name ?? string.Empty,
                         Department = c.Request.Order.UnitName ?? string.Empty,
                         ReferenceNumber = c.Request.Order.CustomerReferenceNumber ?? string.Empty,
+                        InterpreterLocation = ((InterpreterLocation)c.Request.InterpreterLocation.Value).GetDescription(),
                     });
         }
 

@@ -18,6 +18,8 @@ namespace Tolk.BusinessLogic.Utilities
 
         public CompetenceAndSpecialistLevel InterpreterCompetenceLevel { get; set; }
 
+        public string InterpreterLocation { get; set; }
+
         public string InterpreterId { get; set; }
 
         public string Status { get; set; }
