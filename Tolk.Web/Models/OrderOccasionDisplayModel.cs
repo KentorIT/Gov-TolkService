@@ -7,6 +7,10 @@ namespace Tolk.Web.Models
 {
     public class OrderOccasionDisplayModel: OrderOccasionModel
     {
+        public OrderOccasionDisplayModel()
+        {
+        }
+
         public OrderOccasionDisplayModel(OrderOccasionModel occasion)
         {
             OrderOccasionId = occasion.OrderOccasionId;

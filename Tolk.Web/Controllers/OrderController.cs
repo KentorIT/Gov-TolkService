@@ -408,17 +408,14 @@ namespace Tolk.Web.Controllers
                 Order groupOrder = CreateNewOrder();
                 // Add list of occasions, with the price information
                 model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
-                yield return new OrderOccasionDisplayModel(occasion)
+                occasion.PriceInformationModel = new PriceInformationModel
                 {
-                    PriceInformationModel = new PriceInformationModel
-                    {
-                        Header = "Beräknat preliminärt pris",
-                        PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
-                        UseDisplayHideInfo = true,
-                        Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
-                    }
+                    Header = "Beräknat preliminärt pris",
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
+                    UseDisplayHideInfo = true,
+                    Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
-
+                yield return occasion;
             }
         }
 

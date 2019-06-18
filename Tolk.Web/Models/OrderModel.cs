@@ -380,7 +380,7 @@ namespace Tolk.Web.Models
             get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count() > 1 || Occasions.Single().ExtraInterpreter));
         }
 
-        public IEnumerable<OrderOccasionModel> UniqueOrdersFromOccasions
+        public IEnumerable<OrderOccasionDisplayModel> UniqueOrdersFromOccasions
         {
             get
             {
@@ -388,19 +388,19 @@ namespace Tolk.Web.Models
                 {
                     foreach (var occasion in Occasions)
                     {
-                        yield return occasion;
+                        yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false };
                         if (occasion.ExtraInterpreter)
                         {
-                            yield return occasion;
+                            yield return new OrderOccasionDisplayModel(occasion);
                         }
                     }
                 }
                 else
                 {
-                    yield return new OrderOccasionModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
+                    yield return new OrderOccasionDisplayModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = false };
                     if (ExtraInterpreter)
                     {
-                        yield return new OrderOccasionModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
+                        yield return new OrderOccasionDisplayModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
                     }
                 }
             }
