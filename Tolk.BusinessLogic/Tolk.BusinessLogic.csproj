@@ -19,6 +19,8 @@
     <Compile Remove="Data\Migrations\20180914124739_AddAttachmentsTable.cs" />
     <Compile Remove="Data\Migrations\20181015134028_RequisitionTaxCard.cs" />
     <Compile Remove="Data\Migrations\20181015134149_RequisitionTaxCard.cs" />
+    <Compile Remove="Data\Migrations\20190618111741_RequestGroup.cs" />
+    <Compile Remove="Data\Migrations\20190618111741_RequestGroup.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

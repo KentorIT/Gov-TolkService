@@ -8,8 +8,10 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class Request
+    public class Request :RequestBase
     {
+        #region constructors
+
         public Request() { }
 
         public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false)
@@ -28,29 +30,22 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceLevel = originalRequest.CompetenceLevel;
         }
 
+        #endregion
+
+        #region properties
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequestId { get; set; }
-
-        public int RankingId { get; set; }
-
-        public RequestStatus Status { get; set; }
-
-        public Ranking Ranking { get; set; }
 
         public int OrderId { get; set; }
 
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 
-        /// <summary>
-        /// The time (inclusive) when the request is expired. If null, expiry must be manually defined
-        /// </summary>
-        public DateTimeOffset? ExpiresAt { get; set; }
+        public int? RequestGroupId { get; set; }
 
-        public DateTimeOffset CreatedAt { get; set; }
-
-        [MaxLength(1000)]
-        public string BrokerMessage { get; set; }
+        [ForeignKey(nameof(RequestGroupId))]
+        public RequestGroup RequestGroup { get; set; }
 
         public int? InterpreterBrokerId { get; set; }
 
@@ -63,74 +58,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(InterpreterBrokerId))]
         public InterpreterBroker Interpreter { get; set; }
 
-        [MaxLength(1000)]
-        public string DenyMessage { get; set; }
-
-        public DateTimeOffset? RecievedAt { get; set; }
-
         public int? InterpreterLocation { get; set; }
-
-        public int? ReceivedBy { get; set; }
-
-        [ForeignKey(nameof(ReceivedBy))]
-        public AspNetUser ReceivedByUser { get; set; }
-
-        public int? ImpersonatingReceivedBy { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingReceivedBy))]
-        public AspNetUser ReceivedByImpersonator { get; set; }
-
-        public DateTimeOffset? AnswerDate { get; set; }
-
-        public int? AnsweredBy { get; set; }
-
-        [ForeignKey(nameof(AnsweredBy))]
-        public AspNetUser AnsweringUser { get; set; }
-
-        public int? ImpersonatingAnsweredBy { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingAnsweredBy))]
-        public AspNetUser AnsweredByImpersonator { get; set; }
-
-        public DateTimeOffset? AnswerProcessedAt { get; set; }
-
-        public int? AnswerProcessedBy { get; set; }
-
-        [ForeignKey(nameof(AnswerProcessedBy))]
-        public AspNetUser ProcessingUser { get; private set; }
-
-        public int? ImpersonatingAnswerProcessedBy { get; set; }
-
-        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
-        {
-            if (Status != RequestStatus.Created)
-            {
-                throw new InvalidOperationException($"Tried to mark request {RequestId} as received by {userId}({impersonatorId}) but it is already {Status}");
-            }
-
-            Status = RequestStatus.Received;
-            RecievedAt = receiveTime;
-            ReceivedBy = userId;
-            ImpersonatingReceivedBy = impersonatorId;
-        }
-
-        [ForeignKey(nameof(ImpersonatingAnswerProcessedBy))]
-        public AspNetUser AnswerProcessedByImpersonator { get; private set; }
-
-        public DateTimeOffset? CancelledAt { get; set; }
-
-        public int? CancelledBy { get; set; }
-
-        [ForeignKey(nameof(CancelledBy))]
-        public AspNetUser CancelledByUser { get; set; }
-
-        public int? ImpersonatingCanceller { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingCanceller))]
-        public AspNetUser CancelledByImpersonator { get; set; }
-
-        [MaxLength(1000)]
-        public string CancelMessage { get; set; }
 
         public int? ReplacingRequestId { get; set; }
 
@@ -138,10 +66,7 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacedByRequest))]
         public Request ReplacingRequest { get; set; }
 
-        /// <summary>
-        /// If true, this Request wil not be followed by another to the next broker.
-        /// </summary>
-        public bool IsTerminalRequest { get; set; }
+        #endregion
 
         #region navigation
 
@@ -161,9 +86,60 @@ namespace Tolk.BusinessLogic.Entities
 
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
-        public static object HttpContext { get; set; }
 
         #endregion
+
+        #region Status Checks
+
+        public bool CanCancel
+        {
+            get => (Order.Status == OrderStatus.Requested || 
+                    Order.Status == OrderStatus.RequestResponded ||
+                    Order.Status == OrderStatus.RequestRespondedNewInterpreter || 
+                    Order.Status == OrderStatus.ResponseAccepted) &&
+                    (IsToBeProcessedByBroker || IsAcceptedOrApproved);
+        }
+
+        public bool CanChangeInterpreter(DateTimeOffset swedenNow)
+        {
+           return IsAcceptedOrApproved && Order.StartAt > swedenNow;
+        }
+
+        public bool CanCreateRequisition
+        {
+            get => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
+        }
+
+        public void CreateComplaint(Complaint complaint)
+        {
+            if (!CanCreateComplaint)
+            {
+                throw new InvalidOperationException("Several complaints cannot be created or request does not have status approved.");
+            }
+            Complaints.Add(complaint);
+        }
+
+        public bool CanCreateComplaint
+        {
+            get => !Complaints.Any() && Status == RequestStatus.Approved;
+        }
+
+        #endregion
+
+        #region Methods
+
+        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        {
+            if (Status != RequestStatus.Created)
+            {
+                throw new InvalidOperationException($"Tried to mark request {RequestId} as received by {userId}({impersonatorId}) but it is already {Status}");
+            }
+
+            Status = RequestStatus.Received;
+            RecievedAt = receiveTime;
+            ReceivedBy = userId;
+            ImpersonatingReceivedBy = impersonatorId;
+        }
 
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
@@ -183,50 +159,6 @@ namespace Tolk.BusinessLogic.Entities
             AnswerProcessedAt = approveTime;
             AnswerProcessedBy = userId;
             ImpersonatingAnswerProcessedBy = impersonatorId;
-        }
-
-        public bool IsAcceptedOrApproved
-        {
-            get => IsAccepted || Status == RequestStatus.Approved;
-        }
-
-        public bool IsAccepted
-        {
-            get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
-        }
-
-        public bool StatusNotToBeDisplayedForBroker
-        {
-            get => Status == RequestStatus.NoDeadlineFromCustomer || Status == RequestStatus.AwaitingDeadlineFromCustomer || Status == RequestStatus.InterpreterReplaced;
-        }
-
-        public bool CanCancel
-        {
-            get => (Order.Status == OrderStatus.Requested || 
-                    Order.Status == OrderStatus.RequestResponded ||
-                    Order.Status == OrderStatus.RequestRespondedNewInterpreter || 
-                    Order.Status == OrderStatus.ResponseAccepted) &&
-                    (IsToBeProcessedByBroker || IsAcceptedOrApproved);
-        }
-
-        public bool CanDecline
-        {
-            get => IsToBeProcessedByBroker;
-        }
-
-        public bool CanApprove
-        {
-            get => IsAccepted;
-        }
-
-        public bool CanChangeInterpreter(DateTimeOffset swedenNow)
-        {
-           return IsAcceptedOrApproved && Order.StartAt > swedenNow;
-        }
-
-        public bool CanDeny
-        {
-            get => IsAccepted;
         }
 
         public void Accept(
@@ -266,21 +198,6 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
 
             Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
-        }
-
-        private void ValidateAgainstOrder(InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
-        {
-            ValidateRequirements(Order.Requirements, requirementAnswers);
-
-            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
-            {
-                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
-            }
-
-            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
-            {
-                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
-            }
         }
 
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
@@ -456,22 +373,6 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.CancelledByCreator;
         }
 
-        private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
-        {
-            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();
-            return priceRows
-                .Select(p => new RequisitionPriceRow
-                {
-                    StartAt = p.StartAt,
-                    EndAt = p.EndAt,
-                    PriceRowType = p.PriceRowType,
-                    PriceListRowId = p.PriceListRowId,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    PriceCalculationChargeId = p.PriceCalculationChargeId,
-                }).ToList();
-        }
-
         public void CancelByBroker(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string cancelMessage)
         {
             if (Order.Status != OrderStatus.ResponseAccepted)
@@ -510,28 +411,39 @@ namespace Tolk.BusinessLogic.Entities
             Order.DeliverRequisition();
         }
 
-        public bool CanCreateRequisition
-        {
-            get => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
-        }
+        #endregion
 
-        public void CreateComplaint(Complaint complaint)
+        #region private methods
+
+        private void ValidateAgainstOrder(InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
-            if (!CanCreateComplaint)
+            ValidateRequirements(Order.Requirements, requirementAnswers);
+
+            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
             {
-                throw new InvalidOperationException("Several complaints cannot be created or request does not have status approved.");
+                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
             }
-            Complaints.Add(complaint);
+
+            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
+            {
+                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
+            }
         }
 
-        public bool CanCreateComplaint
+        private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
         {
-            get => !Complaints.Any() && Status == RequestStatus.Approved;
-        }
-
-        public bool IsToBeProcessedByBroker
-        {
-            get => Status == RequestStatus.Created || Status == RequestStatus.Received;
+            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();
+            return priceRows
+                .Select(p => new RequisitionPriceRow
+                {
+                    StartAt = p.StartAt,
+                    EndAt = p.EndAt,
+                    PriceRowType = p.PriceRowType,
+                    PriceListRowId = p.PriceListRowId,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    PriceCalculationChargeId = p.PriceCalculationChargeId,
+                }).ToList();
         }
 
         private void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
@@ -548,5 +460,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Negative answer on required requirement");
             }
         }
+
+        #endregion
     }
 }

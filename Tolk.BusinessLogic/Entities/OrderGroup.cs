@@ -42,5 +42,7 @@ namespace Tolk.BusinessLogic.Entities
         public AspNetUser CreatedByImpersonator { get; set; }
 
         public List<Order> Orders { get; set; }
+
+        public List<RequestGroup> RequestGroups { get; set; }
     }
 }
