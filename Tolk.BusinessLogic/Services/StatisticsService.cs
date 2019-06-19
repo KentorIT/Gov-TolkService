@@ -385,7 +385,7 @@ namespace Tolk.BusinessLogic.Services
                         rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasRequisition ? "Ja" : "Nej");
                         rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamation finns";
                         rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasComplaint ? "Ja" : "Nej");
-                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Preliminär kostnad (SEK)";
+                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
                         rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
                         rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
                         break;
@@ -521,7 +521,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
             rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
-            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Prel.kostnad bekräftelse (SEK)";
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
             rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PreliminaryCost);
         }
