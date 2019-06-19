@@ -15,5 +15,13 @@ namespace Tolk.BusinessLogic.Utilities
 
         public string OrderedInterpreterLocation3 { get; set; }
 
+        public string CompetenceLevelDesired1 { get; set; }
+
+        public string CompetenceLevelDesired2 { get; set; }
+
+        public string CompetenceLevelRequired1 { get; set; }
+
+        public string CompetenceLevelRequired2 { get; set; }
+
     }
 }
