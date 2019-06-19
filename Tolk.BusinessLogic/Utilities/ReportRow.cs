@@ -42,5 +42,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public string CustomerUnitName { get; set; }
 
+        public string AllowExceedingTravelCost { get; set; }
+
     }
 }

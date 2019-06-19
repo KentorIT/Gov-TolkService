@@ -146,7 +146,7 @@ namespace Tolk.BusinessLogic.Services
         }
 
         public OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
-        { 
+        {
             return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
         }
 
@@ -265,7 +265,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.InterpreterLocations)
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue) 
+                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                         && (localAdminCustomerUnits != null ? (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
         }
 
@@ -358,6 +358,8 @@ namespace Tolk.BusinessLogic.Services
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate.ToString());
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
+                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Accepterar restid";
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AllowExceedingTravelCost);
                 switch (reportType)
                 {
                     case ReportType.RequestsForBrokers:
@@ -396,24 +398,15 @@ namespace Tolk.BusinessLogic.Services
                 {
                     CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter, reportType);
                 }
-                switch (reportType)
+                switch (EnumHelper.Parent<ReportType, ReportGroup>(reportType))
                 {
-                    case ReportType.OrdersForSystemAdministrator:
-                    case ReportType.RequisitionsForSystemAdministrator:
-                    case ReportType.ComplaintsForSystemAdministrator:
-                    case ReportType.DeliveredOrdersSystemAdministrator:
+                    case ReportGroup.SystemAdminReport:
                         CreateColumnsForSystemAdministrator(rowsWorksheet, rows, ref columnLetter);
                         break;
-                    case ReportType.DeliveredOrdersBrokers:
-                    case ReportType.RequestsForBrokers:
-                    case ReportType.RequisitionsForBroker:
-                    case ReportType.ComplaintsForBroker:
+                    case ReportGroup.BrokerReport:
                         CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
                         break;
-                    case ReportType.DeliveredOrdersCustomer:
-                    case ReportType.OrdersForCustomer:
-                    case ReportType.RequisitionsForCustomer:
-                    case ReportType.ComplaintsForCustomer:
+                    case ReportGroup.CustomerReport:
                         CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
                         break;
                 }
@@ -461,7 +454,6 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
         }
 
-
         private void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
@@ -471,6 +463,7 @@ namespace Tolk.BusinessLogic.Services
                 CreateColumnsForBrokerRequest(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
             }
         }
+
         private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
@@ -572,6 +565,7 @@ namespace Tolk.BusinessLogic.Services
                         OrderedInterpreterLocation2 = o.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation3 = o.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         InterpreterLocation = o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.HasValue ? ((InterpreterLocation)o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.Value).GetDescription() : string.Empty,
+                        AllowExceedingTravelCost = o.AllowExceedingTravelCost.HasValue ? o.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
                     });
         }
 
@@ -601,12 +595,14 @@ namespace Tolk.BusinessLogic.Services
                         OrderedInterpreterLocation2 = r.Order.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation3 = r.Order.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
-
+                        AllowExceedingTravelCost = r.Order.AllowExceedingTravelCost.HasValue ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.Order.AllowExceedingTravelCost.Value).GetDescription() : string.Empty
                     });
         }
 
         public static IEnumerable<ReportRequisitionRow> GetRequisitionsExcelFileRows(IEnumerable<Requisition> listItems, ReportType reportType)
         {
+            var isBroker = EnumHelper.Parent<ReportType, ReportGroup>(reportType) == ReportGroup.BrokerReport;
+
             return listItems
                     .Select(r => new ReportRequisitionRow
                     {
@@ -635,11 +631,14 @@ namespace Tolk.BusinessLogic.Services
                         ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
                         PreliminaryCost = r.Request.PriceRows.Sum(p => p.TotalPrice),
                         InterpreterLocation = ((InterpreterLocation)r.Request.InterpreterLocation.Value).GetDescription(),
+                        AllowExceedingTravelCost = !r.Request.Order.AllowExceedingTravelCost.HasValue ? string.Empty : isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.Request.Order.AllowExceedingTravelCost.Value).GetDescription() : r.Request.Order.AllowExceedingTravelCost.Value.GetDescription()
                     });
         }
 
         public static IEnumerable<ReportComplaintRow> GetComplaintsExcelFileRows(IEnumerable<Complaint> listItems, ReportType reportType)
         {
+            var isBroker = EnumHelper.Parent<ReportType, ReportGroup>(reportType) == ReportGroup.BrokerReport;
+
             return listItems
                     .Select(c => new ReportComplaintRow
                     {
@@ -661,6 +660,7 @@ namespace Tolk.BusinessLogic.Services
                         Department = c.Request.Order.UnitName ?? string.Empty,
                         ReferenceNumber = c.Request.Order.CustomerReferenceNumber ?? string.Empty,
                         InterpreterLocation = ((InterpreterLocation)c.Request.InterpreterLocation.Value).GetDescription(),
+                        AllowExceedingTravelCost = !c.Request.Order.AllowExceedingTravelCost.HasValue ? string.Empty : isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.Request.Order.AllowExceedingTravelCost.Value).GetDescription() : c.Request.Order.AllowExceedingTravelCost.Value.GetDescription()
                     });
         }
 
