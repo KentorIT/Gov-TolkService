@@ -449,7 +449,7 @@ namespace Tolk.BusinessLogic.Entities
         private void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
             if (requirements.Count() != requirementAnswers.Count() ||
-                !requirements.Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.Select(a => a.OrderRequirementId)))
+                !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
             {
                 throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
             }
