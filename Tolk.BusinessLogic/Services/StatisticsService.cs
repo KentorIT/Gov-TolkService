@@ -187,7 +187,7 @@ namespace Tolk.BusinessLogic.Services
                       .Include(r => r.Order).ThenInclude(o => o.Language)
                       .Include(r => r.Order).ThenInclude(o => o.Region)
                       .Include(r => r.Order).ThenInclude(o => o.Requests)
-                      .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                      .Include(r => r.Order).ThenInclude(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                       .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                       .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                       .OrderBy(r => r.Order.OrderNumber)
@@ -207,7 +207,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .OrderBy(r => r.Order.OrderNumber)
@@ -263,7 +263,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
-                    .Include(o => o.Requirements)
+                    .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                     .Include(o => o.InterpreterLocations)
                     .Include(o => o.CompetenceRequirements)
                     .OrderBy(o => o.OrderNumber)
@@ -285,7 +285,7 @@ namespace Tolk.BusinessLogic.Services
                     .Include(o => o.Language)
                     .Include(o => o.Region)
                     .Include(o => o.CreatedByUser)
-                    .Include(o => o.Requirements)
+                    .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                     .Include(o => o.InterpreterLocations)
                     .Include(o => o.CompetenceRequirements)
                     .OrderBy(o => o.OrderNumber)
@@ -444,6 +444,12 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelRequired1);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Ytterligare krav på kompetensnivå";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelRequired2);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga krav";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga önskemål";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderDesiredRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga önskemål";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FulfilledOrderDesiredRequirements);
         }
 
         private void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
@@ -545,6 +551,16 @@ namespace Tolk.BusinessLogic.Services
 
         private static string GetColumnName(char columnLetter, int index)
         {
+            if (columnLetter > 'Z')
+            {
+                char charLevel2 = 'A';
+
+                for (int i = 1; i < columnLetter - 'Z'; ++i)
+                {
+                    charLevel2++;
+                }
+                return $"A{charLevel2}{index}";
+            }
             return $"{columnLetter}{index}";
         }
 
@@ -582,6 +598,9 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelDesired2 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelRequired1 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
                         CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any() && o.CompetenceRequirements.Count() > 1) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
+                        OrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
+                        OrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
+                        FulfilledOrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
                     });
         }
 
@@ -616,6 +635,9 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelDesired2 = (r.Order.LanguageHasAuthorizedInterpreter && !r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelRequired1 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
                         CompetenceLevelRequired2 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any() && r.Order.CompetenceRequirements.Count() > 1) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
+                        OrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired).Count(),
+                        OrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired).Count(),
+                        FulfilledOrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
                     });
         }
 

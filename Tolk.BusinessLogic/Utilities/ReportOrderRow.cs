@@ -23,5 +23,11 @@ namespace Tolk.BusinessLogic.Utilities
 
         public string CompetenceLevelRequired2 { get; set; }
 
+        public int OrderRequirements { get; set; }
+
+        public int OrderDesiredRequirements { get; set; }
+
+        public int FulfilledOrderDesiredRequirements { get; set; }
+
     }
 }
