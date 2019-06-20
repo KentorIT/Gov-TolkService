@@ -430,6 +430,8 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt är krav";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppfyllt krav/önskemål om dialekt";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.FulfilledDialectRequirement ? "Ja" : "Nej");
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 1:a hand";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation1);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 2:a hand";
@@ -589,6 +591,7 @@ namespace Tolk.BusinessLogic.Services
                         Price = o.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null ? o.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Sum(p => p.TotalPrice) : 0,
                         Dialect = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
                         DialectIsRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
+                        FulfilledDialectRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement)).FirstOrDefault() != null ? true : false,
                         OrderedInterpreterLocation1 = o.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation2 = o.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation3 = o.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
@@ -626,6 +629,7 @@ namespace Tolk.BusinessLogic.Services
                         Price = r.PriceRows != null ? r.PriceRows.Sum(p => p.TotalPrice) : 0,
                         Dialect = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
                         DialectIsRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
+                        FulfilledDialectRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement)).FirstOrDefault() != null ? true : false,
                         OrderedInterpreterLocation1 = r.Order.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation2 = r.Order.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
                         OrderedInterpreterLocation3 = r.Order.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,

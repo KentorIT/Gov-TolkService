@@ -9,6 +9,8 @@ namespace Tolk.BusinessLogic.Utilities
 
         public bool DialectIsRequirement { get; set; }
 
+        public bool FulfilledDialectRequirement { get; set; }
+
         public string OrderedInterpreterLocation1 { get; set; }
 
         public string OrderedInterpreterLocation2 { get; set; }
