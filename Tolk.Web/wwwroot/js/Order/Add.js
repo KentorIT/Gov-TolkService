@@ -123,10 +123,10 @@ $(function () {
 
     var toggleSeveralOccasions = function () {
         //if date is set, and hasToggledLastTimeForRequiringLatestAnswerBy is false and SeveralOccasions is false
-        if (LastAnswerByIsShowing || $("#SeveralOccasions").is(":checked")) {
+        if ($("#SeveralOccasions").is(":checked")) {
             return;
         }
-        var $disabled = !allowLatestAnswerBy || !hasValidOccasion();
+        var $disabled = LastAnswerByIsShowing || !hasValidOccasion();
         $("#SeveralOccasions").prop('disabled', $disabled);
         if ($disabled) {
             $("#SeveralOccasions").parents(".checkbox").addClass("checkbox-disabled");
