@@ -67,40 +67,32 @@ namespace Tolk.Web.Controllers
                 switch (model.ReportType)
                 {
                     case ReportType.OrdersForCustomer:
-                        model.ReportItems = _statService.GetOrders(start, end, organisationId, customerUnits).Count();
+                    case ReportType.OrdersForSystemAdministrator:
+                        model.ReportItems = _statService.GetNoOfOrders(start, end, organisationId, customerUnits);
                         break;
                     case ReportType.DeliveredOrdersCustomer:
-                        model.ReportItems = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits).Count();
+                    case ReportType.DeliveredOrdersSystemAdministrator:
+                        model.ReportItems = _statService.GetNoOfDeliveredOrders(start, end, organisationId, customerUnits);
                         break;
                     case ReportType.RequestsForBrokers:
-                        model.ReportItems = _statService.GetRequestsForBroker(start, end, brokerId.Value).Count();
+                        model.ReportItems = _statService.GetNoOfRequestsForBroker(start, end, brokerId.Value);
                         break;
                     case ReportType.DeliveredOrdersBrokers:
-                        model.ReportItems = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value).Count();
-                        break;
-                    case ReportType.OrdersForSystemAdministrator:
-                        model.ReportItems = _statService.GetOrders(start, end, organisationId).Count();
-                        break;
-                    case ReportType.DeliveredOrdersSystemAdministrator:
-                        model.ReportItems = _statService.GetDeliveredOrders(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetNoOfDeliveredRequestsForBroker(start, end, brokerId.Value);
                         break;
                     case ReportType.RequisitionsForCustomer:
-                        model.ReportItems = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).Count();
+                    case ReportType.RequisitionsForSystemAdministrator:
+                        model.ReportItems = _statService.GetNoOfRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
                         break;
                     case ReportType.RequisitionsForBroker:
-                        model.ReportItems = _statService.GetRequisitionsForBroker(start, end, brokerId.Value).Count();
-                        break;
-                    case ReportType.RequisitionsForSystemAdministrator:
-                        model.ReportItems = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetNoOfRequisitionsForBroker(start, end, brokerId.Value);
                         break;
                     case ReportType.ComplaintsForCustomer:
-                        model.ReportItems = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).Count();
+                    case ReportType.ComplaintsForSystemAdministrator:
+                        model.ReportItems = _statService.GetNoOfComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
                         break;
                     case ReportType.ComplaintsForBroker:
-                        model.ReportItems = _statService.GetComplaintsForBroker(start, end, brokerId.Value).Count();
-                        break;
-                    case ReportType.ComplaintsForSystemAdministrator:
-                        model.ReportItems = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId).Count();
+                        model.ReportItems = _statService.GetNoOfComplaintsForBroker(start, end, brokerId.Value);
                         break;
                 }
                 model.StartDate = start.ToString();

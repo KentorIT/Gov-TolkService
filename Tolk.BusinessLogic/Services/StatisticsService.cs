@@ -41,80 +41,80 @@ namespace Tolk.BusinessLogic.Services
 
         public WeeklyStatisticsModel GetWeeklyOrderStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetOrders(StartDate, breakDate);
-            int thisWeek = GetOrders(breakDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(lastWeek, thisWeek, "Bokningar");
+            var orders = GetOrders(StartDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(orders.Where(o => o.CreatedAt < breakDate).Count(), orders.Where(o => o.CreatedAt >= breakDate).Count(), "Bokningar");
         }
 
         public WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetDeliveredOrders(StartDate, breakDate);
-            int thisWeek = GetDeliveredOrders(breakDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(lastWeek, thisWeek, "Utförda uppdrag");
+            var deliveredOrders = GetDeliveredOrders(StartDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(deliveredOrders.Where(o => o.EndAt < breakDate).Count(), deliveredOrders.Where(o => o.EndAt >= breakDate).Count(), "Utförda uppdrag");
         }
 
         public WeeklyStatisticsModel GetWeeklyRequisitionStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetRequisitions(StartDate, breakDate);
-            int thisWeek = GetRequisitions(breakDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(lastWeek, thisWeek, "Rekvisitioner");
+            var requisitions = GetRequisitions(StartDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(requisitions.Where(r => r.CreatedAt < breakDate).Count(), requisitions.Where(r => r.CreatedAt >= breakDate).Count(), "Rekvisitioner");
         }
 
         public WeeklyStatisticsModel GetWeeklyComplaintStatistics(DateTimeOffset breakDate)
         {
-            int lastWeek = GetComplaints(StartDate, breakDate);
-            int thisWeek = GetComplaints(breakDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(lastWeek, thisWeek, "Reklamationer");
+            var complaints = GetComplaints(StartDate, _clock.SwedenNow);
+            return GetWeeklyStatistics(complaints.Where(c => c.CreatedAt < breakDate).Count(), complaints.Where(c => c.CreatedAt >= breakDate).Count(), "Reklamationer");
         }
 
         public WeeklyStatisticsModel GetWeeklyUserLogins(DateTimeOffset breakDate)
         {
-            int lastWeek = GetUserLogins(StartDate, breakDate);
-            int thisWeek = GetUserLogins(breakDate, _clock.SwedenNow);
+            var userLogins = GetUserLogins(StartDate, _clock.SwedenNow);
+            int lastWeek = userLogins.Where(u => u.LoggedInAt < breakDate).Select(u => u.UserId).Distinct().Count();
+            int thisWeek = userLogins.Where(u => u.LoggedInAt >= breakDate).Select(u => u.UserId).Distinct().Count();
             return GetWeeklyStatistics(lastWeek, thisWeek, "Inloggade anv.");
         }
 
         public WeeklyStatisticsModel GetWeeklyNewUsers(DateTimeOffset breakDate)
         {
-            int lastWeek = GetNewUsers(StartDate, breakDate);
-            int thisWeek = GetNewUsers(breakDate, _clock.SwedenNow);
+            var newUsers = GetNewUsers(StartDate, _clock.SwedenNow);
+            int lastWeek = newUsers.Where(u => u.LoggedAt < breakDate).Select(u => u.UserId).Distinct().Count();
+            int thisWeek = newUsers.Where(u => u.LoggedAt >= breakDate).Select(u => u.UserId).Distinct().Count();
             return GetWeeklyStatistics(lastWeek, thisWeek, "Nya användare");
         }
 
-        private DateTimeOffset StartDate { get => _clock.SwedenNow.AddDays(-14); }
+        private DateTimeOffset StartDate => _clock.SwedenNow.AddDays(-14);
 
-        private DateTimeOffset BreakDate { get => _clock.SwedenNow.AddDays(-7); }
+        private DateTimeOffset BreakDate => _clock.SwedenNow.AddDays(-7);
 
-        private int GetOrders(DateTimeOffset start, DateTimeOffset end)
+        private List<Order> GetOrders(DateTimeOffset start, DateTimeOffset end)
         {
-            return _dbContext.Orders.Where(o => o.CreatedAt >= start && o.CreatedAt < end).Count();
+            return _dbContext.Orders.Where(o => o.CreatedAt >= start && o.CreatedAt < end).ToList();
         }
 
-        private int GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end)
+        private List<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end)
         {
             return _dbContext.Orders.Where(o => o.EndAt >= start && o.EndAt < end
-                    && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).Count();
+                    && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).ToList();
         }
 
-        private int GetRequisitions(DateTimeOffset start, DateTimeOffset end)
+        private List<Requisition> GetRequisitions(DateTimeOffset start, DateTimeOffset end)
         {
             return _dbContext.Requisitions.Where(r => r.CreatedAt >= start && r.CreatedAt < end
-                    && !r.ReplacedByRequisitionId.HasValue).Count();
+                    && !r.ReplacedByRequisitionId.HasValue).ToList();
         }
 
-        private int GetComplaints(DateTimeOffset start, DateTimeOffset end)
+        private List<Complaint> GetComplaints(DateTimeOffset start, DateTimeOffset end)
         {
-            return _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).Count();
+            return _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).ToList();
         }
 
-        private int GetUserLogins(DateTimeOffset start, DateTimeOffset end)
+        private List<UserLoginLogEntry> GetUserLogins(DateTimeOffset start, DateTimeOffset end)
         {
-            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start && u.LoggedInAt < end).Select(u => u.UserId).Distinct().Count();
+            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start
+                && u.LoggedInAt < end).ToList();
         }
 
-        private int GetNewUsers(DateTimeOffset start, DateTimeOffset end)
+        private List<UserAuditLogEntry> GetNewUsers(DateTimeOffset start, DateTimeOffset end)
         {
-            return _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).Select(u => u.UserId).Distinct().Count();
+            return _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start
+                && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).ToList();
         }
 
         public WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
@@ -135,10 +135,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<OrderStatisticsModel> GetOrderStatistics()
         {
-            IQueryable<Order> orders = _dbContext.Orders
-                .Include(o => o.Region)
-                .Include(o => o.Language)
-                .Include(o => o.CustomerOrganisation);
+            IQueryable<Order> orders = _dbContext.Orders;
 
             yield return GetOrderRegionStatistics(orders);
             yield return GetOrderLanguageStatistics(orders);
@@ -169,7 +166,7 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        public int TotalNoOfOrders { get => _dbContext.Orders.Count(); }
+        public int TotalNoOfOrders => _dbContext.Orders.Count();
 
         #endregion
 
@@ -195,6 +192,15 @@ namespace Tolk.BusinessLogic.Services
                           && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
         }
 
+        public int GetNoOfRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        {
+            return _dbContext.Requests.Where(r => r.Ranking.BrokerId == brokerId
+                      && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
+                      && !(r.Status == RequestStatus.NoDeadlineFromCustomer
+                      || r.Status == RequestStatus.AwaitingDeadlineFromCustomer
+                      || r.Status == RequestStatus.InterpreterReplaced)).Count();
+        }
+
         public IEnumerable<Request> GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
             return _dbContext.Requests
@@ -211,10 +217,19 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .OrderBy(r => r.Order.OrderNumber)
-                    .Where(r => r.Ranking.BrokerId == brokerId && 
+                    .Where(r => r.Ranking.BrokerId == brokerId &&
                         !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced)
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted));
+        }
+
+        public int GetNoOfDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        {
+            return _dbContext.Requests
+                    .Where(r => r.Ranking.BrokerId == brokerId &&
+                        !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced)
+                        && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
+                        && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)).Count();
         }
 
         public IEnumerable<Requisition> GetRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
@@ -234,6 +249,12 @@ namespace Tolk.BusinessLogic.Services
                         && r.Request.Ranking.BrokerId == brokerId && r.ReplacedByRequisitionId == null);
         }
 
+        public int GetNoOfRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        {
+            return _dbContext.Requisitions.Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
+                        && r.Request.Ranking.BrokerId == brokerId && r.ReplacedByRequisitionId == null).Count();
+        }
+
         public IEnumerable<Complaint> GetComplaintsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
             return _dbContext.Complaints
@@ -245,8 +266,14 @@ namespace Tolk.BusinessLogic.Services
                     .Include(c => c.Request).ThenInclude(r => r.Requisitions)
                     .Include(c => c.AnsweringUser)
                     .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date && 
+                    .Where(c => c.CreatedAt.Date >= start.Date &&
                     c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId);
+        }
+
+        public int GetNoOfComplaintsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        {
+            return _dbContext.Complaints.Where(c => c.CreatedAt.Date >= start.Date
+                && c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId).Count();
         }
 
         #endregion
@@ -274,6 +301,13 @@ namespace Tolk.BusinessLogic.Services
                         && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
         }
 
+        public int GetNoOfOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        {
+            return _dbContext.Orders.Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
+                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)))).Count();
+        }
+
         public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Orders
@@ -297,6 +331,14 @@ namespace Tolk.BusinessLogic.Services
                         && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
         }
 
+        public int GetNoOfDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        {
+            return _dbContext.Orders.Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
+                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
+                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)))).Count();
+        }
+
         public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Requisitions
@@ -317,6 +359,13 @@ namespace Tolk.BusinessLogic.Services
                         && (localAdminCustomerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value))));
         }
 
+        public int GetNoOfRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        {
+            return _dbContext.Requisitions.Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
+                        && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value)))).Count();
+        }
+
         public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             return _dbContext.Complaints
@@ -334,6 +383,12 @@ namespace Tolk.BusinessLogic.Services
                         && (localAdminCustomerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value))));
         }
 
+        public int GetNoOfComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        {
+            return _dbContext.Complaints.Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
+                        && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                        && (localAdminCustomerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value)))).Count();
+        }
         #endregion
 
         #region Generate Excel
