@@ -1259,7 +1259,8 @@ ul.pagination > li.paginate_button.active > a {
 }
 .sortable-only-table,
 .search-table,
-.searchable-only-table {
+.searchable-only-table,
+.combined-table {
   border-collapse: separate;
   border-spacing: 0px 5px;
 }

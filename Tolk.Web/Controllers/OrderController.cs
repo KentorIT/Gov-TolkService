@@ -675,7 +675,8 @@ namespace Tolk.Web.Controllers
             {
                 PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
-                UseDisplayHideInfo = true
+                UseDisplayHideInfo = true,
+                InitialCollapse = initialCollapse
             };
         }
 
