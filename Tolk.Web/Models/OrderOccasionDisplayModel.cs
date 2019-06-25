@@ -24,7 +24,7 @@ namespace Tolk.Web.Models
 
         public string OrderNumber { get; set; }
 
-        public string Information => $"{OccasionStartDateTime.ToString("yyyy-MM-dd")} {OccasionStartDateTime.ToString("hh\\:mm")} - {OccasionEndDateTime.ToString("hh\\:mm")}";
+        public string Information => $"{OccasionStartDateTime.ToString("yyyy-MM-dd")} {OccasionStartDateTime.ToString("HH\\:mm")} - {OccasionEndDateTime.ToString("HH\\:mm")}";
 
         public PriceInformationModel PriceInformationModel { get; set; }
 

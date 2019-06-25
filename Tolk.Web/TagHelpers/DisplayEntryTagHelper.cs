@@ -109,8 +109,8 @@ namespace Tolk.Web.TagHelpers
                 case OutputType.TimeRange:
                     var timeRange = (TimeRange)For.ModelExplorer.Model;
                     text = ValuePrefix + timeRange.StartDate.ToString("yyyy-MM-dd") + " "
-                        + timeRange.StartTime.ToString("hh\\:mm") + "-"
-                        + timeRange.EndTime.ToString("hh\\:mm");
+                        + timeRange.StartTime.ToString("HH\\:mm") + "-"
+                        + timeRange.EndTime.ToString("HH\\:mm");
                     break;
                 case OutputType.Currency:
                     text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToString("#,0.00 SEK");
