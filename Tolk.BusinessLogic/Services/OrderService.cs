@@ -92,11 +92,20 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleExpiredRequests()
+        public async Task HandleExpiredEntities()
+        {
+            await HandleExpiredRequests();
+            await HandleExpiredRequestGroups();
+            await HandleExpiredComplaints();
+            await HandleExpiredNonAnsweredRespondedRequests();
+        }
+
+        private async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
-                    || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                .Where(r => r.RequestGroupId == null &&
+                    ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) ||
+                    (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)))
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
@@ -113,7 +122,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Ranking)
                             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                             .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(r =>
+                            .SingleOrDefaultAsync(r => 
                                 ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestId == requestId);
@@ -152,7 +161,69 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleExpiredComplaints()
+        private async Task HandleExpiredRequestGroups()
+        {
+            var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
+                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) || 
+                    (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                .Select(r => r.RequestGroupId)
+                .ToListAsync();
+
+            _logger.LogDebug("Found {count} expired request groups to process: {requestGroupIds}",
+                expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
+            foreach (var requestGroupId in expiredRequestGroupIds)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var expiredRequestGroup = await _tolkDbContext.RequestGroups
+                            .Include(r => r.Ranking)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
+                            .Include(g => g.Requests).ThenInclude(r => r.Ranking)
+                            .SingleOrDefaultAsync(r =>
+                                ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
+                                || (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                && r.RequestGroupId == requestGroupId);
+
+                        if (expiredRequestGroup == null)
+                        {
+                            _logger.LogDebug("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestGroupId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Processing expired request {requestId} for Order group {orderGroupId}.",
+                                expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
+
+                            expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
+
+                            if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
+                            {
+                                expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
+                                await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
+                            }
+                            else
+                            {
+                                _notificationService.RequestGroupExpired(expiredRequestGroup);
+                                await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
+                            }
+
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
+                    }
+                }
+            }
+        }
+
+        private async Task HandleExpiredComplaints()
         {
             var expiredComplaintIds = await _tolkDbContext.Complaints
                 .Where(c => c.CreatedAt.AddMonths(_tolkBaseOptions.MonthsToApproveComplaints) <= _clock.SwedenNow && c.Status == ComplaintStatus.Created)
@@ -197,11 +268,12 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleExpiredNonAnsweredRespondedRequests()
+        private async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
-                .Where(r => (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
-                && r.Order.StartAt <= _clock.SwedenNow)
+                .Where(r => r.RequestGroupId == null &&
+                    (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    r.Order.StartAt <= _clock.SwedenNow)
                 .Where(r => r.IsAccepted)
                 .Select(r => r.RequestId).ToListAsync();
 
@@ -241,6 +313,73 @@ namespace Tolk.BusinessLogic.Services
                     }
                 }
             }
+        }
+
+        public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)
+        {
+            RequestGroup requestGroup = null;
+            DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(group.ClosestStartAt);
+            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
+
+            if (expiredRequestGroup != null)
+            {
+                if (!expiredRequestGroup.IsTerminalRequest)
+                {
+                    requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow);
+                }
+            }
+            else
+            {
+                requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
+                //This is the first time a request is created on this order, add the priceinformation too...
+                await _tolkDbContext.SaveChangesAsync();
+                CreatePriceInformation(group);
+            }
+
+            // Save to get ids for the log message.
+            await _tolkDbContext.SaveChangesAsync();
+
+            if (requestGroup != null)
+            {
+                var newRequestGroup = _tolkDbContext.RequestGroups
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
+                    .Include(r => r.Ranking.Broker)
+                    .Single(r => r.RequestGroupId == requestGroup.RequestGroupId);
+                if (expiry.HasValue)
+                {
+                    _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
+                        requestGroup.RequestGroupId, requestGroup.OrderGroupId, requestGroup.Ranking.BrokerId, requestGroup.ExpiresAt);
+                    _notificationService.RequestGroupCreated(newRequestGroup);
+                    return;
+                }
+                else
+                {
+                    //TODO: THIS IS ONLY VALID IF THIS IS AN ONE OCCASION, EXTRA INTERPRETER GROUP!!
+                    if (group.IsSingleOccasion)
+                    {
+                        // Request expiry information from customer
+                        group.AwaitDeadlineFromCustomer();
+
+                        await _tolkDbContext.SaveChangesAsync();
+
+                        _logger.LogInformation($"Created request group {requestGroup.RequestGroupId} for order group {requestGroup.OrderGroupId}, but system was unable to calculate expiry.");
+                        _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
+                        return;
+                    }
+                }
+            }
+            await TerminateOrderGroup(group);
         }
 
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
@@ -309,7 +448,23 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task TerminateOrder(Order order)
+        public async Task TerminateOrderGroup(OrderGroup orderGroup)
+        {
+            foreach (Order order in orderGroup.Orders)
+            {
+                await TerminateOrder(order, false);
+
+            }
+            var terminatedOrderGroup = await _tolkDbContext.OrderGroups
+              .Include(o => o.CreatedByUser)
+              .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+              .SingleAsync(o => o.OrderGroupId == orderGroup.OrderGroupId);
+            _notificationService.OrderGroupNoBrokerAccepted(terminatedOrderGroup);
+            _logger.LogInformation("Could not create another request group for order group {orderGroupId}, no more available brokers or too close in time.",
+               orderGroup.OrderGroupId);
+        }
+
+        public async Task TerminateOrder(Order order, bool notify = true)
         {
             if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
             {
@@ -322,14 +477,17 @@ namespace Tolk.BusinessLogic.Services
 
             //There are no more brokers to ask.
             // Send an email to tell the order creator, and possibly the other user as well...
-            var terminatedOrder = await _tolkDbContext.Orders
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.CustomerUnit)
-                .SingleAsync(o => o.OrderId == order.OrderId);
-            _notificationService.OrderNoBrokerAccepted(terminatedOrder);
-            _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
-                order.OrderId);
+            if (notify)
+            {
+                var terminatedOrder = await _tolkDbContext.Orders
+                   .Include(o => o.CreatedByUser)
+                   .Include(o => o.ContactPersonUser)
+                   .Include(o => o.CustomerUnit)
+                   .SingleAsync(o => o.OrderId == order.OrderId);
+                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
+                    order.OrderId);
+            }
         }
 
         public async Task ReplaceOrder(Order order, Order replacementOrder, int userId, int? impersonatorId, string cancelMessage)
@@ -410,8 +568,9 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException($"The order {order.OrderId} has not been denied by all brokers");
             }
-            await _tolkDbContext.AddAsync(new OrderStatusConfirmation {
-                Order= order,
+            await _tolkDbContext.AddAsync(new OrderStatusConfirmation
+            {
+                Order = order,
                 ConfirmedBy = userId,
                 ImpersonatingConfirmedBy = impersonatorId,
                 OrderStatus = order.Status,
@@ -454,6 +613,11 @@ namespace Tolk.BusinessLogic.Services
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
             _notificationService.RequestCreated(request);
+        }
+
+        public void CreatePriceInformation(OrderGroup orderGroup)
+        {
+            orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
         }
 
         public void CreatePriceInformation(Order order)

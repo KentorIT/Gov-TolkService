@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190619064712_ConnectOrdersIfExtraInterpreter")]
+    partial class ConnectOrdersIfExtraInterpreter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -853,8 +855,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasComputedColumnSql("'G-' + CAST(YEAR([CreatedAt]) AS NVARCHAR(100)) + '-' + CAST(([OrderGroupId]+(100000)) AS NVARCHAR(100))")
                         .HasMaxLength(255);
 
-                    b.Property<bool>("RequireSameInterpreter");
-
                     b.HasKey("OrderGroupId");
 
                     b.HasIndex("CreatedBy");
@@ -1272,9 +1272,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<string>("DenyMessage")
-                        .HasMaxLength(1000);
-
-                    b.Property<string>("ExpectedTravelCostInfo")
                         .HasMaxLength(1000);
 
                     b.Property<DateTimeOffset?>("ExpiresAt");

@@ -133,6 +133,13 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> AnswerGroup([FromBody] RequestGroupAnswerModel model)
+        {
+#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
+            return Json(new ResponseBase());
+        }
+            
+        [HttpPost]
         public JsonResult Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
             var apiUser = GetApiUser();
@@ -162,6 +169,13 @@ namespace Tolk.Web.Api.Controllers
             request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
             _dbContext.SaveChanges();
             //End of service
+            return Json(new ResponseBase());
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> AcknowledgeGroup([FromBody] RequestGroupAcknowledgeModel model)
+        {
+#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
             return Json(new ResponseBase());
         }
 
@@ -203,6 +217,13 @@ namespace Tolk.Web.Api.Controllers
             await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
             _dbContext.SaveChanges();
             //End of service
+            return Json(new ResponseBase());
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeclineGroup([FromBody] RequestGroupDeclineModel model)
+        {
+#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
             return Json(new ResponseBase());
         }
 
@@ -465,7 +486,7 @@ namespace Tolk.Web.Api.Controllers
         #region private methods
 
         //Break out to error generator service...
-        private JsonResult ReturError(string errorCode,string specifiedErrorMessage = null)
+        private JsonResult ReturError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
             var message = ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();

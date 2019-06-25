@@ -238,6 +238,9 @@ namespace Tolk.Web.Authorization
                 case Order order:
                     return user.IsInRole(Roles.SystemAdministrator) ||
                         order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler));
+                case OrderGroup orderGroup:
+                    return user.IsInRole(Roles.SystemAdministrator) ||
+                        orderGroup.Orders.First().IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler));
                 case Requisition requisition:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {

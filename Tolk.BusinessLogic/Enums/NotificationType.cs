@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Detta är en notifieringshook, som inte är i bruk än...")]
         [CustomName("request_cancelled_by_broker", false)]
-        RequestCancelledByBroker= 4,
+        RequestCancelledByBroker = 4,
 
         [Description("Svar på förfrågan har accepterats")]
         [CustomName("request_answer_approved")]
@@ -31,7 +31,7 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Svar på förfrågan godtogs inte")]
         [CustomName("request_answer_denied")]
-        RequestAnswerDenied= 6,
+        RequestAnswerDenied = 6,
 
         [Description("Förlorad förfrågan på grund av inaktivitet")]
         [CustomName("request_lost_due_to_inactivity")]
@@ -72,5 +72,13 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Ersättning av tolk har godkänts")]
         [CustomName("request_replaced_interpreter_accepted")]
         RequestReplacedInterpreterAccepted = 16,
+
+        [Description("Sammanhållen förfrågan skapad")]
+        [CustomName("request_group_created")]
+        RequestGroupCreated = 17,
+
+        [Description("Förlorad samanhållen förfrågan på grund av inaktivitet")]
+        [CustomName("request_group_lost_due_to_inactivity")]
+        RequestGroupLostDueToInactivity = 18,
     }
 }

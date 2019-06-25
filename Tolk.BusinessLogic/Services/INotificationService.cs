@@ -34,5 +34,9 @@ namespace Tolk.BusinessLogic.Services
         void RequisitionCreated(Requisition requisition);
         void RequisitionReviewed(Requisition requisition);
         bool ResendWebHook(OutboundWebHookCall failedCall);
+        void RequestGroupCreated(RequestGroup requestGroup);
+        void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
+        void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup);
+        void RequestGroupExpired(RequestGroup expiredRequestGroup);
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190624050604_GroupRequireSameInterpreter")]
+    partial class GroupRequireSameInterpreter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1272,9 +1274,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<string>("DenyMessage")
-                        .HasMaxLength(1000);
-
-                    b.Property<string>("ExpectedTravelCostInfo")
                         .HasMaxLength(1000);
 
                     b.Property<DateTimeOffset?>("ExpiresAt");

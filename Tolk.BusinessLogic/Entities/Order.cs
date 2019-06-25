@@ -183,6 +183,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ImpersonatingCreator))]
         public AspNetUser CreatedByImpersonator { get; set; }
 
+        public int? IsExtraInterpreterForOrderId { get; set; }
+
+        [ForeignKey(nameof(IsExtraInterpreterForOrderId))]
+        public Order IsExtraInterpreterForOrder { get; set; }
+
         #endregion
 
         #region navigation properties
@@ -251,6 +256,11 @@ namespace Tolk.BusinessLogic.Entities
                 return null;
             }
 
+            return CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
+        }
+
+        public Request CreateRequest(Ranking ranking, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        {
             var request = new Request(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
 
             Requests.Add(request);

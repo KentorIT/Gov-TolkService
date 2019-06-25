@@ -25,6 +25,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderContactPersonChanged(Order order) { }
 
+        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup) { }
+
         public void OrderNoBrokerAccepted(Order order) { }
 
         public void OrderReplacementCreated(Order order) { }
@@ -52,6 +54,12 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestDeclinedByBroker(Request request) { }
 
         public void RequestExpired(Request request) { }
+
+        public void RequestGroupCreated(RequestGroup requestGroup) { }
+
+        public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup) { }
+
+        public void RequestGroupExpired(RequestGroup expiredRequestGroup) { }
 
         public void RequestReplamentOrderAccepted(Request request) { }
 

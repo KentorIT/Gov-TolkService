@@ -24,6 +24,10 @@ namespace Tolk.BusinessLogic.Helpers
         {
             return $"{origin}/Request/View/{requestId}";
         }
+        public static string GetRequestGroupViewUrl(string origin, int requestGroupId)
+        {
+            return $"{origin}/Request/ViewGroup/{requestGroupId}";
+        }
 
         #endregion
 

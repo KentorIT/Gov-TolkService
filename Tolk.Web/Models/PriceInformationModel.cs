@@ -23,6 +23,8 @@ namespace Tolk.Web.Models
 
         public bool CenterHeader { get; set; } = false;
 
+        public bool InitialCollapse { get; set; } = true;
+
         public string Description { get; set; }
     }
 }

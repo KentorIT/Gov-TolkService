@@ -298,30 +298,43 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
+            if (model.IsMultipleOrders)
+            {
+                ModelState.Remove("SplitTimeRange.StartDate");
+                ModelState.Remove("SplitTimeRange.StartTimeHour");
+                ModelState.Remove("SplitTimeRange.StartTimeMinutes");
+                ModelState.Remove("SplitTimeRange.EndTimeHour");
+                ModelState.Remove("SplitTimeRange.EndTimeMinutes");
+                model.SplitTimeRange = null;
+            }
             if (ModelState.IsValid)
             {
                 using (var trn = await _dbContext.Database.BeginTransactionAsync())
                 {
                     if (model.IsMultipleOrders)
                     {
-                        List<Order> orders = new List<Order>();
-                        // create an OrderGroup, and then create the instanses of order needed.
-                        foreach (var occasion in model.UniqueOrdersFromOccasions)
-                        {
-                        }
-                        return RedirectToAction(nameof(HomeController.Index), "Home", new { ErrorMessage = "Det finns inte stöd för sammanhållna bokningar än." });
-                        
+                        var orderGroup = CreateNewOrderGroup(GetOrdersForGroup(model).ToList());
+                        await _dbContext.AddAsync(orderGroup);
+                        //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
+                        await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
+
+                        await _dbContext.SaveChangesAsync();
+                        trn.Commit();
+                        return RedirectToAction(nameof(SentGroup), new { id = orderGroup.OrderGroupId });
                     }
-                    Order order = CreateNewOrder();
-                    model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
-                    await _dbContext.AddAsync(order);
-                    await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
+                    else
+                    {
+                        Order order = CreateNewOrder();
+                        model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
+                        await _dbContext.AddAsync(order);
+                        await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
 
-                    await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
+                        await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
 
-                    await _dbContext.SaveChangesAsync();
-                    trn.Commit();
-                    return RedirectToAction(nameof(Sent), new { id = order.OrderId });
+                        await _dbContext.SaveChangesAsync();
+                        trn.Commit();
+                        return RedirectToAction(nameof(Sent), new { id = order.OrderId });
+                    }
                 }
             }
             return View(model);
@@ -402,22 +415,23 @@ namespace Tolk.Web.Controllers
             return PartialView(nameof(Confirm), updatedModel);
         }
 
-        private IEnumerable<OrderOccasionDisplayModel> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> SentGroup(int id)
         {
-            foreach (var occasion in model.UniqueOrdersFromOccasions)
+            OrderGroup orderGroup = await _dbContext.OrderGroups
+                .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .SingleAsync(o => o.OrderGroupId == id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
-                Order groupOrder = CreateNewOrder();
-                // Add list of occasions, with the price information
-                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
-                occasion.PriceInformationModel = new PriceInformationModel
+                return View(new OrderGroupSummaryModel
                 {
-                    Header = "Beräknat preliminärt pris",
-                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
-                    UseDisplayHideInfo = true,
-                    Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
-                };
-                yield return occasion;
+                    OrderGroupNumber = orderGroup.OrderGroupNumber,
+                    OrderOccasionDisplayModels = orderGroup.Orders
+                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, GetPriceinformationToDisplay(o, false)))
+            });
             }
+            return Forbid();
         }
 
         [Authorize(Policy = Policies.Customer)]
@@ -611,6 +625,35 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        private IEnumerable<Order> GetOrdersForGroup(OrderModel model)
+        {
+            foreach (var occasion in model.UniqueOrdersFromOccasions)
+            {
+                var order = CreateNewOrder();
+                model.UpdateOrder(order, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
+                yield return order;
+            }
+
+        }
+
+        private IEnumerable<OrderOccasionDisplayModel> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        {
+            foreach (var occasion in model.UniqueOrdersFromOccasions)
+            {
+                Order groupOrder = CreateNewOrder();
+                // Add list of occasions, with the price information
+                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
+                occasion.PriceInformationModel = new PriceInformationModel
+                {
+                    Header = "Beräknat preliminärt pris",
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
+                    UseDisplayHideInfo = true,
+                    Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
+                };
+                yield return occasion;
+            }
+        }
+
         private PriceInformationModel GetPriceinformationToDisplay(Request request)
         {
             if (request.PriceRows == null)
@@ -625,7 +668,7 @@ namespace Tolk.Web.Controllers
             };
         }
 
-        private PriceInformationModel GetPriceinformationToDisplay(Order order)
+        private PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
         {
             if (order.PriceRows == null)
             {
@@ -637,6 +680,20 @@ namespace Tolk.Web.Controllers
                 Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
                 UseDisplayHideInfo = true
             };
+        }
+
+        private OrderGroup CreateNewOrderGroup(List<Order> orders)
+        {
+            var user = _dbContext.Users
+               .Include(u => u.CustomerOrganisation)
+               .Single(u => u.Id == User.GetUserId());
+            var impersonator = User.TryGetImpersonatorId();
+            AspNetUser impersonatingUser = null;
+            if (impersonator.HasValue)
+            {
+                impersonatingUser = _dbContext.Users.Single(u => u.Id == impersonator);
+            }
+            return new OrderGroup(user, impersonatingUser, _clock.SwedenNow, orders);
         }
 
         private Order CreateNewOrder()
@@ -694,6 +751,14 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
+        }
+
+        private async Task<OrderGroup> GetOrderGroup(int id)
+        {
+            return await _dbContext.OrderGroups
+                .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+
+                .SingleAsync(o => o.OrderGroupId == id);
         }
     }
 }

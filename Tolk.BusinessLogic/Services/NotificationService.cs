@@ -16,7 +16,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
-    public class NotificationService: INotificationService
+    public class NotificationService : INotificationService
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
@@ -28,8 +28,6 @@ namespace Tolk.BusinessLogic.Services
         private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
         private const string requireApprovementText = "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
-
-        private static readonly HttpClient client = new HttpClient();
 
         public NotificationService(
             TolkDbContext dbContext,
@@ -217,6 +215,61 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void RequestGroupCreated(RequestGroup requestGroup)
+        {
+            var orderGroup = requestGroup.OrderGroup;
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
+            if (email != null)
+            {
+                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
+                    $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
+                    $"\tRegion: {orderGroup.Region.Name}\n" +
+                    $"\tSpråk: {orderGroup.LanguageName}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccuranses(orderGroup.Orders)}\n" +
+                    $"\tSvara senast: {requestGroup.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    GotoRequestGroupPlain(requestGroup.RequestGroupId);
+                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                    <ul>
+                    <li>Uppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}</li>
+                    <li>Region: {orderGroup.Region.Name}</li>
+                    <li>Språk: {orderGroup.LanguageName}</li>
+                    <li>{GetOccuransesAsHtmlList(orderGroup.Orders)}</li>
+                    <li>Svara senast: {requestGroup.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}</li>
+                    </ul>
+                    <div>{GotoRequestGroupButton(requestGroup.RequestGroupId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
+                CreateEmail(
+                    email.ContactInformation,
+                    $"Ny sammanhållen bokningsförfrågan registrerad: {orderGroup.OrderGroupNumber}",
+                    bodyPlain,
+                    bodyHtml,
+                    true
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    GetRequestGroupModel(requestGroup),
+                    webhook.ContactInformation,
+                    NotificationType.RequestGroupCreated,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
+        private string GetOccuranses(IEnumerable<Order> orders)
+        {
+            var texts = orders.Select(o => $"\t\t{o.OrderNumber}: {o.StartAt.ToString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToString("HH:mm")}").ToArray();
+            return String.Join("\n", texts);
+        }
+
+        private string GetOccuransesAsHtmlList(IEnumerable<Order> orders)
+        {
+            var texts = orders.Select(o => $"<li>{o.OrderNumber}: {o.StartAt.ToString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToString("HH:mm")}").ToArray();
+            return $"<ul>{String.Join("\n", texts)}</ul>";
+        }
+
         public void RequestCreatedWithoutExpiry(Request request)
         {
             string body = $@"Bokningsförfrågan {request.Order.OrderNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
@@ -303,6 +356,33 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     },
                     webhook.ContactInformation,
                     NotificationType.RequestLostDueToInactivity,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
+        public void RequestGroupExpired(RequestGroup requestGroup)
+        {
+            var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har gått vidare till nästa förmedling i rangordningen",
+                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name}.\nTidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupButton(requestGroup.RequestGroupId)}",
+                    true);
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestGroupLostDueToInactivityModel
+                    {
+                        OrderGroupNumber = orderGroupNumber,
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestGroupLostDueToInactivity,
                     webhook.RecipientUserId
                 );
             }
@@ -625,7 +705,7 @@ Sammanställning:
         public void RemindUnhandledRequest(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
-            string body =  $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
+            string body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
             + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
             + requireApprovementText;
 
@@ -656,7 +736,7 @@ Sammanställning:
                 _dbContext.Add(new OutboundEmail(
                     recipient,
                     subjectPrepend + subject,
-                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}": ""),
+                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
                     $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
                     _clock.SwedenNow));
             }
@@ -806,6 +886,10 @@ Sammanställning:
                     return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint";
             }
         }
+        private string GotoRequestGroupPlain(int requestGroupId)
+        {
+            return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId)}";
+        }
 
         private string GotoOrderButton(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, string textOverride = null, bool autoBreakLines = true)
         {
@@ -843,6 +927,12 @@ Sammanställning:
                 case HtmlHelper.ViewTab.Complaint:
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint", "Till reklamation");
             }
+        }
+
+        private string GotoRequestGroupButton(int requestGroupId, string textOverride = null, bool autoBreakLines = true)
+        {
+            string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
+            return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId), textOverride ?? "Till bokning");
         }
 
         private static RequestModel GetRequestModel(Request request)
@@ -915,6 +1005,80 @@ Sammanställning:
             };
         }
 
+        private static RequestGroupModel GetRequestGroupModel(RequestGroup requestGroup)
+        {
+            var orderGroup = requestGroup.OrderGroup;
+            var order = orderGroup.FirstOrder;
+            return new RequestGroupModel
+            {
+                CreatedAt = requestGroup.CreatedAt,
+                OrderGroupNumber = orderGroup.OrderGroupNumber,
+                Customer = order.CustomerOrganisation.Name,
+                //D2 pads any single digit with a zero 1 -> "01"
+                Region = order.Region.RegionId.ToString("D2"),
+                Language = new LanguageModel
+                {
+                    Key = orderGroup.FirstOrder.Language?.ISO_639_Code,
+                    Description = order.OtherLanguage ?? order.Language.Name,
+                },
+                ExpiresAt = requestGroup.ExpiresAt,
+                Locations = order.InterpreterLocations.Select(l => new LocationModel
+                {
+                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    Rank = l.Rank,
+                    Key = EnumHelper.GetCustomName(l.InterpreterLocation)
+                }),
+                CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
+                {
+                    Key = EnumHelper.GetCustomName(c.CompetenceLevel),
+                    Rank = c.Rank ?? 0
+                }),
+                AllowExceedingTravelCost = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AssignentType = EnumHelper.GetCustomName(order.AssignentType),
+                Description = order.Description,
+                CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
+                Requirements = order.Requirements.Select(r => new RequirementModel
+                {
+                    Description = r.Description,
+                    IsRequired = r.IsRequired,
+                    RequirementId = r.OrderRequirementId,
+                    RequirementType = EnumHelper.GetCustomName(r.RequirementType)
+                }),
+                Attachments = order.Attachments.Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.Attachment.FileName
+                }),
+                Occasions = orderGroup.Orders.Select( o => new OccasionModel
+                {
+                    OrderNumber = o.OrderNumber,
+                    StartAt = o.StartAt,
+                    EndAt = o.EndAt,
+                    IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
+                    PriceInformation = new PriceInformationModel
+                    {
+                        PriceCalculatedFromCompetenceLevel = o.PriceCalculatedFromCompetenceLevel.GetCustomName(),
+                        PriceRows = o.PriceRows.GroupBy(r => r.PriceRowType)
+                        .Select(p => new PriceRowModel
+                        {
+                            Description = p.Key.GetDescription(),
+                            PriceRowType = p.Key.GetCustomName(),
+                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                            {
+                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                                Price = l.Price,
+                                Quantity = l.Quantity
+                            })
+                        })
+                    }
+                })
+            };
+        }
+
         private Request GetRequest(int id)
         {
             return _dbContext.Requests
@@ -956,6 +1120,16 @@ Sammanställning:
             _dbContext.SaveChanges();
 
             return true;
+        }
+
+        public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup)
+        {
+#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
+        }
+
+        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
+        {
+#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
         }
     }
 }

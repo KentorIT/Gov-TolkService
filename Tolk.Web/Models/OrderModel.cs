@@ -69,7 +69,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Myndighetens avdelning")]
         [StringLength(100)]
-        public string UnitName { get; set; }   
+        public string UnitName { get; set; }
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         [ClientRequired(ErrorMessage = "Ange datum")]
@@ -106,7 +106,7 @@ namespace Tolk.Web.Models
         public InterpreterLocation? RankedInterpreterLocationSecond { get; set; }
 
         public List<OrderOccasionModel> Occasions { get; set; }
-        
+
 
         [Display(Name = "Tredje hand")]
         public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
@@ -269,7 +269,7 @@ namespace Tolk.Web.Models
         [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
- 
+
         #endregion
 
         #region extra requirements
@@ -388,23 +388,37 @@ namespace Tolk.Web.Models
         {
             get
             {
+                int id = 0;
                 if (SeveralOccasions)
                 {
                     foreach (var occasion in Occasions)
                     {
-                        yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false };
+                        yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false, OrderOccasionId = id++ };
                         if (occasion.ExtraInterpreter)
                         {
-                            yield return new OrderOccasionDisplayModel(occasion);
+                            yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreterFor = id, OrderOccasionId = id++ };
                         }
                     }
                 }
                 else
                 {
-                    yield return new OrderOccasionDisplayModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = false };
+                    yield return new OrderOccasionDisplayModel
+                    {
+                        OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
+                        OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                        ExtraInterpreter = false,
+                        OrderOccasionId = id++
+                    };
                     if (ExtraInterpreter)
                     {
-                        yield return new OrderOccasionDisplayModel { OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime, OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime, ExtraInterpreter = true };
+                        yield return new OrderOccasionDisplayModel
+                        {
+                            OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
+                            OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                            ExtraInterpreter = true,
+                            ExtraInterpreterFor = id,
+                            OrderOccasionId = id++
+                        };
                     }
                 }
             }
