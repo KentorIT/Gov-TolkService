@@ -298,7 +298,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
-            if (model.IsMultipleOrders)
+            if (model.SeveralOccasions)
             {
                 ModelState.Remove("SplitTimeRange.StartDate");
                 ModelState.Remove("SplitTimeRange.StartTimeHour");
@@ -325,7 +325,8 @@ namespace Tolk.Web.Controllers
                     else
                     {
                         Order order = CreateNewOrder();
-                        model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
+                        var firstOccasion = model.FirstOccasion;
+                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
                         await _dbContext.AddAsync(order);
                         await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
 
@@ -348,21 +349,17 @@ namespace Tolk.Web.Controllers
             Order order = CreateNewOrder();
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             OrderModel updatedModel = null;
+            var firstOccasion = model.FirstOccasion;
+            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
+            updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
-                var firstOccasion = model.UniqueOrdersFromOccasions.First();
-                model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
-                updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
-
                 updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
                 updatedModel.SeveralOccasions = true;
                 //TODO: THERE ARE WARNINGS TO ADD HERE, TOO!!
             }
             else
             {
-                model.UpdateOrder(order, model.SplitTimeRange.StartAt.Value, model.SplitTimeRange.EndAt.Value);
-                updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
-
                 //get pricelisttype for customer and get calculated price
                 updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel
                 {
@@ -429,7 +426,7 @@ namespace Tolk.Web.Controllers
                     OrderGroupNumber = orderGroup.OrderGroupNumber,
                     OrderOccasionDisplayModels = orderGroup.Orders
                         .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, GetPriceinformationToDisplay(o, false)))
-            });
+                });
             }
             return Forbid();
         }

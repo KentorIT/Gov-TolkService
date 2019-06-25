@@ -75,10 +75,10 @@ namespace Tolk.Web.Models
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
 
-        [Display(Name = "Extra tolk", Description = "Om denna checkbox kryssas i så betyder det att man vill ha två tolkar till samma tillfälle. Det innebär självklart arvode och förmedlingsavgift för båda tolkarna för hela tilfället.")]
+        [Display(Name = "Extra tolk", Description = "Om denna kryssruta kryssas i så betyder det att man vill ha två tolkar till samma tillfälle. Det innebär arvode och förmedlingsavgift för båda tolkarna för hela tilfället.")]
         public bool ExtraInterpreter { get; set; }
 
-        [Display(Name = "Boka flera tillfällen", Description = "Om denna checkbox kryssas i så kan man lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär självklart arvode och förmedlingsavgift för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler.")]
+        [Display(Name = "Boka flera tillfällen", Description = "Om denna kryssruta kryssas i så kan man lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär arvode och förmedlingsavgift för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler.")]
         public bool SeveralOccasions { get; set; }
 
         [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet &quotÖvrig information om uppdraget&quot nedan.")]
@@ -382,6 +382,11 @@ namespace Tolk.Web.Models
         public bool IsMultipleOrders
         {
             get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count() > 1 || Occasions.Single().ExtraInterpreter));
+        }
+
+        public OrderOccasionDisplayModel FirstOccasion
+        {
+            get => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).First();
         }
 
         public IEnumerable<OrderOccasionDisplayModel> UniqueOrdersFromOccasions
