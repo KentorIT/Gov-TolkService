@@ -192,7 +192,7 @@ namespace Tolk.BusinessLogic.Services
                       .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                       .OrderBy(r => r.Order.OrderNumber)
                       .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                          && !r.StatusNotToBeDisplayedForBroker);
+                          && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
         }
 
         public IEnumerable<Request> GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
@@ -211,7 +211,8 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .OrderBy(r => r.Order.OrderNumber)
-                    .Where(r => r.Ranking.BrokerId == brokerId && !r.StatusNotToBeDisplayedForBroker
+                    .Where(r => r.Ranking.BrokerId == brokerId && 
+                        !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced)
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted));
         }
@@ -244,7 +245,8 @@ namespace Tolk.BusinessLogic.Services
                     .Include(c => c.Request).ThenInclude(r => r.Requisitions)
                     .Include(c => c.AnsweringUser)
                     .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId);
+                    .Where(c => c.CreatedAt.Date >= start.Date && 
+                    c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId);
         }
 
         #endregion
@@ -269,7 +271,7 @@ namespace Tolk.BusinessLogic.Services
                     .OrderBy(o => o.OrderNumber)
                     .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
                         && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits != null ? (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
+                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
         }
 
         public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
@@ -292,7 +294,7 @@ namespace Tolk.BusinessLogic.Services
                     .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
                         && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
                         && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits != null ? (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
+                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
         }
 
         public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
@@ -312,7 +314,7 @@ namespace Tolk.BusinessLogic.Services
                     .OrderBy(r => r.Request.Order.OrderNumber)
                     .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
                         && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits != null ? (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
+                        && (localAdminCustomerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value))));
         }
 
         public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
@@ -329,7 +331,7 @@ namespace Tolk.BusinessLogic.Services
                     .OrderBy(c => c.Request.Order.OrderNumber)
                     .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
                         && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits != null ? (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value)) : localAdminCustomerUnits == null));
+                        && (localAdminCustomerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value))));
         }
 
         #endregion

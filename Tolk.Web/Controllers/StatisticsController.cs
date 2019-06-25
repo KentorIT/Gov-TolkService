@@ -122,40 +122,40 @@ namespace Tolk.Web.Controllers
             switch (model.ReportType)
             {
                 case ReportType.OrdersForCustomer:
-                    var orders = _statService.GetOrders(start, end, organisationId, customerUnits);
+                    var orders = _statService.GetOrders(start, end, organisationId, customerUnits).ToList();
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(orders, model.ReportType), orders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersCustomer:
-                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits);
+                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits).ToList();
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrders, model.ReportType), deliveredOrders.First().CustomerOrganisation.Name, model.ReportType);
                 case ReportType.DeliveredOrdersBrokers:
-                    var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value);
+                    var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value).ToList();
                     return CreateExcelFile(StatisticsService.GetRequestExcelFileRows(deliveredOrdersBrokers, model.ReportType), deliveredOrdersBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequestsForBrokers:
-                    var requestsForBrokers = _statService.GetRequestsForBroker(start, end, brokerId.Value);
+                    var requestsForBrokers = _statService.GetRequestsForBroker(start, end, brokerId.Value).ToList();
                     return CreateExcelFile(StatisticsService.GetRequestExcelFileRows(requestsForBrokers, model.ReportType), requestsForBrokers.First().Ranking.Broker.Name, model.ReportType);
                 case ReportType.OrdersForSystemAdministrator:
-                    var ordersForSystemAdministrator = _statService.GetOrders(start, end, organisationId);
+                    var ordersForSystemAdministrator = _statService.GetOrders(start, end, organisationId).ToList();
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(ordersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.DeliveredOrdersSystemAdministrator:
-                    var deliveredOrdersForSystemAdministrator = _statService.GetDeliveredOrders(start, end, organisationId);
+                    var deliveredOrdersForSystemAdministrator = _statService.GetDeliveredOrders(start, end, organisationId).ToList();
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.RequisitionsForSystemAdministrator:
-                    var requisitionsForSystemAdministrator = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId);
+                    var requisitionsForSystemAdministrator = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId).ToList();
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.RequisitionsForBroker:
-                    var requisitionsForBroker = _statService.GetRequisitionsForBroker(start, end, brokerId.Value);
+                    var requisitionsForBroker = _statService.GetRequisitionsForBroker(start, end, brokerId.Value).ToList();
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForBroker, model.ReportType), requisitionsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.RequisitionsForCustomer:
-                    var requisitionsForCustomer = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
+                    var requisitionsForCustomer = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).ToList();
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForCustomer, model.ReportType), requisitionsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
                 case ReportType.ComplaintsForSystemAdministrator:
-                    var complaintsForSystemAdministrator = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId);
+                    var complaintsForSystemAdministrator = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId).ToList();
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForSystemAdministrator, model.ReportType), string.Empty, model.ReportType);
                 case ReportType.ComplaintsForBroker:
-                    var complaintsForBroker = _statService.GetComplaintsForBroker(start, end, brokerId.Value);
+                    var complaintsForBroker = _statService.GetComplaintsForBroker(start, end, brokerId.Value).ToList();
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForBroker, model.ReportType), complaintsForBroker.First().Request.Ranking.Broker.Name, model.ReportType);
                 case ReportType.ComplaintsForCustomer:
-                    var complaintsForCustomer = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
+                    var complaintsForCustomer = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).ToList();
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForCustomer, model.ReportType), complaintsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.ReportType);
             }
             return RedirectToAction(nameof(List));
