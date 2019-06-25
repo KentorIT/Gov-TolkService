@@ -1,13 +1,14 @@
-﻿function sanitizeTimeInput(value) {
-    if (value.indexOf(":") === -1) {
-        var colonPos = value.length - 2;
-        value = [value.slice(0, colonPos), ":", value.slice(colonPos)].join("");
+﻿$(function () {
+    function sanitizeTimeInput(value) {
+        if (value.indexOf(":") === -1) {
+            var colonPos = value.length - 2;
+            value = [value.slice(0, colonPos), ":", value.slice(colonPos)].join("");
+        }
+        if (value.length === 4) {
+            value = ["0", value].join("");
+        }
+        return value;
     }
-    if (value.length === 4) {
-        value = ["0", value].join("");
-    }
-    return value;
-}
     $.validator.addMethod("staywithin", function (value, element, options) {
         var thisPrefix = element.id.split('_')[0];
         return test(thisPrefix, $(element).data("rule-otherproperty"));
