@@ -767,15 +767,19 @@ namespace Tolk.Web.TagHelpers
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
             WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
             WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
+            writer.WriteLine("<span class=\"time-errors\">");
             WriteValidation(writer, startTimeHourModelExplorer, startTimeHourFieldName);
             WriteValidation(writer, startTimeMinutesModelExplorer, startTimeMinutesFieldName);
+            writer.WriteLine("</span>");
             writer.WriteLine("</div>");
             writer.WriteLine("<div class=\"endtime-part\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
             WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
             WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
+            writer.WriteLine("<span class=\"time-errors\">");
             WriteValidation(writer, endTimeHourModelExplorer, endTimeHourFieldName);
             WriteValidation(writer, endTimeMinutesModelExplorer, endTimeMinutesFieldName);
+            writer.WriteLine("</span>");
             writer.WriteLine("</div>");
         }
 

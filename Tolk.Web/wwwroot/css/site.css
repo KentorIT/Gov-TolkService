@@ -1,4 +1,20 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
+@media screen and (max-width: 767px) {
+}
+@media (min-width: 768px) {
+}
+@media (min-width: 768px) {
+}
+@media (max-width: 767px) {
+}
+@media (min-width: 768px) {
+}
+@media (min-width: 768px) {
+}
+@media (max-width: 767px) {
+}
+@media (max-width: 767px) {
+}
 .bg-gray {
   background-color: #F1F4F2;
 }
@@ -636,6 +652,38 @@ input[type='checkbox']:checked:after {
   padding-bottom: 1px;
   padding-top: 3px;
   vertical-align: middle;
+}
+.order-datepicker.order-group-disabled .date-part,
+.order-datepicker.order-group-disabled .starttime-part,
+.order-datepicker.order-group-disabled .endtime-part {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .order-datepicker.order-group-disabled .date-part,
+  .order-datepicker.order-group-disabled .starttime-part,
+  .order-datepicker.order-group-disabled .endtime-part {
+    float: left;
+    width: 33.33333333%;
+  }
+}
+.order-datepicker.order-group-disabled .time-errors {
+  float: left;
+  width: 100%;
+}
+.order-datepicker.order-group-enabled {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .order-datepicker.order-group-enabled {
+    float: left;
+    width: 100%;
+  }
 }
 .order-datepicker .date-part {
   width: 170px;

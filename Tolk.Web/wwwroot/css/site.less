@@ -1,5 +1,7 @@
 ﻿// Import Merriweather Sans
 @import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
+@import (reference) "../lib/bootstrap/less/bootstrap.less";
+@import (reference) "../lib/bootstrap/less/mixins.less";
 @font-family: "Merriweather Sans", sans-serif;
 @height-input: 34px;
 @ultradarkgray: #333333;
@@ -729,7 +731,23 @@ input[type='checkbox']:checked:after {
     vertical-align: middle;
 }
 
+.order-datepicker.order-group-disabled {
+    .date-part, .starttime-part, .endtime-part {
+        .make-sm-column(4);
+    }
+
+    .time-errors {
+        float: left;
+        width:100%;
+    }
+}
+
+.order-datepicker.order-group-enabled {
+    .make-sm-column(12);
+}
+
 .order-datepicker {
+
     .date-part {
         width: @date-input-width;
         padding-bottom: 10px;

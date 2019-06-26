@@ -1,8 +1,12 @@
 ﻿@model Tolk.Web.Models.OrderModel
+@using Microsoft.Extensions.Options;
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
 @{
     var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser;
+    bool enableOrderGroups = TolkOptions.Value.EnableOrderGroups;
+    string orderTimeClass = enableOrderGroups ? "order-group-enabled" : "order-group-disabled";
 }
 @using Tolk.Web.Services
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
@@ -58,41 +62,46 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-12 order-datepicker">
+                            <div class="order-datepicker @orderTimeClass">
                                 <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
-                                <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
+                                @if (enableOrderGroups)
+                                {
+                                    <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
+                                }
                             </div>
                         </div>
-                        <div class="row add-date-button-row">
-                            <div class="col-sm-12">
-                                <a class="btn btn-warning table-button add-occasion">Lägg till <span class="glyphicon glyphicon-plus"></span></a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <form-entry asp-for="SeveralOccasions" />
-                            </div>
-                        </div>
-                        <div class="row several-occasions-table">
-                            <div class="col-sm-12 col-md-10 col-lg-8">
-                                <div class="table-responsive table-datatable">
-                                    <table class="table sortable-only-table styled-row">
-                                        <thead>
-                                            <tr>
-                                                <th>Tillfälle</th>
-                                                <th>Extra tolk</th>
-                                                <th data-sortable="false"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
+                        @if (enableOrderGroups)
+                        {
+                            <div class="row add-date-button-row">
+                                <div class="col-sm-12">
+                                    <a class="btn btn-warning table-button add-occasion">Lägg till <span class="glyphicon glyphicon-plus"></span></a>
                                 </div>
                             </div>
-                            <div class="col-sm-12 important-info">
-                                Observera att detta innebär ett krav på förmedlingen att tillsätta samma tolk på alla tillfällen. Om den första förmedlingen inte kan tillsätta samtliga tillfällen måste förmedlingen tacka nej till hela bokningen och den går vidare till nästa förmedling.
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <form-entry asp-for="SeveralOccasions" />
+                                </div>
                             </div>
-                        </div>
-
+                            <div class="row several-occasions-table">
+                                <div class="col-sm-12 col-md-10 col-lg-8">
+                                    <div class="table-responsive table-datatable">
+                                        <table class="table sortable-only-table styled-row">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tillfälle</th>
+                                                    <th>Extra tolk</th>
+                                                    <th data-sortable="false"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 important-info">
+                                    Observera att detta innebär ett krav på förmedlingen att tillsätta samma tolk på alla tillfällen. Om den första förmedlingen inte kan tillsätta samtliga tillfällen måste förmedlingen tacka nej till hela bokningen och den går vidare till nästa förmedling.
+                                </div>
+                            </div>
+                        }
                         <div class="row">
                             <div class="col-sm-8">
                                 <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" help-link="@HelpLinkService.GenerateUrl("nybokning_svarstid")" />

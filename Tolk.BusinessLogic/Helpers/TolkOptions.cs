@@ -13,6 +13,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableTimeTravel { get; set; }
 
+        public bool EnableOrderGroups { get; set; }
+
         public bool RoundPriceDecimals { get; set; }
 
         public long CombinedMaxSizeAttachments { get; set; }

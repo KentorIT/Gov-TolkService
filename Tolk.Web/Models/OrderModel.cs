@@ -386,7 +386,7 @@ namespace Tolk.Web.Models
 
         public OrderOccasionDisplayModel FirstOccasion
         {
-            get => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).First();
+            get => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).FirstOrDefault();
         }
 
         public IEnumerable<OrderOccasionDisplayModel> UniqueOrdersFromOccasions
@@ -407,23 +407,26 @@ namespace Tolk.Web.Models
                 }
                 else
                 {
-                    yield return new OrderOccasionDisplayModel
-                    {
-                        OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
-                        OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
-                        ExtraInterpreter = false,
-                        OrderOccasionId = id++
-                    };
-                    if (ExtraInterpreter)
+                    if (SplitTimeRange != null)
                     {
                         yield return new OrderOccasionDisplayModel
                         {
                             OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                             OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
-                            ExtraInterpreter = true,
-                            ExtraInterpreterFor = id,
+                            ExtraInterpreter = false,
                             OrderOccasionId = id++
                         };
+                        if (ExtraInterpreter)
+                        {
+                            yield return new OrderOccasionDisplayModel
+                            {
+                                OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
+                                OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                                ExtraInterpreter = true,
+                                ExtraInterpreterFor = id,
+                                OrderOccasionId = id++
+                            };
+                        }
                     }
                 }
             }
