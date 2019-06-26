@@ -119,7 +119,8 @@ namespace Tolk.Web.Api.Controllers
                     }).ToList(),
                     //Does not handle attachments yet.
                     new List<RequestAttachment>(),
-                    model.ExpectedTravelCosts
+                    model.ExpectedTravelCosts,
+                    model.ExpectedTravelCostInfo
                 );
                 await _dbContext.SaveChangesAsync();
                 //End of service
@@ -323,7 +324,8 @@ namespace Tolk.Web.Api.Controllers
                     }).ToList(),
                     //Does not handle attachments yet.
                     new List<RequestAttachment>(),
-                    model.ExpectedTravelCosts);
+                    model.ExpectedTravelCosts,
+                    model.ExpectedTravelCostInfo);
                 await _dbContext.SaveChangesAsync();
             }
             catch (InvalidOperationException)
@@ -379,8 +381,9 @@ namespace Tolk.Web.Api.Controllers
                 user?.Id ?? apiUser.Id,
                 (user != null ? (int?)apiUser.Id : null),
                 EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                model.ExpectedTravelCosts
-            );
+                model.ExpectedTravelCosts,
+                model.ExpectedTravelCostInfo
+            ); 
             _dbContext.SaveChanges();
             //End of service
             return Json(new ResponseBase());
@@ -605,6 +608,7 @@ namespace Tolk.Web.Api.Controllers
                 InterpreterLocation = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
                 InterpreterCompetenceLevel = EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request?.CompetenceLevel),
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
+                ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
                 RequirementAnswers = request.RequirementAnswers
                     .Select(r => new RequirementAnswerModel
                     {

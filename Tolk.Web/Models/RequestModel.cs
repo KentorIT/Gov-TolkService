@@ -116,10 +116,15 @@ namespace Tolk.Web.Models
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för resekostnad")]
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite not explicitly allowing them
         [ClientRequired(ErrorMessage = "Ange resekostnad (endast siffror, ange 0 om det inte finns någon kostnad)")]
-        [Display(Name = "Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd.")]
+        [Display(Name = "Bedömd resekostnad")]
         [DataType(DataType.Currency)]
-        [Placeholder("Förväntad resekostnad i SEK. Ange 0 om ingen kostnad förväntas.")]
+        [Placeholder("Ange i SEK")]
         public decimal? ExpectedTravelCosts { get; set; }
+
+        [Display(Name = "Kommentar till bedömd resekostnad")]
+        [StringLength(1000)]
+        [DataType(DataType.MultilineText)]
+        public string ExpectedTravelCostInfo { get; set; }
 
         [ClientRequired]
         [Display(Name = "Inställelsesätt")]
@@ -198,6 +203,7 @@ namespace Tolk.Web.Models
                 InterpreterVerificationMessage  = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
+                ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
                 RequisitionId = request.Requisitions?.OrderByDescending(r => r.RequisitionId).FirstOrDefault()?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {

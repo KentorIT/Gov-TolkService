@@ -168,7 +168,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
 
             request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo);
+                requirementAnswers, attachments, priceInfo, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -248,7 +248,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Throws<InvalidOperationException>(() => request.Accept(DateTime.Now, 10, null,
                 interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter,
                 new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(),
-                new PriceInformation()));
+                new PriceInformation(), null));
         }
 
         [Theory]
@@ -467,7 +467,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
 
             request.ReplaceInterpreter(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, isAutoAccepted, oldRequest);
+                requirementAnswers, attachments, priceInfo, isAutoAccepted, oldRequest, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -508,7 +508,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null));
+                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null, null));
         }
 
         [Theory]
@@ -982,7 +982,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 CompetenceAndSpecialistLevel.OtherInterpreter,
                 new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Fact]
@@ -1010,7 +1011,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() }, 
+                    null)
             );
         }
 
@@ -1039,7 +1041,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() }, 
+                    null)
             );
         }
 
@@ -1068,7 +1071,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 2, CanSatisfyRequirement = true } },
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
         // no on not required
@@ -1096,7 +1100,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null);
         }
 
         [Fact]
@@ -1123,7 +1128,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null);
         }
         // no answer on not required
         [Fact]
@@ -1151,7 +1157,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1188,7 +1195,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
                 },
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         // yes and no on required
@@ -1225,7 +1233,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
                 },
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Fact]
@@ -1262,7 +1271,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                         new OrderRequirementRequestAnswer {OrderRequirementId = 3, CanSatisfyRequirement = true }
                     },
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1295,7 +1305,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 level,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
 
         }
 
@@ -1341,8 +1352,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 level,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
-
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Fact]
@@ -1375,7 +1386,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 CompetenceAndSpecialistLevel.OtherInterpreter,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Theory]
@@ -1411,7 +1423,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     level,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1446,7 +1459,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 level,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Theory]
@@ -1482,7 +1496,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     level,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1515,7 +1530,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1548,7 +1564,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 CompetenceAndSpecialistLevel.OtherInterpreter,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Theory]
@@ -1581,7 +1598,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
 
@@ -1616,7 +1634,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 CompetenceAndSpecialistLevel.OtherInterpreter,
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
-                new PriceInformation() { PriceRows = new List<PriceRowBase>() });
+                new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null);
         }
 
         [Theory]
@@ -1650,7 +1669,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     CompetenceAndSpecialistLevel.OtherInterpreter,
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
-                    new PriceInformation() { PriceRows = new List<PriceRowBase>() })
+                    new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null)
             );
         }
     }

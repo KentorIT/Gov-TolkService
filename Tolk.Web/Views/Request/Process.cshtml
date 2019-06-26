@@ -42,15 +42,17 @@
             @if (Model.OrderModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" }, { "isBroker", true } })
-                <div class="col-sm-4">
-                    @if (Model.InterpreterLocation.HasValue)
-                    {
-                        <input asp-for="InterpreterLocation" type="hidden" />
-                    }
-                    else
-                    {
-                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
-                    }
+                <div class="row">
+                    <div class="col-sm-4">
+                        @if (Model.InterpreterLocation.HasValue)
+                        {
+                            <input asp-for="InterpreterLocation" type="hidden" />
+                        }
+                        else
+                        {
+                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
+                        }
+                    </div>
                 </div>
             }
             else
@@ -68,7 +70,7 @@
                         <div class="interpreter-information d-none">
                             <span class="glyphicon message-icon glyphicon-ok"></span>
                             <span class="info-message"></span>
-                            <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none" 
+                            <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
                                   data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                         </div>
                     </div>
@@ -95,20 +97,18 @@
                 </div>
             }
             <input asp-for="Status" type="hidden" />
-            @if ((Model.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation || Model.InterpreterLocation == InterpreterLocation.OnSite) && Model.OrderModel.AllowExceedingTravelCost.SelectedItem != null &&
-           (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes))
+            @if (Model.OrderModel.AllowExceedingTravelCost.SelectedItem != null && EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes)
             {
-                //This should be visible if a specified  InterpreterLocation is set and not being OffSite.
-                <div class="important-info">Om bedömd restid och/eller resväg överstiger gränsvärdena så fyll i resekostnad nedan, annars lämna 0 i fältet.</div>
-                <form-entry asp-for="ExpectedTravelCosts" />
-            }
-            else if (Model.OrderModel.AllowExceedingTravelCost.SelectedItem != null && (EnumHelper.Parse<TrueFalse>(Model.OrderModel.AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes))
-            {
-                // If it is set to Offsite it is not needed at all
-                // It should be hidden and possible to show if InterpreterLocation can be selected, and it is set to any other than OffSite
                 <div class="collapse" id="set-expected-travel-costs">
-                    <div class="important-info">Ange bedömd resekostnad nedan. Ange 0 om uppdraget inte innebär resor.</div>
-                    <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                    <div class="row">
+                        <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                        <div class="col-sm-4">
+                            <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                        </div>
+                        <div class="col-sm-4">
+                            <form-entry asp-for="ExpectedTravelCostInfo" />
+                        </div>
+                    </div>
                 </div>
             }
             <div class="row">
@@ -233,15 +233,15 @@
     </div>
 </div>
 @section Scripts {
-<environment include="Development">
-    <script src="~/js/Request/ValidateInterpreter.js" asp-append-version="true"></script>
-    <script src="~/js/Request/Process.js" asp-append-version="true"></script>
-    <script src="~/js/Files.js" asp-append-version="true"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/js/Request/ValidateInterpreter.min.js" asp-append-version="true"></script>
-    <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
-    <script src="~/js/Files.min.js" asp-append-version="true"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/js/Request/ValidateInterpreter.js" asp-append-version="true"></script>
+        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/ValidateInterpreter.min.js" asp-append-version="true"></script>
+        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

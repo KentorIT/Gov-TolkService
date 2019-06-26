@@ -265,7 +265,8 @@ namespace Tolk.Web.Controllers
                                     model.InterpreterCompetenceLevel.Value,
                                     requirementAnswers,
                                     model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
-                                    model.ExpectedTravelCosts
+                                    model.ExpectedTravelCosts,
+                                    model.ExpectedTravelCostInfo
                                 );
                             }
                             else
@@ -280,7 +281,8 @@ namespace Tolk.Web.Controllers
                                     model.InterpreterCompetenceLevel.Value,
                                     requirementAnswers,
                                     model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                                    model.ExpectedTravelCosts
+                                    model.ExpectedTravelCosts,
+                                    model.ExpectedTravelCostInfo
                                 );
                             }
                         }
@@ -292,7 +294,8 @@ namespace Tolk.Web.Controllers
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
                                 model.InterpreterLocation.Value,
-                                model.ExpectedTravelCosts
+                                model.ExpectedTravelCosts,
+                                model.ExpectedTravelCostInfo
                             );
                         }
                         await _dbContext.SaveChangesAsync();

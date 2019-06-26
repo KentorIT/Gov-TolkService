@@ -226,9 +226,13 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
-        [Display(Name = "Angiven förväntad resekostnad (exkl. moms)")]
+        [Display(Name = "Angiven bedömd resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
+
+        [Display(Name = "Kommentar till bedömd resekostnad")]
+        [DataType(DataType.MultilineText)]
+        public string ExpectedTravelCostInfo { get; set; }
 
         public PriceInformationModel ActiveRequestPriceInformationModel { get; set; }
 

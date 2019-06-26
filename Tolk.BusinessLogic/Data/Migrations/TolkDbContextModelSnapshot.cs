@@ -1268,6 +1268,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("DenyMessage")
                         .HasMaxLength(1000);
 
+                    b.Property<string>("ExpectedTravelCostInfo")
+                        .HasMaxLength(1000);
+
                     b.Property<DateTimeOffset?>("ExpiresAt");
 
                     b.Property<int?>("ImpersonatingAnswerProcessedBy");

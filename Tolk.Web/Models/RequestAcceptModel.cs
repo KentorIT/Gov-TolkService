@@ -34,6 +34,8 @@ namespace Tolk.Web.Models
 
         public decimal? ExpectedTravelCosts { get; set; }
 
+        public string ExpectedTravelCostInfo { get; set; }
+
         public RequestStatus Status { get; set; }
 
         public List<FileModel> Files { get; set; }

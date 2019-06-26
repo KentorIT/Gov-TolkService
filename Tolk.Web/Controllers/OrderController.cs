@@ -164,6 +164,7 @@ namespace Tolk.Web.Controllers
                     model.RequestId = request.RequestId;
                     model.AnsweredBy = request.AnsweringUser?.CompleteContactInformation;
                     model.ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
+                    model.ExpectedTravelCostInfo = request.ExpectedTravelCostInfo;
                     //There is no InterpreterLocation for replacement order if not answered yet
                     if (request.InterpreterLocation.HasValue)
                     {

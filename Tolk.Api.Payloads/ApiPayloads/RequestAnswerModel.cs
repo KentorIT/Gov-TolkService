@@ -11,6 +11,7 @@ namespace Tolk.Api.Payloads.ApiPayloads
         public string Location { get; set; }
         public string CompetenceLevel { get; set; }
         public decimal? ExpectedTravelCosts { get; set; }
+        public string ExpectedTravelCostInfo { get; set; }
         public IEnumerable<RequirementAnswerModel> RequirementAnswers { get; set; }
         //Files
     }

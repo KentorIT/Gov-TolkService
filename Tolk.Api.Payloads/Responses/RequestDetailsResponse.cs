@@ -38,6 +38,7 @@ namespace Tolk.Api.Payloads.Responses
         public string InterpreterLocation { get; set; }
         public string InterpreterCompetenceLevel { get; set; }
         public decimal? ExpectedTravelCosts { get; set; }
+        public string ExpectedTravelCostInfo { get; set; }
         public IEnumerable<RequirementAnswerModel> RequirementAnswers { get; set; }
 
         #region requisition

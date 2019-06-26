@@ -965,6 +965,8 @@ li.placeholder::before {
 }
 .to-accept-info {
   background-color: #E6F1ED;
+  margin-left: 14px;
+  margin-right: 14px;
   border: none;
   color: black;
   padding: 12px 12px 12px 12px;
@@ -1068,9 +1070,6 @@ ul.pagination > li.paginate_button.active > a {
 #TimeWasteTotalTime,
 #TimeWasteIWHTime {
   width: 30%;
-}
-#ExpectedTravelCosts {
-  width: 31%;
 }
 .panel-heading {
   background-color: #587573;

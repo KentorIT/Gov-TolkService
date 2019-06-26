@@ -8,7 +8,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class Request :RequestBase
+    public class Request : RequestBase
     {
         #region constructors
 
@@ -24,7 +24,7 @@ namespace Tolk.BusinessLogic.Entities
         }
 
         public Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
-            :this(originalRequest.Ranking, expiry, creationTime)
+            : this(originalRequest.Ranking, expiry, creationTime)
         {
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
@@ -62,6 +62,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ReplacingRequestId { get; set; }
 
+        [MaxLength(1000)]
+        public string ExpectedTravelCostInfo { get; set; }
+
         [ForeignKey(nameof(ReplacingRequestId))]
         [InverseProperty(nameof(ReplacedByRequest))]
         public Request ReplacingRequest { get; set; }
@@ -93,16 +96,16 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel
         {
-            get => (Order.Status == OrderStatus.Requested || 
+            get => (Order.Status == OrderStatus.Requested ||
                     Order.Status == OrderStatus.RequestResponded ||
-                    Order.Status == OrderStatus.RequestRespondedNewInterpreter || 
+                    Order.Status == OrderStatus.RequestRespondedNewInterpreter ||
                     Order.Status == OrderStatus.ResponseAccepted) &&
                     (IsToBeProcessedByBroker || IsAcceptedOrApproved);
         }
 
         public bool CanChangeInterpreter(DateTimeOffset swedenNow)
         {
-           return IsAcceptedOrApproved && Order.StartAt > swedenNow;
+            return IsAcceptedOrApproved && Order.StartAt > swedenNow;
         }
 
         public bool CanCreateRequisition
@@ -170,8 +173,10 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
-            PriceInformation priceInformation, 
-            VerificationResult? verificationResult = null)
+            PriceInformation priceInformation,
+            string expectedTravelCostInfo,
+            VerificationResult? verificationResult = null
+            )
         {
             if (!IsToBeProcessedByBroker)
             {
@@ -196,7 +201,7 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
-
+            ExpectedTravelCostInfo = expectedTravelCostInfo;
             Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
         }
 
@@ -228,21 +233,14 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             DenyMessage = message;
-            if (!Order.ReplacingOrderId.HasValue)
-            {
-                Order.Status = OrderStatus.Requested;
-            }
-            else
-            {
-                Order.Status = OrderStatus.NoBrokerAcceptedOrder;
-            }
+            Order.Status = !Order.ReplacingOrderId.HasValue ? OrderStatus.Requested : OrderStatus.NoBrokerAcceptedOrder;
         }
 
         public void AcceptReplacementOrder(
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            decimal? expectedTravelCosts,
+            string expectedTravelCostInfo,
             InterpreterLocation interpreterLocation,
             PriceInformation priceInformation)
         {
@@ -259,6 +257,7 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
+            ExpectedTravelCostInfo = expectedTravelCostInfo;
             if (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved)
             {
                 Status = RequestStatus.Accepted;
@@ -284,6 +283,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceInformation priceInformation,
             bool isAutoAccepted,
             Request oldRequest,
+            string expectedTravelCostInfo,
             VerificationResult? verificationResult = null)
         {
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
@@ -309,7 +309,8 @@ namespace Tolk.BusinessLogic.Entities
             RequirementAnswers = requirementAnswers;
             Attachments = attachments.ToList();
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
-            InterpreterCompetenceVerificationResultOnAssign = verificationResult; 
+            ExpectedTravelCostInfo = expectedTravelCostInfo;
+            InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             //if old request already was approved by customer
             if (oldRequest.Status == RequestStatus.Approved)
             {

@@ -55,7 +55,8 @@ namespace Tolk.BusinessLogic.Services
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
-            decimal? expectedTravelCosts
+            decimal? expectedTravelCosts,
+            string expectedTravelCostInfo
         )
         {
             //Get prices
@@ -67,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
             }
             // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, verificationResult);
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
             //Create notification
             switch (request.Status)
             {
@@ -89,14 +90,15 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId,
             InterpreterLocation interpreterLocation,
-            decimal? expectedTravelCosts
+            decimal? expectedTravelCosts, 
+            string expectedTravelCostInfo
         )
         {
             request.AcceptReplacementOrder(
                 acceptTime,
                 userId,
                 impersonatorId,
-                expectedTravelCosts,
+                expectedTravelCostInfo,
                 interpreterLocation,
                 _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts)
             );
@@ -138,7 +140,8 @@ namespace Tolk.BusinessLogic.Services
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
-            decimal? expectedTravelCosts
+            decimal? expectedTravelCosts, 
+            string expectedTravelCostInfo
         )
         {
             Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt)
@@ -166,6 +169,7 @@ namespace Tolk.BusinessLogic.Services
                 _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
+                expectedTravelCostInfo,
                 verificationResult
             );
             if (request.Status == RequestStatus.Approved && noNeedForUserAccept)
