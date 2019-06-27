@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ using System.Transactions;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
@@ -31,6 +33,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly INotificationService _notificationService;
         private readonly HashService _hashService;
+        private readonly TolkOptions _options;
 
         public UserController(
             UserManager<AspNetUser> userManager,
@@ -40,7 +43,8 @@ namespace Tolk.Web.Controllers
             UserService userService,
             IAuthorizationService authorizationService,
             INotificationService notificationService,
-            HashService hashService
+            HashService hashService,
+            IOptions<TolkOptions> options
 )
         {
             _userManager = userManager;
@@ -51,6 +55,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _notificationService = notificationService;
             _hashService = hashService;
+            _options = options.Value;
         }
 
         public ActionResult List(UserFilterModel model)
@@ -524,6 +529,7 @@ namespace Tolk.Web.Controllers
                         CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                         UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                         UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
+                        CallbackApiKey = apiUser.Claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(apiUser.Claims.Single(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
                         OrganisationNumber = apiUser.Broker.OrganizationNumber,
                         NotificationSettings = apiUser.NotificationSettings.Select(s => new NotificationSettingsDetailsModel
                         {
@@ -777,6 +783,7 @@ namespace Tolk.Web.Controllers
                         CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                         UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                         UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
+                        CallbackApiKey = apiUser.Claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
                         OrganisationNumber = apiUser.Broker.OrganizationNumber
                     });
                 }
@@ -839,6 +846,15 @@ namespace Tolk.Web.Controllers
                             if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
                             {
                                 await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CertificateSerialNumber), model.CertificateSerialNumber));
+                            }
+                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.CallbackApiKey));
+                            if (claim != null)
+                            {
+                                await _userManager.RemoveClaimAsync(brokerUser, claim);
+                            }
+                            if (!string.IsNullOrWhiteSpace(model.CallbackApiKey))
+                            {
+                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CallbackApiKey), EncryptHelper.Encrypt(model.CallbackApiKey, _options.PublicOrigin, apiUser.UserName)));
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();

@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<WebHookService> _logger;
-        private readonly TolkOptions.SmtpSettings _options;
+        private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private static HttpClient client = new HttpClient();
 
@@ -29,7 +29,7 @@ namespace Tolk.BusinessLogic.Services
         {
             _dbContext = dbContext;
             _logger = logger;
-            _options = options.Value.Smtp;
+            _options = options.Value;
             _clock = clock;
         }
 
@@ -47,16 +47,11 @@ namespace Tolk.BusinessLogic.Services
 
             if (callIds.Any())
             {
-                //Need app settings: UseCertFile, Cert.FilePath, CertPublicKey
-
-                //var handler = new HttpClientHandler();
-                //handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                //handler.SslProtocols = SslProtocols.Tls12;
-                //handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
                 foreach (var callId in callIds)
                 {
                     bool success = false;
                     var call = await _dbContext.OutboundWebHookCalls
+                        .Include(c => c.RecipientUser).ThenInclude(u => u.Claims)
                         .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
                     try
                     {
@@ -66,21 +61,26 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
-                                client.DefaultRequestHeaders.Accept.Clear();
-                                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
-                                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
-                                //Also add cert to call
-                                _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
-                                var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
-                                var response = await client.PostAsync(call.RecipientUrl, content);
-
-                                success = response.IsSuccessStatusCode;
-                                if (!success)
-                                {
-                                    _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
-                                    errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}";
-                                }
+                            client.DefaultRequestHeaders.Clear();
+                            client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
+                            client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
+                            string encryptedCallbackKey = call.RecipientUser.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
+                            if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
+                            {
+                                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", EncryptHelper.Decrypt(encryptedCallbackKey, _options.PublicOrigin, call.RecipientUser.UserName));
                             }
+                            //Also add cert to call
+                            _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
+                            var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
+                            var response = await client.PostAsync(call.RecipientUrl, content);
+
+                            success = response.IsSuccessStatusCode;
+                            if (!success)
+                            {
+                                _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
+                                errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}";
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
