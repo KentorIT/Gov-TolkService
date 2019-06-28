@@ -4,43 +4,44 @@
 @{
     ViewData["Title"] = "Ändra " + Model.Name;
 }
-<h2>@ViewData["Title"]</h2>
-@using (Html.BeginForm(FormMethod.Post))
-{
-    <div class="row">
-        <input type="hidden" asp-for="CustomerId" />
-        <div class="col-sm-4">
-            <form-entry asp-for="Name" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <input type="hidden" asp-for="CustomerId" />
+            <div class="col-sm-4">
+                <form-entry asp-for="Name" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="EmailDomain" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OrganizationPrefix" />
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <form-entry asp-for="EmailDomain" />
+        <div class="row">
+            <div class="col-sm-4">
+                &nbsp;
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="PriceListType" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="OrganizationPrefix" />
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = Model.CustomerId })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            &nbsp;
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="PriceListType" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = Model.CustomerId })">Avbryt <span class="btn-remove-times">&times;</span></a>
-        </div>
-        <div class="col-sm-4">
-            <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
-        </div>
-    </div>
-}
+    </form>
+</section>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

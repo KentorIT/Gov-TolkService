@@ -3,61 +3,63 @@
 @{
     ViewData["Title"] = "Uppdrag";
 }
-<div class="row">
-    <div class="col-md-8">
-        <h2>@ViewData["Title"]</h2>
-        <display-entry asp-for="OrderNumber" />
-        @if (!string.IsNullOrEmpty(Model.ReplacedByOrderNumber))
-        {
-            <div class="important-info">Detta uppdrag är avbokat och har ersatts med uppdrag @Model.ReplacedByOrderNumber.</div>
-        }
-        @if (Model.ReplacedByOrderStatus == OrderStatus.Requested)
-        {
-            <div class="important-info">Ersättningsuppdraget är ännu inte besvarat av förmedlingen.</div>
-        }
-        else if (Model.ReplacedByOrderStatus == OrderStatus.RequestResponded)
-        {
-            <div class="important-info">Ersättningsuppdraget är ännu inte godkänt av myndighet.</div>
-        }
-        <display-entry asp-for="LanguageName" />
-        <display-entry asp-for="InterpreterLocation" />
-        @if (Model.InterpreterLocation == InterpreterLocation.OffSitePhone || Model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
-        {
-            <display-entry asp-for="OffSiteContactInformation" />
-        }
-        else
-        {
-            <display-entry asp-for="ExpectedTravelCosts" />
-            <display-entry asp-for="Address" />
-        }
-        <display-entry asp-for="CustomerName" />
-        <display-entry asp-for="StartDateTime" />
-        <display-entry asp-for="EndDateTime" />
-        <display-entry asp-for="BrokerName" />
-        @if (Model.OrderAttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.OrderAttachmentListModel)
-        }
-        @if (Model.RequestAttachmentListModel?.DisplayFiles?.Count > 0)
-        {
-            @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
-        }
-        @if (Model.RequisitionId.HasValue)
-        {
-            <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
-        }
-        else if (Model.AllowRequisitionRegistration)
-        {
-            <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
-        }
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>@ViewData["Title"]</h1>
+            <display-entry asp-for="OrderNumber" />
+            @if (!string.IsNullOrEmpty(Model.ReplacedByOrderNumber))
+            {
+                <div class="important-info">Detta uppdrag är avbokat och har ersatts med uppdrag @Model.ReplacedByOrderNumber.</div>
+            }
+            @if (Model.ReplacedByOrderStatus == OrderStatus.Requested)
+            {
+                <div class="important-info">Ersättningsuppdraget är ännu inte besvarat av förmedlingen.</div>
+            }
+            else if (Model.ReplacedByOrderStatus == OrderStatus.RequestResponded)
+            {
+                <div class="important-info">Ersättningsuppdraget är ännu inte godkänt av myndighet.</div>
+            }
+            <display-entry asp-for="LanguageName" />
+            <display-entry asp-for="InterpreterLocation" />
+            @if (Model.InterpreterLocation == InterpreterLocation.OffSitePhone || Model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
+            {
+                <display-entry asp-for="OffSiteContactInformation" />
+            }
+            else
+            {
+                <display-entry asp-for="ExpectedTravelCosts" />
+                <display-entry asp-for="Address" />
+            }
+            <display-entry asp-for="CustomerName" />
+            <display-entry asp-for="StartDateTime" />
+            <display-entry asp-for="EndDateTime" />
+            <display-entry asp-for="BrokerName" />
+            @if (Model.OrderAttachmentListModel?.DisplayFiles?.Count > 0)
+            {
+                @await Html.PartialAsync("_FileList", Model.OrderAttachmentListModel)
+            }
+            @if (Model.RequestAttachmentListModel?.DisplayFiles?.Count > 0)
+            {
+                @await Html.PartialAsync("_FileList", Model.RequestAttachmentListModel)
+            }
+            @if (Model.RequisitionId.HasValue)
+            {
+                <a href="@Url.Action("View", "Requisition", new { id = Model.RequisitionId })">Visa rekvisition</a>
+            }
+            else if (Model.AllowRequisitionRegistration)
+            {
+                <a href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+            }
+        </div>
     </div>
-</div>
-@section Scripts {
-    <environment include="Development">
-        <script src="~/js/Files.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Files.min.js" asp-append-version="true"></script>
-    </environment>
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
+</section>
+    @section Scripts {
+        <environment include="Development">
+            <script src="~/js/Files.js" asp-append-version="true"></script>
+        </environment>
+        <environment exclude="Development">
+            <script src="~/js/Files.min.js" asp-append-version="true"></script>
+        </environment>
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+    }

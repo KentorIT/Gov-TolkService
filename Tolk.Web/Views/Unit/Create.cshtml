@@ -4,30 +4,30 @@
 @{
     ViewData["Title"] = "Skapa enhet";
 }
-<h2>@ViewData["Title"]</h2>
-
-<form method="post">
-    <div class="row">
-        <div class="col-sm-4">
-            <form-entry asp-for="Name" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="Name" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="Email" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="LocalAdministrator" type="select" asp-items="SelectListService.CustomerUsers" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="Email" />
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="LocalAdministrator" type="select" asp-items="SelectListService.CustomerUsers" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
-        </div>
-        <div class="col-sm-4">
-            <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
-        </div>
-    </div>
-</form>
-
+    </form>
+</section>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

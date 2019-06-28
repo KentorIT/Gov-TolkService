@@ -10,49 +10,50 @@
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "CustomerOrganizationInfo";
 }
-
-@if (isCollapsible)
-{
-    <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
-        <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
-    </a>
-}
-else
-{
-    <h2 class="normal-weight">@header</h2>
-}
-<hr />
-<div id="@divId" class="@divClass">
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="CustomerName" />
-            <display-entry asp-for="CreatedBy" />
+<section aria-label="@header">
+    @if (isCollapsible)
+    {
+        <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
+            <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
+        </a>
+    }
+    else
+    {
+        <h1 class="normal-weight">@header</h1>
+    }
+    <hr />
+    <div id="@divId" class="@divClass">
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerName" />
+                <display-entry asp-for="CreatedBy" />
+            </div>
+            @if (IsOrderDetailView)
+            {
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerUnitName" />
+                    <display-entry asp-for="UnitName" />
+                    <display-entry asp-for="CustomerReferenceNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="ContactPerson" />
+                    @if (Model.AllowEditContactPerson)
+                    {
+                        <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
+                        <br /><br />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerUnitName" />
+                    <display-entry asp-for="UnitName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerReferenceNumber" />
+                </div>
+            }
         </div>
-        @if (IsOrderDetailView)
-        {
-            <div class="col-sm-4">
-                <display-entry asp-for="CustomerUnitName" />
-                <display-entry asp-for="UnitName" />
-                <display-entry asp-for="CustomerReferenceNumber" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="ContactPerson" />
-                @if (Model.AllowEditContactPerson)
-                {
-                    <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
-                    <br /><br />
-                }
-            </div>
-        }
-        else
-        {
-            <div class="col-sm-4">
-                <display-entry asp-for="CustomerUnitName" />
-                <display-entry asp-for="UnitName" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="CustomerReferenceNumber" />
-            </div>
-        }
     </div>
-</div>
+</section>

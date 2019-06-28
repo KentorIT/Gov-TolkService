@@ -5,49 +5,51 @@
     ViewData["Title"] = "Tack för din bokning";
 }
 @{ HelpLinkService.PageName = "myndighet-bokning-skickad/";}
-<div class="row">
-    <div class="col-sm-9 center-content">
-        <div class="col-sm-12 text-center">
-            <img class="progressbar" src="~/images/Step3_Order.PNG" alt="Ny bokning, steg 3 av 3, bokning skickad" />
-        </div>
-        <div class="col-sm-12 center-content">
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-sm-9 center-content">
             <div class="col-sm-12 text-center">
-                <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
+                <img class="progressbar" src="~/images/Step3_Order.PNG" alt="Ny bokning, steg 3 av 3, bokning skickad" />
             </div>
-            <div class="col-sm-12 text-center">
-                <h3>BokningsID: @Model.OrderNumber</h3>
+            <div class="col-sm-12 center-content">
+                <div class="col-sm-12 text-center">
+                    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
+                </div>
+                <div class="col-sm-12 text-center">
+                    <h2>BokningsID: @Model.OrderNumber</h2>
+                </div>
+                @if (Model.OrderCalculatedPriceInformationModel != null)
+                {
+                    Model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";
+                    await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                }
+                <br /><br /><br />
             </div>
-            @if (Model.OrderCalculatedPriceInformationModel != null)
-            {
-                Model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";
-                await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
-            }
-            <br /><br /><br />
-        </div>
-        <hr />
-        <br />
-        <h4>Vad händer nu?</h4>
-        <p>
-            Bokningsförfrågan skickas till den förmedling som är rangordnad som nr. 1 i aktuellt län (region).<br />
-            När en förmedling svarar på din förfrågan får du ett mail om detta. Detsamma gäller om samtliga förmedlingar avböjer eller inte svarar i tid, dvs ingen tolk blir tillsatt. Bokningsförfrågan avbryts i dessa fall och du måste göra en ny förfrågan.<br />
+            <hr />
             <br />
-            Om svarstider på bokningsförfrågningar:
-            <ul>
-                <li>Förfrågningar som görs senast två arbetsdagar före tolktillfället ska besvaras senast kl. 15.00 nästa arbetsdag</li>
-                <li>Förfrågningar som görs senast kl 14:00 arbetsdagen före tolktillfället ska besvaras senast kl 16:30 samma dag</li>
-                <li>Förfrågningar som görs efter kl 14:00 arbetsdagen före uppdragsstart, eller samma arbetsdag som uppdragsstart, skall besvaras omedelbart eller enligt av avroparen angiven senaste svarstid.</li>
-            </ul>
+            <h2>Vad händer nu?</h2>
+            <p>
+                Bokningsförfrågan skickas till den förmedling som är rangordnad som nr. 1 i aktuellt län (region).<br />
+                När en förmedling svarar på din förfrågan får du ett mail om detta. Detsamma gäller om samtliga förmedlingar avböjer eller inte svarar i tid, dvs ingen tolk blir tillsatt. Bokningsförfrågan avbryts i dessa fall och du måste göra en ny förfrågan.<br />
+                <br />
+                Om svarstider på bokningsförfrågningar:
+                <ul>
+                    <li>Förfrågningar som görs senast två arbetsdagar före tolktillfället ska besvaras senast kl. 15.00 nästa arbetsdag</li>
+                    <li>Förfrågningar som görs senast kl 14:00 arbetsdagen före tolktillfället ska besvaras senast kl 16:30 samma dag</li>
+                    <li>Förfrågningar som görs efter kl 14:00 arbetsdagen före uppdragsstart, eller samma arbetsdag som uppdragsstart, skall besvaras omedelbart eller enligt av avroparen angiven senaste svarstid.</li>
+                </ul>
+                <br />
+                Om tolkarvode:<br />
+                Domstolsverkets arvodestabeller 1 och 2 uppdateras i december varje år. För uppdrag som avser nya året och som bokas innan taxan uppdaterats kommer den nya taxan att slå igenom i den kommande rekvisitionen.
+            </p>
+            <br /><br />
+            <hr />
             <br />
-            Om tolkarvode:<br />
-            Domstolsverkets arvodestabeller 1 och 2 uppdateras i december varje år. För uppdrag som avser nya året och som bokas innan taxan uppdaterats kommer den nya taxan att slå igenom i den kommande rekvisitionen.
-        </p>
-        <br /><br />
-        <hr />
-        <br />
-        <div class="col-sm-12 center-content text-center">
-            <a class="btn btn-large btn-default" asp-controller="Home" asp-action="Index">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+            <div class="col-sm-12 center-content text-center">
+                <a class="btn btn-large btn-default" asp-controller="Home" asp-action="Index">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
 

@@ -2,47 +2,48 @@
 @{
     ViewData["Title"] = "Registrera användarkonto";
 }
-
-<div class="row">
-    <div class="col-sm-8 login-page page-shadow">
-        <div class="row padding-bottom-30px">
-            <div class="col-xs-12">
-                <h2 class="padding-bottom-30px">@ViewData["Title"]</h2>
-                <h3>Användarkontot är registrerat <span class="glyphicon glyphicon-ok"></span></h3>
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-sm-8 login-page page-shadow">
+            <div class="row padding-bottom-30px">
+                <div class="col-xs-12">
+                    <h1 class="padding-bottom-30px">@ViewData["Title"]</h1>
+                    <h2>Användarkontot är registrerat <span class="glyphicon glyphicon-ok"></span></h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <display-entry asp-for="NameFirst" />
+                </div>
+                <div class="col-md-6">
+                    <display-entry asp-for="NameFamily" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <display-entry asp-for="PhoneWork" />
+                </div>
+                <div class="col-md-6">
+                    <display-entry asp-for="PhoneCellphone" />
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-xs-12">
+                    <p>
+                        Klicka på knappen Gå till startsida nedan för att börja använda Kammarkollegiets tolkavropstjänst.
+                        I tjänsten finns det möjlighet att ändra de användaruppgifter som precis angivits.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-align-center">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-default btn-large">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <display-entry asp-for="NameFirst" />
-            </div>
-            <div class="col-md-6">
-                <display-entry asp-for="NameFamily" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <display-entry asp-for="PhoneWork" />
-            </div>
-            <div class="col-md-6">
-                <display-entry asp-for="PhoneCellphone" />
-            </div>
-        </div>
-        <hr />
-        <div class="row">
-            <div class="col-xs-12">
-                <p>
-                    Klicka på knappen Gå till startsida nedan för att börja använda Kammarkollegiets tolkavropstjänst.
-                    I tjänsten finns det möjlighet att ändra de användaruppgifter som precis angivits.
-                </p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12 text-align-center">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-default btn-large">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
-            </div>
+        <div class="col-sm-4 welcome-info">
+            @await Html.PartialAsync("_AppInfoSmall")
         </div>
     </div>
-    <div class="col-sm-4 welcome-info">
-        @await Html.PartialAsync("_AppInfoSmall")
-    </div>
-</div>
+</section>

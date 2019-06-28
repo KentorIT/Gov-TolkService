@@ -2,30 +2,32 @@
 @{
     ViewData["Title"] = "Ändra tolk";
 }
-<h2>@ViewData["Title"]</h2>
-<form method="post">
-    <div class="row">
-        <div class="col-sm-4">
-            <input asp-for="Id" type="hidden" />
-            <form-entry asp-for="FirstName" />
-            <form-entry asp-for="LastName" />
-            <form-entry asp-for="IsActive" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-4">
+                <input asp-for="Id" type="hidden" />
+                <form-entry asp-for="FirstName" />
+                <form-entry asp-for="LastName" />
+                <form-entry asp-for="IsActive" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OfficialInterpreterId" />
+                <form-entry asp-for="Email" />
+                <form-entry asp-for="PhoneNumber" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="OfficialInterpreterId" />
-            <form-entry asp-for="Email" />
-            <form-entry asp-for="PhoneNumber" />
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id })">Avbryt <span class="btn-remove-times">&times;</span></a>
-        </div>
-        <div class="col-sm-4">
-            <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
-        </div>
-    </div>
-</form>
+    </form>
+</section>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

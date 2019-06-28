@@ -13,13 +13,13 @@
 @if (isCollapsible)
 {
     <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
-        <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
+        <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
     </a>
     <hr />
 }
 else
 {
-    <h2 class="normal-weight"> @header @if (showHelpLink) { @HelpLinkService.HeaderAnchor() }</h2>
+    <h1 class="normal-weight"> @header @if (showHelpLink) { @HelpLinkService.HeaderAnchor() }</h1>
 }
 <div id="@divId" class="@divClass">
     <div class="row">

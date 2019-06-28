@@ -2,30 +2,30 @@
 @{
     ViewData["Title"] = "Skapa tolk";
 }
-<h2>@ViewData["Title"]</h2>
-
-<form method="post">
-    <div class="row">
-        <div class="col-sm-4">
-            <form-entry asp-for="FirstName" />
-            <form-entry asp-for="LastName" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="FirstName" />
+                <form-entry asp-for="LastName" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OfficialInterpreterId" />
+                <form-entry asp-for="Email" />
+                <form-entry asp-for="PhoneNumber" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="OfficialInterpreterId" />
-            <form-entry asp-for="Email" />
-            <form-entry asp-for="PhoneNumber" />
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")">Avbryt <span class="btn-remove-times">&times;</span></a>
-        </div>
-        <div class="col-sm-4">
-            <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
-        </div>
-    </div>
-</form>
-
+    </form>
+</section>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

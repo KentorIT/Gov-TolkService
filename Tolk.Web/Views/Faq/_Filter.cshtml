@@ -1,11 +1,12 @@
 ﻿@model FaqFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+<section aria-label="Filtrera">
 <div class="col-sm-12">
     <form method="get" class="filter-form do-not-check-dirty">
         <div class="row">
             <div class="col-xs-4">
-                <h4>Filtrera</h4>
+                <h2>Filtrera</h2>
             </div>
             <div class="col-xs-8">
                 <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
@@ -16,7 +17,7 @@
                 <form-entry asp-for="QuestionAnswer" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="IsDisplayed" type="select" asp-items="SelectListService.BoolList" class="allow-clear"  />
+                <form-entry asp-for="IsDisplayed" type="select" asp-items="SelectListService.BoolList" class="allow-clear" />
             </div>
             <div class="col-sm-4">
                 <form-entry asp-for="DisplayedFor" type="select" asp-items="SelectListService.DisplayForUserRoles" class="allow-clear" />
@@ -24,3 +25,4 @@
         </div>
     </form>
 </div>
+</section>

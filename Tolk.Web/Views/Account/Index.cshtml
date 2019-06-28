@@ -2,60 +2,62 @@
 @{
     ViewData["Title"] = "Mitt konto";
 }
-<h2>@Model.NameFull</h2>
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="NameFirst" />
-        <display-entry asp-for="NameFamily" />
-    </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="UserName" />
-        <display-entry asp-for="Email" />
-    </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="PhoneWork" />
-        <display-entry asp-for="PhoneCellphone" />
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="ChangePassword">Ändra lösenord</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="ChangeEmail">Ändra e-postadress</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="Edit">Ändra uppgifter</a>
-    </div>
-</div>
-@if (Model.CustomerUnits != null && Model.CustomerUnits.Any())
-{
+<section aria-label="@ViewData["Title"]">
+    <h1>@Model.NameFull</h1>
     <div class="row">
-        <div class="col-sm-12">
-            <h3>Mina enheter</h3>
-            <div class="row">
-                <div class="col-md-12">
-                    <table class="table search-table sortable-only-table">
-                        <thead>
-                            <tr>
-                                <th>Enhetens namn</th>
-                                <th>Enhetens status</th>
-                                <th>Är lokal administratör</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.CustomerUnits)
-                            {
-                            <tr>
-                                <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
-                                <td class="gray-border-bottom">@(item.IsActive ? "Aktiv" : "Inaktiv")</td>
-                                <td class="gray-border-bottom gray-border-right">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
+        <div class="col-sm-4">
+            <display-entry asp-for="NameFirst" />
+            <display-entry asp-for="NameFamily" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="UserName" />
+            <display-entry asp-for="Email" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="PhoneWork" />
+            <display-entry asp-for="PhoneCellphone" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="ChangePassword">Ändra lösenord</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="ChangeEmail">Ändra e-postadress</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="Edit">Ändra uppgifter</a>
+        </div>
+    </div>
+    @if (Model.CustomerUnits != null && Model.CustomerUnits.Any())
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>Mina enheter</h2>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table search-table sortable-only-table">
+                            <thead>
+                                <tr>
+                                    <th>Enhetens namn</th>
+                                    <th>Enhetens status</th>
+                                    <th>Är lokal administratör</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.CustomerUnits)
+                                {
+                                    <tr>
+                                        <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                        <td class="gray-border-bottom">@(item.IsActive ? "Aktiv" : "Inaktiv")</td>
+                                        <td class="gray-border-bottom gray-border-right">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-}
+    }
+</section>

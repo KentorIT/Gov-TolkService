@@ -49,12 +49,12 @@ function refreshCollapsibles() {
         var element = $(this);
         if (!element.hasClass("disabled")) {
             if ($(element.attr("data-target")).hasClass("in")) {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+                element.children("h1").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h1"));
             }
             else {
-                element.children("h2").children("i").remove();
-                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h2"));
+                element.children("h1").children("i").remove();
+                $('<i class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h1"));
             }
         }
     });
@@ -265,13 +265,13 @@ $(function () {
 
         if ($(element.attr("data-target")).hasClass("in")) {
             $(element.attr("data-target")).collapse("hide");
-            element.children("h3").children("span").removeClass("glyphicon-triangle-bottom");
-            element.children("h3").children("span").addClass("glyphicon-triangle-right");
+            element.children("h2").children("span").removeClass("glyphicon-triangle-bottom");
+            element.children("h2").children("span").addClass("glyphicon-triangle-right");
         }
         else {
             $(element.attr("data-target")).collapse("show");
-            element.children("h3").children("span").removeClass("glyphicon-triangle-right");
-            element.children("h3").children("span").addClass("glyphicon-triangle-bottom");
+            element.children("h2").children("span").removeClass("glyphicon-triangle-right");
+            element.children("h2").children("span").addClass("glyphicon-triangle-bottom");
         }
     });
 

@@ -3,22 +3,23 @@
 @{
     ViewData["Title"] = "Ändra nyhet";
 }
-<form method="post">
+<section aria-label="@ViewData["Title"]">
     <div class="row">
         <div class="col-sm-12">
-            <h2>@ViewData["Title"]</h2>
-            @await Html.PartialAsync("_SystemMessage", Model)
-            <div class="row">
-                <div class="col-sm-12">
-                    <input asp-for="SystemMessageId" type="hidden" />
-                    <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Avbryt <span class="btn-remove-times">&times;</span></a>
-                    <button class="btn btn-large btn-success pull-right">Ändra nyhet</button>
+            <h1>@ViewData["Title"]</h1>
+            <form method="post">
+                @await Html.PartialAsync("_SystemMessage", Model)
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input asp-for="SystemMessageId" type="hidden" />
+                        <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="List">Avbryt <span class="btn-remove-times">&times;</span></a>
+                        <button class="btn btn-large btn-success pull-right">Ändra nyhet</button>
+                    </div>
                 </div>
-            </div>
-
+            </form>
         </div>
     </div>
-</form>
+</section>
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

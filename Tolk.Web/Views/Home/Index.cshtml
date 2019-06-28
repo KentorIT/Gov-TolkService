@@ -40,7 +40,7 @@
 {
     <div class="row ">
         <div class="col-xs-12">
-            <h2>Nyheter</h2>
+            <h1>Nyheter</h1>
             @foreach (SystemMessage sm in Model.SystemMessages)
             {
                 <div class="col-xs-12 @sm.CssClass">
@@ -105,7 +105,7 @@
         HelpLinkService.PageName = "myndighet-de-olika-listorna-pa-startsidan/";
     }
 }
-<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
+<h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 @foreach (var startlist in Model.StartLists)
 {
     <div class="row">

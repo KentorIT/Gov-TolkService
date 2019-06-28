@@ -8,69 +8,71 @@
     int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId;
     HelpLinkService.PageName = isOrderDetailView ? "myndighet-detaljvyer-av-bokningar/" : "formedling-detaljvyer-av-bokningar/";
 }
-<div class="row">
-    <div class="col-sm-12 order-header-contract-info">
-        Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
-        <div class="help-sign-big">
-            @HelpLinkService.HeaderAnchor()
+<section aria-label="Bokningshuvud">
+    <div class="row">
+        <div class="col-sm-12 order-header-contract-info">
+            Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+            <div class="help-sign-big">
+                @HelpLinkService.HeaderAnchor()
+            </div>
         </div>
     </div>
-</div>
-@if (!string.IsNullOrEmpty(Model.ActiveRequest.ViewedByUser))
-{
-    <span class="glyphicon glyphicon-user color-red" title="@Model.ActiveRequest.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ActiveRequest.ViewedByUser</span>
-    <br /><br />
-}
-<div class="row">
-    <div class="col-sm-3">
-        @if (isOrderDetailView)
-        {
-            <div class="@Model.ColorClassName">
-                <display-entry asp-for="Status" />
-            </div>
-        }
-        else
-        {
-            <div class="@Model.ActiveRequest.ColorClassName">
-                <display-entry asp-for="ActiveRequest.Status" />
-            </div>
-        }
-    </div>
-    <div class="col-sm-3">
-        @{string location = string.Empty;
-            if (Model.InterpreterLocationAnswer != 0)
+    @if (!string.IsNullOrEmpty(Model.ActiveRequest.ViewedByUser))
+    {
+        <span class="glyphicon glyphicon-user color-red" title="@Model.ActiveRequest.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ActiveRequest.ViewedByUser</span>
+        <br /><br />
+    }
+    <div class="row">
+        <div class="col-sm-3">
+            @if (isOrderDetailView)
             {
-                location = " - " + Tolk.BusinessLogic.Utilities.EnumHelper.GetDescription(Model.InterpreterLocationAnswer);
+                <div class="@Model.ColorClassName">
+                    <display-entry asp-for="Status" />
+                </div>
             }
-        }
-        <display-entry asp-for="AssignmentType" text-append="@location" />
-    </div>
+            else
+            {
+                <div class="@Model.ActiveRequest.ColorClassName">
+                    <display-entry asp-for="ActiveRequest.Status" />
+                </div>
+            }
+        </div>
+        <div class="col-sm-3">
+            @{string location = string.Empty;
+                if (Model.InterpreterLocationAnswer != 0)
+                {
+                    location = " - " + Tolk.BusinessLogic.Utilities.EnumHelper.GetDescription(Model.InterpreterLocationAnswer);
+                }
+            }
+            <display-entry asp-for="AssignmentType" text-append="@location" />
+        </div>
 
-    <div class="col-sm-3">
+        <div class="col-sm-3">
 
-        <display-entry asp-for="OrderNumber" />
+            <display-entry asp-for="OrderNumber" />
 
-        @if (actionReplacingId.HasValue)
-        {
-            <span>
-                (Ersätter <a href="@Url.Action("View", new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
-            </span>
-        }
-        @if (actionReplacedById.HasValue)
-        {
-            <span>
-                (Ersatt av <a href="@Url.Action("View", new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
-            </span>
-        }
+            @if (actionReplacingId.HasValue)
+            {
+                <span>
+                    (Ersätter <a href="@Url.Action("View", new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
+                </span>
+            }
+            @if (actionReplacedById.HasValue)
+            {
+                <span>
+                    (Ersatt av <a href="@Url.Action("View", new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
+                </span>
+            }
+        </div>
+        <div class="col-sm-3">
+            @if (isOrderDetailView)
+            {
+                <display-entry asp-for="CreatedAt" />
+            }
+            else
+            {
+                <display-entry asp-for="ActiveRequest.CreatedAt" />
+            }
+        </div>
     </div>
-    <div class="col-sm-3">
-        @if (isOrderDetailView)
-        {
-            <display-entry asp-for="CreatedAt" />
-        }
-        else
-        {
-            <display-entry asp-for="ActiveRequest.CreatedAt" />
-        }
-    </div>
-</div>
+</section>

@@ -4,15 +4,16 @@
 @{
     ViewData["Title"] = "Logga in";
 }
-
-<div class="row">
-    <div class="col-md-4 login-page page-shadow">
-        @await Html.PartialAsync("_LoginPagePartial")
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-md-4 login-page page-shadow">
+            @await Html.PartialAsync("_LoginPagePartial")
+        </div>
+        <div class="col-md-8 welcome-info">
+            @await Html.PartialAsync("_AppInfo")
+        </div>
     </div>
-    <div class="col-md-8 welcome-info">
-        @await Html.PartialAsync("_AppInfo")
-    </div>
-</div>
+</section>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")

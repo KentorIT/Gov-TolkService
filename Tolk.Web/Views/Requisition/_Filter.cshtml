@@ -1,55 +1,57 @@
 ﻿@model RequisitionFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-<div class="col-sm-12">
-    <form method="get" class="filter-form do-not-check-dirty">
-        <div class="row">
-            <div class="col-xs-4">
-                <h4>Filtrera</h4>
+<section aria-label="Filtrera">
+    <div class="col-sm-12">
+        <form method="get" class="filter-form do-not-check-dirty">
+            <div class="row">
+                <div class="col-xs-4">
+                    <h2>Filtrera</h2>
+                </div>
+                <div class="col-xs-8">
+                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
+                </div>
             </div>
-            <div class="col-xs-8">
-                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="OrderNumber" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
-            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="OrderNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.RequisitionStatuses" Class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
+                </div>
 
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="DateRange" />
             </div>
-            @if (Model.IsBroker)
-            {
+            <div class="row">
                 <div class="col-sm-4">
-                    <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+                    <form-entry asp-for="DateRange" />
                 </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" Class="allow-clear" />
-                </div>
-            }
-            else
-            {
-                <div class="col-sm-4">
-                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" Class="allow-clear" />
-                </div>
-                if (Model.HasCustomerUnits)
+                @if (Model.IsBroker)
                 {
-                <div class="col-sm-4">
-                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
-                    <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
-                </div>
+                    <div class="col-sm-4">
+                        <form-entry asp-for="CreatedById" type="select" asp-items="SelectListService.BrokerUsersAndInterpreters" Class="allow-clear" />
+                    </div>
+                    <div class="col-sm-4">
+                        <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" Class="allow-clear" />
+                    </div>
                 }
-            }
-        </div>
+                else
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" Class="allow-clear" />
+                    </div>
+                    if (Model.HasCustomerUnits)
+                    {
+                        <div class="col-sm-4">
+                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                            <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                        </div>
+                    }
+                }
+            </div>
 
-    </form>
-</div>
+        </form>
+    </div>
+</section>

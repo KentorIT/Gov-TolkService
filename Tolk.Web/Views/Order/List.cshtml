@@ -6,68 +6,70 @@
     ViewData["Title"] = "Historik - Bokningar";
     HelpLinkService.PageName = "myndighet-historik/";
 }
-<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h2>
-<div class="row">
-    @await Html.PartialAsync("_Filter", Model.FilterModel)
-</div>
-<div class="row">
-    <div class="col-md-12">
-        @if (Model.Items.Any())
-        {
-            <div class="table-responsive standard-table table-paging table-datatable">
-                <table class="table table-hover full-row-height clickable-rows-with-action search-table table-order-col0-desc">
-                    <thead>
-                        <tr>
-                            <th class="defaultSortDesc">BokningsID</th>
-                            <th>Status</th>
-                            <th>Språk</th>
-                            <th>Datum för uppdrag</th>
-                            <th>Län</th>
-                            @if (Model.FilterModel.IsAdmin)
-                            {
-                                <th>Myndighet</th>
-                            }
-                            <th>Förmedling</th>
-                            @if (Model.FilterModel.IsCentralAdminOrOrderHandler)
-                            {
-                                <th>Skapad av</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Items)
-                        {
-                        <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
-                            <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
-                            <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                            <td class="gray-border-bottom">@item.Language</td>
-                            <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
-                            <td class="gray-border-bottom">@item.RegionName</td>
-                            @if (Model.FilterModel.IsAdmin)
-                            {
-                                <td class="gray-border-bottom">@item.CustomerName</td>
-                            }
-
-                            @if (Model.FilterModel.IsCentralAdminOrOrderHandler)
-                            {
-                                <td class="gray-border-bottom">@item.BrokerName</td>
-                                <td class="gray-border-bottom gray-border-right">@item.CreatorName</td>
-                            }
-                            else
-                            {
-                                <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
-                            }
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else if (Model.FilterModel.HasActiveFilters)
-        {
-            <span class="no-result-message">
-                Sökningen gav inget resultat.
-            </span>
-        }
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h1>
+    <div class="row">
+        @await Html.PartialAsync("_Filter", Model.FilterModel)
     </div>
-</div>
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.Items.Any())
+            {
+                <div class="table-responsive standard-table table-paging table-datatable">
+                    <table class="table table-hover full-row-height clickable-rows-with-action search-table table-order-col0-desc">
+                        <thead>
+                            <tr>
+                                <th class="defaultSortDesc">BokningsID</th>
+                                <th>Status</th>
+                                <th>Språk</th>
+                                <th>Datum för uppdrag</th>
+                                <th>Län</th>
+                                @if (Model.FilterModel.IsAdmin)
+                                {
+                                    <th>Myndighet</th>
+                                }
+                                <th>Förmedling</th>
+                                @if (Model.FilterModel.IsCentralAdminOrOrderHandler)
+                                {
+                                    <th>Skapad av</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr data-id="@item.OrderId" data-click-action-url="@Url.Action(item.Action, new { id = item.OrderId })">
+                                    <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                                    <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                                    <td class="gray-border-bottom">@item.Language</td>
+                                    <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                    <td class="gray-border-bottom">@item.RegionName</td>
+                                    @if (Model.FilterModel.IsAdmin)
+                                    {
+                                        <td class="gray-border-bottom">@item.CustomerName</td>
+                                    }
+
+                                    @if (Model.FilterModel.IsCentralAdminOrOrderHandler)
+                                    {
+                                        <td class="gray-border-bottom">@item.BrokerName</td>
+                                        <td class="gray-border-bottom gray-border-right">@item.CreatorName</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (Model.FilterModel.HasActiveFilters)
+            {
+                <span class="no-result-message">
+                    Sökningen gav inget resultat.
+                </span>
+            }
+        </div>
+    </div>
+</section>

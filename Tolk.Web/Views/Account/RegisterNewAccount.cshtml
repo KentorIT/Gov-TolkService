@@ -2,51 +2,52 @@
 @{
     ViewData["Title"] = "Registrera användarkonto";
 }
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-sm-8 login-page page-shadow">
+            <h1 class="padding-bottom-30px">@ViewData["Title"]</h1>
+            <form method="post">
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="PasswordToken" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <form-entry asp-for="NameFirst" />
+                    </div>
+                    <div class="col-md-6">
+                        <form-entry asp-for="NameFamily" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form-entry asp-for="PhoneWork" />
+                    </div>
+                    <div class="col-md-6">
+                        <form-entry asp-for="PhoneCellphone" />
+                    </div>
+                </div>
+                <hr />
+                <div class="row padding-bottom-60px">
+                    <div class="col-md-6">
+                        <form-entry asp-for="Email" class="neg-margin-top invisible" />
+                        <form-entry asp-for="NewPassword" />
+                    </div>
+                    <div class="col-md-6">
+                        <form-entry asp-for="Email" class="neg-margin-top invisible" />
+                        <form-entry asp-for="ConfirmPassword" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
 
-<div class="row">
-    <div class="col-sm-8 login-page page-shadow">
-        <h2 class="padding-bottom-30px">@ViewData["Title"]</h2>
-        <form method="post">
-            <input type="hidden" asp-for="UserId" />
-            <input type="hidden" asp-for="PasswordToken" />
-            <div class="row">
-                <div class="col-md-6">
-                    <form-entry asp-for="NameFirst" />
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-success btn-large pull-right">Registrera konto</button>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <form-entry asp-for="NameFamily" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <form-entry asp-for="PhoneWork" />
-                </div>
-                <div class="col-md-6">
-                    <form-entry asp-for="PhoneCellphone" />
-                </div>
-            </div>
-            <hr />
-            <div class="row padding-bottom-60px">
-                <div class="col-md-6">
-                    <form-entry asp-for="Email" class="neg-margin-top invisible" />
-                    <form-entry asp-for="NewPassword" />
-                </div>
-                <div class="col-md-6">
-                    <form-entry asp-for="Email" class="neg-margin-top invisible" />
-                    <form-entry asp-for="ConfirmPassword" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-
-                </div>
-                <div class="col-md-6">
-                    <button class="btn btn-success btn-large pull-right">Registrera konto</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
+        <div class="col-sm-4 welcome-info">
+            @await Html.PartialAsync("_AppInfoSmall")
+        </div>
     </div>
-    <div class="col-sm-4 welcome-info">
-        @await Html.PartialAsync("_AppInfoSmall")
-    </div>
-</div>
+</section>

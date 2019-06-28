@@ -2,35 +2,36 @@
 @{
     ViewData["Title"] = "Enhetsdetaljer";
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="Name" />
-        <display-entry asp-for="Email" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="Name" />
+            <display-entry asp-for="Email" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="CreatedAt" />
+            <display-entry asp-for="CreatedBy" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="IsActive" />
+            @if (!Model.IsActive)
+            {
+                <display-entry asp-for="InactivatedAt" />
+                <display-entry asp-for="InactivatedBy" />
+            }
+        </div>
     </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="CreatedBy" />
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.CustomerUnitId">Ändra enhetsuppgifter</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="Users" asp-route-id="@Model.CustomerUnitId">Hantera användare</a>
+        </div>
     </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="IsActive" />
-        @if (!Model.IsActive)
-        {
-            <display-entry asp-for="InactivatedAt" />
-            <display-entry asp-for="InactivatedBy" />
-        }
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-4">
-        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.CustomerUnitId">Ändra enhetsuppgifter</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-large btn-default" asp-action="Users" asp-route-id="@Model.CustomerUnitId">Hantera användare</a>
-    </div>
-</div>
-
+</section>
 

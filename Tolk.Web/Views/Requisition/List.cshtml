@@ -13,65 +13,67 @@
         HelpLinkService.PageName = "myndighet-historik/";
     }
 }
-<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-rekvisitioner")</h2>
-<div class="row">
-    <div class="col-md-12 important-info">
-        Rekvisitionen i avropstjänsten är under utveckling och än så länge är det inte möjligt att godkänna eller underkänna rekvisitioner direkt i tjänsten. Rekvisitionen ska initialt ses som ett underlag över genomfört tolkuppdrag som ska granskas av den person som gjort bokningen eller annan person som blivit utsedd att granska rekvisitionen. Parallellt med avropstjänsten kommer det fortsatt att finnas fler typer av rekvisitioner, t.ex. pappersblanketter eller tolkförmedlingars bokningssystem. Varje avropande myndighet kommer överens med respektive tolkförmedling på vilket sätt godkännande av rekvisitioner ska göras.
-        Rekvisitionen ska visa det slutliga utfallet för tolkuppdraget vad gäller tider, arvoden och förmedlingsavgift. När det gäller tolkens resekostnader kan det finnas poster som inte är kända vid tillfället för registrering av rekvisitionen. Det avser främst traktamenten och bilersättning som ska beräknas enligt särskilda tabeller i tolktaxan eller enligt Skatteverkets regler. Rekvisitionen visar alltså inte alltid den slutliga kostnaden för denna typ av poster utan dessa kan tillkomma när uppdraget slutligen faktureras.
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-rekvisitioner")</h1>
+    <div class="row">
+        <div class="col-md-12 important-info">
+            Rekvisitionen i avropstjänsten är under utveckling och än så länge är det inte möjligt att godkänna eller underkänna rekvisitioner direkt i tjänsten. Rekvisitionen ska initialt ses som ett underlag över genomfört tolkuppdrag som ska granskas av den person som gjort bokningen eller annan person som blivit utsedd att granska rekvisitionen. Parallellt med avropstjänsten kommer det fortsatt att finnas fler typer av rekvisitioner, t.ex. pappersblanketter eller tolkförmedlingars bokningssystem. Varje avropande myndighet kommer överens med respektive tolkförmedling på vilket sätt godkännande av rekvisitioner ska göras.
+            Rekvisitionen ska visa det slutliga utfallet för tolkuppdraget vad gäller tider, arvoden och förmedlingsavgift. När det gäller tolkens resekostnader kan det finnas poster som inte är kända vid tillfället för registrering av rekvisitionen. Det avser främst traktamenten och bilersättning som ska beräknas enligt särskilda tabeller i tolktaxan eller enligt Skatteverkets regler. Rekvisitionen visar alltså inte alltid den slutliga kostnaden för denna typ av poster utan dessa kan tillkomma när uppdraget slutligen faktureras.
+        </div>
     </div>
-</div>
-<div class="row">
-    @await Html.PartialAsync("_Filter", Model.FilterModel)
-</div>
-<div class="row">
-    <div class="col-md-12">
-        @if (Model.Items.Any())
-        {
-            <div class="table-responsive standard-table table-paging table-datatable ">
-                <table class="table table-hover full-row-height clickable-rows-with-action search-table table-order-col0-desc">
-                    <thead>
-                        <tr>
-                            <th class="defaultSortDesc">BokningsID</th>
-                            <th>Status</th>
-                            <th>Språk</th>
-                            <th>Datum för uppdrag</th>
-                            @if (Model.FilterModel.IsBroker)
-                            {
-                                <th>Myndighet</th>
-                            }
-                            else
-                            {
-                                <th>Förmedling</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Items)
-                        {
-                            <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "requisition" })">
-                                <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
-                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                                <td class="gray-border-bottom">@item.Language</td>
-                                <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+    <div class="row">
+        @await Html.PartialAsync("_Filter", Model.FilterModel)
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.Items.Any())
+            {
+                <div class="table-responsive standard-table table-paging table-datatable ">
+                    <table class="table table-hover full-row-height clickable-rows-with-action search-table table-order-col0-desc">
+                        <thead>
+                            <tr>
+                                <th class="defaultSortDesc">BokningsID</th>
+                                <th>Status</th>
+                                <th>Språk</th>
+                                <th>Datum för uppdrag</th>
                                 @if (Model.FilterModel.IsBroker)
                                 {
-                                    <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
+                                    <th>Myndighet</th>
                                 }
                                 else
                                 {
-                                    <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                    <th>Förmedling</th>
                                 }
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else if (Model.FilterModel.HasActiveFilters)
-        {
-            <span class="no-result-message">
-                Sökningen gav inget resultat.
-            </span>
-        }
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "requisition" })">
+                                    <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
+                                    <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
+                                    <td class="gray-border-bottom">@item.Language</td>
+                                    <td class="gray-border-bottom"><display-entry asp-for="@item.OrderDateAndTime" /></td>
+                                    @if (Model.FilterModel.IsBroker)
+                                    {
+                                        <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (Model.FilterModel.HasActiveFilters)
+            {
+                <span class="no-result-message">
+                    Sökningen gav inget resultat.
+                </span>
+            }
+        </div>
     </div>
-</div>
+</section>

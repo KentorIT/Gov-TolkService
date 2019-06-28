@@ -1,16 +1,17 @@
 ﻿
 @{
-    ViewData["Title"] = "Verifieringslänk gäller inte längre";
+    ViewData["Title"] = "Aktiveringslänk gäller inte längre";
 }
-
-<div class="row">
-    <div class="col-md-4 login-page page-shadow">
-        <h2>@ViewData["Title"]</h2>
-        <p>
-            Denna aktiveringslänk gäller inte längre. Klicka på <a asp-action="ForgotPassword">Glömt lösenord?</a> för att begära en ny aktiveringslänk.
-        </p>
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-md-4 login-page page-shadow">
+            <h1>@ViewData["Title"]</h1>
+            <p>
+                Denna aktiveringslänk gäller inte längre. Klicka på <a asp-action="ForgotPassword">Glömt lösenord?</a> för att begära en ny aktiveringslänk.
+            </p>
+        </div>
+        <div class="col-md-8 welcome-info">
+            @await Html.PartialAsync("_AppInfo")
+        </div>
     </div>
-    <div class="col-md-8 welcome-info">
-        @await Html.PartialAsync("_AppInfo")
-    </div>
-</div>
+</section>

@@ -1,18 +1,15 @@
 ﻿@using Tolk.Web.Helpers
 @model ErrorViewModel
 @{
-    ViewData["Title"] = "Fel";
+    ViewData["Title"] = "Ett fel har inträffat i applikationen";
 }
-
-<h1 class="text-danger">Fel</h1>
-
-<h2 class="text-danger">Ett fel har inträffat i applikationen</h2>
-
-<p>
-    Ett fel har inträffat. Om du behöver hjälp, vänligen kontakta supporten.
-</p>
-@if (Model.ShowRequestId)
-{
+<section aria-label="@ViewData[" Title"]">
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p>
+        Ett fel har inträffat. Om du behöver hjälp, vänligen kontakta supporten.
+    </p>
+    @if (Model.ShowRequestId)
+    {
     <p>
         SpårningsID och version kan hjälpa support-personal att lokalisera felet.
     </p>
@@ -22,5 +19,5 @@
     <p>
         <strong>Version:</strong> <code>@GitHelper.Version</code>
     </p>
-}
-
+    }
+</section>

@@ -1,9 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Kontot låst";
 }
-
-<header>
-    <h2 class="text-danger">@ViewData["Title"]</h2>
-    <p class="text-danger">Ditt konto har tillfälligt blivit låst på grund
-    av för många felaktiga inloggningsförsök. Försök igen senare.</p>
-</header>
+<section aria-label="@ViewData["Title"]">
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">
+        Ditt konto har tillfälligt blivit låst på grund
+        av för många felaktiga inloggningsförsök. Försök igen senare.
+    </p>
+</section>

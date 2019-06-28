@@ -6,85 +6,87 @@
     ViewData["Title"] = "Organisationens inställningar";
     HelpLinkService.PageName = "Organisationens-installningar";
 }
-<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
-@if (!string.IsNullOrEmpty(@Model.Message))
-{
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
+    @if (!string.IsNullOrEmpty(@Model.Message))
+    {
+        <div class="row">
+            <div class="col-xs-12">
+                <br />
+                <div class="system-action-info">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span class="info-message">
+                        @Model.Message
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+    <h2>Allmänna inställningar</h2>
     <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="system-action-info">
-                <span class="glyphicon glyphicon-ok"></span>
-                <span class="info-message">
-                    @Model.Message
-                </span>
+        <div class="col-sm-12">
+            <div class="col-sm-4">
+                <display-entry asp-for="UserName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="Email" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="OrganisationNumber" />
             </div>
         </div>
     </div>
-}
-<h3>Allmänna inställningar</h3>
-<div class="row">
-    <div class="col-sm-12">
-        <div class="col-sm-4">
-            <display-entry asp-for="UserName" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="Email" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="OrganisationNumber" />
-        </div>
-    </div>
-</div>
-<h3>Integrationsinställningar</h3>
-<div class="row">
-    <div class="col-sm-12">
-        <div class="col-sm-4">
-            <display-entry asp-for="UseApiKeyAuthentication" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="UseCertificateAuthentication" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="CertificateSerialNumber" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="CallbackApiKey" />
+    <h2>Integrationsinställningar</h2>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="col-sm-4">
+                <display-entry asp-for="UseApiKeyAuthentication" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="UseCertificateAuthentication" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CertificateSerialNumber" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CallbackApiKey" />
+            </div>
         </div>
     </div>
-</div>
-<h3>Notifieringsinställningar</h3>
-<div class="row">
-    <div class="col-md-12">
-        <table class="table table-hover search-table">
-            <thead>
-                <tr>
-                    <th>Typ</th>
-                    <th>Kanal</th>
-                    <th>Koppling</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.NotificationSettings)
-                {
+    <h2>Notifieringsinställningar</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover search-table">
+                <thead>
                     <tr>
-                        <td class="gray-border-bottom gray-border-left">@item.Type.GetDescription()</td>
-                        <td class="gray-border-bottom">@item.Channel.GetDescription()</td>
-                        <td class="gray-border-bottom gray-border-right">@item.ContactInformation</td>
+                        <th>Typ</th>
+                        <th>Kanal</th>
+                        <th>Koppling</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.NotificationSettings)
+                    {
+                        <tr>
+                            <td class="gray-border-bottom gray-border-left">@item.Type.GetDescription()</td>
+                            <td class="gray-border-bottom">@item.Channel.GetDescription()</td>
+                            <td class="gray-border-bottom gray-border-right">@item.ContactInformation</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="ChangeApiKey">Api-nyckel</a>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="ChangeApiKey">Api-nyckel</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="EditOrganisationSettings">Inställningar</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-primary btn-large" asp-action="EditNotificationSettings">Notifieringsinställningar</a>
+        </div>
     </div>
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="EditOrganisationSettings">Inställningar</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-primary btn-large" asp-action="EditNotificationSettings">Notifieringsinställningar</a>
-    </div>
-</div>
+</section>

@@ -12,54 +12,56 @@
         HelpLinkService.PageName = "myndighet-anvandare/";
     }
 }
-<h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
-<div class="row">
-    @await Html.PartialAsync("_Filter", Model.FilterModel)
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <a class="btn btn-default btn-large pull-right" asp-action="Create" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa användare</a>
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
+    <div class="row">
+        @await Html.PartialAsync("_Filter", Model.FilterModel)
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        @if (Model.Items.Any())
-        {
-            <div class="table-responsive standard-table table-paging table-datatable">
-                <table class="table table-hover full-row-height clickable-rows-with-action search-table">
-                    <thead>
-                        <tr>
-                            <th>Namn</th>
-                            <th>Email</th>
-                            @if (Model.FilterModel.IsSystemAdministrator)
-                            {
-                                <th>Organisation</th>
-                            }
-                            <th>Senaste inloggning</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Items)
-                        {
-                            <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
-                                <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
-                                <td class="gray-border-bottom">@item.Email</td>
+    <div class="row">
+        <div class="col-md-12">
+            <a class="btn btn-default btn-large pull-right" asp-action="Create" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa användare</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.Items.Any())
+            {
+                <div class="table-responsive standard-table table-paging table-datatable">
+                    <table class="table table-hover full-row-height clickable-rows-with-action search-table">
+                        <thead>
+                            <tr>
+                                <th>Namn</th>
+                                <th>Email</th>
                                 @if (Model.FilterModel.IsSystemAdministrator)
                                 {
-                                    <td class="gray-border-bottom">@item.Organisation</td>
+                                    <th>Organisation</th>
                                 }
-                                <td class="gray-border-bottom gray-border-right">@item.LastLoginAt</td>
+                                <th>Senaste inloggning</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else if (Model.FilterModel.HasActiveFilters)
-        {
-            <span class="no-result-message">
-                Sökningen gav inget resultat.
-            </span>
-        }
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
+                                    <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
+                                    <td class="gray-border-bottom">@item.Email</td>
+                                    @if (Model.FilterModel.IsSystemAdministrator)
+                                    {
+                                        <td class="gray-border-bottom">@item.Organisation</td>
+                                    }
+                                    <td class="gray-border-bottom gray-border-right">@item.LastLoginAt</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (Model.FilterModel.HasActiveFilters)
+            {
+                <span class="no-result-message">
+                    Sökningen gav inget resultat.
+                </span>
+            }
+        </div>
     </div>
-</div>
+</section>

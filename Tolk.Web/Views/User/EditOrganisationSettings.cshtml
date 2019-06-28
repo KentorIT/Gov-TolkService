@@ -2,50 +2,52 @@
 @{
     ViewData["Title"] = "Organisationens inställningar";
 }
-<h2>@ViewData["Title"]</h2>
-<form method="post">
-    <h3>Allmänna inställningar</h3>
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="col-sm-4">
-                <display-entry asp-for="UserName" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="Email" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganisationNumber" />
-            </div>
-        </div>
-    </div>
-    <h3>Integrationsinställningar</h3>
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="col-sm-4">
-                <form-entry asp-for="UseApiKeyAuthentication" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="UseCertificateAuthentication" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="CertificateSerialNumber" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="CallbackApiKey" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <h2>Allmänna inställningar</h2>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="col-sm-4">
+                    <display-entry asp-for="UserName" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Email" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="OrganisationNumber" />
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="col-sm-4">
-                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="ViewOrganisationSettings">Avbryt <span class="btn-remove-times">&times;</span></a>
-            </div>
-            <div class="col-sm-8">
-                <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>
+        <h2>Integrationsinställningar</h2>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="col-sm-4">
+                    <form-entry asp-for="UseApiKeyAuthentication" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="UseCertificateAuthentication" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CertificateSerialNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="CallbackApiKey" />
+                </div>
             </div>
         </div>
-    </div>
-</form>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="col-sm-4">
+                    <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="ViewOrganisationSettings">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-large btn-success pull-right">Spara</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
 @section Scripts{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

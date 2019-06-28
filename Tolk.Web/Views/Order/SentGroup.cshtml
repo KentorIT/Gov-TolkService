@@ -12,10 +12,10 @@
         </div>
         <div class="col-sm-12 center-content">
             <div class="col-sm-12 text-center">
-                <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
+                <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
             </div>
             <div class="col-sm-12 text-center">
-                <h3>BokningsID för grupp: @Model.OrderGroupNumber</h3>
+                <h2>BokningsID för grupp: @Model.OrderGroupNumber</h2>
             </div>
             @if (Model.OrderOccasionDisplayModels.Any())
             {
@@ -73,7 +73,7 @@
         </div>
         <hr />
         <br />
-        <h4>Vad händer nu?</h4>
+        <h2>Vad händer nu?</h2>
         <p>
             Bokningsförfrågan skickas till den förmedling som är rangordnad som nr. 1 i aktuellt län (region).<br />
             När en förmedling svarar på din förfrågan får du ett mail om detta. Detsamma gäller om samtliga förmedlingar avböjer eller inte svarar i tid, dvs ingen tolk blir tillsatt. Bokningsförfrågan avbryts i dessa fall och du måste göra en ny förfrågan.<br />

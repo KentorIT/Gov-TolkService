@@ -24,18 +24,18 @@
 @if (isCollapsible)
 {
     <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
-        <h3><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h3>
+        <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
     </a>
 }
 else
 {
-    <h2 class="normal-weight">
+    <h1 class="normal-weight">
         @header
         @if (!string.IsNullOrWhiteSpace(HelpLinkService.PageName))
         {
             @HelpLinkService.HeaderAnchor()
         }
-    </h2>
+    </h1>
 }
 
 <hr />

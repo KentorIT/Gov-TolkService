@@ -2,25 +2,24 @@
 @{
     ViewData["Title"] = "Skapa användare";
 }
-
-<div class="row">
-    <div class="col-md-6">
-        <h2>Skapa användare</h2>
-        <p>
-            Databasen saknar användare, registrera en första administratörsanvändare nedan.
-        </p>
-
-        <form asp-action="CreateInitialUser" asp-controller="Account" class="do-not-check-dirty">
-            <form-entry asp-for="Email" />
-            <form-entry asp-for="FirstName" />
-            <form-entry asp-for="LastName" />
-            <form-entry asp-for="NewPassword" />
-            <form-entry asp-for="ConfirmPassword" />
-            <button type="submit" class="btn btn-success">Skapa användare</button>
-        </form>
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-md-6">
+            <h1>Skapa användare</h1>
+            <p>
+                Databasen saknar användare, registrera en första administratörsanvändare nedan.
+            </p>
+            <form asp-action="CreateInitialUser" asp-controller="Account" class="do-not-check-dirty">
+                <form-entry asp-for="Email" />
+                <form-entry asp-for="FirstName" />
+                <form-entry asp-for="LastName" />
+                <form-entry asp-for="NewPassword" />
+                <form-entry asp-for="ConfirmPassword" />
+                <button type="submit" class="btn btn-success">Skapa användare</button>
+            </form>
+        </div>
     </div>
-</div>
-
+</section>
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

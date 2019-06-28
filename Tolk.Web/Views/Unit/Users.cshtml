@@ -3,127 +3,126 @@
 @{
     ViewData["Title"] = "Hantera användare för " + Model.Name;
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-sm-12">
-    </div>
-</div>
-@if (!string.IsNullOrEmpty(@Model.ErrorMessage))
-{
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
     <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="warning-info-home">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                <span class="info-message">
-                    @Model.ErrorMessage
-                </span>
-            </div>
+        <div class="col-sm-12">
         </div>
     </div>
-}
-@if (!string.IsNullOrEmpty(@Model.Message))
-{
-    <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="system-action-info">
-                <span class="glyphicon glyphicon-ok"></span>
-                <span class="info-message">
-                    @Model.Message
-                </span>
+    @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
+    {
+        <div class="row">
+            <div class="col-xs-12">
+                <br />
+                <div class="warning-info-home">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                    <span class="info-message">
+                        @Model.ErrorMessage
+                    </span>
+                </div>
             </div>
         </div>
-    </div>
-}
-<div class="row">
-    <div class="col-md-12">
-        @if (Model.UnitUsers.Any())
-        {
-            <h4>Användare kopplade till enheten</h4>
-            <br />
-            <div class="table-responsive standard-table table-paging table-datatable">
-                <table class="table table-hover full-row-height clickable-rows-with-action search-table">
-                    <thead>
-                        <tr>
-                            <th>Efternamn</th>
-                            <th>Förnamn</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Lokal admin</th>
-                            <th></th>
-                            <th>Koppla från användare</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.UnitUsers)
-                        {
-                            <tr data-id="@item.CombinedId" data-click-action-url="@Url.Action("View", "User", new { id = item.Id })">
-                                <td class="@item.ColorClassName gray-border-bottom"> @item.LastName</td>
-                                <td class="gray-border-bottom"> @item.FirstName</td>
-                                <td class="gray-border-bottom">@item.Email</td>
-                                <td class="gray-border-bottom">@item.IsActive</td>
-                                <td class="gray-border-bottom">@item.IsLocalAdmin</td>
-                                <td class="gray-border-bottom">
-                                    @if (item.IsLocalAdmin == "Ja")
-                                    {
-                                        <form class="do-not-check-dirty" method="post" asp-action="ChangeLocalAdmin" asp-controller="User" asp-route-combinedId="@item.CombinedId">
-                                            <button type="submit" class="btn btn-warning do-not-check-dirty">Ta bort lokal admin <span class="btn-remove-times-small">&times;</span></button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <form class="do-not-check-dirty" method="post" asp-action="ChangeLocalAdmin" asp-controller="User" asp-route-combinedId="@item.CombinedId">
-                                            <button type="submit" class="btn btn-default do-not-check-dirty">Gör till lokal admin <span class="glyphicon glyphicon-ok"></span></button>
-                                        </form>
-                                    }
-                                </td>
-                                <td class="gray-border-bottom gray-border-right">
-                                    <form class="do-not-check-dirty" method="post" asp-action="DisconnectUser" asp-controller="User" asp-route-combinedId="@item.CombinedId">
-                                        <button type="submit" class="btn btn-warning do-not-check-dirty">Ta bort från enhet <span class="btn-remove-times-small">&times;</span></button>
-                                    </form>
-                                </td>
+    }
+    @if (!string.IsNullOrEmpty(@Model.Message))
+    {
+        <div class="row">
+            <div class="col-xs-12">
+                <br />
+                <div class="system-action-info">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span class="info-message">
+                        @Model.Message
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.UnitUsers.Any())
+            {
+                <h2>Användare kopplade till enheten</h2>
+                <br />
+                <div class="table-responsive standard-table table-paging table-datatable">
+                    <table class="table table-hover full-row-height clickable-rows-with-action search-table">
+                        <thead>
+                            <tr>
+                                <th>Efternamn</th>
+                                <th>Förnamn</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Lokal admin</th>
+                                <th></th>
+                                <th>Koppla från användare</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <h4>Koppla ytterligare användare till enheten</h4>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <label>Välj befintlig organisationsanvändare</label>
-        <br /><br />
-        <div class="border">
-            <br />
-            <form class="do-not-check-dirty" method="post" asp-action="ConnectUserToUnit" asp-controller="User">
-                <input asp-for="CustomerUnitId" type="hidden" />
-                <form-entry asp-for="ConnectUserId" type="select" asp-items="SelectListService.CustomerUsersNotForCurrentUnit(Model.CustomerUnitId)" class="allow-clear" />
-                <form-entry asp-for="IsLocalAdministrator" />
-                <button type="submit" class="btn btn-default pull-right">Koppla person</button>
-            </form>
-            <br /><br />
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.UnitUsers)
+                            {
+                                <tr data-id="@item.CombinedId" data-click-action-url="@Url.Action("View", "User", new { id = item.Id })">
+                                    <td class="@item.ColorClassName gray-border-bottom"> @item.LastName</td>
+                                    <td class="gray-border-bottom"> @item.FirstName</td>
+                                    <td class="gray-border-bottom">@item.Email</td>
+                                    <td class="gray-border-bottom">@item.IsActive</td>
+                                    <td class="gray-border-bottom">@item.IsLocalAdmin</td>
+                                    <td class="gray-border-bottom">
+                                        @if (item.IsLocalAdmin == "Ja")
+                                        {
+                                            <form class="do-not-check-dirty" method="post" asp-action="ChangeLocalAdmin" asp-controller="User" asp-route-combinedId="@item.CombinedId">
+                                                <button type="submit" class="btn btn-warning do-not-check-dirty">Ta bort lokal admin <span class="btn-remove-times-small">&times;</span></button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form class="do-not-check-dirty" method="post" asp-action="ChangeLocalAdmin" asp-controller="User" asp-route-combinedId="@item.CombinedId">
+                                                <button type="submit" class="btn btn-default do-not-check-dirty">Gör till lokal admin <span class="glyphicon glyphicon-ok"></span></button>
+                                            </form>
+                                        }
+                                    </td>
+                                    <td class="gray-border-bottom gray-border-right">
+                                        <form class="do-not-check-dirty" method="post" asp-action="DisconnectUser" asp-controller="User" asp-route-combinedId="@item.CombinedId">
+                                            <button type="submit" class="btn btn-warning do-not-check-dirty">Ta bort från enhet <span class="btn-remove-times-small">&times;</span></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
-    <div class="col-md-6">
-        <label>Skapa ny användare kopplad till enheten</label>
-        <br /><br />
-        <a class="btn btn-large btn-default" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerUnitId="@Model.CustomerUnitId" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa ny användare</a>
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Koppla ytterligare användare till enheten</h2>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.CustomerUnitId })">Avbryt <span class="btn-remove-times">&times;</span></a>
+    <div class="row">
+        <div class="col-md-6">
+            <label>Välj befintlig organisationsanvändare</label>
+            <br /><br />
+            <div class="border">
+                <br />
+                <form class="do-not-check-dirty" method="post" asp-action="ConnectUserToUnit" asp-controller="User">
+                    <input asp-for="CustomerUnitId" type="hidden" />
+                    <form-entry asp-for="ConnectUserId" type="select" asp-items="SelectListService.CustomerUsersNotForCurrentUnit(Model.CustomerUnitId)" class="allow-clear" />
+                    <form-entry asp-for="IsLocalAdministrator" />
+                    <button type="submit" class="btn btn-default pull-right">Koppla person</button>
+                </form>
+                <br /><br />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label>Skapa ny användare kopplad till enheten</label>
+            <br /><br />
+            <a class="btn btn-large btn-default" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerUnitId="@Model.CustomerUnitId" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa ny användare</a>
+        </div>
     </div>
-</div>
-
-
-
+    <div class="row">
+        <div class="col-md-12">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.CustomerUnitId })">Avbryt <span class="btn-remove-times">&times;</span></a>
+        </div>
+    </div>
+</section>
 
 

@@ -2,60 +2,62 @@
 @{
     ViewData["Title"] = $"Webhook - detaljer ({Model.OutboundWebHookCallId})";
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="NotificationType" />
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="CreatedAt" />
-        <display-entry asp-for="DeliveredAt" />
-    </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="ReplacedBy" />
-        <display-entry asp-for="Replaces" />
-    </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="RecipientUrl" />
-        @if (Model.FailedTries.Any() && Model.ReplacedBy == null)
-        {
-            <form method="post" asp-action="Resend">
-                <input type="hidden" name="WebHookId" value="@Model.OutboundWebHookCallId" />
-                <button class="btn btn-large btn-default">Skicka om</button>
-            </form>
-        }
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12">
-        <display-entry asp-for="Payload" />
-    </div>
-</div>
-
-@if (Model.FailedTries.Any())
-{
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
     <div class="row">
-        <div class="col-sm-12">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="webhook-view col-sm-2">Tidpunkt</th>
-                        <th class="webhook-view col-sm-10">Felmeddelande</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (FailedTryModel failedTry in Model.FailedTries)
-                    {
-                        <tr>
-                            <td class="webhook-view col-sm-2">@failedTry.FailedAt</td>
-                            <td class="webhook-view col-sm-10">@failedTry.ErrorMessage</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="col-sm-4">
+            <display-entry asp-for="NotificationType" />
         </div>
     </div>
-}
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="CreatedAt" />
+            <display-entry asp-for="DeliveredAt" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="ReplacedBy" />
+            <display-entry asp-for="Replaces" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="RecipientUrl" />
+            @if (Model.FailedTries.Any() && Model.ReplacedBy == null)
+            {
+                <form method="post" asp-action="Resend">
+                    <input type="hidden" name="WebHookId" value="@Model.OutboundWebHookCallId" />
+                    <button class="btn btn-large btn-default">Skicka om</button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <display-entry asp-for="Payload" />
+        </div>
+    </div>
+
+    @if (Model.FailedTries.Any())
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="webhook-view col-sm-2">Tidpunkt</th>
+                            <th class="webhook-view col-sm-10">Felmeddelande</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (FailedTryModel failedTry in Model.FailedTries)
+                        {
+                            <tr>
+                                <td class="webhook-view col-sm-2">@failedTry.FailedAt</td>
+                                <td class="webhook-view col-sm-10">@failedTry.ErrorMessage</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>

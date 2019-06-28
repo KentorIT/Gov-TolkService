@@ -2,23 +2,25 @@
 @{
     ViewData["Title"] = "Tolkuppgifter";
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="FullName" />
-        <display-entry asp-for="Email" />
-        <display-entry asp-for="IsActive" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="FullName" />
+            <display-entry asp-for="Email" />
+            <display-entry asp-for="IsActive" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="OfficialInterpreterId" />
+            <display-entry asp-for="PhoneNumber" />
+        </div>
     </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="OfficialInterpreterId" />
-        <display-entry asp-for="PhoneNumber" />
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id">Ändra tolkuppgifter</a>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-sm-4">
-        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
-    </div>
-    <div class="col-sm-4">
-        <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id">Ändra tolkuppgifter</a>
-    </div>
-</div>
+</section>

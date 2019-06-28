@@ -5,64 +5,66 @@
     var visibleClass = Model.Files != null ? !Model.Files.Any() ? "d-none" : string.Empty : "d-none";
     HelpLinkService.PageName = (string)ViewData["helplink"];
 }
-@if (Model.AllowUpload)
-{
-    <label>Bifoga filer</label>
-    <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span> @HelpLinkService.Anchor("bifoga-filer")
-    <br />
-    <br />
-    <a href="#" class="btn btn-warning" data-target="#addFilesDialog" data-toggle="modal" data-backdrop="static"><span class="glyphicon glyphicon-paperclip"></span> Bifoga filer</a>
-    <div class="file-list no-padding @visibleClass">
-        <div class="table-responsive add-attachment">
-            <label>@Model.Title</label>
-            <table class="table table-attached-files table-hover file-table-view file-table-add">
-                <tbody>
-                    @if (Model.Files != null)
-                    {
-                        @for (var i = 0; i < Model.Files.Count; ++i)
+<section aria-label="Bifogade filer">
+    @if (Model.AllowUpload)
+    {
+        <label>Bifoga filer</label>
+        <span class="form-entry-information glyphicon glyphicon-info-sign" title="@Model.Description"></span> @HelpLinkService.Anchor("bifoga-filer")
+        <br />
+        <br />
+        <a href="#" class="btn btn-warning" data-target="#addFilesDialog" data-toggle="modal" data-backdrop="static"><span class="glyphicon glyphicon-paperclip"></span> Bifoga filer</a>
+        <div class="file-list no-padding @visibleClass">
+            <div class="table-responsive add-attachment">
+                <label>@Model.Title</label>
+                <table class="table table-attached-files table-hover file-table-view file-table-add">
+                    <tbody>
+                        @if (Model.Files != null)
                         {
-                            <tr data-id="@Model.Files[i].Id.ToString()" data-size="@Model.Files[i].Size.ToString()">
-                                <td class="table-full-column">
-                                    <span class="glyphicon glyphicon-paperclip"></span>
-                                    <input asp-for="Files[i].Id" type="hidden" />
-                                    @Model.Files[i].FileName
-                                </td>
-                                @if (Model.AllowDelete)
-                                {
-                                    <td class="table-button-column fixed">
-                                        <span class="remove-file-row bold">&times;</span>
+                            @for (var i = 0; i < Model.Files.Count; ++i)
+                            {
+                                <tr data-id="@Model.Files[i].Id.ToString()" data-size="@Model.Files[i].Size.ToString()">
+                                    <td class="table-full-column">
+                                        <span class="glyphicon glyphicon-paperclip"></span>
+                                        <input asp-for="Files[i].Id" type="hidden" />
+                                        @Model.Files[i].FileName
                                     </td>
-                                }
-                            </tr>
+                                    @if (Model.AllowDelete)
+                                    {
+                                        <td class="table-button-column fixed">
+                                            <span class="remove-file-row bold">&times;</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                         }
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-}
-else
-{
-    <div class="file-list no-padding">
-        <div class="table-responsive">
-            <label>@Model.Title</label>
-            <table class="table table-attached-files table-hover file-table-view">
-                <tbody>
-                    @if (Model.Files != null)
-                    {
-                        @for (var i = 0; i < Model.DisplayFiles.Count; ++i)
+    }
+    else
+    {
+        <div class="file-list no-padding">
+            <div class="table-responsive">
+                <label>@Model.Title</label>
+                <table class="table table-attached-files table-hover file-table-view">
+                    <tbody>
+                        @if (Model.Files != null)
                         {
-                            <tr data-id="@Model.DisplayFiles[i].Id.ToString()" data-size="@Model.DisplayFiles[i].Size.ToString()">
-                                <td class="table-full-column">
-                                    <span class="glyphicon glyphicon-paperclip"></span>
-                                    <input asp-for="DisplayFiles[i].Id" type="hidden" />
-                                    @Model.DisplayFiles[i].FileName
-                                </td>
-                            </tr>
+                            @for (var i = 0; i < Model.DisplayFiles.Count; ++i)
+                            {
+                                <tr data-id="@Model.DisplayFiles[i].Id.ToString()" data-size="@Model.DisplayFiles[i].Size.ToString()">
+                                    <td class="table-full-column">
+                                        <span class="glyphicon glyphicon-paperclip"></span>
+                                        <input asp-for="DisplayFiles[i].Id" type="hidden" />
+                                        @Model.DisplayFiles[i].FileName
+                                    </td>
+                                </tr>
+                            }
                         }
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-}
+    }
+</section>

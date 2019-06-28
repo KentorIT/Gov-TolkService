@@ -38,7 +38,7 @@
                         <div class="col-sm-12 text-center">
                             <img class="progressbar" src="~/images/Step1_Order.PNG" alt="Ny bokning, steg 1 av 3, skapa bokning" />
                         </div>
-                        <h2 class="normal-weight">Bokningsuppgifter @HelpLinkService.HeaderAnchor()</h2>
+                        <h1 class="normal-weight">Bokningsuppgifter @HelpLinkService.HeaderAnchor()</h1>
                         <hr />
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
@@ -109,9 +109,9 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-12">
-                                <h3 class="no-padding-margin">
+                                <h2 class="no-padding-margin">
                                     Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken. Om endast ett förstahandsval anges, betraktas detta som ett tvingande krav för förmedlingen. Om andrahands- och tredjehandsval anges betraktas alla alternativ som önskemål, och förmedlingen har rätt att tillsätta tolk enligt något av alternativen"></span> @HelpLinkService.Anchor("nybokning_installelsesatt")
-                                </h3>
+                                </h2>
                             </div>
                         </div>
                         <div class="row ranked-InterpreterLocation">
@@ -176,7 +176,7 @@
 
                         <div class="row">
                             <div class="col-sm-12">
-                                <h3 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering."></span> @HelpLinkService.Anchor("nybokning_kompetensniva")</h3>
+                                <h2 class="no-padding-margin">Tolkens kompetensnivå <span class="form-entry-information glyphicon glyphicon-info-sign" title="Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering."></span> @HelpLinkService.Anchor("nybokning_kompetensniva")</h2>
                             </div>
                         </div>
                         <div class="d-none important-info " id="divNonCompetenceLevel">
@@ -252,7 +252,7 @@
                         </div>
                     </div>
                 </div>
-                <h2 class="normal-weight">Myndighetens uppgifter</h2>
+                <h1 class="normal-weight">Myndighetens uppgifter</h1>
                 <hr />
                 <div class="row">
                     <div class="col-sm-4">
@@ -329,7 +329,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Lägg till krav</h4>
+                <h2 class="modal-title">Lägg till krav</h2>
             </div>
             <div class="modal-body" id="req">
                 @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
@@ -347,7 +347,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Lägg till önskemål</h4>
+                <h2 class="modal-title">Lägg till önskemål</h2>
             </div>
             <div class="modal-body" id="des">
                 @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })

@@ -5,11 +5,11 @@
 @{
     ViewData["Title"] = "Statistik";
 }
-<h2>@ViewData["Title"]</h2>
+<h1>@ViewData["Title"]</h1>
 
 <div class="row">
     <div class="col-md-12">
-        <h3>Veckostatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Veckostatistiken uppdateras löpande och tittar sju dagar tillbaka i tiden och jämför siffrorna med ytterligare sju dagar tillbaka i tiden."></span></h3>
+        <h2>Veckostatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Veckostatistiken uppdateras löpande och tittar sju dagar tillbaka i tiden och jämför siffrorna med ytterligare sju dagar tillbaka i tiden."></span></h2>
         <hr />
     </div>
 </div>
@@ -41,7 +41,7 @@
 {
     <div class="row">
         <div class="col-md-12">
-            <h3>Bokningsstatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Bokningsstatistiken uppdateras löpande och tittar på alla beställda bokningar som gjorts i systemet."></span></h3>
+            <h2>Bokningsstatistik <span class="form-entry-information glyphicon glyphicon-info-sign" title="Bokningsstatistiken uppdateras löpande och tittar på alla beställda bokningar som gjorts i systemet."></span></h2>
             <hr />
         </div>
     </div>
@@ -50,7 +50,7 @@
         {
             <div class="col-md-4">
                 <div class="statistics-box-header center-block">
-                    <h4>@orderStatistic.Name</h4>
+                    <h2>@orderStatistic.Name</h2>
                 </div>
                 <div class="statistics-box wrap-report-info">
                     @if (orderStatistic.MoreToDisplay)

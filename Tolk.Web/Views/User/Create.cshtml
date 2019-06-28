@@ -5,123 +5,123 @@
 @{
     ViewData["Title"] = "Skapa användare";
 }
-<h2>@ViewData["Title"]</h2>
-
-<form method="post">
-    <div class="row">
-        <div class="col-sm-4">
-            <form-entry asp-for="Email" />
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="Email" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="NameFirst" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="NameFamily" />
+            </div>
         </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="NameFirst" />
-        </div>
-        <div class="col-sm-4">
-            <form-entry asp-for="NameFamily" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
-            {
-                <form-entry asp-for="IsOrganisationAdministrator" />
-                @if (Model.DisplayCentralOrderHandler)
+        <div class="row">
+            <div class="col-sm-4">
+                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
                 {
-                    <div class="CentralOrderHandlerCheckBox">
-                        <form-entry asp-for="IsCentralOrderHandler" />
-                    </div>
+                    <form-entry asp-for="IsOrganisationAdministrator" />
+                    @if (Model.DisplayCentralOrderHandler)
+                    {
+                        <div class="CentralOrderHandlerCheckBox">
+                            <form-entry asp-for="IsCentralOrderHandler" />
+                        </div>
+                    }
                 }
-            }
 
-        </div>
-        <div class="col-sm-4">
-            @if (Model.UserType == UserType.SystemAdministrator)
-            {
-                if (Model.HasSelectedOrganisation)
+            </div>
+            <div class="col-sm-4">
+                @if (Model.UserType == UserType.SystemAdministrator)
                 {
-                    <input asp-for="OrganisationIdentifier" type="hidden" />
-                    <display-entry asp-for="Organisation" />
+                    if (Model.HasSelectedOrganisation)
+                    {
+                        <input asp-for="OrganisationIdentifier" type="hidden" />
+                        <display-entry asp-for="Organisation" />
+                    }
+                    else
+                    {
+                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                    }
                 }
-                else
+            </div>
+            <div class="col-sm-4">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                @if (Model.UnitUsers != null && Model.UnitUsers.Any())
                 {
-                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
-                }
-            }
-        </div>
-        <div class="col-sm-4">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            @if (Model.UnitUsers != null && Model.UnitUsers.Any())
-            {
-                <h3>Koppla användare till enhet</h3>
+                    <h2>Koppla användare till enhet</h2>
 
-                <table class="table search-table">
-                    <thead>
-                        <tr>
-                            <th>Enhetsnamn</th>
-                            <th>Enhetens status</th>
-                            <th>Hantera användare</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.UnitUsers.Count(); ++i)
-                        {
+                    <table class="table search-table">
+                        <thead>
                             <tr>
-                                <td class="gray-border-bottom col-sm-4 @Model.UnitUsers[i].ColorClassName">
-                                    @(Model.UnitUsers[i].Name)
-                                </td>
-                                <td class="gray-border-bottom col-sm-2">
-                                    @(Model.UnitUsers[i].IsActive ? "Aktiv" : "Inaktiv")
-                                    <input asp-for="UnitUsers[i].CustomerUnitId" type="hidden" />
-                                </td>
-                                <td class="gray-border-bottom gray-border-right col-sm-4">
-                                    <div class="select-connect col-sm-6">
-                                        @if (Model.HasSelectedCustomerunit)
-                                        {
-                                            <input asp-for="UnitUsers[i].UserIsConnected" type="hidden" />
-                                            <div>Användare kopplad</div>
-                                        }
-                                        else
-                                        {
-                                            <form-entry asp-for="UnitUsers[i].UserIsConnected" />
-                                        }
-                                    </div>
-                                    <div class="select-localadmin col-sm-6">
-                                        <form-entry asp-for="UnitUsers[i].IsLocalAdmin" />
-                                    </div>
-                                    <div class="col-sm-6 non-unit-local-admin">
-
-                                    </div>
-                                </td>
+                                <th>Enhetsnamn</th>
+                                <th>Enhetens status</th>
+                                <th>Hantera användare</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.UnitUsers.Count(); ++i)
+                            {
+                                <tr>
+                                    <td class="gray-border-bottom col-sm-4 @Model.UnitUsers[i].ColorClassName">
+                                        @(Model.UnitUsers[i].Name)
+                                    </td>
+                                    <td class="gray-border-bottom col-sm-2">
+                                        @(Model.UnitUsers[i].IsActive ? "Aktiv" : "Inaktiv")
+                                        <input asp-for="UnitUsers[i].CustomerUnitId" type="hidden" />
+                                    </td>
+                                    <td class="gray-border-bottom gray-border-right col-sm-4">
+                                        <div class="select-connect col-sm-6">
+                                            @if (Model.HasSelectedCustomerunit)
+                                            {
+                                                <input asp-for="UnitUsers[i].UserIsConnected" type="hidden" />
+                                                <div>Användare kopplad</div>
+                                            }
+                                            else
+                                            {
+                                                <form-entry asp-for="UnitUsers[i].UserIsConnected" />
+                                            }
+                                        </div>
+                                        <div class="select-localadmin col-sm-6">
+                                            <form-entry asp-for="UnitUsers[i].IsLocalAdmin" />
+                                        </div>
+                                        <div class="col-sm-6 non-unit-local-admin">
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="row">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="col-sm-8 text-danger">@Model.ErrorMessage</div>
             }
         </div>
-    </div>
-    <div class="row">
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-        {
-            <div class="col-sm-8 text-danger">@Model.ErrorMessage</div>
-        }
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="@Model.UserPageMode.BackAction" asp-controller="@Model.UserPageMode.BackController" asp-route-id="@Model.UserPageMode.BackId">Avbryt <span class="btn-remove-times">&times;</span></a>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="@Model.UserPageMode.BackAction" asp-controller="@Model.UserPageMode.BackController" asp-route-id="@Model.UserPageMode.BackId">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+            </div>
+            <div class="col-sm-4">
+                <input asp-for="UserPageMode.BackController" type="hidden" />
+                <input asp-for="UserPageMode.BackId" type="hidden" />
+                <input asp-for="UserPageMode.BackAction" type="hidden" />
+                <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
+            </div>
         </div>
-        <div class="col-sm-4">
-        </div>
-        <div class="col-sm-4">
-            <input asp-for="UserPageMode.BackController" type="hidden" />
-            <input asp-for="UserPageMode.BackId" type="hidden" />
-            <input asp-for="UserPageMode.BackAction" type="hidden" />
-            <button id="create" type="submit" class="btn btn-large btn-success pull-right">Skapa</button>
-        </div>
-    </div>
-</form>
-
+    </form>
+</section>
 @section Scripts {
     <environment include="Development">
         <script src="~/js/User/User.js" asp-append-version="true"></script>

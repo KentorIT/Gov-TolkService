@@ -6,52 +6,54 @@
     ViewData["Title"] = "Registrera reklamation";
     HelpLinkService.PageName = "myndighet-skapa-reklamation";
 }
-<div class="row">
-    <div class="col-sm-12">
-        <h2>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h2>
-        <div class="row">
-            <div class="col-sm-4">
-                <input asp-for="OrderId" type="hidden" />
-                <display-entry asp-for="OrderNumber" />
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
+            <div class="row">
+                <div class="col-sm-4">
+                    <input asp-for="OrderId" type="hidden" />
+                    <display-entry asp-for="OrderNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="BrokerName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerName" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="BrokerName" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="CustomerReferenceNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="RegionName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="LanguageName" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="CustomerName" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="InterpreterName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="StartAt" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="EndAt" />
+                </div>
             </div>
+            <form method="post">
+                <input asp-for="RequestId" type="hidden" />
+                <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypes" />
+                <form-entry asp-for="Message" />
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Order" asp-action="View" asp-route-Id="@Model.OrderId">Avbryt <span class="btn-remove-times">&times;</span></a>
+                <button id="create" class="btn btn-large btn-default pull-right">Registera reklamation</button>
+            </form>
         </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="CustomerReferenceNumber" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="RegionName" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="LanguageName" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="InterpreterName" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="StartAt" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="EndAt" />
-            </div>
-        </div>
-        <form method="post">
-            <input asp-for="RequestId" type="hidden" />
-            <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypes" />
-            <form-entry asp-for="Message" />
-            <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Order" asp-action="View" asp-route-Id="@Model.OrderId">Avbryt <span class="btn-remove-times">&times;</span></a>
-            <button id="create" class="btn btn-large btn-default pull-right">Registera reklamation</button>
-        </form>
     </div>
-</div>
-@section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
+</section>
+    @section Scripts {
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+    }

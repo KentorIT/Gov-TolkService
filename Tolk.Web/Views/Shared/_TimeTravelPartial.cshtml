@@ -10,7 +10,7 @@
     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.TimeTravel)).Succeeded)
     {
         <div class="dropdown time-travel">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Hoppa i tiden">
                 <span class="glyphicon glyphicon-time"></span>
                 <span class="caret"></span>
             </a>

@@ -1,8 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Behörighet saknas";
 }
-
-<header>
-    <h2 class="text-danger">@ViewData["Title"]</h2>
-    <p class="text-danger">Du har inte rätt att se denna sida.</p>
-</header>
+<section aria-label="@ViewData["Title"]">
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">Du har inte behörighet att se denna sida.</p>
+</section>

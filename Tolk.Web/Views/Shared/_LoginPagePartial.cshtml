@@ -1,11 +1,10 @@
-@using Tolk.BusinessLogic.Entities
 @model LoginViewModel
 @using Tolk.BusinessLogic.Helpers
 @using Microsoft.Extensions.Options
 @inject IOptions<TolkOptions> options
 
-<section>
-    <h2>Logga in</h2>
+<section aria-label="Logga in">
+    <h1>Logga in</h1>
     <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" asp-action="Login" asp-controller="Account" class="do-not-check-dirty">
         <div class="row padding-bottom-30px">
             <div class="col-xs-12">
