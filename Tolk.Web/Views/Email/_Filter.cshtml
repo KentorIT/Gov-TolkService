@@ -1,0 +1,37 @@
+﻿@model EmailFilterModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+<section aria-label="Filtrera">
+    <div class="col-sm-12">
+        <form method="get" class="filter-form do-not-check-dirty">
+            <div class="row">
+                <div class="col-xs-4">
+                    <h2>Filtrera</h2>
+                </div>
+                <div class="col-xs-8">
+                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.FilterMessage))
+                {
+                    <div class="col-xs-12 important-info">
+                        <display-entry asp-for="FilterMessage" />
+                    </div>
+                }
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="Subject" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Receipent" class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="IsSent" type="select" asp-items="SelectListService.BoolList" class="allow-clear" />
+                </div>
+                <div class="col-sm-6">
+                    <form-entry asp-for="DateCreated" />
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
