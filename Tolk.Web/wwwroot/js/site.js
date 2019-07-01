@@ -126,6 +126,10 @@ $(function () {
 
     $('.form-entry-information').tooltip();
 
+    $(".disable-on-click").closest("form").on("submit", function () {
+        $(this).find(".disable-on-click").disableOnSubmit();
+    });
+
     var orderDatePickerOptions = jQuery.extend({}, datePickerOptions);
     orderDatePickerOptions.startDate = new Date($('#now').val()).zeroTime();
     $('.datepicker').not('.order-datepicker .datepicker').datepicker(datePickerOptions);
@@ -278,7 +282,6 @@ $(function () {
     refreshCollapsibles();
 });
 
-$("#create").closest("form").on("submit", function () { $("#create").disableOnSubmit(); });
 
 $(document).ready(function () {
     $('.no-auto-complete').val("");
