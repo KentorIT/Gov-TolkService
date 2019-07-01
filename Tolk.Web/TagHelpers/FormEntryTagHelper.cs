@@ -190,12 +190,10 @@ namespace Tolk.Web.TagHelpers
                         WriteValidation(writer);
                         break;
                     case InputTypeRadioButtonGroup:
-                        WriteLabel(writer);
                         WriteRadioGroup(writer);
                         WriteValidation(writer);
                         break;
                     case InputTypeCheckboxGroup:
-                        WriteLabel(writer);
                         WriteCheckboxGroup(writer);
                         WriteValidation(writer);
                         break;
@@ -899,13 +897,36 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteRadioGroup(TextWriter writer)
         {
-            bool isRow = LayoutOption == "row";
-            var id = IdOverride ?? For.Name;
-            int? ci = CheckedIndex == null ? 0
-                : CheckedIndex == "none" ? (int?)null
-                : int.Parse(CheckedIndex);
 
-            writer.WriteLine($"<div id=\"{id}\">");
+            var IsDisplayed = !AttributeHelper.IsAttributeDefined<NoDisplayNameAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
+
+            var id = IdOverride ?? For.Name;
+
+            int? ci = CheckedIndex == null ? 0
+                    : CheckedIndex == "none" ? (int?)null
+                    : int.Parse(CheckedIndex);
+
+            if (IsDisplayed)
+            {
+                writer.WriteLine($"<fieldset id=\"{id}\">");
+                writer.WriteLine($"<legend>{LabelOverride ?? For.ModelExplorer.Metadata.DisplayName}");
+                if (For.ModelExplorer.Metadata.IsRequired ||
+                        (((RequiredCheckedAttribute)AttributeHelper
+                        .GetAttribute<RequiredCheckedAttribute>(For.ModelExplorer.Metadata.ContainerType,
+                        For.ModelExplorer.Metadata.PropertyName))?.Min > 0))
+                {
+                    writer.WriteLine(RequiredStarSpan);
+                }
+                writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+                if (!string.IsNullOrEmpty(HelpLink))
+                {
+                    writer.WriteLine(string.Format(HelpAnchor, HelpLink));
+                }
+                writer.WriteLine("</legend>");
+            }
+            bool isRow = LayoutOption == "row";
 
             var itArr = Items.ToArray();
             for (int i = 0; i < itArr.Length; i++)
@@ -932,8 +953,7 @@ namespace Tolk.Web.TagHelpers
                     writer.WriteLine($"<span class=\"checkmark\"></span > <span class=\"radio-text\">{item.Text}</span ></label><br><div class=\"radiobutton-row-space\"></div>");
                 }
             }
-
-            writer.WriteLine($"</div>"); //groupId
+            writer.WriteLine($"</fieldset>"); //groupId
         }
 
         private void WriteCheckboxGroup(TextWriter writer)
@@ -942,12 +962,29 @@ namespace Tolk.Web.TagHelpers
 
             var id = IdOverride ?? For.Name;
 
-            var checkboxGroupBuilder = new TagBuilder("div");
+            var checkboxGroupBuilder = new TagBuilder("fieldset");
             checkboxGroupBuilder.Attributes.Add("id", id);
             checkboxGroupBuilder.Attributes.Add("for", For.Name);
             checkboxGroupBuilder.Attributes.Add("name", For.Name);
 
             htmlBuilder.AppendHtml(checkboxGroupBuilder.RenderStartTag());
+
+            var displayName = LabelOverride ?? For.ModelExplorer.Metadata.DisplayName;
+
+            htmlBuilder.AppendHtml($"<legend>{displayName}");
+            if (For.ModelExplorer.Metadata.IsRequired ||
+                    (((RequiredCheckedAttribute)AttributeHelper
+                    .GetAttribute<RequiredCheckedAttribute>(For.ModelExplorer.Metadata.ContainerType,
+                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0))
+            {
+                htmlBuilder.AppendHtml(RequiredStarSpan);
+            }
+            htmlBuilder.AppendHtml(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+            if (!string.IsNullOrEmpty(HelpLink))
+            {
+                htmlBuilder.AppendHtml(string.Format(HelpAnchor, HelpLink));
+            }
+            htmlBuilder.AppendHtml("</legend>");
 
             var itemsArr = Items.ToArray();
 

@@ -118,7 +118,7 @@ namespace Tolk.Web.Models
         [StringLength(100)]
         public string CustomerReferenceNumber { get; set; }
 
-        [NoDisplayName]
+        [Display(Name = "Tolkens kompetensnivå", Description = "Kompetensnivå kan anges som krav eller önskemål. Maximalt två alternativ kan anges. Om kompetensnivå anges som krav ska förmedlingen tillsätta tolk med någon av angivna alternativ. Om kompetensnivå anges som önskemål kan förmedlingen tillsätta tolk enligt något av alternativen. Om inget krav eller önskemål om kompetensnivå har angetts, eller om förmedlingen inte kan tillgodose angivna önskemål, måste förmedlingen tillsätta tolk med högsta möjliga kompetensnivå enligt principen om kompetensprioritering.")]
         [ClientRequired]
         public RadioButtonGroup CompetenceLevelDesireType { get; set; }
 

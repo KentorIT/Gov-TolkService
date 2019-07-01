@@ -41,6 +41,12 @@ h6,
 small {
   font-family: "Merriweather Sans", sans-serif;
 }
+legend {
+  font-size: 16px;
+  font-weight: normal;
+  color: black;
+  border: 0px;
+}
 h1 {
   line-height: 31px;
   font-size: 24px;

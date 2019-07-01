@@ -24,11 +24,13 @@ $(function () {
         }
         if (selectedItem.attr('data-additional') === "") {
             $('#divNonCompetenceLevel').show();
+            $('#divNonCompetenceLevel2').show();
             $('#divCompetenceLevel').hide();
             $('#LanguageHasAuthorizedInterpreter').val('false');
         }
         else {
             $('#divNonCompetenceLevel').hide();
+            $('#divNonCompetenceLevel2').hide();
             $('#divCompetenceLevel').show();
             $('#LanguageHasAuthorizedInterpreter').val('true');
         }
