@@ -354,7 +354,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 PriceRows = new List<PriceRowBase>()
             };
 
-            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, null, InterpreterLocation.OnSite, priceInfo);
+            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", InterpreterLocation.OnSite, priceInfo);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -1101,7 +1101,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    null);
+                    "Blir jättereskostnad pga allt är så dyrt!");
         }
 
         [Fact]
@@ -1158,7 +1158,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    null)
+                    "Blir jättereskostnad pga allt är så dyrt!")
             );
         }
 
@@ -1272,7 +1272,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    null)
+                    "Blir jättereskostnad pga allt är så dyrt!")
             );
         }
 
@@ -1306,7 +1306,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                null);
+                "Blir jättereskostnad pga allt är så dyrt!");
 
         }
 

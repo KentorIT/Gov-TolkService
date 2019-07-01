@@ -247,7 +247,7 @@ namespace Tolk.Web.TagHelpers
 
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
-        private const string HelpAnchor = "<a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
+        private const string HelpAnchor = " <a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
 
         private void WritePrefix(TextWriter writer, PrefixAttribute.Position condition)
         {
@@ -950,7 +950,7 @@ namespace Tolk.Web.TagHelpers
                     writer.WriteLine($"<label for=\"{itemName}\" class=\"radiocontainer\"> ");
                     WritePrefix(writer, PrefixAttribute.Position.Value);
                     writer.WriteLine(inputElem);
-                    writer.WriteLine($"<span class=\"checkmark\"></span > <span class=\"radio-text\">{item.Text}</span ></label><br><div class=\"radiobutton-row-space\"></div>");
+                    writer.WriteLine($"<span class=\"checkmark\"></span> <span class=\"radio-text\">{item.Text}</span ></label><br><div class=\"radiobutton-row-space\"></div>");
                 }
             }
             writer.WriteLine($"</fieldset>"); //groupId
