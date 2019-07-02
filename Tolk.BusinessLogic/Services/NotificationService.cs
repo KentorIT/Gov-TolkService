@@ -743,6 +743,19 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
+        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId)
+        {
+            _dbContext.Add(new OutboundEmail(
+                    recipient,
+                    subject,
+                    plainBody,
+                    htmlBody,
+                    _clock.SwedenNow,
+                    replacingEmailId));
+
+            _dbContext.SaveChanges();
+        }
+
         private string GetRequisitionPriceInformationForMail(Requisition requisition)
         {
             if (requisition.PriceRows == null)
@@ -1049,7 +1062,7 @@ Sammanställning:
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName
                 }),
-                Occasions = orderGroup.Orders.Select( o => new OccasionModel
+                Occasions = orderGroup.Orders.Select(o => new OccasionModel
                 {
                     OrderNumber = o.OrderNumber,
                     StartAt = o.StartAt,
@@ -1059,21 +1072,21 @@ Sammanställning:
                     {
                         PriceCalculatedFromCompetenceLevel = o.PriceCalculatedFromCompetenceLevel.GetCustomName(),
                         PriceRows = o.PriceRows.GroupBy(r => r.PriceRowType)
-                        .Select(p => new PriceRowModel
-                        {
-                            Description = p.Key.GetDescription(),
-                            PriceRowType = p.Key.GetCustomName(),
-                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                            {
-                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                                Price = l.Price,
-                                Quantity = l.Quantity
-                            })
-                        })
+                       .Select(p => new PriceRowModel
+                       {
+                           Description = p.Key.GetDescription(),
+                           PriceRowType = p.Key.GetCustomName(),
+                           Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                           CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                           CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                           PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                           {
+                               PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                               Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                               Price = l.Price,
+                               Quantity = l.Quantity
+                           })
+                       })
                     }
                 })
             };

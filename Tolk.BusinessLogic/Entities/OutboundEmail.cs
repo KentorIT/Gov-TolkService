@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 using MimeKit;
 
 namespace Tolk.BusinessLogic.Entities
@@ -13,13 +12,15 @@ namespace Tolk.BusinessLogic.Entities
             string subject,
             string plainBody,
             string htmlBody,
-            DateTimeOffset createdAt)
+            DateTimeOffset createdAt,
+            int? replacingEmailId = null)
         {
             Recipient = recipient;
             Subject = subject;
             PlainBody = plainBody;
             HtmlBody = htmlBody;
             CreatedAt = createdAt;
+            ReplacingEmailId = replacingEmailId;
         }
 
         public int OutboundEmailId { get; private set; }
@@ -40,6 +41,15 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset? DeliveredAt { get; set; }
 
+        public int? ReplacingEmailId { get; set; }
+
+        [ForeignKey(nameof(ReplacingEmailId))]
+        [InverseProperty(nameof(ReplacedByEmail))]
+        public OutboundEmail ReplacingEmail { get; set; }
+
+        [InverseProperty(nameof(ReplacingEmail))]
+        public OutboundEmail ReplacedByEmail { get; set; }
+               
         public MimeMessage ToMimeKitMessage(InternetAddress from)
         {
             var message = new MimeMessage();

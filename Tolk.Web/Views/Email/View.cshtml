@@ -1,0 +1,58 @@
+﻿@model EmailModel
+@{
+    ViewData["Title"] = "E-postmeddelande";
+}
+@if (!string.IsNullOrEmpty(@Model.ErrorMessage))
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <br />
+            <div class="warning-info-home">
+                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                <span class="info-message">
+                    @Model.ErrorMessage
+                </span>
+            </div>
+        </div>
+    </div>
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="Subject" />
+            <display-entry asp-for="CreatedAt" />
+            <display-entry asp-for="SentAt" />
+        </div>
+        <div class="col-sm-8">
+            <display-entry asp-for="Recipient" />
+            <display-entry asp-for="Body" />
+        </div>
+    </div>
+    @if (Model.IsResent)
+    {
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="ResentAt" />
+        </div>
+        <div class="col-sm-8">
+            Om du vill skicka om detta igen så gå in på det omskickade meddelandet genom att följa länken nedan: <br />
+            <a class="pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacingEmailId })"> Gå till omskickat meddelande</a>
+        </div>
+    </div>
+        }
+        <div class="row">
+            <div class="col-sm-8">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+            </div>
+            <div class="col-sm-4">
+                @if (!Model.IsResent)
+                {
+                    <form method="post" asp-action="Resend">
+                        <input type="hidden" name="id" value="@Model.OutboundEmailId" />
+                        <button class="btn btn-large btn-default">Skicka om <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+                    </form>
+                }
+            </div>
+        </div>
+</section>

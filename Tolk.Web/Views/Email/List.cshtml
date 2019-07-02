@@ -1,5 +1,4 @@
 ﻿@model EmailListModel
-@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "E-postmeddelanden";
 }
@@ -13,7 +12,7 @@
             @if (Model.Items.Any())
             {
                 <div class="table-responsive standard-table table-paging table-datatable">
-                    <table class="table table-hover full-row-height search-table">
+                    <table class="table table-hover clickable-rows-with-action full-row-height search-table">
                         <thead>
                             <tr>
                                 <th>Skapat</th>
@@ -21,17 +20,19 @@
                                 <th>Ämne</th>
                                 <th>Innehåll</th>
                                 <th>Skickat</th>
+                                <th>Omskickat</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model.Items)
                             {
-                            <tr>
+                            <tr data-id="@item.OutboundEmailId" data-click-action-url="@Url.Action("View", new { id = item.OutboundEmailId})">
                                 <td class="gray-border-bottom min-date-width @item.ColorClassName">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td class="gray-border-bottom">@item.Recipient</td>
                                 <td class="gray-border-bottom">@item.Subject</td>
                                 <td class="gray-border-bottom">@item.DisplayBody</td>
-                                <td class="gray-border-bottom gray-border-right">@(item.IsSent ? item.SentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                                <td class="gray-border-bottom">@(item.IsSent ? item.SentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                                <td class="gray-border-bottom gray-border-right">@(item.ResentAt.HasValue ? item.ResentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
                             </tr>
                             }
                         </tbody>

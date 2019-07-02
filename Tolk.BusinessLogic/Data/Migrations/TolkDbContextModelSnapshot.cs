@@ -1006,10 +1006,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<string>("Recipient")
                         .IsRequired();
 
+                    b.Property<int?>("ReplacingEmailId");
+
                     b.Property<string>("Subject")
                         .IsRequired();
 
                     b.HasKey("OutboundEmailId");
+
+                    b.HasIndex("ReplacingEmailId")
+                        .IsUnique()
+                        .HasFilter("[ReplacingEmailId] IS NOT NULL");
 
                     b.ToTable("OutboundEmails");
                 });
@@ -2210,6 +2216,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("OrderStatusConfirmations")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundEmail", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundEmail", "ReplacingEmail")
+                        .WithOne("ReplacedByEmail")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.OutboundEmail", "ReplacingEmailId");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>
