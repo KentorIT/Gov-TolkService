@@ -191,9 +191,16 @@
                                 </div>
                                 <div class="d-none" id="divCompetenceLevel">
                                     <div class="row">
-                                        <div class="col-sm-12">
+                                        <div class="col-sm-4">
                                             <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" help-link="@HelpLinkService.GenerateUrl(" nybokning_kompetensniva")" checked-index="none" />
                                             <div id="CompetenceLevelDesireTypeValidator" class="d-none text-danger body"></div>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <div class="competence-information d-none">
+                                                <span class="glyphicon message-icon glyphicon-ok"></span>
+                                                <span class="info-message-small"></span>
+                                                <div class="comp-list"><ul></ul></div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row">

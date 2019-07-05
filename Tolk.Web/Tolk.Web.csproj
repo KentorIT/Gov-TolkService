@@ -165,7 +165,7 @@
     <Content Update="Views\User\Edit.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Statistics\ListLanguages.cshtml">
+    <Content Update="Views\Language\List.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\User\View.cshtml">

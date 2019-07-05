@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Administrera språk";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>Här kan du utföra olika handlingar för att hantera språken i tjänsten</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            Visa information om alla språk som finns upplagda i tjänsten: <br />
+        </div>
+        <div class="col-sm-4">
+            Se skillnader mellan språken i Kammarkollegiets register och tjänsten: <br />
+        </div>
+        <div class="col-sm-4">
+            Uppdatera språkens kompetenser från Kammarkollegiets register: <br />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="List">Visa alla språk</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="Verify">Visa skillnader</a>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-large btn-default" asp-action="UpdateCompetences">Uppdatera kompetenser</a>
+        </div>
+    </div>
+</section>

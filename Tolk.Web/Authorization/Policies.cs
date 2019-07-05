@@ -27,6 +27,7 @@ namespace Tolk.Web.Authorization
         public const string HasPassword = nameof(HasPassword);
         public const string CustomerOrAdmin = nameof(CustomerOrAdmin);
         public const string CentralLocalAdminCustomer = nameof(CentralLocalAdminCustomer);
+        public const string ApplicationAdminOrBrokerCA = nameof(ApplicationAdminOrBrokerCA);
         public const string SystemCentralLocalAdmin = nameof(SystemCentralLocalAdmin);
 
         public static void RegisterTolkAuthorizationPolicies(this IServiceCollection services)
@@ -50,6 +51,7 @@ namespace Tolk.Web.Authorization
                     builder.RequireRole(Roles.SystemAdministrator)
                     .AddRequirements(new TolkOptionsRequirement<bool>(o => o.EnableTimeTravel, true)));
                 opt.AddPolicy(CustomerOrAdmin, builder => builder.RequireAssertion(CustomerOrAdminHandler));
+                opt.AddPolicy(ApplicationAdminOrBrokerCA, builder => builder.RequireAssertion(ApplicationAdminOrBrokerCentralAdminHandler));
                 opt.AddPolicy(CentralLocalAdminCustomer, builder => builder.RequireAssertion(CentralLocalAdminHandler));
                 opt.AddPolicy(SystemCentralLocalAdmin, builder => builder.RequireAssertion(SystemCentralLocalAdminHandler));
             });
@@ -71,6 +73,13 @@ namespace Tolk.Web.Authorization
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ||
                 context.User.IsInRole(Roles.SystemAdministrator);
+        };
+
+
+        private readonly static Func<AuthorizationHandlerContext, bool> ApplicationAdminOrBrokerCentralAdminHandler = (context) =>
+        {
+            return (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && context.User.IsInRole(Roles.CentralAdministrator)) ||
+                context.User.IsInRole(Roles.ApplicationAdministrator);
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> CentralLocalAdminHandler = (context) =>

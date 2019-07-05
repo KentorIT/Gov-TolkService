@@ -654,6 +654,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<bool>("Active");
 
+                    b.Property<bool>("HasAuthorized");
+
+                    b.Property<bool>("HasEducated");
+
+                    b.Property<bool>("HasHealthcare");
+
+                    b.Property<bool>("HasLegal");
+
                     b.Property<string>("ISO_639_Code")
                         .HasMaxLength(3);
 

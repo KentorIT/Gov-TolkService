@@ -1,0 +1,85 @@
+﻿@model Tolk.BusinessLogic.Helpers.ValidateTellusLanguageListResult
+@{
+    ViewData["Title"] = "Verifiera språk mot Tellus";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+
+    @if (Model.FoundChanges)
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                Det finns skillnader mellan mellan detta systems och Tellus språklista.
+            </div>
+        </div>
+        @if (Model.NewLanguages.Any())
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Nya språk i Tellus</h2>
+                </div>
+                <div class="col-sm-6">
+                    <div class="table-responsive table-datatable">
+                        <table class="table sortable-only-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Språk</th>
+                                    <th>Isokod i Tellus</th>
+                                    <th>Isokod finns i systemet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.NewLanguages)
+                                {
+                                    <tr>
+                                        <td class="gray-border-bottom gray-border-left">@item.Value</td>
+                                        <td class="gray-border-bottom">@item.Id</td>
+                                        <td class="gray-border-bottom gray-border-right">@item.Description</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model.RemovedLanguages.Any())
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Borttagna språk från Tellus</h2>
+                </div>
+                <div class="col-sm-6">
+                    <div class="table-responsive table-datatable">
+                        <table class="table sortable-only-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Språk</th>
+                                    <th>Isokod i systemet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.RemovedLanguages)
+                                {
+                                    <tr>
+                                        <td class="gray-border-bottom gray-border-left">@item.Value</td>
+                                        <td class="gray-border-bottom gray-border-right">@item.Id</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                Det fanns inga skillnader mellan detta systems och Tellus språklista.
+            </div>
+        </div>
+    }
+</section>

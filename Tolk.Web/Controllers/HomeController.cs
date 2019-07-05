@@ -401,11 +401,6 @@ namespace Tolk.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [Authorize(Roles = Roles.SystemAdministrator)]
-        public async Task<IActionResult> VerifyLanguages()
-        {
-            return View(await _verificationService.ValidateTellusLanguageList());
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]

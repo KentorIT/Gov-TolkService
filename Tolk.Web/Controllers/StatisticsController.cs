@@ -159,20 +159,6 @@ namespace Tolk.Web.Controllers
             return File(_statService.CreateExcelFile(rows, organisationName, reportType), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
-        [Authorize(Roles = Roles.CentralAdministrator)]
-        [Authorize(Policy = Policies.Broker)]
-        public ActionResult ListLanguages()
-        {
-            return View(
-                _dbContext.Languages.Where(l => l.Active == true)
-                .OrderBy(l => l.Name).Select(l => new LanguageListItem
-                {
-                    ISO_639_Code = l.ISO_639_Code,
-                    Name = l.Name,
-                    TellusName = l.TellusName
-                }));
-        }
-
         [Authorize(Roles = Roles.AdminRoles)]
         public ActionResult Reports()
         {

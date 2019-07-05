@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
@@ -133,7 +134,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
                         "Det finns skillnader i systemets språklista och den i Tellus.",
-                        $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Home/VerifyLanguages");
+                        $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/Verify");
                     _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.SupportEmail}");
                 }
                 else
@@ -143,6 +144,59 @@ namespace Tolk.BusinessLogic.Services
             }
 
             return validationResult;
+        }
+
+        public async Task<UpdateLanguagesCompetenceResult> UpdateTellusLanguagesCompetenceInfo(bool notify = false)
+        {
+            if (!_tolkBaseOptions.Tellus.IsLanguagesCompetenceActivated)
+                return new UpdateLanguagesCompetenceResult
+                {
+                    UpdatedLanguages = Enumerable.Empty<Language>(),
+                    Message = "Hämtningen av språkkompetenser från Tellus är inte aktiverad, ändra konfigurering för att aktivera."
+                };
+            var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesCompetenceInfoUri);
+            string content = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<TellusLanguagesCompetenceInfoResponse>(content);
+
+            if (result.Status != 200)
+            {
+                if (notify)
+                {
+                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                        $"Hämtningen av språkkompetenser från Tellus misslyckades!",
+                        $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
+                }
+                _logger.LogWarning($"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}");
+                return new UpdateLanguagesCompetenceResult
+                {
+                    UpdatedLanguages = Enumerable.Empty<Language>(),
+                    Message = $"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}"
+                };
+            }
+            var currentTellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrWhiteSpace(l.TellusName)).ToList();
+            var tellusLanguagesWithCompetences = result.Result.Where(t => currentTellusLanguages.Any(l => l.TellusName == t.Id && l.Active));
+            if (!result.Result.Any() || !tellusLanguagesWithCompetences.Any())
+            {
+                return new UpdateLanguagesCompetenceResult
+                {
+                    UpdatedLanguages = Enumerable.Empty<Language>(),
+                    Message = result.Result.Any() ? "Hämtningen innehöll endast ej aktiva språk eller Tellusnamn som inte förekommer i tjänsten" : "Hämtningen innehöll inga språk"
+                };
+            }
+            List<Language> updatedLanguages = new List<Language>();
+
+            foreach (TellusLanguagesInfoModel l in tellusLanguagesWithCompetences)
+            {
+                var updates = currentTellusLanguages.Where(ls => ls.TellusName == l.Id &&
+                (l.HasLegal != ls.HasLegal ||
+                l.HasHealthcare != ls.HasHealthcare ||
+                l.HasAuthorized != ls.HasAuthorized ||
+                l.HasEducated != ls.HasEducated)).ToList();
+                updates.ForEach(c => { c.HasLegal = l.HasLegal; c.HasHealthcare = l.HasHealthcare; c.HasAuthorized = l.HasAuthorized; c.HasEducated = l.HasEducated; });
+                updatedLanguages.AddRange(updates);
+            }
+            _dbContext.SaveChanges();
+            return new UpdateLanguagesCompetenceResult { UpdatedLanguages = updatedLanguages, Message = updatedLanguages.Any() ? string.Empty : "Inga skillnader i kompetenser fanns mellan tjänsten och Tellus" };
         }
 
         private static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)

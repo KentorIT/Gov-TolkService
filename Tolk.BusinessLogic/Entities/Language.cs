@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Text;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -23,5 +20,28 @@ namespace Tolk.BusinessLogic.Entities
 
         [Required]
         public bool Active { get; set; }
+
+        public bool HasLegal { get; set; }
+
+        public bool HasHealthcare { get; set; }
+
+        public bool HasAuthorized { get; set; }
+
+        public bool HasEducated { get; set; }
+
+        public string Competences
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder(HasLegal ? "L" : string.Empty);
+                sb.Append(HasHealthcare ? "H" : string.Empty);
+                sb.Append(HasAuthorized ? "A" : string.Empty);
+                sb.Append(HasEducated ? "E" : string.Empty);
+                return sb.ToString().Length == 0 ? "0" : sb.ToString();
+            }
+        }
+        public bool HasAllCompetences => HasLegal && HasHealthcare && HasAuthorized && HasEducated;
+
+
     }
 }

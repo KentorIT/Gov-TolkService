@@ -126,7 +126,7 @@
                                         <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
-                                        <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="List">Språk</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
                                     </ul>
                                 </li>
@@ -165,7 +165,7 @@
                                     @if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
                                         <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
-                                        <li><a class="submenu" asp-area="" asp-controller="Home" asp-action="VerifyLanguages">Verifiera språkregister</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Email" asp-action="List">E-postmeddelanden</a></li>
                                     }
                                 </ul>
@@ -219,7 +219,7 @@
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="ListLanguages">Språk</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Language" asp-action="List">Språk</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
                                     }
                                 }
@@ -235,6 +235,8 @@
                                     if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Email" asp-action="List">E-postmeddelanden</a></li>
                                     }
                                 }
                                 <li>

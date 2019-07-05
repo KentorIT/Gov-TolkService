@@ -214,7 +214,7 @@ namespace Tolk.Web.Services
                         {
                             Value = l.LanguageId.ToString(),
                             Text = l.Name,
-                            AdditionalDataAttribute = l.TellusName ?? string.Empty
+                            AdditionalDataAttribute = string.IsNullOrEmpty(l.TellusName) ? string.Empty : l.Competences
                         })
                     .ToList().AsReadOnly();
 

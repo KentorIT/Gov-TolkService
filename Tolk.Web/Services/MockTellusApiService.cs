@@ -191,7 +191,7 @@ namespace Tolk.Web.Services
 
 
         };
-        public MockTellusApiService( TolkDbContext dbContext)
+        public MockTellusApiService(TolkDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -209,7 +209,7 @@ namespace Tolk.Web.Services
 
         public TellusLanguagesResponse GetLanguages()
         {
-            var tellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) && 
+            var tellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) &&
                 !_languageModels.Any(t => t.RemoveOnTest && t.Id == l.TellusName))
                 .Select(l => new TellusLanguageModel
                 {
@@ -224,6 +224,48 @@ namespace Tolk.Web.Services
             return new TellusLanguagesResponse
             {
                 Result = tellusLanguages,
+                Status = 200,
+            };
+        }
+
+        public TellusLanguagesCompetenceInfoResponse GetLanguagesInfo()
+        {
+            List<TellusLanguagesInfoModel> tellusLanguagesInfo = new List<TellusLanguagesInfoModel> {
+                new TellusLanguagesInfoModel
+                {
+                    Id = "bul",
+                    HasAuthorized = true,
+                    HasEducated = false,
+                    HasHealthcare = false,
+                    HasLegal = false
+                } };
+            tellusLanguagesInfo.Add(new TellusLanguagesInfoModel
+            {
+                Id = "deu",
+                HasAuthorized = true,
+                HasEducated = true,
+                HasHealthcare = true,
+                HasLegal = true
+            });
+            tellusLanguagesInfo.Add(new TellusLanguagesInfoModel
+            {
+                Id = "est",
+                HasAuthorized = true,
+                HasEducated = true,
+                HasHealthcare = false,
+                HasLegal = true
+            });
+            tellusLanguagesInfo.Add(new TellusLanguagesInfoModel
+            {
+                Id = "ind",
+                HasAuthorized = false,
+                HasEducated = false,
+                HasHealthcare = false,
+                HasLegal = false
+            });
+            return new TellusLanguagesCompetenceInfoResponse
+            {
+                Result = tellusLanguagesInfo,
                 Status = 200,
             };
         }

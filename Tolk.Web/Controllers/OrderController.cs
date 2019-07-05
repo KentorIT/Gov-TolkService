@@ -375,6 +375,7 @@ namespace Tolk.Web.Controllers
 
                 //check if order is far in future (more than 2 years ahead)
                 updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
+
             }
 
             updatedModel.RegionName = _dbContext.Regions
@@ -382,10 +383,12 @@ namespace Tolk.Web.Controllers
 
             updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ? model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" : _dbContext.CustomerUnits
                 .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name : "Du tillhör ingen enhet i systemet";
+            Language language = _dbContext.Languages
+                .Single(l => l.LanguageId == model.LanguageId);
 
-            updatedModel.LanguageName = order.OtherLanguage ?? _dbContext.Languages
-                .Single(l => l.LanguageId == model.LanguageId).Name;
+            updatedModel.LanguageName = order.OtherLanguage ?? language.Name;
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
+            updatedModel.WarningOrderRequiredCompetenceInfo = CheckOrderCompetenceRequirements(order, language);
 
             if (order.Attachments?.Count() > 0)
             {
@@ -410,6 +413,18 @@ namespace Tolk.Web.Controllers
             updatedModel.CreatedBy = user.CompleteContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
             return PartialView(nameof(Confirm), updatedModel);
+        }
+
+        private string CheckOrderCompetenceRequirements(Order o, Language l)
+        {
+            return (!o.SpecificCompetenceLevelRequired || !o.LanguageHasAuthorizedInterpreter || l.HasAllCompetences) ?
+            string.Empty :
+                    ((!l.HasLegal && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.CourtSpecialist)) ||
+                    (!l.HasHealthcare && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.HealthCareSpecialist)) ||
+                    (!l.HasAuthorized && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.AuthorizedInterpreter)) ||
+                    (!l.HasEducated && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter))) ?
+                    "Observera att du har ställt krav på minst en kompetensnivå där det för närvarande saknas tolkar för det valda språket i Kammarkollegiets tolkregister. Det finns risk för att förmedlingen inte kan tillsätta någon tolk."
+                    : string.Empty;
         }
 
         [Authorize(Policy = Policies.Customer)]

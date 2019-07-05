@@ -1,0 +1,46 @@
+﻿@model Tolk.BusinessLogic.Helpers.UpdateLanguagesCompetenceResult
+@{
+    ViewData["Title"] = "Uppdaterade språkkompetenser från Tellus";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+            @if (Model.UpdatedLanguages.Any())
+            {
+            <h2>Följande språk uppdaterades</h2>
+            <div class="table-responsive table-datatable">
+                <table class="table sortable-only-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Språk</th>
+                            <th>Tellusnamn</th>
+                            <th>Uppdaterade kompetenser</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.UpdatedLanguages)
+                        {
+                            <tr>
+                                <td class="gray-border-bottom gray-border-left">@item.Name</td>
+                                <td class="gray-border-bottom">@item.TellusName</td>
+                                <td class="gray-border-bottom gray-border-right">
+                                    Rättstolk: @(item.HasLegal ? "Ja" : "Nej")<br />
+                                    Sjukvårdstolk: @(item.HasHealthcare ? "Ja" : "Nej")<br />
+                                    Auktoriserad tolk: @(item.HasAuthorized ? "Ja" : "Nej")<br />
+                                    Utbildad tolk: @(item.HasEducated ? "Ja" : "Nej")<br />
+                                </td>
+                            </tr>
+                         }
+                    </tbody>
+                </table>
+
+            </div>
+            }
+            else
+            {
+            <display-entry asp-for="Message" />
+            }
+        </div>
+    </div>
+</section>

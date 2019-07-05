@@ -1025,9 +1025,9 @@ li.placeholder::before {
     background-color: @primary-lightest;
     border: 1px solid @primary-darker;
     color: black;
-    padding: 12px 12px 12px 12px;
     margin-left: 0px;
     margin-right: 0px;
+    .padding-12px;
 }
 
 .warning-info {
@@ -1038,14 +1038,23 @@ li.placeholder::before {
     margin-right: 0px;
 }
 
-.warning-info-confirm {
-    padding: 8px 12px 0px 8px;
+.warning-info-home {
+    .padding-12px;
     .warning-info
 }
 
-.warning-info-home {
-    padding: 12px 12px 12px 12px;
-    .warning-info
+.warning-yellow {
+    background-color: @light-yellow;
+    border: 1px solid @border-yellow;
+}
+
+.yellow-glyphicon {
+    color: @border-yellow;
+}
+
+.warning-info-yellow {
+    .warning-yellow;
+    .padding-12px;
 }
 
 .system-message {
@@ -1065,8 +1074,7 @@ li.placeholder::before {
 }
 
 .system-message-warning {
-    background-color: @light-yellow;
-    border: 1px solid @border-yellow;
+    .warning-yellow;
     .system-message
 }
 
@@ -1119,9 +1127,9 @@ li.placeholder::before {
     margin-right: 14px;
     border: none;
     color: black;
-    padding: 12px 12px 12px 12px;
     font-size: 16px;
     margin-bottom: 20px;
+    .padding-12px;
 }
 
 .no-result-message {
@@ -1166,6 +1174,12 @@ li.placeholder::before {
 .info-message {
     font-size: 18px;
     padding-left: 10px;
+}
+
+
+.info-message-small {
+    font-size: 14px;
+    padding-left: 8px;
 }
 
 .shortcut-box {
@@ -1292,6 +1306,10 @@ ul.pagination > li.paginate_button.active > a {
     padding: 30px 20px;
     margin-top: -30px;
     min-height: 460px;
+}
+
+.padding-12px {
+    padding: 12px 12px 12px 12px;
 }
 
 .padding-bottom-30px {
@@ -1815,4 +1833,8 @@ ol.breadcrumb > li + li:before {
 
 .min-date-width {
     min-width: 90px;
+}
+
+.comp-list {
+    font-size: 13px;
 }

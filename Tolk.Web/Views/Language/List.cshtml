@@ -1,0 +1,44 @@
+﻿@model IEnumerable<LanguageListItem>
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
+@{
+    ViewData["Title"] = "Språk";
+    HelpLinkService.PageName = "sprak";
+}
+<h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive table-datatable">
+            <table class="table sortable-only-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Namn</th>
+                        <th>ISO 639-3</th>
+                        <th>Id i KamK. register</th>
+                        <th>Tolkar finns med komp. i KamK. register</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="gray-border-bottom gray-border-left">@item.Name</td>
+                            <td class="gray-border-bottom">@item.ISO_639_Code</td>
+                            <td class="gray-border-bottom">@item.TellusName</td>
+                            @if (!string.IsNullOrWhiteSpace(item.TellusName))
+                            {
+                                <td class="gray-border-bottom gray-border-right">
+                                    Rättstolk: @(item.HasLegal ? "Ja" : "Nej")<br />
+                                    Sjukvårdstolk: @(item.HasHealthcare ? "Ja" : "Nej")<br />
+                                    Auktoriserad tolk: @(item.HasAuthorized ? "Ja" : "Nej")<br />
+                                    Utbildad tolk: @(item.HasEducated ? "Ja" : "Nej")<br />
+                                </td>
+                            }
+                            else { <td class="gray-border-bottom gray-border-right" /> }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
