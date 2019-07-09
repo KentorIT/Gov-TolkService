@@ -442,12 +442,12 @@ namespace Tolk.Web.Controllers
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
                     serversideValid = false;
-                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
+                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten");
                 }
                 else if (HighestLevelLoggedInUserType == UserType.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
                 {
                     serversideValid = false;
-                    ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet.");
+                    ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet");
                 }
                 else if (HighestLevelLoggedInUserType == UserType.ApplicationAdministrator)
                 {

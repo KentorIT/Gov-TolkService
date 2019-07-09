@@ -23,6 +23,7 @@ $(function () {
             $('#other-language').collapse('hide');
         }
         if (selectedItem.attr('data-additional') === "") {
+            $('.competence-information > span.info-message-small').text("").removeAttr("role");
             $('#divNonCompetenceLevel').show();
             $('#divNonCompetenceLevel2').show();
             $('#divCompetenceLevel').hide();
@@ -44,19 +45,19 @@ $(function () {
         $('.competence-information > div.comp-list').find("li").remove();
 
         if (compLevelString.length === 4) {
-            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har tolkar för samtliga kompetensnivåer för valt språk");
             $('.competence-information').removeClass("warning-info-home").removeClass("warning-info-yellow").addClass("system-action-info")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-exclamation-sign").addClass("glyphicon-ok").removeClass("yellow-glyphicon");
+            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har tolkar för samtliga kompetensnivåer för valt språk").attr("role", "status");
         }
         else if (compLevelString === "0") {
             $('.competence-information').removeClass("warning-info-yellow").removeClass("system-action-info").addClass("warning-info-home")
-                .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").removeClass("yellow-glyphicon");;
-            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har inga tolkar för någon kompetensnivå för valt språk");
+                .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").removeClass("yellow-glyphicon");
+            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har inga tolkar för någon kompetensnivå för valt språk").attr("role", "alert");
         }
         else {
             $('.competence-information').removeClass("warning-info-home").removeClass("system-action-info").addClass("warning-info-yellow")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").addClass("yellow-glyphicon");
-            $('.competence-information > span.info-message-small').text("Tolkar med följande kompetensnivå finns i Kammarkollegiets tolkregister för valt språk:");
+            $('.competence-information > span.info-message-small').text("Tolkar med följande kompetensnivå finns i Kammarkollegiets tolkregister för valt språk:").attr("role", "alert");
             if (compLevelString.indexOf("L") >= 0) {
                 $('.competence-information > div.comp-list').find("ul").append('<li>Rättstolk</li>');
             }

@@ -5,6 +5,7 @@ var $competenceLevel;
 
 var validateInterpreter = function (interpreterId, officialInterpreterId, competenceLevel, orderId) {
     if (competenceLevel === "" || competenceLevel === "OtherInterpreter" || interpreterId === "") {
+        $('.interpreter-information > span.info-message').removeAttr("role");
         $('.interpreter-information').addClass("d-none");
     } else {
         $interpreterId = interpreterId;
@@ -35,13 +36,14 @@ var validateInterpreter = function (interpreterId, officialInterpreterId, compet
             dataType: "json",
             success: function (data) {
                 $('.interpreter-information').removeClass("d-none");
-                $('.interpreter-information > span.info-message').text(data.description);
                 if (data.value === 100) {
+                    $('.interpreter-information > span.info-message').text(data.description).attr("role", "status");
                     $('.interpreter-information').removeClass("warning-info-home").removeClass("system-message-warning").addClass("system-action-info")
                         .children("span.glyphicon.message-icon").removeClass("glyphicon-exclamation-sign").removeClass("glyphicon-hourglass").addClass("glyphicon-ok");
                     $('.interpreter-information > span.form-entry-information').addClass("d-none");
                 }
                 else {
+                    $('.interpreter-information > span.info-message').text(data.description).attr("role", "alert");
                     $('.interpreter-information').removeClass("system-action-info").removeClass("system-message-warning").addClass("warning-info-home")
                         .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").removeClass("glyphicon-hourglass").addClass("glyphicon-exclamation-sign");
                     $('.interpreter-information > span.form-entry-information').removeClass("d-none");
