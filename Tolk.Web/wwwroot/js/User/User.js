@@ -18,20 +18,42 @@
     });
 
     $(document).ready(function () {
-        toggleCentralOrderHandler($("#OrganisationIdentifier option:selected"));
+        toggleRoles($("#OrganisationIdentifier option:selected"));
     });
 
     $("body").on("change", "#OrganisationIdentifier", function () {
-        toggleCentralOrderHandler($("#OrganisationIdentifier option:selected"));
+        toggleRoles($("#OrganisationIdentifier option:selected"));
     });
 
-    function toggleCentralOrderHandler(selectedItem) {
+    function toggleRoles(selectedItem) {
         if (selectedItem.attr('value') !== undefined) {
             if (selectedItem.attr('data-additional') === "GovernmentBody") {
                 $('.CentralOrderHandlerCheckBox').show();
+                $('.OrganisationAdministratorCheckBox').show();
+                $('.ApplicationAdministratorCheckBox').hide();
+                $('.SystemAdministratorCheckBox').hide();
+                $('.ImpersonatorCheckBox').hide();
+            }
+            else if (selectedItem.attr('data-additional') === "Broker") {
+                $('.CentralOrderHandlerCheckBox').hide();
+                $('.ApplicationAdministratorCheckBox').hide();
+                $('.SystemAdministratorCheckBox').hide();
+                $('.ImpersonatorCheckBox').hide();
+                $('.OrganisationAdministratorCheckBox').show();
+            }
+            else if (selectedItem.attr('data-additional') === "Owner") {
+                $('.CentralOrderHandlerCheckBox').hide();
+                $('.OrganisationAdministratorCheckBox').hide();
+                $('.ApplicationAdministratorCheckBox').show();
+                $('.SystemAdministratorCheckBox').show();
+                $('.ImpersonatorCheckBox').show();
             }
             else {
                 $('.CentralOrderHandlerCheckBox').hide();
+                $('.OrganisationAdministratorCheckBox').hide();
+                $('.ApplicationAdministratorCheckBox').hide();
+                $('.SystemAdministratorCheckBox').hide();
+                $('.ImpersonatorCheckBox').hide();
             }
         }
     };

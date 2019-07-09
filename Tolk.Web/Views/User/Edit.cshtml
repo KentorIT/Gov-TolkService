@@ -1,14 +1,14 @@
 ﻿@model UserModel
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Ändra användare";
+    ViewData["Title"] = "Ändra användare " + Model.NameFull;
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <form method="post">
         <div class="row">
             <div class="col-sm-4">
-                <display-entry asp-for="UserName" />
+                <display-entry asp-for="Organisation" />
             </div>
         </div>
         <div class="row">
@@ -16,12 +16,21 @@
                 <input asp-for="Id" type="hidden" />
                 <form-entry asp-for="NameFirst" />
                 <form-entry asp-for="NameFamily" />
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator || Model.UserType == UserType.OrganisationAdministrator)
                 {
-                    <form-entry asp-for="IsOrganisationAdministrator" />
+                    @if (Model.DisplayCentralAdmin)
+                    {
+                        <form-entry asp-for="IsOrganisationAdministrator" />
+                    }
                     @if (Model.DisplayCentralOrderHandler)
                     {
                         <form-entry asp-for="IsCentralOrderHandler" />
+                    }
+                    @if (Model.DisplayForAdminUser)
+                    {
+                        <form-entry asp-for="IsApplicationAdministrator" />
+                        <form-entry asp-for="IsSystemAdministrator" />
+                        <form-entry asp-for="IsImpersonator" />
                     }
                 }
                 else
@@ -38,9 +47,8 @@
             <div class="col-sm-4">
                 <form-entry asp-for="PhoneWork" />
                 <form-entry asp-for="PhoneCellphone" />
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator || Model.UserType == UserType.OrganisationAdministrator)
                 {
-
                     <form-entry asp-for="IsActive" />
                 }
                 else

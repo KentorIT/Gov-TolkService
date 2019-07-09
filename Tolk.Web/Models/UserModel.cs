@@ -46,6 +46,15 @@ namespace Tolk.Web.Models
         [Display(Name = "Rätt att hantera alla myndighetens avrop")]
         public bool IsCentralOrderHandler { get; set; }
 
+        [Display(Name = "Applikationsadministratör")]
+        public bool IsApplicationAdministrator { get; set; }
+
+        [Display(Name = "Systemadministratör")]
+        public bool IsSystemAdministrator { get; set; }
+
+        [Display(Name = "Kan överta annan användare")]
+        public bool IsImpersonator { get; set; }
+
         [Display(Name = "Aktiv")]
         public bool IsActive { get; set; }
 
@@ -71,6 +80,10 @@ namespace Tolk.Web.Models
         public bool HasSelectedCustomerunit { get; set; }
 
         public bool DisplayCentralOrderHandler { get; set; }
+
+        public bool DisplayCentralAdmin{ get; set; }
+
+        public bool DisplayForAdminUser { get; set; }
 
         /// <summary>
         /// If set, the server code found some error that slipped through the client sides fingers.

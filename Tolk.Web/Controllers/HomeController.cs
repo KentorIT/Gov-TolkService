@@ -75,7 +75,7 @@ namespace Tolk.Web.Controllers
             }
             return View(new StartViewModel
             {
-                PageTitle = User.IsInRole(Roles.SystemAdministrator) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
+                PageTitle = (User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator)) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),

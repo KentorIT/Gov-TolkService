@@ -26,11 +26,7 @@ namespace Tolk.Web.Models
 
         public string Email { get; set; }
 
-        public bool IsSystemAdministrator { get; set; } = false;
-
-        public bool IsBroker { get; set; } = false;
-
-        public bool IsCustomer { get; set; } = false;
+        public UserType UserType { get; set; }
 
         public bool HasActiveFilters => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
 
@@ -80,6 +76,14 @@ namespace Tolk.Web.Models
                 if ((Roles.Value & UserType.SystemAdministrator) == UserType.SystemAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SystemAdministrator).Id));
+                }
+                if ((Roles.Value & UserType.ApplicationAdministrator) == UserType.ApplicationAdministrator)
+                {
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.ApplicationAdministrator).Id));
+                }
+                if ((Roles.Value & UserType.Impersonator) == UserType.Impersonator)
+                {
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.Impersonator).Id));
                 }
                 if ((Roles.Value & UserType.OrganisationAdministrator) == UserType.OrganisationAdministrator)
                 {

@@ -23,5 +23,11 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Lokal administratör")]
         LocalAdministrator = 32,
+
+        [Description("Applikationsadministratör")]
+        ApplicationAdministrator = 64,
+
+        [Description("Kan överta annan användare")]
+        Impersonator = 128,
     }
 }

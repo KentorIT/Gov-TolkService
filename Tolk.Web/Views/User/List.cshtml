@@ -1,9 +1,10 @@
 ﻿@model UserListModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
 @inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Användare";
-    if (Model.FilterModel.IsBroker)
+    if (Model.FilterModel.UserType == UserType.Broker)
     {
         HelpLinkService.PageName = "formedling-anvandare/";
     }
@@ -32,7 +33,7 @@
                             <tr>
                                 <th>Namn</th>
                                 <th>Email</th>
-                                @if (Model.FilterModel.IsSystemAdministrator)
+                                @if (Model.FilterModel.UserType == UserType.ApplicationAdministrator || Model.FilterModel.UserType == UserType.SystemAdministrator)
                                 {
                                     <th>Organisation</th>
                                 }
@@ -42,15 +43,15 @@
                         <tbody>
                             @foreach (var item in Model.Items)
                             {
-                                <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
-                                    <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
-                                    <td class="gray-border-bottom">@item.Email</td>
-                                    @if (Model.FilterModel.IsSystemAdministrator)
-                                    {
-                                        <td class="gray-border-bottom">@item.Organisation</td>
-                                    }
-                                    <td class="gray-border-bottom gray-border-right">@item.LastLoginAt</td>
-                                </tr>
+                            <tr data-id="@item.UserId" data-click-action-url="@Url.Action("View", new { id = item.UserId })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name @(item.IsActive ? "" : "(Inaktiv)")</td>
+                                <td class="gray-border-bottom">@item.Email</td>
+                                @if (Model.FilterModel.UserType == UserType.ApplicationAdministrator || Model.FilterModel.UserType == UserType.SystemAdministrator)
+                                {
+                                    <td class="gray-border-bottom">@item.Organisation</td>
+                                }
+                                <td class="gray-border-bottom gray-border-right">@item.LastLoginAt</td>
+                            </tr>
                             }
                         </tbody>
                     </table>

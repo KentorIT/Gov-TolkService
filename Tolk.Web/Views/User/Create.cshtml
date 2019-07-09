@@ -21,9 +21,36 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+                <label>Möjliga roller för användaren</label>
+                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
                 {
-                    <form-entry asp-for="IsOrganisationAdministrator" />
+                    <div class="OrganisationAdministratorCheckBox">
+                        <form-entry asp-for="IsOrganisationAdministrator" />
+                    </div>
+                    <div class="CentralOrderHandlerCheckBox">
+                        <form-entry asp-for="IsCentralOrderHandler" />
+                    </div>
+                    @if (Model.UserType == UserType.ApplicationAdministrator)
+                    {
+                        <div class="d-none ApplicationAdministratorCheckBox">
+                            <form-entry asp-for="IsApplicationAdministrator" />
+                        </div>
+                        <div class="d-none SystemAdministratorCheckBox">
+                            <form-entry asp-for="IsSystemAdministrator" />
+                        </div>
+                        <div class="d-none ImpersonatorCheckBox">
+                            <form-entry asp-for="IsImpersonator" />
+                        </div>
+                    }
+                }
+                @if (Model.UserType == UserType.OrganisationAdministrator)
+                {
+                    @if (Model.DisplayCentralAdmin)
+                    {
+                        <div class="OrganisationAdministratorCheckBox">
+                            <form-entry asp-for="IsOrganisationAdministrator" />
+                        </div>
+                    }
                     @if (Model.DisplayCentralOrderHandler)
                     {
                         <div class="CentralOrderHandlerCheckBox">
@@ -31,10 +58,9 @@
                         </div>
                     }
                 }
-
             </div>
             <div class="col-sm-4">
-                @if (Model.UserType == UserType.SystemAdministrator)
+                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
                 {
                     if (Model.HasSelectedOrganisation)
                     {

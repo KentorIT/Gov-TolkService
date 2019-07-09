@@ -49,6 +49,8 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString());
 
+        public static IEnumerable<SelectListItem> SearchableRolesForSysAdmin => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString() && s.Value != UserType.ApplicationAdministrator.ToString() && s.Value != UserType.Impersonator.ToString());
+
         public static IEnumerable<SelectListItem> SearchableRolesForCustomers =>
             GetList(new List<UserType>() { UserType.OrderCreator, UserType.OrganisationAdministrator });
 
@@ -369,10 +371,9 @@ namespace Tolk.Web.Services
                 };
                 if (!_cache.TryGetValue(impersonationTargets, out IEnumerable<SelectListItem> items))
                 {
-                    var adminRoleId = _dbContext.Roles.Single(r => r.Name == Roles.SystemAdministrator).Id;
-
                     items = _dbContext.Users
-                        .Where(u => u.IsActive && !u.IsApiUser && !u.Roles.Select(r => r.RoleId).Contains(adminRoleId))
+                        .Where(u => u.IsActive && !u.IsApiUser &&
+                        (u.InterpreterId.HasValue || u.BrokerId.HasValue || u.CustomerOrganisationId.HasValue))
                         .Select(u => new SelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,

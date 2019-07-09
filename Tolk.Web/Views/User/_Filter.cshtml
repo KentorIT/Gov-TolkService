@@ -1,51 +1,58 @@
 ﻿@model UserFilterModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
 <section aria-label="Filtrera">
-<div class="col-sm-12">
-    <form method="get" class="filter-form do-not-check-dirty">
-        <div class="row">
-            <div class="col-xs-4">
-                <h2>Filtrera</h2>
-            </div>
-            <div class="col-xs-8">
-                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="Name" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
-            </div>
-            @if (Model.IsSystemAdministrator)
-            {
-                <div class="col-sm-4">
-                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
+    <div class="col-sm-12">
+        <form method="get" class="filter-form do-not-check-dirty">
+            <div class="row">
+                <div class="col-xs-4">
+                    <h2>Filtrera</h2>
                 </div>
-            }
-            else if (Model.IsBroker)
-            {
-                <div class="col-sm-4">
-                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
+                <div class="col-xs-8">
+                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
                 </div>
-            }
-            else if (Model.IsCustomer)
-            {
-                <div class="col-sm-4">
-                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
-                </div>
-            }
-        </div>
-        @if (Model.IsSystemAdministrator)
-        {
+            </div>
             <div class="row">
                 <div class="col-sm-4">
-                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                    <form-entry asp-for="Name" />
                 </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
+                </div>
+                @if (Model.UserType == UserType.ApplicationAdministrator)
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
+                    </div>
+                }
+                else if (Model.UserType == UserType.SystemAdministrator)
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForSysAdmin" class="allow-clear" />
+                    </div>
+                }
+                else if (Model.UserType == UserType.Broker)
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
+                    </div>
+                }
+                else if (Model.UserType == UserType.OrderCreator)
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
+                    </div>
+                }
             </div>
-        }
-    </form>
-</div>
+            @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
+            {
+                <div class="row">
+                    <div class="col-sm-4">
+                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                    </div>
+                </div>
+            }
+        </form>
+    </div>
 </section>
