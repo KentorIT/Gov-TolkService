@@ -625,6 +625,7 @@ Sammanställning:
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         bodyAppr + GotoOrderPlain(request.Order.OrderId),
                         HtmlHelper.ToHtmlBreak(bodyAppr) + GotoOrderButton(request.Order.OrderId));
+                    NotifyBrokerOnAcceptedAnswer(request, orderNumber);
                     break;
                 default:
                     throw new NotImplementedException($"{nameof(RequestReplamentOrderAccepted)} cannot send notifications on requests with status: {request.Status.ToString()}");
