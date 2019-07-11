@@ -49,6 +49,19 @@ namespace Tolk.BusinessLogic.Services
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
         {
             string orderNumber = request.Order.OrderNumber;
+
+            //customer send email with info about requisition created 
+            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
+            {
+                string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
+                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." 
+                     : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
+                CreateEmail(GetRecipientsFromOrder(request.Order, true), $"Rekvisition har skapats pga avbokat uppdrag boknings-ID {orderNumber}",
+                    body + GotoOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId),
+                    true);
+            }
+            //broker
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
