@@ -1152,7 +1152,7 @@ ul.pagination > li.paginate_button.active > a {
 #RequirementType {
   width: 300px;
 }
-#ContactPersonId {
+.change-contact > #ContactPersonId {
   width: 200px;
 }
 .progressbar {

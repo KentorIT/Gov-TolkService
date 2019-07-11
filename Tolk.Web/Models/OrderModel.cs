@@ -306,6 +306,8 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmCancellation { get; set; } = false;
 
+        public string InfoMessage { get; set; } = string.Empty;
+
         public bool ActiveRequestIsAnswered { get; set; }
 
         public bool IsReplacement => ReplacingOrderId.HasValue;

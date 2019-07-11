@@ -122,7 +122,7 @@ namespace Tolk.Web.Controllers
                 });
         }
 
-        public async Task<IActionResult> View(int id)
+        public async Task<IActionResult> View(int id, string message = null)
         {
             //Get order model from db
             Order order = GetOrder(id);
@@ -212,6 +212,7 @@ namespace Tolk.Web.Controllers
                 }
                 model.ActiveRequest.OrderModel = model;
                 model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
+                model.InfoMessage = message;
                 return View(model);
             }
             return Forbid();
@@ -605,7 +606,7 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
-                    return RedirectToAction(nameof(View), new { id = order.OrderId });
+                    return RedirectToAction(nameof(View), new { id = order.OrderId, message = $"Person med rätt att granska rekvisition för bokningen är ändrad" });
                 }
                 else
                 {

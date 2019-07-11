@@ -24,6 +24,20 @@
     <div id="order" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
+                @if (!string.IsNullOrEmpty(@Model.InfoMessage))
+                {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <br />
+                            <div class="system-action-info">
+                                <span class="glyphicon glyphicon-ok"></span>
+                                <span class="info-message" role="status">
+                                    @Model.InfoMessage
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
                 @if (Model.AllowConfirmCancellation)
                 {
                     <br />
@@ -264,7 +278,7 @@
                             </div>
                         }
                         <input asp-for="OrderId" type="hidden" />
-                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear" />
+                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons.Where(sl => sl.Value != Model.CreatedById.ToString() && sl.Value != Model.ChangeContactPersonId?.ToString()).ToList()" class="allow-clear change-contact" />
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-default pull-right">@editContactpersonButtonText person</button>
                             <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
