@@ -1,35 +1,77 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
-using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-
-    [Authorize(Roles = Roles.SystemAdministrator)]
     public class ContractController : Controller
     {
+        private const string ContractNumber = "23.3-9066-16";
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger _logger;
+        private readonly ISwedishClock _clock;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public ContractController(
             TolkDbContext dbContext,
-            ILogger<ContractController> logger)
+            ISwedishClock clock,
+            PriceCalculationService priceCalculationService)
         {
             _dbContext = dbContext;
-            _logger = logger;
+            _clock = clock;
+            _priceCalculationService = priceCalculationService;
         }
 
-        public ActionResult Index()
+        public IActionResult Index()
         {
             return View();
+        }
+
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
+        public IActionResult List()
+        {
+            var brokerFeePrices = _priceCalculationService.BrokerFeePriceList;
+            return View(new ContractListModel
+            {
+                ItemsPerBroker = _dbContext.Brokers.Include(b => b.Rankings)
+                .ThenInclude(r => r.Region)
+                .Select(b => new ContractBrokerListItemModel
+                {
+                    Broker = b.Name,
+                    RegionRankings = b.Rankings.Where(ra => ra.FirstValidDate <= _clock.SwedenNow && ra.LastValidDate > _clock.SwedenNow)
+                        .Select(ra => new BrokerRankModel
+                        {
+                            RegionName = ra.Region.Name,
+                            BrokerFeePercentage = ra.BrokerFee,
+                            Rank = ra.Rank,
+                            BrokerFeeInSEK = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
+                                .Select(p => p.PriceToUse).ToList()
+                        }).ToList()
+                }),
+                ItemsPerRegion = _dbContext.Regions.Include(b => b.Rankings)
+                .ThenInclude(r => r.Broker)
+                .OrderBy(r => r.Name)
+                .Select(r => new ContractRegionListItemModel
+                {
+                    Region = r.Name,
+                    Brokers = r.Rankings.Where(ra => ra.FirstValidDate <= _clock.SwedenNow && ra.LastValidDate > _clock.SwedenNow)
+                    .OrderBy(ra => ra.Rank).Select(ra => new BrokerRankModel
+                    {
+                        BrokerName = ra.Broker.Name,
+                        BrokerFeePercentage = ra.BrokerFee,
+                        Rank = ra.Rank,
+                        BrokerFeeInSEK = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                            p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
+                                .Select(p => p.PriceToUse).ToList()
+                    }).ToList()
+                }),
+                ContractNumber = ContractNumber
+            });
         }
     }
 }

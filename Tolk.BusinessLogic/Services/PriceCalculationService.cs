@@ -578,7 +578,7 @@ namespace Tolk.BusinessLogic.Services
             return noOfHours == 1 ? $"0-{noOfHours}" : $"{noOfHours - 0.5}-{noOfHours}";
         }
 
-        private IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
+        public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
         {
             get
             {

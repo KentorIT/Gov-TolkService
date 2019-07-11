@@ -156,5 +156,11 @@
     "inputFiles": [
       "wwwroot/lib/selectwoo/selectwoo.css"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Contract/Contract.min.js",
+    "inputFiles": [
+      "wwwroot/js/Contract/Contract.js"
+    ]
   }
 ]

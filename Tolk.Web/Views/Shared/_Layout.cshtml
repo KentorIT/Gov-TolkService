@@ -158,10 +158,7 @@
                                     <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
-                                    @if (User.IsInRole(Roles.SystemAdministrator))
-                                    {
-                                        <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
-                                    }
+                                    <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="List">Ramavtal</a></li>
                                     @if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
                                         <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
@@ -228,10 +225,7 @@
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
-                                    if (User.IsInRole(Roles.SystemAdministrator))
-                                    {
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
-                                    }
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
                                     if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
@@ -268,14 +262,14 @@
                             <div class="kamk-footer-heading">Tolkavropstjänsten</div>
                             <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
                             <a asp-area="" asp-controller="Faq" asp-action="Faqs">Frågor &amp; svar</a><br />
-                            <a asp-area="" asp-controller="Home" asp-action="Contract">Om ramavtalet</a><br />
+                            <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
                         </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Om oss</div>
-                                <a href="https://www.kammarkollegiet.se/statens-inkopscentral" target="_blank">Statens inköpscentral</a><br />
-                                <a href="https://www.kammarkollegiet.se/om-oss/vara-uppgifter/forteckning-over-vara-uppgifter/rattsavdelningen/auktorisation-av-tolkar-och-oversattare" target="_blank">Auktorisation av tolkar och god tolksed</a><br />
-                                <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
-</div>
+                            <a href="https://www.kammarkollegiet.se/statens-inkopscentral" target="_blank">Statens inköpscentral</a><br />
+                            <a href="https://www.kammarkollegiet.se/om-oss/vara-uppgifter/forteckning-over-vara-uppgifter/rattsavdelningen/auktorisation-av-tolkar-och-oversattare" target="_blank">Auktorisation av tolkar och god tolksed</a><br />
+                            <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
+                        </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Service Desk</div>
                             <a href="#">Telefonnummer</a><br />
