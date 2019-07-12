@@ -43,6 +43,7 @@ $(function () {
     var setCompetenceInfo = function (compLevelString) {
         $('.competence-information').removeClass("d-none");
         $('.competence-information > div.comp-list').find("li").remove();
+        $('.competence-information > div.comp-list').find("ul").remove();
 
         if (compLevelString.length === 4) {
             $('.competence-information').removeClass("warning-info-home").removeClass("warning-info-yellow").addClass("system-action-info")
@@ -58,6 +59,7 @@ $(function () {
             $('.competence-information').removeClass("warning-info-home").removeClass("system-action-info").addClass("warning-info-yellow")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").addClass("yellow-glyphicon");
             $('.competence-information > span.info-message-small').text("Tolkar med följande kompetensnivå finns i Kammarkollegiets tolkregister för valt språk:").attr("role", "alert");
+            $('.competence-information > div.comp-list').append('<ul>');
             if (compLevelString.indexOf("L") >= 0) {
                 $('.competence-information > div.comp-list').find("ul").append('<li>Rättstolk</li>');
             }
@@ -70,6 +72,8 @@ $(function () {
             if (compLevelString.indexOf("E") >= 0) {
                 $('.competence-information > div.comp-list').find("ul").append('<li>Utbildad tolk</li>');
             }
+            $('.competence-information > div.comp-list').append('</ul>');
+
         }
     };
 
