@@ -25,7 +25,7 @@ namespace Tolk.Web.Tests
 
             subject.EndDateTime.Value.Date.ToString("yyyy-MM-dd").Should().Be(expectedEndDate);
 
-            subject.StartDateTime.ToString().Should().Be("2018-04-19 15:00:00 +02:00");
+            subject.StartDateTime.Should().Be(DateTime.Parse("2018-04-19 15:00:00").ToDateTimeOffsetSweden());
         }
 
         [Theory]
