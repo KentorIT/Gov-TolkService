@@ -3,6 +3,7 @@ using Tolk.Web.Models;
 using Tolk.BusinessLogic.Helpers;
 using Xunit;
 using FluentAssertions;
+using System.Globalization;
 
 namespace Tolk.Web.Tests
 {
@@ -22,7 +23,7 @@ namespace Tolk.Web.Tests
                 EndTime = TimeSpan.Parse(endTime)
             };
 
-            subject.EndDateTime.Value.Date.ToShortDateString().Should().Be(expectedEndDate);
+            subject.EndDateTime.Value.Date.ToString("yyyy-MM-dd").Should().Be(expectedEndDate);
 
             subject.StartDateTime.ToString().Should().Be("2018-04-19 15:00:00 +02:00");
         }
