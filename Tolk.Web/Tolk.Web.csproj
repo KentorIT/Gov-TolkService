@@ -79,7 +79,7 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Customer\List.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Customer\_Filter.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
