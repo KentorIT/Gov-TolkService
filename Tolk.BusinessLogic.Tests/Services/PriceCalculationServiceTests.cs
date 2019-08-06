@@ -944,10 +944,9 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 int totalQuantity = (int)(quant1 + quant2 + quant3);
                 decimal totalPrice = price * totalQuantity;
-                DateTimeOffset minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
-                DateTimeOffset maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
+                DateTimeOffset minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min().ToDateTimeOffsetSweden();
+                DateTimeOffset maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max().ToDateTimeOffsetSweden();
 
-                //decimal.Round(Price, 2, MidpointRounding.AwayFromZero)
                 //generate rows
                 List<PriceRowBase> priceRows = new List<PriceRowBase>
                 {
