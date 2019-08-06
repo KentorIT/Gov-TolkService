@@ -10,7 +10,6 @@ using Tolk.BusinessLogic.Enums;
 using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Tests.TestHelpers;
 using Tolk.BusinessLogic.Entities;
-using System.Globalization;
 
 namespace Tolk.BusinessLogic.Tests.Services
 {
@@ -23,13 +22,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         private readonly DateTimeOffset dateIn_14_DaysRange = DateTimeOffset.Now.AddDays(-9);
         private readonly DateTimeOffset breakDate = DateTimeOffset.Now.AddDays(-7);
         private readonly DateTimeOffset resetDate = DateTimeOffset.Now.AddMonths(-18);
-        private readonly CultureInfo culureInfo = new CultureInfo("sv-SE");
 
         public StatisticsServiceTests()
         {
             var i = DateTimeOffset.Now;
             _tolkDbContext = CreateTolkDbContext();
-            _clock = new StubSwedishClock(DateTimeOffset.Now.ToString(culureInfo));
+            _clock = new StubSwedishClock(DateTimeOffset.Now.ToString());
 
             var mockLanguages = MockEntities.MockLanguages;
             var mockRankings = MockEntities.MockRankings;

@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public StubSwedishClock(string dateTimeStringLocal)
         {
-            _dateTimeSweden = DateTime.Parse(dateTimeStringLocal).ToDateTimeOffsetSweden();
+            _dateTimeSweden = DateTime.SpecifyKind(DateTime.Parse(dateTimeStringLocal), DateTimeKind.Unspecified).ToDateTimeOffsetSweden();
         }
     }
 }

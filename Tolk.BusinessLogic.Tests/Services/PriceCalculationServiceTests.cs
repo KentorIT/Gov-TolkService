@@ -450,7 +450,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2), EndAt = DateTime.Parse(endMealbreak2) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -641,7 +641,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 {
                     mealbreaks.Add(new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() });
                 }
-                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, mealbreaks);
+                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requisitionEndAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestEndAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, mealbreaks);
                 useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
             }
         }
@@ -944,8 +944,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 int totalQuantity = (int)(quant1 + quant2 + quant3);
                 decimal totalPrice = price * totalQuantity;
-                DateTime minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
-                DateTime maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
+                DateTimeOffset minStartAt = new List<DateTime> { DateTime.Parse(start1), DateTime.Parse(start2), DateTime.Parse(start3) }.Min();
+                DateTimeOffset maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max();
 
                 //decimal.Round(Price, 2, MidpointRounding.AwayFromZero)
                 //generate rows
@@ -956,11 +956,11 @@ namespace Tolk.BusinessLogic.Tests.Services
                     { GetPriceRowWithPriceListRowForTest(start3, end3, price, (int)decimal.Round(quant3, MidpointRounding.AwayFromZero), 1101) },
                 };
                 IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsAndReduceForMealBreak(priceRows);
-                mergedPriceRows.Count().Should().Be(1, "total no of rows should be 1");
-                mergedPriceRows.First().StartAt.Should().Be(minStartAt, "startAt should be {0}", minStartAt);
-                mergedPriceRows.First().EndAt.Should().Be(maxEndAt, "endAt should be {0}", maxEndAt);
-                mergedPriceRows.Sum(pr => pr.TotalPrice).Should().Be(totalPrice, "total price should be {0}", totalPrice);
-                mergedPriceRows.Sum(pr => pr.Quantity).Should().Be(totalQuantity, "total quantitiy should be {0}", totalQuantity);
+                mergedPriceRows.Count().Should().Be(1);
+                mergedPriceRows.First().StartAt.Should().Be(minStartAt);
+                mergedPriceRows.First().EndAt.Should().Be(maxEndAt);
+                mergedPriceRows.Sum(pr => pr.TotalPrice).Should().Be(totalPrice);
+                mergedPriceRows.Sum(pr => pr.Quantity).Should().Be(totalQuantity);
             }
         }
 
