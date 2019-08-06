@@ -422,7 +422,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -449,7 +449,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak2), EndAt = DateTime.Parse(endMealbreak2) },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
@@ -485,7 +485,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -516,7 +516,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -548,8 +548,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2), EndAt = DateTime.Parse(endMealbreak2) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -580,8 +580,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                 };
                 List<MealBreak> mealbreaks = new List<MealBreak>
                 {
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) },
-                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2), EndAt = DateTime.Parse(endMealbreak2) },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
+                    new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, mealbreaks);
                 pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
@@ -639,7 +639,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 List<MealBreak> mealbreaks = new List<MealBreak>();
                 if (!string.IsNullOrEmpty(startMealbreak1))
                 {
-                    mealbreaks.Add(new MealBreak { StartAt = DateTime.Parse(startMealbreak1), EndAt = DateTime.Parse(endMealbreak1) });
+                    mealbreaks.Add(new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() });
                 }
                 PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, mealbreaks);
                 useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
@@ -966,20 +966,20 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         private PriceRowBase GetPriceRowBaseForTest(string startAt, string endAt, PriceRowType priceRowType, decimal price)
         {
-            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = 1, PriceRowType = priceRowType, Price = price };
+            return new PriceRowBase { StartAt = DateTime.Parse(startAt).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endAt).ToDateTimeOffsetSweden(), Quantity = 1, PriceRowType = priceRowType, Price = price };
         }
 
         private static PriceRowBase InterpreterCompensationPriceRow
         {
             get
             {
-                return new PriceRowBase { StartAt = DateTime.Parse(DefaultStartDate), EndAt = DateTime.Parse(DefaultEndDate), Quantity = 1, PriceRowType = PriceRowType.InterpreterCompensation, Price = (decimal)Price_2H_Court_Comp1 };
+                return new PriceRowBase { StartAt = DateTime.Parse(DefaultStartDate).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(DefaultEndDate).ToDateTimeOffsetSweden(), Quantity = 1, PriceRowType = PriceRowType.InterpreterCompensation, Price = (decimal)Price_2H_Court_Comp1 };
             }
         }
 
         private PriceRowBase GetPriceRowWithPriceListRowForTest(string startAt, string endAt, decimal price, int quantity, int pricelistRowId)
         {
-            return new PriceRowBase { StartAt = DateTime.Parse(startAt), EndAt = DateTime.Parse(endAt), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
+            return new PriceRowBase { StartAt = DateTime.Parse(startAt).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endAt).ToDateTimeOffsetSweden(), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
         }
     }
 }
