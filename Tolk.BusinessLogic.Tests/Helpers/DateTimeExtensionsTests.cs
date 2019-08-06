@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Tolk.BusinessLogic.Helpers;
 using FluentAssertions;
+using System.Globalization;
 
 namespace Tolk.BusinessLogic.Tests.Helpers
 {
@@ -20,7 +21,7 @@ namespace Tolk.BusinessLogic.Tests.Helpers
         [InlineData("2018-10-28 04:00", "2018-10-28 04:00:00 +01:00")]
         public void ToDateTimeOffsetSweden(string input, string expected)
             => DateTime.Parse(input).ToDateTimeOffsetSweden()
-            .ToString()
+            .ToString(new CultureInfo("sv-SE"))
             .Should().Be(expected);
     }
 }
