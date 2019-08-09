@@ -7,10 +7,6 @@
     <ApplicationInsightsAnnotationResourceId>/subscriptions/b5d73a6f-1a31-4c49-b52d-d7213d39db71/resourcegroups/Dev/providers/microsoft.insights/components/tolkdev</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
   
-  <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
-  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
