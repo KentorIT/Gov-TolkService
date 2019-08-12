@@ -11,6 +11,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Ämne")]
         public string Subject { get; set; }
 
+        [DataType(DataType.MultilineText)]
         [Display(Name = "Innehåll")]
         public string Body { get; set; }
 
