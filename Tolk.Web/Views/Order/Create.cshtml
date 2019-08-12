@@ -3,30 +3,30 @@
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
-    @{
+@{
     var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser;
     bool enableOrderGroups = TolkOptions.Value.EnableOrderGroups;
     string orderTimeClass = enableOrderGroups ? "order-group-enabled" : "order-group-disabled";
-    }
-    @using Tolk.Web.Services
-    @using (Html.BeginForm("Add", "Order", FormMethod.Post))
-    {
+}
+@using Tolk.Web.Services
+@using (Html.BeginForm("Add", "Order", FormMethod.Post))
+{
     @section Scripts {
-    <environment include="Development">
-        <script src="~/js/Files.js" asp-append-version="true"></script>
-        <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
-        <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
-        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-        <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Files.min.js" asp-append-version="true"></script>
-        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-        <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
-        <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
-        <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
-    </environment>
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+        <environment include="Development">
+            <script src="~/js/Files.js" asp-append-version="true"></script>
+            <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
+            <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
+            <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+            <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+        </environment>
+        <environment exclude="Development">
+            <script src="~/js/Files.min.js" asp-append-version="true"></script>
+            <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+            <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+            <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
+            <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
+        </environment>
+        @await Html.PartialAsync("_ValidationScriptsPartial")
     }
     <div class="wizard row">
         <div class="col-xs-12">
@@ -44,10 +44,10 @@
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
                             <input type="hidden" asp-for="NextLastTimeForRequiringLatestAnswerBy" />
-                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" help-link="@HelpLinkService.GenerateUrl(" nybokning_uppdragstyp")" />
+                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
                             <div class="row">
                                 <div class="col-sm-4">
-                                    <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" help-link="@HelpLinkService.GenerateUrl(" nybokning_sprak")" />
+                                    <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" help-link="@HelpLinkService.GenerateUrl("nybokning_sprak")" />
                                     <input id="OtherLanguageId" type="hidden" value="@OrderModel.OtherLanguageId" />
                                     <form-entry asp-for="OtherLanguage" class="collapse" id="other-language" />
                                     <span class="d-none">
@@ -55,57 +55,57 @@
                                     </span>
                                 </div>
                                 <div class="col-sm-4">
-                                    <form-entry asp-for="Dialect" help-link="@HelpLinkService.GenerateUrl(" nybokning_dialekt")" />
+                                    <form-entry asp-for="Dialect" help-link="@HelpLinkService.GenerateUrl("nybokning_dialekt")" />
                                     <form-entry asp-for="DialectIsRequired" class="requirement-checkbox" />
                                 </div>
                                 <div class="col-sm-4">
-                                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" help-link="@HelpLinkService.GenerateUrl(" nybokning_lan")" />
+                                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" help-link="@HelpLinkService.GenerateUrl("nybokning_lan")" />
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="order-datepicker @orderTimeClass">
-                                    <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl(" nybokning_start_sluttid")" />
+                                    <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
                                     @if (enableOrderGroups)
                                     {
-                                    <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
+                                        <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
                                     }
                                 </div>
                             </div>
                             @if (enableOrderGroups)
                             {
-                            <div class="row add-date-button-row">
-                                <div class="col-sm-12">
-                                    <a class="btn btn-warning table-button add-occasion">Lägg till <span class="glyphicon glyphicon-plus"></span></a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <form-entry asp-for="SeveralOccasions" />
-                                </div>
-                            </div>
-                            <div class="row several-occasions-table">
-                                <div class="col-sm-12 col-md-10 col-lg-8">
-                                    <div class="table-responsive table-datatable">
-                                        <table class="table sortable-only-table styled-row">
-                                            <thead>
-                                                <tr>
-                                                    <th>Tillfälle</th>
-                                                    <th>Extra tolk</th>
-                                                    <th data-sortable="false"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
+                                <div class="row add-date-button-row">
+                                    <div class="col-sm-12">
+                                        <a class="btn btn-warning table-button add-occasion">Lägg till <span class="glyphicon glyphicon-plus"></span></a>
                                     </div>
                                 </div>
-                                <div class="col-sm-12 important-info">
-                                    Observera att detta innebär ett krav på förmedlingen att tillsätta samma tolk på alla tillfällen. Om den första förmedlingen inte kan tillsätta samtliga tillfällen måste förmedlingen tacka nej till hela bokningen och den går vidare till nästa förmedling.
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <form-entry asp-for="SeveralOccasions" />
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="row several-occasions-table">
+                                    <div class="col-sm-12 col-md-10 col-lg-8">
+                                        <div class="table-responsive table-datatable">
+                                            <table class="table sortable-only-table styled-row">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Tillfälle</th>
+                                                        <th>Extra tolk</th>
+                                                        <th data-sortable="false"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 important-info">
+                                        Observera att detta innebär ett krav på förmedlingen att tillsätta samma tolk på alla tillfällen. Om den första förmedlingen inte kan tillsätta samtliga tillfällen måste förmedlingen tacka nej till hela bokningen och den går vidare till nästa förmedling.
+                                    </div>
+                                </div>
                             }
                             <div class="row">
                                 <div class="col-sm-8">
-                                    <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" help-link="@HelpLinkService.GenerateUrl(" nybokning_svarstid")" />
+                                    <form-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" help-link="@HelpLinkService.GenerateUrl("nybokning_svarstid")" />
                                 </div>
                             </div>
                             <section aria-label="Inställelsesätt">
@@ -163,7 +163,7 @@
                                     </div>
 
                                     <div class="col-sm-12">
-                                        <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-index="none" help-link="@HelpLinkService.GenerateUrl(" nybokning_extra_restid")" />
+                                        <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-index="none" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
                                         <div id="AllowExceedingTravelCostValidator" class="d-none text-danger body"></div>
                                     </div>
                                     <div class="col-sm-8 important-info allow-more-travel-cost-information">
@@ -192,7 +192,7 @@
                                 <div class="d-none" id="divCompetenceLevel">
                                     <div class="row">
                                         <div class="col-sm-4">
-                                            <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" help-link="@HelpLinkService.GenerateUrl(" nybokning_kompetensniva")" checked-index="none" />
+                                            <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" help-link="@HelpLinkService.GenerateUrl("nybokning_kompetensniva")" checked-index="none" />
                                             <div id="CompetenceLevelDesireTypeValidator" class="d-none text-danger body"></div>
                                         </div>
                                         <div class="col-sm-8">
@@ -231,7 +231,7 @@
                             </section>
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl(" nybokning_extrainfo")" />
+                                    <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
                                 </div>
                             </div>
                             <div class="row">
@@ -273,21 +273,21 @@
                             <div class="col-sm-8">
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <form-entry asp-for="CustomerReferenceNumber" help-link="@HelpLinkService.GenerateUrl(" nybokning_arendenummer")" />
+                                        <form-entry asp-for="CustomerReferenceNumber" help-link="@HelpLinkService.GenerateUrl("nybokning_arendenummer")" />
                                     </div>
                                     <div class="col-sm-6">
-                                        <form-entry asp-for="UnitName" help-link="@HelpLinkService.GenerateUrl(" nybokning_avdelning")" />
+                                        <form-entry asp-for="UnitName" help-link="@HelpLinkService.GenerateUrl("nybokning_avdelning")" />
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl(" nybokning_rekvisition")" />
+                                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />
                                     </div>
                                     @if (customerUnitItems != null && customerUnitItems.Any())
                                     {
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" help-link="@HelpLinkService.GenerateUrl(" nybokning_enhet")" />
-                                    </div>
+                                        <div class="col-sm-6">
+                                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" help-link="@HelpLinkService.GenerateUrl("nybokning_enhet")" />
+                                        </div>
                                     }
                                 </div>
                             </div>
@@ -314,67 +314,67 @@
             </section>
         </div>
     </div>
-    }
-    <span id="basefile" class="d-none">
-        <input asp-for="Files[0].Id" type="hidden" />
-    </span>
-    <span id="baseOccasion" class="d-none">
-        <input asp-for="Occasions[0].OrderOccasionId" type="hidden" />
-        <input asp-for="Occasions[0].OccasionStartDateTime" type="hidden" />
-        <input asp-for="Occasions[0].OccasionEndDateTime" type="hidden" />
-        <input asp-for="Occasions[0].ExtraInterpreter" type="hidden" />
-    </span>
-    <span id="baseRequirement" class="d-none">
-        <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
-        <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
-        <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
-        <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
-    </span>
-    <span id="baseDesiredRequirement" class="d-none">
-        <input asp-for="OrderDesiredRequirements[0].OrderRequirementId" type="hidden" />
-        <input asp-for="OrderDesiredRequirements[0].RequirementType" type="hidden" />
-        <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
-        <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
-    </span>
-    @await Html.PartialAsync("_UploadFileDialog")
-    <section aria-label="Lägg till krav">
-        <div id="addRequirement" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h2 class="modal-title">Lägg till krav</h2>
-                    </div>
-                    <div class="modal-body" id="req">
-                        @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                        <button type="button" class="btn btn-default right-md-button save-requirement">Spara</button>
-                    </div>
+}
+<span id="basefile" class="d-none">
+    <input asp-for="Files[0].Id" type="hidden" />
+</span>
+<span id="baseOccasion" class="d-none">
+    <input asp-for="Occasions[0].OrderOccasionId" type="hidden" />
+    <input asp-for="Occasions[0].OccasionStartDateTime" type="hidden" />
+    <input asp-for="Occasions[0].OccasionEndDateTime" type="hidden" />
+    <input asp-for="Occasions[0].ExtraInterpreter" type="hidden" />
+</span>
+<span id="baseRequirement" class="d-none">
+    <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
+</span>
+<span id="baseDesiredRequirement" class="d-none">
+    <input asp-for="OrderDesiredRequirements[0].OrderRequirementId" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementType" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
+</span>
+@await Html.PartialAsync("_UploadFileDialog")
+<section aria-label="Lägg till krav">
+    <div id="addRequirement" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">Lägg till krav</h2>
+                </div>
+                <div class="modal-body" id="req">
+                    @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-default right-md-button save-requirement">Spara</button>
                 </div>
             </div>
         </div>
-    </section>
-    <section aria-label="Lägg till önskemål">
-        <div id="addDesiredRequirement" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h2 class="modal-title">Lägg till önskemål</h2>
-                    </div>
-                    <div class="modal-body" id="des">
-                        @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                        <button type="button" class="btn btn-default right-md-button save-desiredRequirement">Spara</button>
-                    </div>
+    </div>
+</section>
+<section aria-label="Lägg till önskemål">
+    <div id="addDesiredRequirement" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">Lägg till önskemål</h2>
+                </div>
+                <div class="modal-body" id="des">
+                    @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-default right-md-button save-desiredRequirement">Spara</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
