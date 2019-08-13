@@ -24,6 +24,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IMemoryCache _cache;
         private readonly ITolkBaseOptions _tolkBaseOptions;
+        private readonly string _senderPrepend;
 
         private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
@@ -44,6 +45,7 @@ namespace Tolk.BusinessLogic.Services
             _priceCalculationService = priceCalculationService;
             _cache = cache;
             _tolkBaseOptions = tolkBaseOptions;
+            _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions.Env.DisplayName) ? $"{_tolkBaseOptions.Env.DisplayName} " : string.Empty;
         }
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
@@ -735,12 +737,6 @@ Sammanställning:
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
         {
-            string subjectPrepend = string.Empty;
-            if (!string.IsNullOrEmpty(TolkBaseOptions.Env.Name) && _tolkBaseOptions.Env.Name.ToLower() != "production")
-            {
-                subjectPrepend = $"({_tolkBaseOptions.Env.Name}) ";
-            }
-
             string noReply = "Detta e-postmeddelande går inte att svara på.";
             string handledBy = "Detta ärende hanteras i Kammarkollegiets Tolktjänst.";
             string contractInfo = "Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16";
@@ -749,7 +745,7 @@ Sammanställning:
             {
                 _dbContext.Add(new OutboundEmail(
                     recipient,
-                    subjectPrepend + subject,
+                    _senderPrepend + subject,
                     $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
                     $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
                     _clock.SwedenNow));

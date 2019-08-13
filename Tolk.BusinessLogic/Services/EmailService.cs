@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<EmailService> _logger;
         private readonly TolkOptions.SmtpSettings _options;
         private readonly ISwedishClock _clock;
-        private readonly string _environment;
+        private readonly string _senderPrepend;
 
         public EmailService(
             TolkDbContext dbContext,
@@ -31,17 +31,11 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _options = options.Value.Smtp;
             _clock = clock;
-            _environment = options.Value.Env.Name;
+            _senderPrepend = !string.IsNullOrWhiteSpace(options.Value.Env.DisplayName) ? $"{options.Value.Env.DisplayName} " : string.Empty;
         }
 
         public async Task SendEmails()
         {
-            string senderPrepend = string.Empty;
-            if (!string.IsNullOrEmpty(_environment) && _environment.ToLower() != "production")
-            {
-                senderPrepend = $"({_environment}) ";
-            }
-
             var emailIds = await _dbContext.OutboundEmails
                 .Where(e => e.DeliveredAt == null)
                 .Select(e => e.OutboundEmailId)
@@ -57,7 +51,7 @@ namespace Tolk.BusinessLogic.Services
                     await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_options.UserName, _options.Password);
 
-                    var from = new MailboxAddress(senderPrepend + Constants.SystemName, _options.FromAddress);
+                    var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.FromAddress);
 
                     foreach (var emailId in emailIds)
                     {

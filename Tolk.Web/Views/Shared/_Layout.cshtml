@@ -26,7 +26,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Tolk.Web</title>
+    <title>@Options.Value.Env.DisplayName @ViewData["Title"] - Tolk.Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap-datepicker/bootstrap-datepicker3.min.css" />
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -66,7 +66,7 @@
                             <span class="visible-xs hidden-sm hidden-md hidden-lg">
                                 <img class="logo-navbar" src="~/images/KamK_Logo_Crown.png" alt="Till start - @Constants.SystemName" />
                             </span>
-                            @if (!string.IsNullOrEmpty(Options.Value.Env.Name) && Options.Value.Env.Name.ToLower() != "production")
+                            @if (!string.IsNullOrEmpty(Options.Value.Env.Name))
                             {
                                 <span class="environment-banner" style="@envBackColor; @Options.Value.Env.Foreground;">@Options.Value.Env.Name</span>
                             }
@@ -170,7 +170,7 @@
                         }
                     </ul>
                     <ul class="nav navbar-nav navbar-right hidden-xs">
-                        @if (!string.IsNullOrEmpty(Options.Value.Env.Name) && Options.Value.Env.Name.ToLower() != "production")
+                        @if (!string.IsNullOrEmpty(Options.Value.Env.Name))
                         {
                             <li class="environment-stripe" style="@envBackColor;">
                             </li>
