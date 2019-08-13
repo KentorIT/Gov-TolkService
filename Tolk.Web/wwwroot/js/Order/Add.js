@@ -30,6 +30,7 @@ $(function () {
             $('#LanguageHasAuthorizedInterpreter').val('false');
             $('.competence-information').removeClass("d-none");
             $('.competence-information').addClass("d-none");
+            $("#competence-not-available").hide();
         }
         else {
             setCompetenceInfo(selectedItem.attr('data-additional'));
@@ -37,6 +38,7 @@ $(function () {
             $('#divNonCompetenceLevel2').hide();
             $('#divCompetenceLevel').show();
             $('#LanguageHasAuthorizedInterpreter').val('true');
+            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'))
         }
     };
 
@@ -330,6 +332,7 @@ $(function () {
             $("#competence-required").hide();
             $("#competence-requested").show();
             $("#competence-info").show();
+            $("#competence-not-available").hide();
             $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
         }
         else if ($(items[0]).val() === 'Requirement') {
@@ -337,15 +340,56 @@ $(function () {
             $("#competence-requested").hide();
             $("#competence-required").show();
             $("#competence-info").hide();
+            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'))
             $("#RequiredCompetenceLevels_cbHidden").removeClass("ignore-validation");
         }
         else {
             $("#competence-requested").hide();
             $("#competence-required").hide();
             $("#competence-info").show();
+            $("#competence-not-available").hide();
             $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
         }
     });
+
+    function validateAvailableCompetences(checkedCompetences) {
+        var currentLanguageCompetences = $("#LanguageId option:selected").attr('data-additional');
+        var showWarning = false;
+        //check if required is checked and if all competences not available - then validate
+        var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
+        if ($(competenceDesireType[0]).val() === 'Requirement' && currentLanguageCompetences.length !== 4) {
+            checkedCompetences.each(function () {
+                switch ($(this).val()) {
+                    case "CourtSpecialist":
+                        if (!(currentLanguageCompetences.indexOf("L") >= 0)) {
+                            showWarning = true;
+                        }
+                        break;
+                    case "HealthCareSpecialist":
+                        if (!(currentLanguageCompetences.indexOf("H") >= 0)) {
+                            showWarning = true;
+                        }
+                        break;
+                    case "AuthorizedInterpreter":
+                        if (!(currentLanguageCompetences.indexOf("A") >= 0)) {
+                            showWarning = true;
+                        }
+                        break;
+                    case "EducatedInterpreter":
+                        if (!(currentLanguageCompetences.indexOf("E") >= 0)) {
+                            showWarning = true;
+                        }
+                        break;
+                }
+            });
+        }
+        if (showWarning) {
+            $("#competence-not-available").show();
+        }
+        else {
+            $("#competence-not-available").hide();
+        }
+    }
 
     $("body").on("change", "#SplitTimeRange_StartTimeHour", function () {
         var chosenStartHour = parseInt($(this).val());
@@ -441,6 +485,11 @@ $(function () {
         else {
             allCheckboxes.filter(':not(:checked)').removeAttr('disabled');
         }
+        if (checkedBoxes.length > 0) {
+            validateAvailableCompetences(checkedBoxes)
+        }
+        else { $("#competence-not-available").hide(); }
+
     });
 
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
