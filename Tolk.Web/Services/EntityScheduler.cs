@@ -8,10 +8,11 @@ namespace Tolk.Web.Services
 {
     public class EntityScheduler
     {
-        private IServiceProvider _services;
-        private ILogger<EntityScheduler> _logger;
-        private ISwedishClock _clock;
-        private DateTimeOffset nextDailyRunTime;
+        private readonly IServiceProvider _services;
+        private readonly ILogger<EntityScheduler> _logger;
+        private readonly ISwedishClock _clock;
+
+        private  DateTimeOffset nextDailyRunTime;
 
         private const int TimeToRun = 5;
 
@@ -73,7 +74,7 @@ namespace Tolk.Web.Services
                     if (_clock.SwedenNow > nextDailyRunTime)
                     {
                         nextDailyRunTime = nextDailyRunTime.AddDays(1);
-                        nextDailyRunTime = nextDailyRunTime - nextDailyRunTime.TimeOfDay;
+                        nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
                         nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
                         _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
