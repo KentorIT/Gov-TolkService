@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
@@ -48,9 +49,12 @@ namespace Tolk.Web.Controllers
                             RegionName = ra.Region.Name,
                             BrokerFeePercentage = ra.BrokerFee,
                             Rank = ra.Rank,
-                            BrokerFeeInSEK = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
-                                .Select(p => p.PriceToUse).ToList()
+                            BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.PriceToUse)
+                                .Select(p => p.PriceToUse.ToString("#,0.00")).ToList(),
+                            CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                               p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                         }).ToList()
                 }),
                 ItemsPerRegion = _dbContext.Regions.Include(b => b.Rankings)
@@ -65,9 +69,12 @@ namespace Tolk.Web.Controllers
                         BrokerName = ra.Broker.Name,
                         BrokerFeePercentage = ra.BrokerFee,
                         Rank = ra.Rank,
-                        BrokerFeeInSEK = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                            p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
-                                .Select(p => p.PriceToUse).ToList()
+                        BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                .Select(p => p.PriceToUse.ToString("#,0.00")).ToList(),
+                        CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
+                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                     }).ToList()
                 }),
                 ContractNumber = ContractNumber

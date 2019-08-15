@@ -35,10 +35,18 @@
                                         <table>
                                             <thead>
                                                 <tr>
-                                                    <th>Rang &nbsp; &nbsp; </th>
-                                                    <th>Förmedling &nbsp; &nbsp;</th>
-                                                    <th>Förmedlingsavgift % &nbsp; &nbsp;</th>
-                                                    <th>Förmedlingsavgift per kompetensnivå SEK</th>
+                                                    <th class="align-top">Rang &nbsp; &nbsp; </th>
+                                                    <th class="align-top">Förmedling &nbsp; &nbsp;</th>
+                                                    <th class="align-top">Förmedlingsavgift % &nbsp; &nbsp;</th>
+                                                    <th class="align-top">
+                                                        Förmedlingsavgift per kompetensnivå i SEK <br />
+                                                        <span class="normal-weight">
+                                                            @foreach (var cd in item.Brokers.First().CompetenceDescriptions)
+                                                            {
+                                                                <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                            }
+                                                        </span>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -49,14 +57,13 @@
                                                         <td>@b.BrokerName &nbsp; &nbsp;</td>
                                                         <td>@b.BrokerFeePercentage</td>
                                                         <td>
-                                                            @foreach (var p in b.BrokerFeeInSEK)
+                                                            @foreach (var p in b.BrokerFeesPerCompetenceLevel)
                                                             {
-                                                                <span>@p.ToString("#,0.00") &nbsp; </span>
+                                                                <span> @p &nbsp; </span>
                                                             }
                                                         </td>
                                                     </tr>
                                                 }
-
                                             </tbody>
                                         </table>
                                     </td>
@@ -88,10 +95,18 @@
                                         <table>
                                             <thead>
                                                 <tr>
-                                                    <th>Län &nbsp; &nbsp; </th>
-                                                    <th>Rang &nbsp; &nbsp; </th>
-                                                    <th>Förmedlingsavgift % &nbsp; &nbsp;</th>
-                                                    <th>Förmedlingsavgift per kompetensnivå SEK</th>
+                                                    <th class="align-top">Län &nbsp; &nbsp; </th>
+                                                    <th class="align-top">Rang &nbsp; &nbsp; </th>
+                                                    <th class="align-top">Förmedlingsavgift % &nbsp; &nbsp;</th>
+                                                    <th class="align-top">
+                                                        Förmedlingsavgift per kompetensnivå i SEK <br />
+                                                        <span class="normal-weight">
+                                                            @foreach (var cd in item.RegionRankings.First().CompetenceDescriptions)
+                                                            {
+                                                                <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                            }
+                                                        </span>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -102,14 +117,13 @@
                                                         <td>@b.Rank &nbsp; &nbsp;</td>
                                                         <td>@b.BrokerFeePercentage</td>
                                                         <td>
-                                                            @foreach (var p in b.BrokerFeeInSEK)
+                                                            @foreach (var p in b.BrokerFeesPerCompetenceLevel)
                                                             {
-                                                                <span>@p.ToString("#,0.00") &nbsp; </span>
+                                                                <span> @p &nbsp; </span>
                                                             }
                                                         </td>
                                                     </tr>
                                                 }
-
                                             </tbody>
                                         </table>
                                     </td>

@@ -43,6 +43,17 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         /// <summary>
+        /// Gets the shorter version of descriptive text of an enum value.
+        /// </summary>
+        /// <typeparam name="TEnum">Type of the enum.</typeparam>
+        /// <param name="value">Enum value.</param>
+        /// <returns>Short description string.</returns>
+        public static string GetShortDescription<TEnum>(TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperty<ShortDescriptionAttribute, TEnum>(value)?.ShortDescription ?? value.ToString();
+        }
+
+        /// <summary>
         /// Gets the custom name
         /// </summary>
         /// <typeparam name="TEnum">Type of the enum.</typeparam>
