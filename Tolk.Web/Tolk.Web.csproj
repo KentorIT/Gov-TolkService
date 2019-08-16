@@ -147,6 +147,9 @@
     <Content Update="Views\User\ChangeApiKey.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\User\EditDefaultSettings.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\User\EditNotificationSettings.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -957,6 +957,26 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        public async Task<ActionResult> EditDefaultSettings(int id)
+        {
+            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == id);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            {
+                var model = new DefaultSettingsModel
+                {
+                    Id = id,
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = "User",
+                        BackAction = nameof(View),
+                        BackId = id.ToString()
+                    }
+                };
+                return View(model);
+            }
+            return Forbid();
+        }
+
         private void UpdateNotificationSetting(AspNetUser apiUser, bool isActive, NotificationType type, NotificationChannel channel, string connectionInformation)
         {
             var setting = apiUser.NotificationSettings.SingleOrDefault(s => s.NotificationType == type && s.NotificationChannel == channel);
