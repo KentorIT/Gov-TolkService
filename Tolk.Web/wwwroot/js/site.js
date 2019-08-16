@@ -192,7 +192,7 @@ $(function () {
         sorting: false,
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
-        },
+        }
     });
 
 
@@ -236,6 +236,11 @@ $(function () {
                 if ($(this).valid !== undefined) {
                     $(this).valid(); //jquery validation script validate on change
                 }
+            })
+            .promise().done(function () {
+                $(".select2-selection__placeholder").each(function () {
+                    $(this).parent().prop("title", $(this).text());
+                });
             });
     });
 
