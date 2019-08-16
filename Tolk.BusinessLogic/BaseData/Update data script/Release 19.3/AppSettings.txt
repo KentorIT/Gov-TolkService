@@ -1,6 +1,6 @@
 
 
 Lägg till applikationsvariabler:
- "IsLanguagesCompetenceActivated": "true", --frågan är om det ska vara påslaget i prod eller inte?
- "LanguagesCompetenceInfoUri": "https://b-tellusapi.kammarkollegiet.se/languagesinfo/sv", --TEST
+ "Tellus:IsLanguagesCompetenceActivated": "true", --frågan är om det ska vara påslaget i prod eller inte?
+ "Tellus:LanguagesCompetenceInfoUri": "https://b-tellusapi.kammarkollegiet.se/languagesinfo/sv", --TEST
 								https://tellusapi.kammarkollegiet.se/languagesinfo/sv  --PROD - kolla att den funkar
