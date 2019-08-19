@@ -20,18 +20,22 @@ namespace Tolk.Web.Helpers
             var gitDir = "../.git";
             if (Directory.Exists(gitDir))
             {
+                string versionNumber = File.ReadAllText($"../VersionNumber.txt");
+
                 // Local, running in a repo directory.
                 var head = File.ReadAllText($"{gitDir}/HEAD");
-
+                string gitInfo = string.Empty;
                 if(head.StartsWith("ref: "))
                 {
                     var refFile = head.Substring(5).TrimEnd('\n');
-                    Version = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();
+                    gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();
                 }
                 else
                 {
-                    Version = head.FormatVersion();
+                    gitInfo = head.FormatVersion();
+                    
                 }
+                Version = $"{versionNumber}.0-{gitInfo}";
             }
 
             var activeAzureVersion = 
