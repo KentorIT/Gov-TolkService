@@ -213,7 +213,7 @@
                     </div>
                     <div class="modal-body">
                         <form method="post" asp-action="Decline" class="do-not-check-dirty">
-                            <input asp-for="RequestId" type="hidden" />
+                            <input id="DeniedRequestId" name="DeniedRequestId" value="@Model.RequestId" type="hidden" />
                             <form-entry asp-for="DenyMessage" />
                             @if (Model.OrderModel.ReplacingOrderId.HasValue)
                             {

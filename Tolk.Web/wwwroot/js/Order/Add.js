@@ -79,15 +79,15 @@ $(function () {
         }
     };
 
-    var toggleGender = function (reqType, genderRbl, description) {
+    var toggleGender = function (reqType, genderSpan, descriptionSpan) {
         if (reqType.val() === "Gender") {
-            genderRbl.show();
-            description.hide();
+            genderSpan.show();
+            descriptionSpan.hide();
         }
         else {
-            genderRbl.hide();
-            description.show();
-            description.find("#RequirementDescription").val("");
+            genderSpan.hide();
+            descriptionSpan.show();
+            descriptionSpan.find("input").val("");
         }
     };
 
@@ -231,13 +231,13 @@ $(function () {
     $("body").on("click", ".add-requirement-button", function () {
         var target = $($(this).data("target"));
         AddRequirement(target);
-        toggleGender(target.find("#RequirementType"), target.find("#GenderRequirement"), target.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(target.find("#RequirementType"), target.find("input[name$=Gender]").parents(".form-group"), target.find("#RequirementDescription").parents(".form-group"));
     });
 
     $("body").on("click", ".add-desiredRequirement-button", function () {
         var target = $($(this).data("target"));
         AddRequirement(target);
-        toggleGender(target.find("#RequirementType"), target.find("#GenderRequest"), target.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(target.find("#DesiredRequirementType"), target.find("input[name$=DesiredGender]").parents(".form-group"), target.find("#DesiredRequirementDescription").parents(".form-group"));
     });
 
     $("body").on("click", ".save-requirement", function (event) {
@@ -280,9 +280,9 @@ $(function () {
         event.preventDefault();
         var modalContent = $(this).parents(".modal-content");
 
-        if (modalContent.find("#RequirementType option:selected").text() === "Tolkens kön") {
+        if (modalContent.find("#DesiredRequirementType option:selected").text() === "Tolkens kön") {
             var textToUse = modalContent.find("input[type='Radio']").filter(":checked").val() === "Female" ? "Kvinna" : "Man";
-            modalContent.find("#RequirementDescription").val(textToUse);
+            modalContent.find("#DesiredRequirementDescription").val(textToUse);
         }
         //Before we start, validate the form!
         if (modalContent.find("form").valid()) {
@@ -302,8 +302,8 @@ $(function () {
 
             //Add the info to the cloned hidden fields, add a row to the table
             $('.order-desiredRequirement-table > tbody:last-child').append('<tr>' +
-                '<td class="table-type-column">' + $hidden.html() + $(this).parents(".modal-content").find("#RequirementType option:selected").text() + '</td>' +
-                '<td class="table-description-column">' + $(this).parents(".modal-content").find("#RequirementDescription").val() + '</td>' +
+                '<td class="table-type-column">' + $hidden.html() + $(this).parents(".modal-content").find("#DesiredRequirementType option:selected").text() + '</td>' +
+                '<td class="table-description-column">' + $(this).parents(".modal-content").find("#DesiredRequirementDescription").val() + '</td>' +
                 '<td class="table-button-column fixed"><span class="remove-desiredRequirement-row bold">&times;</span></td>' +
                 '</tr>');
             //Make the table visible, if this is the first visible row.
@@ -314,11 +314,11 @@ $(function () {
     });
 
     requiredModal.find("#RequirementType").on("change", function () {
-        toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("#GenderRequirement"), requiredModal.find("#RequirementDescription").parents(".form-group"));
+        toggleGender(requiredModal.find("#RequirementType"), requiredModal.find("input[name$=Gender]").parents(".form-group"), requiredModal.find("#RequirementDescription").parents(".form-group"));
     });
 
-    desiredModal.find("#RequirementType").on("change", function () {
-        toggleGender(desiredModal.find("#RequirementType"), desiredModal.find("#GenderRequest"), desiredModal.find("#RequirementDescription").parents(".form-group"));
+    desiredModal.find("#DesiredRequirementType").on("change", function () {
+        toggleGender(desiredModal.find("#DesiredRequirementType"), desiredModal.find("input[name$=DesiredGender]").parents(".form-group"), desiredModal.find("#DesiredRequirementDescription").parents(".form-group"));
     });
 
     $("body").on("change", "#LanguageId", function () {

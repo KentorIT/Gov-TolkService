@@ -1147,7 +1147,8 @@ ul.pagination > li.paginate_button.active > a {
 .detail-price-info {
   background-color: #F1F4F2;
 }
-#RequirementType {
+#RequirementType,
+#DesiredRequirementType {
   width: 300px;
 }
 .change-contact > #ContactPersonId {

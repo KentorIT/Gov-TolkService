@@ -65,8 +65,7 @@
         </div>
         <div class="col-sm-6">
             <span class="pull-right form-entry-information glyphicon glyphicon-info-sign info-sign-big" title="Klicka på ”Granskad” för att bekräfta att du tagit del av innehållet i rekvisitionen. Detta betyder inte automatiskt att rekvisitionen är godkänd. Varje myndighet avgör själv vilken rutin för godkännande som ska gälla. Observera att om du klickat på granskad har du inte längre möjlighet att skicka kommentarer på rekvisitionen."></span>
-            <form method="post" asp-controller="Requisition" asp-action="Review">
-                <input asp-for="RequisitionId" type="hidden" />
+            <form method="post" action="@Url.Action("Review", "Requisition", new { RequisitionId = Model.RequisitionId })" asp-antiforgery="true">
                 <button class="btn btn-success btn-large pull-right">Granskad <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
             </form>
         </div>

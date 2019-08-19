@@ -400,7 +400,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                 .Include(r => r.Interpreter)
-                .Single(r => r.RequestId == model.RequestId);
+                .Single(r => r.RequestId == model.DeniedRequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanDecline)
             {

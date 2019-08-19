@@ -281,7 +281,7 @@ namespace Tolk.Web.Models
 
 
         [Display(Name = "Tillkommande önskemål", Description = "Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen")]
-        public List<OrderRequirementModel> OrderDesiredRequirements { get; set; }
+        public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
         #endregion
 
@@ -520,19 +520,14 @@ namespace Tolk.Web.Models
                     // add all extra desired requirements
                     foreach (var req in OrderDesiredRequirements)
                     {
-                        OrderRequirement requirement = null;
-                        if (req.OrderRequirementId.HasValue)
+                        OrderRequirement requirement = new OrderRequirement
                         {
-                            requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
-                        }
-                        else
-                        {
-                            requirement = new OrderRequirement();
-                            order.Requirements.Add(requirement);
-                        }
-                        requirement.RequirementType = req.RequirementType.Value;
-                        requirement.IsRequired = req.RequirementIsRequired;
-                        requirement.Description = req.RequirementDescription;
+                            RequirementType = req.DesiredRequirementType.Value,
+                            IsRequired = false,
+                            Description = req.DesiredRequirementDescription
+
+                        };
+                        order.Requirements.Add(requirement);
                     }
                 }
             }

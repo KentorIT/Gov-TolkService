@@ -339,10 +339,8 @@
     <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
 </span>
 <span id="baseDesiredRequirement" class="d-none">
-    <input asp-for="OrderDesiredRequirements[0].OrderRequirementId" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].RequirementType" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].RequirementIsRequired" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].RequirementDescription" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementType" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
 </span>
 @await Html.PartialAsync("_UploadFileDialog")
 <section aria-label="Lägg till krav">   
@@ -375,7 +373,7 @@
                     <h2 class="modal-title">Lägg till önskemål</h2>
                 </div>
                 <div class="modal-body" id="des">
-                    @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = false })
+                    @await Html.PartialAsync("_DesiredRequirement", new OrderDesiredRequirementModel())
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
