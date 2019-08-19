@@ -43,6 +43,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeHiddenTimeRangeHidden = "time-range-hidden";
         private const string InputTypeRadioButtonGroup = "radio-group";
         private const string InputTypeCheckboxGroup = "checkbox-group";
+        private const string DateLabelId = "lblDate";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -432,7 +433,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteDateRangeBlock(TextWriter writer)
         {
-            WriteLabelWithoutFor(writer);
+            WriteLabelWithoutFor(writer, true);
             writer.WriteLine("<div class=\"form-inline\">");
 
             var fromModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Start");
@@ -511,7 +512,7 @@ namespace Tolk.Web.TagHelpers
 
             WritePrefix(writer, PrefixAttribute.Position.Value);
             // First write a label
-            WriteLabelWithoutFor(writer);
+            WriteLabelWithoutFor(writer, true);
             writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
@@ -542,6 +543,7 @@ namespace Tolk.Web.TagHelpers
                     data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):?[0-5][0-9]$",
                     data_val_regex = "Ange tid som HH:MM eller HHMM",
                     data_val_required = "Tid måste anges.",
+                    aria_labelledby = DateLabelId + For.Name
                 });
             if (extraAttributes != null)
             {
@@ -586,21 +588,18 @@ namespace Tolk.Web.TagHelpers
             return list;
         }
 
-        private void WriteLabelWithoutFor(TextWriter writer)
+        private void WriteLabelWithoutFor(TextWriter writer, bool writeId = false)
         {
-            writer.Write($"<label>{_htmlGenerator.Encode(For.ModelExplorer.Metadata.DisplayName)}");
-            if (For.ModelExplorer.Metadata.IsRequired)
-            {
-                writer.Write(RequiredStarSpan);
-            }
-            writer.WriteLine("</label>");
+            WriteLabelWithoutFor(For.ModelExplorer, writer, writeId);
             WriteInfoIfDescription(writer);
             WriteHelpIfHelpLink(writer);
         }
 
-        private void WriteLabelWithoutFor(ModelExplorer modelExplorer, TextWriter writer)
+        private void WriteLabelWithoutFor(ModelExplorer modelExplorer, TextWriter writer, bool writeId = false)
         {
-            writer.Write($"<label>{_htmlGenerator.Encode(modelExplorer.Metadata.DisplayName)}");
+            var idString = writeId ? $"id=\"{DateLabelId + For.Name}\"" : string.Empty;
+            writer.Write($"<label {idString}>{_htmlGenerator.Encode(modelExplorer.Metadata.DisplayName)}");
+
             if (modelExplorer.Metadata.IsRequired)
             {
                 writer.Write(RequiredStarSpan);
@@ -630,7 +629,8 @@ namespace Tolk.Web.TagHelpers
                     placeholder = "ÅÅÅÅ-MM-DD",
                     type = "text",
                     data_val_required = "Datum måste anges.",
-                    title = "Datum"
+                    title = "Datum",
+                    aria_labelledby = DateLabelId + For.Name
                 });
             if (extraAttributes != null)
             {
@@ -687,7 +687,7 @@ namespace Tolk.Web.TagHelpers
 
                 IDictionary<string, string> extraAttributes = null;
 
-                WriteLabelWithoutFor(writer);
+                WriteLabelWithoutFor(writer, true);
                 var inlineClass = "form-inline";
 
                 if (stayWithinAttribute != null)
@@ -754,7 +754,7 @@ namespace Tolk.Web.TagHelpers
                 endTimeMinutesValue = endTimeMinutesModelExplorer.Model;
             }
             writer.WriteLine("<div class=\"date-part\">");
-            WriteLabelWithoutFor(dateModelExplorer, writer);
+            WriteLabelWithoutFor(dateModelExplorer, writer, true);
             WriteInfoIfDescription(writer);
             WriteHelpIfHelpLink(writer);
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
