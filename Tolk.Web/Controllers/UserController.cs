@@ -192,7 +192,10 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Edit(int id, string bc, string ba, string bi)
         {
             var user = _userManager.Users.Include(u => u.Roles)
-                .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit).SingleOrDefault(u => u.Id == id);
+                .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit)
+                .Include(u => u.CustomerOrganisation)
+                .Include(u => u.Broker)
+                .SingleOrDefault(u => u.Id == id);
             IEnumerable<CustomerUnit> customerUnits = LoggedInCustomerUnits;
 
             var unitUsers = customerUnits?.Select(cu => new UnitUserModel
@@ -240,6 +243,7 @@ namespace Tolk.Web.Controllers
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
                     DisplayForAdminUser = UseRolesForAdminUser(user),
                     IsActive = user.IsActive,
+                    Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     UserType = HighestLevelLoggedInUserType,
                     UnitUsers = unitUsers?.OrderByDescending(uu => uu.UserIsConnected).ThenByDescending(uu => uu.IsLocalAdmin)
                         .ThenByDescending(uu => uu.IsActive).ThenBy(uu => uu.Name).ToList(),
