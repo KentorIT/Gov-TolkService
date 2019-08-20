@@ -500,19 +500,13 @@ namespace Tolk.Web.Models
                     // add all extra requirements
                     foreach (var req in OrderRequirements)
                     {
-                        OrderRequirement requirement = null;
-                        if (req.OrderRequirementId.HasValue)
+                        OrderRequirement requirement = new OrderRequirement
                         {
-                            requirement = order.Requirements.Single(r => r.OrderRequirementId == req.OrderRequirementId);
-                        }
-                        else
-                        {
-                            requirement = new OrderRequirement();
-                            order.Requirements.Add(requirement);
-                        }
-                        requirement.RequirementType = req.RequirementType.Value;
-                        requirement.IsRequired = req.RequirementIsRequired;
-                        requirement.Description = req.RequirementDescription;
+                            RequirementType = req.RequirementType.Value,
+                            IsRequired = true,
+                            Description = req.RequirementDescription
+                        };
+                        order.Requirements.Add(requirement);
                     }
                 }
                 if (OrderDesiredRequirements != null)
@@ -525,7 +519,6 @@ namespace Tolk.Web.Models
                             RequirementType = req.DesiredRequirementType.Value,
                             IsRequired = false,
                             Description = req.DesiredRequirementDescription
-
                         };
                         order.Requirements.Add(requirement);
                     }
