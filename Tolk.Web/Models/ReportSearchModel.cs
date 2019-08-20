@@ -21,5 +21,7 @@ namespace Tolk.Web.Models
 
         public string EndDate { get; set; }
 
+        public ReportType SelectedReportType { get; set; }
+
     }
 }

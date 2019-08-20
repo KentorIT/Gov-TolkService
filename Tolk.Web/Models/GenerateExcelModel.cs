@@ -4,7 +4,7 @@ namespace Tolk.Web.Models
 {
     public class GenerateExcelModel
     {
-        public ReportType ReportType { get; set; }
+        public ReportType SelectedReportType { get; set; }
 
         public string StartDate { get; set; }
 
