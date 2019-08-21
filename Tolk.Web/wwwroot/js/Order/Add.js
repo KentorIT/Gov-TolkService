@@ -50,12 +50,12 @@ $(function () {
         if (compLevelString.length === 4) {
             $('.competence-information').removeClass("warning-info-home").removeClass("warning-info-yellow").addClass("system-action-info")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-exclamation-sign").addClass("glyphicon-ok").removeClass("yellow-glyphicon");
-            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har tolkar för samtliga kompetensnivåer för valt språk").attr("role", "status");
+            $('.competence-information > span.info-message-small').text("Det finns tolkar inom samtliga kompetensnivåer för valt språk i Kammarkollegiets tolkregister").attr("role", "status");
         }
         else if (compLevelString === "0") {
             $('.competence-information').removeClass("warning-info-yellow").removeClass("system-action-info").addClass("warning-info-home")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").removeClass("yellow-glyphicon");
-            $('.competence-information > span.info-message-small').text("Kammarkollegiets tolkregister har inga tolkar för någon kompetensnivå för valt språk").attr("role", "alert");
+            $('.competence-information > span.info-message-small').text("Det finns för närvarande inga tolkar som är utbildade eller auktoriserade i valt språk i Kammarkollegiets tolkregister").attr("role", "alert");
         }
         else {
             $('.competence-information').removeClass("warning-info-home").removeClass("system-action-info").addClass("warning-info-yellow")
