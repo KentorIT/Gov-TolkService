@@ -35,31 +35,51 @@
             <display-entry asp-for="Body" />
         </div>
     </div>
-    <hr />
-    @if (Model.IsResent)
+    @if (Model.DisplayResend)
     {
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="ResentAt" />
+        <hr />
+        @if (Model.IsResent)
+        {
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="ResentAt" />
+                </div>
+                <div class="col-sm-8">
+                    Om du vill skicka om detta igen så gå in på det omskickade meddelandet genom att följa länken nedan: <br />
+                    <a class="pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacingEmailId })"> Gå till omskickat meddelande</a>
+                </div>
             </div>
+        }
+        <div class="row">
             <div class="col-sm-8">
-                Om du vill skicka om detta igen så gå in på det omskickade meddelandet genom att följa länken nedan: <br />
-                <a class="pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacingEmailId })"> Gå till omskickat meddelande</a>
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+            </div>
+            <div class="col-sm-4">
+                @if (!Model.IsResent)
+                {
+                    <form method="post" asp-action="Resend">
+                        <input type="hidden" name="id" value="@Model.OutboundEmailId" />
+                        <button class="btn btn-large btn-default">Skicka om <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
+                    </form>
+                }
             </div>
         </div>
     }
-    <div class="row">
-        <div class="col-sm-8">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
-        </div>
-        <div class="col-sm-4">
-            @if (!Model.IsResent)
+    else
+    {
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+            </div>
+            @if (Model.IsResent)
             {
-                <form method="post" asp-action="Resend">
-                    <input type="hidden" name="id" value="@Model.OutboundEmailId" />
-                    <button class="btn btn-large btn-default">Skicka om <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></button>
-                </form>
+                <div class="col-sm-4">
+                    <display-entry asp-for="ResentAt" />
+                </div>
+                <div class="col-sm-4">
+                    <a class="pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacingEmailId })"> Gå till omskickat meddelande</a>
+                </div>
             }
         </div>
-    </div>
+    }
 </section>

@@ -11,7 +11,7 @@ using Tolk.BusinessLogic.Services;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.ApplicationAdministrator)]
+    [Authorize(Roles = Roles.AppOrSysAdmin)]
     public class EmailController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -66,9 +66,10 @@ namespace Tolk.Web.Controllers
         public IActionResult View(int id)
         {
             return View(EmailModel.GetModelFromOutboundEmail(_dbContext.OutboundEmails
-                .Include(e => e.ReplacedByEmail).Single(e => e.OutboundEmailId == id)));
+                .Include(e => e.ReplacedByEmail).Single(e => e.OutboundEmailId == id), User.IsInRole(Roles.ApplicationAdministrator)));
         }
 
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Resend(int id)
@@ -78,7 +79,7 @@ namespace Tolk.Web.Controllers
                 .SingleOrDefault(e => e.OutboundEmailId == id);
             if (oldEmail == null || oldEmail.ReplacedByEmail != null)
             {
-                return View(nameof(View), EmailModel.GetModelFromOutboundEmail(oldEmail, "Det gick inte att skicka om detta e-postmeddelande"));
+                return View(nameof(View), EmailModel.GetModelFromOutboundEmail(oldEmail, User.IsInRole(Roles.ApplicationAdministrator), "Det gick inte att skicka om detta e-postmeddelande"));
             }
 
             _notificationService.CreateReplacingEmail(

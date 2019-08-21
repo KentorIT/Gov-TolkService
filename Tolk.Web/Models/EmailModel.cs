@@ -32,9 +32,11 @@ namespace Tolk.Web.Models
 
         public string ErrorMessage { get; set; }
 
+        public bool DisplayResend { get; set; }
+
         public int? ReplacingEmailId { get; set; }
 
-        public static EmailModel GetModelFromOutboundEmail(OutboundEmail mail, string errormessage = null)
+        public static EmailModel GetModelFromOutboundEmail(OutboundEmail mail, bool displayResend, string errormessage = null)
         {
             return new EmailModel
             {
@@ -46,7 +48,8 @@ namespace Tolk.Web.Models
                 SentAt = mail.DeliveredAt,
                 ReplacingEmailId = mail.ReplacedByEmail?.OutboundEmailId, 
                 ResentAt = mail.ReplacedByEmail?.CreatedAt,
-                ErrorMessage = errormessage
+                ErrorMessage = errormessage,
+                DisplayResend = displayResend
             };
         }
 
