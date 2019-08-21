@@ -25,8 +25,7 @@
                     {
                         <div class="important-info">@Model.Info48HCancelledByCustomer</div>
                     }
-                    <form method="post" asp-action="ConfirmCancellation">
-                        <input asp-for="RequestId" type="hidden" />
+                    <form method="post" action="@Url.Action("ConfirmCancellation", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
@@ -34,8 +33,7 @@
                 @if (Model.AllowConfirmationDenial)
                 {
                     <br />
-                    <form method="post" asp-action="ConfirmDenial">
-                        <input asp-for="RequestId" type="hidden" />
+                    <form method="post" action="@Url.Action("ConfirmDenial", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
@@ -65,8 +63,7 @@
                     <div class="col-sm-6">
                         @if (Model.AllowCancellation)
                         {
-                            <form method="post" class="cancel-form" asp-action="Cancel">
-                                <input asp-for="RequestId" type="hidden" />
+                            <form method="post" class="cancel-form" action="@Url.Action("Cancel", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                                 <input name="CancelMessage" type="hidden" />
                                 <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
                             </form>
