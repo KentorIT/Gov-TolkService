@@ -90,8 +90,7 @@
                 <h2 class="modal-title">Bestrid reklamation</h2>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="Dispute" class="do-not-check-dirty">
-                    <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
+                <form method="post" action="@Url.Action("Dispute", "Complaint", new { ComplaintId = Model.ComplaintId })" asp-antiforgery="true">
                     <form-entry asp-for="DisputeMessage" />
                     <span id="disputeComplaintValidator" class="text-danger left-padding"></span>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
@@ -114,8 +113,7 @@
                 <h2 class="modal-title">Godta bestridande av reklamation</h2>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="AcceptDispute" class="do-not-check-dirty">
-                    <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
+                <form method="post" action="@Url.Action("AcceptDispute", "Complaint", new { ComplaintId = Model.ComplaintId })" asp-antiforgery="true">
                     <form-entry asp-for="AnswerDisputedMessage" />
                     <span id="acceptDisputeValidator" class="text-danger left-padding"></span>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
@@ -138,9 +136,8 @@
                 <h2 class="modal-title">Avslå bestridande av reklamation</h2>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="Refute" class="do-not-check-dirty">
-                    <input type="hidden" name="ComplaintId" value="@Model.ComplaintId" />
-                    <form-entry asp-for="AnswerDisputedMessage" />
+                <form method="post" action="@Url.Action("Refute", "Complaint", new { ComplaintId = Model.ComplaintId })" asp-antiforgery="true">
+                    <form-entry asp-for="RefuteMessage" />
                     <span id="refuteDisputeValidator" class="text-danger left-padding"></span>
                     <button type="button" class="btn btn-warning pull-left do-not-check-dirty" data-dismiss="modal">Avbryt</button>
                     <button type="submit" class="btn btn-default btn-refute pull-right">Avslå</button>

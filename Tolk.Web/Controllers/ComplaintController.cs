@@ -255,7 +255,7 @@ namespace Tolk.Web.Controllers
                         return RedirectToAction("View", "Request", new { id = complaint.RequestId, tab = "complaint" });
                     }
 
-                    _complaintService.Refute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.AnswerDisputedMessage);
+                    _complaintService.Refute(complaint, User.GetUserId(), User.TryGetImpersonatorId(), model.RefuteMessage);
                     await _dbContext.SaveChangesAsync();
 
                     return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });

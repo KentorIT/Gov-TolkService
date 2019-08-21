@@ -38,6 +38,13 @@ namespace Tolk.Web.Models
         [Placeholder("Skriv svar angående bestridande.")]
         public string AnswerDisputedMessage { get; set; }
 
+        [DataType(DataType.MultilineText)]
+        [ClientRequired]
+        [Display(Name = "Meddelande vid svar på bestridande")]
+        [StringLength(1000)]
+        [Placeholder("Skriv svar angående bestridande.")]
+        public string RefuteMessage { get; set; }
+
         public bool IsBroker { get; set; }
 
         public bool IsCustomer { get; set; }
