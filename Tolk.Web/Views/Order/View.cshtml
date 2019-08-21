@@ -1,5 +1,6 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @inject SelectListService SelectListService
+@inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
@@ -150,6 +151,7 @@
                         <input name="CancelMessage" type="hidden" />
                         <input name="AddReplacementOrder" type="hidden" value="false" />
                         <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
+                        @HelpLinkService.ButtonHelpIcon("myndighet-avboka-uppdrag")
                     </form>
                 </div>
             }
@@ -158,15 +160,17 @@
                 <div class="col-sm-4">
                     @if (Model.AllowDenial)
                     {
-                        <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
-                            <input name="DenyMessage" type="hidden" />
-                            <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
-                        </form>
+                    <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
+                        <input name="DenyMessage" type="hidden" />
+                        <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                        @HelpLinkService.ButtonHelpIcon("myndighet-underkann-tillsattning")
+                    </form>
                     }
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-4 pull-right">
                     <form method="post" action="@Url.Action("Approve", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
-                        <button class="btn btn-default btn-success btn-large pull-right">Godkänn tillsättning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                        <button class="btn btn-default btn-success btn-large">Godkänn tillsättning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                        @HelpLinkService.ButtonHelpIcon("myndighet-godkann-tillsattning")
                     </form>
                 </div>
             }

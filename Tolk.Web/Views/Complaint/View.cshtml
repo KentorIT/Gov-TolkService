@@ -1,4 +1,6 @@
 ﻿@model Tolk.Web.Models.ComplaintViewModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 <div class="row">
     <div class="col-sm-12">
         <div class="row">
@@ -56,6 +58,13 @@
         @if (Model.AllowAnwser)
         {
             <div class="row">
+                <div class="col-sm-12">
+                    <div class="pull-right">
+                        @HelpLinkService.ButtonHelpIcon("formedling-besvara-reklamation")
+                    </div>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-6">
                     <button class="btn btn-large btn-danger pull-left" data-toggle="modal" data-target="#disputeMessageDialog">Bestrid reklamation</button>
                 </div>
@@ -69,6 +78,13 @@
         }
         @if (Model.AllowAnwserOnDispute)
         {
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="pull-right">
+                        @HelpLinkService.ButtonHelpIcon("myndighet-hantera-reklamation")
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-sm-6">
                     <button class="btn btn-large btn-danger pull-left" data-toggle="modal" data-target="#refuteMessageDialog">Avslå bestridande</button>

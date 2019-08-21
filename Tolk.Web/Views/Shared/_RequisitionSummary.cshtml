@@ -1,13 +1,9 @@
 ﻿@model RequisitionViewModel
-@using Tolk.Web.Services
-@inject HelpLinkService HelpLinkService
 @{
     string header = (string)ViewData["header"] ?? "Rekvisitionssammanfattning";
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
     string divClass = isCollapsible ? "collapse" : "";
     string divId = (string)ViewData["id"] ?? "RequisitionSummary";
-    bool showHelpLink = !string.IsNullOrEmpty((string)ViewData["helplink"]);
-    HelpLinkService.PageName = showHelpLink ? (string)ViewData["helplink"] : string.Empty;
 }
 
 @if (isCollapsible)
@@ -19,7 +15,7 @@
 }
 else
 {
-    <h1 class="normal-weight"> @header @if (showHelpLink) { @HelpLinkService.HeaderAnchor() }</h1>
+    <h1 class="normal-weight"> @header</h1>
 }
 <div id="@divId" class="@divClass">
     <div class="row">

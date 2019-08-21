@@ -34,6 +34,12 @@ namespace Tolk.Web.Services
         {
             return new HtmlString($"<a href=\"{GenerateUrl(anchorpoint)}\" aria-label=\"Hjälp från manual\" target=\"_blank\" class=\"pull-right\"><span class=\"glyphicon glyphicon-question-sign\"></span></a>");
         }
+
+        public HtmlString ButtonHelpIcon(string pageName)
+        {
+            PageName = pageName;
+            return new HtmlString($"<a href=\"{GenerateUrl(null)}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"glyphicon glyphicon-question-sign help-sign-medium\"></span></a>");
+        }
     }
 }
 
