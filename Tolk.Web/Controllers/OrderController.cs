@@ -467,23 +467,22 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
-            var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(o => o.CustomerOrganisation)
-                .Single(o => o.OrderId == model.OrderId);
+            var request = await _dbContext.Requests
+                .Include(r => r.Interpreter)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestId == model.RequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
             {
-                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
                 if (!request.CanApprove)
                 {
                     _logger.LogWarning("Wrong status when trying to Approve request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction(nameof(View), new { id = order.OrderId });
+                    return RedirectToAction(nameof(View), new { id = request.OrderId });
                 }
                 _orderService.ApproveRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
-                return RedirectToAction(nameof(View), new { id = order.OrderId });
+                return RedirectToAction(nameof(View), new { id = request.OrderId });
             }
             return Forbid();
         }
@@ -570,20 +569,20 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
-            var order = await _dbContext.Orders.Include(o => o.Requests)
-                .ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .SingleAsync(o => o.OrderId == model.OrderId);
+            var request = await _dbContext.Requests
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order)
+                .SingleAsync(r => r.RequestId == model.RequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
             {
-                var request = order.Requests.Single(r => r.RequestId == model.RequestId);
                 if (!request.CanDeny)
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att neka denna tillsättningen" });
                 }
                 await _orderService.DenyRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 await _dbContext.SaveChangesAsync();
-                return RedirectToAction(nameof(View), new { id = order.OrderId });
+                return RedirectToAction(nameof(View), new { id = request.OrderId });
             }
             return Forbid();
         }
