@@ -31,5 +31,10 @@ namespace Tolk.BusinessLogic.Utilities
 
         public int FulfilledOrderDesiredRequirements { get; set; }
 
+        /// <summary>
+        /// Since only completed orders use this, the no of fulfilled requirements = no of requirements
+        /// </summary>
+        public int FulfilledOrderRequirements => OrderRequirements;
+
     }
 }

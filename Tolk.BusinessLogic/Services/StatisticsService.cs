@@ -505,6 +505,8 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelRequired2);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga krav";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga krav";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FulfilledOrderRequirements);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga önskemål";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderDesiredRequirements);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga önskemål";
