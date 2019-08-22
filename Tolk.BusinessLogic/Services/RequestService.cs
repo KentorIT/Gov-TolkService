@@ -172,6 +172,7 @@ namespace Tolk.BusinessLogic.Services
                 expectedTravelCostInfo,
                 verificationResult
             );
+            _tolkDbContext.SaveChanges();
             if (request.Status == RequestStatus.Approved && noNeedForUserAccept)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
