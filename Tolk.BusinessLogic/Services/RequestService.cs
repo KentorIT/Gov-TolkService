@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -172,7 +173,8 @@ namespace Tolk.BusinessLogic.Services
                 expectedTravelCostInfo,
                 verificationResult
             );
-            _tolkDbContext.SaveChanges();
+            // needed to be able to get the requestid for the link
+            await _tolkDbContext.SaveChangesAsync();
             if (request.Status == RequestStatus.Approved && noNeedForUserAccept)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
