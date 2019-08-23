@@ -327,7 +327,7 @@ namespace Tolk.Web.Controllers
                     {
                         Order order = CreateNewOrder();
                         var firstOccasion = model.FirstOccasion;
-                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
+                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
                         await _dbContext.AddAsync(order);
                         await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
 
@@ -351,7 +351,7 @@ namespace Tolk.Web.Controllers
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             OrderModel updatedModel = null;
             var firstOccasion = model.FirstOccasion;
-            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime, firstOccasion.OccasionEndDateTime);
+            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
             updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
@@ -645,7 +645,7 @@ namespace Tolk.Web.Controllers
             foreach (var occasion in model.UniqueOrdersFromOccasions)
             {
                 var order = CreateNewOrder();
-                model.UpdateOrder(order, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
+                model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
                 yield return order;
             }
 
@@ -657,7 +657,7 @@ namespace Tolk.Web.Controllers
             {
                 Order groupOrder = CreateNewOrder();
                 // Add list of occasions, with the price information
-                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime, occasion.OccasionEndDateTime);
+                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
                     Header = "Beräknat preliminärt pris",
