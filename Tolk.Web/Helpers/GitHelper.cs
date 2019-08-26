@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Tolk.Web.Helpers
@@ -37,12 +38,17 @@ namespace Tolk.Web.Helpers
                 }
                 Version = $"{versionNumber}.0-{gitInfo}";
             }
+            else
+            {
+                //Get file version, if the site is run from artifacts built by build server.
+                Version = $"{Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version}";
+            }
 
             var activeAzureVersion = 
                 Environment.ExpandEnvironmentVariables(
                 "%HOME%\\site\\deployments\\active");
 
-            if(File.Exists(activeAzureVersion))
+            if (File.Exists(activeAzureVersion))
             {
                 Version = File.ReadAllText(activeAzureVersion).FormatVersion();
             }
