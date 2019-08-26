@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Globalization;
+using System.Reflection;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
@@ -97,17 +98,7 @@ namespace Tolk.Web
                 opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
             });
 
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<OrderModel, ReplaceOrderModel>();
-            });
-
-            // This does not, for some reason, work. I had to initialize the map when I use it instead...
-            //services.AddAutoMapper(cfg =>
-            //{
-            //    cfg.CreateMap<OrderModel, ReplaceOrderModel>();
-            //});
-
+            services.AddAutoMapper(Assembly.GetEntryAssembly());
             services.Configure<RequestLocalizationOptions>(opt =>
             {
                 var supportedCultures = new[] { new CultureInfo("sv-SE") };

@@ -35,6 +35,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly INotificationService _notificationService;
         private readonly UserManager<AspNetUser> _userManager;
+        private readonly IMapper _mapper;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -47,7 +48,8 @@ namespace Tolk.Web.Controllers
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
             INotificationService notificationService,
-            UserManager<AspNetUser> usermanager
+            UserManager<AspNetUser> usermanager,
+            IMapper mapper
             )
         {
             _dbContext = dbContext;
@@ -61,6 +63,7 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _notificationService = notificationService;
             _userManager = usermanager;
+            _mapper = mapper;
         }
 
         public IActionResult List(OrderFilterModel model)
@@ -225,7 +228,7 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
-                ReplaceOrderModel model = Mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
+                ReplaceOrderModel model = _mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
                 model.ReplacedTimeRange = new TimeRange
                 {
                     StartDateTime = order.StartAt,

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
+    [AutoMap(typeof(OrderModel))]
     public class ReplaceOrderModel : OrderModel
     {
         [Display(Name = "Det ersatta uppdragets datum och tid")]
