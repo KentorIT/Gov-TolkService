@@ -26,8 +26,9 @@ namespace Tolk.Web.Models
             }
             set
             {
-                StartDate = value.Value.Date;
-                StartTime = value.Value.TimeOfDay;
+                var valueSweden = value.Value.ToDateTimeOffsetSweden();
+                StartDate = valueSweden.Date;
+                StartTime = valueSweden.TimeOfDay;
             }
         }
 
