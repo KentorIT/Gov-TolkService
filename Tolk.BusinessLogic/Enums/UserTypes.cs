@@ -29,5 +29,8 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Kan överta annan användare")]
         Impersonator = 128,
+
+        [Description("Rätt att hantera alla myndighetens avrop")]
+        CentralOrderHandler = 256,
     }
 }

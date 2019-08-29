@@ -195,35 +195,86 @@ $(function () {
         }
     });
 
+    var delay = function (callback, ms) {
+        var timer = 0;
+        return function () {
+            var context = this, args = arguments;
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                callback.apply(context, args);
+            }, ms || 0);
+        };
+    };
+
+    var  repeatStringNumTimes = function(string, times) {
+        if (times < 0) {
+            return "";
+        }
+        if (times === 1) {
+            return string;
+        } else {
+            return string + repeatStringNumTimes(string, times - 1);
+        }
+    };
 
     $(".ajax-listing table").each(
         function () {
             var $table = $(this);
             $.ajax({
                 dataType: 'json',
-                url: tolkBaseUrl + $table.data("ajax-column-definition"),
+                url: $table.data("ajax-column-definition"),
                 success: function (json) {
                     var $columnDefinition = json;
-                    $table.DataTable({
+                    var $idColumn = $columnDefinition.filter(function (o) {
+                        return o.isIdColumn;
+                    });
+                    var $leftcssDefinitionColumn = $columnDefinition.filter(function (o) {
+                        return o.isLeftCssClassName;
+                    });
+                    $table.html("<thead><tr>" + repeatStringNumTimes("<th></th>", $columnDefinition.length) + "</tr></thead><tbody/>");
+                    var $dataTable = $table.DataTable({
                         serverSide: true,
-                        searching: true,
+                        searching: false,
                         paging: true,
                         dom: "lrtip",
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
-                            $(row).data("id", data.id);
-                            $(row).data("click-action-url", $table.data("click-action-url") + "/" + data.id);
+                            if ($table.hasClass("clickable-rows-with-action")) {
+                                $(row).data("click-action-url", $table.data("click-action-url") + "/" + data[$idColumn[0].data]);
+                            }
+                            if ($leftcssDefinitionColumn.length > 0) {
+                                $(row).find("td").eq(0).addClass(data[$leftcssDefinitionColumn[0].data]);
+                            }
                         },
-                        ajax: tolkBaseUrl + $table.data("ajax-path"),
+                        ajax: {
+                            url: $table.data("ajax-path"),
+                            type: 'POST',
+                            data: function (data) {
+                                // Read values and append to data
+                                $(".filter-panel input, .filter-panel select").each(function () {
+                                    data[$(this).prop("id")] = $(this).val();
+                                });
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                //possibly log something, but mainly reload the main page.
+                                location.reload();
+                            }
+                        },
                         columns: $columnDefinition,
                         language: {
                             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
                         }
                     });
+                    $("body").on("change", ".filter-panel select", function () {
+                        $dataTable.draw();
+                    });
+                    $("body").on("keyup", ".filter-panel input", delay(function (e) {
+                        //Note keyup does not catch IE 11's x that clears the input bux, BUT if on uses the event called "input", the list is reloaded all the time, even if no changes are introduced to the input, just leaving and entering the field...
+                        $dataTable.draw();
+                    }, 500));
                 }
             });
         });
-
 
     $("body").on("click", ".btn-datatable", function (e) {
         e.stopPropagation();

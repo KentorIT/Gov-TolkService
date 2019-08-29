@@ -35,6 +35,7 @@ namespace Tolk.Web.Models
 
         public UserPageMode UserPageMode { get; set; }
 
+        public CustomerUserFilterModel UserFilterModel { get; set; }
 
         public static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
         {

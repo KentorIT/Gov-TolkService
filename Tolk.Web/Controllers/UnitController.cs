@@ -262,7 +262,7 @@ namespace Tolk.Web.Controllers
                 FirstName = u.NameFirst,
                 LastName = u.NameFamily,
                 Email = u.Email,
-                IsActive = u.IsActive ? "Aktiv" : "Inaktiv",
+                IsActive = u.IsActive,
                 IsLocalAdmin = u.CustomerUnits.Any(cu => cu.CustomerUnitId == id && cu.IsLocalAdmin) ? "Ja" : "Nej"
             });
 

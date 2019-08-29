@@ -52,7 +52,7 @@ namespace Tolk.Web.Services
         public static IEnumerable<SelectListItem> SearchableRolesForSysAdmin => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString() && s.Value != UserType.ApplicationAdministrator.ToString() && s.Value != UserType.Impersonator.ToString());
 
         public static IEnumerable<SelectListItem> SearchableRolesForCustomers =>
-            GetList(new List<UserType>() { UserType.OrderCreator, UserType.OrganisationAdministrator });
+            GetList(new List<UserType>() { UserType.CentralOrderHandler, UserType.OrderCreator, UserType.OrganisationAdministrator });
 
         public static IEnumerable<SelectListItem> SearchableRolesForBrokers =>
             GetList(new List<UserType>() { UserType.Broker, UserType.OrganisationAdministrator });

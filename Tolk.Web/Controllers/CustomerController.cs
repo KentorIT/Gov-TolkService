@@ -14,6 +14,10 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 using Tolk.Web.Helpers;
+using Microsoft.AspNetCore.Identity;
+using Tolk.BusinessLogic.Enums;
+using System.Reflection;
+using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Controllers
 {
@@ -24,17 +28,22 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
         private readonly IAuthorizationService _authorizationService;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
+        private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
 
 
         public CustomerController(
             TolkDbContext dbContext,
             ILogger<ContractController> logger,
-            IAuthorizationService authorizationService
+            IAuthorizationService authorizationService,
+            RoleManager<IdentityRole<int>> roleManager
         )
         {
             _dbContext = dbContext;
             _logger = logger;
             _authorizationService = authorizationService;
+            _roleManager = roleManager;
         }
 
         public ActionResult Index()
@@ -125,70 +134,62 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        public IActionResult ListUsers(int id, IDataTablesRequest request)
+        [HttpPost]
+        public async Task<IActionResult> ListUsers(IDataTablesRequest request)
         {
-            // NEED TO APPLY SORT ORDER?
-            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == id).Select(u => new DynamicUserListItemModel
-            {
-                Id = u.Id,
-                FirstName = u.NameFirst,
-                LastName = u.NameFamily,
-                Email = u.Email
-            });
-            //HOW TO SEND FILTER VALUES?
-            var filteredData = data;
+            var filters = await GetSearchCriteriaModel<CustomerUserFilterModel>();
+            filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
+            filters.CentralOrderHandlerRoleId = CentralOrderHandlerRoleId;
 
-            var sortColumn = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).FirstOrDefault();
-            if (sortColumn != null)
-            {
-                data = data.OrderBy($"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}");
-            }
+            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id)
+                .Select(u => new DynamicUserListItemModel
+                {
+                    Id = u.Id,
+                    FirstName = u.NameFirst,
+                    LastName = u.NameFamily,
+                    Email = u.Email,
+                    Roles = u.Roles.Select(r => r.RoleId),
+                    IsActive = u.IsActive
 
-            var dataPage = data.Skip(request.Start).Take(request.Length);
-
-            // Response creation. To create your response you need to reference your request, to avoid
-            // request/response tampering and to ensure response will be correctly created.
-            var response = DataTablesResponse.Create(request, data.Count(), filteredData.Count(), dataPage);
-
-            // Easier way is to return a new 'DataTablesJsonResult', which will automatically convert your
-            // response to a json-compatible content, so DataTables can read it when received.
-            return new DataTablesJsonResult(response, true);
+                });
+            return GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data));
         }
 
         public JsonResult UserColumnDefinition()
         {
-            //THIS SHOULD BE RETRIEVED FROM A MORE CENTRALIZED PLACE, AND BY READING ATTRIBUTES FROM UserListItem
-            return Json(Columns);
+            return Json(GetColumnDefinitions<DynamicUserListItemModel>());
         }
 
-        private static List<ColumnDefinition> Columns => new List<ColumnDefinition>()
+        private static IActionResult GetData<T>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData)
+        {
+            var sortColumn = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).FirstOrDefault();
+            if (sortColumn != null)
             {
-                new ColumnDefinition
-                {
-                    Name = "Id",
-                    Data = "id",
-                    Title = "",
-                    Visible = false
-                },
-                new ColumnDefinition
-                {
-                    Name = "LastName",
-                    Data = "lastName",
-                    Title = "Efternamn",
-                },
-                new ColumnDefinition
-                {
-                    Name = "FirstName",
-                    Data = "firstName",
-                    Title = "Förnamn",
-                },
-                new ColumnDefinition
-                {
-                    Name = "Email",
-                    Data = "email",
-                    Title = "Epost"
-                },
-            };
+                filteredData = filteredData.OrderBy($"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}");
+            }
+
+            var dataPage = filteredData.Skip(request.Start).Take(request.Length);
+            var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), dataPage);
+            return new DataTablesJsonResult(response, true);
+        }
+
+        protected async Task<T> GetSearchCriteriaModel<T>()
+            where T : class, new()
+        {
+            var searchModel = new T();
+            await TryUpdateModelAsync(searchModel);
+            return searchModel;
+        }
+
+        private static IEnumerable<ColumnDefinition> GetColumnDefinitions<TModel>()
+        {
+            var t = typeof(TModel);
+            return t.GetProperties()
+                 .Where(p => AttributeHelper.IsAttributeDefined<ColumnDefinitionsAttribute>(t, p.Name))
+                 .OrderBy(p => ((ColumnDefinitionsAttribute)AttributeHelper.GetAttribute<ColumnDefinitionsAttribute>(t, p.Name)).Index)
+                 .Select(p => ((ColumnDefinitionsAttribute)AttributeHelper.GetAttribute<ColumnDefinitionsAttribute>(t, p.Name)).ColumnDefinition);
+
+        }
 
         private bool ValidateCustomer(CustomerModel model)
         {
@@ -204,15 +205,4 @@ namespace Tolk.Web.Controllers
             return valid;
         }
     }
-    public class ColumnDefinition
-    {
-        public string Name { get; set; }
-        public string Data { get; set; }
-        public string Title { get; set; }
-        public bool Sortable { get; set; } = true;
-        public bool Searchable { get; set; } = false;
-        public bool Visible { get; set; } = true;
-    }
-
-
 }

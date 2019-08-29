@@ -1,0 +1,16 @@
+﻿@model CustomerUserFilterModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+
+<section aria-label="Filtrera användare">
+    <h2>Filtrera myndighetens användare</h2>
+    <div class="row">
+        <div class="col-sm-8">
+            <input asp-for="Id" type="hidden" />
+            <form-entry asp-for="SearchString" />
+        </div>
+        <div class="col-sm-4">
+            <form-entry asp-for="UserType" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
+        </div>
+    </div>
+</section>
