@@ -137,10 +137,10 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ListUsers(IDataTablesRequest request)
         {
-            var filters = await GetSearchCriteriaModel<CustomerUserFilterModel>();
-            filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
-            filters.CentralOrderHandlerRoleId = CentralOrderHandlerRoleId;
+            //Get filters
+            CustomerUserFilterModel filters = await GetFilters();
 
+            //Get the full table
             var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id)
                 .Select(u => new DynamicUserListItemModel
                 {
@@ -152,43 +152,23 @@ namespace Tolk.Web.Controllers
                     IsActive = u.IsActive
 
                 });
-            return GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data));
+
+            //Filter and return data tables dat
+            return AjaxDataTableHelper.GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data));
         }
 
         public JsonResult UserColumnDefinition()
         {
-            return Json(GetColumnDefinitions<DynamicUserListItemModel>());
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<DynamicUserListItemModel>());
         }
 
-        private static IActionResult GetData<T>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData)
+        private async Task<CustomerUserFilterModel> GetFilters()
         {
-            var sortColumn = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).FirstOrDefault();
-            if (sortColumn != null)
-            {
-                filteredData = filteredData.OrderBy($"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}");
-            }
-
-            var dataPage = filteredData.Skip(request.Start).Take(request.Length);
-            var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), dataPage);
-            return new DataTablesJsonResult(response, true);
-        }
-
-        protected async Task<T> GetSearchCriteriaModel<T>()
-            where T : class, new()
-        {
-            var searchModel = new T();
-            await TryUpdateModelAsync(searchModel);
-            return searchModel;
-        }
-
-        private static IEnumerable<ColumnDefinition> GetColumnDefinitions<TModel>()
-        {
-            var t = typeof(TModel);
-            return t.GetProperties()
-                 .Where(p => AttributeHelper.IsAttributeDefined<ColumnDefinitionsAttribute>(t, p.Name))
-                 .OrderBy(p => ((ColumnDefinitionsAttribute)AttributeHelper.GetAttribute<ColumnDefinitionsAttribute>(t, p.Name)).Index)
-                 .Select(p => ((ColumnDefinitionsAttribute)AttributeHelper.GetAttribute<ColumnDefinitionsAttribute>(t, p.Name)).ColumnDefinition);
-
+            var filters = new CustomerUserFilterModel();
+            await TryUpdateModelAsync(filters);
+            filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
+            filters.CentralOrderHandlerRoleId = CentralOrderHandlerRoleId;
+            return filters;
         }
 
         private bool ValidateCustomer(CustomerModel model)
