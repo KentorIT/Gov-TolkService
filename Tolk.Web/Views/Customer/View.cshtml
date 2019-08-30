@@ -64,7 +64,8 @@
                 <table class="table table-hover clickable-rows-with-action search-table" data-order="[[ 1, &quot;asc&quot; ]]"
                        data-ajax-path="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.ListUsers), "Customer")"
                        data-ajax-column-definition="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.UserColumnDefinition), "Customer")"
-                       data-click-action-url="@Url.Action(nameof(Tolk.Web.Controllers.UserController.View), "User")">
+                       data-click-action-url="@Url.Action(nameof(Tolk.Web.Controllers.UserController.View), "User")"
+                       data-filter-selector=".filter-panel">
                 </table>
             </div>
         </div>

@@ -220,6 +220,7 @@ $(function () {
     $(".ajax-listing table").each(
         function () {
             var $table = $(this);
+            var $filterSelector = $table.data("filter-selector");
             $.ajax({
                 dataType: 'json',
                 url: $table.data("ajax-column-definition"),
@@ -251,7 +252,7 @@ $(function () {
                             type: 'POST',
                             data: function (data) {
                                 // Read values and append to data
-                                $(".filter-panel input, .filter-panel select").each(function () {
+                                $($filterSelector + " :input").each(function () {
                                     data[$(this).prop("id")] = $(this).val();
                                 });
                             },
@@ -265,10 +266,10 @@ $(function () {
                             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
                         }
                     });
-                    $("body").on("change", ".filter-panel select", function () {
+                    $("body").on("change", $filterSelector + " select", function () {
                         $dataTable.draw();
                     });
-                    $("body").on("keyup", ".filter-panel input", delay(function (e) {
+                    $("body").on("keyup", $filterSelector + " input", delay(function (e) {
                         //Note keyup does not catch IE 11's x that clears the input bux, BUT if on uses the event called "input", the list is reloaded all the time, even if no changes are introduced to the input, just leaving and entering the field...
                         $dataTable.draw();
                     }, 500));
