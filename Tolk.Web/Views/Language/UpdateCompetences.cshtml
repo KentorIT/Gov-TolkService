@@ -8,39 +8,44 @@
         <div class="col-sm-12">
             @if (Model.UpdatedLanguages.Any())
             {
-            <h2>Följande språk uppdaterades</h2>
-            <div class="table-responsive table-datatable">
-                <table class="table sortable-only-table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Språk</th>
-                            <th>Tellusnamn</th>
-                            <th>Uppdaterade kompetenser</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.UpdatedLanguages)
-                        {
+                <h2>Följande språk uppdaterades</h2>
+                <div class="table-responsive table-datatable">
+                    <table class="table sortable-only-table table-hover">
+                        <thead>
                             <tr>
-                                <td class="gray-border-bottom gray-border-left">@item.Name</td>
-                                <td class="gray-border-bottom">@item.TellusName</td>
-                                <td class="gray-border-bottom gray-border-right">
-                                    Rättstolk: @(item.HasLegal ? "Ja" : "Nej")<br />
-                                    Sjukvårdstolk: @(item.HasHealthcare ? "Ja" : "Nej")<br />
-                                    Auktoriserad tolk: @(item.HasAuthorized ? "Ja" : "Nej")<br />
-                                    Utbildad tolk: @(item.HasEducated ? "Ja" : "Nej")<br />
-                                </td>
+                                <th>Språk</th>
+                                <th>Tellusnamn</th>
+                                <th>Uppdaterade kompetenser</th>
                             </tr>
-                         }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.UpdatedLanguages)
+                            {
+                                <tr>
+                                    <td class="gray-border-bottom gray-border-left">@item.Name</td>
+                                    <td class="gray-border-bottom">@item.TellusName</td>
+                                    <td class="gray-border-bottom gray-border-right">
+                                        Rättstolk: @(item.HasLegal ? "Ja" : "Nej")<br />
+                                        Sjukvårdstolk: @(item.HasHealthcare ? "Ja" : "Nej")<br />
+                                        Auktoriserad tolk: @(item.HasAuthorized ? "Ja" : "Nej")<br />
+                                        Utbildad tolk: @(item.HasEducated ? "Ja" : "Nej")<br />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
 
-            </div>
+                </div>
             }
             else
             {
-            <display-entry asp-for="Message" />
+                <display-entry asp-for="Message" />
             }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("Index")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
         </div>
     </div>
 </section>

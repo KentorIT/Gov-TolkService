@@ -4,3 +4,4 @@ Lägg till applikationsvariabler:
  "Tellus:IsLanguagesCompetenceActivated": "true", --frågan är om det ska vara påslaget i prod eller inte?
  "Tellus:LanguagesCompetenceInfoUri": "https://b-tellusapi.kammarkollegiet.se/languagesinfo/sv", --TEST
 								https://tellusapi.kammarkollegiet.se/languagesinfo/sv  --PROD - kolla att den funkar
+Tellus:UnusedIsoCodes - lägg till zho = swe;swl;zho
