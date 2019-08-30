@@ -1,0 +1,21 @@
+﻿@inject Tolk.Web.Services.HelpLinkService HelpLinkService
+@{
+    ViewData["Title"] = "Användarmanualer";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+            <p>
+                Här kommer det inom kort även en länk till användarmanual för systemadministratör.
+            </p>
+        </div>
+        <div class="col-sm-12">
+            <a href="@HelpLinkService.CustomerManual" target="_blank">Användarmanual för myndighet</a>
+            <br /><br />
+        </div>
+        <div class="col-sm-12">
+            <a href="@HelpLinkService.BrokerManual" target="_blank">Användarmanual för tolkförmedling</a>
+        </div>
+    </div>
+</section>

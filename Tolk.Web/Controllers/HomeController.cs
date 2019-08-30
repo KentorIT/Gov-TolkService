@@ -390,6 +390,12 @@ namespace Tolk.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = Roles.AppOrSysAdmin)]
+        public IActionResult UserManual()
+        {
+            return View();
+        }
+
         public IActionResult Error()
         {
             _logger.LogError("TraceID: {0} UserID: {1}", Activity.Current?.Id ?? HttpContext.TraceIdentifier, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "-");

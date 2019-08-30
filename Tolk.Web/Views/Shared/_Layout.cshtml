@@ -7,6 +7,7 @@
 @using Microsoft.Extensions.Options;
 @using System.Security.Claims
 @inject Tolk.Web.Services.SelectListService SelectListService
+@inject Tolk.Web.Services.HelpLinkService HelpLinkService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
@@ -20,6 +21,7 @@
         name = User.FindFirstValue(TolkClaimTypes.PersonalName) ?? User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? User.FindFirstValue(ClaimTypes.Name);
         infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? $"Visa konto ({name})\nInloggad SystemAdmin: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : $"Visa mitt konto({name})";
     }
+    string userManual = (await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded ? HelpLinkService.CustomerManual  : (await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded ? HelpLinkService.BrokerManual : string.Empty;
 }
 <!DOCTYPE html>
 <html lang="sv-se">
@@ -262,6 +264,14 @@
                             <div class="kamk-footer-heading">Tolkavropstjänsten</div>
                             <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
                             <a asp-area="" asp-controller="Faq" asp-action="Faqs">Frågor &amp; svar</a><br />
+                            @if (!string.IsNullOrWhiteSpace(userManual))
+                            {
+                                <a href=@userManual target="_blank">Användarmanual</a><br />
+                            }
+                            else
+                            {
+                                <a asp-area="" asp-controller="Home" asp-action="UserManual">Användarmanualer</a><br />
+                            }
                             <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
                         </div>
                         <div class="col-md-3">
