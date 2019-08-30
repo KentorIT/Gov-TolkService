@@ -494,7 +494,7 @@ namespace Tolk.Web.Controllers
                         var organisationPrefix = string.Empty;
                         int? customerId = null;
                         int? brokerId = null;
-                        if (!User.IsInRole(Roles.ApplicationAdministrator) && !!User.IsInRole(Roles.SystemAdministrator))
+                        if (!User.IsInRole(Roles.ApplicationAdministrator) && !User.IsInRole(Roles.SystemAdministrator))
                         {
                             customerId = User.TryGetCustomerOrganisationId();
                             brokerId = User.TryGetBrokerId();
