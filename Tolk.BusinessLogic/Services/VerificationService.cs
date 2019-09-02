@@ -112,21 +112,22 @@ namespace Tolk.BusinessLogic.Services
                 return null;
             }
             var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodesList.Contains(t.Id)).ToList();
-            var currentLanguages = _dbContext.Languages.ToList();
+            var currentLanguages = _dbContext.Languages.Where(l => l.Active).ToList();
             var validationResult = new ValidateTellusLanguageListResult
             {
-                NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id && l.Active)).Select(t => new TellusLanguageModel
+                NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id)).Select(t => new TellusLanguageModel
                 {
                     Id = t.Id,
                     Value = t.Value,
                     ExistsInSystemWithoutTellusConnection = currentLanguages.Any(l => l.ISO_639_Code == t.Id && string.IsNullOrEmpty(l.TellusName)),
-                    InactiveInSystem = currentLanguages.Any(l => (l.ISO_639_Code == t.Id || l.TellusName == t.Id) && !l.Active)
+                    InactiveInSystem = currentLanguages.Any(l => (l.ISO_639_Code == t.Id || l.TellusName == t.Id))
                 }),
-                RemovedLanguages = currentLanguages.Where(l => !string.IsNullOrEmpty(l.TellusName) && !tellusLanguages.Any(t => l.TellusName == t.Id)).Select(l => new TellusLanguageModel
-                {
-                    Id = l.TellusName,
-                    Value = l.Name
-                })
+                RemovedLanguages = currentLanguages.Where(l => !string.IsNullOrEmpty(l.TellusName) && !tellusLanguages.Any(t => l.TellusName == t.Id))
+                    .Select(l => new TellusLanguageModel
+                    {
+                        Id = l.TellusName,
+                        Value = l.Name
+                    })
             };
             if (notify)
             {
