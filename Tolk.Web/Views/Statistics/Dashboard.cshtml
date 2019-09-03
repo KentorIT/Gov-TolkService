@@ -1,11 +1,14 @@
 ﻿@using Tolk.BusinessLogic.Enums;
 @using Tolk.BusinessLogic.Utilities;
 @using Tolk.Web.Helpers;
+@using Tolk.Web.Services;
+@inject HelpLinkService HelpLinkService
 @model Tolk.Web.Models.StatisticsDashboardModel
 @{
     ViewData["Title"] = "Statistik";
+    HelpLinkService.PageName = "statistik/";
 }
-<h1>@ViewData["Title"]</h1>
+<h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 
 <div class="row">
     <div class="col-md-12">

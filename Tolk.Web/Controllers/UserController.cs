@@ -67,6 +67,8 @@ namespace Tolk.Web.Controllers
 
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
+            model.IsBroker = brokerId.HasValue;
+            model.IsCustomer = customerId.HasValue;
             var users = _dbContext.Users.Where(u => !u.IsApiUser).Select(u => u);
             model.UserType = HighestLevelLoggedInUserType;
             if (customerId.HasValue)

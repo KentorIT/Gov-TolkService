@@ -1,17 +1,12 @@
 ﻿@model ReportSearchModel
 @using Tolk.Web.Services;
 @using Tolk.Web.Helpers;
+@using Tolk.BusinessLogic.Enums;
 @inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Rapporter";
-    @if (User.TryGetBrokerId() != null)
-    {
-        HelpLinkService.PageName = "formedling-rapporter/";
-    }
-    else
-    {
-        HelpLinkService.PageName = "myndighet-rapporter/";
-    }
+    var userType = User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : User.TryGetCustomerOrganisationId() != null ? Tolk.BusinessLogic.Enums.UserType.OrderCreator : Tolk.BusinessLogic.Enums.UserType.SystemAdministrator;
+    HelpLinkService.PageName = userType == UserType.Broker ? "formedling-rapporter/" : userType == UserType.OrderCreator ? "myndighet-rapporter/" : "admin-rapporter/";
 }
 <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 
@@ -32,7 +27,7 @@
     </div>
     <div class="row">
         <div class="col-md-4">
-            <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportList(User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : User.TryGetCustomerOrganisationId() != null ? Tolk.BusinessLogic.Enums.UserType.OrderCreator : Tolk.BusinessLogic.Enums.UserType.SystemAdministrator)" class="allow-clear" />
+            <form-entry asp-for="ReportType" type="select" asp-items="SelectListService.ReportList(userType)" class="allow-clear" />
         </div>
         <div class="col-md-8 pull-left">
             <div class="pull-left">

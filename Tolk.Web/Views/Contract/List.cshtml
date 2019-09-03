@@ -1,9 +1,12 @@
 ﻿@model ContractListModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Information om ramavtal " + Model.ContractNumber;
+    HelpLinkService.PageName = "ramavtal";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         <br />
         <div class="col-sm-12 in" id="link-display-reg">

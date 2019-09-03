@@ -3,11 +3,11 @@
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @{
-    ViewData["Title"] = "Historik - Bokningar";
-    HelpLinkService.PageName = "myndighet-historik/";
+    ViewData["Title"] = Model.FilterModel.IsAdmin ? "Sök bokningar" : "Historik - Bokningar";
+    HelpLinkService.PageName = Model.FilterModel.IsAdmin ? "admin-bokningar/" : "myndighet-historik/";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor(Model.FilterModel.IsAdmin ? "" : "historik-bokningar")</h1>
     <div class="row">
         @await Html.PartialAsync("_Filter", Model.FilterModel)
     </div>

@@ -1,9 +1,12 @@
 ﻿@model EmailListModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "E-postmeddelanden";
+    HelpLinkService.PageName = "mail";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         @await Html.PartialAsync("_Filter", Model.FilterModel)
     </div>
@@ -26,14 +29,14 @@
                         <tbody>
                             @foreach (var item in Model.Items)
                             {
-                            <tr data-id="@item.OutboundEmailId" data-click-action-url="@Url.Action("View", new { id = item.OutboundEmailId})">
-                                <td class="gray-border-bottom min-date-width @item.ColorClassName">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td class="gray-border-bottom">@item.Recipient</td>
-                                <td class="gray-border-bottom">@item.Subject</td>
-                                <td class="gray-border-bottom">@item.DisplayBody</td>
-                                <td class="gray-border-bottom">@(item.IsSent ? item.SentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
-                                <td class="gray-border-bottom gray-border-right">@(item.ResentAt.HasValue ? item.ResentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
-                            </tr>
+                                <tr data-id="@item.OutboundEmailId" data-click-action-url="@Url.Action("View", new { id = item.OutboundEmailId})">
+                                    <td class="gray-border-bottom min-date-width @item.ColorClassName">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="gray-border-bottom">@item.Recipient</td>
+                                    <td class="gray-border-bottom">@item.Subject</td>
+                                    <td class="gray-border-bottom">@item.DisplayBody</td>
+                                    <td class="gray-border-bottom">@(item.IsSent ? item.SentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                                    <td class="gray-border-bottom gray-border-right">@(item.ResentAt.HasValue ? item.ResentAt?.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                                </tr>
                             }
                         </tbody>
                     </table>

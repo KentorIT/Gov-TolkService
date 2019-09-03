@@ -1,9 +1,12 @@
 ﻿@model SystemMessageListModel
+@using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
+@inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = "Sparade nyheter";
+    ViewData["Title"] = "Nyheter";
+    HelpLinkService.PageName = "admin-nyheter";
 }
-<h1>@ViewData["Title"]</h1>
+<h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 <div class="row">
     <div class="col-md-12">
         <a class="btn btn-default btn-large pull-right" href="@Url.Action("Create")">Skapa nyhet</a>

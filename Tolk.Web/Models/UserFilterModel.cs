@@ -28,6 +28,10 @@ namespace Tolk.Web.Models
 
         public UserType UserType { get; set; }
 
+        public bool IsCustomer { get; set; }
+
+        public bool IsBroker { get; set; }
+
         public bool HasActiveFilters => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)

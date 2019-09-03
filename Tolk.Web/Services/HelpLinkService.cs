@@ -39,6 +39,8 @@ namespace Tolk.Web.Services
         public string BrokerManual => $"{BaseAddress}formedling-anvandarmanual/";
 
         public string CustomerManual => $"{BaseAddress}myndighet-anvandarmanual/";
+
+        public string SystemAdminManual => $"{BaseAddress}systemadmin-anvandarmanual/";
     }
 }
 
