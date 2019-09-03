@@ -3,81 +3,79 @@
 @using Tolk.Web.Services
 <section aria-label="Filtrera">
     <div class="col-sm-12">
-        <form method="get" class="filter-form do-not-check-dirty">
-            <div class="row">
-                <div class="col-xs-4">
-                    <h2>Filtrera</h2>
-                </div>
-                <div class="col-xs-8">
-                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
-                </div>
+        <div class="row">
+            <div class="col-xs-4">
+                <h2>Filtrera</h2>
             </div>
-            <div class="row">
-                <div class="col-sm-3">
-                    <form-entry asp-for="OrderNumber" />
-                </div>
-                <div class="col-sm-3">
-                    <form-entry asp-for="CustomerReferenceNumber" />
-                </div>
-                <div class="col-sm-3">
-                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" class="allow-clear" />
-                </div>
-                <div class="col-sm-3">
-                    <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
-                </div>
+            <div class="col-xs-8">
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
             </div>
-            <div class="row">
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <form-entry asp-for="OrderNumber" />
+            </div>
+            <div class="col-sm-3">
+                <form-entry asp-for="CustomerReferenceNumber" />
+            </div>
+            <div class="col-sm-3">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.OrderStatuses" class="allow-clear" />
+            </div>
+            <div class="col-sm-3">
+                <form-entry asp-for="LanguageId" type="select" asp-items="SelectListService.Languages" class="allow-clear" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="DateRange" />
+            </div>
+            @if (Model.IsAdmin)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
+                </div>
+                <div class="col-sm-3">
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
+                </div>
+                <div class="col-sm-2">
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+                </div>
+            }
+            else if (Model.IsCentralAdminOrOrderHandler)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
+                </div>
+                <div class="col-sm-3">
+                    <form-entry asp-for="CreatedBy" type="select" asp-items="SelectListService.CustomerUsers" class="allow-clear" />
+                </div>
+                <div class="col-sm-2">
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+                </div>
+                if (Model.HasCustomerUnits)
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                        <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                    </div>
+                }
+            }
+            else
+            {
                 <div class="col-sm-4">
-                    <form-entry asp-for="DateRange" />
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
                 </div>
-                @if (Model.IsAdmin)
-                {
-                    <div class="col-sm-3">
-                        <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
-                    </div>
-                    <div class="col-sm-3">
-                        <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
-                    </div>
-                    <div class="col-sm-2">
-                        <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
-                    </div>
-                }
-                else if (Model.IsCentralAdminOrOrderHandler)
-                {
-                    <div class="col-sm-3">
-                        <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
-                    </div>
-                    <div class="col-sm-3">
-                        <form-entry asp-for="CreatedBy" type="select" asp-items="SelectListService.CustomerUsers" class="allow-clear" />
-                    </div>
-                    <div class="col-sm-2">
-                        <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
-                    </div>
-                    if (Model.HasCustomerUnits)
-                    {
-                        <div class="col-sm-4">
-                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
-                            <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
-                        </div>
-                    }
-                }
-                else
+                <div class="col-sm-4">
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+                </div>
+                if (Model.HasCustomerUnits)
                 {
                     <div class="col-sm-4">
-                        <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
+                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                        <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
                     </div>
-                    <div class="col-sm-4">
-                        <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
-                    </div>
-                    if (Model.HasCustomerUnits)
-                    {
-                        <div class="col-sm-4">
-                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
-                            <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
-                        </div>
-                    }
                 }
-            </div>
-        </form>
+            }
+        </div>
     </div>
 </section>

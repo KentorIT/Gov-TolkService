@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -66,12 +67,9 @@ namespace Tolk.Web.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult List(OrderFilterModel model)
+        public IActionResult List()
         {
-            if (model == null)
-            {
-                model = new OrderFilterModel();
-            }
+            var model = new OrderFilterModel();
             var isSysAdmin = User.IsInRole(Roles.SystemAdministrator);
             var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             var userId = User.GetUserId();
@@ -88,41 +86,7 @@ namespace Tolk.Web.Controllers
             model.IsAdmin = isSysAdmin;
             model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
 
-            var orders = _dbContext.Orders.Select(o => o);
-            orders = !isSysAdmin ? orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler)) : orders;
-
-            // Filters
-            orders = model.Apply(orders);
-
-            return View(
-                new OrderListModel
-                {
-                    FilterModel = model,
-                    Items = orders.Select(o => new OrderListItemModel
-                    {
-                        OrderId = o.OrderId,
-                        Language = o.OtherLanguage ?? o.Language.Name,
-                        OrderNumber = o.OrderNumber.ToString(),
-                        RegionName = o.Region.Name,
-                        OrderDateAndTime = new TimeRange
-                        {
-                            StartDateTime = o.StartAt,
-                            EndDateTime = o.EndAt
-                        },
-                        Status = o.Status,
-                        CreatorName = o.CreatedByUser.FullName,
-                        BrokerName = o.Requests.Where(r =>
-                            r.Status == RequestStatus.Created ||
-                            r.Status == RequestStatus.Received ||
-                            r.Status == RequestStatus.Accepted ||
-                            r.Status == RequestStatus.Approved ||
-                            r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
-                            r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
-                            .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
-                        CustomerName = o.CustomerOrganisation.Name,
-                        Action = nameof(View)
-                    })
-                });
+            return View(new OrderListModel { FilterModel = model });
         }
 
         public async Task<IActionResult> View(int id, string message = null)
@@ -641,6 +605,61 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för bokning {order.OrderNumber} är satt" });
             }
             return Forbid();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListOrders(IDataTablesRequest request)
+        {
+            var model = new OrderFilterModel();
+            await TryUpdateModelAsync(model);
+            var isSysAdmin = User.IsInRole(Roles.SystemAdministrator);
+            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            var userId = User.GetUserId();
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            IEnumerable<int> customerUnits = null;
+            if (customerOrganisationId.HasValue)
+            {
+                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
+                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
+                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
+                    .Select(cu => cu.CustomerUnitId).ToList();
+            }
+            model.IsCentralAdminOrOrderHandler = isCentralAdminOrOrderHandler;
+            model.IsAdmin = isSysAdmin;
+            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
+
+            var orders = _dbContext.Orders.Select(o => o);
+            orders = !isSysAdmin ? orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler)) : orders;
+
+            var filteredData = model.Apply(orders).Select(o => new OrderListItemModel
+            {
+                OrderId = o.OrderId,
+                Language = o.OtherLanguage ?? o.Language.Name,
+                OrderNumber = o.OrderNumber,
+                RegionName = o.Region.Name,
+                OrderDateAndTime = $"{o.StartAt.ToString("yyyy-MM-dd")} {o.StartAt.ToString("hh\\:mm")}-{o.EndAt.ToString("hh\\:mm")}",
+                Status = o.Status,
+                CreatorName = o.CreatedByUser.FullName,
+                BrokerName = o.Requests.Where(r =>
+                    r.Status == RequestStatus.Created ||
+                    r.Status == RequestStatus.Received ||
+                    r.Status == RequestStatus.Accepted ||
+                    r.Status == RequestStatus.Approved ||
+                    r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
+                    r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
+                   .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
+                CustomerName = o.CustomerOrganisation.Name
+            });
+            return AjaxDataTableHelper.GetData(request, orders.Count(), filteredData);
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<OrderListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(OrderListItemModel.CustomerName)).Visible = User.IsInRole(Roles.SystemAdministrator);
+            definition.Single(d => d.Name == nameof(OrderListItemModel.CreatorName)).Visible = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            return Json(definition);
         }
 
         private IEnumerable<Order> GetOrdersForGroup(OrderModel model)

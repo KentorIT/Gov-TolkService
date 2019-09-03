@@ -40,9 +40,9 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string NameFamily { get; set; }
 
-        public string FullName { get => $"{NameFirst} {NameFamily}"; }
+        public string FullName => $"{NameFirst} {NameFamily}"; 
 
-        public string CompleteContactInformation { get => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; }
+        public string CompleteContactInformation => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; 
 
         [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }
