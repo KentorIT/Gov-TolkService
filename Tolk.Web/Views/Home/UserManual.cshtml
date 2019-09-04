@@ -1,4 +1,5 @@
 ﻿@inject Tolk.Web.Services.HelpLinkService HelpLinkService
+@using Tolk.Web.Authorization
 @{
     ViewData["Title"] = "Användarmanualer";
 }
@@ -16,5 +17,12 @@
         <div class="col-sm-12">
             <a href="@HelpLinkService.SystemAdminManual" target="_blank">Användarmanual för systemadministratör</a>
         </div>
+        @if (User.IsInRole(Roles.ApplicationAdministrator))
+        {
+            <div class="col-sm-12">
+                <br />
+                <a href="@HelpLinkService.ApplicationAdminManual" target="_blank">Användarmanual för applikationsadministratör</a>
+            </div>
+        }
     </div>
 </section>

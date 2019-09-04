@@ -4,10 +4,10 @@
 @using Tolk.Web.Services
 @{
     ViewData["Title"] = "Myndigheter i systemet";
-    HelpLinkService.PageName = "myndighet-historik/";
+    HelpLinkService.PageName = "myndigheter/";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-bokningar")</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         @await Html.PartialAsync("_Filter", Model.FilterModel)
     </div>

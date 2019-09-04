@@ -82,6 +82,7 @@ namespace Tolk.Web.Controllers
                 SystemMessages = SystemMessagesForUser,
                 StartLists = await GetStartLists(),
                 IsBroker = User.TryGetBrokerId().HasValue,
+                IsCustomer = User.TryGetCustomerOrganisationId().HasValue
             });
         }
 

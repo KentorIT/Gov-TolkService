@@ -96,14 +96,7 @@
     </div>
 }
 @{
-    if (Model.IsBroker)
-    {
-        HelpLinkService.PageName = "formedling-de-olika-listorna-pa-startsidan/";
-    }
-    else
-    {
-        HelpLinkService.PageName = "myndighet-de-olika-listorna-pa-startsidan/";
-    }
+    HelpLinkService.PageName = Model.IsBroker ? "formedling-de-olika-listorna-pa-startsidan/" : Model.IsCustomer ? "myndighet-de-olika-listorna-pa-startsidan/" : "admin-startsida/";
 }
 <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 @foreach (var startlist in Model.StartLists)

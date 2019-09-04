@@ -1,11 +1,14 @@
-﻿@{
-    ViewData["Title"] = "Administrera språk";
+﻿@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
+@{
+    HelpLinkService.PageName = "admin-sprak/";
+    ViewData["Title"] = "Språk i tjänsten";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         <div class="col-sm-12">
-            <h2>Här kan du utföra olika handlingar för att hantera språken i tjänsten</h2>
+            <h2>Här kan du få information och utföra olika handlingar för språken i tjänsten</h2>
         </div>
     </div>
     <div class="row">
@@ -16,7 +19,7 @@
             Se skillnader mellan språken i Kammarkollegiets register och tjänsten: <br />
         </div>
         <div class="col-sm-4">
-            Uppdatera språkens kompetenser från Kammarkollegiets register: <br />
+            Uppdatera språkens kompetensnivåer från Kammarkollegiets register: <br />
         </div>
     </div>
     <div class="row">
