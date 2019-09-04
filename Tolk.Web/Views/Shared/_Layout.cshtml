@@ -21,7 +21,7 @@
         name = User.FindFirstValue(TolkClaimTypes.PersonalName) ?? User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? User.FindFirstValue(ClaimTypes.Name);
         infoTextUser = User.IsInRole(Roles.Impersonator) && !string.IsNullOrWhiteSpace(User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName)) ? $"Visa konto ({name})\nInloggad SystemAdmin: " + User.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) : $"Visa mitt konto({name})";
     }
-    string userManual = (await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded ? HelpLinkService.CustomerManual  : (await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded ? HelpLinkService.BrokerManual : string.Empty;
+    string userManual = (await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded ? HelpLinkService.CustomerManual : (await AuthorizationService.AuthorizeAsync(User, Policies.Broker)).Succeeded ? HelpLinkService.BrokerManual : string.Empty;
 }
 <!DOCTYPE html>
 <html lang="sv-se">
@@ -263,7 +263,8 @@
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Tolkavropstjänsten</div>
                             <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
-                            <a asp-area="" asp-controller="Faq" asp-action="Faqs">Frågor &amp; svar</a><br />
+                            <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
+                            <a href="https://www.avropa.se/innehall/avropstjanst-tolk/" target="_blank">Aktuell information</a><br />
                             @if (!string.IsNullOrWhiteSpace(userManual))
                             {
                                 <a href=@userManual target="_blank">Användarmanual</a><br />
@@ -272,7 +273,7 @@
                             {
                                 <a asp-area="" asp-controller="Home" asp-action="UserManual">Användarmanualer</a><br />
                             }
-                            <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
+                            <a asp-area="" asp-controller="Faq" asp-action="Faqs">Frågor &amp; svar</a><br />
                         </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Om oss</div>
@@ -292,8 +293,7 @@
                             Kammarkollegiet<br />
                             Statens inköpscentral<br />
                             Birger Jarlsgatan 16<br />
-                            Box 2218<br />
-                            103 15 Stockholm<br />
+                            Box 2218, 103 15 Stockholm<br />
                             Växel: 08-700 08 00<br />
                         </div>
                     </div>
