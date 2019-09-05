@@ -662,7 +662,8 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any() && o.CompetenceRequirements.Count() > 1) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
                         OrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
                         OrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
-                        FulfilledOrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
+                        FulfilledOrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement)).Count(),
+                        FulfilledOrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
                     });
         }
 
@@ -700,7 +701,8 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelRequired2 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any() && r.Order.CompetenceRequirements.Count() > 1) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
                         OrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired).Count(),
                         OrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired).Count(),
-                        FulfilledOrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
+                        FulfilledOrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement)).Count(),
+                        FulfilledOrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement)).Count()
                     });
         }
 
