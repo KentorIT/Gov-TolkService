@@ -217,8 +217,8 @@ namespace Tolk.BusinessLogic.Services
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
                     .OrderBy(r => r.Order.OrderNumber)
-                    .Where(r => r.Ranking.BrokerId == brokerId &&
-                        !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced)
+                    .Where(r => r.Ranking.BrokerId == brokerId
+                        && r.Status == RequestStatus.Approved
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted));
         }
@@ -226,8 +226,8 @@ namespace Tolk.BusinessLogic.Services
         public int GetNoOfDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
             return _dbContext.Requests
-                    .Where(r => r.Ranking.BrokerId == brokerId &&
-                        !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced)
+                    .Where(r => r.Ranking.BrokerId == brokerId
+                        && r.Status == RequestStatus.Approved
                         && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
                         && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)).Count();
         }
