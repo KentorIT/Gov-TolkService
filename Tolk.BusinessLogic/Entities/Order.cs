@@ -319,7 +319,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId)
         {
-            return CustomerOrganisationId == customerOrganisationId && !CustomerUnitId.HasValue && CreatedBy == userId;
+            return CustomerOrganisationId == customerOrganisationId && CustomerUnitId == null && CreatedBy == userId;
         }
 
         private bool UserIsContact(int userId)
@@ -329,7 +329,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private bool CreatedByUsersUnit(IEnumerable<int> customerUnits)
         {
-            return CustomerUnitId.HasValue && customerUnits != null && customerUnits.Any() && customerUnits.Contains(CustomerUnitId.Value);
+            return CustomerUnitId != null && customerUnits.Contains(CustomerUnitId.Value);
         }
 
         #endregion

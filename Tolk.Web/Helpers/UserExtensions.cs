@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 
 namespace Tolk.Web.Helpers

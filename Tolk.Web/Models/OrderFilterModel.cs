@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -41,7 +43,8 @@ namespace Tolk.Web.Models
 
         public bool IsCentralAdminOrOrderHandler { get; set; }
 
-        public bool HasCustomerUnits { get; set; }
+        public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
+        public IEnumerable<int> CustomerUnits { get; set; }
 
         public bool IsAdmin { get; set; }
 
@@ -51,8 +54,15 @@ namespace Tolk.Web.Models
                 LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue || CustomerOrganisationId.HasValue; 
         }
 
+        public int UserId { get; set; }
+
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
+            if (!IsAdmin)
+            {
+                orders = orders.CustomerOrders(IsCentralAdminOrOrderHandler, CustomerOrganisationId.Value, UserId, CustomerUnits);
+            }
+
             orders = !string.IsNullOrWhiteSpace(OrderNumber) 
                 ? orders.Where(o => o.OrderNumber.Contains(OrderNumber)) 
                 : orders;

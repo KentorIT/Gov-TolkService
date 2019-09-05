@@ -70,21 +70,9 @@ namespace Tolk.Web.Controllers
         public IActionResult List()
         {
             var model = new OrderFilterModel();
-            var isSysAdmin = User.IsInRole(Roles.SystemAdministrator);
-            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
-            var userId = User.GetUserId();
-            var customerOrganisationId = User.TryGetCustomerOrganisationId();
-            IEnumerable<int> customerUnits = null;
-            if (customerOrganisationId.HasValue)
-            {
-                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
-                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
-                    .Select(cu => cu.CustomerUnitId).ToList();
-            }
-            model.IsCentralAdminOrOrderHandler = isCentralAdminOrOrderHandler;
-            model.IsAdmin = isSysAdmin;
-            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
+            model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
+            model.CustomerUnits = User.TryGetAllCustomerUnits();
 
             return View(new OrderListModel { FilterModel = model });
         }
@@ -612,25 +600,16 @@ namespace Tolk.Web.Controllers
         {
             var model = new OrderFilterModel();
             await TryUpdateModelAsync(model);
-            var isSysAdmin = User.IsInRole(Roles.SystemAdministrator);
-            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
-            var userId = User.GetUserId();
-            var customerOrganisationId = User.TryGetCustomerOrganisationId();
-            IEnumerable<int> customerUnits = null;
-            if (customerOrganisationId.HasValue)
+            model.UserId = User.GetUserId();
+            model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
+
+            if (!model.IsAdmin)
             {
-                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
-                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
-                    .Select(cu => cu.CustomerUnitId).ToList();
+                model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
             }
-            model.IsCentralAdminOrOrderHandler = isCentralAdminOrOrderHandler;
-            model.IsAdmin = isSysAdmin;
-            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
 
             var orders = _dbContext.Orders.Select(o => o);
-            orders = !isSysAdmin ? orders.Where(o => o.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler)) : orders;
-
             var filteredData = model.Apply(orders).Select(o => new OrderListItemModel
             {
                 OrderId = o.OrderId,
