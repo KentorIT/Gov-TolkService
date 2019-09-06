@@ -84,7 +84,7 @@ namespace BrokerMock.Controllers
                         {
                             var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
                             //Find a location that is not present in payload
-                            
+
                             await AssignInterpreter(
                                 payload.OrderNumber,
                                 interpreter,
@@ -292,6 +292,10 @@ namespace BrokerMock.Controllers
                         RequirementId = r.RequirementId
                     })
                 );
+            }
+            if (extraInstructions.Contains("CANCELONAPPROVE"))
+            {
+                await Cancel(payload.OrderNumber);
             }
 
             return new JsonResult("Success");
@@ -619,6 +623,33 @@ namespace BrokerMock.Controllers
                     else
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter}");
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> Cancel(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new RequestCancelModel
+                {
+                    OrderNumber = orderNumber,
+                    CallingUser = "regular-user@formedling1.se",
+                    Message = "Cancelled at hello"
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Cancel", content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel]:: Boknings-ID: {orderNumber} avbokat från förmedling");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel] FAILED:: Boknings-ID: {orderNumber} avbokat från förmedling");
                     }
                 }
             }

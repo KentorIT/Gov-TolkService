@@ -133,20 +133,11 @@ namespace Tolk.Web.Controllers
             var customerOrganisationId = User.GetCustomerOrganisationId();
             var customerUnits = User.TryGetAllCustomerUnits();
             //Accepted orders to approve, Cancelled by broker, Non-answered-orders
-            var ordersCorrectStatusAndUser = _dbContext.Orders.CustomerOrders(false, customerOrganisationId, userId, customerUnits)
-                .Include(o => o.Requests)
-                .Include(o => o.Language)
-                OrderStatusConfirmations
-                .Where(o => (o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter
-                || o.Status == OrderStatus.NoBrokerAcceptedOrder || o.Status == OrderStatus.CancelledByBroker || o.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-                ).ToList();
 
-            actionList.AddRange(ordersCorrectStatusAndUser
-                //.Where(os => !_dbContext.RequestStatusConfirmation.Where(rs => rs.RequestStatus == RequestStatus.CancelledByBroker)
-                //.Select(rs => rs.RequestId).Contains(os.Requests.OrderByDescending(r => r.RequestId).First().RequestId) &&
-                //!_dbContext.OrderStatusConfirmation.Where(osc => osc.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)
-                //.Select(osc => osc.OrderId).Contains(os.OrderId))
-                .Where(o => o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+                .Include(o => o.Language)
+                .Include(o => o.Requests)
+                .Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter  || o.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
@@ -163,8 +154,50 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Order"
                 }));
 
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+                .Include(o => o.Language)
+                .Include(o => o.Requests)
+                .Include(o => o.OrderStatusConfirmations)
+                .Where(o => o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)).ToList()
+                .Select(o => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                    DefaulListAction = "View",
+                    DefaulListController = "Order",
+                    DefaultItemId = o.OrderId,
+                    InfoDate = GetInfoDateForCustomer(o)?.DateTime,
+                    CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
+                    ButtonItemId = o.OrderId,
+                    Language = o.OtherLanguage ?? o.Language.Name,
+                    OrderNumber = o.OrderNumber,
+                    Status = o.ReplacingOrderId != null ? StartListItemStatus.ReplacementOrderNotAnswered : StartListItemStatus.OrderNotAnswered,
+                    ButtonAction = "View",
+                    ButtonController = "Order"
+                }));
+
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+                .Include(o => o.Language)
+                .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
+                .Where(o => o.Status == OrderStatus.CancelledByBroker && o.Requests.Any(r => r.Status == RequestStatus.CancelledByBroker &&
+                                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))).ToList()
+                .Select(o => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                    DefaulListAction = "View",
+                    DefaulListController = "Order",
+                    DefaultItemId = o.OrderId,
+                    InfoDate = GetInfoDateForCustomer(o)?.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.Single(r => r.Status == RequestStatus.CancelledByBroker).CompetenceLevel,
+                    ButtonItemId = o.OrderId,
+                    Language = o.OtherLanguage ?? o.Language.Name,
+                    OrderNumber = o.OrderNumber,
+                    Status = StartListItemStatus.OrderCancelled,
+                    ButtonAction = "View",
+                    ButtonController = "Order"
+                }));
+
             //Requisitions to review
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(false, customerOrganisationId, userId, customerUnits)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Where(o => o.Status == OrderStatus.Delivered)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Requisitions)
@@ -188,7 +221,7 @@ namespace Tolk.Web.Controllers
                 }));
 
             //Disputed complaints
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(false, customerOrganisationId, userId, customerUnits)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Complaints)
                 .Where(c => c.Status == ComplaintStatus.Disputed)
@@ -221,7 +254,7 @@ namespace Tolk.Web.Controllers
             };
 
             //Sent and approved orders
-            var sentAndApprovedOrders = _dbContext.Orders.CustomerOrders(false, customerOrganisationId, userId, customerUnits, false)
+            var sentAndApprovedOrders = _dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, false, false)
                 .Include(o => o.Requests).Include(o => o.Language)
                 .Where(o => (o.Status == OrderStatus.Requested || o.Status == OrderStatus.ResponseAccepted)
                 && o.EndAt > _clock.SwedenNow).ToList();

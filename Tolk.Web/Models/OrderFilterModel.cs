@@ -60,7 +60,7 @@ namespace Tolk.Web.Models
         {
             if (!IsAdmin)
             {
-                orders = orders.CustomerOrders(IsCentralAdminOrOrderHandler, CustomerOrganisationId.Value, UserId, CustomerUnits);
+                orders = orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true);
             }
 
             orders = !string.IsNullOrWhiteSpace(OrderNumber) 
