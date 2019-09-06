@@ -1,21 +1,42 @@
-@import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700');
+﻿@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Merriweather Sans Light Italic'), local('MerriweatherSans-LightItalic'), url(https://fonts.gstatic.com/s/merriweathersans/v11/2-c29IRs1JiJN1FRAMjTN5zd9vgsFHXwepzB4hR-zQ.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Merriweather Sans Italic'), local('MerriweatherSans-Italic'), url(https://fonts.gstatic.com/s/merriweathersans/v11/2-c79IRs1JiJN1FRAMjTN5zd9vgsFHXwcjfj8g.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Merriweather Sans Light'), local('MerriweatherSans-Light'), url(https://fonts.gstatic.com/s/merriweathersans/v11/2-c49IRs1JiJN1FRAMjTN5zd9vgsFH1eYCDE0hM.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Merriweather Sans'), local('MerriweatherSans-Regular'), url(https://fonts.gstatic.com/s/merriweathersans/v11/2-c99IRs1JiJN1FRAMjTN5zd9vgsFHX1QjA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Merriweather Sans Bold'), local('MerriweatherSans-Bold'), url(https://fonts.gstatic.com/s/merriweathersans/v11/2-c49IRs1JiJN1FRAMjTN5zd9vgsFH1OZyDE0hM.ttf) format('truetype');
+}
 @media screen and (max-width: 767px) {
-}
-@media (min-width: 768px) {
-}
-@media (min-width: 768px) {
-}
-@media (max-width: 767px) {
-}
-@media (min-width: 768px) {
-}
-@media (min-width: 768px) {
-}
-@media (max-width: 767px) {
-}
-@media (max-width: 767px) {
-}
-.bg-gray {
+}@media (min-width: 768px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (max-width: 767px) {
+}.bg-gray {
   background-color: #F1F4F2;
 }
 body {
@@ -1405,9 +1426,16 @@ ul.pagination > li.paginate_button.active > a {
   color: #767676;
   font-weight: normal;
 }
+.sorting:hover {
+  background-color: #E6F1ED;
+}
 .sorting_asc,
 .sorting_desc {
   color: #767676;
+}
+.sorting_asc:hover,
+.sorting_desc:hover {
+  background-color: #BFDDD2;
 }
 .sorting:after {
   opacity: 1 !important;
