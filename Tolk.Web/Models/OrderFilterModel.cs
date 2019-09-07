@@ -44,6 +44,7 @@ namespace Tolk.Web.Models
         public bool IsCentralAdminOrOrderHandler { get; set; }
 
         public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
+
         public IEnumerable<int> CustomerUnits { get; set; }
 
         public bool IsAdmin { get; set; }
@@ -67,7 +68,7 @@ namespace Tolk.Web.Models
                 ? orders.Where(o => o.OrderNumber.Contains(OrderNumber)) 
                 : orders;
             orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
-                ? orders.Where(o => o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
+                ? orders.Where(o => o.CustomerReferenceNumber != null && o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : orders;
             orders = RegionId.HasValue 
                 ? orders.Where(o => o.RegionId == RegionId) 

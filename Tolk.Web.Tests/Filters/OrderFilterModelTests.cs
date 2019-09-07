@@ -16,13 +16,14 @@ namespace Tolk.Web.Tests.Filters
 
         private Language[] mockLanguages;
         private Order[] mockOrders;
+        private AspNetUser[] MockCustomerUsers;
 
         public OrderFilterModelTests()
         {
             var mockRankings = MockEntities.MockRankings;
             mockLanguages = MockEntities.MockLanguages;
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
-            mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
+            MockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
+            mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, MockCustomerUsers);
 
             // Modify request statuses
             mockOrders[0].Requests[0].Status = RequestStatus.DeniedByCreator;
@@ -32,13 +33,16 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void OrderFilter_ByOrderNumber()
         {
+            var firstUser = MockCustomerUsers.First();
             var filterFirst = new OrderFilterModel
             {
-                OrderNumber = "337"
+                OrderNumber = "337",
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
-                OrderNumber = "2018-000006"
+                OrderNumber = "2018-001337",
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -58,11 +62,13 @@ namespace Tolk.Web.Tests.Filters
         {
             var filterFirst = new OrderFilterModel
             {
-                DateRange = new DateRange { Start = new DateTime(2018,06,01), End = new DateTime(2018,08,31) }
+                DateRange = new DateRange { Start = new DateTime(2018,06,01), End = new DateTime(2018,08,31) },
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
-                DateRange = new DateRange { Start = new DateTime(2018, 09, 01), End = new DateTime(2018, 11, 01) }
+                DateRange = new DateRange { Start = new DateTime(2018, 09, 01), End = new DateTime(2018, 11, 01) },
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -83,7 +89,8 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new OrderFilterModel
             {
-                CustomerReferenceNumber = input
+                CustomerReferenceNumber = input,
+                IsAdmin = true
             };
 
             var list = filter.Apply(mockOrders.AsQueryable());
@@ -96,11 +103,13 @@ namespace Tolk.Web.Tests.Filters
         {
             var filterFirst = new OrderFilterModel
             {
-                Status = OrderStatus.Delivered
+                Status = OrderStatus.Delivered,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
-                Status = OrderStatus.CancelledByCreator
+                Status = OrderStatus.CancelledByCreator,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -123,10 +132,12 @@ namespace Tolk.Web.Tests.Filters
             var filterFirst = new OrderFilterModel
             {
                 RegionId = regionFirst.RegionId,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
                 RegionId = regionSecond.RegionId,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -149,10 +160,12 @@ namespace Tolk.Web.Tests.Filters
             var filterFirst = new OrderFilterModel
             {
                 LanguageId = languageFirst.LanguageId,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
                 LanguageId = languageSecond.LanguageId,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -174,11 +187,13 @@ namespace Tolk.Web.Tests.Filters
             var brokerSecond = 2;
             var filterFirst = new OrderFilterModel
             {
-                BrokerId = brokerFirst
+                BrokerId = brokerFirst,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
-                BrokerId = brokerSecond
+                BrokerId = brokerSecond,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -214,11 +229,13 @@ namespace Tolk.Web.Tests.Filters
             {
                 LanguageId = languageFirst.LanguageId,
                 RegionId = regionFirst.RegionId,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
                 LanguageId = languageSecond.LanguageId,
                 RegionId = regionSecond.RegionId,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -241,12 +258,14 @@ namespace Tolk.Web.Tests.Filters
             var filterFirst = new OrderFilterModel
             {
                 DateRange = new DateRange { Start = new DateTime(2018,09,01), End = new DateTime(2018,10,30) },
-                BrokerId = 1
+                BrokerId = 1,
+                IsAdmin = true
             };
             var filterSecond = new OrderFilterModel
             {
                 DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 08, 31) },
-                BrokerId = 2
+                BrokerId = 2,
+                IsAdmin = true
             };
 
             var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
@@ -263,7 +282,8 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new OrderFilterModel
             {
-                DateRange = new DateRange { Start = new DateTime(2018, 06, 07), End = new DateTime(2018, 08, 07) }
+                DateRange = new DateRange { Start = new DateTime(2018, 06, 07), End = new DateTime(2018, 08, 07) },
+                IsAdmin = true
             };
 
             var list = filter.Apply(mockOrders.AsQueryable());
@@ -275,7 +295,7 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void OrderFilter_NoSettings()
         {
-            var filter = new OrderFilterModel {};
+            var filter = new OrderFilterModel {IsAdmin = true};
 
             var list = filter.Apply(mockOrders.AsQueryable());
 
@@ -288,7 +308,8 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new OrderFilterModel
             {
-                BrokerId = 3
+                BrokerId = 3,
+                IsAdmin = true
             };
 
             var list = filter.Apply(mockOrders.AsQueryable());

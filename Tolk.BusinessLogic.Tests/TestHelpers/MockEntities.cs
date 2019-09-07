@@ -25,9 +25,12 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         {
             return new[]
             {
-                new AspNetUser("Arne@a.se", "Arne", "Arne", "Aronson", mockCustomers[0]),
-                new AspNetUser("Berit@b.se", "Berit", "Berit", "Bryntesson", mockCustomers[1]),
-                new AspNetUser("Ceasar@c.se", "Ceasar", "Ceasar", "Claesson", mockCustomers[2]),
+                new AspNetUser(1, "Arne@a.se", "Arne", "Arne", "Aronson", mockCustomers[0]),
+                new AspNetUser(2, "Berit@b.se", "Berit", "Berit", "Bryntesson", mockCustomers[1]),
+                new AspNetUser(3, "Ceasar@c.se", "Ceasar", "Ceasar", "Claesson", mockCustomers[2]),
+                new AspNetUser(4, "doris@a.se", "Doris", "Doris", "Degerman", mockCustomers[0]),
+                new AspNetUser(5, "emanuel@d.se", "Emanuel", "Emanuel", "Eriksson", mockCustomers[3]),
+                new AspNetUser(6, "filippa@d.se", "Filippa", "Filippa", "Fröman", mockCustomers[3]),
             };
         }
 
@@ -54,6 +57,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Ranking { RankingId = 2, BrokerId = 2, Rank = 2 },
             };
         }
+        public static CustomerUnit[] MockUnits
+        {
+            get => new[]
+            {
+                new CustomerUnit { CustomerUnitId = 1, CustomerOrganisationId = 4 },
+                new CustomerUnit { CustomerUnitId = 2, CustomerOrganisationId = 4 },
+            };
+        }
 
         public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {
@@ -62,6 +73,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 1,
+                    CreatedBy = mockCustomerUsers[0].Id,
+                    ContactPersonId = mockCustomerUsers[3].Id,
                     CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number1",
                     OrderNumber = "2018-001337",
@@ -79,6 +92,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 2,
+                    CreatedBy = mockCustomerUsers[0].Id,
                     CustomerOrganisationId = mockCustomerUsers[0].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number2",
                     OrderNumber = "2018-000066", // execute order 66...
@@ -95,6 +109,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 3,
+                    CreatedBy = mockCustomerUsers[1].Id,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number3",
                     OrderNumber = "2018-000042",
@@ -112,6 +127,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 4,
+                    CreatedBy = mockCustomerUsers[1].Id,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number4",
                     OrderNumber = "2018-000654",
@@ -128,6 +144,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 5,
+                    CreatedBy = mockCustomerUsers[1].Id,
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number5",
                     OrderNumber = "2018-000330",
@@ -144,6 +161,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 6,
+                    CreatedBy = mockCustomerUsers[1].Id,
                     CustomerReferenceNumber = "Number6",
                     CustomerOrganisationId = mockCustomerUsers[1].CustomerOrganisation.CustomerOrganisationId,
                     OrderNumber = "2018-000501",
@@ -161,6 +179,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 7,
+                    CreatedBy = mockCustomerUsers[2].Id,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number7",
                     OrderNumber = "2018-000006",
@@ -177,6 +196,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 8,
+                    CreatedBy = mockCustomerUsers[2].Id,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "Number8",
                     OrderNumber = "2018-000007",
@@ -193,6 +213,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
                 {
                     OrderId = 9,
+                    CreatedBy = mockCustomerUsers[2].Id,
                     CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
                     CustomerReferenceNumber = "EmptyOrder",
                     OrderNumber = "2018-000008",
@@ -201,7 +222,59 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Requested,
                     Requests = new List<Request>(),
                     InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
-                }
+                },
+                new Order(mockCustomerUsers[3], null, mockCustomerUsers[3].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
+                    OrderId = 10,
+                    CreatedBy = mockCustomerUsers[3].Id,
+                    CustomerOrganisationId = mockCustomerUsers[3].CustomerOrganisation.CustomerOrganisationId,
+                    CustomerReferenceNumber = "EmptyOrder",
+                    OrderNumber = "2018-000009",
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    Status = OrderStatus.Requested,
+                    Requests = new List<Request>(),
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
+                },
+
+                new Order(mockCustomerUsers[4], null, mockCustomerUsers[4].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
+                    OrderId = 11,
+                    CreatedBy = mockCustomerUsers[4].Id,
+                    CustomerOrganisationId = mockCustomerUsers[4].CustomerOrganisation.CustomerOrganisationId,
+                    OrderNumber = "2018-000010",
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    Status = OrderStatus.Requested,
+                    Requests = new List<Request>(),
+                    CustomerUnit = MockUnits[0],
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
+                },
+                new Order(mockCustomerUsers[4], null, mockCustomerUsers[4].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
+                    OrderId = 12,
+                    CreatedBy = mockCustomerUsers[4].Id,
+                    CustomerOrganisationId = mockCustomerUsers[4].CustomerOrganisation.CustomerOrganisationId,
+                    OrderNumber = "2018-000011",
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    CustomerUnit = MockUnits[1],
+                    Status = OrderStatus.Requested,
+                    Requests = new List<Request>(),
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
+                },
+                new Order(mockCustomerUsers[4], null, mockCustomerUsers[4].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                {
+                    OrderId = 13,
+                    CreatedBy = mockCustomerUsers[4].Id,
+                    CustomerOrganisationId = mockCustomerUsers[4].CustomerOrganisation.CustomerOrganisationId,
+                    OrderNumber = "2018-000012",
+                    Region = Region.Regions.Where(r => r.Name == "Uppsala").Single(),
+                    Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                    Status = OrderStatus.Requested,
+                    Requests = new List<Request>(),
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation {InterpreterLocation = InterpreterLocation.OffSitePhone, OffSiteContactInformation = "0000" } }
+                },
             };
 
             // Set required properties
@@ -209,6 +282,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 o.LanguageId = o.Language.LanguageId;
                 o.RegionId = o.Region.RegionId;
+                o.CustomerUnitId = o.CustomerUnit?.CustomerUnitId;
                 foreach (Request r in o.Requests)
                 {
                     r.Order = o;

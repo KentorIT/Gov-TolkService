@@ -603,6 +603,7 @@ namespace Tolk.Web.Controllers
             model.UserId = User.GetUserId();
             model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
+            model.CustomerUnits = User.TryGetAllCustomerUnits();
 
             if (!model.IsAdmin)
             {
