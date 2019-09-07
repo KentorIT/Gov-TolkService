@@ -503,6 +503,8 @@ namespace Tolk.BusinessLogic.Services
             CancelOrder(order, userId, impersonatorId, cancelMessage, true);
 
             replacementOrder.CreatedAt = _clock.SwedenNow;
+            replacementOrder.CreatedBy = userId;
+            replacementOrder.ImpersonatingCreator = impersonatorId;
             replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
             {
                 Description = r.Description,
