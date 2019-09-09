@@ -602,8 +602,9 @@ Sammanställning:
 
         private string GetPossibleInfoNotValidatedInterpreter(Request request)
         {
+            //Todo, if VerificationResult = 3xx = validity undetermined?
             bool? isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign.HasValue ? (bool?)(request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated) : null;
-            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls." : string.Empty;
+            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
 
         public void RequestDeclinedByBroker(Request request)
@@ -704,7 +705,7 @@ Sammanställning:
             {
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
                     var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
-                        "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.";
+                        "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status." + GetPossibleInfoNotValidatedInterpreter(request);
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                         $"{bodyNoAccept} {GotoOrderPlain(request.Order.OrderId)}",
                         $"{HtmlHelper.ToHtmlBreak(bodyNoAccept)} {GotoOrderButton(request.Order.OrderId)}"
