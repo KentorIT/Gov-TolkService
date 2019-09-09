@@ -38,7 +38,7 @@ $(function () {
             $('#divNonCompetenceLevel2').hide();
             $('#divCompetenceLevel').show();
             $('#LanguageHasAuthorizedInterpreter').val('true');
-            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'))
+            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'));
         }
     };
 
@@ -340,7 +340,7 @@ $(function () {
             $("#competence-requested").hide();
             $("#competence-required").show();
             $("#competence-info").hide();
-            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'))
+            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'));
             $("#RequiredCompetenceLevels_cbHidden").removeClass("ignore-validation");
         }
         else {
@@ -486,10 +486,11 @@ $(function () {
             allCheckboxes.filter(':not(:checked)').removeAttr('disabled');
         }
         if (checkedBoxes.length > 0) {
-            validateAvailableCompetences(checkedBoxes)
+            validateAvailableCompetences(checkedBoxes);
         }
-        else { $("#competence-not-available").hide(); }
-
+        else {
+            $("#competence-not-available").hide();
+        }
     });
 
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
@@ -669,6 +670,9 @@ $(function () {
     }
     var $this = $(".wizard");
     $this.tolkWizard({
+        backHandler: function (event) {
+            $("#send").prop("title", "");
+        },
         nextHandler: function (event) {
             var errors = 0;
             $("[data-valmsg-for]").empty();
@@ -731,7 +735,7 @@ $(function () {
                     success: function (data) {
                         $(".wizard .wizard-step").eq(currentStep).html(data);
                         $('.form-entry-information').tooltip();
-                        $("#send").removeAttr("disabled");
+                        $("#send").removeAttr("disabled").prop("title", "Observera att bokningen inte kan eller får ändras efter att den skickats iväg. Om du är osäker på ifall det går att hitta en tolk som uppfyller ställda krav kan du istället ange dem som önskemål");
                         $("#back").removeAttr("disabled");
                     },
                     error: function (t2) {
