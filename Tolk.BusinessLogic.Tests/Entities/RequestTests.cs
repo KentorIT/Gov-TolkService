@@ -611,7 +611,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     ReplacingOrderId = (isReplaced ? (int?)66 : null)
                 },
                 Requisitions = new List<Requisition>(),
-                PriceRows = new List<RequestPriceRow>(),
+                PriceRows = new List<RequestPriceRow>() { new RequestPriceRow { PriceRowType = PriceRowType.BrokerFee }, new RequestPriceRow { PriceRowType = PriceRowType.InterpreterCompensation } },
             };
             request.Order.Requests.Add(request);
             request.Order.Status = orderStatus;
@@ -635,11 +635,17 @@ namespace Tolk.BusinessLogic.Tests.Entities
             if (expectNewRequisition)
             {
                 var requisition = request.Requisitions.Single();
-                var expectedMessage = createFullCompensationRequisition ? "Genererat av systemet, eftersom tillfället avbokades för tätt inpå" : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår";
                 Assert.Equal(cancelledAt, requisition.CreatedAt);
                 Assert.Equal(userId, requisition.CreatedBy);
                 Assert.Equal(impersonatorId, requisition.ImpersonatingCreatedBy);
-                Assert.Equal(expectedMessage, requisition.Message);
+                if (createFullCompensationRequisition)
+                {
+                    Assert.Contains(requisition.PriceRows, r => r.PriceRowType != PriceRowType.BrokerFee);
+                }
+                else
+                {
+                    Assert.DoesNotContain(requisition.PriceRows, r => r.PriceRowType != PriceRowType.BrokerFee);
+                }
                 Assert.Equal(RequisitionStatus.AutomaticGeneratedFromCancelledOrder, requisition.Status);
                 Assert.Equal(request.Order.StartAt, requisition.SessionStartedAt);
                 Assert.Equal(request.Order.EndAt, requisition.SessionEndedAt);
