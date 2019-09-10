@@ -22,10 +22,16 @@ namespace Tolk.Web.Helpers
 
         public static IActionResult GetData<T>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData)
         {
-            var sortColumn = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).FirstOrDefault();
-            if (sortColumn != null)
+            var sortColumns = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).Select(c => c);
+            if (sortColumns.Any())
             {
-                filteredData = filteredData.OrderBy($"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}");
+                var sortColumn = sortColumns.First();
+                string sort = $"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}";
+                foreach (var col in sortColumns.Skip(1))
+                {
+                    sort += $", {col.Name} {(col.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}"; ;
+                }
+                filteredData = filteredData.OrderBy(sort);
             }
 
             var dataPage = filteredData.Skip(request.Start).Take(request.Length);
