@@ -76,7 +76,7 @@ namespace Tolk.BusinessLogic.Enums
         #region Error
         // 4xx = error
         // Non-critical errors when trying to validate interpreter
-        [Description("Fel vid verifiering")]
+        [Description("Fel vid verifiering: Det gick inte att nå tolkregistret")]
         UnknownError = 400,
         [Description("Uppkopplingsfel vid verifiering")]
         ConnectionError = 401,

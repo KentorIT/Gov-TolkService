@@ -56,7 +56,7 @@ namespace Tolk.BusinessLogic.Services
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
                 string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
-                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." 
+                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."
                      : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
                 CreateEmail(GetRecipientsFromOrder(request.Order, true), $"Rekvisition har skapats pga avbokat uppdrag boknings-ID {orderNumber}",
                     body + GotoOrderPlain(request.Order.OrderId),
@@ -602,9 +602,10 @@ Sammanställning:
 
         private string GetPossibleInfoNotValidatedInterpreter(Request request)
         {
-            //Todo, if VerificationResult = 3xx = validity undetermined?
-            bool? isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign.HasValue ? (bool?)(request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated) : null;
-            return (_tolkBaseOptions.Tellus.IsActivated && isInterpreterVerified.HasValue && !isInterpreterVerified.Value) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
+            var shouldCheckValidationCode = _tolkBaseOptions.Tellus.IsActivated && request.InterpreterCompetenceVerificationResultOnAssign.HasValue;
+            bool isInterpreterValidationError = shouldCheckValidationCode && (request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.UnknownError || request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.ConnectionError);
+            bool isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated;
+            return isInterpreterValidationError ? "\n\nObservera att tolkens kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
 
         public void RequestDeclinedByBroker(Request request)
