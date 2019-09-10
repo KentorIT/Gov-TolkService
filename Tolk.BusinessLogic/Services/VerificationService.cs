@@ -36,7 +36,7 @@ namespace Tolk.BusinessLogic.Services
             _notificationService = notificationService;
         }
 
-        public async Task<VerificationResult> VerifyInterpreter(string interpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel)
+        public async Task<VerificationResult> VerifyInterpreter(string interpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel, bool reVerify = false)
         {
             if (string.IsNullOrWhiteSpace(interpreterId))
             {
@@ -56,17 +56,18 @@ namespace Tolk.BusinessLogic.Services
                 var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                 string content = await response.Content.ReadAsStringAsync();
                 information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
-
+  
                 return CheckInterpreter(competenceLevel, order, information);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to verify the interpreter against {_tolkBaseOptions.Tellus.Uri}");
-                return VerificationResult.UnknownError;
+                _logger.LogError(e, $"Failed to verify the interpreter against {_tolkBaseOptions.Tellus.Uri}" + (reVerify ? " for second time" : " for first time"));
+                //try to verify once more if reVerify is false since it's probably most often connection problem/timeout
+                return !reVerify ? await VerifyInterpreter(interpreterId, orderId, competenceLevel, true) : VerificationResult.UnknownError;
             }
         }
 
-        private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Entities.Order order, TellusInterpreterResponse information)
+        private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Order order, TellusInterpreterResponse information)
         {
             if (information.TotalMatching < 1)
             {
