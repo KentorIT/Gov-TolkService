@@ -37,7 +37,7 @@ namespace Tolk.Web.Models
         [StringLength(32)]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "Tolk-ID")]
+        [Display(Name = "Kammarkollegiets tolknummer")]
         [StringLength(32)]
         public string OfficialInterpreterId { get; set; }
 

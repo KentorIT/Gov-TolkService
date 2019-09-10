@@ -250,7 +250,7 @@ namespace Tolk.Web.Controllers
                                         }).ToList();
                                     requestModel.Files = files.Count() > 0 ? files : null;
                                 }
-                                ModelState.AddModelError(nameof(requestModel.InterpreterId), "Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
+                                ModelState.AddModelError(nameof(requestModel.InterpreterId), "Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.");
                                 return View(nameof(Process), requestModel);
                             }
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)

@@ -56,7 +56,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public string FullName { get => $"{FirstName} {LastName}"; }
 
-        public string CompleteContactInformation { get => $"{FullName}\nTolk-ID: {OfficialInterpreterId ?? "-"}\nE-post: {Email ?? "-"}\nTel: {PhoneNumber ?? "-"}"; }
+        public string CompleteContactInformation { get => $"{FullName}\nKammarkollegiets tolknummer: {OfficialInterpreterId ?? "-"}\nE-post: {Email ?? "-"}\nTel: {PhoneNumber ?? "-"}"; }
 
         public string OfficialInterpreterId { get; set; }
 

@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
                 {
                     if (!_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId(), model.Id))
                     {
-                        ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
+                        ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.");
                     }
                     else
                     {
@@ -129,7 +129,7 @@ namespace Tolk.Web.Controllers
             {
                 if (!_interpreterService.IsUniqueOfficialInterpreterId(model.OfficialInterpreterId, User.GetBrokerId()))
                 {
-                    ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolk-ID i tjänsten.");
+                    ModelState.AddModelError(nameof(model.OfficialInterpreterId), $"Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.");
                 }
                 else
                 {

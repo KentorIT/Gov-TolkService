@@ -90,7 +90,7 @@ namespace Tolk.Web.Api.Controllers
                 return ReturError("INTERPRETER_OFFICIALID_ALREADY_SAVED");
             }
 
-            //Does not handle Tolk-Id
+            //Does not handle Kammarkollegiets tolknummer
             if (interpreter == null)
             {
                 //Possibly the interpreter should be added, if not found?? 

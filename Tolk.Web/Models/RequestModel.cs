@@ -97,7 +97,7 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string NewInterpreterLastName { get; set; }
 
-        [Display(Name = "Tolk-ID")]
+        [Display(Name = "Kammarkollegiets tolknummer")]
         public string NewInterpreterOfficialInterpreterId { get; set; }
 
         [Required]

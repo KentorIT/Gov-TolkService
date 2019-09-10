@@ -15,7 +15,7 @@ namespace Tolk.Api.Payloads.Enums
         [Description("Redan registrerad tolk")]
         ExistingInterpreter = 2,
         [CustomName("authorized_interpreter_id")]
-        [Description("Tolk-ID")]
+        [Description("Kammarkollegiets tolknummer")]
         AuthorizedInterpreterId = 3
     }
 }

@@ -502,7 +502,7 @@ namespace Tolk.Web.Services
             .Select(i => new SelectListItem
             {
                 Value = i.InterpreterBrokerId.ToString(),
-                Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (Tolk-ID: saknas)" : $"{i.FullName} (Tolk-ID: {i.OfficialInterpreterId})",
+                Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (KamK tolknr: saknas)" : $"{i.FullName} (KamK tolknr: {i.OfficialInterpreterId})",
             });
 
             foreach (var i in interpretersInDb)

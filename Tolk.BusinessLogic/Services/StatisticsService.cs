@@ -411,7 +411,7 @@ namespace Tolk.BusinessLogic.Services
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevel.GetDescription());
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolk-ID";
+                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
