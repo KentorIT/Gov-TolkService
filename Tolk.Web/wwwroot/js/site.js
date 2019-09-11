@@ -253,7 +253,7 @@ $(function () {
                             data: function (data) {
                                 // Read values and append to data
                                 $($filterSelector + " :input").each(function () {
-                                    data[$(this).prop("id")] = $(this).val();
+                                    data[$(this).prop("name")] = $(this).val();
                                 });
                             },
                             error: function (jqXHR, textStatus, errorThrown) {
@@ -266,10 +266,10 @@ $(function () {
                             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
                         }
                     });
-                    $("body").on("change", $filterSelector + " select", function () {
+                    $("body").on("change", $filterSelector + " select, " + $filterSelector + " input.datepicker, " + $filterSelector + " :checkbox, " + $filterSelector + " :radio", function () {
                         $dataTable.draw();
                     });
-                    $("body").on("keyup", $filterSelector + " input", delay(function (e) {
+                    $("body").on("keyup", $filterSelector + " input:not(.datepicker, :checkbox, :radio)", delay(function (e) {
                         //Note keyup does not catch IE 11's x that clears the input bux, BUT if on uses the event called "input", the list is reloaded all the time, even if no changes are introduced to the input, just leaving and entering the field...
                         $dataTable.draw();
                     }, 500));
