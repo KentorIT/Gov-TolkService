@@ -40,6 +40,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<Request> Requests { get; set; }
 
+        public List<Quarantine> Quarantines { get; set; }
+
         #endregion
     }
 }

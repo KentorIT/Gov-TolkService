@@ -454,6 +454,9 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<RequestGroup> RequestGroups { get; set; }
 
+        public DbSet<Quarantine> Quarantines { get; set; }
+
+        public DbSet<QuarantineHistoryEntry> QuarantineHistoryEntries { get; set; }
 
         public static bool isUserStoreInitialized = false;
 
