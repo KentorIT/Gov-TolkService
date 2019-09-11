@@ -671,7 +671,7 @@ $(function () {
     var $this = $(".wizard");
     $this.tolkWizard({
         backHandler: function (event) {
-            $("#send").prop("title", "");
+            $("#send").tooltip("destroy");
         },
         nextHandler: function (event) {
             var errors = 0;
@@ -735,7 +735,8 @@ $(function () {
                     success: function (data) {
                         $(".wizard .wizard-step").eq(currentStep).html(data);
                         $('.form-entry-information').tooltip();
-                        $("#send").removeAttr("disabled").prop("title", "Observera att bokningen inte kan eller får ändras efter att den skickats iväg. Om du är osäker på ifall det går att hitta en tolk som uppfyller ställda krav kan du istället ange dem som önskemål");
+                        $("#send").removeAttr("disabled")
+                            .tooltip({ title: "Observera att bokningen inte kan eller får ändras efter att den skickats iväg. Om du är osäker på ifall det går att hitta en tolk som uppfyller ställda krav kan du istället ange dem som önskemål" });
                         $("#back").removeAttr("disabled");
                     },
                     error: function (t2) {
