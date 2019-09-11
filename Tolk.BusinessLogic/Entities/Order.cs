@@ -85,7 +85,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 if (value == OrderStatus.ResponseAccepted &&
                 //NEED TO ADD A CHECK IF REQUESTED, AND THE ALLOW CHECK IS FALSE
-                    (!((Status == OrderStatus.Requested && AllowExceedingTravelCost != Enums.AllowExceedingTravelCost.YesShouldBeApproved) ||
+                    (!((Status == OrderStatus.Requested && !Requests.OrderBy(r => r.RequestId).Last().RequiresAccept) ||
                         Status == OrderStatus.RequestResponded ||
                         Status == OrderStatus.RequestRespondedNewInterpreter ||
                        (Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||

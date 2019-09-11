@@ -189,8 +189,6 @@ namespace Tolk.BusinessLogic.Entities
 
             ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
 
-            bool requiresAccept = Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
-            Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -202,8 +200,12 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
-            Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            Status = RequiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
+            Order.Status = RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
         }
+
+        public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+            InterpreterLocation.HasValue && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
 
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
         {
@@ -258,7 +260,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
-            if (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved)
+            if (RequiresAccept)
             {
                 Status = RequestStatus.Accepted;
                 Order.Status = OrderStatus.RequestResponded;
