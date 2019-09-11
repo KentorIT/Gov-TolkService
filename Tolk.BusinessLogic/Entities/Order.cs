@@ -329,7 +329,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private bool CreatedByUsersUnit(IEnumerable<int> customerUnits)
         {
-            return CustomerUnitId != null && customerUnits.Contains(CustomerUnitId.Value);
+            return CustomerUnitId != null && (customerUnits?.Contains(CustomerUnitId.Value) ?? false);
         }
 
         #endregion
