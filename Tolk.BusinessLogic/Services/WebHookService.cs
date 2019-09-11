@@ -64,7 +64,7 @@ namespace Tolk.BusinessLogic.Services
                             client.DefaultRequestHeaders.Clear();
                             client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
                             client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
-                            string encryptedCallbackKey = call.RecipientUser.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
+                            string encryptedCallbackKey = call.RecipientUser?.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
                             if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
                             {
                                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", EncryptHelper.Decrypt(encryptedCallbackKey, _options.PublicOrigin, call.RecipientUser.UserName));
