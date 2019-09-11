@@ -192,7 +192,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
+                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}\n" +
                     $"\tRegion: {order.Region.Name}\n" +
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
@@ -200,7 +200,7 @@ namespace Tolk.BusinessLogic.Services
                     $"\tSlut: {order.EndAt.ToString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSvara senast: {request.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     GotoRequestPlain(request.RequestId);
-                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
 <ul>
 <li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}</li>
 <li>Region: {order.Region.Name}</li>
@@ -236,7 +236,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
+                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} organisationsnummer {orderGroup.CustomerOrganisation.OrganisationNumber} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
                     $"\tRegion: {orderGroup.Region.Name}\n" +
                     $"\tSpråk: {orderGroup.LanguageName}\n" +
@@ -244,7 +244,7 @@ namespace Tolk.BusinessLogic.Services
                     $"{GetOccuranses(orderGroup.Orders)}\n" +
                     $"\tSvara senast: {requestGroup.ExpiresAt?.ToString("yyyy-MM-dd HH:mm")}\n\n\n" +
                     GotoRequestGroupPlain(requestGroup.RequestGroupId);
-                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} organisationsnummer {orderGroup.CustomerOrganisation.OrganisationNumber} har inkommit via Kammarkollegiets avropstjänst för tolkar. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
                     <ul>
                     <li>Uppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}</li>
                     <li>Region: {orderGroup.Region.Name}</li>
@@ -357,8 +357,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             {
                 CreateEmail(email.ContactInformation,
                     $"Bokningsförfrågan {orderNumber} har gått vidare till nästa förmedling i rangordningen",
-                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name}.\nTidsfristen enligt ramavtal har nu gått ut. {GotoRequestPlain(request.RequestId)}",
-                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GotoRequestButton(request.RequestId)}",
+                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GotoRequestPlain(request.RequestId)}",
+                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GotoRequestButton(request.RequestId)}",
                     true);
             }
             var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Webhook);
@@ -384,8 +384,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             {
                 CreateEmail(email.ContactInformation,
                     $"Sammanhållen bokningsförfrågan {orderGroupNumber} har gått vidare till nästa förmedling i rangordningen",
-                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name}.\nTidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupPlain(requestGroup.RequestGroupId)}",
-                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupButton(requestGroup.RequestGroupId)}",
+                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GotoRequestGroupButton(requestGroup.RequestGroupId)}",
                     true);
             }
             var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Webhook);
@@ -969,6 +969,7 @@ Sammanställning:
                 CreatedAt = request.CreatedAt,
                 OrderNumber = order.OrderNumber,
                 Customer = order.CustomerOrganisation.Name,
+                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToString("D2"),
                 Language = new LanguageModel
@@ -1039,6 +1040,7 @@ Sammanställning:
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
                 Customer = order.CustomerOrganisation.Name,
+                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToString("D2"),
                 Language = new LanguageModel

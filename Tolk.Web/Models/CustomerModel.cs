@@ -27,7 +27,11 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Namnprefix", Description = "Detta används vid skapande av användarnamn när det skapas en ny användare kopplat till organisationen")]
         [Required]
-        public string OrganizationPrefix { get; set; }
+        public string OrganisationPrefix { get; set; }
+
+        [Display(Name = "Organisationsnummer")]
+        [Required]
+        public string OrganisationNumber { get; set; }
 
         [Display(Name = "EmailDomän", Description = "Detta används när en användare som kopplar upp sig själv, för att kunna räkna ut med vilken organisation hen skall kopplas till.")]
         [Required]
@@ -47,7 +51,8 @@ namespace Tolk.Web.Models
                 ParentId = customer.ParentCustomerOrganisationId,
                 PriceListType = customer.PriceListType,
                 EmailDomain = customer.EmailDomain,
-                OrganizationPrefix = customer.OrganizationPrefix,
+                OrganisationPrefix = customer.OrganisationPrefix,
+                OrganisationNumber = customer.OrganisationNumber,
                 Message = message,
                 UserPageMode = new UserPageMode
                 {
@@ -64,7 +69,8 @@ namespace Tolk.Web.Models
             customer.Name = Name;
             customer.ParentCustomerOrganisationId = ParentId;
             customer.EmailDomain = EmailDomain;
-            customer.OrganizationPrefix = OrganizationPrefix;
+            customer.OrganisationPrefix = OrganisationPrefix;
+            customer.OrganisationNumber = OrganisationNumber;
         }
     }
 }

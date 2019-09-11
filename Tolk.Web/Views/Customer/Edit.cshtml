@@ -13,20 +13,18 @@
                 <form-entry asp-for="Name" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+                <form-entry asp-for="OrganisationNumber" />
             </div>
-        </div>
-        <div class="row">
             <div class="col-sm-4">
                 <form-entry asp-for="EmailDomain" />
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganizationPrefix" />
-            </div>
         </div>
         <div class="row">
             <div class="col-sm-4">
-                &nbsp;
+                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="OrganisationPrefix" />
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="PriceListType" />
@@ -36,7 +34,7 @@
             <div class="col-sm-4">
                 <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = Model.CustomerId })">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-8">
                 <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
             </div>
         </div>

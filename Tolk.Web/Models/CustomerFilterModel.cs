@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
@@ -20,7 +17,12 @@ namespace Tolk.Web.Models
         [Display(Name = "Namn")]
         [Placeholder("Sök på del av namn")]
         public string Name { get; set; }
-        public bool HasActiveFilters => ParentId.HasValue || !string.IsNullOrWhiteSpace(Name) || PriceListType.HasValue;
+
+        [Display(Name = "Organisationsnummer")]
+        [Placeholder("Sök på del av organisationsnummer")]
+        public string OrganisationNumber { get; set; }
+
+        public bool HasActiveFilters => ParentId.HasValue || !string.IsNullOrWhiteSpace(Name) || PriceListType.HasValue || !string.IsNullOrWhiteSpace(OrganisationNumber);
         internal IQueryable<CustomerOrganisation> Apply(IQueryable<CustomerOrganisation> items)
         {
             items = PriceListType.HasValue
@@ -29,10 +31,13 @@ namespace Tolk.Web.Models
             items = ParentId.HasValue
                ? items.Where(c => c.ParentCustomerOrganisationId == ParentId)
                : items;
+            items = !string.IsNullOrWhiteSpace(OrganisationNumber)
+                ? items.Where(c => c.OrganisationNumber.Contains(OrganisationNumber))
+                : items;
             items = !string.IsNullOrWhiteSpace(Name)
                 ? items.Where(c => c.Name.Contains(Name))
                 : items;
-           return items;
+            return items;
         }
 
     }

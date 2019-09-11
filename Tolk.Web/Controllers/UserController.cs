@@ -530,7 +530,7 @@ namespace Tolk.Web.Controllers
                         }
                         if (customerId.HasValue)
                         {
-                            organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganizationPrefix;
+                            organisationPrefix = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerId).OrganisationPrefix;
                         }
                         List<CustomerUnitUser> unitUsers = new List<CustomerUnitUser>();
 

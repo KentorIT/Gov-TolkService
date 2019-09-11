@@ -26,6 +26,7 @@
                         <thead>
                             <tr>
                                 <th>Namn</th>
+                                <th>Organisationsnummer</th>
                                 <th>Prislista</th>
                                 <th>Föräldermyndighet</th>
                             </tr>
@@ -33,11 +34,12 @@
                         <tbody>
                             @foreach (var item in Model.Items)
                             {
-                                <tr data-id="@item.CustomerId" data-click-action-url="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = item.CustomerId })">
-                                    <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
-                                    <td class="gray-border-bottom">@EnumHelper.GetDescription(item.PriceListType)</td>
-                                    <td class="gray-border-bottom  gray-border-right">@item.ParentName</td>
-                                </tr>
+                            <tr data-id="@item.CustomerId" data-click-action-url="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = item.CustomerId })">
+                                <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                <td class="gray-border-bottom">@item.OrganisationNumber</td>
+                                <td class="gray-border-bottom">@EnumHelper.GetDescription(item.PriceListType)</td>
+                                <td class="gray-border-bottom  gray-border-right">@item.ParentName</td>
+                            </tr>
                             }
                         </tbody>
                     </table>

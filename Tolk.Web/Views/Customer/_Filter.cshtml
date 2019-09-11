@@ -14,13 +14,16 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-3">
                 <form-entry asp-for="Name" />
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-3">
+                <form-entry asp-for="OrganisationNumber" />
+            </div>
+            <div class="col-sm-3">
                 <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-3">
                 <form-entry asp-for="PriceListType" type="select" asp-items="SelectListService.PriceListTypes" class="allow-clear" />
             </div>
         </div>

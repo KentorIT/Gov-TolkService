@@ -685,7 +685,7 @@ namespace Tolk.Web.Controllers
                                     }
                                 }
                                 var user = new AspNetUser(model.Email,
-                                    _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganizationPrefix),
+                                    _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganisationPrefix),
                                     model.FirstName,
                                     model.LastName,
                                     organisation);

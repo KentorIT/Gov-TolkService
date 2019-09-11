@@ -9,6 +9,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public bool RequireSameInterpreter { get; set; }
         public string OrderGroupNumber { get; set; }
         public string Customer { get; set; }
+        public string CustomerOrganisationNumber { get; set; }
         public string Region { get; set; }
         public DateTimeOffset? ExpiresAt { get; set; }
         public LanguageModel Language { get; set; }

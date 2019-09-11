@@ -368,6 +368,7 @@ namespace Tolk.Web.Controllers
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = user.CompleteContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
+            updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
             return PartialView(nameof(Confirm), updatedModel);
         }
 

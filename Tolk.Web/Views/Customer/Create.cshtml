@@ -12,20 +12,19 @@
                 <form-entry asp-for="Name" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+                <form-entry asp-for="OrganisationNumber" />
             </div>
-        </div>
-        <div class="row">
             <div class="col-sm-4">
                 <form-entry asp-for="EmailDomain" />
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganizationPrefix" />
-            </div>
         </div>
         <div class="row">
             <div class="col-sm-4">
-                &nbsp;
+                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+            </div>
+
+            <div class="col-sm-4">
+                <form-entry asp-for="OrganisationPrefix" />
             </div>
             <div class="col-sm-4">
                 <form-entry asp-for="PriceListType" type="select" asp-items="SelectListService.PriceListTypes" />
@@ -33,9 +32,15 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
+                &nbsp;
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
                 <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-8">
                 <button type="submit" class="disable-on-click btn btn-large btn-default pull-right">Skapa</button>
             </div>
         </div>

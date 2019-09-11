@@ -220,6 +220,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighet")]
         public string CustomerName { get; set; }
 
+        [Display(Name = "Myndighetens organisationsnummer")]
+        public string CustomerOrganisationNumber { get; set; }
+
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 
@@ -630,6 +633,7 @@ namespace Tolk.Web.Models
                 ChangeContactPersonId = order.ContactPersonId,
                 CreatedAt = order.CreatedAt,
                 CustomerName = order.CustomerOrganisation.Name,
+                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
                 CustomerUnitName = order.CustomerUnit?.Name ?? string.Empty,
                 Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,

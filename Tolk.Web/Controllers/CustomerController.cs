@@ -1,11 +1,9 @@
-﻿using DataTables.AspNet.AspNetCore;
-using DataTables.AspNet.Core;
+﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
@@ -15,9 +13,6 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Identity;
-using Tolk.BusinessLogic.Enums;
-using System.Reflection;
-using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Controllers
 {
@@ -68,7 +63,8 @@ namespace Tolk.Web.Controllers
                         CustomerId = c.CustomerOrganisationId,
                         Name = c.Name,
                         PriceListType = c.PriceListType,
-                        ParentName = c.ParentCustomerOrganisation.Name
+                        ParentName = c.ParentCustomerOrganisation.Name,
+                        OrganisationNumber = c.OrganisationNumber
                     })
             });
         }
@@ -177,9 +173,9 @@ namespace Tolk.Web.Controllers
             //Test prefix
             if (_dbContext.CustomerOrganisations.Any(c =>
                  c.CustomerOrganisationId != model.CustomerId &&
-                 c.OrganizationPrefix.Equals(model.OrganizationPrefix, StringComparison.InvariantCultureIgnoreCase)))
+                 c.OrganisationPrefix.Equals(model.OrganisationPrefix, StringComparison.InvariantCultureIgnoreCase)))
             {
-                ModelState.AddModelError(nameof(model.OrganizationPrefix), $"Denna Namnprefix används redan i tjänsten.");
+                ModelState.AddModelError(nameof(model.OrganisationPrefix), $"Denna Namnprefix används redan i tjänsten.");
                 valid = false;
             }
             return valid;

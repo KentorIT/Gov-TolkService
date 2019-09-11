@@ -30,6 +30,10 @@ namespace Tolk.BusinessLogic.Entities
         public List<CustomerOrganisation> SubCustomerOrganisations { get; set; }
 
         [MaxLength(8)]
-        public string OrganizationPrefix { get; set; }
+        public string OrganisationPrefix { get; set; }
+
+        [Required]
+        [MaxLength(32)]
+        public string OrganisationNumber { get; set; }
     }
 }
