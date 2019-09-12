@@ -86,11 +86,7 @@ namespace Tolk.Web.Controllers
             {
                 var now = _clock.SwedenNow;
                 //TODO: Handle this better. Preferably with a list that you can use contains on
-                var request = order.Requests.SingleOrDefault(r =>
-                        r.Status != RequestStatus.InterpreterReplaced &&
-                        r.Status != RequestStatus.DeniedByTimeLimit &&
-                        r.Status != RequestStatus.DeniedByCreator &&
-                        r.Status != RequestStatus.DeclinedByBroker);
+                var request = order.ActiveRequest;
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null &&
                     request.CanCancel &&

@@ -57,6 +57,30 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Ranking { RankingId = 2, BrokerId = 2, Rank = 2 },
             };
         }
+
+        public static Ranking[] MockRankingsWithQuarantines
+        {
+            get => new[]
+            {
+                new Ranking {
+                    RankingId = 1,
+                    BrokerId = 1,
+                    Rank = 1,
+                    Quarantines = new [] {
+                        new Quarantine {
+                            QuarantineId = 1,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 1
+                        }
+                    }.ToList()
+                },
+                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2,  },
+                new Ranking { RankingId = 3, BrokerId = 3, Rank = 3,  },
+                new Ranking { RankingId = 4, BrokerId = 4, Rank = 4,  },
+            };
+        }
+
         public static CustomerUnit[] MockUnits
         {
             get => new[]

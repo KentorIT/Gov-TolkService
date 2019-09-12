@@ -43,5 +43,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(UpdatedBy))]
         public AspNetUser UpdatedUser { get; set; }
+
+        public List<Request> QuarantinedRequests { get; set; }
     }
 }

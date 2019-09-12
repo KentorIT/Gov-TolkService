@@ -23,6 +23,15 @@ namespace Tolk.BusinessLogic.Entities
             IsTerminalRequest = isTerminalRequest;
         }
 
+        public Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
+        {
+            Ranking = ranking;
+            Status = RequestStatus.LostDueToQuarantine;
+            CreatedAt = creationTime;
+            Quarantine = quarantine;
+            QuarantineId = quarantine.QuarantineId;
+        }
+
         public Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
             : this(originalRequest.Ranking, expiry, creationTime)
         {
@@ -68,6 +77,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ReplacingRequestId))]
         [InverseProperty(nameof(ReplacedByRequest))]
         public Request ReplacingRequest { get; set; }
+
+        public int? QuarantineId { get; set; }
+
+        [ForeignKey(nameof(QuarantineId))]
+        public Quarantine Quarantine { get; set; }
 
         #endregion
 

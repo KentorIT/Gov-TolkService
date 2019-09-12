@@ -121,8 +121,8 @@ namespace Tolk.BusinessLogic.Services
                         var expiredRequest = await _tolkDbContext.Requests
                             .Include(r => r.Ranking)
                             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(r => 
+                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
+                            .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestId == requestId);
@@ -165,7 +165,7 @@ namespace Tolk.BusinessLogic.Services
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
                 .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) || 
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) ||
                     (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
@@ -390,7 +390,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (expiredRequest != null)
             {
-                // Check if expired request was created before assignment after 14:00
+                // Only create a new request if the previous request was not a flagged as terminal.
                 if (!expiredRequest.IsTerminalRequest)
                 {
                     request = order.CreateRequest(rankings, expiry, _clock.SwedenNow);
@@ -631,9 +631,8 @@ namespace Tolk.BusinessLogic.Services
                 order.EndAt,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
                 order.CustomerOrganisation.PriceListType,
-                order.Requests.Single(r =>
-                    r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
-                );
+                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
+            );
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
             _tolkDbContext.SaveChanges();
         }
@@ -641,7 +640,9 @@ namespace Tolk.BusinessLogic.Services
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
         {
             CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
-            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date).OrderBy(r => r.Rank).FirstOrDefault().RankingId;
+            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
+                .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
+                .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
             return _priceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
         }
 

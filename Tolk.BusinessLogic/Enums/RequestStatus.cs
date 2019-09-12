@@ -54,5 +54,7 @@ namespace Tolk.BusinessLogic.Enums
         AwaitingDeadlineFromCustomer = 17,
         [Description("Ingen sista svarstid från myndighet")]
         NoDeadlineFromCustomer = 18,
+        [Description("Förlorad på grund av karantän")]
+        LostDueToQuarantine = 19,
     }
 }

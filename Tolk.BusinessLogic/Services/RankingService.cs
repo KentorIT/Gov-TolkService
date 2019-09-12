@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Tolk.BusinessLogic.Services
 {
     public class RankingService
     {
-        private TolkDbContext _tolkDbContext;
+        private readonly TolkDbContext _tolkDbContext;
 
         public RankingService(TolkDbContext tolkDbContext)
         {
@@ -24,7 +25,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentException("Date must be a pure date, without time component", nameof(date));
             }
 
-            return _tolkDbContext.Rankings
+            return _tolkDbContext.Rankings.Include(r => r.Quarantines)
                 .Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
         }
     }
