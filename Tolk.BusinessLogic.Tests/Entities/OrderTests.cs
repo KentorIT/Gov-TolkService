@@ -266,5 +266,99 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             Assert.Throws<InvalidOperationException>(() => order.ChangeContactPerson(DateTimeOffset.Now, 1, null, newContactPerson));
         }
+
+        [Theory]
+        [InlineData(null, "2019-01-01", false)]
+        [InlineData("2019-01-02", "2019-01-01", true)]
+        [InlineData(null, "2019-01-01", true)]
+        [InlineData("2019-01-02", "2019-01-01", false)]
+        public void CreateRequestValid(string expiry, string now, bool isTerminalRequest)
+        {
+            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            var nowDate = DateTime.Parse(now);
+            var order = MockOrders.Last();
+            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest);
+            Assert.Equal(RequestStatus.Created, request.Status);
+        }
+
+        [Theory]
+        [InlineData("2019-01-01", "2019-01-02", false)]
+        [InlineData("2019-01-01", "2019-01-02", true)]
+        public void CreateRequestInValid(string expiry, string now, bool isTerminalRequest)
+        {
+            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            var nowDate = DateTime.Parse(now);
+            var order = MockOrders.Last();
+            Assert.Throws<InvalidOperationException>(() => order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest));
+        }
+
+        [Theory]
+        [InlineData(1, 1, 2)]
+        [InlineData(2, 1, 1)]
+        [InlineData(1, 2, 1)]
+        [InlineData(3, 1, 3)]
+        public void CreateRequestWithQuarantine(int customer, int region, int requests)
+        {
+            var order = MockOrders.Last();
+            order.CustomerOrganisationId = customer;
+            order.RegionId = region;
+            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), null, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
+            Assert.Equal(requests, order.Requests.Count());
+        }
+
+        [Theory]
+        [InlineData(new int[] { }, 1, 1, null, 1, 1, false, true)]
+        [InlineData(new int[] { }, 1, 1, null, 1, 1, true, true)]
+        [InlineData(new int[] { }, 1, 1, null, 1, 2, true, true)]
+        [InlineData(new int[] { }, 1, 1, null, 1, 2, false, false)]
+        [InlineData(new int[] { }, 1, 1, null, 2, 2, false, false)]
+        [InlineData(new int[] { }, 1, 1, null, 2, 2, true, false)]
+        [InlineData(new int[] { 1 }, 1, 1, null, 1, 1, false, true)]
+        [InlineData(new int[] { 1 }, 1, 1, null, 1, 1, true, true)]
+        [InlineData(new int[] { 1 }, 1, 1, null, 1, 2, true, true)]
+        [InlineData(new int[] { 1 }, 1, 1, null, 1, 2, false, false)]
+        [InlineData(new int[] { 2 }, 1, 1, null, 2, 2, false, false)]
+        [InlineData(new int[] { 2 }, 1, 1, null, 2, 2, true, false)]
+        [InlineData(new int[] { }, 1, 1, 1, 1, 1, false, false)]
+        [InlineData(new int[] { }, 1, 1, 1, 1, 1, true, true)]
+        [InlineData(new int[] { }, 1, 1, 1, 1, 2, true, true)]
+        [InlineData(new int[] { }, 1, 1, 1, 1, 2, false, false)]
+        [InlineData(new int[] { }, 1, 1, 1, 2, 2, false, false)]
+        [InlineData(new int[] { }, 1, 1, 1, 2, 2, true, false)]
+        [InlineData(new int[] { 1 }, 1, 1, 1, 1, 1, false, true)]
+        [InlineData(new int[] { 1 }, 1, 1, 1, 1, 1, true, true)]
+        [InlineData(new int[] { 1 }, 1, 1, 1, 1, 2, true, true)]
+        [InlineData(new int[] { 1 }, 1, 1, 1, 1, 2, false, true)]
+        [InlineData(new int[] { 2 }, 1, 1, 1, 1, 1, false, false)]
+        [InlineData(new int[] { 2 }, 1, 1, 1, 1, 1, true, true)]
+        [InlineData(new int[] { 2 }, 1, 1, 1, 1, 2, true, true)]
+        [InlineData(new int[] { 2 }, 1, 1, 1, 1, 2, false, false)]
+        [InlineData(new int[] { 1, 2 }, 1, 1, 1, 1, 1, false, true)]
+        [InlineData(new int[] { 1, 2 }, 1, 1, 1, 1, 1, true, true)]
+        [InlineData(new int[] { 1, 2 }, 1, 1, 1, 1, 2, true, true)]
+        [InlineData(new int[] { 1, 2 }, 1, 1, 1, 1, 2, false, true)]
+        public void IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int callingCustomerId, int userId, int? orderUnit, int orderCustomerId, int creatorId, bool hasCorrectAdminRole, bool expected)
+        {
+            var order = MockOrders.Last();
+            order.CustomerOrganisationId = orderCustomerId;
+            order.CustomerUnitId = orderUnit;
+            order.CreatedBy = creatorId;
+            Assert.Equal(expected, order.IsAuthorizedAsCreator(customerUnits, callingCustomerId, userId, hasCorrectAdminRole));
+        }
+
+        [Theory]
+        [InlineData(new int[] { }, 1, 2, null, 1, null, false)]
+        [InlineData(new int[] { }, 1, 2, null, 1, 2, true)]
+        [InlineData(new int[] { }, 1, 2, 2, 1, null, false)]
+        [InlineData(new int[] { }, 1, 2, 2, 1, 2, true)]
+        public void IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int callingCustomerId, int userId, int? orderUnit, int creatorId, int? contactPersonId, bool expected)
+        {
+            var order = MockOrders.Last();
+            order.CustomerOrganisationId = callingCustomerId;
+            order.CustomerUnitId = orderUnit;
+            order.CreatedBy = creatorId;
+            order.ContactPersonId = contactPersonId;
+            Assert.Equal(expected, order.IsAuthorizedAsCreatorOrContact(customerUnits, callingCustomerId, userId, false));
+        }
     }
 }

@@ -16,6 +16,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false)
         {
+            if (expiry.HasValue && expiry < creationTime)
+            {
+                throw new InvalidOperationException("The Request cannot have a expiry befor the creation time.");
+            }
             Ranking = ranking;
             Status = RequestStatus.Created;
             ExpiresAt = expiry;

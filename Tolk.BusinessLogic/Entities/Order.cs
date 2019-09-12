@@ -244,7 +244,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
-            //OM DET FINNS EN QUARAINTINE PÅ NÄSTA PLATS, SKAPA EN QUARANTINED REQUEST HÄR
             Ranking ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
             {
@@ -256,33 +255,7 @@ namespace Tolk.BusinessLogic.Entities
             return CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
         }
 
-        private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
-        {
-            var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
-
-            var ranking = ReplacingOrderId.HasValue && brokersWithRequest.Any() ? null :
-                rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
-            if (ranking != null)
-            {
-                var quarantine = ranking.Quarantines.FirstOrDefault(q => q.CustomerOrganisationId == CustomerOrganisationId && q.ActiveFrom <= newRequestCreationTime && q.ActiveTo >= newRequestCreationTime);
-                if (quarantine != null)
-                {
-                    //Create a quarantined request, and get next...
-                    CreateQuarantinedRequest(ranking, newRequestCreationTime, quarantine);
-                    ranking = GetNextRanking(rankings, newRequestCreationTime);
-                }
-            }
-            return ranking;
-        }
-
-        public Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
-        {
-            var request = new Request(ranking, creationTime, quarantine);
-            Requests.Add(request);
-            return request;
-        }
-
-        public Request CreateRequest(Ranking ranking, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        internal Request CreateRequest(Ranking ranking, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var request = new Request(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
             Requests.Add(request);
@@ -331,6 +304,32 @@ namespace Tolk.BusinessLogic.Entities
         {
             return IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole) 
                 || UserIsContact(userId);
+        }
+
+        private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
+        {
+            var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
+
+            var ranking = ReplacingOrderId.HasValue && brokersWithRequest.Any() ? null :
+                rankings.Where(r => !brokersWithRequest.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
+            if (ranking != null)
+            {
+                var quarantine = ranking.Quarantines.FirstOrDefault(q => q.CustomerOrganisationId == CustomerOrganisationId && q.ActiveFrom <= newRequestCreationTime && q.ActiveTo >= newRequestCreationTime);
+                if (quarantine != null)
+                {
+                    //Create a quarantined request, and get next...
+                    CreateQuarantinedRequest(ranking, newRequestCreationTime, quarantine);
+                    ranking = GetNextRanking(rankings, newRequestCreationTime);
+                }
+            }
+            return ranking;
+        }
+
+        private Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
+        {
+            var request = new Request(ranking, creationTime, quarantine);
+            Requests.Add(request);
+            return request;
         }
 
         private bool HasCorrectAdminRoleForCustomer(int? customerOrganisationId, bool hasCorrectAdminRole = false)

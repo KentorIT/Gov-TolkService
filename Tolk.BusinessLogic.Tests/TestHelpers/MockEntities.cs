@@ -63,6 +63,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             get => new[]
             {
                 new Ranking {
+                    RegionId = 1,
                     RankingId = 1,
                     BrokerId = 1,
                     Rank = 1,
@@ -72,12 +73,57 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                             ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
                             ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
                             CustomerOrganisationId = 1
-                        }
+                        },
+                         new Quarantine {
+                            QuarantineId = 2,
+                            ActiveFrom =  new DateTimeOffset(2010,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2011,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 2,
+                            Motivation = "Old for cust 2"
+                        },
+                         new Quarantine {
+                            QuarantineId = 3,
+                            ActiveFrom =  new DateTimeOffset(2010,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2011,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 1,
+                            Motivation = "Old for cust 1"
+                        },
+                        new Quarantine {
+                            QuarantineId = 4,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 3,
+                            Motivation = "First cust 3"
+                        },
                     }.ToList()
                 },
-                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2,  },
-                new Ranking { RankingId = 3, BrokerId = 3, Rank = 3,  },
-                new Ranking { RankingId = 4, BrokerId = 4, Rank = 4,  },
+                new Ranking {
+                    RegionId = 1,
+                    RankingId = 2,
+                    BrokerId = 2,
+                    Rank = 2,
+                    Quarantines =new [] {
+                        new Quarantine {
+                            QuarantineId = 5,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 2,
+                            Motivation = "active Quarantine for cust 2, on second rank"
+                        },
+                        new Quarantine {
+                            QuarantineId = 6,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 3,
+                            Motivation = "Second cust 3"
+                        }
+
+                    }.ToList()
+                },
+                new Ranking { RegionId = 1, RankingId = 3, BrokerId = 3, Rank = 3, Quarantines = new List<Quarantine>() },
+                new Ranking { RegionId = 1, RankingId = 4, BrokerId = 4, Rank = 4, Quarantines = new List<Quarantine>() },
+                new Ranking { RegionId = 2, RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new List<Quarantine>() },
+                new Ranking { RegionId = 2, RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new List<Quarantine>() },
             };
         }
 
@@ -109,8 +155,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.RequestRespondedNewInterpreter,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,04,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,04,02,14,11,00, new TimeSpan(02,00,00))),
                     },
                 },
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -127,7 +173,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00))),
                     },
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -144,7 +190,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Requested,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
 
@@ -162,7 +208,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -179,7 +225,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.RequestResponded,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -196,8 +242,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -214,7 +260,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.CancelledByCreator,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -231,7 +277,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), DateTimeOffset.Now),
+                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
