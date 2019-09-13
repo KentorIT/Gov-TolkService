@@ -82,7 +82,7 @@ nedanstående länk eller klistra in den i din webbläsare.
 
 {{0}}
 
-Vid frågor, vänligen kontakta {_options.SupportEmail}";
+Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
 
             var subject = $"Du har blivit inbjuden som tolk till {Constants.SystemName}";
 
@@ -101,7 +101,7 @@ in den i din webbläsare.
 
 {{0}}
 
-Vid frågor, vänligen kontakta {_options.SupportEmail}";
+Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
 
             var subject = $"Aktivering av konto i {Constants.SystemName}";
 
@@ -233,7 +233,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 }
             }
             _logger.LogWarning("There are at least 100 users starting with the string {userName}.", userNameStart);
-            _notificationService.CreateEmail(_options.SupportEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", addContractInfo: false);
+            _notificationService.CreateEmail(_options.Support.SecondLineEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", addContractInfo: false);
             for (int i = 1; i < 1000; ++i)
             {
                 var userName = $"{userNameStart}{i.ToString("D3")}";

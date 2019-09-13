@@ -845,7 +845,7 @@ Om du har begärt att lösenordet ska återställas för '{user.FullName}' klick
 Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.";
+supporten på {_options.Support.FirstLineEmail}.";
 
             var bodyHtml =
         $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
@@ -858,7 +858,7 @@ supporten på {_options.SupportEmail}.";
 Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.</div>";
+supporten på {_options.Support.FirstLineEmail}.</div>";
 
             _notificationService.CreateEmail(
                 user.Email,
@@ -889,7 +889,7 @@ Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länk
 
 Om du inte har bytt e-postadress kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.";
+supporten på {_options.Support.FirstLineEmail}.";
 
             var bodyHtml =
         $@"<h2>Ändring av e-postadress för {Constants.SystemName} </h2>
@@ -900,7 +900,7 @@ supporten på {_options.SupportEmail}.";
 
 <div>Om du inte har bytt e-postadress kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.SupportEmail}.</div>";
+supporten på {_options.Support.FirstLineEmail}.</div>";
 
             _notificationService.CreateEmail(
                 newEmailAddress,

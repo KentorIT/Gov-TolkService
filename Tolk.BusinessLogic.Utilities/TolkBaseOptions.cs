@@ -10,7 +10,8 @@ namespace Tolk.BusinessLogic.Utilities
 
         public Environment Env { get; set; } = new Environment { Name = string.Empty, Background = "background: rgba(255, 0, 0, 0.5)", Foreground = "color: #f1f1f1" };
         public TellusApi Tellus { get; set; }
-        public string SupportEmail { get; set; }
+        public SupportSettings Support { get; set; }
+
 
         public class TellusApi
         {
@@ -25,6 +26,14 @@ namespace Tolk.BusinessLogic.Utilities
                     return UnusedIsoCodes.Split(';');
                 }
             }
+        }
+
+        public class SupportSettings
+        {
+            public string FirstLineEmail { get; set; }
+            public string SecondLineEmail { get; set; }
+            public string UserAccountEmail { get; set; }
+            public string SupportPhone { get; set; }
         }
 
         public class Environment

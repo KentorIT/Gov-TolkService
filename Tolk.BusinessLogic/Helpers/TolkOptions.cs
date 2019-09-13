@@ -30,9 +30,9 @@ namespace Tolk.BusinessLogic.Helpers
                 throw new InvalidOperationException($"Invalid configuration of PublicOrigin: {PublicOrigin}");
             }
 
-            if (string.IsNullOrEmpty(SupportEmail))
+            if (string.IsNullOrEmpty(Support.FirstLineEmail))
             {
-                throw new InvalidOperationException($"Support e-mail config missing.");
+                throw new InvalidOperationException($"First line support e-mail config missing.");
             }
         }
 

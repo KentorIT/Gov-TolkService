@@ -104,7 +104,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (notify)
                 {
-                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                    _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                         $"Verifieringen av språklistan mot Tellus misslyckades!",
                         "Det borde stå vad som gick fel här, om vi vet det...");
                 }
@@ -133,10 +133,10 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (validationResult.FoundChanges)
                 {
-                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                    _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                         "Det finns skillnader i systemets språklista och den i Tellus.",
                         $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/Verify");
-                    _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.SupportEmail}");
+                    _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.Support.SecondLineEmail}");
                 }
                 else
                 {
@@ -163,7 +163,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 if (notify)
                 {
-                    _notificationService.CreateEmail(_tolkBaseOptions.SupportEmail,
+                    _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                         $"Hämtningen av språkkompetenser från Tellus misslyckades!",
                         $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
                 }
