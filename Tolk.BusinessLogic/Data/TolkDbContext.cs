@@ -71,6 +71,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<Holiday>()
                 .HasKey(h => new { h.Date, h.DateType });
 
+            builder.Entity<UserDefaultSetting>()
+                .HasKey(uds => new { uds.UserId, uds.DefaultSettingType });
+
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()
@@ -457,6 +460,10 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<Quarantine> Quarantines { get; set; }
 
         public DbSet<QuarantineHistoryEntry> QuarantineHistoryEntries { get; set; }
+
+        public DbSet<UserDefaultSetting> UserDefaultSettings { get; set; }
+
+        public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 
         public static bool isUserStoreInitialized = false;
 

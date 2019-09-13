@@ -21,6 +21,10 @@
     <Compile Remove="Data\Migrations\20181015134149_RequisitionTaxCard.cs" />
     <Compile Remove="Data\Migrations\20190618111741_RequestGroup.cs" />
     <Compile Remove="Data\Migrations\20190618111741_RequestGroup.Designer.cs" />
+    <Compile Remove="Data\Migrations\20190913091226_UserDefaultSettings.cs" />
+    <Compile Remove="Data\Migrations\20190913091226_UserDefaultSettings.Designer.cs" />
+    <Compile Remove="Data\Migrations\20190913094212_RenamedOrgColumn.cs" />
+    <Compile Remove="Data\Migrations\20190913094212_RenamedOrgColumn.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

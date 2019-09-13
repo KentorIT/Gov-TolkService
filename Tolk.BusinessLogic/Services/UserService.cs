@@ -153,7 +153,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
-                CustomerunitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
+                CustomerUnitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
                 {
                     CustomerUnitId = c.CustomerUnitId,
                     IsLocalAdmin = c.IsLocalAdmin,
@@ -194,7 +194,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
                 UserChangeType = UserChangeType.UpdatedCustomerUnitUserOnly,
-                CustomerunitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
+                CustomerUnitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
                 {
                     CustomerUnitId = c.CustomerUnitId,
                     IsLocalAdmin = c.IsLocalAdmin,
