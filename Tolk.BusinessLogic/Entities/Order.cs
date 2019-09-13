@@ -44,6 +44,7 @@ namespace Tolk.BusinessLogic.Entities
             CreatedByUser = createdByUser;
             CreatedAt = createdAt;
             CustomerOrganisation = customerOrganisation;
+            CustomerOrganisationId = customerOrganisation.CustomerOrganisationId;
             CreatedByImpersonator = createdByImpersonator;
             Status = OrderStatus.Requested;
             Requirements = new List<OrderRequirement>();

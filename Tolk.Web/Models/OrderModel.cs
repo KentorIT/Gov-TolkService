@@ -706,7 +706,8 @@ namespace Tolk.Web.Models
                 PreviousRequests = order.Requests.Where(r =>
                        r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
                        r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
-                       r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator
+                       r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator ||
+                       r.Status == BusinessLogic.Enums.RequestStatus.LostDueToQuarantine
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,
