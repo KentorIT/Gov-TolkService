@@ -968,8 +968,12 @@ Sammanställning:
             {
                 CreatedAt = request.CreatedAt,
                 OrderNumber = order.OrderNumber,
-                Customer = order.CustomerOrganisation.Name,
-                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                CustomerInformation = new CustomerInformationModel
+                {
+                    Name = order.CustomerOrganisation.Name,
+                    OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                    ContactInformation = order.CreatedByUser.CompleteContactInformation
+                },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToString("D2"),
                 Language = new LanguageModel
