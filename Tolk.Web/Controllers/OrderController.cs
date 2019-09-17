@@ -240,7 +240,7 @@ namespace Tolk.Web.Controllers
             {
                 LastTimeForRequiringLatestAnswerBy = panicTime.ToString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToString("yyyy-MM-dd"),
-                CreatedBy = user.CompleteContactInformation
+                CreatedByName = user.FullName
             };
             return View(model);
         }

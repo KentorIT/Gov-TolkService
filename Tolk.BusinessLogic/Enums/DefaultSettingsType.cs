@@ -32,5 +32,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Accepterar restid eller resvä som överskrider gränsvärden")]
         AllowExceedingTravelCost = 12,
 
+        [Description("Fakturareferens")]
+        InvoiceReference = 13,
     }
 }

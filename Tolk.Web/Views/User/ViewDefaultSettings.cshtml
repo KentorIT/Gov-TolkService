@@ -23,13 +23,16 @@
     <div class="col-sm-4">
         <display-entry asp-for="Region" />
     </div>
+    <div class="col-sm-4">
+        <display-entry asp-for="InvoiceReference" />
+    </div>
     @if (Model.ShowUnitSelection)
     {
         <div class="col-sm-4">
             <display-entry asp-for="CustomerUnit" />
         </div>
     }
-    </div>
+</div>
     <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="RankedInterpreterLocationFirst" />

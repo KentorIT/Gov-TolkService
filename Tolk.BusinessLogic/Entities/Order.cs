@@ -21,6 +21,7 @@ namespace Tolk.BusinessLogic.Entities
             Language = order.Language;
             OtherLanguage = order.OtherLanguage;
             Region = order.Region;
+            InvoiceReference = order.InvoiceReference;
             CustomerUnitId = order.CustomerUnitId;
             LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter;
             SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired;
@@ -130,6 +131,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [MaxLength(100)]
         public string CustomerReferenceNumber { get; set; }
+
+        [MaxLength(100)]
+        public string InvoiceReference { get; set; }
 
         public int? ContactPersonId { get; set; }
 

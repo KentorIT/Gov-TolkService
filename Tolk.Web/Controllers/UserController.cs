@@ -895,6 +895,7 @@ namespace Tolk.Web.Controllers
                     OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
                     OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
                     AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
+                    InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
                     UserPageMode = new UserPageMode
                     {
                         BackController = bc ?? BackController,
@@ -944,6 +945,7 @@ namespace Tolk.Web.Controllers
                         OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
                         OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
                         AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
+                        InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
                         UserPageMode = new UserPageMode
                         {
                             BackController = bc ?? BackController,
@@ -989,6 +991,7 @@ namespace Tolk.Web.Controllers
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSitePhoneContactInformation, model.OffSitePhoneContactInformation);
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSiteVideoContactInformation, model.OffSiteVideoContactInformation);
                     UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InvoiceReference, model.InvoiceReference);
 
                     await _dbContext.SaveChangesAsync();
                     //Need to update the loaded user's claims list after save.

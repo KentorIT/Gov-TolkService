@@ -276,29 +276,28 @@
                         <hr />
                         <div class="row">
                             <div class="col-sm-4">
-                                <display-entry asp-for="CreatedBy" />
+                                <display-entry asp-for="CreatedByName" />
                             </div>
-                            <div class="col-sm-8">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="CustomerReferenceNumber" help-link="@HelpLinkService.GenerateUrl("nybokning_arendenummer")" />
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="UnitName" help-link="@HelpLinkService.GenerateUrl("nybokning_avdelning")" />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />
-                                    </div>
-                                    @if (customerUnitItems != null && customerUnitItems.Any())
-                                    {
-                                        <div class="col-sm-6">
-                                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" help-link="@HelpLinkService.GenerateUrl("nybokning_enhet")" />
-                                        </div>
-                                    }
-                                </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="CustomerReferenceNumber" help-link="@HelpLinkService.GenerateUrl("nybokning_arendenummer")" />
                             </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="UnitName" help-link="@HelpLinkService.GenerateUrl("nybokning_avdelning")" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <form-entry asp-for="InvoiceReference" />
+                            </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />
+                            </div>
+                            @if (customerUnitItems != null && customerUnitItems.Any())
+                            {
+                                <div class="col-sm-4">
+                                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" help-link="@HelpLinkService.GenerateUrl("nybokning_enhet")" />
+                                </div>
+                            }
                         </div>
                     </section>
                     <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
@@ -343,7 +342,7 @@
     <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
 </span>
 @await Html.PartialAsync("_UploadFileDialog")
-<section aria-label="Lägg till krav">   
+<section aria-label="Lägg till krav">
     <div id="addRequirement" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->

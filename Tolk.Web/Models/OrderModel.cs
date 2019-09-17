@@ -209,6 +209,15 @@ namespace Tolk.Web.Models
 
         public int CreatedById { get; set; }
 
+        [Display(Name = "Bokning skapad av")]
+        public string CreatedByName { get; set; }
+
+        [Display(Name = "Fakturareferens")]
+        [StringLength(100)]
+        [Placeholder("Referens för korrekt fakturering...")]
+        [Required]
+        public string InvoiceReference { get; set; }
+
         [Display(Name = "Bokning besvarad av")]
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
@@ -457,6 +466,8 @@ namespace Tolk.Web.Models
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
             order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
+            order.InvoiceReference = InvoiceReference;
+
             if (isReplace)
             {
                 // need to be able to change the locations after getting the replaced order´s information copied...
@@ -632,6 +643,7 @@ namespace Tolk.Web.Models
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
                 ChangeContactPersonId = order.ContactPersonId,
                 CreatedAt = order.CreatedAt,
+                InvoiceReference = order.InvoiceReference,
                 CustomerName = order.CustomerOrganisation.Name,
                 CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
@@ -750,6 +762,7 @@ namespace Tolk.Web.Models
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 CustomerUnitId = order.CustomerUnitId,
+                InvoiceReference = order.InvoiceReference,
                 TimeRange = new TimeRange
                 {
                     StartDateTime = order.StartAt,

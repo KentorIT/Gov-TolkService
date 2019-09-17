@@ -546,7 +546,8 @@ namespace Tolk.Web.Api.Controllers
                 {
                     Name = request.Order.CustomerOrganisation.Name,
                     OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
-                    ContactInformation = request.Order.CreatedByUser.CompleteContactInformation
+                    ContactInformation = request.Order.CreatedByUser.CompleteContactInformation,
+                    InvoiceReference = request.Order.InvoiceReference
                 },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,

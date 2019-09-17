@@ -9,6 +9,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public string Name { get; set; }
         public string OrganisationNumber{ get; set; }
         public string ContactInformation { get; set; }
+        public string InvoiceReference { get; set; }
 
     }
 }

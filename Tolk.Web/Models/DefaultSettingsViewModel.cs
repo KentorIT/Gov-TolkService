@@ -59,6 +59,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
         public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
 
+        [Display(Name = "Fakturareferens")]
+        public string InvoiceReference { get; set; }
+
         public string Message { get; set; }
         public bool ShowUnitSelection { get; set; }
         public bool AllowChange { get; set; }

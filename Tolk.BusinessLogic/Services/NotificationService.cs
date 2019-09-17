@@ -972,7 +972,8 @@ Sammanställning:
                 {
                     Name = order.CustomerOrganisation.Name,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
-                    ContactInformation = order.CreatedByUser.CompleteContactInformation
+                    ContactInformation = order.CreatedByUser.CompleteContactInformation,
+                    InvoiceReference = order.InvoiceReference
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToString("D2"),
