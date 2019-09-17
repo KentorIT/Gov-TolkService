@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,10 +16,10 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<RequestService> _logger;
         private readonly INotificationService _notificationService;
         private readonly OrderService _orderService;
-        private readonly RankingService _rankingService;
         private readonly TolkDbContext _tolkDbContext;
         private readonly ISwedishClock _clock;
         private readonly VerificationService _verificationService;
+        private readonly EmailService _emailService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
 
         public RequestService(
@@ -28,10 +27,10 @@ namespace Tolk.BusinessLogic.Services
             ILogger<RequestService> logger,
             INotificationService notificationService,
             OrderService orderService,
-            RankingService rankingService,
             TolkDbContext tolkDbContext,
             ISwedishClock clock,
             VerificationService verificationService,
+             EmailService emailService,
             ITolkBaseOptions tolkBaseOptions
             )
         {
@@ -39,10 +38,10 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _notificationService = notificationService;
             _orderService = orderService;
-            _rankingService = rankingService;
             _tolkDbContext = tolkDbContext;
             _clock = clock;
             _verificationService = verificationService;
+            _emailService = emailService;
             _tolkBaseOptions = tolkBaseOptions;
         }
 
@@ -91,7 +90,7 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId,
             InterpreterLocation interpreterLocation,
-            decimal? expectedTravelCosts, 
+            decimal? expectedTravelCosts,
             string expectedTravelCostInfo
         )
         {
@@ -141,7 +140,7 @@ namespace Tolk.BusinessLogic.Services
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
-            decimal? expectedTravelCosts, 
+            decimal? expectedTravelCosts,
             string expectedTravelCostInfo
         )
         {
@@ -236,12 +235,25 @@ namespace Tolk.BusinessLogic.Services
 
             if (requestViewsToDelete.Any())
             {
-                _logger.LogInformation($"{requestViewsToDelete.Count} RequestViews deleted");
-                _tolkDbContext.RemoveRange(requestViewsToDelete);
-                _tolkDbContext.SaveChanges();
-                return;
+                try
+                {
+                    _logger.LogInformation($"{requestViewsToDelete.Count} RequestViews deleted");
+                    _tolkDbContext.RemoveRange(requestViewsToDelete);
+                    await _tolkDbContext.SaveChangesAsync();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failing {methodName}", nameof(DeleteRequestViews));
+                    SendErrorMail(nameof(DeleteRequestViews), ex);
+                }
             }
             _logger.LogInformation($"No RequestViews to delete");
+        }
+
+        private async void SendErrorMail(string methodname, Exception ex)
+        {
+            await _emailService.SendSupportErrorEmail(nameof(RequestService), methodname, ex);
         }
     }
 }

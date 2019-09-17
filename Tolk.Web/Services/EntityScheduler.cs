@@ -82,8 +82,7 @@ namespace Tolk.Web.Services
                         {
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
                             serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
-                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().ValidateTellusLanguageList(true),
-                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().UpdateTellusLanguagesCompetenceInfo(true)
+                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().HandleTellusVerifications(true),
                         };
                     }
                     else
@@ -98,7 +97,7 @@ namespace Tolk.Web.Services
                         };
                     }
 
-                    Task.WaitAll(tasksToRun);
+                    Task.WaitAll(tasksToRun, 120000);
                 }
             }
             catch (Exception ex)

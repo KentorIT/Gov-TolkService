@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkOptions.SmtpSettings _options;
         private readonly ISwedishClock _clock;
         private readonly string _senderPrepend;
+        private readonly string _secondLineSupportMail;
 
         public EmailService(
             TolkDbContext dbContext,
@@ -32,6 +33,7 @@ namespace Tolk.BusinessLogic.Services
             _options = options.Value.Smtp;
             _clock = clock;
             _senderPrepend = !string.IsNullOrWhiteSpace(options.Value.Env.DisplayName) ? $"{options.Value.Env.DisplayName} " : string.Empty;
+            _secondLineSupportMail = options.Value.Support.SecondLineEmail;
         }
 
         public async Task SendEmails()
@@ -89,6 +91,35 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
         }
+
+        public async Task SendSupportErrorEmail(string classname, string methodname, Exception ex)
+        {
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_options.UserName, _options.Password);
+                var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.FromAddress);
+                var message = new MimeMessage();
+
+                message.From.Add(from);
+                message.To.Add(new MailboxAddress(_secondLineSupportMail));
+                message.Subject = $"Fel i {classname} metod {methodname}";
+                var builder = new BodyBuilder
+                {
+                    TextBody = $"Felmeddelande:\n{ex.Message}\n\nStackTrace:\n{ex.StackTrace}"
+                };
+                message.Body = builder.ToMessageBody();
+                try
+                {
+                    _logger.LogInformation("Sending email to {recipient}", _secondLineSupportMail);
+                    await client.SendAsync(message);
+
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Failure sending e-mail to {recipient}", _secondLineSupportMail);
+                }
+            }
+        }
     }
 }
-;
