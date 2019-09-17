@@ -15,10 +15,12 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string EditDefaultSettings = nameof(EditDefaultSettings);
         public const string EditContact = nameof(EditContact);
         public const string CreateRequisition = nameof(CreateRequisition);
         public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
+        public const string ViewDefaultSettings = nameof(ViewDefaultSettings);
         public const string Accept = nameof(Accept);
         public const string Cancel = nameof(Cancel);
         public const string Replace = nameof(Replace);
@@ -39,9 +41,11 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(EditContact, builder => builder.RequireAssertion(EditContactHandler));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
+                opt.AddPolicy(EditDefaultSettings, builder => builder.RequireAssertion(EditDefaultSettingsHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
+                opt.AddPolicy(ViewDefaultSettings, builder => builder.RequireAssertion(ViewDefaultSettingsHandler));
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
@@ -134,6 +138,24 @@ namespace Tolk.Web.Authorization
                 case CustomerUnitUser unituser:
                     return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unituser.CustomerUnit.CustomerOrganisationId) ||
                         IsUserLocalAdminOfCustomerUnit(unituser.CustomerUnitId, localAdminCustomerUnits);
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> EditDefaultSettingsHandler = (context) =>
+        {
+            var user = context.User;
+            var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
+            switch (context.Resource)
+            {
+                case AspNetUser editedUser:
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && editedUser.Id == user.GetUserId();
+                case CustomerOrganisation organisation:
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == organisation.CustomerOrganisationId;
+                case CustomerUnit unit:
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) ||
+                        IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 default:
                     throw new NotImplementedException();
             }
@@ -307,6 +329,30 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
+                        IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> ViewDefaultSettingsHandler = (context) =>
+        {
+            var user = context.User;
+            var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
+            switch (context.Resource)
+            {
+                case AspNetUser viewedUser:
+                    return viewedUser.CustomerOrganisationId.HasValue &&
+                    (
+                        user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator) ||
+                        (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && 
+                            user.TryGetCustomerOrganisationId() == viewedUser.CustomerOrganisationId && 
+                            (viewedUser.Id == user.GetUserId() || user.IsInRole(Roles.CentralAdministrator)))
+                    );
+                case CustomerOrganisation organisation:
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == organisation.CustomerOrganisationId;
+                case CustomerUnit unit:
+                    return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 default:
                     throw new NotImplementedException();

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -246,7 +247,7 @@ namespace Tolk.Web.Services
                         items.Add(new SelectListItem
                         {
                             Value = "0",
-                            Text = "Koppla inte till någon enhet"
+                            Text = Constants.SelectNoUnit
                         });
                     }
                     return items.AsReadOnly();

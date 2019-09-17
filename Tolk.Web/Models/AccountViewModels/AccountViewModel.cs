@@ -31,6 +31,8 @@ namespace Tolk.Web.Models.AccountViewModels
         [Display(Name = "Telefonnummer (mobil)")]
         public string PhoneCellphone { get; set; }
 
+        public bool AllowDefaultSettings { get; set; }
+
         public IEnumerable<UnitUserModel> CustomerUnits { get; set; }
     }
 }

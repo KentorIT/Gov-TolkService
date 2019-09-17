@@ -90,6 +90,8 @@ namespace Tolk.Web.Models
         /// </summary>
         public string ErrorMessage { get; set; }
 
+        public bool AllowDefaultSettings { get; set; }
+
         public UserPageMode UserPageMode { get; set; }
     }
 }

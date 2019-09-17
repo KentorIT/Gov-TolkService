@@ -9,6 +9,7 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <form method="post">
+        <input asp-for="Id" type="hidden" />
         <div class="row">
             <div class="col-sm-4">
                 <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
@@ -16,7 +17,7 @@
             @if (customerUnitItems != null && customerUnitItems.Any())
             {
                 <div class="col-sm-4">
-                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems"  class="allow-clear" />
+                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" class="allow-clear" />
                 </div>
             }
         </div>
@@ -43,7 +44,7 @@
                 <fieldset>
                     <legend>Address till anvisad lokal</legend>
                     <form-entry asp-for="OffSiteDesignatedLocationStreet" />
-                    <form-entry asp-for="OffSiteDesignatedLocationLocationCity" />
+                    <form-entry asp-for="OffSiteDesignatedLocationCity" />
                 </fieldset>
             </div>
             <div class="col-sm-4">
@@ -56,12 +57,12 @@
         </div>
         <div class="row">
             <div class="col-sm-8">
-                <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-index="none" />
+                <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost"  class="allow-clear" />
             </div>
         </div>
         <div class="row">
             <div class="col-sm-8">
-                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("ViewDefaultSettings", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
             </div>
             <div class="col-sm-4">
                 <input asp-for="UserPageMode.BackController" type="hidden" />

@@ -162,7 +162,7 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogOnNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null)
+        public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.NotificationSettings)
@@ -178,6 +178,25 @@ Vid frågor, vänligen kontakta {_options.SupportEmail}";
                     ConnectionInformation = n.ConnectionInformation,
                     NotificationChannel = n.NotificationChannel,
                     NotificationType = n.NotificationType,
+                }).ToList(),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+        public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null)
+        {
+            AspNetUser currentUserInformation = _dbContext.Users
+                            .Include(u => u.DefaultSettings)
+                            .SingleOrDefault(u => u.Id == userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UserChangeType = UserChangeType.UpdatedDefaultSettings,
+                DefaultsHistory = currentUserInformation.DefaultSettings.Select(n => new UserDefaultSettingHistoryEntry
+                {
+                    DefaultSettingType = n.DefaultSettingType,
+                    Value = n.Value
                 }).ToList(),
             });
             await _dbContext.SaveChangesAsync();

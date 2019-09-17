@@ -9,5 +9,6 @@ namespace Tolk.BusinessLogic.Enums
         ChangedPassword = 3,
         UpdatedNotificationSettings = 4,
         UpdatedCustomerUnitUserOnly = 5,
+        UpdatedDefaultSettings = 6,
     }
 }

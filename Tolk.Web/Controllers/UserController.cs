@@ -10,6 +10,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -22,7 +23,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policies.SystemCentralLocalAdmin)]
+    [Authorize]
     public class UserController : Controller
     {
         private readonly UserManager<AspNetUser> _userManager;
@@ -58,6 +59,13 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
         }
 
+        private int ImpersonatorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.Impersonator).Id;
+        private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
+        private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
+        private int ApplicationAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.ApplicationAdministrator).Id;
+        private int SystemAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.SystemAdministrator).Id;
+
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public ActionResult List(UserFilterModel model)
         {
             if (model == null)
@@ -109,6 +117,7 @@ namespace Tolk.Web.Controllers
             });
         }
 
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> View(int id, string bc = null, string ba = null, string bi = null)
         {
             var user = GetUserToHandle(id);
@@ -126,6 +135,7 @@ namespace Tolk.Web.Controllers
                 var model = new UserModel
                 {
                     Id = id,
+                    AllowDefaultSettings = _options.EnableDefaultSettings && user.CustomerOrganisationId.HasValue,
                     UserName = user.UserName,
                     NameFirst = user.NameFirst,
                     NameFamily = user.NameFamily,
@@ -162,35 +172,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private bool UseRolesForAdminUser(AspNetUser user)
-        {
-            return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && User.IsInRole(Roles.ApplicationAdministrator) && !user.InterpreterId.HasValue;
-        }
-
-        private int ImpersonatorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.Impersonator).Id;
-        private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
-        private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
-        private int ApplicationAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.ApplicationAdministrator).Id;
-        private int SystemAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.SystemAdministrator).Id;
-
-        private string BackController => HttpContext.Request.Headers["Referer"].ToString().Contains("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().Contains("Unit") ? "Unit" : "User";
-
-        private string BackAction => BackController == "User" ? "List" : BackController == "Unit" ? "Users" : "View";
-
-        private string BackId
-        {
-            get
-            {
-                var referer = HttpContext.Request.Headers["Referer"].ToString();
-                if (!(referer.Contains("Unit") || referer.Contains("Customer")))
-                {
-                    return string.Empty;
-                }
-                var id = referer.Split("/").Last();
-                return id.Contains("?") ? id.Split("?").First() : id;
-            }
-        }
-
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> Edit(int id, string bc, string ba, string bi)
         {
             var user = _userManager.Users.Include(u => u.Roles)
@@ -264,6 +246,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> Edit(UserModel model)
         {
             if (ModelState.IsValid)
@@ -327,58 +310,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId });
         }
 
-        private async Task UpdateCentralOrderHandlerRoleAsync(UserModel model, AspNetUser user)
-        {
-            if (model.IsCentralOrderHandler && !user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.CentralOrderHandler);
-            }
-            else if (!model.IsCentralOrderHandler && user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.CentralOrderHandler);
-            }
-        }
-
-        private async Task UpdateOrganisationAdministratorRoleAsync(UserModel model, AspNetUser user)
-        {
-            if (model.IsOrganisationAdministrator && !user.Roles.Any(r => r.RoleId == CentralAdministratorRoleId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.CentralAdministrator);
-            }
-            else if (!model.IsOrganisationAdministrator && user.Roles.Any(r => r.RoleId == CentralAdministratorRoleId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
-            }
-        }
-
-        private async Task UpdateRolesForAdminUserAsync(UserModel model, AspNetUser user)
-        {
-            if (model.IsApplicationAdministrator && !user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.ApplicationAdministrator);
-            }
-            else if (!model.IsApplicationAdministrator && user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.ApplicationAdministrator);
-            }
-            if (model.IsSystemAdministrator && !user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.SystemAdministrator);
-            }
-            else if (!model.IsSystemAdministrator && user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.SystemAdministrator);
-            }
-            if (model.IsImpersonator && !user.Roles.Any(r => r.RoleId == ImpersonatorRoleId))
-            {
-                await _userManager.AddToRoleAsync(user, Roles.Impersonator);
-            }
-            else if (!model.IsImpersonator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId))
-            {
-                await _userManager.RemoveFromRoleAsync(user, Roles.Impersonator);
-            }
-        }
-
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public ActionResult Create(string bc, string ba, string bi, int? customerId = null, int? customerUnitId = null)
         {
             bool hasSelectedCustomer = false;
@@ -427,19 +359,9 @@ namespace Tolk.Web.Controllers
             });
         }
 
-        private UserType HighestLevelLoggedInUserType =>
-            User.IsInRole(Roles.ApplicationAdministrator) ? UserType.ApplicationAdministrator :
-            User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator :
-            User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
-
-        private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?
-            User.IsInRole(Roles.CentralAdministrator) ?
-            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()) :
-            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()
-            && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == User.GetUserId() && cuu.IsLocalAdmin)) : null;
-
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> Create(UserModel model)
         {
             if (ModelState.IsValid)
@@ -668,7 +590,7 @@ namespace Tolk.Web.Controllers
                     {
                         if (ModelState.IsValid)
                         {
-                            await _userService.LogOnNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId());
+                            await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId());
                             foreach (var setting in model)
                             {
                                 UpdateNotificationSetting(apiUser, setting.UseEmail, setting.Type, NotificationChannel.Email, setting.SpecificEmail);
@@ -811,7 +733,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
@@ -830,28 +751,6 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction("Users", "Unit", new { id = model.CustomerUnitId, message = $"{user.FullName} är nu kopplad till enheten" });
             }
             return Forbid();
-        }
-
-        private AspNetUser GetUserToHandle(int userId)
-        {
-            return _userManager.Users
-            .Include(u => u.Roles)
-            .Include(u => u.CustomerOrganisation)
-            .Include(u => u.Broker)
-            .SingleOrDefault(u => u.Id == userId);
-        }
-
-        private CustomerUnitUser GetUnitUser(string combinedId)
-        {
-            int userId = Convert.ToInt32(combinedId.Split("_")[0]);
-            int customerUnitId = Convert.ToInt32(combinedId.Split("_")[1]);
-            return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
-                .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
-        }
-
-        private bool IfLastUserWithLocalAdmin(CustomerUnitUser unitUser)
-        {
-            return unitUser.IsLocalAdmin && !_dbContext.CustomerUnitUsers.Where(cu => cu.CustomerUnitId == unitUser.CustomerUnitId && cu.UserId != unitUser.UserId && cu.IsLocalAdmin).Any();
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
@@ -957,24 +856,263 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        public async Task<ActionResult> EditDefaultSettings(int id)
+        [Authorize(Policies.SystemCentralLocalAdmin)]
+        public async Task<ActionResult> ViewDefaultSettings(int? id = null, string bc = null, string ba = null, string message = null)
         {
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == id);
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+            //Flytta allt detta kod till userService, och flytta action till account.
+            //    Sedan kan vi ha kvar den här, men den tar inte en nullable int!
+            //Sedan tror jag att man skall ha en egen policy för detta EditDefaultSettings som man kan skicka in user och unit till...?
+            if (!id.HasValue)
             {
-                var model = new DefaultSettingsModel
+                id = User.GetUserId();
+            }
+            var user = await _userManager.Users
+                .Include(u => u.DefaultSettings)
+                .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
+                .SingleOrDefaultAsync(u => u.Id == id);
+            if (_options.EnableDefaultSettings && (await _authorizationService.AuthorizeAsync(User, user, Policies.ViewDefaultSettings)).Succeeded)
+            {
+                int? customerUnit = user.GetIntValue(DefaultSettingsType.CustomerUnit);
+                var model = new DefaultSettingsViewModel
                 {
-                    Id = id,
+                    Id = id.Value,
+                    Message = message,
+                    ShowUnitSelection = user.CustomerUnits.Any(),
+                    AllowChange = id == User.GetUserId(),
+                    //Make attribute that takes a DefaultSettingsType, gets the type from the property and parses in a switch, get the value from an extension on aspnetuser?
+                    //then make a twin attribute that is set on order model properties, to make them connected to the correct default value.
+                    //This should not be set in controller though, but sent as array to client to be set on load.
+                    // if done this way, the units can have their own set of default sent in the same way.
+                    Region = Region.Regions.SingleOrDefault(r => r.RegionId == user.GetIntValue(DefaultSettingsType.Region))?.Name,
+                    CustomerUnit = customerUnit == 0 ? Constants.SelectNoUnit : user.CustomerUnits.SingleOrDefault(c => c.CustomerUnitId == customerUnit)?.CustomerUnit.Name,
+                    RankedInterpreterLocationFirst = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationPrimary),
+                    RankedInterpreterLocationSecond = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationSecondary),
+                    RankedInterpreterLocationThird = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationThird),
+                    OnSiteLocationStreet = user.GetValue(DefaultSettingsType.OnSiteStreet),
+                    OnSiteLocationCity = user.GetValue(DefaultSettingsType.OnSiteCity),
+                    OffSiteDesignatedLocationStreet = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationStreet),
+                    OffSiteDesignatedLocationCity = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationCity),
+                    OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
+                    OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
+                    AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                     UserPageMode = new UserPageMode
                     {
-                        BackController = "User",
-                        BackAction = nameof(View),
-                        BackId = id.ToString()
+                        BackController = bc ?? BackController,
+                        BackAction = ba ?? BackAction,
+                        BackId = id?.ToString() ?? BackId
                     }
                 };
                 return View(model);
             }
             return Forbid();
+        }
+
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> EditDefaultSettings(int? id = null, string bc = null, string ba = null)
+        {
+            if (_options.EnableDefaultSettings)
+            {
+                //Flytta allt detta kod till userService, och flytta action till account.
+                //    Sedan kan vi ha kvar den här, men den tar inte en nullable int!
+                //Sedan tror jag att man skall ha en egen policy för detta EditDefaultSettings som man kan skicka in user och unit till...?
+                if (!id.HasValue)
+                {
+                    id = User.GetUserId();
+                }
+                var user = await _userManager.Users
+                    .Include(u => u.DefaultSettings)
+                    .SingleOrDefaultAsync(u => u.Id == id);
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.EditDefaultSettings)).Succeeded)
+                {
+                    AllowExceedingTravelCost? cost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost);
+                    var model = new DefaultSettingsModel
+                    {
+                        Id = id.Value,
+                        //Make attribute that takes a DefaultSettingsType, gets the type from the property and parses in a switch, get the value from an extension on aspnetuser?
+                        //then make a twin attribute that is set on order model properties, to make them connected to the correct default value.
+                        //This should not be set in controller though, but sent as array to client to be set on load.
+                        // if done this way, the units can have their own set of default sent in the same way.
+                        RegionId = user.GetIntValue(DefaultSettingsType.Region),
+                        CustomerUnitId = user.GetIntValue(DefaultSettingsType.CustomerUnit),
+                        RankedInterpreterLocationFirst = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationPrimary),
+                        RankedInterpreterLocationSecond = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationSecondary),
+                        RankedInterpreterLocationThird = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationThird),
+                        OnSiteLocationStreet = user.GetValue(DefaultSettingsType.OnSiteStreet),
+                        OnSiteLocationCity = user.GetValue(DefaultSettingsType.OnSiteCity),
+                        OffSiteDesignatedLocationStreet = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationStreet),
+                        OffSiteDesignatedLocationCity = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationCity),
+                        OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
+                        OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
+                        AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
+                        UserPageMode = new UserPageMode
+                        {
+                            BackController = bc ?? BackController,
+                            BackAction = ba ?? BackAction,
+                            BackId = id?.ToString() ?? BackId
+                        }
+                    };
+                    return View(model);
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> EditDefaultSettings(DefaultSettingsModel model)
+        {
+            if (!_options.EnableDefaultSettings)
+            {
+                return Forbid();
+            }
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.Users
+                    .Include(u => u.DefaultSettings)
+                    .SingleOrDefaultAsync(u => u.Id == model.Id);
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.EditDefaultSettings)).Succeeded)
+                {
+                    await _userService.LogDefaultSettingsUpdateAsync(model.Id, User.GetUserId());
+                    UpdateDefaultSetting(user, DefaultSettingsType.Region, model.RegionId?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.CustomerUnit, model.CustomerUnitId?.ToString());
+
+                    //InterpreterLocations
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationPrimary, ((int?)model.RankedInterpreterLocationFirst)?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationSecondary, ((int?)model.RankedInterpreterLocationSecond)?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationThird, ((int?)model.RankedInterpreterLocationThird)?.ToString());
+
+                    UpdateDefaultSetting(user, DefaultSettingsType.OnSiteStreet, model.OnSiteLocationStreet);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OnSiteCity, model.OnSiteLocationCity);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteDesignatedLocationStreet, model.OffSiteDesignatedLocationStreet);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteDesignatedLocationCity, model.OffSiteDesignatedLocationCity);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSitePhoneContactInformation, model.OffSitePhoneContactInformation);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteVideoContactInformation, model.OffSiteVideoContactInformation);
+                    UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToString());
+
+                    await _dbContext.SaveChangesAsync();
+                    //Need to update the loaded user's claims list after save.
+                    // it is done here (GenerateClaimsAsync), but need to find out how it is initiated...
+
+                    return RedirectToAction(nameof(ViewDefaultSettings), "User", new
+                    {
+                        message = "Ändringarna sparades",
+                        ba = model.UserPageMode.BackAction,
+                        bc = model.UserPageMode.BackController,
+                        id = model.Id
+                    });
+                }
+                return Forbid();
+            }
+            return View(model);
+        }
+
+        private bool UseRolesForAdminUser(AspNetUser user)
+        {
+            return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && User.IsInRole(Roles.ApplicationAdministrator) && !user.InterpreterId.HasValue;
+        }
+
+        private string BackController => HttpContext.Request.Headers["Referer"].ToString().Contains("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().Contains("Unit") ? "Unit" : "User";
+
+        private string BackAction => BackController == "User" ? "List" : BackController == "Unit" ? "Users" : "View";
+
+        private string BackId
+        {
+            get
+            {
+                var referer = HttpContext.Request.Headers["Referer"].ToString();
+                if (!(referer.Contains("Unit") || referer.Contains("Customer")))
+                {
+                    return string.Empty;
+                }
+                var id = referer.Split("/").Last();
+                return id.Contains("?") ? id.Split("?").First() : id;
+            }
+        }
+
+        private async Task UpdateCentralOrderHandlerRoleAsync(UserModel model, AspNetUser user)
+        {
+            if (model.IsCentralOrderHandler && !user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId))
+            {
+                await _userManager.AddToRoleAsync(user, Roles.CentralOrderHandler);
+            }
+            else if (!model.IsCentralOrderHandler && user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId))
+            {
+                await _userManager.RemoveFromRoleAsync(user, Roles.CentralOrderHandler);
+            }
+        }
+
+        private async Task UpdateOrganisationAdministratorRoleAsync(UserModel model, AspNetUser user)
+        {
+            if (model.IsOrganisationAdministrator && !user.Roles.Any(r => r.RoleId == CentralAdministratorRoleId))
+            {
+                await _userManager.AddToRoleAsync(user, Roles.CentralAdministrator);
+            }
+            else if (!model.IsOrganisationAdministrator && user.Roles.Any(r => r.RoleId == CentralAdministratorRoleId))
+            {
+                await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
+            }
+        }
+
+        private async Task UpdateRolesForAdminUserAsync(UserModel model, AspNetUser user)
+        {
+            if (model.IsApplicationAdministrator && !user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId))
+            {
+                await _userManager.AddToRoleAsync(user, Roles.ApplicationAdministrator);
+            }
+            else if (!model.IsApplicationAdministrator && user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId))
+            {
+                await _userManager.RemoveFromRoleAsync(user, Roles.ApplicationAdministrator);
+            }
+            if (model.IsSystemAdministrator && !user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId))
+            {
+                await _userManager.AddToRoleAsync(user, Roles.SystemAdministrator);
+            }
+            else if (!model.IsSystemAdministrator && user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId))
+            {
+                await _userManager.RemoveFromRoleAsync(user, Roles.SystemAdministrator);
+            }
+            if (model.IsImpersonator && !user.Roles.Any(r => r.RoleId == ImpersonatorRoleId))
+            {
+                await _userManager.AddToRoleAsync(user, Roles.Impersonator);
+            }
+            else if (!model.IsImpersonator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId))
+            {
+                await _userManager.RemoveFromRoleAsync(user, Roles.Impersonator);
+            }
+        }
+
+        private UserType HighestLevelLoggedInUserType =>
+            User.IsInRole(Roles.ApplicationAdministrator) ? UserType.ApplicationAdministrator :
+            User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator :
+            User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
+
+        private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?
+            User.IsInRole(Roles.CentralAdministrator) ?
+            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()) :
+            _dbContext.CustomerUnits.Where(cu => cu.CustomerOrganisationId == User.TryGetCustomerOrganisationId()
+            && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == User.GetUserId() && cuu.IsLocalAdmin)) : null;
+
+        private AspNetUser GetUserToHandle(int userId)
+        {
+            return _userManager.Users
+            .Include(u => u.Roles)
+            .Include(u => u.CustomerOrganisation)
+            .Include(u => u.Broker)
+            .SingleOrDefault(u => u.Id == userId);
+        }
+
+        private CustomerUnitUser GetUnitUser(string combinedId)
+        {
+            int userId = Convert.ToInt32(combinedId.Split("_")[0]);
+            int customerUnitId = Convert.ToInt32(combinedId.Split("_")[1]);
+            return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
+                .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
+        }
+
+        private bool IfLastUserWithLocalAdmin(CustomerUnitUser unitUser)
+        {
+            return unitUser.IsLocalAdmin && !_dbContext.CustomerUnitUsers.Where(cu => cu.CustomerUnitId == unitUser.CustomerUnitId && cu.UserId != unitUser.UserId && cu.IsLocalAdmin).Any();
         }
 
         private void UpdateNotificationSetting(AspNetUser apiUser, bool isActive, NotificationType type, NotificationChannel channel, string connectionInformation)
@@ -996,6 +1134,27 @@ namespace Tolk.Web.Controllers
             else if (setting != null)
             {
                 _dbContext.UserNotificationSettings.Remove(setting);
+            }
+        }
+
+        private void UpdateDefaultSetting(AspNetUser user, DefaultSettingsType type, string value)
+        {
+            var setting = user.DefaultSettings.SingleOrDefault(s => s.DefaultSettingType == type);
+            if (setting == null && !string.IsNullOrEmpty(value))
+            {
+                user.DefaultSettings.Add(new UserDefaultSetting
+                {
+                    DefaultSettingType = type,
+                    Value = value,
+                });
+            }
+            else if (setting != null && !string.IsNullOrEmpty(value))
+            {
+                setting.Value = value;
+            }
+            else if (setting != null && string.IsNullOrEmpty(value))
+            {
+                _dbContext.UserDefaultSettings.Remove(setting);
             }
         }
 
