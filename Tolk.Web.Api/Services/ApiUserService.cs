@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -9,7 +7,6 @@ using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 
@@ -19,8 +16,6 @@ namespace Tolk.Web.Api.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
-        private readonly TolkOptions _options;
-        private readonly IMemoryCache _cache;
         private readonly HashService _hashService;
         private readonly InterpreterService _interpreterService;
 
@@ -28,16 +23,12 @@ namespace Tolk.Web.Api.Services
 
         public ApiUserService(TolkDbContext dbContext,
             ILogger<ApiUserService> logger,
-            IOptions<TolkOptions> options,
             HashService hashService,
-            InterpreterService interpreterService,
-            IMemoryCache cache = null
+            InterpreterService interpreterService
             )
         {
             _logger = logger;
             _dbContext = dbContext;
-            _options = options.Value;
-            _cache = cache;
             _hashService = hashService;
             _interpreterService = interpreterService;
         }

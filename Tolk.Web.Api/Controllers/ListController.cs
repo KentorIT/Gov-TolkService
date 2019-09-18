@@ -9,7 +9,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
-using Tolk.Web.Api.Helpers;
+using H = Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
@@ -17,10 +17,10 @@ namespace Tolk.Web.Api.Controllers
     public class ListController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly TolkApiOptions _options;
+        private readonly H.TolkApiOptions _options;
         private readonly ApiUserService _apiUserService;
 
-        public ListController(TolkDbContext tolkDbContext, IOptions<TolkApiOptions> options, ApiUserService apiUserService)
+        public ListController(TolkDbContext tolkDbContext, IOptions<H.TolkApiOptions> options, ApiUserService apiUserService)
         {
             _dbContext = tolkDbContext;
             _options = options.Value;
@@ -118,7 +118,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(H.ErrorCodes.UNAUTHORIZED);
             }
 
             return Json(new BrokerInterpretersResponse
@@ -162,6 +162,12 @@ namespace Tolk.Web.Api.Controllers
             return DescriptionsAsJson<RequisitionStatus>();
         }
 
+        [HttpGet]
+        public JsonResult ErrorCodes()
+        {
+            return Json(_options.ErrorResponses.Select(d => d));
+        }
+
         private JsonResult DescriptionsAsJson<T>()
         {
             return Json(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
@@ -178,7 +184,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }
@@ -192,26 +198,6 @@ namespace Tolk.Web.Api.Controllers
                 _apiUserService.GetApiUserByApiKey(userName, key);
         }
 
-        //Break out, or fill cache at startup?
-        // use this pattern: public const string UNAUTHORIZED = nameof(UNAUTHORIZED);
-        private static IEnumerable<ErrorResponse> ErrorResponses
-        {
-            get
-            {
-                //TODO: should move to cache!!
-                //TODO: should handle information from the call, i.e. Order number and the api method called
-                return new List<ErrorResponse>
-                {
-                    new ErrorResponse { StatusCode = 403, ErrorCode = "UNAUTHORIZED", ErrorMessage = "The api user could not be authorized." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_FOUND", ErrorMessage = "The provided order number has no request in the correct state for the call." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_NOT_FOUND", ErrorMessage = "The provided interpreter was not found." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_OFFICIALID_ALREADY_SAVED", ErrorMessage = "The official interpreterId for the provided new interpreter was already saved." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
-               };
-            }
-        }
         #endregion
     }
 }

@@ -23,19 +23,17 @@ namespace Tolk.Web.Api.Controllers
         private readonly TolkApiOptions _options;
         private readonly RequisitionService _requisitionService;
         private readonly ApiUserService _apiUserService;
-        private readonly ISwedishClock _timeService;
 
         public RequisitionController(
             TolkDbContext tolkDbContext,
             IOptions<TolkApiOptions> options,
             RequisitionService requisitionService,
-            ApiUserService apiUserService,
-            ISwedishClock timeService)
+            ApiUserService apiUserService
+            )
         {
             _dbContext = tolkDbContext;
             _options = options.Value;
             _apiUserService = apiUserService;
-            _timeService = timeService;
             _requisitionService = requisitionService;
         }
 
@@ -47,7 +45,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests)
@@ -63,7 +61,7 @@ namespace Tolk.Web.Api.Controllers
                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -71,7 +69,7 @@ namespace Tolk.Web.Api.Controllers
             var request = order.Requests.SingleOrDefault(r => apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Approved);
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             try
             {
@@ -90,7 +88,7 @@ namespace Tolk.Web.Api.Controllers
             catch (InvalidOperationException)
             {
                 //TODO: Should log the acctual exception here!!
-                return ReturError("REQUISITION_NOT_IN_CORRECT_STATE");
+                return ReturError(ErrorCodes.REQUISITION_NOT_IN_CORRECT_STATE);
             }
             //End of service
             return Json(new ResponseBase());
@@ -106,7 +104,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
 
             if (!_dbContext.Orders
@@ -114,7 +112,7 @@ namespace Tolk.Web.Api.Controllers
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
 
             var requisition = _dbContext.Requisitions
@@ -127,7 +125,7 @@ namespace Tolk.Web.Api.Controllers
                     c.ReplacedByRequisitionId == null);
             if (requisition == null)
             {
-                return ReturError("REQUISITION_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUISITION_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -141,21 +139,21 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             if (!_dbContext.Orders
                 .Any(o => o.OrderNumber == orderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
 
             var attachment = _dbContext.RequisitionAttachments.Where(a => a.AttachmentId == attachmentId &&
                 a.Requisition.Request.Order.OrderNumber == orderNumber).SingleOrDefault()?.Attachment;
             if (attachment == null)
             {
-                return ReturError("ATTACHMENT_NOT_FOUND");
+                return ReturError(ErrorCodes.ATTACHMENT_NOT_FOUND);
             }
 
             return Json(new FileResponse
@@ -172,7 +170,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message =_options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }
@@ -184,24 +182,6 @@ namespace Tolk.Web.Api.Controllers
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
             return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
                 _apiUserService.GetApiUserByApiKey(userName, key);
-        }
-
-        //Break out, or fill cache at startup?
-        // use this pattern: public const string UNAUTHORIZED = nameof(UNAUTHORIZED);
-        private static IEnumerable<ErrorResponse> ErrorResponses
-        {
-            get
-            {
-                //TODO: should move to cache!!
-                //TODO: should handle information from the call, i.e. Order number and the api method called
-                return new List<ErrorResponse>
-                {
-                    new ErrorResponse { StatusCode = 403, ErrorCode = "UNAUTHORIZED", ErrorMessage = "The api user could not be authorized." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUISITION_NOT_FOUND", ErrorMessage = "The provided order has no registered requisition." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUISITION_NOT_IN_CORRECT_STATE", ErrorMessage = "The requisition was not in a correct state." },
-               };
-            }
         }
 
         private static RequisitionDetailsResponse GetResponseFromRequisition(Requisition requisition, string orderNumber, bool includePreiviousRequisitions)

@@ -46,7 +46,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Complaints)
@@ -56,7 +56,7 @@ namespace Tolk.Web.Api.Controllers
                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -70,7 +70,7 @@ namespace Tolk.Web.Api.Controllers
                 .SingleOrDefault(c => c.Status == ComplaintStatus.Created);
             if (complaint == null)
             {
-                return ReturError("COMPLAINT_NOT_FOUND");
+                return ReturError(ErrorCodes.COMPLAINT_NOT_FOUND);
             }
             _complaintService.Accept(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
 
@@ -85,14 +85,14 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders.SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
                    //Must have a request connected to the order for the broker, any status...
                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -106,7 +106,7 @@ namespace Tolk.Web.Api.Controllers
                 .SingleOrDefault(c => c.Status == ComplaintStatus.Created);
             if (complaint == null)
             {
-                return ReturError("COMPLAINT_NOT_FOUND");
+                return ReturError(ErrorCodes.COMPLAINT_NOT_FOUND);
             }
             _complaintService.Dispute(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
 
@@ -124,7 +124,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
 
             var complaint = _dbContext.Complaints
@@ -133,7 +133,7 @@ namespace Tolk.Web.Api.Controllers
                     c.Request.ReplacingRequestId == null);
             if (complaint == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(callingUser, apiUser.BrokerId.Value);
@@ -149,7 +149,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }
@@ -161,24 +161,6 @@ namespace Tolk.Web.Api.Controllers
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
             return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
                 _apiUserService.GetApiUserByApiKey(userName, key);
-        }
-
-        //Break out, or fill cache at startup?
-        // use this pattern: public const string UNAUTHORIZED = nameof(UNAUTHORIZED);
-        private static IEnumerable<ErrorResponse> ErrorResponses
-        {
-            get
-            {
-                //TODO: should move to cache!!
-                //TODO: should handle information from the call, i.e. Order number and the api method called
-                return new List<ErrorResponse>
-                {
-                    new ErrorResponse { StatusCode = 403, ErrorCode = "UNAUTHORIZED", ErrorMessage = "The api user could not be authorized." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "COMPLAINT_NOT_FOUND", ErrorMessage = "The provided order has no registered complaint." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "COMPLAINT_NOT_IN_CORRECT_STATE", ErrorMessage = "The complaint was not in a correct state." },
-               };
-            }
         }
 
         private static ComplaintDetailsResponse GetResponseFromComplaint(Complaint complaint, string orderNumber)

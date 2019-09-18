@@ -49,7 +49,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = await _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -68,7 +68,7 @@ namespace Tolk.Web.Api.Controllers
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -78,7 +78,7 @@ namespace Tolk.Web.Api.Controllers
                 (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             InterpreterBroker interpreter;
             try
@@ -87,14 +87,14 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (InvalidOperationException)
             {
-                return ReturError("INTERPRETER_OFFICIALID_ALREADY_SAVED");
+                return ReturError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
             }
 
             //Does not handle Kammarkollegiets tolknummer
             if (interpreter == null)
             {
                 //Possibly the interpreter should be added, if not found?? 
-                return ReturError("INTERPRETER_NOT_FOUND");
+                return ReturError(ErrorCodes.INTERPRETER_NOT_FOUND);
             }
             var now = _timeService.SwedenNow;
             if (request.Status == RequestStatus.Created)
@@ -128,7 +128,7 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return ReturError("REQUEST_NOT_CORRECTLY_ANSWERED", ex.Message);
+                return ReturError(ErrorCodes.REQUEST_NOT_CORRECTLY_ANSWERED, ex.Message);
             }
         }
 
@@ -145,7 +145,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
@@ -154,7 +154,7 @@ namespace Tolk.Web.Api.Controllers
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -163,7 +163,7 @@ namespace Tolk.Web.Api.Controllers
                 (r.Status == RequestStatus.Created));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             //Add RequestService that does this, and additionally calls _notificationService
             request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
@@ -185,7 +185,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
@@ -194,7 +194,7 @@ namespace Tolk.Web.Api.Controllers
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -212,7 +212,7 @@ namespace Tolk.Web.Api.Controllers
                     (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
             _dbContext.SaveChanges();
@@ -233,14 +233,14 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             if (!_dbContext.Orders
                 .Any(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -258,7 +258,7 @@ namespace Tolk.Web.Api.Controllers
                 (r.Status == RequestStatus.Approved));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             try
             {
@@ -269,7 +269,7 @@ namespace Tolk.Web.Api.Controllers
             catch (InvalidOperationException)
             {
                 //TODO: Should log the acctual exception here!!
-                return ReturError("REQUEST_NOT_IN_CORRECT_STATE");
+                return ReturError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
             }
 
             //End of service
@@ -282,14 +282,14 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             if (!_dbContext.Orders
                 .Any(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -312,7 +312,7 @@ namespace Tolk.Web.Api.Controllers
                 r.Status == RequestStatus.Accepted));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             InterpreterBroker interpreter;
             try
@@ -321,12 +321,12 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (InvalidOperationException)
             {
-                return ReturError("INTERPRETER_OFFICIALID_ALREADY_SAVED");
+                return ReturError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
             }
             if (interpreter == null)
             {
                 //Possibly the interpreter should be added, if not found?? 
-                return ReturError("INTERPRETER_NOT_FOUND");
+                return ReturError(ErrorCodes.INTERPRETER_NOT_FOUND);
             }
             var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
 
@@ -355,7 +355,7 @@ namespace Tolk.Web.Api.Controllers
             catch (InvalidOperationException)
             {
                 //TODO: Should log the acctual exception here!!
-                return ReturError("REQUEST_NOT_IN_CORRECT_STATE");
+                return ReturError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
             }
             return Json(new ResponseBase());
         }
@@ -366,7 +366,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -380,7 +380,7 @@ namespace Tolk.Web.Api.Controllers
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -391,7 +391,7 @@ namespace Tolk.Web.Api.Controllers
                 (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
             if (request == null)
             {
-                return ReturError("REQUEST_NOT_FOUND");
+                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
             }
             var now = _timeService.SwedenNow;
             //Add transaction here!!!
@@ -423,7 +423,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
             var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
@@ -433,13 +433,13 @@ namespace Tolk.Web.Api.Controllers
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
             if (order == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
 
             var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
             if (attachment == null)
             {
-                return ReturError("ATTACHMENT_NOT_FOUND");
+                return ReturError(ErrorCodes.ATTACHMENT_NOT_FOUND);
             }
 
             return Json(new FileResponse
@@ -453,7 +453,7 @@ namespace Tolk.Web.Api.Controllers
             var apiUser = GetApiUser();
             if (apiUser == null)
             {
-                return ReturError("UNAUTHORIZED");
+                return ReturError(ErrorCodes.UNAUTHORIZED);
             }
 
             //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
@@ -477,7 +477,7 @@ namespace Tolk.Web.Api.Controllers
                     r.ReplacingRequestId == null);
             if (request == null)
             {
-                return ReturError("ORDER_NOT_FOUND");
+                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
             }
             //Possibly the user should be added, if not found?? 
             var user = _apiUserService.GetBrokerUser(callingUser, apiUser.BrokerId.Value);
@@ -493,7 +493,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
-            var message = ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
             Response.StatusCode = message.StatusCode;
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
@@ -509,28 +509,6 @@ namespace Tolk.Web.Api.Controllers
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
             return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
                 _apiUserService.GetApiUserByApiKey(userName, key);
-        }
-
-        //Break out, or fill cache at startup?
-        // use this pattern: public const string UNAUTHORIZED = nameof(UNAUTHORIZED);
-        private static IEnumerable<ErrorResponse> ErrorResponses
-        {
-            get
-            {
-                //TODO: should move to cache!!
-                //TODO: should handle information from the call, i.e. Order number and the api method called
-                return new List<ErrorResponse>
-                {
-                    new ErrorResponse { StatusCode = 403, ErrorCode = "UNAUTHORIZED", ErrorMessage = "The api user could not be authorized." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ORDER_NOT_FOUND", ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_FOUND", ErrorMessage = "The provided order number has no request in the correct state for the call." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_NOT_FOUND", ErrorMessage = "The provided interpreter was not found." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "INTERPRETER_OFFICIALID_ALREADY_SAVED", ErrorMessage = "The official interpreterId for the provided new interpreter was already saved." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "ATTACHMENT_NOT_FOUND", ErrorMessage = "The file coould not be found." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_IN_CORRECT_STATE", ErrorMessage = "The request or the underlying order was not in a correct state." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = "REQUEST_NOT_CORRECTLY_ANSWERED", ErrorMessage = "The request or the underlying order was not correctly answered" },
-               };
-            }
         }
 
         public static RequestDetailsResponse GetResponseFromRequest(Request request)

@@ -107,6 +107,11 @@ namespace BrokerMock.Services
                 items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get tax card types: {items.Count}");
                 _cache.Set("TaxCardTypes", items);
+
+                response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ErrorCodes/");
+                var errors = JsonConvert.DeserializeObject<List<ErrorResponse>>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get error codes: {errors.Count}");
+                _cache.Set("ErrorCodes", errors);
             }
             using (var client = GetHttpClient())
             {
