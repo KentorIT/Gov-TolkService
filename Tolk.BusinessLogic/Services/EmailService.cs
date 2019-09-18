@@ -103,10 +103,10 @@ namespace Tolk.BusinessLogic.Services
 
                 message.From.Add(from);
                 message.To.Add(new MailboxAddress(_secondLineSupportMail));
-                message.Subject = $"Fel i {classname} metod {methodname}";
+                message.Subject = $"Exception in {classname} method {methodname}";
                 var builder = new BodyBuilder
                 {
-                    TextBody = $"Felmeddelande:\n{ex.Message}\n\nStackTrace:\n{ex.StackTrace}"
+                    TextBody = $"Exception message:\n{ex.Message}\n\nException info:\n{ex.ToString()}\n\nStackTrace:\n{ex.StackTrace}"
                 };
                 message.Body = builder.ToMessageBody();
                 try
