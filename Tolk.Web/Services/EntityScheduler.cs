@@ -12,7 +12,7 @@ namespace Tolk.Web.Services
         private readonly ILogger<EntityScheduler> _logger;
         private readonly ISwedishClock _clock;
 
-        private  DateTimeOffset nextDailyRunTime;
+        private DateTimeOffset nextDailyRunTime;
 
         private const int TimeToRun = 5;
 
@@ -82,8 +82,7 @@ namespace Tolk.Web.Services
                         {
                             serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
                             serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
-                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().ValidateTellusLanguageList(true),
-                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().UpdateTellusLanguagesCompetenceInfo(true)
+                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().HandleTellusVerifications(true),
                         };
                     }
                     else
@@ -97,13 +96,20 @@ namespace Tolk.Web.Services
                             serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
                         };
                     }
-
-                    Task.WaitAll(tasksToRun);
+                    int allotedTime = 120000;
+                    if (!Task.WaitAll(tasksToRun, allotedTime))
+                    {
+                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTime} ms");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Entity Scheduler failed ({message}).", ex.Message);
+                using (var serviceScope = _services.CreateScope())
+                {
+                   _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendSupportErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
+                }
             }
             finally
             {

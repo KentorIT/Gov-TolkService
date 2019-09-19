@@ -24,6 +24,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<OrderService> _logger;
         private readonly INotificationService _notificationService;
         private readonly VerificationService _verificationService;
+        private readonly EmailService _emailService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
 
         public OrderService(
@@ -35,6 +36,7 @@ namespace Tolk.BusinessLogic.Services
             ILogger<OrderService> logger,
             INotificationService notificationService,
             VerificationService verificationService,
+            EmailService emailService,
             ITolkBaseOptions tolkBaseOptions
             )
         {
@@ -46,6 +48,7 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _notificationService = notificationService;
             _verificationService = verificationService;
+            _emailService = emailService;
             _tolkBaseOptions = tolkBaseOptions;
         }
 
@@ -88,6 +91,7 @@ namespace Tolk.BusinessLogic.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
+                    SendErrorMail(nameof(HandleStartedOrders), ex);
                 }
             }
         }
@@ -95,7 +99,8 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleExpiredEntities()
         {
             await HandleExpiredRequests();
-            await HandleExpiredRequestGroups();
+            #warning SKA SLÅS PÅ NÄR VI IMPLEMENTERAR SAMMANHÅLLEN BOKNING!
+            //await HandleExpiredRequestGroups();
             await HandleExpiredComplaints();
             await HandleExpiredNonAnsweredRespondedRequests();
         }
@@ -104,7 +109,7 @@ namespace Tolk.BusinessLogic.Services
         {
             var expiredRequestIds = await _tolkDbContext.Requests
                 .Where(r => r.RequestGroupId == null &&
-                    ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) ||
+                    ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
                     (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)))
                 .Select(r => r.RequestId)
                 .ToListAsync();
@@ -123,7 +128,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                             .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
                             .SingleOrDefaultAsync(r =>
-                                ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
+                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
                                 || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestId == requestId);
 
@@ -156,6 +161,8 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
+                        trn.Rollback();
+                        SendErrorMail(nameof(HandleExpiredRequests), ex);
                     }
                 }
             }
@@ -165,7 +172,7 @@ namespace Tolk.BusinessLogic.Services
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
                 .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker) ||
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
                     (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
@@ -185,7 +192,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
-                                ((r.ExpiresAt <= _clock.SwedenNow && r.IsToBeProcessedByBroker)
+                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
                                 || (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestGroupId == requestGroupId);
 
@@ -218,9 +225,16 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
+                        trn.Rollback();
+                        SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
                     }
                 }
             }
+        }
+
+        private async void SendErrorMail(string methodname, Exception ex)
+        {
+            await _emailService.SendSupportErrorEmail(nameof(OrderService), methodname, ex);
         }
 
         private async Task HandleExpiredComplaints()
@@ -256,13 +270,15 @@ namespace Tolk.BusinessLogic.Services
                             expiredComplaint.Status = ComplaintStatus.Confirmed;
                             expiredComplaint.AnsweredAt = _clock.SwedenNow;
                             expiredComplaint.AnswerMessage = $"Systemet har efter {_tolkBaseOptions.MonthsToApproveComplaints} månader automatiskt accepterat reklamationen då svar uteblivit.";
-                            _tolkDbContext.SaveChanges();
+                            await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure processing expired complaint {complaintId}", complaintId);
+                        trn.Rollback();
+                        SendErrorMail(nameof(HandleExpiredComplaints), ex);
                     }
                 }
             }
@@ -273,8 +289,7 @@ namespace Tolk.BusinessLogic.Services
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
                 .Where(r => r.RequestGroupId == null &&
                     (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    r.Order.StartAt <= _clock.SwedenNow)
-                .Where(r => r.IsAccepted)
+                    r.Order.StartAt <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))
                 .Select(r => r.RequestId).ToListAsync();
 
             _logger.LogDebug("Found {count} non answered responded requests that expires: {requestIds}",
@@ -290,7 +305,7 @@ namespace Tolk.BusinessLogic.Services
                         .Include(r => r.Order)
                         .SingleOrDefaultAsync(r => r.Order.StartAt <= _clock.SwedenNow
                         && (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
-                        && (r.IsAccepted)
+                        && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         && r.RequestId == requestId);
                         if (request == null)
                         {
@@ -303,13 +318,15 @@ namespace Tolk.BusinessLogic.Services
                                 requestId);
                             request.Status = RequestStatus.ResponseNotAnsweredByCreator;
                             request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
-                            _tolkDbContext.SaveChanges();
+                            await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
+                        trn.Rollback();
+                        SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
                     }
                 }
             }
@@ -729,6 +746,8 @@ namespace Tolk.BusinessLogic.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing {methodName}", nameof(CleanTempAttachments));
+                    trn.Rollback();
+                    SendErrorMail(nameof(CleanTempAttachments), ex);
                 }
                 trn.Commit();
             }

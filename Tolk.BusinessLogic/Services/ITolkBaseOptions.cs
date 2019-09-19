@@ -8,6 +8,6 @@ namespace Tolk.BusinessLogic.Services
         string TolkWebBaseUrl { get; }
         int MonthsToApproveComplaints { get; }
         TolkBaseOptions.TellusApi Tellus { get; }
-        string SupportEmail { get; }
+        TolkBaseOptions.SupportSettings Support { get; }
     }
 }

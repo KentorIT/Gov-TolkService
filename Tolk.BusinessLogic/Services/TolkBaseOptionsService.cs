@@ -21,6 +21,7 @@ namespace Tolk.BusinessLogic.Services
         public int MonthsToApproveComplaints => _options.MonthsToApproveComplaints;
 
         public TolkBaseOptions.TellusApi Tellus => _options.Tellus;
-        public string SupportEmail => _options.SupportEmail;
+
+        public TolkBaseOptions.SupportSettings Support => _options.Support;
     }
 }
