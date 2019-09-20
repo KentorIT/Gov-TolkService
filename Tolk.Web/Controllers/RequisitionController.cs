@@ -108,7 +108,7 @@ namespace Tolk.Web.Controllers
                 {
                     OrderRequestId = model.CustomerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                     Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                    OrderNumber = r.Request.Order.OrderNumber.ToString(),
+                    OrderNumber = r.Request.Order.OrderNumber,
                     OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("hh\\:mm")}-{r.Request.Order.EndAt.ToString("hh\\:mm")}",
                     Status = r.Status,
                     BrokerName = r.Request.Ranking.Broker.Name,
