@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -55,62 +56,74 @@ namespace Tolk.Web.Controllers
             _requisitionService = requisitionService;
         }
 
-        public IActionResult List(RequisitionFilterModel model)
+        public IActionResult List()
         {
-            if (model == null)
+            return View(new RequisitionListModel
             {
-                model = new RequisitionFilterModel();
+                FilterModel = new RequisitionFilterModel
+                {
+                    CustomerUnits = User.TryGetAllCustomerUnits(),
+                    IsBroker = User.TryGetBrokerId().HasValue,
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListRequisitions(IDataTablesRequest request)
+        {
+            var model = new RequisitionFilterModel();
+            await TryUpdateModelAsync(model);
+            //Set this if app or sys admins 
+            model.IsAdmin = false;
+            model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            int? brokerId = User.TryGetBrokerId();
+            model.IsBroker = brokerId.HasValue;
+            if (model.IsBroker)
+            {
+                model.BrokerId = User.TryGetBrokerId();
+            }
+            else
+            {
+                model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
+                model.UserId = User.GetUserId();
+                model.CustomerUnits = User.TryGetAllCustomerUnits();
             }
 
-            var isCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
-            var brokerId = User.TryGetBrokerId();
-            var customerOrganisationId = User.TryGetCustomerOrganisationId();
-            model.IsBroker = brokerId.HasValue;
+            IQueryable<Requisition> requisitions = null;
 
-            var requisitions = _dbContext.Requisitions.Where(r => !r.ReplacedByRequisitionId.HasValue);
-            var userId = User.GetUserId();
-            IEnumerable<int> customerUnits = null;
-            if (customerOrganisationId.HasValue)
+            if (model.CustomerOrganisationId.HasValue || model.IsAdmin)
             {
-                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId &&
-                        (isCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
-                    .Select(cu => cu.CustomerUnitId).ToList();
-
-                requisitions = requisitions.Where(r => r.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId.Value, userId, isCentralAdminOrOrderHandler));
+                requisitions = model.GetRequisitionsFromOrders(_dbContext.Orders.Select(o => o));
             }
             else if (brokerId.HasValue)
             {
-                requisitions = requisitions.Where(r => r.Request.Ranking.BrokerId == brokerId);
+                requisitions = model.GetRequisitionsFromRequests(_dbContext.Requests.Select(o => o));
             }
             else
             {
                 return Forbid();
             }
-
-            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
-
-            requisitions = model.Apply(requisitions);
-            return View(
-                new RequisitionListModel
+            return AjaxDataTableHelper.GetData(request, requisitions.Count(), model.Apply(requisitions)
+                .Select(r => new RequisitionListItemModel
                 {
-                    FilterModel = model,
-                    Items = requisitions.Select(r => new RequisitionListItemModel
-                    {
-                        OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
-                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                        OrderNumber = r.Request.Order.OrderNumber.ToString(),
-                        OrderDateAndTime = new TimeRange
-                        {
-                            StartDateTime = r.Request.Order.StartAt,
-                            EndDateTime = r.Request.Order.EndAt,
-                        },
-                        Status = r.Status,
-                        Controller = customerOrganisationId.HasValue ? "Order" : "Request",
-                        BrokerName = r.Request.Ranking.Broker.Name,
-                        CustomerName = r.Request.Order.CustomerOrganisation.Name,
-                    })
-                });
+                    OrderRequestId = model.CustomerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
+                    Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
+                    OrderNumber = r.Request.Order.OrderNumber.ToString(),
+                    OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("hh\\:mm")}-{r.Request.Order.EndAt.ToString("hh\\:mm")}",
+                    Status = r.Status,
+                    BrokerName = r.Request.Ranking.Broker.Name,
+                    CustomerName = r.Request.Order.CustomerOrganisation.Name,
+                })
+            );
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<RequisitionListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue; //or is sys/app admin 
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue; //or is sys/app admin 
+            return Json(definition);
         }
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)

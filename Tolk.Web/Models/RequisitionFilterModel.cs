@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -30,7 +32,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedling")]
         public int? BrokerId { get; set; }
 
-        public bool HasCustomerUnits { get; set; }
+        public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
 
         public bool HasActiveFilters => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
 
@@ -38,6 +40,31 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Skapad av")]
         public int? CreatedById { get; set; }
+
+        public bool IsCentralAdminOrOrderHandler { get; set; }
+
+        public bool IsAdmin { get; set; }
+
+        public int UserId{ get; set; }
+
+
+        public IEnumerable<int> CustomerUnits { get; set; }
+
+        internal IQueryable<Requisition> GetRequisitionsFromOrders(IQueryable<Order> orders)
+        {
+            if (!IsAdmin)
+            {
+                orders = orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true);
+            }
+            return orders.Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Requisitions)
+                .Where(r => !r.ReplacedByRequisitionId.HasValue);
+        }
+
+        internal IQueryable<Requisition> GetRequisitionsFromRequests(IQueryable<Request> requests)
+        {
+            return requests.BrokerRequests(BrokerId.Value).SelectMany(r => r.Requisitions)
+                .Where(r => !r.ReplacedByRequisitionId.HasValue);
+        }
 
         internal IQueryable<Requisition> Apply(IQueryable<Requisition> requisitions)
         {
@@ -68,11 +95,12 @@ namespace Tolk.Web.Models
             requisitions = CustomerUnitId.HasValue
                 ? requisitions.Where(r => r.Request.Order.CustomerUnitId == CustomerUnitId)
                 : requisitions;
-            requisitions = FilterByInactiveUnits.HasValue 
-                ? requisitions.Where(r => r.Request.Order.CustomerUnit == null || r.Request.Order.CustomerUnit.IsActive) 
+            requisitions = FilterByInactiveUnits ?? false
+                ? requisitions.Where(r => r.Request.Order.CustomerUnit == null || r.Request.Order.CustomerUnit.IsActive)
                 : requisitions;
 
             return requisitions;
+
         }
     }
 }
