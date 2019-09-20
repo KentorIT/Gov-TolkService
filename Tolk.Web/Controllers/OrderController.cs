@@ -69,12 +69,20 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
-            var model = new OrderFilterModel();
-            model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
-            model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
-            model.CustomerUnits = User.TryGetAllCustomerUnits();
+            var model = new OrderFilterModel
+            {
+                IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler),
+                IsAdmin = User.IsInRole(Roles.SystemAdministrator),
+                CustomerUnits = User.TryGetAllCustomerUnits()
+            };
 
-            return View(new OrderListModel { FilterModel = model });
+            return View(new OrderListModel { FilterModel = new OrderFilterModel
+                {
+                    IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler),
+                    IsAdmin = User.IsInRole(Roles.SystemAdministrator),
+                    CustomerUnits = User.TryGetAllCustomerUnits()
+                }
+            });
         }
 
         public async Task<IActionResult> View(int id, string message = null)
@@ -607,7 +615,7 @@ namespace Tolk.Web.Controllers
                 model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
             }
 
-            var orders = _dbContext.Orders.Select(o => o);
+            var orders = model.GetOrders(_dbContext.Orders.Select(o => o));
             var filteredData = model.Apply(orders).Select(o => new OrderListItemModel
             {
                 OrderId = o.OrderId,

@@ -51,48 +51,51 @@ namespace Tolk.Web.Models
 
         public bool HasActiveFilters
         {
-            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(CustomerReferenceNumber) || 
-                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue || CustomerOrganisationId.HasValue; 
+            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(CustomerReferenceNumber) ||
+                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue || CustomerOrganisationId.HasValue;
         }
 
         public int UserId { get; set; }
 
+        internal IQueryable<Order> GetOrders(IQueryable<Order> orders)
+        {
+            return !IsAdmin
+                ? orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true)
+                : orders;
+
+        }
+
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
-            if (!IsAdmin)
-            {
-                orders = orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true);
-            }
-
-            orders = !string.IsNullOrWhiteSpace(OrderNumber) 
-                ? orders.Where(o => o.OrderNumber.Contains(OrderNumber)) 
+            orders = !string.IsNullOrWhiteSpace(OrderNumber)
+                ? orders.Where(o => o.OrderNumber.Contains(OrderNumber))
                 : orders;
             orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? orders.Where(o => o.CustomerReferenceNumber != null && o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : orders;
-            orders = RegionId.HasValue 
-                ? orders.Where(o => o.RegionId == RegionId) 
+            orders = RegionId.HasValue
+                ? orders.Where(o => o.RegionId == RegionId)
                 : orders;
             orders = CustomerUnitId.HasValue
                 ? orders.Where(o => o.CustomerUnitId == CustomerUnitId)
                 : orders;
-            orders = LanguageId.HasValue 
-                ? orders.Where(o => o.LanguageId == LanguageId) 
+            orders = LanguageId.HasValue
+                ? orders.Where(o => o.LanguageId == LanguageId)
                 : orders;
             orders = CreatedBy.HasValue
                 ? orders.Where(o => o.CreatedBy == CreatedBy)
                 : orders;
-            orders = Status.HasValue 
-                ? Status.Value == OrderStatus.ToBeProcessedByCustomer 
-                    ? orders.Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter) 
+            orders = Status.HasValue
+                ? Status.Value == OrderStatus.ToBeProcessedByCustomer
+                    ? orders.Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter)
                 : orders.Where(o => o.Status == Status) : orders;
-            orders = BrokerId.HasValue 
-                ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved))) 
+            orders = BrokerId.HasValue
+                ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved)))
                 : orders;
             orders = CustomerOrganisationId.HasValue
                 ? orders.Where(o => o.CustomerOrganisationId == CustomerOrganisationId)
                 : orders;
-            orders = FilterByInactiveUnits.HasValue
+            orders = FilterByInactiveUnits ?? false
                 ? orders.Where(o => o.CustomerUnit == null || o.CustomerUnit.IsActive)
                 : orders;
             orders = DateRange?.Start != null
@@ -101,7 +104,7 @@ namespace Tolk.Web.Models
             orders = DateRange?.End != null
                     ? orders.Where(o => o.StartAt.Date <= DateRange.End)
                     : orders;
-                
+
             return orders;
         }
     }

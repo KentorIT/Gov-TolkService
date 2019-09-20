@@ -241,7 +241,14 @@ $(function () {
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
-                                $(row).data("click-action-url", $table.data("click-action-url") + "/" + data[$idColumn[0].data]);
+                                var $action = $table.data("click-action-url");
+                                if ($action.indexOf("?")) {
+                                    $(row).data("click-action-url", $action.replace("?", "/" + data[$idColumn[0].data] + "?"));
+
+                                } else {
+                                    $(row).data("click-action-url", $action + "/" + data[$idColumn[0].data]);
+
+                                }
                             }
                             if ($leftcssDefinitionColumn.length > 0) {
                                 $(row).find("td").eq(0).addClass(data[$leftcssDefinitionColumn[0].data]);
@@ -253,7 +260,11 @@ $(function () {
                             data: function (data) {
                                 // Read values and append to data
                                 $($filterSelector + " :input").each(function () {
-                                    data[$(this).prop("name")] = $(this).val();
+                                    if ($(this).is(":checkbox")) {
+                                        data[$(this).prop("name")] = $(this).is(":checked") ? "true": "false";
+                                    } else {
+                                        data[$(this).prop("name")] = $(this).val();
+                                    }
                                 });
                             },
                             error: function (jqXHR, textStatus, errorThrown) {
