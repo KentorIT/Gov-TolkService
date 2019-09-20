@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -62,24 +63,25 @@ namespace Tolk.Web.Controllers
             _interpreterService = interpreterService;
         }
 
-        public IActionResult List(RequestFilterModel model)
+        public IActionResult List()
         {
-            if (model == null)
-            {
-                model = new RequestFilterModel();
-            }
-            var items = _dbContext.Requests
-                .Where(r => r.Ranking.Broker.BrokerId == User.GetBrokerId()
-                && !r.StatusNotToBeDisplayedForBroker);
-            // Filters
-            items = model.Apply(items);
+            return View(new RequestListModel { FilterModel = new RequestFilterModel() });
+        }
 
-            return View(
-                new RequestListModel
-                {
-                    Items = items.SelectRequestListItemModel(),
-                    FilterModel = model
-                });
+        [HttpPost]
+        public async Task<IActionResult> ListRequests(IDataTablesRequest request)
+        {
+            var model = new RequestFilterModel();
+            await TryUpdateModelAsync(model);
+
+            var requests = _dbContext.Requests.BrokerRequests(User.GetBrokerId());
+            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests).SelectRequestListItemModel());
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<RequestListItemModel>());
         }
 
         public async Task<IActionResult> View(int id)

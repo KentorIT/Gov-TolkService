@@ -2,8 +2,7 @@
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
 <section aria-label="Filtrera">
-<div class="col-sm-12">
-    <form method="get" class="filter-form do-not-check-dirty">
+    <div class="col-sm-12">
         <div class="row">
             <div class="col-xs-4">
                 <h2>Filtrera</h2>
@@ -46,6 +45,5 @@
                 <form-entry asp-for="AnsweredById" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
             </div>
         </div>
-    </form>
-</div>
+    </div>
 </section>

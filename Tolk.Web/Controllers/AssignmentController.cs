@@ -63,21 +63,7 @@ namespace Tolk.Web.Controllers
                new AssignmentListModel
                {
                    FilterModel = filterModel,
-                   Items = requests.Select(r => new RequestListItemModel
-                   {
-                       RequestId = r.RequestId,
-                       Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                       OrderNumber = r.Order.OrderNumber,
-                       CustomerName = r.Order.CustomerOrganisation.Name,
-                       RegionName = r.Order.Region.Name,
-                       OrderDateAndTime = new TimeRange
-                       {
-                           StartDateTime = r.Order.StartAt,
-                           EndDateTime = r.Order.EndAt
-                       },
-                       Status = r.Status,
-                       Action = nameof(View)
-                   })
+                   Items = requests.SelectRequestListItemModel()
                });
         }
 

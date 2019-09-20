@@ -16,6 +16,12 @@ namespace Tolk.BusinessLogic.Utilities
                 filteredOrders.Where(o => ((o.CreatedBy == userId || (includeContact && o.ContactPersonId == userId)) && o.CustomerUnitId == null) ||
                     customerUnits.Contains(o.CustomerUnitId ?? -1));
         }
+
+        public static IQueryable<Request> BrokerRequests(this IQueryable<Request> requests, int brokerId)
+        {
+            return requests.Where(r => r.Ranking.BrokerId == brokerId);
+        }
+
         public static int? GetIntValue(this AspNetUser user, DefaultSettingsType type)
         {
             return user.GetValue(type).TryGetNullableInt();
