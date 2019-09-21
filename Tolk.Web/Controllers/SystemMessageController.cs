@@ -24,15 +24,18 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<SystemMessageController> _logger;
+        private readonly IAuthorizationService _authorizationService;
         private readonly ISwedishClock _clock;
 
         public SystemMessageController(
             TolkDbContext dbContext,
             ILogger<SystemMessageController> logger,
+            IAuthorizationService authorizationService,
             ISwedishClock clock)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _authorizationService = authorizationService;
             _clock = clock;
         }
 

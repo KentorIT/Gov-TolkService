@@ -27,6 +27,7 @@ namespace Tolk.Web.Controllers
     {
         private readonly UserManager<AspNetUser> _userManager;
         private readonly SignInManager<AspNetUser> _signInManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly ILogger _logger;
         private readonly TolkDbContext _dbContext;
         private readonly IUserClaimsPrincipalFactory<AspNetUser> _claimsFactory;
@@ -39,6 +40,7 @@ namespace Tolk.Web.Controllers
         public AccountController(
             UserManager<AspNetUser> userManager,
             SignInManager<AspNetUser> signInManager,
+            RoleManager<IdentityRole<int>> roleManager,
             ILogger<AccountController> logger,
             TolkDbContext dbContext,
             IUserClaimsPrincipalFactory<AspNetUser> claimsFactory,
@@ -50,6 +52,7 @@ namespace Tolk.Web.Controllers
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _logger = logger;
             _dbContext = dbContext;
             _claimsFactory = claimsFactory;

@@ -26,33 +26,39 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
+        private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly DateCalculationService _dateCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly INotificationService _notificationService;
         private readonly RequestService _requestService;
         private readonly InterpreterService _interpreterService;
 
         public RequestController(
             TolkDbContext dbContext,
             ISwedishClock clock,
+            OrderService orderService,
             IAuthorizationService authorizationService,
             PriceCalculationService priceCalculationService,
             DateCalculationService dateCalculationService,
             ILogger<RequestController> logger,
             IOptions<TolkOptions> options,
+            INotificationService notificationService,
             RequestService requestService,
             InterpreterService interpreterService
         )
         {
             _dbContext = dbContext;
             _clock = clock;
+            _orderService = orderService;
             _authorizationService = authorizationService;
             _priceCalculationService = priceCalculationService;
             _dateCalculationService = dateCalculationService;
             _logger = logger;
             _options = options.Value;
+            _notificationService = notificationService;
             _requestService = requestService;
             _interpreterService = interpreterService;
         }

@@ -28,19 +28,22 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<HomeController> _logger;
+        private readonly VerificationService _verificationService;
 
         public HomeController(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<HomeController> logger)
+            ILogger<HomeController> logger,
+            VerificationService verificationService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
+            _verificationService = verificationService;
         }
 
         public async Task<IActionResult> Index(string message, string errorMessage)

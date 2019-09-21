@@ -24,26 +24,35 @@ namespace Tolk.Web.Controllers
     public class RequisitionController : Controller
     {
         private readonly TolkDbContext _dbContext;
+        private readonly ISwedishClock _clock;
+        private readonly OrderService _orderService;
         private readonly IAuthorizationService _authorizationService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
+        private readonly INotificationService _notificationService;
         private readonly RequisitionService _requisitionService;
 
         public RequisitionController(
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
+            ISwedishClock clock,
+            OrderService orderService,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
+            INotificationService notificationService,
             RequisitionService requisitionService
             )
         {
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
+            _clock = clock;
+            _orderService = orderService;
             _authorizationService = authorizationService;
             _logger = logger;
             _options = options.Value;
+            _notificationService = notificationService;
             _requisitionService = requisitionService;
         }
 

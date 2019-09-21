@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 using Tolk.Web.Helpers;
@@ -17,15 +18,18 @@ namespace Tolk.Web.Controllers
     [Authorize(Policies.SystemCentralLocalAdmin)]
     public class StatisticsController : Controller
     {
+        private readonly TolkDbContext _dbContext;
         private readonly ILogger<StatisticsController> _logger;
         private readonly ISwedishClock _clock;
         private readonly StatisticsService _statService;
 
         public StatisticsController(
+            TolkDbContext dbContext,
             ILogger<StatisticsController> logger,
             ISwedishClock clock,
             StatisticsService statService)
         {
+            _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
             _statService = statService;
