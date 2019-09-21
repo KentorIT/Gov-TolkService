@@ -7,7 +7,6 @@ namespace Tolk.Api.Payloads.WebHookPayloads
     {
         public DateTimeOffset CreatedAt { get; set; }
         public string OrderNumber { get; set; }
-        public string Customer { get; set; }
         public CustomerInformationModel CustomerInformation { get; set; }
         public string Region { get; set; }
         public DateTimeOffset? ExpiresAt { get; set; }

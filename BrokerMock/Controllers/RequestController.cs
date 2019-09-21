@@ -45,7 +45,7 @@ namespace BrokerMock.Controllers
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var apiKey);
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]{apiKey}:: Boknings-ID: {payload.OrderNumber} skapad av {payload.Customer} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} skapad av {payload.CustomerInformation.Name} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}");
             }
             if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
             {
