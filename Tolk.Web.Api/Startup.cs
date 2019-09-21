@@ -40,6 +40,7 @@ namespace Tolk.Web.Api
             services.AddScoped<HashService>();
             services.AddScoped<VerificationService>();
             services.AddScoped<InterpreterService>();
+            services.AddScoped<EmailService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));

@@ -9,5 +9,6 @@ namespace Tolk.BusinessLogic.Services
         int MonthsToApproveComplaints { get; }
         TolkBaseOptions.TellusApi Tellus { get; }
         TolkBaseOptions.SupportSettings Support { get; }
+        TolkBaseOptions.SmtpSettings Smtp { get; }
     }
 }

@@ -12,6 +12,7 @@ namespace Tolk.BusinessLogic.Utilities
         public TellusApi Tellus { get; set; }
         public SupportSettings Support { get; set; }
 
+        public SmtpSettings Smtp { get; set; }
 
         public class TellusApi
         {
@@ -26,6 +27,19 @@ namespace Tolk.BusinessLogic.Utilities
                     return UnusedIsoCodes.Split(';');
                 }
             }
+        }
+
+        public class SmtpSettings
+        {
+            public string Host { get; set; }
+
+            public int Port { get; set; }
+
+            public string UserName { get; set; }
+
+            public string Password { get; set; }
+
+            public string FromAddress { get; set; }
         }
 
         public class SupportSettings
@@ -43,6 +57,7 @@ namespace Tolk.BusinessLogic.Utilities
             public string Foreground { get; set; }
             public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : $"({Name})";
         }
+
         public class IsoCode
         {
             public string Value { get; set; }

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -17,7 +18,7 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<EmailService> _logger;
-        private readonly TolkOptions.SmtpSettings _options;
+        private readonly TolkBaseOptions.SmtpSettings _options;
         private readonly ISwedishClock _clock;
         private readonly string _senderPrepend;
         private readonly string _secondLineSupportMail;
@@ -25,15 +26,15 @@ namespace Tolk.BusinessLogic.Services
         public EmailService(
             TolkDbContext dbContext,
             ILogger<EmailService> logger,
-            IOptions<TolkOptions> options,
+            ITolkBaseOptions options,
             ISwedishClock clock)
         {
             _dbContext = dbContext;
             _logger = logger;
-            _options = options.Value.Smtp;
+            _options = options.Smtp;
             _clock = clock;
-            _senderPrepend = !string.IsNullOrWhiteSpace(options.Value.Env.DisplayName) ? $"{options.Value.Env.DisplayName} " : string.Empty;
-            _secondLineSupportMail = options.Value.Support.SecondLineEmail;
+            _senderPrepend = !string.IsNullOrWhiteSpace(options.Env.DisplayName) ? $"{options.Env.DisplayName} " : string.Empty;
+            _secondLineSupportMail = options.Support.SecondLineEmail;
         }
 
         public async Task SendEmails()

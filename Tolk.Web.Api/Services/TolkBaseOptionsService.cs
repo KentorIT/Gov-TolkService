@@ -27,5 +27,7 @@ namespace Tolk.Web.Api.Services
         public TolkBaseOptions.TellusApi Tellus => _options.Tellus;
 
         public TolkBaseOptions.SupportSettings Support => _options.Support;
+
+        public TolkBaseOptions.SmtpSettings Smtp => _options.Smtp;
     }
 }
