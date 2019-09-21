@@ -28,7 +28,6 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
-        private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
         private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
@@ -42,7 +41,6 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
-            RankingService rankingService,
             OrderService orderService,
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
@@ -56,7 +54,6 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
-            _rankingService = rankingService;
             _orderService = orderService;
             _dateCalculationService = dateCalculationService;
             _clock = clock;
@@ -69,14 +66,8 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
-            var model = new OrderFilterModel
-            {
-                IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler),
-                IsAdmin = User.IsInRole(Roles.SystemAdministrator),
-                CustomerUnits = User.TryGetAllCustomerUnits()
-            };
-
-            return View(new OrderListModel { FilterModel = new OrderFilterModel
+            return View(new OrderListModel {
+                FilterModel = new OrderFilterModel
                 {
                     IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler),
                     IsAdmin = User.IsInRole(Roles.SystemAdministrator),

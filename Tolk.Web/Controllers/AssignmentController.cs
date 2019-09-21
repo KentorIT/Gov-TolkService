@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -11,24 +9,20 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
-using System.Collections.Generic;
 
 namespace Tolk.Web.Controllers
 {
     public class AssignmentController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly UserManager<AspNetUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly ISwedishClock _clock;
 
         public AssignmentController(TolkDbContext dbContext,
-            UserManager<AspNetUser> userManager,
             IAuthorizationService authorizationService,
             ISwedishClock clock)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
             _authorizationService = authorizationService;
             _clock = clock;
         }

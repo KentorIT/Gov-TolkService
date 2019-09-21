@@ -17,17 +17,15 @@ namespace Tolk.Web.Controllers
     public class WebhookController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly IAuthorizationService _authorizationService;
         private readonly INotificationService _notificationService;
 
         public WebhookController(TolkDbContext dbContext,
-            IAuthorizationService authorizationService,
             INotificationService notificationService)
         {
             _dbContext = dbContext;
-            _authorizationService = authorizationService;
             _notificationService = notificationService;
         }
+
         public IActionResult List(WebHookFilterModel model)
         {
             if (model == null)

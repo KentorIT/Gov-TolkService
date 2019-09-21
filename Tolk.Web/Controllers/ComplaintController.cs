@@ -19,26 +19,20 @@ namespace Tolk.Web.Controllers
     public class ComplaintController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
-        private readonly INotificationService _notificationService;
         private readonly ComplaintService _complaintService;
 
         public ComplaintController(
             TolkDbContext dbContext,
-            ISwedishClock clock,
             IAuthorizationService authorizationService,
             ILogger<ComplaintController> logger,
-            INotificationService notificationService,
             ComplaintService complaintService
             )
         {
             _dbContext = dbContext;
-            _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
-            _notificationService = notificationService;
             _complaintService = complaintService;
         }
 
