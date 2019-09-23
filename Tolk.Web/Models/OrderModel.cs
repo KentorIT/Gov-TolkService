@@ -222,6 +222,8 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
+        public DateTimeOffset? AnsweredAt { get; set; }
+
         [Display(Name = "Person med rätt att granska rekvisition", Description = "Person som har rätt att granska rekvisition")]
         [DataType(DataType.MultilineText)]
         public string ContactPerson { get; set; }
@@ -259,6 +261,8 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Inställelsesätt enl. svar")]
         public InterpreterLocation InterpreterLocationAnswer { get; set; }
+
+        public string InterpreterLocationInfoAnswer { get; set; }
 
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
@@ -312,6 +316,8 @@ namespace Tolk.Web.Models
 
         public bool AllowProcessing { get; set; } = false;
 
+        public bool AllowRequestPrint { get; set; } = false;
+
         public bool AllowNoAnswerConfirmation { get; set; } = false;
 
         public bool AllowUpdateExpiry { get; set; } = false;
@@ -319,6 +325,8 @@ namespace Tolk.Web.Models
         public bool AllowConfirmCancellation { get; set; } = false;
 
         public string InfoMessage { get; set; } = string.Empty;
+
+        public string ErrorMessage { get; set; } = string.Empty;
 
         public bool ActiveRequestIsAnswered { get; set; }
 
@@ -454,6 +462,8 @@ namespace Tolk.Web.Models
         {
             get => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
         }
+
+        public bool DisplayExpectedTravelCostInfo { get; set; }
 
         #region methods
 

@@ -112,6 +112,8 @@ namespace Tolk.BusinessLogic.Entities
             get => IsAccepted;
         }
 
+        public bool CanPrint => Status == RequestStatus.Approved;
+
         public bool CanDeny
         {
             get => IsAccepted;

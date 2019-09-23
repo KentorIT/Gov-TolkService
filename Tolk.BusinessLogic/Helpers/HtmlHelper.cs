@@ -19,6 +19,10 @@ namespace Tolk.BusinessLogic.Helpers
         {
             return $"{origin}/Order/View/{orderId}";
         }
+        public static string GetOrderPrintUrl(string origin, int orderId)
+        {
+            return $"{origin}/Order/Print/{orderId}";
+        }
 
         public static string GetRequestViewUrl(string origin, int requestId)
         {

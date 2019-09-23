@@ -883,6 +883,9 @@ li.placeholder::before {
 .font-size-14 {
   font-size: 14px;
 }
+.font-size-small {
+  font-size: 10px;
+}
 .line-break {
   white-space: pre-line;
 }
@@ -1636,4 +1639,61 @@ ol.breadcrumb > li + li:before {
 }
 .min-date-width {
   min-width: 90px;
+}
+.order-print-div {
+  width: 20.9cm;
+  padding: 3px;
+  text-align: left;
+  margin-left: 2px;
+  border: 1px solid #ccc;
+}
+.order-print-outer-div {
+  text-align: center;
+  margin-left: 300px;
+}
+.order-print {
+  font-family: Calibri;
+  font-size: 15px;
+}
+.order-print-table {
+  padding: 10px;
+  width: 100%;
+}
+.logo-td-width {
+  width: 130px;
+}
+.order-print-header {
+  padding: 5px;
+  width: 100%;
+}
+.order-print-table-header {
+  padding: 5px;
+  width: 100%;
+  font-size: 18px;
+}
+.order-print-column {
+  vertical-align: top;
+  width: 50%;
+  padding: 2px;
+}
+.order-print-column > h1 {
+  line-height: 26px;
+  font-size: 22px;
+  font-weight: bold;
+  font-family: Calibri;
+}
+.print-page {
+  min-height: 500px;
+  background-color: white;
+  float: none;
+  margin: 0 auto;
+  width: 21cm;
+}
+@media print {
+  .glyphicon-print {
+    display: none;
+  }
+  .btn {
+    display: none;
+  }
 }

@@ -28,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
         private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
@@ -41,6 +42,7 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
+            RankingService rankingService,
             OrderService orderService,
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
@@ -54,6 +56,7 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
+            _rankingService = rankingService;
             _orderService = orderService;
             _dateCalculationService = dateCalculationService;
             _clock = clock;
@@ -66,7 +69,8 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
-            return View(new OrderListModel {
+            return View(new OrderListModel
+            {
                 FilterModel = new OrderFilterModel
                 {
                     IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler),
@@ -76,7 +80,7 @@ namespace Tolk.Web.Controllers
             });
         }
 
-        public async Task<IActionResult> View(int id, string message = null)
+        public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
             //Get order model from db
             Order order = GetOrder(id);
@@ -107,6 +111,7 @@ namespace Tolk.Web.Controllers
                 model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                 model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
+                model.AllowRequestPrint = (request?.CanPrint ?? false) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
@@ -163,6 +168,7 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.OrderModel = model;
                 model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
                 model.InfoMessage = message;
+                model.ErrorMessage = errorMessage;
                 return View(model);
             }
             return Forbid();
@@ -411,6 +417,84 @@ namespace Tolk.Web.Controllers
                 return View(model);
             }
             return Forbid();
+        }
+
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Print(int id)
+        {
+            Order order = GetOrder(id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
+            {
+                var request = order.Requests.SingleOrDefault(r =>
+                        r.Status != RequestStatus.InterpreterReplaced &&
+                        r.Status != RequestStatus.DeniedByTimeLimit &&
+                        r.Status != RequestStatus.DeniedByCreator &&
+                        r.Status != RequestStatus.DeclinedByBroker);
+                if (!(request?.CanPrint ?? false))
+                {
+                    return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });
+                }
+
+                var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
+                model.BrokerName = request.Ranking.Broker.Name;
+                model.CreatedBy = request.Order.CreatedByUser.FullName;
+                model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
+                model.RequestId = request.RequestId;
+                model.AnsweredBy = request.AnsweringUser?.FullName;
+                model.AnsweredAt = request.AnswerDate;
+                model.ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
+                model.ExpectedTravelCostInfo = request.ExpectedTravelCostInfo;
+                model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
+                model.InterpreterLocationInfoAnswer = GetInterpreterLocationInfoAnswer(order, request.InterpreterLocation.Value);
+                model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
+                model.AllowProcessing = model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
+                model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
+                model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
+                model.ActiveRequest.OrderModel = model;
+                model.ActiveRequest.Interpreter = request.Interpreter.FullName;
+                model.ActiveRequest.NewInterpreterEmail = request.Interpreter.Email ?? "-";
+                model.ActiveRequest.NewInterpreterPhoneNumber = request.Interpreter.PhoneNumber ?? "-";
+                model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
+                model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
+                model.Dialect = GetRequestAnswerDialect(model.Dialect, order.Requirements);
+                model.DisplayExpectedTravelCostInfo = DisplayExpectedTravelCostInfo(order, request.InterpreterLocation.Value);
+                model.ActiveRequest.AnswerProcessedBy = request.AnswerProcessedBy.HasValue ? request.ProcessingUser.FullName : "Systemet";
+                model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToString("yyyy-MM-dd HH:mm");
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        private string GetRequestAnswerDialect(string dialect, List<OrderRequirement> orderRequirements)
+        {
+            if (!string.IsNullOrEmpty(dialect) && orderRequirements != null && orderRequirements.Any(or => or.RequirementType == RequirementType.Dialect))
+            {
+                var reqDialect = orderRequirements.Single(or => or.RequirementType == RequirementType.Dialect);
+                return reqDialect.RequirementAnswers.Single(ra => ra.OrderRequirementId == reqDialect.OrderRequirementId).CanSatisfyRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
+            }
+            return string.Empty;
+        }
+
+        private bool DisplayExpectedTravelCostInfo(Order o, int locationAnswer)
+        {
+            if (o.AllowExceedingTravelCost.HasValue && (o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldBeApproved || o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldNotBeApproved))
+            {
+                return locationAnswer == (int)InterpreterLocation.OnSite || locationAnswer == (int)InterpreterLocation.OffSiteDesignatedLocation;
+            }
+            return false;
+        }
+
+        private string GetInterpreterLocationInfoAnswer(Order o, int locationAnswer)
+        {
+            foreach (OrderInterpreterLocation i in o.InterpreterLocations)
+            {
+                if ((int)i.InterpreterLocation == locationAnswer)
+                {
+                    return (i.InterpreterLocation == InterpreterLocation.OffSitePhone || i.InterpreterLocation == InterpreterLocation.OffSiteVideo) ? $"Kontaktinformation: {i.OffSiteContactInformation}" : $"Adress: {i.FullAddress}";
+                }
+            }
+            return string.Empty;
         }
 
         [ValidateAntiForgeryToken]

@@ -1,0 +1,265 @@
+﻿@model Tolk.Web.Models.OrderModel
+@inject Tolk.BusinessLogic.Services.ISwedishClock Clock
+@using Tolk.BusinessLogic.Utilities
+@{
+    ViewData["Title"] = "Bekräftelse tolkavrop " + Model.OrderNumber;
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="sv-se">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tolk.Web</title>
+    <link rel="stylesheet" href="~/lib/bootstrap-datepicker/bootstrap-datepicker3.min.css" />
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/Order/Print.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="~/js/Order/Print.min.js" asp-append-version="true"></script>
+    </environment>
+</head>
+<body>
+    <div role="main" class="print-page">
+        <section aria-label="@ViewData["Title"]">
+            <div class="order-print-table">
+                <table class="order-print-table">
+                    <tr class="order-print-header">
+                        <td class="logo-td-width">
+                            <img src="~/images/KamK_Logo.png" alt="Logo Kammarkollegiet" width="120" />
+                        </td>
+                        <td class="order-header-contract-info">
+                            Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="order-print-div">
+                <table class="order-print-table-header">
+                    <tr>
+                        <td class="order-print-column">
+                            <h1>
+                                @ViewData["Title"]
+                            </h1>
+                        </td>
+                        <td class="align-top font-size-small pull-right">
+                            Utskriftsdatum: @Clock.SwedenNow.Date.ToShortDateString()
+                        </td>
+                    </tr>
+                </table>
+                <div class="order-print">
+                    <table class="order-print-table">
+                        <tr>
+                            <td class="order-print-column">
+                                <span class="bold">Avropande myndighet: </span>@Model.CustomerName<br />
+                                <span class="bold">Avropad: </span>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
+                                <span class="bold">Avropad av: </span>@Model.CreatedBy
+                            </td>
+                            <td class="order-print-column">
+                                <span class="bold">Myndighetens enhet: </span>@(string.IsNullOrEmpty(Model.CustomerUnitName) ? "-" : Model.CustomerUnitName) <br />
+                                <span class="bold">Myndighetens avdelning: </span>@(string.IsNullOrEmpty(Model.UnitName) ? "-" : Model.UnitName) <br />
+                                <span class="bold">Myndighetens ärendenummer: </span>@(string.IsNullOrEmpty(Model.CustomerReferenceNumber) ? "-" : Model.CustomerReferenceNumber)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-print-column">
+                                <span class="bold">Tolkförmedling: </span>@Model.BrokerName<br />
+                                <span class="bold">Bokning besvarad: </span>@Model.AnsweredAt.Value.ToString("yyyy-MM-dd HH:mm")<br />
+                                <span class="bold">Bokning besvarad av: </span>@Model.AnsweredBy
+                            </td>
+                            <td class="order-print-column">
+                                <span class="bold">Bokningsbekräftelse godkänd: </span>@Model.ActiveRequest.AnswerProcessedAt<br />
+                                <span class="bold">Bokningsbekräftelse godkänd av: </span>@Model.ActiveRequest.AnswerProcessedBy
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-print-column">
+                                <span class="bold">Datum och tid för uppdrag: </span>@Model.TimeRange.StartDateTime.Value.ToString("yyyy-MM-dd HH:mm")-@Model.TimeRange.EndDateTime.Value.ToString("HH:mm")<br />
+                                <span class="bold">Språk: </span>@Model.LanguageName @Model.Dialect<br />
+                                <span class="bold">Inställelsesätt: </span>@Model.InterpreterLocationAnswer.GetDescription()<br />
+                                @Model.InterpreterLocationInfoAnswer<br /><br />
+                                @if (Model.DisplayExpectedTravelCostInfo)
+                                {
+                                    <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.Value.ToString("#,0.00 SEK")<br />
+                                    <span class="bold">Kommentar till bedömd resekostnad: </span><br />
+                                    @Model.ActiveRequest.ExpectedTravelCostInfo
+                                }
+                            </td>
+                            <td class="order-print-column">
+                                <span class="bold">Tillsatt tolk: </span>@Model.ActiveRequest.Interpreter <br />
+                                <span class="bold">Kammarkollegiets tolknummer: </span>@Model.ActiveRequest.NewInterpreterOfficialInterpreterId<br />
+                                <span class="bold">E-post: </span>@Model.ActiveRequest.NewInterpreterEmail<br />
+                                <span class="bold">Telefon: </span>@Model.ActiveRequest.NewInterpreterPhoneNumber<br /><br />
+
+                                <span class="bold">Tillsatt kompetensnivå: </span>@Model.InterpreterCompetenceLevel.Value.GetDescription()<br />
+
+                                @if (Model.ActiveRequest.IsInterpreterVerified.HasValue)
+                                {
+                                    if (Model.ActiveRequest.IsInterpreterVerified.Value)
+                                    {
+                                        <div>
+                                            Tolk verifierad mot Kammarkollegiets tolkregister:<br />
+                                            <span class="important-info">
+                                                @Model.ActiveRequest.InterpreterVerificationMessage
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            Tolk är inte verifierad mot Kammarkollegiets tolkregister:<br />
+                                            <span class="important-info">
+                                                @Model.ActiveRequest.InterpreterVerificationMessage
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <br />
+                            </td>
+                        </tr>
+                        @if (Model.ActiveRequest.AttachmentListModel?.DisplayFiles?.Count > 0)
+                        {
+                            <tr>
+                                <td colspan="2" class="align-top">
+                                    <span class="bold">
+                                        Bifogade filer från förmedling:
+                                    </span>
+                                    <table>
+                                        <tbody>
+                                            @if (Model.ActiveRequest.AttachmentListModel?.DisplayFiles != null)
+                                            {
+                                                @for (var i = 0; i < Model.ActiveRequest.AttachmentListModel?.DisplayFiles.Count; ++i)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @Model.ActiveRequest.AttachmentListModel?.DisplayFiles[i].FileName
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <br />
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td class="order-print-column">
+                                <span class="bold">Beräknat pris enligt bokningsbekräftelse: </span>
+                                <br />
+                                <table>
+                                    <tbody>
+                                        @foreach (var item in Model.ActiveRequestPriceInformationModel.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
+                                        {
+                                            <tr>
+                                                <td>@item.DescriptionToUse</td>
+                                                <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td class="bold">Total summa:</td>
+                                            <td class="price-column bold">@Model.ActiveRequestPriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")</td>
+                                        </tr>
+                                        <tr><td colspan="2"><br /></td></tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td class="order-print-column">
+                                @if (Model.ActiveRequest.RequirementAnswers.Any(r => r.IsRequired))
+                                {
+                                    <div class="bold">Uppfyllda tillkommande krav:</div>
+                                    <ul>
+                                        @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => r.IsRequired))
+                                        {
+                                            <li>
+                                                @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                @if (!string.IsNullOrEmpty(req.Answer))
+                                                {
+                                                    <br />
+                                                    <span class="requirement-answer">- Svar: @req.Answer</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired))
+                                {
+                                    @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired && r.CanMeetRequirement))
+                                    {
+                                        <div class="bold">Uppfyllda tillkommande önskemål:</div>
+                                        <ul>
+                                            @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => !r.IsRequired && r.CanMeetRequirement))
+                                            {
+                                                <li>
+                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                    @if (!string.IsNullOrEmpty(req.Answer))
+                                                    {
+                                                        <br />
+                                                        <span class="requirement-answer">Svar: @req.Answer</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired && !r.CanMeetRequirement))
+                                    {
+                                        <div class="bold">Ej uppfyllda tillkommande önskemål:</div>
+                                        <ul>
+                                            @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => !r.IsRequired && !r.CanMeetRequirement))
+                                            {
+                                                <li>
+                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                    @if (!string.IsNullOrEmpty(req.Answer))
+                                                    {
+                                                        <br />
+                                                        <span class="requirement-answer">Svar: @req.Answer</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <br />
+            <a class="btn btn-primary btn-large do-not-check-dirty pull-left" href="@Url.Action("View", new { id = Model.OrderId })"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Gå till bokning</a>
+            <a onclick="window.print();" class="btn btn-primary btn-large do-not-check-dirty pull-right" href="#"> Skriv ut &nbsp;&nbsp; <span class="center-glyphicon glyphicon glyphicon-print"></span></a>
+            <br />
+            <br />
+            <br />
+        </section>
+    </div>
+</body>
+</html>

@@ -162,5 +162,11 @@
     "inputFiles": [
       "wwwroot/js/Contract/Contract.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Order/Print.min.js",
+    "inputFiles": [
+      "wwwroot/js/Order/Print.js"
+    ]
   }
 ]

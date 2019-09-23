@@ -309,8 +309,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
             CreateEmail(GetRecipientsFromOrder(request.Order),
                 $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
-                body + GotoOrderPlain(request.Order.OrderId),
-                HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
+                body + GotoOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true));
 
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
@@ -640,8 +640,8 @@ Sammanställning:
                 case RequestStatus.Approved:
                     var bodyAppr = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras. Inga förändrade krav finns, tolkuppdrag är klart för utförande.";
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
-                        bodyAppr + GotoOrderPlain(request.Order.OrderId),
-                        HtmlHelper.ToHtmlBreak(bodyAppr) + GotoOrderButton(request.Order.OrderId));
+                        bodyAppr + GotoOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
+                        HtmlHelper.ToHtmlBreak(bodyAppr) + GotoOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true));
                     NotifyBrokerOnAcceptedAnswer(request, orderNumber);
                     break;
                 default:
@@ -708,8 +708,8 @@ Sammanställning:
                     var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                         "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status." + GetPossibleInfoNotValidatedInterpreter(request);
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
-                        $"{bodyNoAccept} {GotoOrderPlain(request.Order.OrderId)}",
-                        $"{HtmlHelper.ToHtmlBreak(bodyNoAccept)} {GotoOrderButton(request.Order.OrderId)}"
+                        $"{bodyNoAccept} {GotoOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true)}",
+                        $"{HtmlHelper.ToHtmlBreak(bodyNoAccept)} {GotoOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true)}"
                     );
                     break;
                 case InterpereterChangeAcceptOrigin.User:
@@ -884,13 +884,14 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        private string GotoOrderPlain(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default)
+        private string GotoOrderPlain(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, bool enableOrderPrint = false)
         {
             switch (tab)
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return $"\n\n\nGå till bokning: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}";
+                    string printInfo = enableOrderPrint ? $"\n\nSkriv ut bokningsbekräftelse: {HtmlHelper.GetOrderPrintUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}" : string.Empty;
+                    return $"\n\n\nGå till bokning: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}{printInfo}";
                 case HtmlHelper.ViewTab.Requisition:
                     return $"\n\n\nGå till rekvisition: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition";
                 case HtmlHelper.ViewTab.Complaint:
@@ -911,12 +912,13 @@ Sammanställning:
                     return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint";
             }
         }
+
         private string GotoRequestGroupPlain(int requestGroupId)
         {
             return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId)}";
         }
 
-        private string GotoOrderButton(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, string textOverride = null, bool autoBreakLines = true)
+        private string GotoOrderButton(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, string textOverride = null, bool autoBreakLines = true, bool enableOrderPrint = false)
         {
             string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
             if (!string.IsNullOrEmpty(textOverride))
@@ -927,7 +929,8 @@ Sammanställning:
             {
                 case HtmlHelper.ViewTab.Default:
                 default:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Till bokning");
+                    string printInfo = enableOrderPrint ? $"<br /><br />{HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderPrintUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Skriv ut bokningsbekräftelse")}" : string.Empty;
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Till bokning") + printInfo;
                 case HtmlHelper.ViewTab.Requisition:
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition", "Till rekvisition");
                 case HtmlHelper.ViewTab.Complaint:

@@ -49,6 +49,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
+        public string AnswerProcessedBy { get; set; }
+
+        public string AnswerProcessedAt { get; set; }
+
         [Display(Name = "Förmedling")]
         public string BrokerName { get; set; }
 

@@ -25,6 +25,20 @@
     <div id="order" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
+                @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <br />
+                            <div class="warning-info-home">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                <span role="alert" class="info-message">
+                                    @Model.ErrorMessage
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
                 @if (!string.IsNullOrEmpty(@Model.InfoMessage))
                 {
                     <div class="row">
@@ -155,16 +169,24 @@
                     </form>
                 </div>
             }
+            @if (Model.AllowRequestPrint)
+            {
+                <div class="col-sm-4">
+                    <form method="post" class="cancel-form" action="@Url.Action("Print", "Order", new { id = Model.OrderId })" asp-antiforgery="true">
+                        <button class="btn btn-primary btn-large">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></button>
+                    </form>
+                </div>
+            }
             @if (Model.AllowProcessing)
             {
                 <div class="col-sm-4">
                     @if (Model.AllowDenial)
                     {
-                    <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
-                        <input name="DenyMessage" type="hidden" />
-                        <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
-                        @HelpLinkService.ButtonHelpIcon("myndighet-underkann-tillsattning")
-                    </form>
+                        <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
+                            <input name="DenyMessage" type="hidden" />
+                            <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                            @HelpLinkService.ButtonHelpIcon("myndighet-underkann-tillsattning")
+                        </form>
                     }
                 </div>
                 <div class="col-sm-4 pull-right">

@@ -24,6 +24,7 @@ namespace Tolk.Web.Authorization
         public const string Accept = nameof(Accept);
         public const string Cancel = nameof(Cancel);
         public const string Replace = nameof(Replace);
+        public const string Print = nameof(Print);
         public const string TimeTravel = nameof(TimeTravel);
         public const string ViewMenuAndStartLists = nameof(ViewMenuAndStartLists);
         public const string HasPassword = nameof(HasPassword);
@@ -49,6 +50,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
+                opt.AddPolicy(Print, builder => builder.RequireAssertion(PrintHandler));
                 opt.AddPolicy(ViewMenuAndStartLists, builder => builder.RequireAssertion(ViewMenuAndStartListsHandler));
                 opt.AddPolicy(HasPassword, builder => builder.RequireAssertion(HasPasswordHandler));
                 opt.AddPolicy(TimeTravel, builder =>
@@ -182,6 +184,19 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> PrintHandler = (context) =>
+        {
+            var user = context.User;
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
+            switch (context.Resource)
+            {
+                case Order order:
+                    return order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler));
                 default:
                     throw new NotImplementedException();
             }
