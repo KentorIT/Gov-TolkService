@@ -416,7 +416,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
                 var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, RequestStatus.DeniedByCreator);
+                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.DeniedByCreator });
                 await _requestService.ConfirmDenial(
                     request,
                     _timeService.SwedenNow,
@@ -441,7 +441,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
                 var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, RequestStatus.CancelledByCreatorWhenApproved);
+                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApproved });
                 await _requestService.ConfirmCancellation(
                     request,
                     _timeService.SwedenNow,
@@ -537,7 +537,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region private methods
 
-        private async Task<Request> GetConfirmedRequest(string orderNumber, int brokerId, RequestStatus expectedStatus)
+        private async Task<Request> GetConfirmedRequest(string orderNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {
             var request = await _dbContext.Requests
                 .Include(r => r.Ranking)
@@ -545,8 +545,7 @@ namespace Tolk.Web.Api.Controllers
                 .Include(r => r.RequestStatusConfirmations)
                 .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                     //Must have a request connected to the order for the broker, any status...
-                    r.Ranking.BrokerId == brokerId &&
-                    r.Status == expectedStatus);
+                    r.Ranking.BrokerId == brokerId && expectedStatuses.Contains(r.Status));
             if (request == null)
             {
                 throw new InvalidApiCallException(ErrorCodes.REQUEST_NOT_FOUND);
