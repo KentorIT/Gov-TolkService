@@ -242,12 +242,11 @@ $(function () {
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
                                 var $action = $table.data("click-action-url");
-                                if ($action.indexOf("?")) {
+                                if ($action.indexOf("?") > -1) {
                                     $(row).data("click-action-url", $action.replace("?", "/" + data[$idColumn[0].data] + "?"));
 
                                 } else {
                                     $(row).data("click-action-url", $action + "/" + data[$idColumn[0].data]);
-
                                 }
                             }
                             if ($leftcssDefinitionColumn.length > 0) {
