@@ -171,7 +171,7 @@ namespace Tolk.BusinessLogic.Services
                         ReplacementRequest = GetRequestModel(GetRequest(replacementRequest.RequestId))
                     },
                    webhook.ContactInformation,
-                   NotificationType.RequestInformationUpdated,
+                   NotificationType.RequestReplacementCreated,
                    webhook.RecipientUserId
                );
             }
