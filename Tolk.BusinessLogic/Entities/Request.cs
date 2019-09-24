@@ -234,7 +234,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void ConfirmCancellation(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
-            if (Status != RequestStatus.CancelledByCreatorWhenApproved)
+            if (Status != RequestStatus.CancelledByCreatorWhenApproved && Status != RequestStatus.CancelledByCreator)
             {
                 throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna konfirmeras.");
             }
