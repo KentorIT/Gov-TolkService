@@ -172,9 +172,7 @@
             @if (Model.AllowRequestPrint)
             {
                 <div class="col-sm-4">
-                    <form method="post" class="cancel-form" action="@Url.Action("Print", "Order", new { id = Model.OrderId })" asp-antiforgery="true">
-                        <button class="btn btn-primary btn-large">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></button>
-                    </form>
+                    <a class="btn btn-primary btn-large" href="@Url.Action("Print", "Order", new { id = Model.OrderId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
                 </div>
             }
             @if (Model.AllowProcessing)
