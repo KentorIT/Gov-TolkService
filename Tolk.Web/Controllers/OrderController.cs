@@ -611,7 +611,7 @@ namespace Tolk.Web.Controllers
         {
             var request = await _dbContext.Requests
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order)
+                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(req => req.Ranking)
                 .SingleAsync(r => r.RequestId == model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
