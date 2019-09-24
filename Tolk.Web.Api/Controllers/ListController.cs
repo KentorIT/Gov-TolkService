@@ -11,6 +11,8 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using H = Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
+using System.Threading.Tasks;
+using Tolk.Web.Api.Exceptions;
 
 namespace Tolk.Web.Api.Controllers
 {
@@ -113,17 +115,15 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        public JsonResult BrokerInterpreters()
+        public async Task<JsonResult> BrokerInterpreters()
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(H.ErrorCodes.UNAUTHORIZED);
-            }
+                var apiUser = await GetApiUser();
 
-            return Json(new BrokerInterpretersResponse
-            {
-                Interpreters = _dbContext.InterpreterBrokers
+                return Json(new BrokerInterpretersResponse
+                {
+                    Interpreters = _dbContext.InterpreterBrokers
                     .Where(i => i.BrokerId == apiUser.BrokerId)
                     .Select(i => new InterpreterModel
                     {
@@ -135,7 +135,12 @@ namespace Tolk.Web.Api.Controllers
                         PhoneNumber = i.PhoneNumber,
                         InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
                     }).ToList()
-            });
+                });
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         [HttpGet]
@@ -181,7 +186,7 @@ namespace Tolk.Web.Api.Controllers
         #region SAME AS IN REQUEST, SHOULD BE MOVED
 
         //Break out to error generator service...
-        private JsonResult ReturError(string errorCode)
+        private JsonResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
             var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
@@ -190,12 +195,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         //Break out to a auth pipline
-        private AspNetUser GetApiUser()
+        private async Task<AspNetUser> GetApiUser()
         {
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
-                _apiUserService.GetApiUserByApiKey(userName, key);
+            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
         }
 
         #endregion

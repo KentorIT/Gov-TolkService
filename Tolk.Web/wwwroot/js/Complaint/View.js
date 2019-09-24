@@ -9,7 +9,7 @@ $(function () {
     });
     $("body").on("click", ".btn-refute", function (event) {
         event.preventDefault();
-        triggerValidator("Ange meddelande vid svar", $(this), $("#refuteDisputeValidator"), "#AnswerDisputedMessage");
+        triggerValidator("Ange meddelande vid svar", $(this), $("#refuteDisputeValidator"), "#RefuteMessage");
     });
 });
 

@@ -419,30 +419,24 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
-            return await ConfirmNewRequestStatus(requestId, RequestStatus.CancelledByCreatorWhenApproved, "Avbokning är bekräftad");
+            Request request = await GetConfirmedRequest(requestId);
+            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                await _requestService.ConfirmCancellation(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+            }
+            return Forbid();
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestId)
         {
-            return await ConfirmNewRequestStatus(requestId, RequestStatus.DeniedByCreator, "Bokningsförfrågan arkiverad");
-        }
-
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        private async Task<IActionResult> ConfirmNewRequestStatus(int requestId, RequestStatus expectedStatus, string infoMessage)
-        {
-            var request = _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order)
-                .Single(r => r.RequestId == requestId);
-
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded && request.Status == expectedStatus)
+            Request request = await GetConfirmedRequest(requestId);
+            if (request.Status == RequestStatus.DeniedByCreator && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                _dbContext.Add(new RequestStatusConfirmation { RequestId = requestId, ConfirmedBy = User.GetUserId(), ImpersonatingConfirmedBy = User.TryGetImpersonatorId(), RequestStatus = request.Status, ConfirmedAt = _clock.SwedenNow });
-                _dbContext.SaveChanges();
-                return RedirectToAction("Index", "Home", new { message = infoMessage });
+                await _requestService.ConfirmDenial(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
             }
             return Forbid();
         }
@@ -473,6 +467,15 @@ namespace Tolk.Web.Controllers
                 _dbContext.SaveChanges();
             }
             return Json(new { success = true });
+        }
+
+        private async Task<Request> GetConfirmedRequest(int requestId)
+        {
+            return await _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order)
+                .Include(r => r.RequestStatusConfirmations)
+                .SingleAsync(r => r.RequestId == requestId);
         }
 
         private RequestModel GetModel(Request request, bool includeLog = false)

@@ -14,6 +14,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
 
@@ -26,19 +27,22 @@ namespace Tolk.Web.Api.Controllers
         private readonly RequestService _requestService;
         private readonly ApiUserService _apiUserService;
         private readonly ISwedishClock _timeService;
+        private readonly ApiOrderService _apiOrderService;
 
         public RequestController(
             TolkDbContext tolkDbContext,
             IOptions<TolkApiOptions> options,
             RequestService requestService,
             ApiUserService apiUserService,
-            ISwedishClock timeService)
+            ISwedishClock timeService,
+            ApiOrderService apiOrderService)
         {
             _dbContext = tolkDbContext;
             _options = options.Value;
             _apiUserService = apiUserService;
             _timeService = timeService;
             _requestService = requestService;
+            _apiOrderService = apiOrderService;
         }
 
         #region Updating Methods
@@ -46,12 +50,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Answer([FromBody] RequestAnswerModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
-            var order = await _dbContext.Orders
+                var apiUser = await GetApiUser();
+                var order = await _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
@@ -66,69 +68,74 @@ namespace Tolk.Web.Api.Controllers
                 .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
-            }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = order.Requests.SingleOrDefault(r =>
+                if (order == null)
+                {
+                    return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
+                }
+                //Possibly the user should be added, if not found?? 
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = order.Requests.SingleOrDefault(r =>
                 apiUser.BrokerId == r.Ranking.BrokerId &&
                 //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
                 (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
-            }
-            InterpreterBroker interpreter;
-            try
-            {
-                interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
-            }
-            catch (InvalidOperationException)
-            {
-                return ReturError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
-            }
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                InterpreterBroker interpreter;
+                try
+                {
+                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+                }
+                catch (InvalidOperationException)
+                {
+                    return ReturnError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
+                }
 
-            //Does not handle Kammarkollegiets tolknummer
-            if (interpreter == null)
-            {
-                //Possibly the interpreter should be added, if not found?? 
-                return ReturError(ErrorCodes.INTERPRETER_NOT_FOUND);
+                //Does not handle Kammarkollegiets tolknummer
+                if (interpreter == null)
+                {
+                    //Possibly the interpreter should be added, if not found?? 
+                    return ReturnError(ErrorCodes.INTERPRETER_NOT_FOUND);
+                }
+                var now = _timeService.SwedenNow;
+                if (request.Status == RequestStatus.Created)
+                {
+                    request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                }
+                try
+                {
+                    await _requestService.Accept(
+                        request,
+                        now,
+                        user?.Id ?? apiUser.Id,
+                        (user != null ? (int?)apiUser.Id : null),
+                        interpreter,
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement,
+                            OrderRequirementId = ra.RequirementId,
+                        }).ToList(),
+                        //Does not handle attachments yet.
+                        new List<RequestAttachment>(),
+                        model.ExpectedTravelCosts,
+                        model.ExpectedTravelCostInfo
+                    );
+                    await _dbContext.SaveChangesAsync();
+                    //End of service
+                    return Json(new ResponseBase());
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_CORRECTLY_ANSWERED, ex.Message);
+                }
             }
-            var now = _timeService.SwedenNow;
-            if (request.Status == RequestStatus.Created)
+            catch (InvalidApiCallException ex)
             {
-                request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
-            }
-            try
-            {
-                await _requestService.Accept(
-                    request,
-                    now,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null),
-                    interpreter,
-                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                    EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
-                    model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                    {
-                        Answer = ra.Answer,
-                        CanSatisfyRequirement = ra.CanMeetRequirement,
-                        OrderRequirementId = ra.RequirementId,
-                    }).ToList(),
-                    //Does not handle attachments yet.
-                    new List<RequestAttachment>(),
-                    model.ExpectedTravelCosts,
-                    model.ExpectedTravelCostInfo
-                );
-                await _dbContext.SaveChangesAsync();
-                //End of service
-                return Json(new ResponseBase());
-            }
-            catch (InvalidOperationException ex)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_CORRECTLY_ANSWERED, ex.Message);
+                return ReturnError(ex.ErrorCode);
             }
         }
 
@@ -138,38 +145,31 @@ namespace Tolk.Web.Api.Controllers
 #warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
             return Json(new ResponseBase());
         }
-            
+
         [HttpPost]
-        public JsonResult Acknowledge([FromBody] RequestAcknowledgeModel model)
+        public async Task<JsonResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = await _dbContext.Requests
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                //Add RequestService that does this, and additionally calls _notificationService
+                request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                await _dbContext.SaveChangesAsync();
+                //End of service
+                return Json(new ResponseBase());
             }
-            var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
+            catch (InvalidApiCallException ex)
             {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
+                return ReturnError(ex.ErrorCode);
             }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = order.Requests.SingleOrDefault(r =>
-                apiUser.BrokerId == r.Ranking.BrokerId &&
-                (r.Status == RequestStatus.Created));
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
-            }
-            //Add RequestService that does this, and additionally calls _notificationService
-            request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
-            _dbContext.SaveChanges();
-            //End of service
-            return Json(new ResponseBase());
         }
 
         [HttpPost]
@@ -182,42 +182,37 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Decline([FromBody] RequestDeclineModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                //Possibly the user should be added, if not found?? 
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = await _dbContext.Requests
+                    .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.Order.CreatedByUser)
+                    .Include(r => r.Order.ContactPersonUser)
+                    .Include(r => r.Order.CustomerUnit)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
+                        (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                await _dbContext.SaveChangesAsync();
+                //End of service
+                return Json(new ResponseBase());
             }
-            var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
+            catch (InvalidApiCallException ex)
             {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
+                return ReturnError(ex.ErrorCode);
             }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order.CreatedByUser)
-                .Include(r => r.Order.ContactPersonUser)
-                .Include(r => r.Order.CustomerUnit)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
-                .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    r.Ranking.BrokerId == apiUser.BrokerId &&
-                    //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
-                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
-            }
-            await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
-            _dbContext.SaveChanges();
-            //End of service
-            return Json(new ResponseBase());
         }
 
         [HttpPost]
@@ -228,147 +223,141 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        public JsonResult Cancel([FromBody] RequestCancelModel model)
+        public async Task<JsonResult> Cancel([FromBody] RequestCancelModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
-            if (!_dbContext.Orders
-                .Any(o => o.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
-            }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = _dbContext.Requests
-            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-            .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-            .Include(r => r.Order.CreatedByUser)
-            .Include(r => r.Order.ContactPersonUser)
-            .Include(r => r.Interpreter)
-            .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-            .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                //Possibly the user should be added, if not found?? 
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+
+                var request = await _dbContext.Requests
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.Order.CreatedByUser)
+                    .Include(r => r.Order.ContactPersonUser)
+                    .Include(r => r.Interpreter)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
                 //Must have a request connected to the order for the broker, any status...
                 r.Ranking.BrokerId == apiUser.BrokerId &&
                 //TODO: Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
                 (r.Status == RequestStatus.Approved));
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
-            }
-            try
-            {
-                _requestService.CancelByBroker(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
-                _dbContext.SaveChanges();
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                try
+                {
+                    _requestService.CancelByBroker(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                    await _dbContext.SaveChangesAsync();
 
-            }
-            catch (InvalidOperationException)
-            {
-                //TODO: Should log the acctual exception here!!
-                return ReturError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
-            }
+                }
+                catch (InvalidOperationException)
+                {
+                    //TODO: Should log the acctual exception here!!
+                    return ReturnError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
+                }
 
-            //End of service
-            return Json(new ResponseBase());
+                //End of service
+                return Json(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         [HttpPost]
         public async Task<JsonResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
-            {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
-            if (!_dbContext.Orders
-                .Any(o => o.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
-            }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = _dbContext.Requests
-            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-            .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
-            .Include(r => r.Order).ThenInclude(o => o.Requirements)
-            .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-            .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-            .Include(r => r.Order.CreatedByUser)
-            .Include(r => r.Order.ContactPersonUser)
-            .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-            .SingleOrDefault(r => r.Order.OrderNumber == model.OrderNumber &&
-                r.Ranking.BrokerId == apiUser.BrokerId &&
-                (r.Status == RequestStatus.Approved ||
-                r.Status == RequestStatus.Created ||
-                r.Status == RequestStatus.Received ||
-                r.Status == RequestStatus.InterpreterReplaced ||
-                r.Status == RequestStatus.Accepted));
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
-            }
-            InterpreterBroker interpreter;
             try
             {
-                interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
-            }
-            catch (InvalidOperationException)
-            {
-                return ReturError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
-            }
-            if (interpreter == null)
-            {
-                //Possibly the interpreter should be added, if not found?? 
-                return ReturError(ErrorCodes.INTERPRETER_NOT_FOUND);
-            }
-            var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                //Possibly the user should be added, if not found?? 
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = await _dbContext.Requests
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)
+                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Order.CreatedByUser)
+                    .Include(r => r.Order.ContactPersonUser)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
+                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        (r.Status == RequestStatus.Approved ||
+                        r.Status == RequestStatus.Created ||
+                        r.Status == RequestStatus.Received ||
+                        r.Status == RequestStatus.InterpreterReplaced ||
+                        r.Status == RequestStatus.Accepted));
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                InterpreterBroker interpreter;
+                try
+                {
+                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+                }
+                catch (InvalidOperationException)
+                {
+                    return ReturnError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
+                }
+                if (interpreter == null)
+                {
+                    //Possibly the interpreter should be added, if not found?? 
+                    return ReturnError(ErrorCodes.INTERPRETER_NOT_FOUND);
+                }
+                var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
 
-            try
-            {
-                await _requestService.ChangeInterpreter(
-                    request,
-                    _timeService.SwedenNow,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null),
-                    interpreter,
-                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                    competenceLevel,
-                    model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                    {
-                        Answer = ra.Answer,
-                        CanSatisfyRequirement = ra.CanMeetRequirement,
-                        OrderRequirementId = ra.RequirementId,
-                    }).ToList(),
-                    //Does not handle attachments yet.
-                    new List<RequestAttachment>(),
-                    model.ExpectedTravelCosts,
-                    model.ExpectedTravelCostInfo);
-                await _dbContext.SaveChangesAsync();
+                try
+                {
+                    await _requestService.ChangeInterpreter(
+                        request,
+                        _timeService.SwedenNow,
+                        user?.Id ?? apiUser.Id,
+                        (user != null ? (int?)apiUser.Id : null),
+                        interpreter,
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                        competenceLevel,
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement,
+                            OrderRequirementId = ra.RequirementId,
+                        }).ToList(),
+                        //Does not handle attachments yet.
+                        new List<RequestAttachment>(),
+                        model.ExpectedTravelCosts,
+                        model.ExpectedTravelCostInfo);
+                    await _dbContext.SaveChangesAsync();
+                }
+                catch (InvalidOperationException)
+                {
+                    //TODO: Should log the acctual exception here!!
+                    return ReturnError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
+                }
+                return Json(new ResponseBase());
             }
-            catch (InvalidOperationException)
+            catch (InvalidApiCallException ex)
             {
-                //TODO: Should log the acctual exception here!!
-                return ReturError(ErrorCodes.REQUEST_NOT_IN_CORRECT_STATE);
+                return ReturnError(ex.ErrorCode);
             }
-            return Json(new ResponseBase());
         }
 
         [HttpPost]
-        public JsonResult AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
+        public async Task<JsonResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
-            var order = _dbContext.Orders
+                var apiUser = await GetApiUser();
+
+                var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
                 .Include(o => o.CustomerOrganisation)
@@ -378,39 +367,93 @@ namespace Tolk.Web.Api.Controllers
                 .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
+                if (order == null)
+                {
+                    return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
+                }
+                //Possibly the user should be added, if not found?? 
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = order.Requests.SingleOrDefault(r =>
+                    apiUser.BrokerId == r.Ranking.BrokerId &&
+                    r.Order.ReplacingOrderId != null &&
+                    //Possibly other statuses
+                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                var now = _timeService.SwedenNow;
+                //Add transaction here!!!
+                if (request.Status == RequestStatus.Created)
+                {
+                    request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                }
+                _requestService.AcceptReplacement(
+                    request,
+                    now,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null),
+                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                    model.ExpectedTravelCosts,
+                    model.ExpectedTravelCostInfo
+                );
+                _dbContext.SaveChanges();
+                //End of service
+                return Json(new ResponseBase());
             }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-            var request = order.Requests.SingleOrDefault(r =>
-                apiUser.BrokerId == r.Ranking.BrokerId &&
-                r.Order.ReplacingOrderId != null &&
-                //Possibly other statuses
-                (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
-            if (request == null)
+            catch (InvalidApiCallException ex)
             {
-                return ReturError(ErrorCodes.REQUEST_NOT_FOUND);
+                return ReturnError(ex.ErrorCode);
             }
-            var now = _timeService.SwedenNow;
-            //Add transaction here!!!
-            if (request.Status == RequestStatus.Created)
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
+        {
+            try
             {
-                request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                //Get User, if any...
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, RequestStatus.DeniedByCreator);
+                await _requestService.ConfirmDenial(
+                    request,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null)
+                );
+                //Do The magic
+                return Json(new ResponseBase());
             }
-            _requestService.AcceptReplacement(
-                request,
-                now,
-                user?.Id ?? apiUser.Id,
-                (user != null ? (int?)apiUser.Id : null),
-                EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                model.ExpectedTravelCosts,
-                model.ExpectedTravelCostInfo
-            ); 
-            _dbContext.SaveChanges();
-            //End of service
-            return Json(new ResponseBase());
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
+        {
+            try
+            {
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                //Get User, if any...
+                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, RequestStatus.CancelledByCreatorWhenApproved);
+                await _requestService.ConfirmCancellation(
+                    request,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null)
+                );
+                return Json(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         #endregion
@@ -418,79 +461,102 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
-        public JsonResult File(string orderNumber, int attachmentId, string callingUser)
+        public async Task<JsonResult> File(string orderNumber, int attachmentId, string callingUser)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
-            var order = _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .SingleOrDefault(o => o.OrderNumber == orderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
-            if (order == null)
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
-            }
+                var apiUser = await GetApiUser();
+                var order = _dbContext.Orders
+                    .Include(o => o.Requests).ThenInclude(r => r.Ranking)
+                    .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .SingleOrDefault(o => o.OrderNumber == orderNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                if (order == null)
+                {
+                    return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
+                }
 
-            var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
-            if (attachment == null)
-            {
-                return ReturError(ErrorCodes.ATTACHMENT_NOT_FOUND);
-            }
+                var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
+                if (attachment == null)
+                {
+                    return ReturnError(ErrorCodes.ATTACHMENT_NOT_FOUND);
+                }
 
-            return Json(new FileResponse
+                return Json(new FileResponse
+                {
+                    FileBase64 = Convert.ToBase64String(attachment.Blob)
+                });
+            }
+            catch (InvalidApiCallException ex)
             {
-                FileBase64 = Convert.ToBase64String(attachment.Blob)
-            });
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
-        public JsonResult View(string orderNumber, string callingUser)
+        public async Task<JsonResult> View(string orderNumber, string callingUser)
         {
-            var apiUser = GetApiUser();
-            if (apiUser == null)
+            try
             {
-                return ReturError(ErrorCodes.UNAUTHORIZED);
-            }
+                var apiUser = await GetApiUser();
 
-            //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
-            var request = _dbContext.Requests
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments)
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .SingleOrDefault(r => r.Order.OrderNumber == orderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    r.Ranking.BrokerId == apiUser.BrokerId &&
-                    r.ReplacingRequestId == null);
-            if (request == null)
-            {
-                return ReturError(ErrorCodes.ORDER_NOT_FOUND);
+                //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
+                var request = _dbContext.Requests
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.RequirementAnswers)
+                    .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(r => r.Interpreter)
+                    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Order).ThenInclude(o => o.Region)
+                    .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .SingleOrDefault(r => r.Order.OrderNumber == orderNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        r.ReplacingRequestId == null);
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
+                }
+                //Possibly the user should be added, if not found?? 
+                //End of service
+                return Json(GetResponseFromRequest(request));
             }
-            //Possibly the user should be added, if not found?? 
-            var user = _apiUserService.GetBrokerUser(callingUser, apiUser.BrokerId.Value);
-            //End of service
-            return Json(GetResponseFromRequest(request));
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         #endregion
 
         #region private methods
 
+        private async Task<Request> GetConfirmedRequest(string orderNumber, int brokerId, RequestStatus expectedStatus)
+        {
+            var request = await _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order)
+                .Include(r => r.RequestStatusConfirmations)
+                .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    r.Ranking.BrokerId == brokerId &&
+                    r.Status == expectedStatus);
+            if (request == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.REQUEST_NOT_FOUND);
+            }
+
+            return request;
+        }
+
         //Break out to error generator service...
-        private JsonResult ReturError(string errorCode, string specifiedErrorMessage = null)
+        private JsonResult ReturnError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
             var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
@@ -503,15 +569,14 @@ namespace Tolk.Web.Api.Controllers
         }
 
         //Break out to a auth pipline
-        private AspNetUser GetApiUser()
+        private async Task<AspNetUser> GetApiUser()
         {
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return _apiUserService.GetApiUserByCertificate(Request.HttpContext.Connection.ClientCertificate) ??
-                _apiUserService.GetApiUserByApiKey(userName, key);
+            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
         }
 
-        public static RequestDetailsResponse GetResponseFromRequest(Request request)
+        private static RequestDetailsResponse GetResponseFromRequest(Request request)
         {
             var attach = request.Attachments;
             return new RequestDetailsResponse

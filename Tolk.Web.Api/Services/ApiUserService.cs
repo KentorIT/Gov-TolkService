@@ -3,12 +3,15 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Exceptions;
+using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Services
 {
@@ -33,19 +36,27 @@ namespace Tolk.Web.Api.Services
             _interpreterService = interpreterService;
         }
 
-        public AspNetUser GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
+        public async Task<AspNetUser> GetApiUser(X509Certificate2 clientCertInRequest, string userName, string key)
+        {
+            //First check by cert, then by unamne/key
+            return await GetApiUserByCertificate(clientCertInRequest) ??
+                await GetApiUserByApiKey(userName, key) ?? 
+                throw new InvalidApiCallException(ErrorCodes.UNAUTHORIZED);
+        }
+
+        public async Task<AspNetUser> GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
         {
             if (clientCertInRequest == null)
             {
                 return null;
             }
             _logger.LogInformation("User retrieved using certificate");
-            return _dbContext.Users.SingleOrDefault(u =>
+            return await _dbContext.Users.SingleOrDefaultAsync(u =>
                 u.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication") &&
                 u.Claims.Any(c => c.ClaimType == "CertificateSerialNumber" && c.ClaimValue == clientCertInRequest.SerialNumber));
         }
 
-        public AspNetUser GetApiUserByApiKey(string userName, string key)
+        public async Task<AspNetUser> GetApiUserByApiKey(string userName, string key)
         {
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(key))
             {
@@ -53,9 +64,9 @@ namespace Tolk.Web.Api.Services
             }
             _logger.LogInformation("User retrieved using user/apiKey");
             //Need a lot more security here
-            var user = _dbContext.Users
+            var user = await _dbContext.Users
                 .Include(u => u.Claims)
-                .SingleOrDefault(u =>
+                .SingleOrDefaultAsync(u =>
                 u.NormalizedUserName == userName.ToUpper() &&
                 u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"));
             var secret = user?.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue;

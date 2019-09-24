@@ -222,6 +222,26 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
         }
 
+        public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.DeniedByCreator)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna konfirmeras.");
+            }
+
+            RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
+        public void ConfirmCancellation(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.CancelledByCreatorWhenApproved)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna konfirmeras.");
+            }
+
+            RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
         public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
             InterpreterLocation.HasValue && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
 

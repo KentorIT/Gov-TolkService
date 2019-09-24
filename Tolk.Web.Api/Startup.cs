@@ -41,6 +41,7 @@ namespace Tolk.Web.Api
             services.AddScoped<VerificationService>();
             services.AddScoped<InterpreterService>();
             services.AddScoped<EmailService>();
+            services.AddScoped<ApiOrderService>();
 
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));

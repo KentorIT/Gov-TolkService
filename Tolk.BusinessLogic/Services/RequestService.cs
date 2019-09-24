@@ -185,6 +185,26 @@ namespace Tolk.BusinessLogic.Services
             request.Status = RequestStatus.InterpreterReplaced;
         }
 
+        public async Task ConfirmDenial(
+            Request request,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            request.ConfirmDenial(confirmedAt, userId,impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
+        public async Task ConfirmCancellation(
+            Request request,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            request.ConfirmCancellation(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
         private bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
         {
             if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)

@@ -307,6 +307,7 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit avbokats, med meddelande: '{payload.Message}'");
+                await ConfirmCancellation(payload.OrderNumber);
             }
 
             return new JsonResult("Success");
@@ -318,6 +319,7 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Svaret på Boknings-ID: {payload.OrderNumber} har nekats, med meddelande: '{payload.Message}'");
+                await ConfirmDenial(payload.OrderNumber);
             }
 
             return new JsonResult("Success");
@@ -491,6 +493,58 @@ namespace BrokerMock.Controllers
                     else
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> ConfirmDenial(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new ConfirmDenialModel
+                {
+                    OrderNumber = orderNumber,
+                    CallingUser = "regular-user@formedling1.se"
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmDenial", content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial]:: Boknings-ID: {orderNumber} accat nekande");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial] FAILED:: Boknings-ID: {orderNumber} accat nekande");
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> ConfirmCancellation(string orderNumber)
+        {
+            using (var client = GetHttpClient())
+            {
+                var payload = new ConfirmDenialModel
+                {
+                    OrderNumber = orderNumber,
+                    CallingUser = "regular-user@formedling1.se"
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmCancellation", content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation]:: Boknings-ID: {orderNumber} accat avbokning");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation] FAILED:: Boknings-ID: {orderNumber} accat avbokning");
                     }
                 }
             }
