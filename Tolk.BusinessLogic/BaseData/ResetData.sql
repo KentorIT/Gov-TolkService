@@ -13,7 +13,6 @@ DELETE FROM Orders
 DELETE FROM OrderGroups
 DELETE FROM OrderInterpreterLocation
 DELETE FROM OrderPriceRows
-DELETE FROM OrderRequirementRequestAnswer
 DELETE FROM RequestPriceRows
 DELETE FROM RequisitionPriceRows
 DELETE FROM RequestGroups
