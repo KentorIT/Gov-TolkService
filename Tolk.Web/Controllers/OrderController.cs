@@ -702,7 +702,7 @@ namespace Tolk.Web.Controllers
                 Language = o.OtherLanguage ?? o.Language.Name,
                 OrderNumber = o.OrderNumber,
                 RegionName = o.Region.Name,
-                OrderDateAndTime = $"{o.StartAt.ToString("yyyy-MM-dd")} {o.StartAt.ToString("hh\\:mm")}-{o.EndAt.ToString("hh\\:mm")}",
+                OrderDateAndTime = $"{o.StartAt.ToString("yyyy-MM-dd")} {o.StartAt.ToString("HH\\:mm")}-{o.EndAt.ToString("HH\\:mm")}",
                 Status = o.Status,
                 CreatorName = o.CreatedByUser.FullName,
                 BrokerName = o.Requests.Where(r =>

@@ -52,7 +52,7 @@ namespace Tolk.Web.Models
                 OrderNumber = r.Order.OrderNumber,
                 CustomerName = r.Order.CustomerOrganisation.Name,
                 RegionName = r.Order.Region.Name,
-                OrderDateAndTime = $"{r.Order.StartAt.ToString("yyyy-MM-dd")} {r.Order.StartAt.ToString("hh\\:mm")}-{r.Order.EndAt.ToString("hh\\:mm")}",
+                OrderDateAndTime = $"{r.Order.StartAt.ToString("yyyy-MM-dd")} {r.Order.StartAt.ToString("HH\\:mm")}-{r.Order.EndAt.ToString("HH\\:mm")}",
                 ExpiresAt = r.ExpiresAt.HasValue ? r.ExpiresAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
                 Status = r.Status
             });
