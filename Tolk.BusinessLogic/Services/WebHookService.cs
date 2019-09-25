@@ -19,24 +19,28 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<WebHookService> _logger;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
-        private static HttpClient client = new HttpClient();
+        private readonly INotificationService _notificationService;
+        private static readonly HttpClient client = new HttpClient();
+        private static readonly int NumberOfTries = 5;
 
         public WebHookService(
             TolkDbContext dbContext,
             ILogger<WebHookService> logger,
             IOptions<TolkOptions> options,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            INotificationService notificationService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _options = options.Value;
             _clock = clock;
+            _notificationService = notificationService;
         }
 
         public async Task CallWebHooks()
         {
             var callIds = await _dbContext.OutboundWebHookCalls
-                .Where(e => e.DeliveredAt == null && e.FailedTries < 5)
+                .Where(e => e.DeliveredAt == null && e.FailedTries < NumberOfTries)
                 .Select(e => e.OutboundWebHookCallId)
                 .ToListAsync();
 
@@ -77,15 +81,15 @@ namespace Tolk.BusinessLogic.Services
                             success = response.IsSuccessStatusCode;
                             if (!success)
                             {
-                                _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}", callId, response.StatusCode);
-                                errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}";
+                                _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}, try number {tries}", callId, response.StatusCode, call.FailedTries + 1);
+                                errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}, try number {call.FailedTries + 1}";
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Failure calling web hook {callId}", callId);
-                        errorMessage = $"Failure calling web hook {callId}. {ex}";
+                        _logger.LogError(ex, "Error on this side when calling web hook {callId}, try number {tries}", callId, call.FailedTries + 1);
+                        errorMessage = $"Error on the \"{Constants.SystemName}\" server side for call {callId}. Contact {_options.Support.SecondLineEmail} for more information.";
                     }
                     finally
                     {
@@ -98,6 +102,10 @@ namespace Tolk.BusinessLogic.Services
                             call.FailedTries++;
                             FailedWebHookCall failedCall = new FailedWebHookCall { OutboundWebHookCallId = callId, ErrorMessage = errorMessage, FailedAt = _clock.SwedenNow };
                             _dbContext.FailedWebHookCalls.Add(failedCall);
+                            if (call.FailedTries == NumberOfTries)
+                            {
+                                _notificationService.NotifyOnFailure(callId);
+                            }
                         }
                         await _dbContext.SaveChangesAsync();
                     }

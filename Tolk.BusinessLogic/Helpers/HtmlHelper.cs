@@ -33,6 +33,11 @@ namespace Tolk.BusinessLogic.Helpers
             return $"{origin}/Request/ViewGroup/{requestGroupId}";
         }
 
+        public static string GetWebHookListUrl(string origin)
+        {
+            return $"{origin}/WebHook/List";
+        }
+
         #endregion
 
         #region Anchors & Buttons

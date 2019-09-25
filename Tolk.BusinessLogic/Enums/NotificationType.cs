@@ -80,5 +80,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förlorad samanhållen förfrågan på grund av inaktivitet")]
         [CustomName("request_group_lost_due_to_inactivity")]
         RequestGroupLostDueToInactivity = 18,
+
+        [Description("Webhookanrop har fallerat för många gånger i rad")]
+        [CustomName("error_notification")]
+        ErrorNotification = 19,
     }
 }

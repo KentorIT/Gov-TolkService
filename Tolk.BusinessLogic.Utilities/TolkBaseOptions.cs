@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -22,7 +20,9 @@ namespace Tolk.BusinessLogic.Utilities
             public string LanguagesUri { get; set; }
             public string LanguagesCompetenceInfoUri { get; set; }
             public string UnusedIsoCodes { get; set; }
-            public IEnumerable<string> UnusedIsoCodesList { get
+            public IEnumerable<string> UnusedIsoCodesList
+            {
+                get
                 {
                     return UnusedIsoCodes.Split(';');
                 }
@@ -48,6 +48,7 @@ namespace Tolk.BusinessLogic.Utilities
             public string SecondLineEmail { get; set; }
             public string UserAccountEmail { get; set; }
             public string SupportPhone { get; set; }
+            public bool ReportWebHookFailures { get; set; }
         }
 
         public class Environment

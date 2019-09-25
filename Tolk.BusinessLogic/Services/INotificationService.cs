@@ -39,5 +39,6 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
         void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup);
         void RequestGroupExpired(RequestGroup expiredRequestGroup);
+        void NotifyOnFailure(int callId);
     }
 }

@@ -23,6 +23,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void FlushNotificationSettings() { }
 
+        public void NotifyOnFailure(int callId) { }
+
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
 
         public void OrderContactPersonChanged(Order order) { }

@@ -53,6 +53,11 @@ namespace BrokerMock.Controllers
             }
             var extraInstructions = GetExtraInstructions(payload.Description);
 
+            if (extraInstructions.Contains("THROW"))
+            {
+                throw new Exception();
+            }
+
             if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
             {
                 if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))

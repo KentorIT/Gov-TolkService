@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads;
+using Tolk.Api.Payloads.WebHookPayloads;
 
 namespace BrokerMock.Controllers
 {
@@ -37,6 +38,15 @@ namespace BrokerMock.Controllers
             //Also add cert to call
             await _apiService.GetAllLists();
             return Json(new { Success = true });
+        }
+        public async Task<JsonResult> ErrorMessage([FromBody] ErrorMessageModel payload)
+        {
+            //Also add cert to call
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Failure for this callid:{payload.CallId} when trying to using this type:{payload.NotificationType}");
+            }
+            return new JsonResult("Success");
         }
     }
 }

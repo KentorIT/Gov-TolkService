@@ -1038,6 +1038,15 @@ Sammanställning:
                 }
             };
         }
+        private string GotoWebHookListPlain()
+        {
+            return $"\n\n\nGå till systemets loggsida för att få mer information : {HtmlHelper.GetWebHookListUrl(_tolkBaseOptions.TolkWebBaseUrl)}";
+        }
+        private string GotoWebHookListButton(string textOverride, bool autoBreakLines = true)
+        {
+            string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
+            return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetWebHookListUrl(_tolkBaseOptions.TolkWebBaseUrl), textOverride);
+        }
 
         private static RequestGroupModel GetRequestGroupModel(RequestGroup requestGroup)
         {
@@ -1165,6 +1174,47 @@ Sammanställning:
         public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
         {
 #warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
+        }
+
+        public void NotifyOnFailure(int callId)
+        {
+            OutboundWebHookCall call = _dbContext.OutboundWebHookCalls
+                .Include(c => c.RecipientUser)
+                .Single(c => c.OutboundWebHookCallId == callId);
+            var email = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation, $"Ett webhook-anrop från {Constants.SystemName} har misslyckats fem gånger",
+                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})
+{GotoWebHookListPlain()}",
+                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})<br/>
+{GotoWebHookListButton("Gå till systemets loggsida")}",
+                true
+            );
+            }
+            var webhook = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new ErrorMessageModel
+                    {
+                        ReportedAt = _clock.SwedenNow,
+                        CallId = callId,
+                        NotificationType = call.NotificationType.GetCustomName()
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.ErrorNotification,
+                    webhook.RecipientUserId
+                );
+            }
+            if (_tolkBaseOptions.Support.ReportWebHookFailures)
+            {
+                CreateEmail(
+                    _tolkBaseOptions.Support.SecondLineEmail,
+                    "Ett webhook-anrop har misslyckats fem gånger",
+                    $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()}) till brokerId:{call.RecipientUser.BrokerId.Value}"
+                );
+            }
         }
     }
 }
