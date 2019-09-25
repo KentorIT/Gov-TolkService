@@ -122,11 +122,6 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public RadioButtonGroup CompetenceLevelDesireType { get; set; }
 
-        [Display(Name = "Krav på kompetensnivå tolk", Description = "OBS! Ingen prioritetsordning")]
-        [RequiredChecked(Min = 1, Max = 2)]
-        public CheckboxGroup RequiredCompetenceLevels { get; set; }
-
-        [Display(Name = "Önskemål om kompetensnivå tolk")]
         [Prefix(PrefixPosition = PrefixAttribute.Position.Value, Text = "<span class=\"competence-ranking-num\">1. </span>")]
         public CompetenceAndSpecialistLevel? RequestedCompetenceLevelFirst { get; set; }
 
@@ -154,7 +149,7 @@ namespace Tolk.Web.Models
         }
 
         [Display(Name = "Kompetensnivå är ett krav")]
-        public bool SpecificCompetenceLevelRequired { get => (RequiredCompetenceLevels == null || CompetenceLevelDesireType == null) ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement; }
+        public bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
 
         public bool DisplayExpectedTravelcost { get => (AllowExceedingTravelCost == null || AllowExceedingTravelCost.SelectedItem == null) ? false : DisplayForBroker ? EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes : (EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved); }
 
@@ -362,24 +357,14 @@ namespace Tolk.Web.Models
             get
             {
                 List<CompetenceAndSpecialistLevel> list = new List<CompetenceAndSpecialistLevel>();
-                if (SpecificCompetenceLevelRequired)
+                if (RequestedCompetenceLevelFirst.HasValue)
                 {
-                    return RequiredCompetenceLevels.SelectedItems
-                        .Select(item => EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
-                        .ToList();
+                    list.Add(RequestedCompetenceLevelFirst.Value);
                 }
-                else
+                if (RequestedCompetenceLevelSecond.HasValue)
                 {
-                    if (RequestedCompetenceLevelFirst.HasValue)
-                    {
-                        list.Add(RequestedCompetenceLevelFirst.Value);
-                    }
-                    if (RequestedCompetenceLevelSecond.HasValue)
-                    {
-                        list.Add(RequestedCompetenceLevelSecond.Value);
-                    }
+                    list.Add(RequestedCompetenceLevelSecond.Value);
                 }
-
                 return list;
             }
         }
@@ -560,38 +545,25 @@ namespace Tolk.Web.Models
             }
             else
             {
-                if (RequestedCompetenceLevels.Count > 0)
+                if (RequestedCompetenceLevels.Any())
                 {
-                    if (SpecificCompetenceLevelRequired)
+                    // Counting rank for cases where e.g. first option is undefined, but second is defined
+                    int rank = 0;
+                    if (RequestedCompetenceLevelFirst.HasValue)
                     {
-                        foreach (var entry in RequiredCompetenceLevels.SelectedItems)
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                         {
-                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                            {
-                                CompetenceLevel = EnumHelper.Parse<CompetenceAndSpecialistLevel>(entry.Value)
-                            });
-                        }
+                            CompetenceLevel = RequestedCompetenceLevelFirst.Value,
+                            Rank = ++rank
+                        });
                     }
-                    else
+                    if (RequestedCompetenceLevelSecond.HasValue)
                     {
-                        // Counting rank for cases where e.g. first option is undefined, but second is defined
-                        int rank = 0;
-                        if (RequestedCompetenceLevelFirst.HasValue)
+                        order.CompetenceRequirements.Add(new OrderCompetenceRequirement
                         {
-                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                            {
-                                CompetenceLevel = RequestedCompetenceLevelFirst.Value,
-                                Rank = ++rank
-                            });
-                        }
-                        if (RequestedCompetenceLevelSecond.HasValue)
-                        {
-                            order.CompetenceRequirements.Add(new OrderCompetenceRequirement
-                            {
-                                CompetenceLevel = RequestedCompetenceLevelSecond.Value,
-                                Rank = ++rank
-                            });
-                        }
+                            CompetenceLevel = RequestedCompetenceLevelSecond.Value,
+                            Rank = ++rank
+                        });
                     }
                 }
             }
@@ -619,25 +591,15 @@ namespace Tolk.Web.Models
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
-            HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank,
             }).ToList();
 
-            if (order.SpecificCompetenceLevelRequired)
-            {
-                requiredCompetenceLevels = order.CompetenceRequirements
-                    .Select(i => i.CompetenceLevel)
-                    .ToHashSet();
-            }
-            else
-            {
-                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
-                competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-                competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-            }
+            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
 
             return new OrderModel
             {
@@ -679,17 +641,8 @@ namespace Tolk.Web.Models
                     ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
                     : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
                 },
-                RequiredCompetenceLevels = new CheckboxGroup
-                {
-                    SelectedItems = SelectListService.CompetenceLevels
-                        .Where(item => order.CompetenceRequirements
-                            .Select(r => r.CompetenceLevel)
-                            .ToHashSet()
-                            .Contains(EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
-                        ).ToHashSet()
-                },
-                RequestedCompetenceLevelFirst = order.SpecificCompetenceLevelRequired ? null : competenceFirst?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = order.SpecificCompetenceLevelRequired ? null : competenceSecond?.CompetenceLevel,
+                RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
                 Status = order.Status,
                 RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
                 RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
@@ -745,25 +698,15 @@ namespace Tolk.Web.Models
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
-            HashSet<CompetenceAndSpecialistLevel> requiredCompetenceLevels = null;
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
                 Rank = r.Rank,
             }).ToList();
 
-            if (order.SpecificCompetenceLevelRequired)
-            {
-                requiredCompetenceLevels = order.CompetenceRequirements
-                    .Select(i => i.CompetenceLevel)
-                    .ToHashSet();
-            }
-            else
-            {
-                competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
-                competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-                competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-            }
+            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
 
             return new OrderModel
             {
@@ -786,15 +729,6 @@ namespace Tolk.Web.Models
                     SelectedItem = order.SpecificCompetenceLevelRequired
                     ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
                     : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
-                },
-                RequiredCompetenceLevels = new CheckboxGroup
-                {
-                    SelectedItems = SelectListService.CompetenceLevels
-                        .Where(item => order.CompetenceRequirements
-                            .Select(r => r.CompetenceLevel)
-                            .ToHashSet()
-                            .Contains(EnumHelper.Parse<CompetenceAndSpecialistLevel>(item.Value))
-                        ).ToHashSet()
                 },
                 RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,

@@ -38,7 +38,7 @@ $(function () {
             $('#divNonCompetenceLevel2').hide();
             $('#divCompetenceLevel').show();
             $('#LanguageHasAuthorizedInterpreter').val('true');
-            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'));
+            validateAvailableRequiredCompetences();
         }
     };
 
@@ -75,7 +75,6 @@ $(function () {
                 $('.competence-information > div.comp-list').find("ul").append('<li>Utbildad tolk</li>');
             }
             $('.competence-information > div.comp-list').append('</ul>');
-
         }
     };
 
@@ -325,40 +324,61 @@ $(function () {
         toggleLanguage($("#LanguageId option:selected"));
     });
 
+    $("body").on("change", "#RequestedCompetenceLevelFirst, #RequestedCompetenceLevelSecond", function () {
+        validateAvailableRequiredCompetences();
+    });
+
+    function validateSelectedCompetences() {
+        if ($("#LanguageId option:selected").attr('data-additional') !== "") {
+            var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
+            var firstSelected = $("#RequestedCompetenceLevelFirst").val();
+            var secondSelected = $("#RequestedCompetenceLevelSecond").val();
+            if ($(competenceDesireType[0]).val() === 'Requirement') {
+                if (firstSelected === '') {
+                    return "Krav i första hand måste anges"
+                }
+                if (firstSelected === secondSelected) {
+                    return "Krav i första och andra hand kan inte vara samma"
+                }
+            }
+            if ($(competenceDesireType[0]).val() === 'Request') {
+                if (firstSelected === '' && (firstSelected !== secondSelected)) {
+                    return "Ange önskemål i första hand om du angett önskemål i andra hand"
+                }
+                if (firstSelected !== '' && (firstSelected === secondSelected)) {
+                    return "Önskemål i första och andra hand kan inte vara samma"
+                }
+            }
+        }
+        return "";
+    }
+
     $("body").on("change", "input[name=CompetenceLevelDesireType]", function () {
         var items = $(this).filter('input:checked');
         if ($(items[0]).val() === 'Request') {
             // Is request
-            $("#competence-required").hide();
-            $("#competence-requested").show();
-            $("#competence-info").show();
-            $("#competence-not-available").hide();
-            $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
+            $("#competence-required, #competence-info-requirement, #competence-not-available").hide();
+            $("#competence-requested, #competence-info, #competence-prio-list").show();
         }
         else if ($(items[0]).val() === 'Requirement') {
             // Is requirement
-            $("#competence-requested").hide();
-            $("#competence-required").show();
-            $("#competence-info").hide();
-            validateAvailableCompetences($('[data-checkbox-group="RequiredCompetenceLevels"]').filter(':checked'));
-            $("#RequiredCompetenceLevels_cbHidden").removeClass("ignore-validation");
+            $("#competence-requested, #competence-info").hide();
+            $("#competence-required, #competence-prio-list, #competence-info-requirement").show();
+            validateAvailableRequiredCompetences();
         }
         else {
-            $("#competence-requested").hide();
-            $("#competence-required").hide();
+            $("#competence-requested, #competence-required, #competence-prio-list, #competence-not-available, #competence-info-requirement").hide();
             $("#competence-info").show();
-            $("#competence-not-available").hide();
-            $("#RequiredCompetenceLevels_cbHidden").addClass("ignore-validation");
         }
     });
 
-    function validateAvailableCompetences(checkedCompetences) {
+    function validateAvailableRequiredCompetences() {
         var currentLanguageCompetences = $("#LanguageId option:selected").attr('data-additional');
         var showWarning = false;
         //check if required is checked and if all competences not available - then validate
         var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
         if ($(competenceDesireType[0]).val() === 'Requirement' && currentLanguageCompetences.length !== 4) {
-            checkedCompetences.each(function () {
+            $('#RequestedCompetenceLevelFirst, #RequestedCompetenceLevelSecond').each(function () {
                 switch ($(this).val()) {
                     case "CourtSpecialist":
                         if (!(currentLanguageCompetences.indexOf("L") >= 0)) {
@@ -475,23 +495,6 @@ $(function () {
         document.documentElement.scrollTop = 0;
     });
 
-    $("body").on("change", "#RequiredCompetenceLevels", function () {
-        var allCheckboxes = $('[data-checkbox-group="RequiredCompetenceLevels"]');
-        var checkedBoxes = allCheckboxes.filter(':checked');
-
-        if (checkedBoxes.length >= 2) {
-            allCheckboxes.filter(':not(:checked)').attr('disabled', 'disabled');
-        }
-        else {
-            allCheckboxes.filter(':not(:checked)').removeAttr('disabled');
-        }
-        if (checkedBoxes.length > 0) {
-            validateAvailableCompetences(checkedBoxes);
-        }
-        else {
-            $("#competence-not-available").hide();
-        }
-    });
 
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
         if ($(this).val() === "YesShouldBeApproved") {
@@ -686,7 +689,12 @@ $(function () {
                 errors++;
             }
             if (!validateAllowExceedingTravelCost()) {
-                validatorMessage("AllowExceedingTravelCost", "Ange hurvida restid eller resväg som överskriver gränsvärden accepteras");
+                validatorMessage("AllowExceedingTravelCost", "Ange huruvida restid eller resväg som överskriver gränsvärden accepteras");
+                errors++;
+            }
+            var competenceMessage = validateSelectedCompetences();
+            if (competenceMessage !== "") {
+                validatorMessage("RequestedCompetenceLevelFirst", competenceMessage);
                 errors++;
             }
             if (!$("#SeveralOccasions").is(":checked")) {

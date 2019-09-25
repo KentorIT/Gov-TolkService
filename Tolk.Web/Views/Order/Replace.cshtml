@@ -4,6 +4,7 @@
 @using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Ersätt avbokat uppdrag";
+    var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
 }
 <section aria-label="@ViewData["Title"]">
     <div class="row">
@@ -30,22 +31,15 @@
                         <display-entry asp-for="SpecificCompetenceLevelRequired" />
                     </div>
                     <div class="col-sm-4">
-                        @if (Model.RequestedCompetenceLevels.Count != 0)
+                        @if (Model.RequestedCompetenceLevels.Any())
                         {
-                            @if (Model.SpecificCompetenceLevelRequired)
+                            @if (Model.RequestedCompetenceLevelFirst.HasValue)
                             {
-                                <display-entry asp-for="RequiredCompetenceLevels" />
+                                <display-entry asp-for="RequestedCompetenceLevelFirst" asp-value-prefix="1. " label-override="@competenceInfo" />
                             }
-                            else
+                            @if (Model.RequestedCompetenceLevelSecond.HasValue)
                             {
-                                @if (Model.RequestedCompetenceLevelFirst.HasValue)
-                                {
-                                    <display-entry asp-for="RequestedCompetenceLevelFirst" />
-                                }
-                                @if (Model.RequestedCompetenceLevelSecond.HasValue)
-                                {
-                                    <display-entry asp-for="RequestedCompetenceLevelSecond" />
-                                }
+                                <display-entry asp-for="RequestedCompetenceLevelSecond" asp-value-prefix="2. " />
                             }
                         }
                         else

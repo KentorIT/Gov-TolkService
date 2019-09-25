@@ -208,16 +208,21 @@
                                     <div class="row">
                                         <div class="col-sm-8">
                                             <span id="competence-required">
-                                                <form-entry asp-for="RequiredCompetenceLevels" asp-items="SelectListService.CompetenceLevels" label-override="Ange max två krav på kompetensnivå" />
+                                                <label>Ange krav på kompetensnivå i prioritetsordning</label><br />
                                             </span>
-                                            <div id="competence-requested" class="padding-bottom-30px">
+                                            <span id="competence-requested">
                                                 <label>Ange eventuella önskemål om kompetensnivå i prioritetsordning</label><br />
+                                            </span>
+                                            <div id="competence-prio-list" class="padding-bottom-30px">
                                                 <form-entry asp-for="RequestedCompetenceLevelFirst" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" label-override="" />
                                                 <form-entry asp-for="RequestedCompetenceLevelSecond" type="select" asp-items="SelectListService.CompetenceLevels" class="allow-clear competence-level" />
                                             </div>
+                                            <div class="important-info"  id="competence-info-requirement">
+                                                Du kan ange ett till två krav. Anges två krav så krävs att tolken har en av dessa två kompetensnivåer och helst vill du att tolken har den med högst prioritering.
+                                            </div>
                                             <div class="important-info" id="competence-info">
                                                 Om inga specifika önskemål anges ska förmedlingen tillsätta tolk enligt högsta möjliga kompetensnivå,
-                                                i enlighet med ramavtalets kompetensprioritering
+                                                i enlighet med ramavtalets kompetensprioritering.
                                             </div>
                                             <div class="warning-info-home" id="competence-not-available">
                                                 <div role="alert">

@@ -37,29 +37,18 @@ namespace Tolk.Web.Helpers
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            // Specific case for competence requirements
-            if (validationContext.ObjectInstance.GetType() == typeof(OrderModel))
+            // Argument checks
+            if (validationContext == null)
             {
-                var model = (OrderModel)validationContext.ObjectInstance;
-                if (validationContext.MemberName == nameof(model.RequiredCompetenceLevels)
-                    && !model.SpecificCompetenceLevelRequired)
-                {
-                    return ValidationResult.Success;
-                }
+                throw new ArgumentNullException();
             }
-            { // Argument checks
-                if (validationContext == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                if (Min < 0 || Max < 0)
-                {
-                    throw new ArgumentOutOfRangeException("Arguments cannot be negative");
-                }
-                if (Min > Max)
-                {
-                    throw new ArgumentException($"{nameof(Min)} cannot be bigger than {nameof(Max)}");
-                }
+            if (Min < 0 || Max < 0)
+            {
+                throw new ArgumentOutOfRangeException("Arguments cannot be negative");
+            }
+            if (Min > Max)
+            {
+                throw new ArgumentException($"{nameof(Min)} cannot be bigger than {nameof(Max)}");
             }
 
             var checkboxGroup = (CheckboxGroup)value;

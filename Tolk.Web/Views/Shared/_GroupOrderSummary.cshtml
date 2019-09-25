@@ -19,6 +19,8 @@
     var divId = (string)ViewData["id"] ?? "OrderSummary";
 
     HelpLinkService.PageName = (string)ViewData["helplink"];
+    var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
+
 }
 
 @if (isCollapsible)
@@ -185,20 +187,13 @@ else
             }
             else if (Model.RequestedCompetenceLevels.Any())
             {
-                @if (Model.SpecificCompetenceLevelRequired)
+                @if (Model.RequestedCompetenceLevelFirst.HasValue)
                 {
-                    <display-entry asp-for="RequiredCompetenceLevels" />
+                    <display-entry asp-for="RequestedCompetenceLevelFirst" asp-value-prefix="1. " label-override="@competenceInfo" />
                 }
-                else
+                @if (Model.RequestedCompetenceLevelSecond.HasValue)
                 {
-                    @if (Model.RequestedCompetenceLevelFirst.HasValue)
-                    {
-                        <display-entry asp-for="RequestedCompetenceLevelFirst" asp-value-prefix="1. " />
-                    }
-                    @if (Model.RequestedCompetenceLevelSecond.HasValue)
-                    {
-                        <display-entry asp-for="RequestedCompetenceLevelSecond" asp-value-prefix="2. " />
-                    }
+                    <display-entry asp-for="RequestedCompetenceLevelSecond" asp-value-prefix="2. " />
                 }
             }
             else
