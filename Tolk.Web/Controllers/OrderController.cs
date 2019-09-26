@@ -461,8 +461,7 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.NewInterpreterEmail = request.Interpreter.Email ?? "-";
                 model.ActiveRequest.NewInterpreterPhoneNumber = request.Interpreter.PhoneNumber ?? "-";
                 model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
-                model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
-                model.Dialect = GetRequestAnswerDialect(model.Dialect, order.Requirements);
+                model.Dialect = GetRequestAnswerDialect(model.Dialect, model.ActiveRequest.RequirementAnswers);
                 model.ActiveRequest.AnswerProcessedBy = request.AnswerProcessedBy.HasValue ? request.ProcessingUser.FullName : "Systemet";
                 model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToString("yyyy-MM-dd HH:mm");
                 return View(model);
@@ -470,12 +469,12 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private string GetRequestAnswerDialect(string dialect, List<OrderRequirement> orderRequirements)
+        private string GetRequestAnswerDialect(string dialect, List<RequestRequirementAnswerModel> requirementAnswers)
         {
-            if (!string.IsNullOrEmpty(dialect) && orderRequirements != null && orderRequirements.Any(or => or.RequirementType == RequirementType.Dialect))
+            if (!string.IsNullOrEmpty(dialect) && requirementAnswers != null && requirementAnswers.Any(or => or.RequirementType == RequirementType.Dialect))
             {
-                var reqDialect = orderRequirements.Single(or => or.RequirementType == RequirementType.Dialect);
-                return reqDialect.RequirementAnswers.Single(ra => ra.OrderRequirementId == reqDialect.OrderRequirementId).CanSatisfyRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
+                var reqDialect = requirementAnswers.Single(or => or.RequirementType == RequirementType.Dialect);
+                return reqDialect.CanMeetRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
             }
             return string.Empty;
         }
