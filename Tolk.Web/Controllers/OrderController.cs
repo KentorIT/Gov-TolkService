@@ -463,7 +463,6 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
                 model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
                 model.Dialect = GetRequestAnswerDialect(model.Dialect, order.Requirements);
-                model.DisplayExpectedTravelCostInfo = DisplayExpectedTravelCostInfo(order, request.InterpreterLocation.Value);
                 model.ActiveRequest.AnswerProcessedBy = request.AnswerProcessedBy.HasValue ? request.ProcessingUser.FullName : "Systemet";
                 model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToString("yyyy-MM-dd HH:mm");
                 return View(model);
@@ -479,15 +478,6 @@ namespace Tolk.Web.Controllers
                 return reqDialect.RequirementAnswers.Single(ra => ra.OrderRequirementId == reqDialect.OrderRequirementId).CanSatisfyRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
             }
             return string.Empty;
-        }
-
-        private bool DisplayExpectedTravelCostInfo(Order o, int locationAnswer)
-        {
-            if (o.AllowExceedingTravelCost.HasValue && (o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldBeApproved || o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldNotBeApproved))
-            {
-                return locationAnswer == (int)InterpreterLocation.OnSite || locationAnswer == (int)InterpreterLocation.OffSiteDesignatedLocation;
-            }
-            return false;
         }
 
         private string GetInterpreterLocationInfoAnswer(Order o, int locationAnswer)

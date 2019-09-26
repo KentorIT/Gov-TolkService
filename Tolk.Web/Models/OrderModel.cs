@@ -151,8 +151,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Kompetensnivå är ett krav")]
         public bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
 
-        public bool DisplayExpectedTravelcost { get => (AllowExceedingTravelCost == null || AllowExceedingTravelCost.SelectedItem == null) ? false : DisplayForBroker ? EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes : (EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved); }
-
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
         public string WarningOrderRequiredCompetenceInfo { get; set; } = string.Empty;
@@ -448,8 +446,6 @@ namespace Tolk.Web.Models
             get => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
         }
 
-        public bool DisplayExpectedTravelCostInfo { get; set; }
-
         #region methods
 
         public void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
@@ -650,7 +646,6 @@ namespace Tolk.Web.Models
                 RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
                 RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
                 RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
-                // Add the InterpreterLocation
                 OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
                 {
                     OrderRequirementId = r.OrderRequirementId,

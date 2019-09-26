@@ -157,6 +157,8 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmationDenial { get; set; } = false;
 
+        public bool DisplayExpectedTravelCostInfo { get; set; }
+
         public EventLogModel EventLog { get; set; }
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
@@ -191,7 +193,7 @@ namespace Tolk.Web.Models
             var attach = request.Attachments;
             var verificationResult = (request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign);
             bool? isInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null;
-   
+
             return new RequestModel
             {
                 Status = request.Status,
@@ -205,7 +207,7 @@ namespace Tolk.Web.Models
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
                 IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
-                InterpreterVerificationMessage  = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
+                InterpreterVerificationMessage = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
@@ -237,7 +239,9 @@ namespace Tolk.Web.Models
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
+
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
+                DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
                 OrderModel = OrderModel.GetModelFromOrder(request.Order, null, true),
                 ComplaintId = complaint?.ComplaintId,
                 ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
@@ -257,6 +261,15 @@ namespace Tolk.Web.Models
                     }).ToList()
                 }
             };
+        }
+
+        private static bool GetDisplayExpectedTravelCostInfo(Order o, int locationAnswer)
+        {
+            if (o.AllowExceedingTravelCost.HasValue && (o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldBeApproved || o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldNotBeApproved))
+            {
+                return locationAnswer == (int)BusinessLogic.Enums.InterpreterLocation.OnSite || locationAnswer == (int)BusinessLogic.Enums.InterpreterLocation.OffSiteDesignatedLocation;
+            }
+            return false;
         }
 
         #endregion

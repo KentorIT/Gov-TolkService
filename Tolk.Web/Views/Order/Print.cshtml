@@ -98,7 +98,7 @@
                                 <span class="bold">Språk: </span>@Model.LanguageName @Model.Dialect<br />
                                 <span class="bold">Inställelsesätt: </span>@Model.InterpreterLocationAnswer.GetDescription()<br />
                                 @Model.InterpreterLocationInfoAnswer<br /><br />
-                                @if (Model.DisplayExpectedTravelCostInfo)
+                                @if (Model.ActiveRequest.DisplayExpectedTravelCostInfo)
                                 {
                                     <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.Value.ToString("#,0.00 SEK")<br />
                                     <span class="bold">Kommentar till bedömd resekostnad: </span><br />
