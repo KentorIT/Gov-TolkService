@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                         {
                             _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
                                 startedRequest.RequestId, startedRequest.OrderId);
-                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel);
+                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
                             await _tolkDbContext.SaveChangesAsync();
                         }
                     }
