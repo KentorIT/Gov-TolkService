@@ -1,2 +1,3 @@
 Alla delar i SMTP och alla delar i Support behöver läggas till i både web och api's app settings!
 Smtp finns sedan tidigare i web...
+Ny setting EnableDefaultSettings Denna ska vara false i prod vid release 19.4
