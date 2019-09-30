@@ -89,7 +89,7 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error on this side when calling web hook {callId}, try number {tries}", callId, call.FailedTries + 1);
-                        errorMessage = $"Error on the \"{Constants.SystemName}\" server side for call {callId}. Contact {_options.Support.SecondLineEmail} for more information.";
+                        errorMessage = $"Error on the \"{Constants.SystemName}\" server side for call {callId}. Contact {_options.Support.FirstLineEmail} for more information.";
                     }
                     finally
                     {
