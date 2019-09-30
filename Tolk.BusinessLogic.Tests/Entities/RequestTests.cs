@@ -946,6 +946,157 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Fact]
+        public void AddRequestView()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.Created,
+                Order = new Order(MockOrder),
+                RequestViews = new List<RequestView>(),
+            };
+            request.AddRequestView(1, null, DateTimeOffset.Now);
+            Assert.Equal(1, request.RequestViews.Count(r => r.ViewedBy == 1));
+        }
+
+        [Fact]
+        public void AddRequestView_Twice()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.Created,
+                Order = new Order(MockOrder),
+                RequestViews = new List<RequestView>(),
+            };
+            request.AddRequestView(1, null, DateTimeOffset.Now);
+            request.AddRequestView(1, null, DateTimeOffset.Now);
+            Assert.Equal(1, request.RequestViews.Count(r => r.ViewedBy == 1));
+        }
+
+        [Fact]
+        public void ConfirmDenial()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.DeniedByCreator,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+            request.ConfirmDenial(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, request.RequestStatusConfirmations.Count(r => r.RequestStatus == RequestStatus.DeniedByCreator));
+        }
+
+        // Invalid request status
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByBroker)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void ConfirmDenial_Invalid(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => request.ConfirmDenial(DateTimeOffset.Now, 1, null));
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        public void ConfirmCancellation(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+            request.ConfirmCancellation(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, request.RequestStatusConfirmations.Count(r => r.RequestStatus == status));
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.Accepted, "2019-01-29 15:32", "2019-02-03 12:00", true )]
+        [InlineData(RequestStatus.Approved, "2019-01-29 15:32", "2019-02-03 12:00", true)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, "2019-01-29 15:32", "2019-02-03 12:00", true)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, "2019-01-29 15:32", "2019-02-03 12:00", false )]
+        [InlineData(RequestStatus.CancelledByBroker, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.CancelledByCreator, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.Created, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.DeclinedByBroker, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.DeniedByCreator, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.InterpreterReplaced, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.LostDueToQuarantine, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.Received, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, "2019-01-29 15:32", "2019-02-03 12:00", false)]
+        [InlineData(RequestStatus.Accepted, "2019-02-03 12:00", "2019-01-29 15:32", false)]
+        [InlineData(RequestStatus.Approved, "2019-02-03 12:00", "2019-01-29 15:32", false)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, "2019-02-03 12:00", "2019-01-29 15:32", false)]
+        public void CanChangeInterpreter(RequestStatus status, string now, string startDate, bool allowed)
+        {
+            var startAt = DateTime.Parse(startDate);
+            var nowAt = DateTime.Parse(now);
+            var request = new Request()
+            {
+                Status = status,
+                Order = new Order(MockOrder)
+                {
+                    StartAt = startAt,
+                    EndAt = startAt.AddHours(1)
+                }
+            };
+            Assert.Equal(allowed, request.CanChangeInterpreter(nowAt));
+        }
+
+        // Invalid request status
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByBroker)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void ConfirmCancellation_Invalid(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => request.ConfirmCancellation(DateTimeOffset.Now, 1, null));
+        }
+
+        [Fact]
         public void CreateComplaint_Valid()
         {
             var complaint = new Complaint

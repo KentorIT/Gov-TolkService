@@ -131,6 +131,18 @@ namespace Tolk.BusinessLogic.Entities
             get => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
         }
 
+        public bool CanCreateComplaint
+        {
+            get => !Complaints.Any() && Status == RequestStatus.Approved;
+        }
+
+        public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+            InterpreterLocation.HasValue && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+
+        #endregion
+
+        #region Methods
+
         public void CreateComplaint(Complaint complaint)
         {
             if (!CanCreateComplaint)
@@ -139,15 +151,6 @@ namespace Tolk.BusinessLogic.Entities
             }
             Complaints.Add(complaint);
         }
-
-        public bool CanCreateComplaint
-        {
-            get => !Complaints.Any() && Status == RequestStatus.Approved;
-        }
-
-        #endregion
-
-        #region Methods
 
         public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
@@ -242,12 +245,9 @@ namespace Tolk.BusinessLogic.Entities
             RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
-        public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
-            InterpreterLocation.HasValue && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
-
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
         {
-            if (!RequestViews.Any(rv => rv.RequestId == RequestId && rv.ViewedBy == userId))
+            if (!RequestViews.Any(rv => rv.ViewedBy == userId))
             {
                 RequestViews.Add(new RequestView
                 {
