@@ -29,7 +29,7 @@ namespace BrokerMock.Controllers
         private readonly BrokerMockOptions _options;
         private readonly ApiCallService _apiService;
         private readonly IMemoryCache _cache;
-        private static HttpClient client = new HttpClient();
+
         public RequisitionController(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, ApiCallService apiService, IMemoryCache cache)
         {
             _hubContext = hubContext;
