@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(e => e.OutboundWebHookCallId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} outbound web hook calls to send: {callIds}",
+            _logger.LogInformation("Found {count} outbound web hook calls to send: {callIds}",
                 callIds.Count, string.Join(", ", callIds));
 
             string errorMessage = string.Empty;
@@ -61,7 +61,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         if (call == null)
                         {
-                            _logger.LogDebug("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
+                            _logger.LogInformation("Call {callId} was in list to be handled, but seems to have been handled already.", callId);
                         }
                         else
                         {

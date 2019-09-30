@@ -99,6 +99,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<ValidateTellusLanguageListResult> ValidateTellusLanguageList(bool notify = false)
         {
+            _logger.LogInformation($"Starting {nameof(ValidateTellusLanguageList)}");
             if (!_tolkBaseOptions.Tellus.IsActivated)
             {
                 return new ValidateTellusLanguageListResult
@@ -115,17 +116,17 @@ namespace Tolk.BusinessLogic.Services
 
                 if (result.Status != 200)
                 {
+                    _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
                     if (notify)
                     {
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             $"Verifieringen av språklistan mot Tellus misslyckades!",
                             "Det borde stå vad som gick fel här, om vi vet det...");
                     }
-                    _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
                     return null;
                 }
                 var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodesList.Contains(t.Id)).ToList();
-                var currentLanguages = _dbContext.Languages.ToList();
+                var currentLanguages = await _dbContext.Languages.ToListAsync();
                 var validationResult = new ValidateTellusLanguageListResult
                 {
                     NewLanguages = tellusLanguages.Where(t => !currentLanguages.Any(l => l.TellusName == t.Id && l.Active)).Select(t => new TellusLanguageModel
@@ -146,10 +147,10 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (validationResult.FoundChanges)
                     {
+                        _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.Support.SecondLineEmail}");
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             "Det finns skillnader i systemets språklista och den i Tellus.",
                             $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/Verify");
-                        _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.Support.SecondLineEmail}");
                     }
                     else
                     {
@@ -173,6 +174,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<UpdateLanguagesCompetenceResult> UpdateTellusLanguagesCompetenceInfo(bool notify = false)
         {
+            _logger.LogInformation($"Starting {nameof(UpdateTellusLanguagesCompetenceInfo)}");
             if (!_tolkBaseOptions.Tellus.IsLanguagesCompetenceActivated)
                 return new UpdateLanguagesCompetenceResult
                 {
@@ -200,17 +202,17 @@ namespace Tolk.BusinessLogic.Services
                         Message = $"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}"
                     };
                 }
-                var currentTellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrWhiteSpace(l.TellusName)).ToList();
+                var currentTellusLanguages = await _dbContext.Languages.Where(l => !string.IsNullOrWhiteSpace(l.TellusName)).ToListAsync();
                 var tellusLanguagesWithCompetences = result.Result.Where(t => currentTellusLanguages.Any(l => l.TellusName == t.Id && l.Active));
                 if (!result.Result.Any() || !tellusLanguagesWithCompetences.Any())
                 {
+                    _logger.LogWarning($"Result of {nameof(UpdateTellusLanguagesCompetenceInfo)} had no active languages");
                     if (notify)
                     {
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             result.Result.Any() ? "Hämtningen av språkkompetenser från Tellus innehöll endast ej aktiva språk eller Tellusnamn som inte förekommer i tjänsten" : "Hämtningen av språkkompetenser från Tellus innehöll inga språk",
                             $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
                     }
-                    _logger.LogWarning($"Result of {nameof(UpdateTellusLanguagesCompetenceInfo)} had no active languages");
                     return new UpdateLanguagesCompetenceResult
                     {
                         UpdatedLanguages = Enumerable.Empty<Language>(),

@@ -257,9 +257,9 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
-                    _logger.LogInformation($"{requestViewsToDelete.Count} RequestViews deleted");
                     _tolkDbContext.RemoveRange(requestViewsToDelete);
                     await _tolkDbContext.SaveChangesAsync();
+                    _logger.LogInformation($"{requestViewsToDelete.Count} RequestViews deleted");
                     return;
                 }
                 catch (Exception ex)

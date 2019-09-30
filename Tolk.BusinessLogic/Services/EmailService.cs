@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(e => e.OutboundEmailId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} emails to send: {emailIds}",
+            _logger.LogInformation("Found {count} emails to send: {emailIds}",
                 emailIds.Count, string.Join(", ", emailIds));
 
             if (emailIds.Any())
@@ -67,7 +67,7 @@ namespace Tolk.BusinessLogic.Services
 
                                 if (email == null)
                                 {
-                                    _logger.LogDebug("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
+                                    _logger.LogInformation("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
                                 }
                                 else
                                 {

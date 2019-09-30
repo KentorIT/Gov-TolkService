@@ -61,7 +61,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} requests where the interpreter should be revalidated: {requestIds}",
+            _logger.LogInformation("Found {count} requests where the interpreter should be revalidated: {requestIds}",
                 requestIds.Count, string.Join(", ", requestIds));
 
             foreach (var requestId in requestIds)
@@ -74,7 +74,7 @@ namespace Tolk.BusinessLogic.Services
 
                     if (startedRequest == null)
                     {
-                        _logger.LogDebug("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                        _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
                             requestId);
                     }
                     else
@@ -114,7 +114,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} expired requests to process: {requestIds}",
+            _logger.LogInformation("Found {count} expired requests to process: {requestIds}",
                 expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
 
             foreach (var requestId in expiredRequestIds)
@@ -134,7 +134,7 @@ namespace Tolk.BusinessLogic.Services
 
                         if (expiredRequest == null)
                         {
-                            _logger.LogDebug("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
                                 requestId);
                         }
                         else
@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} expired request groups to process: {requestGroupIds}",
+            _logger.LogInformation("Found {count} expired request groups to process: {requestGroupIds}",
                 expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
             foreach (var requestGroupId in expiredRequestGroupIds)
             {
@@ -198,7 +198,7 @@ namespace Tolk.BusinessLogic.Services
 
                         if (expiredRequestGroup == null)
                         {
-                            _logger.LogDebug("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
                                 requestGroupId);
                         }
                         else
@@ -244,7 +244,7 @@ namespace Tolk.BusinessLogic.Services
                 .Select(c => c.ComplaintId)
                 .ToListAsync();
 
-            _logger.LogDebug("Found {count} expired complaints to process: {expiredComplaintIds}",
+            _logger.LogInformation("Found {count} expired complaints to process: {expiredComplaintIds}",
                 expiredComplaintIds.Count, string.Join(", ", expiredComplaintIds));
 
             foreach (var complaintId in expiredComplaintIds)
@@ -259,7 +259,7 @@ namespace Tolk.BusinessLogic.Services
 
                         if (expiredComplaint == null)
                         {
-                            _logger.LogDebug("Complaint {complaintId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            _logger.LogInformation("Complaint {complaintId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
                                 complaintId);
                         }
                         else
@@ -292,7 +292,7 @@ namespace Tolk.BusinessLogic.Services
                     r.Order.StartAt <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))
                 .Select(r => r.RequestId).ToListAsync();
 
-            _logger.LogDebug("Found {count} non answered responded requests that expires: {requestIds}",
+            _logger.LogInformation("Found {count} non answered responded requests that expires: {requestIds}",
                 nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
 
             foreach (var requestId in nonAnsweredRespondedRequestsId)
@@ -309,7 +309,7 @@ namespace Tolk.BusinessLogic.Services
                         && r.RequestId == requestId);
                         if (request == null)
                         {
-                            _logger.LogDebug("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            _logger.LogInformation("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
                                 requestId);
                         }
                         else
@@ -721,7 +721,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _logger.LogInformation("Cleaning temporary attachments");
                     // Find attachmentgroups older than 24 hours
-                    var attachmentsGroupsToDelete = _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < _clock.SwedenNow.AddDays(-1)).ToList();
+                    var attachmentsGroupsToDelete = await _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < _clock.SwedenNow.AddDays(-1)).ToListAsync();
                     if (attachmentsGroupsToDelete.Any())
                     {
                         _logger.LogInformation("Cleaning {0} attachmentgroups", attachmentsGroupsToDelete.Count());
@@ -730,10 +730,10 @@ namespace Tolk.BusinessLogic.Services
                     }
 
                     // Find orphaned attachments
-                    var attachmentsToDelete = _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
+                    var attachmentsToDelete = await _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
-                                                                        .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToList();
+                                                                        .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToListAsync();
                     if (attachmentsToDelete.Any())
                     {
                         _logger.LogInformation("Cleaning {0} attachments", attachmentsToDelete.Count());
