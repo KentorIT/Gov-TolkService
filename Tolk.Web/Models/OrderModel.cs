@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
         [Required]
         public int? RegionId { get; set; }
 
-        [Display(Name = "Enhet")]
+        [Display(Name = "Enhet", Description = "Välj vilken enhet bokningen ska kopplas till. Om du inte vill att bokningen ska kopplas till en enhet väljer du valet Koppla inte till någon enhet längst ner i rullistan.")]
         [ClientRequired]
         public int? CustomerUnitId { get; set; }
 
@@ -205,7 +205,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Bokning skapad av")]
         public string CreatedByName { get; set; }
 
-        [Display(Name = "Fakturareferens")]
+        [Display(Name = "Fakturareferens", Description = "Här anger du den beställarreferens enligt era interna instruktioner som krävs för att fakturan för tolkuppdraget ska komma till rätt mottagare i er myndighet.")]
         [StringLength(100)]
         [Placeholder("Referens för korrekt fakturering...")]
         [Required]

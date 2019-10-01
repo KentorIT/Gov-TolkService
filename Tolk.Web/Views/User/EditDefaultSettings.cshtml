@@ -3,79 +3,84 @@
 @inject SelectListService SelectListService
 
 @{
-    ViewData["Title"] = "Ändra defaultinställningar";
+    ViewData["Title"] = "Ändra bokningsinställningar";
     var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser;
 }
-<section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
-    <form method="post">
-        <input asp-for="Id" type="hidden" />
+    <section aria-label="@ViewData["Title"]">
+        <h1>@ViewData["Title"]</h1>
         <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+            <div class="col-md-12 important-info">
+                Här kan du fylla i dina personliga bokningsinställningar. Värdena som sparas här kommer att förifyllas när du gör en ny bokning. Du kan förstås ändra på de värden som förifylls när du gör en ny bokning, om det skulle vara vissa tillfällen då du inte vill använda dig av dessa sparade inställningar.
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="InvoiceReference" />
-            </div>
-            @if (customerUnitItems != null && customerUnitItems.Any())
-            {
+        </div>
+        <form method="post">
+            <input asp-for="Id" type="hidden" />
+            <div class="row">
                 <div class="col-sm-4">
-                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" class="allow-clear" />
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
                 </div>
-            }
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                <div class="col-sm-4">
+                    <form-entry asp-for="InvoiceReference" />
+                </div>
+                @if (customerUnitItems != null && customerUnitItems.Any())
+                {
+                    <div class="col-sm-4">
+                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" class="allow-clear" />
+                    </div>
+                }
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>På plats adress</legend>
+                        <form-entry asp-for="OnSiteLocationStreet" />
+                        <form-entry asp-for="OnSiteLocationCity" />
+                    </fieldset>
+                </div>
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>Address till anvisad lokal</legend>
+                        <form-entry asp-for="OffSiteDesignatedLocationStreet" />
+                        <form-entry asp-for="OffSiteDesignatedLocationCity" />
+                    </fieldset>
+                </div>
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>Kontaktuppgifter vid distanstolkning</legend>
+                        <form-entry asp-for="OffSitePhoneContactInformation" />
+                        <form-entry asp-for="OffSiteVideoContactInformation" />
+                    </fieldset>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>På plats adress</legend>
-                    <form-entry asp-for="OnSiteLocationStreet" />
-                    <form-entry asp-for="OnSiteLocationCity" />
-                </fieldset>
+            <div class="row">
+                <div class="col-sm-8">
+                    <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost" class="allow-clear" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>Address till anvisad lokal</legend>
-                    <form-entry asp-for="OffSiteDesignatedLocationStreet" />
-                    <form-entry asp-for="OffSiteDesignatedLocationCity" />
-                </fieldset>
+            <div class="row">
+                <div class="col-sm-8">
+                    <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("ViewDefaultSettings", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
+                <div class="col-sm-4">
+                    <input asp-for="UserPageMode.BackController" type="hidden" />
+                    <input asp-for="UserPageMode.BackId" type="hidden" />
+                    <input asp-for="UserPageMode.BackAction" type="hidden" />
+                    <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+                </div>
             </div>
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>Kontaktuppgifter vid distanstolkning</legend>
-                    <form-entry asp-for="OffSitePhoneContactInformation" />
-                    <form-entry asp-for="OffSiteVideoContactInformation" />
-                </fieldset>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8">
-                <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost"  class="allow-clear" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8">
-                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("ViewDefaultSettings", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
-            </div>
-            <div class="col-sm-4">
-                <input asp-for="UserPageMode.BackController" type="hidden" />
-                <input asp-for="UserPageMode.BackId" type="hidden" />
-                <input asp-for="UserPageMode.BackAction" type="hidden" />
-                <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
-            </div>
-        </div>
-    </form>
-</section>
+        </form>
+    </section>
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

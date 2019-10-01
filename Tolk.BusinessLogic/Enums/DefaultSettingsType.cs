@@ -23,15 +23,12 @@ namespace Tolk.BusinessLogic.Enums
         OffSiteDesignatedLocationStreet = 8,
         [Description("Anvisad lokal - ort")]
         OffSiteDesignatedLocationCity = 9,
-
         [Description("Kontaktuppgifter vid distanstolkning - telefon")]
         OffSitePhoneContactInformation = 10,
         [Description("Kontaktuppgifter vid distanstolkning - video")]
         OffSiteVideoContactInformation = 11,
-
-        [Description("Accepterar restid eller resvä som överskrider gränsvärden")]
+        [Description("Accepterar restid eller resväg som överskrider gränsvärden")]
         AllowExceedingTravelCost = 12,
-
         [Description("Fakturareferens")]
         InvoiceReference = 13,
     }

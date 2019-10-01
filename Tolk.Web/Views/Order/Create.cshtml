@@ -292,7 +292,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4">
-                                <form-entry asp-for="InvoiceReference" />
+                                <form-entry asp-for="InvoiceReference" help-link="@HelpLinkService.GenerateUrl("nybokning_fakturareferens")" />
                             </div>
                             <div class="col-sm-4">
                                 <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />
