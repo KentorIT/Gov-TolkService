@@ -1146,7 +1146,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            var requirementAnswers = new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } };
             request.Accept(
                 DateTimeOffset.Now,
                 1,
@@ -1533,9 +1532,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [Fact]
         public void AcceptWithOneRequiredCompetenceLevel_Valid()
         {
-            var competenceLevels = new List<OrderCompetenceRequirement> {
-                new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter}
-            };
             var request = new Request()
             {
                 Status = RequestStatus.Received,
@@ -1846,12 +1842,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null)
             );
-        }
-
-        [Fact]
-        public void QuarantinedFirstRank()
-        {
-            
         }
     }
 }

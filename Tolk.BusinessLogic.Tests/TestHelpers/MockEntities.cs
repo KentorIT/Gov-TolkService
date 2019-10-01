@@ -102,7 +102,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     RankingId = 2,
                     BrokerId = 2,
                     Rank = 2,
-                    Quarantines =new [] {
+                    Quarantines = new [] {
                         new Quarantine {
                             QuarantineId = 5,
                             ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
@@ -117,13 +117,32 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                             CustomerOrganisationId = 3,
                             Motivation = "Second cust 3"
                         }
-
                     }.ToList()
                 },
                 new Ranking { RegionId = 1, RankingId = 3, BrokerId = 3, Rank = 3, Quarantines = new List<Quarantine>() },
                 new Ranking { RegionId = 1, RankingId = 4, BrokerId = 4, Rank = 4, Quarantines = new List<Quarantine>() },
                 new Ranking { RegionId = 2, RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new List<Quarantine>() },
                 new Ranking { RegionId = 2, RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new List<Quarantine>() },
+                new Ranking { RegionId = 3, RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new [] {
+                        new Quarantine {
+                            QuarantineId = 7,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 2,
+                            Motivation = "active Quarantine for cust 2, on first rank"
+                        } 
+                    }.ToList()
+                },
+                new Ranking { RegionId = 3, RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new [] {
+                        new Quarantine {
+                            QuarantineId = 7,
+                            ActiveFrom =  new DateTimeOffset(2018,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            ActiveTo =  new DateTimeOffset(2019,05,07, 0,0,0, new TimeSpan(02,00,00)),
+                            CustomerOrganisationId = 2,
+                            Motivation = "active Quarantine for cust 2, on second and last rank"
+                        }
+                    }.ToList()
+                },
             };
         }
 

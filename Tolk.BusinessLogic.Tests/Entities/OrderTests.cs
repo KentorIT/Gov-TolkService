@@ -293,17 +293,19 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(1, 1, 2)]
-        [InlineData(2, 1, 1)]
-        [InlineData(1, 2, 1)]
-        [InlineData(3, 1, 3)]
-        public void CreateRequestWithQuarantine(int customer, int region, int requests)
+        [InlineData(1, 1, 2, OrderStatus.Requested)]
+        [InlineData(2, 1, 1, OrderStatus.Requested)]
+        [InlineData(1, 2, 1, OrderStatus.Requested)]
+        [InlineData(3, 1, 3, OrderStatus.Requested)]
+        [InlineData(2, 3, 2, OrderStatus.NoBrokerAcceptedOrder)]
+        public void CreateRequestWithQuarantine(int customer, int region, int requests, OrderStatus expectedStatus)
         {
             var order = MockOrders.Last();
             order.CustomerOrganisationId = customer;
             order.RegionId = region;
             order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), null, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
             Assert.Equal(requests, order.Requests.Count());
+            Assert.Equal(expectedStatus, order.Status);
         }
 
         [Theory]
