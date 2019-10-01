@@ -55,6 +55,7 @@ namespace Tolk.Web.Controllers
                 {
                     CustomerUnits = User.TryGetAllCustomerUnits(),
                     IsBroker = User.TryGetBrokerId().HasValue,
+                    IsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator)
                 }
             });
         }
@@ -64,25 +65,24 @@ namespace Tolk.Web.Controllers
         {
             var model = new RequisitionFilterModel();
             await TryUpdateModelAsync(model);
-            //Set this if app or sys admins 
-            model.IsAdmin = false;
             model.IsCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
-            int? brokerId = User.TryGetBrokerId();
+            var brokerId = User.TryGetBrokerId();
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
             model.IsBroker = brokerId.HasValue;
             if (model.IsBroker)
             {
-                model.BrokerId = User.TryGetBrokerId();
+                model.BrokerId = brokerId;
             }
             else
             {
-                model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
+                model.CustomerOrganisationId = customerOrganisationId;
                 model.UserId = User.GetUserId();
                 model.CustomerUnits = User.TryGetAllCustomerUnits();
             }
 
             IQueryable<Requisition> requisitions = null;
 
-            if (model.CustomerOrganisationId.HasValue || model.IsAdmin)
+            if (model.CustomerOrganisationId.HasValue)
             {
                 requisitions = model.GetRequisitionsFromOrders(_dbContext.Orders.Select(o => o));
             }
@@ -97,7 +97,7 @@ namespace Tolk.Web.Controllers
             return AjaxDataTableHelper.GetData(request, requisitions.Count(), model.Apply(requisitions)
                 .Select(r => new RequisitionListItemModel
                 {
-                    OrderRequestId = model.CustomerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
+                    OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                     Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                     OrderNumber = r.Request.Order.OrderNumber,
                     OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("HH\\:mm")}-{r.Request.Order.EndAt.ToString("HH\\:mm")}",
