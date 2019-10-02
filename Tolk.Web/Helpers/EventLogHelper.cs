@@ -2,6 +2,7 @@
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Models;
 
 namespace Tolk.Web.Helpers
@@ -463,7 +464,16 @@ namespace Tolk.Web.Helpers
             // Complaint answer
             if (complaint.AnsweredAt.HasValue)
             {
-                if (complaint.Status == ComplaintStatus.Confirmed)
+                if (complaint.Status == ComplaintStatus.AutomaticallyConfirmedDueToNoAnswer)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnsweredAt.Value,
+                        EventDetails = complaint.Status.GetDescription(),
+                        Actor = "Systemet",
+                    });
+                }
+                else if (complaint.Status == ComplaintStatus.Confirmed)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {

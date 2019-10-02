@@ -36,3 +36,14 @@ UPDATE CustomerOrganisations SET OrganisationNumber = '202100-4227' WHERE Name =
 SELECT * FROM CustomerOrganisations co
 
 ROLLBACK TRAN 
+
+
+--check if any automatically confirmed complaints should be updated with new status and message
+SELECT * FROM Complaints WHERE status = 2 AND AnsweredBy IS NULL 
+
+BEGIN TRAN 
+
+UPDATE Complaints SET STATUS = 8, 
+AnswerMessage ='Systemet har efter 3 månader automatiskt godtagit reklamationen då svar uteblivit.' WHERE status = 2 AND AnsweredBy IS NULL 
+
+ROLLBACK TRAN

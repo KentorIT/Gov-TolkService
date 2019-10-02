@@ -26,5 +26,8 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("complaint_terminated_trial_denied_complaint")]
         [Description("Reklamation avslagen av extern process")]
         TerminatedTrialDeniedComplaint = 7,
+        [CustomName("complaint_automatically_confirmed")]
+        [Description("Reklamation automatiskt godtagen då svar uteblivit")]
+        AutomaticallyConfirmedDueToNoAnswer = 8,
     }
 }

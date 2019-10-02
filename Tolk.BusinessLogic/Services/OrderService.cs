@@ -267,9 +267,9 @@ namespace Tolk.BusinessLogic.Services
                             _logger.LogInformation("Processing expired Complaint {complaintId}.",
                                 expiredComplaint.ComplaintId);
 
-                            expiredComplaint.Status = ComplaintStatus.Confirmed;
+                            expiredComplaint.Status = ComplaintStatus.AutomaticallyConfirmedDueToNoAnswer;
                             expiredComplaint.AnsweredAt = _clock.SwedenNow;
-                            expiredComplaint.AnswerMessage = $"Systemet har efter {_tolkBaseOptions.MonthsToApproveComplaints} månader automatiskt accepterat reklamationen då svar uteblivit.";
+                            expiredComplaint.AnswerMessage = $"Systemet har efter {_tolkBaseOptions.MonthsToApproveComplaints} månader automatiskt godtagit reklamationen då svar uteblivit.";
                             await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }
