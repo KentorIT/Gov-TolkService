@@ -1,5 +1,6 @@
 ﻿@model Tolk.Web.Models.ComplaintViewModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
 @inject HelpLinkService HelpLinkService
 <div class="row">
     <div class="col-sm-12">
@@ -47,7 +48,14 @@
             <div class="col-sm-4">
                 @if (!string.IsNullOrEmpty(Model.DisputeMessage))
                 {
-                    <display-entry asp-for="DisputeMessage" />
+                    if (Model.Status == ComplaintStatus.AutomaticallyConfirmedDueToNoAnswer)
+                    {
+                        <display-entry asp-for="DisputeMessage" label-override="Statusmeddelande" />
+                    }
+                    else
+                    {
+                        <display-entry asp-for="DisputeMessage" />
+                    }
                 }
                 @if (!string.IsNullOrEmpty(Model.AnswerDisputedMessage))
                 {
