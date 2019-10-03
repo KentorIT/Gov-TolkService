@@ -163,7 +163,7 @@ namespace Tolk.BusinessLogic.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Running {nameof(ValidateTellusLanguageList)} failed");
-                SendErrorMail(nameof(ValidateTellusLanguageList), ex);
+                await SendErrorMail(nameof(ValidateTellusLanguageList), ex);
                 return new ValidateTellusLanguageListResult
                 {
                     NewLanguages = Enumerable.Empty<TellusLanguageModel>(),
@@ -237,7 +237,7 @@ namespace Tolk.BusinessLogic.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Running {nameof(UpdateTellusLanguagesCompetenceInfo)} failed");
-                SendErrorMail(nameof(UpdateTellusLanguagesCompetenceInfo), ex);
+                await SendErrorMail(nameof(UpdateTellusLanguagesCompetenceInfo), ex);
                 return new UpdateLanguagesCompetenceResult
                 {
                     UpdatedLanguages = Enumerable.Empty<Language>(),
@@ -246,7 +246,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private async void SendErrorMail(string methodname, Exception ex)
+        private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(VerificationService), methodname, ex);
         }

@@ -91,7 +91,7 @@ namespace Tolk.BusinessLogic.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
-                    SendErrorMail(nameof(HandleStartedOrders), ex);
+                    await SendErrorMail(nameof(HandleStartedOrders), ex);
                 }
             }
         }
@@ -162,7 +162,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
                         trn.Rollback();
-                        SendErrorMail(nameof(HandleExpiredRequests), ex);
+                        await SendErrorMail(nameof(HandleExpiredRequests), ex);
                     }
                 }
             }
@@ -226,13 +226,13 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
                         trn.Rollback();
-                        SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
+                        await SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
                     }
                 }
             }
         }
 
-        private async void SendErrorMail(string methodname, Exception ex)
+        private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
         }
@@ -278,7 +278,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _logger.LogError(ex, "Failure processing expired complaint {complaintId}", complaintId);
                         trn.Rollback();
-                        SendErrorMail(nameof(HandleExpiredComplaints), ex);
+                        await SendErrorMail(nameof(HandleExpiredComplaints), ex);
                     }
                 }
             }
@@ -326,7 +326,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
                         trn.Rollback();
-                        SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
+                        await SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
                     }
                 }
             }
@@ -747,7 +747,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _logger.LogError(ex, "Failure processing {methodName}", nameof(CleanTempAttachments));
                     trn.Rollback();
-                    SendErrorMail(nameof(CleanTempAttachments), ex);
+                    await SendErrorMail(nameof(CleanTempAttachments), ex);
                 }
                 trn.Commit();
             }

@@ -265,13 +265,13 @@ namespace Tolk.BusinessLogic.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failing {methodName}", nameof(DeleteRequestViews));
-                    SendErrorMail(nameof(DeleteRequestViews), ex);
+                    await SendErrorMail(nameof(DeleteRequestViews), ex);
                 }
             }
             _logger.LogInformation($"No RequestViews to delete");
         }
 
-        private async void SendErrorMail(string methodname, Exception ex)
+        private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(RequestService), methodname, ex);
         }
