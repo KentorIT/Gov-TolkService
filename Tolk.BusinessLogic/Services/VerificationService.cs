@@ -71,26 +71,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Order order, TellusInterpreterResponse information)
-        {
-            if (information.TotalMatching < 1)
-            {
-                return VerificationResult.NotFound;
-            }
-            var interpreter = information.Result.First();
-            if (competenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter)
-            {
-                return VerifyInterpreter(order.StartAt,
-                    interpreter.Educations.Where(c => c.Language == order.Language.TellusName));
-            }
-            else
-            {
-                return VerifyInterpreter(order.StartAt,
-                    interpreter.Competences.Where(c => c.Language == order.Language.TellusName &&
-                        c.Competencelevel.Id == competenceLevel.GetTellusName()));
-            }
-        }
-
         public async Task HandleTellusVerifications(bool notify = false)
         {
             await ValidateTellusLanguageList(notify);
@@ -110,9 +90,7 @@ namespace Tolk.BusinessLogic.Services
             }
             try
             {
-                var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
-                string content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+                TellusLanguagesResponse result = await GetLaguagesFromTellus();
 
                 if (result.Status != 200)
                 {
@@ -243,6 +221,94 @@ namespace Tolk.BusinessLogic.Services
                     UpdatedLanguages = Enumerable.Empty<Language>(),
                     Message = "Hämtningen av språkkompetenser misslyckades."
                 };
+            }
+        }
+
+        public async Task<StatusVerificationResult> VerifySystemStatus()
+        {
+            _logger.LogInformation($"Starting {nameof(VerifySystemStatus)}");
+            try
+            {
+                var items = await GetStatusChecks();
+                _logger.LogInformation($"Update of {nameof(VerifySystemStatus)} completed");
+                return new StatusVerificationResult { Items = items };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Running {nameof(VerifySystemStatus)} failed");
+                return new StatusVerificationResult { Items = Enumerable.Empty<StatusVerificationItem>() };
+            }
+        }
+
+        private async Task<TellusLanguagesResponse> GetLaguagesFromTellus()
+        {
+            var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
+            string content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+        }
+
+        private async Task<IEnumerable<StatusVerificationItem>> GetStatusChecks()
+        {
+            int delay = -1;
+            return new List<StatusVerificationItem>
+            {
+                new StatusVerificationItem
+                {
+                    Test = "Inga epost väntar på att skickas",
+                    Success = !(await _dbContext.OutboundEmails.AnyAsync(o => !o.DeliveredAt.HasValue && o.CreatedAt < _clock.SwedenNow.AddMinutes(delay)))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga webhooks väntar på att skickas",
+                    Success = !(await _dbContext.OutboundWebHookCalls.AnyAsync(o => !o.DeliveredAt.HasValue && o.CreatedAt < _clock.SwedenNow.AddMinutes(delay) && o.FailedTries < 5))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga läslås på förfrågningar väntar på att rensas efter två timmars inaktivitet",
+                    Success = !(await _dbContext.RequestViews.AnyAsync(o => o.ViewedAt < _clock.SwedenNow.AddMinutes(-120 + delay)))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga förfrågningar väntar på att gå vidare till nästa förmedling när tiden gått ut.",
+                    Success = !(await _dbContext.Requests.AnyAsync(r => !r.RequestGroupId.HasValue && r.ExpiresAt < _clock.SwedenNow.AddMinutes(delay) && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga ordrar väntar på att kunden skall sätta sista svarstid, efter uppdragsstart.",
+                    Success = !(await _dbContext.Orders.AnyAsync(o => !o.OrderGroupId.HasValue && o.StartAt < _clock.SwedenNow.AddMinutes(delay) && o.Status == OrderStatus.NoDeadlineFromCustomer))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga ordrar väntar på att kunden skall godkänna reskostnad, efter uppdragsstart.",
+                    Success = !(await _dbContext.Requests.AnyAsync(r => r.RequestGroupId == null &&
+                        (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                        r.Order.StartAt < _clock.SwedenNow.AddMinutes(delay) && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Koppla mot tellus språklista",
+                    Success = (await GetLaguagesFromTellus()).Status == 200
+                }
+            };
+        }
+        
+        private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Order order, TellusInterpreterResponse information)
+        {
+            if (information.TotalMatching < 1)
+            {
+                return VerificationResult.NotFound;
+            }
+            var interpreter = information.Result.First();
+            if (competenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter)
+            {
+                return VerifyInterpreter(order.StartAt,
+                    interpreter.Educations.Where(c => c.Language == order.Language.TellusName));
+            }
+            else
+            {
+                return VerifyInterpreter(order.StartAt,
+                    interpreter.Competences.Where(c => c.Language == order.Language.TellusName &&
+                        c.Competencelevel.Id == competenceLevel.GetTellusName()));
             }
         }
 

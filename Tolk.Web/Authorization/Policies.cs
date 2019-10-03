@@ -6,6 +6,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Authorization
 {
@@ -345,6 +346,8 @@ namespace Tolk.Web.Authorization
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
+                case StatusVerificationResult statusModel:
+                    return user.IsInRole(Roles.ApplicationAdministrator);
                 default:
                     throw new NotImplementedException();
             }

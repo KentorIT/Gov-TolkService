@@ -1,0 +1,40 @@
+﻿@model IEnumerable<StatusVerificationItemModel>
+@{
+    ViewData["Title"] = "Statussida";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+            Denna sida testar att alla externa beroenden är uppe.<br />
+            Den testar också om agenten som jobbar på puls, som bland annat skickar notifieringar och ta hand om förfrågningar som skall gå vidare på grund av inaktivitet.
+            @if (Model.Any())
+            {
+                <div class="table-responsive table-datatable">
+                    <table class="table table-hover sortable-only-table styled-listing">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Resultat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="@(item.Success ? "green-border-left": "red-border-left")">@item.Test</td>
+                                    <td>@(item.Success ? "Fungerade" : "Fungerade inte")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            }
+            else
+            {
+
+            }
+        </div>
+    </div>
+</section>
