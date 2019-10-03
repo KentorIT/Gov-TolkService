@@ -148,7 +148,7 @@ namespace Tolk.BusinessLogic.Services
                     if (validationResult.FoundChanges)
                     {
                         _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.Support.SecondLineEmail}");
-                        _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
+                        await _emailService.SendApplicationManagementEmail(
                             "Det finns skillnader i systemets språklista och den i Tellus.",
                             $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/Verify");
                     }
@@ -209,8 +209,7 @@ namespace Tolk.BusinessLogic.Services
                     _logger.LogWarning($"Result of {nameof(UpdateTellusLanguagesCompetenceInfo)} had no active languages");
                     if (notify)
                     {
-                        _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
-                            result.Result.Any() ? "Hämtningen av språkkompetenser från Tellus innehöll endast ej aktiva språk eller Tellusnamn som inte förekommer i tjänsten" : "Hämtningen av språkkompetenser från Tellus innehöll inga språk",
+                        await _emailService.SendApplicationManagementEmail(result.Result.Any() ? "Hämtningen av språkkompetenser från Tellus innehöll endast ej aktiva språk eller Tellusnamn som inte förekommer i tjänsten" : "Hämtningen av språkkompetenser från Tellus innehöll inga språk",
                             $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
                     }
                     return new UpdateLanguagesCompetenceResult
@@ -249,7 +248,7 @@ namespace Tolk.BusinessLogic.Services
 
         private async void SendErrorMail(string methodname, Exception ex)
         {
-            await _emailService.SendSupportErrorEmail(nameof(VerificationService), methodname, ex);
+            await _emailService.SendErrorEmail(nameof(VerificationService), methodname, ex);
         }
 
         private static VerificationResult VerifyInterpreter(DateTimeOffset startAt, IEnumerable<TellusInterpreterLevelModel> levels)

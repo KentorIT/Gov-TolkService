@@ -234,7 +234,7 @@ namespace Tolk.BusinessLogic.Services
 
         private async void SendErrorMail(string methodname, Exception ex)
         {
-            await _emailService.SendSupportErrorEmail(nameof(OrderService), methodname, ex);
+            await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
         }
 
         private async Task HandleExpiredComplaints()

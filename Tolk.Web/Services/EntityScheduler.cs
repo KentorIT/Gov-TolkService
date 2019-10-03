@@ -108,7 +108,7 @@ namespace Tolk.Web.Services
                 _logger.LogCritical(ex, "Entity Scheduler failed ({message}).", ex.Message);
                 using (var serviceScope = _services.CreateScope())
                 {
-                   _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendSupportErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
+                   _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
                 }
             }
             finally

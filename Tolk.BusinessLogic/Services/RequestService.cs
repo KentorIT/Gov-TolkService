@@ -273,7 +273,7 @@ namespace Tolk.BusinessLogic.Services
 
         private async void SendErrorMail(string methodname, Exception ex)
         {
-            await _emailService.SendSupportErrorEmail(nameof(RequestService), methodname, ex);
+            await _emailService.SendErrorEmail(nameof(RequestService), methodname, ex);
         }
     }
 }

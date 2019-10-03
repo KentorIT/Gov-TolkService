@@ -2,14 +2,12 @@
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -93,7 +91,13 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task SendSupportErrorEmail(string classname, string methodname, Exception ex)
+        public async Task SendErrorEmail(string classname, string methodname, Exception ex)
+        {
+            await SendApplicationManagementEmail($"Exception in {classname} method {methodname}",
+                $"Exception message:\n{ex.Message}\n\nException info:\n{ex.ToString()}\n\nStackTrace:\n{ex.StackTrace}");
+        }
+
+        public async Task SendApplicationManagementEmail(string subject, string messageBody)
         {
             using (var client = new SmtpClient())
             {
@@ -104,10 +108,10 @@ namespace Tolk.BusinessLogic.Services
 
                 message.From.Add(from);
                 message.To.Add(new MailboxAddress(_secondLineSupportMail));
-                message.Subject = $"Exception in {classname} method {methodname}";
+                message.Subject = subject;
                 var builder = new BodyBuilder
                 {
-                    TextBody = $"Exception message:\n{ex.Message}\n\nException info:\n{ex.ToString()}\n\nStackTrace:\n{ex.StackTrace}"
+                    TextBody = messageBody
                 };
                 message.Body = builder.ToMessageBody();
                 try
