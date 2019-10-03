@@ -18,6 +18,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 using Tolk.BusinessLogic.Utilities;
+//using System.Net;
 
 namespace Tolk.Web.Controllers
 {
@@ -28,19 +29,22 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<HomeController> _logger;
+        private readonly VerificationService _verificationService;
 
         public HomeController(
             TolkDbContext dbContext,
             UserManager<AspNetUser> userManager,
             ISwedishClock clock,
             IAuthorizationService authorizationService,
-            ILogger<HomeController> logger)
+            ILogger<HomeController> logger,
+            VerificationService verificationService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _clock = clock;
             _authorizationService = authorizationService;
             _logger = logger;
+            _verificationService = verificationService;
         }
 
         public async Task<IActionResult> Index(string message, string errorMessage)
@@ -134,7 +138,7 @@ namespace Tolk.Web.Controllers
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Include(o => o.Language)
                 .Include(o => o.Requests)
-                .Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter  || o.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
+                .Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter || o.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
@@ -340,7 +344,7 @@ namespace Tolk.Web.Controllers
                 r.Ranking.BrokerId == brokerId &&
                 !_dbContext.RequestStatusConfirmation.Where(rs => rs.RequestStatus == RequestStatus.DeniedByCreator || rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved)
                 .Select(rs => rs.RequestId).Contains(r.RequestId))
-                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = GetInfoDateForBroker(r).Value, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0), ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View", ButtonController = "Request", LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null)  : null, ViewedByUser = GetViewedByForBroker(r.RequestViews.FirstOrDefault(rv => rv.ViewedBy != userId).ViewedByUser) }).ToList());
+                .Select(r => new StartListItemModel { Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View", DefaulListController = "Request", DefaultItemId = r.RequestId, InfoDate = GetInfoDateForBroker(r).Value, CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, CustomerName = r.Order.CustomerOrganisation.Name, ButtonItemId = r.RequestId, Language = r.Order.OtherLanguage ?? r.Order.Language.Name, OrderNumber = r.Order.OrderNumber, Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0), ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View", ButtonController = "Request", LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null, ViewedByUser = GetViewedByForBroker(r.RequestViews.FirstOrDefault(rv => rv.ViewedBy != userId).ViewedByUser) }).ToList());
 
             //Complaints
             actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
@@ -441,7 +445,6 @@ namespace Tolk.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policies.TimeTravel)]
@@ -462,6 +465,32 @@ namespace Tolk.Web.Controllers
                     throw new NotImplementedException();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Status(bool showDetails)
+        {
+            var status = await _verificationService.VerifySystemStatus();
+            if (showDetails)
+            {
+                if ((await _authorizationService.AuthorizeAsync(User, status, Policies.View)).Succeeded)
+                {
+                    //Think I need to model bind, I do not want to send a BusinessLogic Model to a razor view...
+                    return View(status.Items.Select(i => new StatusVerificationItemModel
+                    {
+                        Success = i.Success,
+                        Test = i.Test
+                    }));
+                }
+                else
+                {
+                    return Forbid();    
+                }
+            }
+            if (!status.Success)
+            {
+                return BadRequest();
+            }
+            return new EmptyResult();
         }
     }
 }
