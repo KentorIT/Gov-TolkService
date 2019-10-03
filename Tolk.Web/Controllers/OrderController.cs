@@ -435,7 +435,8 @@ namespace Tolk.Web.Controllers
                         r.Status != RequestStatus.InterpreterReplaced &&
                         r.Status != RequestStatus.DeniedByTimeLimit &&
                         r.Status != RequestStatus.DeniedByCreator &&
-                        r.Status != RequestStatus.DeclinedByBroker);
+                        r.Status != RequestStatus.DeclinedByBroker &&
+                        r.Status != RequestStatus.LostDueToQuarantine);
                 if (!(request?.CanPrint ?? false))
                 {
                     return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });
