@@ -10,17 +10,17 @@ namespace Tolk.BusinessLogic.Services
     {
         public static void AddTolkBusinessLogicServices(this IServiceCollection services)
         {
-            services.AddTransient<RankingService>();
-            services.AddTransient<OrderService>();
-            services.AddTransient<DateCalculationService>();
             services.AddSingleton<ISwedishClock, TimeTravelClock>();
-            services.AddTransient<UserService>();
-            services.AddTransient<EmailService>();
-            services.AddTransient<WebHookService>();
-            services.AddTransient<INotificationService, NotificationService>();
-            services.AddTransient<VerificationService>();
-            services.AddTransient<InterpreterService>();
-            services.AddTransient<ITolkBaseOptions, TolkBaseOptionsService>();
+            services.AddScoped<RankingService>();
+            services.AddScoped<OrderService>();
+            services.AddScoped<DateCalculationService>();
+            services.AddScoped<InterpreterService>();
+            services.AddScoped<ITolkBaseOptions, TolkBaseOptionsService>();
+            services.AddScoped<UserService>();
+            services.AddScoped<EmailService>();
+            services.AddScoped<WebHookService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<VerificationService>();
             services.AddScoped<PriceCalculationService>();
             services.AddScoped<RequestService>();
             services.AddScoped<RequisitionService>();
