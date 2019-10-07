@@ -29,5 +29,7 @@ namespace Tolk.Web.Api.Services
         public TolkBaseOptions.SupportSettings Support => _options.Support;
 
         public TolkBaseOptions.SmtpSettings Smtp => _options.Smtp;
+
+        public TolkBaseOptions.StatusCheckerSettings StatusChecker => _options.StatusChecker;
     }
 }
