@@ -741,7 +741,10 @@ namespace Tolk.BusinessLogic.Services
                         _tolkDbContext.Attachments.RemoveRange(attachmentsToDelete);
                         await _tolkDbContext.SaveChangesAsync();
                     }
-
+                    if (attachmentsGroupsToDelete.Any() || attachmentsToDelete.Any())
+                    {
+                        trn.Commit();
+                    }
                     _logger.LogInformation("Done cleaning temporary attachments");
                 }
                 catch (Exception ex)
@@ -750,7 +753,6 @@ namespace Tolk.BusinessLogic.Services
                     trn.Rollback();
                     await SendErrorMail(nameof(CleanTempAttachments), ex);
                 }
-                trn.Commit();
             }
         }
     }

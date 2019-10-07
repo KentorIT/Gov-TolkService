@@ -162,7 +162,7 @@ namespace Tolk.BusinessLogic.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Running {nameof(ValidateTellusLanguageList)} failed");
+                _logger.LogError(ex, $"Running {nameof(ValidateTellusLanguageList)} failed");
                 await SendErrorMail(nameof(ValidateTellusLanguageList), ex);
                 return new ValidateTellusLanguageListResult
                 {
@@ -236,7 +236,7 @@ namespace Tolk.BusinessLogic.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Running {nameof(UpdateTellusLanguagesCompetenceInfo)} failed");
+                _logger.LogError(ex, $"Running {nameof(UpdateTellusLanguagesCompetenceInfo)} failed");
                 await SendErrorMail(nameof(UpdateTellusLanguagesCompetenceInfo), ex);
                 return new UpdateLanguagesCompetenceResult
                 {
