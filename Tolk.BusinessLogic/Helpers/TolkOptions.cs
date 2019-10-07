@@ -3,7 +3,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public class TolkOptions: TolkBaseOptions
+    public class TolkOptions : TolkBaseOptions
     {
         public string PublicOrigin { get; set; }
 
@@ -34,18 +34,6 @@ namespace Tolk.BusinessLogic.Helpers
             {
                 throw new InvalidOperationException($"First line support e-mail config missing.");
             }
-        }
-
-        public class SideBarBox
-        {
-            public SideBarBox() { }
-            public SideBarBox(string title, string message)
-            {
-                Title = title;
-                Message = message;
-            }
-            public string Title { get; set; }
-            public string Message { get; set; }
         }
     }
 }

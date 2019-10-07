@@ -10,5 +10,6 @@ namespace Tolk.BusinessLogic.Services
         TolkBaseOptions.TellusApi Tellus { get; }
         TolkBaseOptions.SupportSettings Support { get; }
         TolkBaseOptions.SmtpSettings Smtp { get; }
+        TolkBaseOptions.StatusCheckerSettings StatusChecker { get; }
     }
 }
