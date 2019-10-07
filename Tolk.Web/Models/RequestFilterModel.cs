@@ -41,6 +41,9 @@ namespace Tolk.Web.Models
 
         internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
+            items = items.Where(i => i.Status != RequestStatus.AwaitingDeadlineFromCustomer &&
+                    i.Status != RequestStatus.NoDeadlineFromCustomer &&
+                    i.Status != RequestStatus.InterpreterReplaced);
             items = !string.IsNullOrWhiteSpace(OrderNumber)
                 ? items.Where(i => i.Order.OrderNumber.Contains(OrderNumber))
                 : items;

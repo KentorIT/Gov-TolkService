@@ -28,7 +28,7 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByOrderNumber()
         {
-            var orderNum = "33";
+            var orderNum = "66";
             var filter = new RequestFilterModel
             {
                 OrderNumber = orderNum
@@ -44,7 +44,7 @@ namespace Tolk.Web.Tests.Filters
         [Theory]
         [InlineData("x", 0)]
         [InlineData("Number2", 1)]
-        [InlineData("Numb", 6)]
+        [InlineData("Numb", 5)]
         public void RequestFilter_ByCustomerOrderNumber(string input, int count)
         {
             var filter = new RequestFilterModel
@@ -60,7 +60,7 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByRegion()
         {
-            var region = Region.Regions.Where(r => r.Name == "Stockholm").Single();
+            var region = Region.Regions.Where(r => r.Name == "Skåne").Single();
             var filter = new RequestFilterModel
             {
                 RegionId = region.RegionId
@@ -92,7 +92,7 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByLanguage()
         {
-            var language = mockLanguages.Where(l => l.Name == "English").Single();
+            var language = mockLanguages.Where(l => l.Name == "Chinese").Single();
             var filter = new RequestFilterModel
             {
                 LanguageId = language.LanguageId
@@ -133,9 +133,25 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        public void RequestFilter_ByStatus()
+        public void RequestFilter_ByNotAllowedStatus()
         {
             var status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced;
+            var filter = new RequestFilterModel
+            {
+                Status = status
+            };
+
+            var list = filter.Apply(requests.AsQueryable());
+            var actual = requests.Where(r => r.Status == status);
+
+            list.Should().HaveCount(0);
+            list.Should().NotContain(actual);
+        }
+
+        [Fact]
+        public void RequestFilter_ByStatus()
+        {
+            var status = BusinessLogic.Enums.RequestStatus.Accepted;
             var filter = new RequestFilterModel
             {
                 Status = status

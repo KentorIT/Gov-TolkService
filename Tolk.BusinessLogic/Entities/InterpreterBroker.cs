@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -69,5 +70,8 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(InterpreterId))]
         public Interpreter Interpreter { get; set; }
+
+        [InverseProperty("Interpreter")]
+        public List<Request> Requests { get; set; }
     }
 }

@@ -89,8 +89,7 @@ namespace Tolk.Web.Services
                     {
                         tasksToRun = new Task[]
                         {
-                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleStartedOrders(),
-                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleExpiredEntities(),
+                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleAllScheduledTasks(),
                             serviceScope.ServiceProvider.GetRequiredService<RequestService>().DeleteRequestViews(),
                             serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
                             serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()

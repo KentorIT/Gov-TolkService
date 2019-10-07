@@ -62,8 +62,9 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> RequestStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequestStatus>()
-                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer
-                    && e.Value != RequestStatus.NoDeadlineFromCustomer)
+                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer && 
+                    e.Value != RequestStatus.NoDeadlineFromCustomer && 
+                    e.Value != RequestStatus.InterpreterReplaced)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 

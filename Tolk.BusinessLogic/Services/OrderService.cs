@@ -71,7 +71,7 @@ namespace Tolk.BusinessLogic.Services
                     var startedRequest = await _tolkDbContext.Requests
                     .Include(r => r.Interpreter)
                     .SingleOrDefaultAsync(r => r.RequestId == requestId);
-
+                    var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
                     if (startedRequest == null)
                     {
                         _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                         {
                             _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
                                 startedRequest.RequestId, startedRequest.OrderId);
-                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(startedRequest.Interpreter.OfficialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
+                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(officialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
                             await _tolkDbContext.SaveChangesAsync();
                         }
                     }
@@ -96,8 +96,9 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task HandleExpiredEntities()
+        public async Task HandleAllScheduledTasks()
         {
+            await HandleStartedOrders();
             await HandleExpiredRequests();
             #warning SKA SLÅS PÅ NÄR VI IMPLEMENTERAR SAMMANHÅLLEN BOKNING!
             //await HandleExpiredRequestGroups();
