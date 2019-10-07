@@ -381,8 +381,7 @@ namespace Tolk.Web.Services
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,
                             Value = u.Id.ToString(),
                             Selected = impersonatedUserId == u.Id.ToString(),
-                        }).ToList().AsReadOnly();
-                    _cache.Set(impersonationTargets, items, DateTimeOffset.Now.AddMinutes(5));
+                        }).ToList();
                 }
                 foreach (var item in items)
                 {
