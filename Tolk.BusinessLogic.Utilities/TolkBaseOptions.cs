@@ -12,6 +12,16 @@ namespace Tolk.BusinessLogic.Utilities
 
         public SmtpSettings Smtp { get; set; }
 
+        public StatusCheckerSettings StatusChecker { get; set; }
+
+        public class StatusCheckerSettings
+        {
+            public string Enabled { get; set; }
+            public bool CheckUptimeRobot { get; set; }
+            public string UptimeRobotApiKey { get; set; }
+            public string UptimeRobotCheckUrl { get; set; }
+        }
+
         public class TellusApi
         {
             public bool IsActivated { get; set; }

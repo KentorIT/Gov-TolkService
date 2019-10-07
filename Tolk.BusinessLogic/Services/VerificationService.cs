@@ -11,6 +11,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
+using System.Text;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -60,7 +61,7 @@ namespace Tolk.BusinessLogic.Services
                 var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                 string content = await response.Content.ReadAsStringAsync();
                 information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
-  
+
                 return CheckInterpreter(competenceLevel, order, information);
             }
             catch (Exception e)
@@ -246,6 +247,60 @@ namespace Tolk.BusinessLogic.Services
             string content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
         }
+        private async Task<UptimeRobotMonitorResponse> GetMonitorsFromUptimeRobot()
+        {
+            var payload = new
+            {
+                api_key = _tolkBaseOptions.StatusChecker.UptimeRobotApiKey,
+                format = "json"
+            };
+            var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(_tolkBaseOptions.StatusChecker.UptimeRobotCheckUrl, content);
+            return JsonConvert.DeserializeObject<UptimeRobotMonitorResponse>(await response.Content.ReadAsStringAsync());
+        }
+        private class UptimeRobotMonitorResponse
+        {
+            public string Stat { get; set; }
+            public bool Success => Stat == "ok" && (Monitors?.Any() ?? false);
+            public int Status => Success ? 200 : 400;
+            public IEnumerable<UptimeRobotMonitor> Monitors { get; set; }
+            /*
+              "pagination": {
+                "offset": 0,
+                "limit": 50,
+                "total": 2
+              },
+              "monitors": [
+                {
+                  "id": 777749809,
+                  "friendly_name": "Google",
+                  "url": "http://www.google.com",
+                  "type": 1,
+                  "sub_type": "",
+                  "keyword_type": "",
+                  "keyword_value": "",
+                  "http_username": "",
+                  "http_password": "",
+                  "port": "",
+                  "interval": 900,
+                  "status": 1,
+                        "create_datetime": 1462565497,
+                  "monitor_group": 0,
+                  "is_group_main": 0,
+                  "logs": [
+                    {
+                      "type": 98,
+                      "datetime": 1463540297,
+                      "duration": 1054134
+                    }
+                  ]
+                  */
+        }
+        private class UptimeRobotMonitor
+        {
+            public string Friendly_name { get; set; }
+            public int Status { get; set; }
+        }
 
         private async Task<IEnumerable<StatusVerificationItem>> GetStatusChecks()
         {
@@ -275,7 +330,7 @@ namespace Tolk.BusinessLogic.Services
                 new StatusVerificationItem
                 {
                     Test = "Inga ordrar väntar på att kunden skall sätta sista svarstid, efter uppdragsstart.",
-                    Success = !(await _dbContext.Orders.AnyAsync(o => !o.OrderGroupId.HasValue && o.StartAt < _clock.SwedenNow.AddMinutes(delay) && o.Status == OrderStatus.NoDeadlineFromCustomer))
+                    Success = !(await _dbContext.Orders.AnyAsync(o => !o.OrderGroupId.HasValue && o.StartAt < _clock.SwedenNow.AddMinutes(delay) && o.Status == OrderStatus.AwaitingDeadlineFromCustomer ))
                 },
                 new StatusVerificationItem
                 {
@@ -288,10 +343,15 @@ namespace Tolk.BusinessLogic.Services
                 {
                     Test = "Koppla mot tellus språklista",
                     Success = (await GetLaguagesFromTellus()).Status == 200
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Koppla mot uptime robot",
+                    Success = (await GetMonitorsFromUptimeRobot()).Status == 200
                 }
             };
         }
-        
+
         private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Order order, TellusInterpreterResponse information)
         {
             if (information.TotalMatching < 1)
