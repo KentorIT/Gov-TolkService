@@ -19,7 +19,10 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<Request> BrokerRequests(this IQueryable<Request> requests, int brokerId)
         {
-            return requests.Where(r => r.Ranking.BrokerId == brokerId);
+            return requests.Where(r => r.Ranking.BrokerId == brokerId && 
+                    r.Status != RequestStatus.AwaitingDeadlineFromCustomer &&
+                    r.Status != RequestStatus.NoDeadlineFromCustomer &&
+                    r.Status != RequestStatus.InterpreterReplaced);
         }
 
         public static int? GetIntValue(this AspNetUser user, DefaultSettingsType type)
