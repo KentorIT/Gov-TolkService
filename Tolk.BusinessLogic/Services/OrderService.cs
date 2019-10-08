@@ -100,7 +100,7 @@ namespace Tolk.BusinessLogic.Services
         {
             await HandleStartedOrders();
             await HandleExpiredRequests();
-            #warning SKA SLÅS PÅ NÄR VI IMPLEMENTERAR SAMMANHÅLLEN BOKNING!
+#warning SKA SLÅS PÅ NÄR VI IMPLEMENTERAR SAMMANHÅLLEN BOKNING!
             //await HandleExpiredRequestGroups();
             await HandleExpiredComplaints();
             await HandleExpiredNonAnsweredRespondedRequests();
@@ -143,11 +143,19 @@ namespace Tolk.BusinessLogic.Services
                             _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
                                 expiredRequest.RequestId, expiredRequest.OrderId);
 
+                            var requestAwaitingDeadlineFromCustomer = expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer;
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
 
                             if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
                             {
-                                expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
+                                if (requestAwaitingDeadlineFromCustomer)
+                                {
+                                    expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
+                                }
+                                else
+                                {
+                                    _notificationService.RequestExpired(expiredRequest);
+                                }
                                 await TerminateOrder(expiredRequest.Order);
                             }
                             else
@@ -155,7 +163,6 @@ namespace Tolk.BusinessLogic.Services
                                 _notificationService.RequestExpired(expiredRequest);
                                 await CreateRequest(expiredRequest.Order, expiredRequest);
                             }
-
                             trn.Commit();
                         }
                     }
