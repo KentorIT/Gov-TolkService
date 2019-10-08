@@ -14,7 +14,7 @@
         }
     });
 
-    var requestId = $("#RequestId").val();
+   var requestId = $("#RequestId").val();
     if (requestId > 0) {
         var $url = tolkBaseUrl + "Request/AddRequestView?requestId=" + requestId;
         $.ajax({

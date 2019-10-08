@@ -43,6 +43,8 @@ namespace Tolk.Web.Models
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForStartListItem(Status); }
 
+        public int?  ViewedBy { get; set; }
+
         public string ViewedByUser { get; set; } = string.Empty;
 
     }
