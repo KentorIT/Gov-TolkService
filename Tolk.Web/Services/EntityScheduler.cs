@@ -14,7 +14,9 @@ namespace Tolk.Web.Services
 
         private DateTimeOffset nextDailyRunTime;
 
-        private const int TimeToRun = 5;
+        private const int timeToRun = 5;
+        private const int timeDelayContinousJobs = 15000;
+        private const int allotedTimeAllTasks = 120000;
 
         public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock)
         {
@@ -26,9 +28,9 @@ namespace Tolk.Web.Services
             now -= now.TimeOfDay;
 
             nextDailyRunTime = now - now.TimeOfDay;
-            nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
+            nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
 
-            if (_clock.SwedenNow.Hour > TimeToRun)
+            if (_clock.SwedenNow.Hour > timeToRun)
 
             {
                 // Next remind is tomorrow
@@ -49,15 +51,15 @@ namespace Tolk.Web.Services
         {
             _logger.LogTrace("EntityScheduler waking up.");
 
-            if ((nextDailyRunTime - _clock.SwedenNow).TotalHours > 25 || nextDailyRunTime.Hour != TimeToRun)
+            if ((nextDailyRunTime - _clock.SwedenNow).TotalHours > 25 || nextDailyRunTime.Hour != timeToRun)
             {
                 _logger.LogWarning("nextDailyRunTime set to invalid time, was {0}", nextDailyRunTime);
                 DateTimeOffset now = _clock.SwedenNow;
                 now -= now.TimeOfDay;
                 nextDailyRunTime = now - now.TimeOfDay;
-                nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
+                nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
 
-                if (_clock.SwedenNow.Hour > TimeToRun)
+                if (_clock.SwedenNow.Hour > timeToRun)
                 {
                     // Next remind is tomorrow
                     nextDailyRunTime = nextDailyRunTime.AddDays(1);
@@ -75,30 +77,24 @@ namespace Tolk.Web.Services
                     {
                         nextDailyRunTime = nextDailyRunTime.AddDays(1);
                         nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
-                        nextDailyRunTime = nextDailyRunTime.AddHours(TimeToRun);
+                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
                         _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
                         tasksToRun = new Task[]
                         {
-                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().CleanTempAttachments(),
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().SendEmailReminders(),
-                            serviceScope.ServiceProvider.GetRequiredService<VerificationService>().HandleTellusVerifications(true),
+                            RunDailyJobs(serviceScope.ServiceProvider),
                         };
                     }
                     else
                     {
                         tasksToRun = new Task[]
                         {
-                            serviceScope.ServiceProvider.GetRequiredService<OrderService>().HandleAllScheduledTasks(),
-                            serviceScope.ServiceProvider.GetRequiredService<RequestService>().DeleteRequestViews(),
-                            serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
-                            serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks()
+                            RunContinousJobs(serviceScope.ServiceProvider),
                         };
                     }
-                    int allotedTime = 120000;
-                    if (!Task.WaitAll(tasksToRun, allotedTime))
+                    if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
                     {
-                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTime} ms");
+                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks/1000} seconds");
                     }
                 }
             }
@@ -107,15 +103,36 @@ namespace Tolk.Web.Services
                 _logger.LogCritical(ex, "Entity Scheduler failed ({message}).", ex.Message);
                 using (var serviceScope = _services.CreateScope())
                 {
-                   _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
+                    _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
                 }
             }
             finally
             {
-                Task.Delay(15000).ContinueWith(t => Run());
+                Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run());
             }
 
-            _logger.LogTrace("EntityScheduler done, scheduled to wake up in 15 seconds again");
+            _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs/1000} seconds again");
+        }
+
+        private async Task RunDailyJobs(IServiceProvider provider)
+        {
+
+            _logger.LogInformation($"Starting {nameof(RunDailyJobs)}");
+            await provider.GetRequiredService<OrderService>().CleanTempAttachments();
+            await provider.GetRequiredService<RequestService>().SendEmailReminders();
+            await provider.GetRequiredService<VerificationService>().HandleTellusVerifications(true);
+            _logger.LogInformation($"Completed {nameof(RunDailyJobs)}");
+
+        }
+
+        private async Task RunContinousJobs(IServiceProvider provider)
+        {
+            _logger.LogInformation($"Starting {nameof(RunContinousJobs)}");
+            await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
+            await provider.GetRequiredService<RequestService>().DeleteRequestViews();
+            await provider.GetRequiredService<EmailService>().SendEmails();
+            await provider.GetRequiredService<WebHookService>().CallWebHooks();
+            _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }
 }
