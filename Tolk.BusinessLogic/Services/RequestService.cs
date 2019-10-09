@@ -144,7 +144,7 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt)
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed

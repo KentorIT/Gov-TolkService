@@ -116,13 +116,11 @@ namespace Tolk.Web.Services
 
         private async Task RunDailyJobs(IServiceProvider provider)
         {
-
             _logger.LogInformation($"Starting {nameof(RunDailyJobs)}");
             await provider.GetRequiredService<OrderService>().CleanTempAttachments();
             await provider.GetRequiredService<RequestService>().SendEmailReminders();
             await provider.GetRequiredService<VerificationService>().HandleTellusVerifications(true);
             _logger.LogInformation($"Completed {nameof(RunDailyJobs)}");
-
         }
 
         private async Task RunContinousJobs(IServiceProvider provider)
