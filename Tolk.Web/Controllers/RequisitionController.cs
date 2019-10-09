@@ -82,7 +82,7 @@ namespace Tolk.Web.Controllers
 
             IQueryable<Requisition> requisitions = null;
 
-            if (model.CustomerOrganisationId.HasValue)
+            if (customerOrganisationId.HasValue)
             {
                 requisitions = model.GetRequisitionsFromOrders(_dbContext.Orders.Select(o => o));
             }
