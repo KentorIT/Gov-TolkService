@@ -398,7 +398,7 @@ namespace Tolk.BusinessLogic.Entities
                         CreatedAt = cancelledAt,
                         CreatedBy = userId,
                         ImpersonatingCreatedBy = impersonatorId,
-                        Message = createFullCompensationRequisition ? "Genererad av systemet. Full ersättning utgår pga att avbokning mindre än 48 timmar före bokat tolktillfälle" : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår",
+                        Message = createFullCompensationRequisition ? "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle." : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår.",
                         Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
                         SessionStartedAt = Order.StartAt,
                         SessionEndedAt = Order.EndAt,
