@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -28,11 +29,11 @@ namespace Tolk.Web.Models
 
         public bool HasActiveFilters => IsSent.HasValue || !string.IsNullOrWhiteSpace(Receipent) || DateCreated?.Start != null || DateCreated?.End != null;
 
-        internal IQueryable<EmailListItemModel> Apply(IQueryable<EmailListItemModel> emails)
+        internal IQueryable<OutboundEmail> Apply(IQueryable<OutboundEmail> emails)
         {
             emails = !string.IsNullOrWhiteSpace(Receipent) ? emails.Where(e => e.Recipient.Contains(Receipent)) : emails;
             emails = !string.IsNullOrWhiteSpace(Subject) ? emails.Where(e => e.Subject.Contains(Subject)) : emails;
-            emails = IsSent.HasValue ? emails.Where(e => e.SentAt.HasValue == (IsSent == TrueFalse.Yes)) : emails;
+            emails = IsSent.HasValue ? emails.Where(e => e.DeliveredAt.HasValue == (IsSent == TrueFalse.Yes)) : emails;
             emails = DateCreated?.Start != null ? emails.Where(o => o.CreatedAt.Date >= DateCreated.Start) : emails;
             emails = DateCreated?.End != null ? emails.Where(o => o.CreatedAt.Date <= DateCreated.End) : emails;
             return emails;

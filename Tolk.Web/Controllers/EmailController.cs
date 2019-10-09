@@ -7,10 +7,12 @@ using Tolk.BusinessLogic.Data;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 using Tolk.BusinessLogic.Services;
+using Tolk.Web.Helpers;
+using DataTables.AspNet.Core;
+using System.Threading.Tasks;
 
 namespace Tolk.Web.Controllers
 {
-
     [Authorize(Roles = Roles.AppOrSysAdmin)]
     public class EmailController : Controller
     {
@@ -28,27 +30,19 @@ namespace Tolk.Web.Controllers
             _notificationService = notificationService;
         }
 
-        public IActionResult List(EmailFilterModel model)
+        public IActionResult List()
         {
+            return View(new EmailListModel { FilterModel = new EmailFilterModel() });
+        }
 
-            if (!model.HasActiveFilters)
-            {
-                if (model.DateCreated != null)
-                {
-                    return RedirectToAction(nameof(List));
-                }
+        [HttpPost]
+        public async Task<IActionResult> ListEmails(IDataTablesRequest request)
+        {
+            var model = new EmailFilterModel();
+            await TryUpdateModelAsync(model);
 
-                model.DateCreated = new DateRange
-                {
-                    Start = _clock.SwedenNow.Date.AddDays(-1),
-                    End = _clock.SwedenNow.Date
-                };
-                model.FilterMessage = "Om ingen filtrering görs så sätts datumsökningen till att söka på senaste dygnet för att minska antalet sökträffar.";
-            }
-            return View(new EmailListModel
-            {
-                FilterModel = model,
-                Items = model.Apply(_dbContext.OutboundEmails
+            var emails = _dbContext.OutboundEmails.Select(e => e);
+            return AjaxDataTableHelper.GetData(request, emails.Count(), model.Apply(emails)
                 .Select(e =>
                     new EmailListItemModel
                     {
@@ -58,9 +52,14 @@ namespace Tolk.Web.Controllers
                         Body = e.PlainBody,
                         Recipient = e.Recipient,
                         SentAt = e.DeliveredAt,
-                        ResentAt = _dbContext.OutboundEmails.Where(oe => oe.ReplacingEmailId.HasValue && oe.ReplacingEmailId == e.OutboundEmailId).SingleOrDefault().CreatedAt
-                    }))
-            });
+                        ResentAt = e.ReplacedByEmail.CreatedAt
+                    }));
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<EmailListItemModel>());
         }
 
         public IActionResult View(int id)

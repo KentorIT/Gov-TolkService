@@ -1,14 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
+using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
     public class EmailModel
     {
+        [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(OutboundEmailId), Visible = false)]
         public int OutboundEmailId { get; set; }
 
         [Display(Name = "Ämne")]
+        [ColumnDefinitions(Index = 3, Name = nameof(Subject), Title = "Ämne")]
         public string Subject { get; set; }
 
         [DataType(DataType.MultilineText)]
@@ -16,6 +19,7 @@ namespace Tolk.Web.Models
         public string Body { get; set; }
 
         [Display(Name = "Mottagare")]
+        [ColumnDefinitions(Index = 2, Name = nameof(Recipient), Title = "Mottagare")]
         public string Recipient { get; set; }
 
         [Display(Name = "Skapat")]
@@ -46,7 +50,7 @@ namespace Tolk.Web.Models
                 Body = mail.PlainBody,
                 Recipient = mail.Recipient,
                 SentAt = mail.DeliveredAt,
-                ReplacingEmailId = mail.ReplacedByEmail?.OutboundEmailId, 
+                ReplacingEmailId = mail.ReplacedByEmail?.OutboundEmailId,
                 ResentAt = mail.ReplacedByEmail?.CreatedAt,
                 ErrorMessage = errormessage,
                 DisplayResend = displayResend
