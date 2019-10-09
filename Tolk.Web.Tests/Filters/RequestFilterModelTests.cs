@@ -44,7 +44,7 @@ namespace Tolk.Web.Tests.Filters
         [Theory]
         [InlineData("x", 0)]
         [InlineData("Number2", 1)]
-        [InlineData("Numb", 5)]
+        [InlineData("Numb", 6)]
         public void RequestFilter_ByCustomerOrderNumber(string input, int count)
         {
             var filter = new RequestFilterModel
@@ -130,22 +130,6 @@ namespace Tolk.Web.Tests.Filters
             var list = filter.Apply(requests.AsQueryable());
 
             list.Should().OnlyContain(r => r == requests[5] );
-        }
-
-        [Fact]
-        public void RequestFilter_ByNotAllowedStatus()
-        {
-            var status = BusinessLogic.Enums.RequestStatus.InterpreterReplaced;
-            var filter = new RequestFilterModel
-            {
-                Status = status
-            };
-
-            var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Status == status);
-
-            list.Should().HaveCount(0);
-            list.Should().NotContain(actual);
         }
 
         [Fact]
