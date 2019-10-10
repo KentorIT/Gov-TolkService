@@ -7,14 +7,15 @@ namespace Tolk.Web.Models
 {
     public class EmailListItemModel : EmailModel
     {
-        [ColumnDefinitions(Index = 1, Name = nameof(CreatedAtDisplay), Title = "Skapat")]
+        [ColumnDefinitions(Index = 1, Name = nameof(CreatedAtDisplay), ColumnName = "CreatedAt", SortOnWebServer = false, Title = "Skapat")]
         public string CreatedAtDisplay => CreatedAt.ToString("yyyy-MM-dd HH:mm");
 
-        [ColumnDefinitions(Index = 4, Name = nameof(DisplayBody), Title = "Innehåll")]
+        [ColumnDefinitions(Index = 4, Name = nameof(DisplayBody), ColumnName = "PlainBody", SortOnWebServer = false, Title = "Innehåll")]
         public string DisplayBody => Body.Length > 100 ? Body.Substring(0, 100) + "..." : Body;
 
-        [ColumnDefinitions(Index = 5, Name = nameof(SentAtDisplay), Title = "Skickat")]
+        [ColumnDefinitions(Index = 5, Name = nameof(SentAtDisplay), ColumnName = "DeliveredAt", SortOnWebServer = false, Title = "Skickat")]
         public string SentAtDisplay => SentAt?.ToString("yyyy-MM-dd HH:mm") ?? "-";
+
         [ColumnDefinitions(Index = 6, Name = nameof(ResentAtDisplay), Title = "Omskickat")]
         public string ResentAtDisplay => ResentAt?.ToString("yyyy-MM-dd HH:mm") ?? "-";
 

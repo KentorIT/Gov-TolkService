@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -12,10 +13,10 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(Id), Visible = false)]
         public int Id { get; set; }
 
-        [ColumnDefinitions(Index = 1, Name = nameof(LastName),  Title = "Efternamn")]
+        [ColumnDefinitions(Index = 1, Name = nameof(LastName), ColumnName = "NameFamily", SortOnWebServer = false, Title = "Efternamn")]
         public string LastName { get; set; }
 
-        [ColumnDefinitions(Index = 2, Name = nameof(FirstName), Title = "Förnamn")]
+        [ColumnDefinitions(Index = 2, Name = nameof(FirstName), ColumnName = "NameFirst", SortOnWebServer = false, Title = "Förnamn")]
         public string FirstName { get; set; }
 
         [ColumnDefinitions(Index = 3, Name = nameof(Email), Title = "Epost")]
@@ -32,16 +33,14 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Visible = false, Name = nameof(ColorClassName), IsLeftCssClassName = true)]
         public string ColorClassName => CssClassHelper.GetColorClassNameForItemStatus(IsActive);
 
-        public IEnumerable<int> Roles { get; set; }
-
-        public static IQueryable<DynamicUserListItemModel> Filter(CustomerUserFilterModel filters, IQueryable<DynamicUserListItemModel> data)
+        public static IQueryable<AspNetUser> Filter(CustomerUserFilterModel filters, IQueryable<AspNetUser> data)
         {
             var filteredData = data;
             if (!string.IsNullOrWhiteSpace(filters.SearchString))
             {
                 filteredData = filteredData.Where(u =>
-                    u.FirstName.Contains(filters.SearchString) ||
-                    u.LastName.Contains(filters.SearchString) ||
+                    u.NameFirst.Contains(filters.SearchString) ||
+                    u.NameFirst.Contains(filters.SearchString) ||
                     u.Email.Contains(filters.SearchString));
             }
             if (filters.UserType.HasValue)
@@ -49,10 +48,10 @@ namespace Tolk.Web.Models
                 switch (filters.UserType)
                 {
                     case UserType.OrganisationAdministrator:
-                        filteredData = filteredData.Where(u => u.Roles.Contains(filters.CentralAdministratorRoleId));
+                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
                         break;
                     case UserType.CentralOrderHandler:
-                        filteredData = filteredData.Where(u => u.Roles.Contains(filters.CentralOrderHandlerRoleId));
+                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
                         break;
                     case UserType.OrderCreator:
                     default:

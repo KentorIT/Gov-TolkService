@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 3, Name = nameof(Language), Title = "Språk")]
         public string Language { get; set; }
 
-        [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), Title = "Datum för uppdrag")]
+        [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), ColumnName = "StartAt", SortOnWebServer = false, Title = "Datum för uppdrag")]
         public string OrderDateAndTime { get; set; }
 
         [ColumnDefinitions(Index = 5, Name = nameof(RegionName), Title = "Län")]

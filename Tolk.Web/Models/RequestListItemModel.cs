@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 6, Name = nameof(CustomerName), Title = "Myndighet")]
         public string CustomerName { get; set; }
 
-        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAt), Title = "Svar innan")]
+        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAt), SortOnWebServer = false, Title = "Svar innan")]
         public string ExpiresAt { get; set; }
 
         [ColumnDefinitions(IsLeftCssClassName = true, Name = nameof(ColorClassName), Visible = false)]

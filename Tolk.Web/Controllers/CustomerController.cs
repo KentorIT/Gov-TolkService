@@ -137,20 +137,18 @@ namespace Tolk.Web.Controllers
             CustomerUserFilterModel filters = await GetFilters();
 
             //Get the full table
-            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id)
-                .Select(u => new DynamicUserListItemModel
-                {
-                    Id = u.Id,
-                    FirstName = u.NameFirst,
-                    LastName = u.NameFamily,
-                    Email = u.Email,
-                    Roles = u.Roles.Select(r => r.RoleId),
-                    IsActive = u.IsActive
+            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id);
 
-                });
+            //Filter and return data tables data
+            return AjaxDataTableHelper.GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data), d => d.Select(u => new DynamicUserListItemModel
+            {
+                Id = u.Id,
+                FirstName = u.NameFirst,
+                LastName = u.NameFamily,
+                Email = u.Email,
+                IsActive = u.IsActive
 
-            //Filter and return data tables dat
-            return AjaxDataTableHelper.GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data));
+            }));
         }
 
         public JsonResult UserColumnDefinition()
