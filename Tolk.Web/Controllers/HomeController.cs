@@ -194,7 +194,7 @@ namespace Tolk.Web.Controllers
                 }));
 
             //Requisitions to review
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true)
                 .Where(o => o.Status == OrderStatus.Delivered)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Requisitions)
@@ -218,7 +218,7 @@ namespace Tolk.Web.Controllers
                 }));
 
             //Disputed complaints
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Complaints)
                 .Where(c => c.Status == ComplaintStatus.Disputed)
@@ -306,7 +306,7 @@ namespace Tolk.Web.Controllers
             };
 
             // Awaiting requisition
-            //Was removed 2019-05-28 because the requisitions are not in us yet.
+            //Was removed 2019-05-28 because the requisitions are not in use yet.
         }
 
         private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
