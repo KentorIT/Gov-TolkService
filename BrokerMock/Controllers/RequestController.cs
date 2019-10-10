@@ -48,6 +48,16 @@ namespace BrokerMock.Controllers
         #region incomming
 
         [HttpPost]
+        public async Task<JsonResult> CreatedToOther([FromBody] RequestModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: TILL ANDRA FÖRMEDLINGEN Boknings-ID: {payload.OrderNumber} skapad av {payload.CustomerInformation.Name} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}");
+            }
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
         public async Task<JsonResult> Created([FromBody] RequestModel payload)
         {
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var apiKey);

@@ -1,132 +1,126 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.CentralAdministrator)]
-    [Authorize(Policy = Policies.Broker)]
+    [Authorize(Policy = Policies.ApplicationAdminOrBrokerCA)]
     public class WebhookController : Controller
     {
         private readonly TolkDbContext _dbContext;
         private readonly INotificationService _notificationService;
+        private readonly IAuthorizationService _authorizationService;
 
         public WebhookController(TolkDbContext dbContext,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IAuthorizationService authorizationService)
         {
             _dbContext = dbContext;
             _notificationService = notificationService;
+            _authorizationService = authorizationService;
         }
 
-        public IActionResult List(WebHookFilterModel model)
+        public IActionResult List()
         {
-            if (model == null)
+            return View(new WebHookListModel
             {
-                model = new WebHookFilterModel();
-            }
-
-            if (!User.IsInRole(Roles.CentralAdministrator))
-            {
-                return Forbid();
-            }
-
-            int? brokerId = User.TryGetBrokerId();
-            int? apiUser = _dbContext.Users.Where(u => u.BrokerId == brokerId && u.IsApiUser && u.IsActive)
-                .SingleOrDefault()?.Id;
-
-            IQueryable<OutboundWebHookCall> items = _dbContext.OutboundWebHookCalls
-                .Where(wh => wh.RecipientUserId == apiUser);
-
-            items = model.Apply(items);
-
-            return View(
-                new WebHookListModel
+                FilterModel = new WebHookFilterModel
                 {
-                    Items = items.Select(wh => new WebHookListItemModel
-                    {
-                        CreatedAt = wh.CreatedAt.DateTime,
-                        DeliveredAt = wh.DeliveredAt == null ? null : (DateTime?)wh.DeliveredAt.Value.DateTime,
-                        FailedTries = wh.FailedTries,
-                        HasBeenResent = wh.ResentHookId != null,
-                        NotificationType = wh.NotificationType,
-                        OutboundWebHookCallId = wh.OutboundWebHookCallId,
-                        ListColor = "gray-border-bottom " + (
+                    IsAppAdministrator = User.IsInRole(Roles.ApplicationAdministrator)
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListWebhooks(IDataTablesRequest request)
+        {
+            var model = new WebHookFilterModel();
+            await TryUpdateModelAsync(model);
+
+            var webhooks = _dbContext.OutboundWebHookCalls.Select(e => e);
+            if (!User.IsInRole(Roles.ApplicationAdministrator))
+            {
+                webhooks = webhooks.Where(w => w.RecipientUser.BrokerId == User.TryGetBrokerId());
+            }
+            return AjaxDataTableHelper.GetData(request, webhooks.Count(), model.Apply(webhooks), x => x.Select(wh => new WebHookListItemModel
+            {
+                CreatedAt = wh.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                DeliveredAt = wh.DeliveredAt != null ? wh.DeliveredAt.Value.ToString("yyyy-MM-dd HH:mm") : "-",
+                FailedTries = wh.FailedTries,
+                HasBeenResent = wh.ResentHookId != null ? "Ja" : "Nej",
+                NotificationType = wh.NotificationType.GetDescription(),
+                OutboundWebHookCallId = wh.OutboundWebHookCallId,
+                BrokerName = wh.RecipientUser.Broker.Name,
+                ListColor = (
                          (wh.FailedTries >= 5 && wh.ResentHookId == null) ? "red-border-left" :
                          (wh.FailedTries < 5 && wh.DeliveredAt == null) ? "yellow-border-left" :
                          (wh.DeliveredAt != null) ? "green-border-left" :
                          "gray-border-left")
-                    }).OrderByDescending(wh => wh.CreatedAt),
-                    FilterModel = model
-                });
+            }));
         }
 
-        public IActionResult View(int id)
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
         {
-            if (!User.IsInRole(Roles.CentralAdministrator))
-            {
-                return Forbid();
-            }
-            int? brokerId = User.TryGetBrokerId();
-            int? apiUser = _dbContext.Users.Where(u => u.BrokerId == brokerId && u.IsApiUser && u.IsActive)
-                .SingleOrDefault()?.Id;
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<WebHookListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(WebHookListItemModel.BrokerName)).Visible = User.IsInRole(Roles.ApplicationAdministrator);
+            return Json(definition);
+        }
 
-            var notification = _dbContext.OutboundWebHookCalls
-                .Where(wh => wh.RecipientUserId == apiUser)
+        public async Task<IActionResult> View(int id)
+        {
+            var notification = await _dbContext.OutboundWebHookCalls
                 .Include(wh => wh.FailedCalls)
-                .Select(wh => new WebHookModel
-                {
-                    OutboundWebHookCallId = wh.OutboundWebHookCallId,
-                    CreatedAt = wh.CreatedAt,
-                    DeliveredAt = wh.DeliveredAt,
-                    Payload = wh.Payload,
-                    NotificationType = wh.NotificationType,
-                    RecipientUrl = wh.RecipientUrl,
-                    ReplacedBy = wh.ResentHookId,
-                    Replaces = _dbContext.OutboundWebHookCalls.Where(w => w.ResentHookId == wh.OutboundWebHookCallId && w.ResentHookId != null).Select(w => (int?)w.OutboundWebHookCallId).SingleOrDefault(),
-                    FailedTries = wh.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt.DateTime, ErrorMessage = f.ErrorMessage }).ToList()
+                .Include(wh => wh.RecipientUser).ThenInclude(u => u.Broker)
+                .Include(wh => wh.ReplacingWebHook)
+                .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == id);
 
-                })
-                .SingleOrDefault(wh => wh.OutboundWebHookCallId == id);
-
-            if (notification == null)
+            if (notification != null && (await _authorizationService.AuthorizeAsync(User, notification, Policies.View)).Succeeded)
             {
-                return Forbid();
+                return View(new WebHookModel
+                {
+                    OutboundWebHookCallId = notification.OutboundWebHookCallId,
+                    CreatedAt = notification.CreatedAt,
+                    DeliveredAt = notification.DeliveredAt,
+                    BrokerName = notification.RecipientUser.Broker.Name,
+                    Payload = notification.Payload,
+                    NotificationType = notification.NotificationType,
+                    RecipientUrl = notification.RecipientUrl,
+                    ReplacedBy = notification.ResentHookId,
+                    Replaces = notification.ReplacingWebHook?.OutboundWebHookCallId,
+                    FailedTries = notification.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt.DateTime, ErrorMessage = f.ErrorMessage }).ToList(),
+                    AllowResend = notification.FailedCalls.Count() >= 5 && User.TryGetBrokerId() != null && !notification.ResentHookId.HasValue,
+                    ShowBroker = User.IsInRole(Roles.ApplicationAdministrator)
+                });
             }
-
-            return View(notification);
+            return Forbid();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Resend(int WebHookId)
+        public async Task<IActionResult> Resend(int webhookId)
         {
-            if (!User.IsInRole(Roles.CentralAdministrator))
+            var notification = await _dbContext.OutboundWebHookCalls
+                .Include(wh => wh.RecipientUser)
+                .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == webhookId);
+            if (notification != null && (await _authorizationService.AuthorizeAsync(User, notification, Policies.Replace)).Succeeded)
             {
-                return Forbid();
+                _notificationService.ResendWebHook(notification);
+                return RedirectToAction("List");
             }
+            return Forbid();
 
-            int? brokerId = User.TryGetBrokerId();
-            int? apiUser = _dbContext.Users.Where(u => u.BrokerId == brokerId && u.IsApiUser && u.IsActive)
-                .SingleOrDefault()?.Id;
-
-            var oldNotification = _dbContext.OutboundWebHookCalls.Where(wh => wh.RecipientUserId == apiUser).SingleOrDefault(wh => wh.OutboundWebHookCallId == WebHookId);
-            if (oldNotification == null)
-            {
-                return RedirectToAction("View", new { id = WebHookId });
-            }
-
-            _notificationService.ResendWebHook(oldNotification);
-
-
-            return RedirectToAction("List");
         }
     }
 }
