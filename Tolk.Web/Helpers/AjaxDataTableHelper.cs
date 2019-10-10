@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Tolk.Web.Attributes;
 using System.Linq.Dynamic.Core;
+using System;
 
 namespace Tolk.Web.Helpers
 {
@@ -20,24 +21,40 @@ namespace Tolk.Web.Helpers
 
         }
 
-        public static IActionResult GetData<T>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData)
+        public static IActionResult GetData<T, TModel>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData, Func<IQueryable<T>, IQueryable<TModel>> getModel)
         {
+            var colDefs = GetColumnDefinitions<TModel>();
             var sortColumns = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).Select(c => c);
+            IQueryable<TModel> list = null;
             if (sortColumns.Any())
             {
+                //If one has sort on server, all needs to be sorted on server
+                // It might be possible to sort any columns on server up to the point where a column is sorted on web server, and henceforth all sorting is done on the webserver.
+                bool sortOnWebServer = colDefs.Any(c => c.SortOnWebServer && sortColumns.Any(sc => sc.Name == c.Name));
                 var sortColumn = sortColumns.First();
-                string sort = $"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}";
+                string sort = colDefs.GetSortDefinition(sortColumn, sortOnWebServer);
                 foreach (var col in sortColumns.Skip(1))
                 {
-                    sort += $", {col.Name} {(col.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}"; ;
+                    sort += $", {colDefs.GetSortDefinition(col, sortOnWebServer)}";
                 }
-                filteredData = filteredData.OrderBy(sort);
+                if (!sortOnWebServer)
+                {
+                    list = getModel(filteredData.OrderBy(sort).Skip(request.Start).Take(request.Length));
+                }
+                else
+                {
+                    list = getModel(filteredData).OrderBy(sort).Skip(request.Start).Take(request.Length);
+                }
             }
-
-            var dataPage = filteredData.Skip(request.Start).Take(request.Length);
-            var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), dataPage);
+            var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), list);
             return new DataTablesJsonResult(response, true);
         }
 
+        private static string GetSortDefinition(this IEnumerable<ColumnDefinition> colDefs, IColumn sortColumn, bool sortOnWebServer)
+        {
+            return sortOnWebServer ?
+                $"{sortColumn.Name} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}" :
+                $"{colDefs.Single(d => d.Name == sortColumn.Name).ColumnName} {(sortColumn.Sort.Direction == SortDirection.Ascending ? "ASC" : "DESC")}";
+        }
     }
 }

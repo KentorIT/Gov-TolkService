@@ -686,7 +686,8 @@ namespace Tolk.Web.Controllers
             }
 
             var orders = model.GetOrders(_dbContext.Orders.Select(o => o));
-            var filteredData = model.Apply(orders).Select(o => new OrderListItemModel
+            var filteredData = model.Apply(orders);
+            return AjaxDataTableHelper.GetData(request, orders.Count(), filteredData, d => d.Select(o => new OrderListItemModel
             {
                 OrderId = o.OrderId,
                 Language = o.OtherLanguage ?? o.Language.Name,
@@ -704,8 +705,7 @@ namespace Tolk.Web.Controllers
                     r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
                    .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
                 CustomerName = o.CustomerOrganisation.Name
-            });
-            return AjaxDataTableHelper.GetData(request, orders.Count(), filteredData);
+            }));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

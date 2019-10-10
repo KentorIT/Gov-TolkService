@@ -42,8 +42,7 @@ namespace Tolk.Web.Controllers
             await TryUpdateModelAsync(model);
 
             var emails = _dbContext.OutboundEmails.Select(e => e);
-            return AjaxDataTableHelper.GetData(request, emails.Count(), model.Apply(emails)
-                .Select(e =>
+            return AjaxDataTableHelper.GetData(request, emails.Count(), model.Apply(emails), x => x.Select(e =>
                     new EmailListItemModel
                     {
                         OutboundEmailId = e.OutboundEmailId,

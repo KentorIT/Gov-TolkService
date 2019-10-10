@@ -69,7 +69,7 @@ namespace Tolk.Web.Controllers
             await TryUpdateModelAsync(model);
 
             var requests = _dbContext.Requests.BrokerRequests(User.GetBrokerId());
-            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests).SelectRequestListItemModel());
+            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests), r => r.SelectRequestListItemModel());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

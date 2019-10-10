@@ -94,18 +94,16 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            return AjaxDataTableHelper.GetData(request, requisitions.Count(), model.Apply(requisitions)
-                .Select(r => new RequisitionListItemModel
-                {
-                    OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
-                    Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                    OrderNumber = r.Request.Order.OrderNumber,
-                    OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("HH\\:mm")}-{r.Request.Order.EndAt.ToString("HH\\:mm")}",
-                    Status = r.Status,
-                    BrokerName = r.Request.Ranking.Broker.Name,
-                    CustomerName = r.Request.Order.CustomerOrganisation.Name,
-                })
-            );
+            return AjaxDataTableHelper.GetData(request, requisitions.Count(), model.Apply(requisitions), x => x.Select(r => new RequisitionListItemModel
+            {
+                OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
+                Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
+                OrderNumber = r.Request.Order.OrderNumber,
+                OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("HH\\:mm")}-{r.Request.Order.EndAt.ToString("HH\\:mm")}",
+                Status = r.Status,
+                BrokerName = r.Request.Ranking.Broker.Name,
+                CustomerName = r.Request.Order.CustomerOrganisation.Name,
+            }));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
