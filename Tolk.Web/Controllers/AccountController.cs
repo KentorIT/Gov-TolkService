@@ -609,7 +609,6 @@ namespace Tolk.Web.Controllers
 
                 if (user != null)
                 {
-                    _logger.LogInformation("Sent account confirmation link to {userId} ({email})", model.UserId, user.Email);
                     await _userService.SendInviteAsync(user);
                 }
                 else
@@ -627,7 +626,6 @@ namespace Tolk.Web.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-
             return View();
         }
 
@@ -876,42 +874,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         private async Task<IActionResult> SendChangedEmailLink(AspNetUser user, string newEmailAddress)
         {
             var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmailAddress);
-            var resetLink = Url.ChangeEmailCallbackLink(user.Id.ToString(), code);
-
-            var bodyPlain =
-        $@"Ändring av e-postadress för {Constants.SystemName}
-
-Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
-
-{resetLink}
-
-Om du inte har bytt e-postadress kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.";
-
-            var bodyHtml =
-        $@"<h2>Ändring av e-postadress för {Constants.SystemName} </h2>
-
-<div>Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren för att verifiera ändringen.</div>
-
-<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Verifiera e-postadress")}</div>
-
-<div>Om du inte har bytt e-postadress kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.</div>";
-
-            _notificationService.CreateEmail(
-                newEmailAddress,
-                $"Ändring av e-postadress för {Constants.SystemName}",
-                bodyPlain,
-                bodyHtml,
-                false,
-                false);
-            _dbContext.SaveChanges();
-
-            _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",
-                user.Email, user.Id);
-
+            await _userService.SendChangedEmailLink(user, newEmailAddress, Url.ChangeEmailCallbackLink(user.Id.ToString(), code));
             return RedirectToAction(nameof(HomeController.Index), "Home", new { Message = "För att slutföra bytet av e-postadress, klicka på den länk som skickats till den angivna e-postadressen." });
         }
 

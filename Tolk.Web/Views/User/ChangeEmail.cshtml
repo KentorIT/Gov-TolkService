@@ -1,6 +1,9 @@
 ﻿@model UserModel;
 @{
     ViewData["Title"] = $"Sätt ny e-postadress för {Model.NameFull}";
+    string buttonText = Model.SendNewInvite ? "Sätt ny e-postadress" : "Ändra e-postadress";
+    string infoText = Model.SendNewInvite ? "Här kan du sätta en ny e-postadress för en användare som inte kunnat verifiera sin e-post då den varit felaktig. När du väljer att sätta en ny e-postadress så kommer det också gå iväg en ny inbjudan till användaren."
+     : "Här kan du ändra användarens e-postadress. När du ändrat e-postadress här, skickas ett mejl med en verifierslänk till användarens nya e-postadress. Användaren måste sen logga in i tjänsten och använda sig av länken för att bytet av e-post ska slå igenom.";
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
@@ -10,7 +13,7 @@
         <input asp-for="NameFamily" type="hidden" />
         <div class="row">
             <div class="col-md-12 important-info">
-                Här kan du sätta en ny e-postadress för en användare som inte kunnat verifiera sin e-post eftersom den varit felaktig. När du väljer att sätta en ny e-postadress så kommer det också gå iväg en ny inbjudan till användaren.
+                @infoText
             </div>
         </div>
         <div class="row">
@@ -26,7 +29,7 @@
                 <input asp-for="UserPageMode.BackController" type="hidden" />
                 <input asp-for="UserPageMode.BackId" type="hidden" />
                 <input asp-for="UserPageMode.BackAction" type="hidden" />
-                <button type="submit" class="btn btn-success btn-large pull-right">Sätt ny e-postadress</button>
+                <button type="submit" class="btn btn-success btn-large pull-right">@buttonText</button>
             </div>
         </div>
     </form>

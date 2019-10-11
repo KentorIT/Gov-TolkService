@@ -92,7 +92,7 @@ namespace Tolk.Web.Models
 
         public bool AllowDefaultSettings { get; set; }
 
-        public bool AllowSetNewEmail { get; set; }
+        public bool SendNewInvite { get; set; }
 
         public string Message { get; set; }
 

@@ -66,10 +66,25 @@ namespace Tolk.BusinessLogic.Services
             htmlBody = string.Format(HtmlHelper.ToHtmlBreak(body), HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
 
             _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
-
             await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
         }
 
+        public async Task SetTemporaryEmail(AspNetUser user, string newEmail)
+        {
+            var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == user.Id);
+
+            if (emailUser.TemporaryChangedEmailEntry != null)
+            {
+                emailUser.TemporaryChangedEmailEntry.EmailAddress = newEmail;
+                emailUser.TemporaryChangedEmailEntry.ExpirationDate = _clock.SwedenNow.AddDays(7);
+            }
+            else
+            {
+                user.TemporaryChangedEmailEntry = new TemporaryChangedEmailEntry { EmailAddress = newEmail, User = user, ExpirationDate = _clock.SwedenNow.AddDays(7) };
+            }
+            await _dbContext.SaveChangesAsync();
+        }
         private (string, string) CreateInterpreterInvite()
         {
             var body =
@@ -129,6 +144,43 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
                 UserId = userId
             });
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task SendChangedEmailLink(AspNetUser user, string newEmailAddress, string resetLink, bool changedByAdmin = false)
+        {
+            string message = changedByAdmin ? $"Om du har begärt byte av e-postadress för '{user.FullName}' så logga in i {Constants.SystemName} med din gamla e-post {user.Email} och klistra därefter in länken nedan i webbläsaren för att verifiera ändringen." : $"Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren för att verifiera ändringen.";
+            var bodyPlain =
+        $@"Ändring av e-postadress för {Constants.SystemName}
+
+{message}
+
+{resetLink}
+
+Om du inte har bytt/begärt byte av e-postadress kan du radera det här
+meddelandet och kontakta
+supporten på {_options.Support.FirstLineEmail}.";
+
+            var bodyHtml =
+        $@"<h2>Ändring av e-postadress för {Constants.SystemName} </h2>
+
+<div>{message}</div>
+
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Verifiera e-postadress")}</div>
+
+<div>Om du inte har bytt/begärt byte av e-postadress kan du radera det här
+meddelandet och kontakta
+supporten på {_options.Support.FirstLineEmail}.</div>";
+
+            _notificationService.CreateEmail(
+                newEmailAddress,
+                $"Ändring av e-postadress för {Constants.SystemName}",
+                bodyPlain,
+                bodyHtml,
+                false,
+                false);
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",
+                           newEmailAddress, user.Id);
         }
 
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null)
