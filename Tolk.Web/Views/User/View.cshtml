@@ -2,84 +2,107 @@
 @{
     ViewData["Title"] = "Användardetaljer för " + Model.NameFull;
 }
-<section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="Organisation" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="UserName" />
-            <display-entry asp-for="Email" />
-            <display-entry asp-for="PhoneWork" />
-            <display-entry asp-for="PhoneCellphone" />
-        </div>
-        <div class="col-sm-4">
-            @if (Model.DisplayCentralAdmin)
-            {
-                <display-entry asp-for="IsOrganisationAdministrator" />
-            }
-            @if (Model.DisplayCentralOrderHandler)
-            {
-                <display-entry asp-for="IsCentralOrderHandler" />
-            }
-            <display-entry asp-for="IsActive" />
-            <display-entry asp-for="LastLoginAt" />
-        </div>
-        @if (Model.DisplayForAdminUser)
+    <section aria-label="@ViewData["Title"]">
+        <h1>@ViewData["Title"]</h1>
+        @if (!string.IsNullOrEmpty(@Model.Message))
         {
-            <div class="col-sm-4">
-                <display-entry asp-for="IsApplicationAdministrator" />
-                <display-entry asp-for="IsSystemAdministrator" />
-                <display-entry asp-for="IsImpersonator" />
-            </div>
-        }
-    </div>
-    @if (Model.UnitUsers != null && Model.UnitUsers.Any())
-    {
-        <div class="row">
-            <div class="col-sm-12">
-                <h2>Användarens enheter</h2>
-                <div class="row">
-                    <div class="col-md-12">
-                        <table class="table search-table sortable-only-table">
-                            <thead>
-                                <tr>
-                                    <th>Enhetens namn</th>
-                                    <th>Enhetens status</th>
-                                    <th>Är lokal administratör</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.UnitUsers)
-                                {
-                                    <tr>
-                                        <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
-                                        <td class="gray-border-bottom">@(item.IsActive ? "Aktiv" : "Inaktiv")</td>
-                                        <td class="gray-border-bottom gray-border-right">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+            <div class="row">
+                <div class="col-xs-12">
+                    <br />
+                    <div class="system-action-info">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span class="info-message" role="status">
+                            @Model.Message
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
-    }
-    <div class="row">
-        <div class="col-sm-4">
-            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="@Model.UserPageMode.BackAction" asp-controller="@Model.UserPageMode.BackController" asp-route-id="@Model.UserPageMode.BackId"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
-        </div>
-        <div class="col-sm-4">
-            <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Ändra användaruppgifter</a>
-        </div>
-        @if (Model.AllowDefaultSettings)
-        {
+        }
+        <div class="row">
             <div class="col-sm-4">
-                <a class="btn btn-primary btn-large" asp-action="ViewDefaultSettings" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Bokningsinställningar</a>
+                <display-entry asp-for="Organisation" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="UserName" />
+                <display-entry asp-for="Email" />
+                <display-entry asp-for="PhoneWork" />
+                <display-entry asp-for="PhoneCellphone" />
+            </div>
+            <div class="col-sm-4">
+                @if (Model.DisplayCentralAdmin)
+                {
+                    <display-entry asp-for="IsOrganisationAdministrator" />
+                }
+                @if (Model.DisplayCentralOrderHandler)
+                {
+                    <display-entry asp-for="IsCentralOrderHandler" />
+                }
+                <display-entry asp-for="IsActive" />
+                <display-entry asp-for="LastLoginAt" />
+            </div>
+            @if (Model.DisplayForAdminUser)
+            {
+                <div class="col-sm-4">
+                    <display-entry asp-for="IsApplicationAdministrator" />
+                    <display-entry asp-for="IsSystemAdministrator" />
+                    <display-entry asp-for="IsImpersonator" />
+                </div>
+            }
+        </div>
+        @if (Model.UnitUsers != null && Model.UnitUsers.Any())
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Användarens enheter</h2>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table search-table sortable-only-table">
+                                <thead>
+                                    <tr>
+                                        <th>Enhetens namn</th>
+                                        <th>Enhetens status</th>
+                                        <th>Är lokal administratör</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.UnitUsers)
+                                    {
+                                        <tr>
+                                            <td class="gray-border-bottom @item.ColorClassName">@item.Name</td>
+                                            <td class="gray-border-bottom">@(item.IsActive ? "Aktiv" : "Inaktiv")</td>
+                                            <td class="gray-border-bottom gray-border-right">@(item.IsLocalAdmin ? "Ja" : "Nej")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
-    </div>
-</section>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="@Model.UserPageMode.BackAction" asp-controller="@Model.UserPageMode.BackController" asp-route-id="@Model.UserPageMode.BackId"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+            </div>
+            <div class="col-sm-4">
+                <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Ändra användaruppgifter</a>
+            </div>
+            @if (Model.AllowDefaultSettings)
+            {
+                <div class="col-sm-4">
+                    <a class="btn btn-primary btn-large" asp-action="ViewDefaultSettings" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Bokningsinställningar</a>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            @if (Model.AllowSetNewEmail)
+            {
+                <div class="col-sm-4">
+                    <a class="btn btn-default btn-large" asp-action="ChangeEmail" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Sätt ny e-postadress</a>
+                </div>
+            }
+        </div>
+    </section>

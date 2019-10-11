@@ -222,6 +222,21 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task LogUpdateEmailAsync(int userId, int? updatedByUserId = null)
+        {
+            AspNetUser currentUserInformation = _dbContext.Users
+                .SingleOrDefault(u => u.Id == userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UserChangeType = UserChangeType.ChangedEmail,
+                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task LogUpdatePasswordAsync(int userId)
         {
             await _dbContext.AddAsync(new UserAuditLogEntry

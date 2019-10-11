@@ -134,7 +134,7 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Policies.SystemCentralLocalAdmin)]
-        public async Task<ActionResult> View(int id, string bc = null, string ba = null, string bi = null)
+        public async Task<ActionResult> View(int id, string message, string bc = null, string ba = null, string bi = null)
         {
             var user = GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded &&
@@ -150,8 +150,10 @@ namespace Tolk.Web.Controllers
                 }
                 var model = new UserModel
                 {
+                    Message = message,
                     Id = id,
                     AllowDefaultSettings = _options.EnableDefaultSettings && user.CustomerOrganisationId.HasValue,
+                    AllowSetNewEmail = !user.EmailConfirmed,
                     UserName = user.UserName,
                     NameFirst = user.NameFirst,
                     NameFamily = user.NameFamily,
@@ -182,7 +184,6 @@ namespace Tolk.Web.Controllers
                         BackId = bi ?? BackId
                     }
                 };
-
                 return View(model);
             }
             return Forbid();
@@ -1020,6 +1021,66 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             return View(model);
+        }
+
+        [Authorize(Policies.SystemCentralLocalAdmin)]
+        public async Task<ActionResult> ChangeEmail(int id, string bc, string ba, string bi)
+        {
+            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
+            {
+                var model = new UserModel
+                {
+                    Id = user.Id,
+                    NameFirst = user.NameFirst,
+                    NameFamily = user.NameFamily,
+                    Email = user.Email,
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = bc,
+                        BackAction = ba,
+                        BackId = bi
+                    }
+                };
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Policies.SystemCentralLocalAdmin)]
+        public async Task<ActionResult> ChangeEmail(UserModel model)
+        {
+            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
+            if (ModelState.IsValid)
+            {
+                if (user.Email.ToUpper() == model.Email.ToUpper())
+                {
+                    ModelState.AddModelError(nameof(model.Email), "Du har inte ändrat på e-postadressen");
+                    return View(model);
+                }
+                else if (!_userService.IsUniqueEmail(model.Email))
+                {
+                    ModelState.AddModelError(nameof(model.Email), "Denna e-postadress finns redan för en annan användare");
+                    return View(model);
+                }
+
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
+                {
+                    await _userService.LogUpdateEmailAsync(model.Id.Value, User.GetUserId());
+                    user.Email = model.Email;
+                    user.NormalizedEmail = model.Email.ToUpper();
+                    //activate a user that might be inactive due to job that inactivates?
+                    user.IsActive = true;
+                    await _userManager.UpdateAsync(user);
+                    //send new invite
+                    _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
+                    await _userService.SendInviteAsync(user);
+                }
+            }
+            //message that all is done!
+            return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, message = "E-postadressen är ändrad och ny aktiveringslänk är skickad" });
         }
 
         private bool UseRolesForAdminUser(AspNetUser user)

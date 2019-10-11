@@ -1,0 +1,37 @@
+﻿@model UserModel;
+@{
+    ViewData["Title"] = $"Sätt ny e-postadress för {Model.NameFull}";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post" class="do-not-check-dirty">
+        <input asp-for="Id" type="hidden" />
+        <input asp-for="NameFirst" type="hidden" />
+        <input asp-for="NameFamily" type="hidden" />
+        <div class="row">
+            <div class="col-md-12 important-info">
+                Här kan du sätta en ny e-postadress för en användare som inte kunnat verifiera sin e-post eftersom den varit felaktig. När du väljer att sätta en ny e-postadress så kommer det också gå iväg en ny inbjudan till användaren.
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="Email" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.Id, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <input asp-for="UserPageMode.BackController" type="hidden" />
+                <input asp-for="UserPageMode.BackId" type="hidden" />
+                <input asp-for="UserPageMode.BackAction" type="hidden" />
+                <button type="submit" class="btn btn-success btn-large pull-right">Sätt ny e-postadress</button>
+            </div>
+        </div>
+    </form>
+</section>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
