@@ -13,7 +13,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             var filteredOrders = orders.Where(o => o.CustomerOrganisationId == customerOrganisationId);
             return isCentralAdminOrOrderHandler ? filteredOrders :
-                filteredOrders.Where(o => ((o.CreatedBy == userId || (includeContact && o.ContactPersonId == userId)) && o.CustomerUnitId == null) ||
+                filteredOrders.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || (includeContact && o.ContactPersonId == userId) ||
                     customerUnits.Contains(o.CustomerUnitId ?? -1));
         }
 

@@ -185,6 +185,10 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
+                case OutboundWebHookCall webHookCall:
+                    return user.IsInRole(Roles.CentralAdministrator) && 
+                        !webHookCall.ResentHookId.HasValue && 
+                        webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
                 default:
                     throw new NotImplementedException();
             }
@@ -348,6 +352,8 @@ namespace Tolk.Web.Authorization
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 case StatusVerificationResult statusModel:
                     return user.IsInRole(Roles.ApplicationAdministrator);
+                case OutboundWebHookCall webHookCall:
+                    return user.IsInRole(Roles.ApplicationAdministrator) || webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
                 default:
                     throw new NotImplementedException();
             }

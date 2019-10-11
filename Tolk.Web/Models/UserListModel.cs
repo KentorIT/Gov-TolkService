@@ -7,8 +7,6 @@ namespace Tolk.Web.Models
     {
         public UserFilterModel FilterModel { get; set; }
 
-        public IEnumerable<UserListItemModel> Items { get; set; }
-
         public UserPageMode UserPageMode { get; set; }
     }
 }

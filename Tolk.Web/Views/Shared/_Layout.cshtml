@@ -167,6 +167,7 @@
                                         <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Home" asp-action="status" asp-all-route-data="@(new Dictionary<string, string>{{ "showDetails", "true" }})">Systemstatus</a></li>
+                                        <li><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
                                     }
                                 </ul>
                             </li>
@@ -234,7 +235,8 @@
                                     {
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Home" asp-action="status" asp-all-route-data="@(new Dictionary<string, string>{{ "showDetails", "true" }})">Språk</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Home" asp-action="status" asp-all-route-data="@(new Dictionary<string, string>{{ "showDetails", "true" }})">Systemstatus</a></li>
+                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
                                     }
                                 }
                                 <li>

@@ -8,6 +8,12 @@
         <div class="col-sm-4">
             <display-entry asp-for="NotificationType" />
         </div>
+        @if (Model.ShowBroker)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="BrokerName" />
+            </div>
+        }
     </div>
     <div class="row">
         <div class="col-sm-4">
@@ -20,7 +26,7 @@
         </div>
         <div class="col-sm-4">
             <display-entry asp-for="RecipientUrl" />
-            @if (Model.FailedTries.Any() && Model.ReplacedBy == null)
+            @if (Model.AllowResend)
             {
                 <form method="post" asp-action="Resend">
                     <input type="hidden" name="WebHookId" value="@Model.OutboundWebHookCallId" />

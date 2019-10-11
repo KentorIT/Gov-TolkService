@@ -45,6 +45,10 @@ namespace Tolk.BusinessLogic.Entities
         public int? ResentHookId { get; set; }
         [ForeignKey(nameof(ResentHookId))]
         public OutboundWebHookCall ResentHook { get; set; }
+
+        [InverseProperty(nameof(ResentHook))]
+        public OutboundWebHookCall ReplacingWebHook { get; set; }
+
         public ICollection<FailedWebHookCall> FailedCalls { get; set; }
     }
 }

@@ -9,9 +9,11 @@ namespace Tolk.Web.Models
     {
         [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }
+        [Display(Name = "Skickat till")]
         public string RecipientUrl { get; set; }
         [Display(Name = "Innehåll")]
         public string Payload { get; set; }
+        [Display(Name = "Notifikationstyp")]
         public NotificationType NotificationType { get; set; }
         [Display(Name = "Skapad")]
         public DateTimeOffset CreatedAt { get; set; }
@@ -22,6 +24,10 @@ namespace Tolk.Web.Models
         public int? ReplacedBy { get; set; }
         [Display(Name = "Ersätter")]
         public int? Replaces { get; set; }
-    }
+        [Display(Name = "Förmedling")]
+        public string BrokerName { get; set; }
 
+        public bool ShowBroker { get; set; }
+        public bool AllowResend { get; set; }
+    }
 }

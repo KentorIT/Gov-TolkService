@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -66,18 +67,36 @@ namespace Tolk.Web.Controllers
         private int SystemAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.SystemAdministrator).Id;
 
         [Authorize(Policies.SystemCentralLocalAdmin)]
-        public ActionResult List(UserFilterModel model)
+        public ActionResult List()
         {
-            if (model == null)
-            {
-                model = new UserFilterModel();
-            }
+            UserFilterModel model = new UserFilterModel();
 
             var customerId = User.TryGetCustomerOrganisationId();
             var brokerId = User.TryGetBrokerId();
             model.IsBroker = brokerId.HasValue;
             model.IsCustomer = customerId.HasValue;
+            model.UserType = HighestLevelLoggedInUserType;
+            return View(new UserListModel
+            {
+                FilterModel = model,
+                UserPageMode = new UserPageMode
+                {
+                    BackAction = nameof(List),
+                    BackController = "User",
+                    BackId = string.Empty
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListUsers(IDataTablesRequest request)
+        {
+            var model = new UserFilterModel();
+            await TryUpdateModelAsync(model);
             var users = _dbContext.Users.Where(u => !u.IsApiUser).Select(u => u);
+            var customerId = User.TryGetCustomerOrganisationId();
+            var brokerId = User.TryGetBrokerId();
+
             model.UserType = HighestLevelLoggedInUserType;
             if (customerId.HasValue)
             {
@@ -95,26 +114,23 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            users = model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name }).ToList());
-            return View(new UserListModel
+            return AjaxDataTableHelper.GetData(request, users.Count(), model.Apply(users, _roleManager.Roles.Select(r => new RoleMap { Id = r.Id, Name = r.Name })), x => x.Select(u => new UserListItemModel
             {
-                Items = users.Select(u => new UserListItemModel
-                {
-                    UserId = u.Id,
-                    Email = u.Email,
-                    Name = u.FullName,
-                    Organisation = u.CustomerOrganisation.Name ?? u.Broker.Name ?? "-",
-                    LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-",
-                    IsActive = u.IsActive
-                }),
-                FilterModel = model,
-                UserPageMode = new UserPageMode
-                {
-                    BackAction = nameof(List),
-                    BackController = "User",
-                    BackId = string.Empty
-                }
-            });
+                UserId = u.Id,
+                Email = u.Email,
+                Name = $"{u.NameFamily}, {u.NameFirst}",
+                Organisation = u.CustomerOrganisation.Name ?? u.Broker.Name ?? "-",
+                LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-",
+                IsActive = u.IsActive
+            }));
+        }
+
+        public JsonResult ListColumnDefinition()
+        {
+            var userType = HighestLevelLoggedInUserType;
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<UserListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(UserListItemModel.Organisation)).Visible = (userType == UserType.ApplicationAdministrator || userType == UserType.SystemAdministrator);
+            return Json(definition);
         }
 
         [Authorize(Policies.SystemCentralLocalAdmin)]
@@ -879,10 +895,6 @@ namespace Tolk.Web.Controllers
                     Message = message,
                     ShowUnitSelection = user.CustomerUnits.Any(),
                     AllowChange = id == User.GetUserId(),
-                    //Make attribute that takes a DefaultSettingsType, gets the type from the property and parses in a switch, get the value from an extension on aspnetuser?
-                    //then make a twin attribute that is set on order model properties, to make them connected to the correct default value.
-                    //This should not be set in controller though, but sent as array to client to be set on load.
-                    // if done this way, the units can have their own set of default sent in the same way.
                     Region = Region.Regions.SingleOrDefault(r => r.RegionId == user.GetIntValue(DefaultSettingsType.Region))?.Name,
                     CustomerUnit = customerUnit == 0 ? Constants.SelectNoUnit : user.CustomerUnits.SingleOrDefault(c => c.CustomerUnitId == customerUnit)?.CustomerUnit.Name,
                     RankedInterpreterLocationFirst = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationPrimary),

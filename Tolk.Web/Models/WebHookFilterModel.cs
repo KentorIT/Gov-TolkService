@@ -15,10 +15,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Notifieringstyp")]
         public NotificationType? NotificationType { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => NotificationType.HasValue;
-        }
+        [Display(Name = "Förmedling")]
+        public int? BrokerId { get; set; }
+
+        public bool IsAppAdministrator { get; set; }
 
         internal IQueryable<OutboundWebHookCall> Apply(IQueryable<OutboundWebHookCall> items)
         {
@@ -42,6 +42,7 @@ namespace Tolk.Web.Models
             }
 
             items = NotificationType.HasValue ? items.Where(i => i.NotificationType == NotificationType) : items;
+            items = BrokerId.HasValue ? items.Where(w => w.RecipientUser.BrokerId == BrokerId) : items;
 
             return items;
         }
