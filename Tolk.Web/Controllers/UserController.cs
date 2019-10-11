@@ -1085,14 +1085,56 @@ namespace Tolk.Web.Controllers
                     else
                     {
                         await _userService.SetTemporaryEmail(user, model.Email);
-                        //await SendChangedEmailLink(user, model.Email);
                         var code = await _userManager.GenerateChangeEmailTokenAsync(user, model.Email);
                         await _userService.SendChangedEmailLink(user, model.Email, Url.ChangeEmailCallbackLink(user.Id.ToString(), code), true);
                         messageToUser = "För att slutföra ändringen, be användaren att följa instruktionerna i meddelandet som skickats till den nya e-postadressen";
                     }
                 }
-                //message that all is done!
                 return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, message = messageToUser });
+            }
+            return View(model);
+        }
+
+
+
+        [Authorize(Policies.SystemCentralLocalAdmin)]
+        public async Task<ActionResult> SendNewInvite(int id, string bc, string ba, string bi)
+        {
+            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
+            {
+                var model = new UserModel
+                {
+                    Id = user.Id,
+                    NameFirst = user.NameFirst,
+                    NameFamily = user.NameFamily,
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = bc,
+                        BackAction = ba,
+                        BackId = bi
+                    }
+                };
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Policies.SystemCentralLocalAdmin)]
+        public async Task<ActionResult> SendNewInvite(UserModel model)
+        {
+            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
+            if (ModelState.IsValid)
+            {
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
+                {
+                    //activate a user that might be inactive due to job that inactivates?
+                    user.IsActive = true;
+                    await _userService.SendInviteAsync(user);
+                }
+                return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, message = "En ny inbjudan med aktiveringslänk är skickad till användaren" });
             }
             return View(model);
         }
