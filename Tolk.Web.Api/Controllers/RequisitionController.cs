@@ -66,7 +66,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
 
                 var request = order.Requests.SingleOrDefault(r => apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Approved);
                 if (request == null)
@@ -126,7 +126,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.REQUISITION_NOT_FOUND);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 //End of service
                 return Json(GetResponseFromRequisition(requisition, model.OrderNumber, model.IncludePreviousRequisitions));
             }

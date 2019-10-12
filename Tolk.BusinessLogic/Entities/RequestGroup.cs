@@ -50,6 +50,20 @@ namespace Tolk.BusinessLogic.Entities
             Requests.ForEach(r => r.Status = status);
         }
 
+        public override void Decline(
+            DateTimeOffset declinedAt,
+            int userId,
+            int? impersonatorId,
+            string message)
+        {
+            if (!CanDecline)
+            {
+                throw new InvalidOperationException($"Det gick inte att tacka nej till den sammanhållna bokningen med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
+            }
+            base.Decline(declinedAt, userId, impersonatorId, message);
+            OrderGroup.SetStatus(OrderStatus.Requested);
+        }
+
         #endregion
 
         #region private methods

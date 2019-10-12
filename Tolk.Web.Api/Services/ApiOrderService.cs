@@ -35,9 +35,25 @@ namespace Tolk.Web.Api.Services
                 o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
             if (order == null)
             {
+                _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order {orderNumber}, but it could not be returned. This could happen if the order number is wrong, or that the broker has no request connected.");
                 throw new InvalidApiCallException(ErrorCodes.ORDER_NOT_FOUND);
             }
             return order;
+        }
+
+        public async Task<OrderGroup> GetOrderGroupAsync(string orderGroupNumber, int brokerId)
+        {
+            var orderGroup = await _dbContext.OrderGroups
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
+                .SingleOrDefaultAsync(o => o.OrderGroupNumber == orderGroupNumber &&
+                //Must have a request connected to the order for the broker, any status...
+                o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId));
+            if (orderGroup == null)
+            {
+                _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order group {orderGroupNumber}, but it could not be returned. This could happen if the order group number is wrong, or that the broker has no request connected.");
+                throw new InvalidApiCallException(ErrorCodes.ORDER_GROUP_NOT_FOUND);
+            }
+            return orderGroup;
         }
     }
 }

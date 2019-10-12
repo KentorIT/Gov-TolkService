@@ -78,10 +78,10 @@ namespace Tolk.Web.Api.Services
             return null;
         }
 
-        public AspNetUser GetBrokerUser(string caller, int? brokerId)
+        public async Task<AspNetUser> GetBrokerUser(string caller, int? brokerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                _dbContext.Users.SingleOrDefault(u => u.NormalizedEmail == caller.ToUpper() && u.BrokerId == brokerId) :
+                await _dbContext.Users.SingleOrDefaultAsync(u => u.NormalizedEmail == caller.ToUpper() && u.BrokerId == brokerId) :
                 null;
         }
 

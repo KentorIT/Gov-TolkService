@@ -28,6 +28,7 @@ namespace Tolk.BusinessLogic.Services
         void RequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
+        void RequestGroupDeclinedByBroker(RequestGroup requestGroup);
         void RequestExpired(Request request);
         void RequestReplamentOrderAccepted(Request request);
         void RequestReplamentOrderDeclinedByBroker(Request request);

@@ -52,7 +52,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var complaint = await GetCreatedComplaint(model.OrderNumber, apiUser.BrokerId.Value);
                 _complaintService.Accept(complaint, user?.Id ?? apiUser.Id, user != null ? (int?)apiUser.Id : null);
 
@@ -74,7 +74,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var complaint = await GetCreatedComplaint(model.OrderNumber, apiUser.BrokerId.Value);
                 _complaintService.Dispute(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
 

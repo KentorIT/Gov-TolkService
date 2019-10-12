@@ -152,19 +152,6 @@ namespace Tolk.BusinessLogic.Entities
             Complaints.Add(complaint);
         }
 
-        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
-        {
-            if (Status != RequestStatus.Created)
-            {
-                throw new InvalidOperationException($"Tried to mark request {RequestId} as received by {userId}({impersonatorId}) but it is already {Status}");
-            }
-
-            Status = RequestStatus.Received;
-            RecievedAt = receiveTime;
-            ReceivedBy = userId;
-            ImpersonatingReceivedBy = impersonatorId;
-        }
-
         public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
@@ -258,7 +245,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public void Decline(
+        public override void Decline(
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
@@ -268,11 +255,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Det gick inte att tacka nej till förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
-            Status = RequestStatus.DeclinedByBroker;
-            AnswerDate = declinedAt;
-            AnsweredBy = userId;
-            ImpersonatingAnsweredBy = impersonatorId;
-            DenyMessage = message;
+            base.Decline(declinedAt, userId, impersonatorId, message);
             Order.Status = !Order.ReplacingOrderId.HasValue ? OrderStatus.Requested : OrderStatus.NoBrokerAcceptedOrder;
         }
 

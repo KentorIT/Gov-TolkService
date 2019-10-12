@@ -28,7 +28,6 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
-        private readonly RankingService _rankingService;
         private readonly OrderService _orderService;
         private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
@@ -42,7 +41,6 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
-            RankingService rankingService,
             OrderService orderService,
             DateCalculationService dateCalculationService,
             ISwedishClock clock,
@@ -56,7 +54,6 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
-            _rankingService = rankingService;
             _orderService = orderService;
             _dateCalculationService = dateCalculationService;
             _clock = clock;
@@ -844,14 +841,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
-        }
-
-        private async Task<OrderGroup> GetOrderGroup(int id)
-        {
-            return await _dbContext.OrderGroups
-                .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-
-                .SingleAsync(o => o.OrderGroupId == id);
         }
     }
 }

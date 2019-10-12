@@ -73,7 +73,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = order.Requests.SingleOrDefault(r =>
                 apiUser.BrokerId == r.Ranking.BrokerId &&
                 //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
@@ -101,7 +101,7 @@ namespace Tolk.Web.Api.Controllers
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
-                    request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                    _requestService.Acknowledge(request, now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
                 }
                 try
                 {
@@ -142,8 +142,114 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> AnswerGroup([FromBody] RequestGroupAnswerModel model)
         {
-#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
-            return Json(new ResponseBase());
+            try
+            {
+                var apiUser = await GetApiUser();
+                if (!await _dbContext.OrderGroups
+                    .AnyAsync(o => o.OrderGroupNumber == model.OrderGroupNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    o.RequestGroups.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
+                {
+                    return ReturnError(ErrorCodes.ORDER_GROUP_NOT_FOUND);
+                }
+                //Possibly the user should be added, if not found?? 
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var requestGroup = _dbContext.RequestGroups
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
+                    .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
+                    //.Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
+                    .SingleOrDefault(r =>
+                        apiUser.BrokerId == r.Ranking.BrokerId &&
+                        //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
+                        (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+                if (requestGroup == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_GROUP_NOT_FOUND);
+                }
+                InterpreterBroker interpreter;
+                try
+                {
+                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+                }
+                catch (InvalidOperationException)
+                {
+                    return ReturnError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED);
+                }
+
+                //Does not handle Kammarkollegiets tolknummer
+                if (interpreter == null)
+                {
+                    //Possibly the interpreter should be added, if not found?? 
+                    return ReturnError(ErrorCodes.INTERPRETER_NOT_FOUND, "The provided extra interpreter was not found.");
+                }
+                    InterpreterBroker extraInterpreter = null;
+                if (model.ExtraInterpreter != null)
+                {
+                    try
+                    {
+                        extraInterpreter = _apiUserService.GetInterpreter(model.ExtraInterpreter, apiUser.BrokerId.Value);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return ReturnError(ErrorCodes.INTERPRETER_OFFICIALID_ALREADY_SAVED, $"The extra interpreter's official interpreterId {model.ExtraInterpreter.OfficialInterpreterId} for has already been saved.");
+                    }
+
+                    //Does not handle Kammarkollegiets tolknummer
+                    if (extraInterpreter == null)
+                    {
+                        //Possibly the interpreter should be added, if not found?? 
+                        return ReturnError(ErrorCodes.INTERPRETER_NOT_FOUND);
+                    }
+                }
+                var now = _timeService.SwedenNow;
+                if (requestGroup.Status == RequestStatus.Created)
+                {
+                    _requestService.AcknowledgeGroup(requestGroup, now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                }
+                try
+                {
+                    await _requestService.AcceptGroup(
+                        requestGroup,
+                        now,
+                        user?.Id ?? apiUser.Id,
+                        (user != null ? (int?)apiUser.Id : null),
+                        interpreter,
+                        extraInterpreter,
+                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.ExtraInterpreterCompetenceLevel),
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement,
+                            OrderRequirementId = ra.RequirementId,
+                        }).ToList(),
+                        //Does not handle attachments yet.
+                        new List<RequestAttachment>(),
+                        model.ExpectedTravelCosts,
+                        model.ExpectedTravelCostInfo
+                    );
+                    await _dbContext.SaveChangesAsync();
+                    //End of service
+                    return Json(new ResponseBase());
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_CORRECTLY_ANSWERED, ex.Message);
+                }
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         [HttpPost]
@@ -153,15 +259,14 @@ namespace Tolk.Web.Api.Controllers
             {
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
                 }
-                //Add RequestService that does this, and additionally calls _notificationService
-                request.Received(_timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                _requestService.Acknowledge(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Json(new ResponseBase());
@@ -175,8 +280,26 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> AcknowledgeGroup([FromBody] RequestGroupAcknowledgeModel model)
         {
-#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
-            return Json(new ResponseBase());
+            try
+            {
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var requestGroup = await _dbContext.RequestGroups
+                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
+                if (requestGroup == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                }
+                _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                await _dbContext.SaveChangesAsync();
+                //End of service
+                return Json(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         [HttpPost]
@@ -187,11 +310,10 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Order.CreatedByUser)
-                    .Include(r => r.Order.ContactPersonUser)
                     .Include(r => r.Order.CustomerUnit)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
@@ -218,8 +340,36 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> DeclineGroup([FromBody] RequestGroupDeclineModel model)
         {
-#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
-            return Json(new ResponseBase());
+            try
+            {
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
+                //Possibly the user should be added, if not found?? 
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var request = await _dbContext.RequestGroups
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        //Possibly other statuses
+                        (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.REQUEST_GROUP_NOT_FOUND);
+                }
+                await _requestService.DeclineGroup(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                await _dbContext.SaveChangesAsync();
+                //End of service
+                return Json(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
         }
 
         [HttpPost]
@@ -230,7 +380,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
 
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -277,7 +427,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
@@ -372,7 +522,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = order.Requests.SingleOrDefault(r =>
                     apiUser.BrokerId == r.Ranking.BrokerId &&
                     r.Order.ReplacingOrderId != null &&
@@ -415,7 +565,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.DeniedByCreator });
                 await _requestService.ConfirmDenial(
                     request,
@@ -440,7 +590,7 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
                 //Get User, if any...
-                var user = _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApproved });
                 await _requestService.ConfirmCancellation(
                     request,

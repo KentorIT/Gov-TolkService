@@ -11,7 +11,9 @@ namespace Tolk.Api.Payloads.ApiPayloads
         public InterpreterModel ExtraInterpreter { get; set; }
         public string Location { get; set; }
         public string CompetenceLevel { get; set; }
+        public string ExtraInterpreterCompetenceLevel { get; set; }
         public decimal? ExpectedTravelCosts { get; set; }
+        public string ExpectedTravelCostInfo { get; set; }
         public IEnumerable<RequirementAnswerModel> RequirementAnswers { get; set; }
         public IEnumerable<OccasionAnswerModel> OccasionAnswers { get; set; }
         //Files

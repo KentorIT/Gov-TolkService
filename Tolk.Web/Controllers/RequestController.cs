@@ -140,8 +140,8 @@ namespace Tolk.Web.Controllers
                 }
                 if (request.Status == RequestStatus.Created)
                 {
-                    request.Received(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.SaveChanges();
+                    _requestService.Acknowledge(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    await _dbContext.SaveChangesAsync();
                 }
 
                 RequestModel model = GetModel(request);

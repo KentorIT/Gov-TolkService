@@ -15,10 +15,16 @@ namespace Tolk.BusinessLogic.Helpers
 
         #region URLs
 
+        public static string GetOrderGroupViewUrl(string origin, int orderGroupId)
+        {
+            return $"{origin}/OrderGroup/View/{orderGroupId}";
+        }
+
         public static string GetOrderViewUrl(string origin, int orderId)
         {
             return $"{origin}/Order/View/{orderId}";
         }
+
         public static string GetOrderPrintUrl(string origin, int orderId)
         {
             return $"{origin}/Order/Print/{orderId}";
@@ -28,9 +34,10 @@ namespace Tolk.BusinessLogic.Helpers
         {
             return $"{origin}/Request/View/{requestId}";
         }
+
         public static string GetRequestGroupViewUrl(string origin, int requestGroupId)
         {
-            return $"{origin}/Request/ViewGroup/{requestGroupId}";
+            return $"{origin}/RequestGroup/View/{requestGroupId}";
         }
 
         public static string GetWebHookListUrl(string origin)

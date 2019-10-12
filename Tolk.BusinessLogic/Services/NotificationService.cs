@@ -617,6 +617,15 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
         }
 
+        public void RequestGroupDeclinedByBroker(RequestGroup requestGroup)
+        {
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            var body = $"Svar på sammanhållna bokningsförfrågan {orderGroupNumber} har inkommit. Förmedling {requestGroup.Ranking.Broker.Name} har tackat nej till den sammanhållna bokningsförfrågan med följande meddelande:\n{requestGroup.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Förmedling har tackat nej till den sammanhållna bokningsförfrågan {orderGroupNumber}",
+                body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+        }
+
         public void RequestCancelledByBroker(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
@@ -824,6 +833,19 @@ Sammanställning:
             }
         }
 
+        private static IEnumerable<string> GetRecipientsFromOrderGroup(OrderGroup orderGroup, bool sendToContactPersons = false)
+        {
+            var unit = orderGroup.FirstOrder.CustomerUnit;
+            yield return unit != null ? unit.Email : orderGroup.CreatedByUser.Email;
+            if (sendToContactPersons)
+            {
+                foreach (var order in orderGroup.Orders)
+                {
+                    yield return order.ContactPersonUser.Email;
+                }
+            }
+        }
+
         private static string GetRecipientFromComplaint(Complaint complaint)
         {
             return complaint.Request.Order.CustomerUnitId.HasValue ? complaint.Request.Order.CustomerUnit.Email : complaint.CreatedByUser.Email;
@@ -899,6 +921,11 @@ Sammanställning:
             }
         }
 
+        private string GotoOrderGroupPlain(int orderGroupId)
+        {
+            return $"\n\n\nGå till sammanhållen bokning: {HtmlHelper.GetOrderGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderGroupId)}";
+        }
+
         private string GotoRequestPlain(int requestId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default)
         {
             switch (tab)
@@ -936,6 +963,11 @@ Sammanställning:
                 case HtmlHelper.ViewTab.Complaint:
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=complaint", "Till reklamation");
             }
+        }
+
+        private string GotoOrderGroupButton(int orderGroupId)
+        {
+            return $"<br /><br /><br /> {HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderGroupId), "Till bokning")}";
         }
 
         private string GotoRequestButton(int requestId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, string textOverride = null, bool autoBreakLines = true)

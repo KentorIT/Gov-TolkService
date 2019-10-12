@@ -100,8 +100,7 @@ namespace Tolk.BusinessLogic.Services
         {
             await HandleStartedOrders();
             await HandleExpiredRequests();
-#warning SKA SLÅS PÅ NÄR VI IMPLEMENTERAR SAMMANHÅLLEN BOKNING!
-            //await HandleExpiredRequestGroups();
+            await HandleExpiredRequestGroups();
             await HandleExpiredComplaints();
             await HandleExpiredNonAnsweredRespondedRequests();
         }

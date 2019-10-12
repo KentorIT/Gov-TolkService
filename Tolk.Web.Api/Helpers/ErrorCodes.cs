@@ -21,5 +21,7 @@ namespace Tolk.Web.Api.Helpers
         public const string REQUEST_NOT_CORRECTLY_ANSWERED = nameof(REQUEST_NOT_CORRECTLY_ANSWERED);
         public const string REQUISITION_NOT_FOUND = nameof(REQUISITION_NOT_FOUND);
         public const string REQUISITION_NOT_IN_CORRECT_STATE = nameof(REQUISITION_NOT_IN_CORRECT_STATE);
+        public const string ORDER_GROUP_NOT_FOUND = nameof(ORDER_GROUP_NOT_FOUND);
+        public const string REQUEST_GROUP_NOT_FOUND = nameof(REQUEST_GROUP_NOT_FOUND);
     }
 }

@@ -83,6 +83,11 @@ namespace Tolk.BusinessLogic.Entities
             get => (Orders == null) || (Orders.Count() <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
         }
 
+        public void SetStatus(OrderStatus status)
+        {
+            Orders.ForEach(o => o.Status = status);
+        }
+
         public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
@@ -91,8 +96,8 @@ namespace Tolk.BusinessLogic.Entities
 
             if (ranking == null)
             {
-                // Rejected by all brokers, close the order
-                Orders.ForEach(o => o.Status = OrderStatus.NoBrokerAcceptedOrder);
+                // Rejected by all brokers, close all orders
+                SetStatus(OrderStatus.NoBrokerAcceptedOrder);
                 return null;
             }
 

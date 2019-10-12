@@ -59,16 +59,7 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
-            //Get prices
-            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            VerificationResult? verificationResult = null;
-            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
-            {
-                //Only check if the selected level is other than other.
-                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
-            }
-            // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel));
             //Create notification
             switch (request.Status)
             {
@@ -83,6 +74,86 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
+        {
+             //Get prices
+           var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
+            // Acccept the request
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
+        }
+
+        private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)
+        {
+            VerificationResult? verificationResult = null;
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
+            {
+                //Only check if the selected level is other than other.
+                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, orderId , competenceLevel);
+            }
+
+            return verificationResult;
+        }
+
+        public async Task AcceptGroup(
+            RequestGroup requestGroup,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterBroker interpreter,
+            InterpreterBroker extraInterpreter,
+            CompetenceAndSpecialistLevel competenceLevel,
+            CompetenceAndSpecialistLevel? extraInterpreterCompetenceLevel,
+            InterpreterLocation interpreterLocation,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
+            decimal? expectedTravelCosts,
+            string expectedTravelCostInfo
+        )
+        {
+            //1. Set the request group and order group in correct state
+            var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter, competenceLevel);
+            var extraInterpreterVerificationResult = extraInterpreter != null ?
+                await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, extraInterpreter, extraInterpreterCompetenceLevel.Value) :
+                null;
+            foreach (var request in requestGroup.Requests)
+            {
+                bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
+                AcceptRequest(request, 
+                    acceptTime, 
+                    userId, 
+                    impersonatorId, 
+                    isExtraInterpreterOccasion ? extraInterpreter : interpreter, 
+                    interpreterLocation,
+                    isExtraInterpreterOccasion ? extraInterpreterCompetenceLevel.Value : competenceLevel, 
+                    requirementAnswers, 
+                    attachedFiles, 
+                    expectedTravelCosts, 
+                    expectedTravelCostInfo,
+                    isExtraInterpreterOccasion ? extraInterpreterVerificationResult :  verificationResult);
+            }
+#warning add _notificationService stuff here...
+            //Need to take inte consideration...
+            //1. (NOT REALLY HANDLED YET) one occasion, two interpreters. only one is assigned, the other is not. 
+            //  Then a new RequestGroup should be added, but only connected to the remaining order.
+            //  The order that is sent to the next broker needs to be aware of the fact that it is paired with another order.
+            //  WHAT SHOULD HAPPEN IF 
+            // a. The customer wants to approve cost.
+            // b. The first broker only assigns one.
+            // c. The second broker assigns the other.
+            // d. The customer then has two costs to accept, but does not in the first instance!
+            // 2. several occasions, no accept needed
+            // 3. several occasions, accept needed.
+        }
+
+        public void Acknowledge(Request request, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
+        {
+            request.Received(acknowledgeTime, userId, impersonatorId);
+        }
+
+        public void AcknowledgeGroup(RequestGroup requestGroup, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
+        {
+            requestGroup.Received(acknowledgeTime, userId, impersonatorId);
+        }
 
         public void AcceptReplacement(
             Request request,
@@ -122,6 +193,18 @@ namespace Tolk.BusinessLogic.Services
             {
                 _notificationService.RequestReplamentOrderDeclinedByBroker(request);
             }
+        }
+
+        public async Task DeclineGroup(
+            RequestGroup requestGroup,
+            DateTimeOffset declinedAt,
+            int userId,
+            int? impersonatorId,
+            string message)
+        {
+            requestGroup.Decline(declinedAt, userId, impersonatorId, message);
+            await _orderService.CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
+            _notificationService.RequestGroupDeclinedByBroker(requestGroup);
         }
 
         public void CancelByBroker(Request request, DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
@@ -191,7 +274,7 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId)
         {
-            request.ConfirmDenial(confirmedAt, userId,impersonatorId);
+            request.ConfirmDenial(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
 

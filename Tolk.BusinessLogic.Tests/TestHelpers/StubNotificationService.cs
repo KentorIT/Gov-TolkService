@@ -63,6 +63,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup) { }
 
+        public void RequestGroupDeclinedByBroker(RequestGroup requestGroup) { }
+
         public void RequestGroupExpired(RequestGroup expiredRequestGroup) { }
 
         public void RequestReplamentOrderAccepted(Request request) { }
