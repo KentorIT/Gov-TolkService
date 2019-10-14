@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
             {
                 filteredData = filteredData.Where(u =>
                     u.NameFirst.Contains(filters.SearchString) ||
-                    u.NameFirst.Contains(filters.SearchString) ||
+                    u.NameFamily.Contains(filters.SearchString) ||
                     u.Email.Contains(filters.SearchString));
             }
             if (filters.UserType.HasValue)
