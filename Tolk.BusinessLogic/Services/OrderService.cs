@@ -101,7 +101,6 @@ namespace Tolk.BusinessLogic.Services
             await HandleStartedOrders();
             await HandleExpiredRequests();
             await HandleExpiredRequestGroups();
-            await HandleExpiredComplaints();
             await HandleExpiredNonAnsweredRespondedRequests();
         }
 
@@ -244,7 +243,7 @@ namespace Tolk.BusinessLogic.Services
             await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
         }
 
-        private async Task HandleExpiredComplaints()
+        public async Task HandleExpiredComplaints()
         {
             var expiredComplaintIds = await _tolkDbContext.Complaints
                 .Where(c => c.CreatedAt.AddMonths(_tolkBaseOptions.MonthsToApproveComplaints) <= _clock.SwedenNow && c.Status == ComplaintStatus.Created)

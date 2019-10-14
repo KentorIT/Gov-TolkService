@@ -120,6 +120,7 @@ namespace Tolk.Web.Services
             await provider.GetRequiredService<OrderService>().CleanTempAttachments();
             await provider.GetRequiredService<RequestService>().SendEmailReminders();
             await provider.GetRequiredService<VerificationService>().HandleTellusVerifications(true);
+            await provider.GetRequiredService<OrderService>().HandleExpiredComplaints();
             _logger.LogInformation($"Completed {nameof(RunDailyJobs)}");
         }
 
