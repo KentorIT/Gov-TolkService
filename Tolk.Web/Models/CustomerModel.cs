@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -58,13 +59,13 @@ namespace Tolk.Web.Models
                 {
                     BackController = "Customer",
                     BackAction = "View",
-                    BackId = customer.CustomerOrganisationId.ToString()
+                    BackId = customer.CustomerOrganisationId.ToSwedishString()
                 }
                 
             };
         }
 
-        public void UpdateCustomer(CustomerOrganisation customer)
+        internal void UpdateCustomer(CustomerOrganisation customer)
         {
             customer.Name = Name;
             customer.ParentCustomerOrganisationId = ParentId;

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -27,12 +28,12 @@ namespace Tolk.Web.Services
             }
             else
             {
-                timeValueSanitized = timeValue.FirstValue.Contains(":")
+                timeValueSanitized = timeValue.FirstValue.ContainsSwedish(":")
                     ? timeValue.FirstValue
                     : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
             }
 
-            var model = TimeSpan.Parse(timeValueSanitized);
+            var model = timeValueSanitized.ToSwedishTimeSpan();
 
             bindingContext.Result = ModelBindingResult.Success(model);
 

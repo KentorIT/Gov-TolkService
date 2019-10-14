@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Web.Models;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Helpers
 {
@@ -21,7 +22,7 @@ namespace Tolk.Web.Helpers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Attributes.ContainsKey("class") && context.Attributes["class"].Contains("force-validation"))
+            if (context.Attributes.ContainsKey("class") && context.Attributes["class"].ContainsSwedish("force-validation"))
             {
                 var minText = Min != 0 ? $"minst {Min} val" : "";
                 var maxText = Max != int.MaxValue ? $"max {Max} val" : "";
@@ -29,9 +30,9 @@ namespace Tolk.Web.Helpers
 
                 MergeAttribute(context.Attributes, "data-val", "true");
                 MergeAttribute(context.Attributes, "data-val-requiredchecked", $"{context.ModelMetadata.DisplayName} måste ha {minText}{bridge}{maxText} ifyllt");
-                MergeAttribute(context.Attributes, "data-val-requiredchecked-min", Min.ToString());
-                MergeAttribute(context.Attributes, "data-val-requiredchecked-max", Max.ToString());
-                MergeAttribute(context.Attributes, "data-val-requiredchecked-maxchecked", int.MaxValue.ToString());
+                MergeAttribute(context.Attributes, "data-val-requiredchecked-min", Min.ToSwedishString());
+                MergeAttribute(context.Attributes, "data-val-requiredchecked-max", Max.ToSwedishString());
+                MergeAttribute(context.Attributes, "data-val-requiredchecked-maxchecked", int.MaxValue.ToSwedishString());
             }
         }
 

@@ -19,6 +19,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models.AccountViewModels;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -348,7 +349,7 @@ namespace Tolk.Web.Controllers
             _logger.LogDebug("Requesting password reset for {email}", model.Email);
             if (ModelState.IsValid)
             {
-                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToUpper());
+                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToSwedishUpper());
                 if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
@@ -363,7 +364,7 @@ namespace Tolk.Web.Controllers
                     //Send new invite if email is not confirmed and user is active and not apiUser (user has lost invite email)
                     if (user.IsActive && !user.IsApiUser && !user.LastLoginAt.HasValue)
                     {
-                        return await ConfirmAccount(new ConfirmAccountModel { UserId = user.Id.ToString() });
+                        return await ConfirmAccount(new ConfirmAccountModel { UserId = user.Id.ToSwedishString() });
                     }
                     // Don't reveal that user is not allowed to get password link
                     else
@@ -669,7 +670,7 @@ namespace Tolk.Web.Controllers
                                 //check if user has changed parent domain to another valid parent domain
                                 if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
                                 {
-                                    var selectedOrganisationId = int.Parse(model.OrganisationIdentifier);
+                                    var selectedOrganisationId = model.OrganisationIdentifier.ToSwedishInt();
                                     organisation = await _dbContext.CustomerOrganisations
                                         .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
                                         || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
@@ -828,7 +829,7 @@ namespace Tolk.Web.Controllers
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToString(), code);
+            var resetLink = Url.ResetPasswordCallbackLink(user.Id.ToSwedishString(), code);
 
             var bodyPlain =
         $@"Återställning av lösenord för {Constants.SystemName}
@@ -874,7 +875,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         private async Task<IActionResult> SendChangedEmailLink(AspNetUser user, string newEmailAddress)
         {
             var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmailAddress);
-            await _userService.SendChangedEmailLink(user, newEmailAddress, Url.ChangeEmailCallbackLink(user.Id.ToString(), code));
+            await _userService.SendChangedEmailLink(user, newEmailAddress, Url.ChangeEmailCallbackLink(user.Id.ToSwedishString(), code));
             return RedirectToAction(nameof(HomeController.Index), "Home", new { Message = "För att slutföra bytet av e-postadress, klicka på den länk som skickats till den angivna e-postadressen." });
         }
 

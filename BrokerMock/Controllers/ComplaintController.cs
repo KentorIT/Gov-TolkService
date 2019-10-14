@@ -179,13 +179,13 @@ namespace BrokerMock.Controllers
             return handler;
         }
 
-        private IEnumerable<string> GetExtraInstructions(string description)
+        private static IEnumerable<string> GetExtraInstructions(string description)
         {
             if (string.IsNullOrEmpty(description))
             {
                 return Enumerable.Empty<string>();
             }
-            return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
+            return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
         #endregion

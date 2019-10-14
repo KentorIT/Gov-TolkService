@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -62,7 +63,7 @@ namespace Tolk.Web.Controllers
                 foreach (var file in files)
                 {
                     var extension = Path.GetExtension(file.FileName);
-                    if (!_options.AllowedFileExtensions.Split(",").Any(e => e.ToUpper() == extension.ToUpper()))
+                    if (!_options.AllowedFileExtensions.Split(",").Any(e => e.ToSwedishUpper() == extension.ToSwedishUpper()))
                     {
                         trn.Rollback();
                         //log here as well

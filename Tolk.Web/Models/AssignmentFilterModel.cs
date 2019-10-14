@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -34,7 +35,9 @@ namespace Tolk.Web.Models
         internal IQueryable<Request> Apply(IQueryable<Request> requests, ISwedishClock clock)
         {
             requests = !string.IsNullOrWhiteSpace(OrderNumber)
+#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
                 ? requests.Where(r => r.Order.OrderNumber.Contains(OrderNumber))
+#pragma warning restore CA1307 // 
                 : requests;
             requests = RegionId.HasValue
                 ? requests.Where(r => r.Order.RegionId == RegionId)

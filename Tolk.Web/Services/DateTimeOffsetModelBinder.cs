@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Tolk.BusinessLogic.Helpers;
-
+using Tolk.BusinessLogic.Utilities;
 namespace Tolk.Web.Services
 {
     public class DateTimeOffsetModelBinder : IModelBinder
@@ -32,7 +32,7 @@ namespace Tolk.Web.Services
                 }
                 else
                 {
-                    timeValueSanitized = timeValue.FirstValue.Contains(":")
+                    timeValueSanitized = timeValue.FirstValue.ContainsSwedish(":")
                         ? timeValue.FirstValue
                         : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
                 }
@@ -41,7 +41,7 @@ namespace Tolk.Web.Services
             { 
                 timeValueSanitized = $"{timeHourValue.FirstValue}:{timeMinuteValue.FirstValue}";
             }
-            dateTime = DateTime.Parse($"{dateValue.FirstValue} {timeValueSanitized}");
+            dateTime = $"{dateValue.FirstValue} {timeValueSanitized}".ToSwedishDateTime();
             var model = dateTime.ToDateTimeOffsetSweden();
 
             bindingContext.Result = ModelBindingResult.Success(model);
@@ -49,7 +49,7 @@ namespace Tolk.Web.Services
             return Task.CompletedTask;
         }
 
-        private bool ValueDefinedAndUsed(ValueProviderResult vpr)
+        private static bool ValueDefinedAndUsed(ValueProviderResult vpr)
         {
             return !(vpr == ValueProviderResult.None || string.IsNullOrWhiteSpace(vpr.FirstValue));
         }

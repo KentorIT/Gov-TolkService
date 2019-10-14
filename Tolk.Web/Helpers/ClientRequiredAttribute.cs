@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Helpers
 {
@@ -12,7 +13,7 @@ namespace Tolk.Web.Helpers
         public void AddValidation(ClientModelValidationContext context)
         {
             // Overriding required message manually, as it will default to built-in english messages otherwise
-            context.Attributes["data-val-required"] = ErrorMessage ?? string.Format(Resources.DataAnnotationValidationMessages.Required, context.ModelMetadata.DisplayName);
+            context.Attributes["data-val-required"] = ErrorMessage ?? Resources.DataAnnotationValidationMessages.Required.FormatSwedish(context.ModelMetadata.DisplayName);
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)

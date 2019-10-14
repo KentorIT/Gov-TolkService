@@ -13,6 +13,7 @@ using System.Text.Encodings.Web;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -270,7 +271,7 @@ namespace Tolk.Web.TagHelpers
 
             if (IsDisplayed)
             {
-                bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItem>(
+                bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItemAttribute>(
                 For.ModelExplorer.Metadata.ContainerType,
                 For.ModelExplorer.Metadata.PropertyName);
 
@@ -295,7 +296,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
             {
-                writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
             }
         }
 
@@ -303,7 +304,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (!string.IsNullOrEmpty(HelpLink))
             {
-                writer.WriteLine(string.Format(HelpAnchor, HelpLink));
+                writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
             }
         }
 
@@ -319,7 +320,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteInput(TextWriter writer)
         {
-            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoComplete>(
+            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoCompleteAttribute>(
             For.ModelExplorer.Metadata.ContainerType,
             For.ModelExplorer.Metadata.PropertyName);
 
@@ -384,7 +385,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteCheckBoxInLabel(TextWriter writer, ModelExplorer modelExplorer, string name)
         {
-            bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItem>(
+            bool IsSubItem = AttributeHelper.IsAttributeDefined<SubItemAttribute>(
                 modelExplorer.Metadata.ContainerType,
                 modelExplorer.Metadata.PropertyName);
             var labelBuilder = GenerateLabel(IsSubItem);
@@ -402,7 +403,7 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
-                htmlBuilder.AppendHtml(string.Format(InformationSpan, For.Metadata.Description));
+                htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.Metadata.Description));
             }
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
 
@@ -412,7 +413,7 @@ namespace Tolk.Web.TagHelpers
 
         private void WritePassword(TextWriter writer)
         {
-            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoComplete>(
+            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoCompleteAttribute>(
             For.ModelExplorer.Metadata.ContainerType,
             For.ModelExplorer.Metadata.PropertyName);
 
@@ -515,8 +516,8 @@ namespace Tolk.Web.TagHelpers
             WriteLabelWithoutFor(writer, true);
             writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, timeHourValue, writer, true);
-            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, timeMinuteValue, writer, false);
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, writer, true);
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, writer, false);
             writer.WriteLine("</div>");
             writer.WriteLine("</div>"); // form-inline
 
@@ -558,15 +559,15 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, object timeValue, TextWriter writer, bool hour)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, TextWriter writer, bool hour)
         {
             string hourClass = hour ? "hour" : string.Empty;
             writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
-            WriteSelect(GetSplitTImeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
+            WriteSelect(GetSplitTimeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
             writer.WriteLine("</div>");
         }
 
-        private IEnumerable<SelectListItem> GetSplitTImeValues(bool hour)
+        private static IEnumerable<SelectListItem> GetSplitTimeValues(bool hour)
         {
             List<SelectListItem> list = new List<SelectListItem>();
 
@@ -576,13 +577,13 @@ namespace Tolk.Web.TagHelpers
 
             for (int i = start; i <= max; i += jump)
             {
-                list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToString() : i.ToString(), Value = i.ToString() });
+                list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToSwedishString() : i.ToSwedishString(), Value = i.ToSwedishString() });
             }
             if (hour)
             {
                 for (int i = 0; i <= 7; i += jump)
                 {
-                    list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToString() : i.ToString(), Value = i.ToString() });
+                    list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToSwedishString() : i.ToSwedishString(), Value = i.ToSwedishString() });
                 }
             }
             return list;
@@ -670,11 +671,11 @@ namespace Tolk.Web.TagHelpers
             if (isHidden)
             {
                 //Make three hidden fields
-                var tagBuilder = _htmlGenerator.GenerateHidden(ViewContext, dateModelExplorer, dateFieldName, ((DateTime)dateValue).ToString("yyyy-MM-dd"), false, null);
+                var tagBuilder = _htmlGenerator.GenerateHidden(ViewContext, dateModelExplorer, dateFieldName, ((DateTime)dateValue).ToSwedishString("yyyy-MM-dd"), false, null);
                 tagBuilder.WriteTo(writer, _htmlEncoder);
-                var tagBuilder2 = _htmlGenerator.GenerateHidden(ViewContext, startTimeModelExplorer, startTimeFieldName, ((TimeSpan)startTimeValue).ToString(@"hh\:mm"), false, null);
+                var tagBuilder2 = _htmlGenerator.GenerateHidden(ViewContext, startTimeModelExplorer, startTimeFieldName, ((TimeSpan)startTimeValue).ToSwedishString(@"hh\:mm"), false, null);
                 tagBuilder2.WriteTo(writer, _htmlEncoder);
-                var tagBuilder3 = _htmlGenerator.GenerateHidden(ViewContext, endTimeModelExplorer, endTimeFieldName, ((TimeSpan)endTimeValue).ToString(@"hh\:mm"), false, null);
+                var tagBuilder3 = _htmlGenerator.GenerateHidden(ViewContext, endTimeModelExplorer, endTimeFieldName, ((TimeSpan)endTimeValue).ToSwedishString(@"hh\:mm"), false, null);
                 tagBuilder3.WriteTo(writer, _htmlEncoder);
 
             }
@@ -724,7 +725,7 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private void WriteSplitTimeRangeBlock(TextWriter writer, bool isHidden = false)
+        private void WriteSplitTimeRangeBlock(TextWriter writer)
         {
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == nameof(SplitTimeRange.StartDate));
             var dateFieldName = $"{For.Name}.{nameof(SplitTimeRange.StartDate)}";
@@ -762,8 +763,8 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
             writer.WriteLine("<div class=\"starttime-part\">");
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
-            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, startTimeHourValue, writer, true);
-            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, startTimeMinutesValue, writer, false);
+            WriteSplitTimePickerInput(startTimeHourModelExplorer, startTimeHourFieldName, writer, true);
+            WriteSplitTimePickerInput(startTimeMinutesModelExplorer, startTimeMinutesFieldName, writer, false);
             writer.WriteLine("<span class=\"time-errors\">");
             WriteValidation(writer, startTimeHourModelExplorer, startTimeHourFieldName);
             WriteValidation(writer, startTimeMinutesModelExplorer, startTimeMinutesFieldName);
@@ -771,8 +772,8 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
             writer.WriteLine("<div class=\"endtime-part\">");
             WriteLabelWithoutFor(endTimeHourModelExplorer, writer);
-            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, endTimeHourValue, writer, true);
-            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, endTimeMinutesValue, writer, false);
+            WriteSplitTimePickerInput(endTimeHourModelExplorer, endTimeHourFieldName, writer, true);
+            WriteSplitTimePickerInput(endTimeMinutesModelExplorer, endTimeMinutesFieldName, writer, false);
             writer.WriteLine("<span class=\"time-errors\">");
             WriteValidation(writer, endTimeHourModelExplorer, endTimeHourFieldName);
             WriteValidation(writer, endTimeMinutesModelExplorer, endTimeMinutesFieldName);
@@ -906,7 +907,7 @@ namespace Tolk.Web.TagHelpers
 
             int? ci = CheckedIndex == null ? 0
                     : CheckedIndex == "none" ? (int?)null
-                    : int.Parse(CheckedIndex);
+                    : CheckedIndex.ToSwedishInt();
 
             if (IsDisplayed)
             {
@@ -919,10 +920,10 @@ namespace Tolk.Web.TagHelpers
                 {
                     writer.WriteLine(RequiredStarSpan);
                 }
-                writer.WriteLine(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
                 if (!string.IsNullOrEmpty(HelpLink))
                 {
-                    writer.WriteLine(string.Format(HelpAnchor, HelpLink));
+                    writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
                 }
                 writer.WriteLine("</legend>");
             }
@@ -979,10 +980,10 @@ namespace Tolk.Web.TagHelpers
             {
                 htmlBuilder.AppendHtml(RequiredStarSpan);
             }
-            htmlBuilder.AppendHtml(string.Format(InformationSpan, For.ModelExplorer.Metadata.Description));
+            htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
             if (!string.IsNullOrEmpty(HelpLink))
             {
-                htmlBuilder.AppendHtml(string.Format(HelpAnchor, HelpLink));
+                htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
             }
             htmlBuilder.AppendHtml("</legend>");
 
@@ -990,7 +991,7 @@ namespace Tolk.Web.TagHelpers
 
             var selectedItems = ((CheckboxGroup)For.ModelExplorer.Model)?.SelectedItems;
 
-            for (var i = 0; i < itemsArr.Count(); i++)
+            for (var i = 0; i < itemsArr.Length; i++)
             {
                 var item = itemsArr[i];
                 var itemName = $"{id}_{i}";

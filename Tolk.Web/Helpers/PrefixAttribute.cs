@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Tolk.Web.Helpers
 {
+    [AttributeUsage(AttributeTargets.Property)]
     public class PrefixAttribute : Attribute
     {
         public enum Position

@@ -200,7 +200,7 @@ namespace Tolk.Web.Controllers
                     FileName = a.Attachment.FileName,
                     Size = a.Attachment.Blob.Length
                 }).ToList();
-                model.Files = files.Count() > 0 ? files : null;
+                model.Files = files.Any() ? files : null;
                 return View(model);
             }
             return Forbid();
@@ -245,8 +245,8 @@ namespace Tolk.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             var model = new OrderModel()
             {
-                LastTimeForRequiringLatestAnswerBy = panicTime.ToString("yyyy-MM-dd"),
-                NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToString("yyyy-MM-dd"),
+                LastTimeForRequiringLatestAnswerBy = panicTime.ToSwedishString("yyyy-MM-dd"),
+                NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName
             };
             return View(model);
@@ -349,7 +349,7 @@ namespace Tolk.Web.Controllers
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
             updatedModel.WarningOrderRequiredCompetenceInfo = CheckOrderCompetenceRequirements(order, language);
 
-            if (order.Attachments?.Count() > 0)
+            if (order.Attachments?.Count > 0)
             {
                 List<FileModel> attachments = new List<FileModel>();
                 foreach (int attId in order.Attachments.Select(a => a.AttachmentId))
@@ -375,7 +375,7 @@ namespace Tolk.Web.Controllers
             return PartialView(nameof(Confirm), updatedModel);
         }
 
-        private string CheckOrderCompetenceRequirements(Order o, Language l)
+        private static string CheckOrderCompetenceRequirements(Order o, Language l)
         {
             return (!o.SpecificCompetenceLevelRequired || !o.LanguageHasAuthorizedInterpreter || l.HasAllCompetences) ?
             string.Empty :
@@ -461,13 +461,13 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
                 model.Dialect = GetRequestAnswerDialect(model.Dialect, model.ActiveRequest.RequirementAnswers);
                 model.ActiveRequest.AnswerProcessedBy = request.AnswerProcessedBy.HasValue ? request.ProcessingUser.FullName : "Systemet";
-                model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToString("yyyy-MM-dd HH:mm");
+                model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm");
                 return View(model);
             }
             return Forbid();
         }
 
-        private string GetRequestAnswerDialect(string dialect, List<RequestRequirementAnswerModel> requirementAnswers)
+        private static string GetRequestAnswerDialect(string dialect, List<RequestRequirementAnswerModel> requirementAnswers)
         {
             if (!string.IsNullOrEmpty(dialect) && requirementAnswers != null && requirementAnswers.Any(or => or.RequirementType == RequirementType.Dialect))
             {
@@ -477,7 +477,7 @@ namespace Tolk.Web.Controllers
             return string.Empty;
         }
 
-        private string GetInterpreterLocationInfoAnswer(Order o, int locationAnswer)
+        private static string GetInterpreterLocationInfoAnswer(Order o, int locationAnswer)
         {
             foreach (OrderInterpreterLocation i in o.InterpreterLocations)
             {
@@ -690,7 +690,7 @@ namespace Tolk.Web.Controllers
                 Language = o.OtherLanguage ?? o.Language.Name,
                 OrderNumber = o.OrderNumber,
                 RegionName = o.Region.Name,
-                OrderDateAndTime = $"{o.StartAt.ToString("yyyy-MM-dd")} {o.StartAt.ToString("HH\\:mm")}-{o.EndAt.ToString("HH\\:mm")}",
+                OrderDateAndTime = $"{o.StartAt.ToSwedishString("yyyy-MM-dd")} {o.StartAt.ToSwedishString("HH\\:mm")}-{o.EndAt.ToSwedishString("HH\\:mm")}",
                 Status = o.Status,
                 CreatorName = o.CreatedByUser.FullName,
                 BrokerName = o.Requests.Where(r =>

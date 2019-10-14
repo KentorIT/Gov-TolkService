@@ -78,7 +78,7 @@ namespace Tolk.Web.Controllers
                 SystemMessageText = systemMessage.SystemMessageText,
                 SystemMessageHeader = systemMessage.SystemMessageHeader,
                 DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
-                SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToString(),
+                SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToSwedishString(),
                 DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
             });
         }
@@ -110,7 +110,7 @@ namespace Tolk.Web.Controllers
             if (model.DisplayDate.Start > model.DisplayDate.End)
             {
                 var selectedItem = GetSelectedSystemMessageType(EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value));
-                model.SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToString();
+                model.SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToSwedishString();
                 ModelState.AddModelError($"{nameof(model.DisplayDate)}.{nameof(model.DisplayDate.Start)}", "Visningsdatum för nyheten är fel. Från och med datum kan inte vara större än till och med datum.");
             }
             else
@@ -133,7 +133,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        private SelectListItem GetSelectedSystemMessageType(SystemMessageType systemMessageType)
+        private static SelectListItem GetSelectedSystemMessageType(SystemMessageType systemMessageType)
         {
             return SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessageType.ToString());
         }

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tolk.Api.Payloads;
-using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Api.Controllers
 {
@@ -37,7 +32,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public ActionResult<string> TestTime()
         {
-            return _timeService.SwedenNow.ToString("yyyy-MM-dd HH:mm:ss");
+            return _timeService.SwedenNow.ToSwedishString("yyyy-MM-dd HH:mm:ss");
         }
     }
 }

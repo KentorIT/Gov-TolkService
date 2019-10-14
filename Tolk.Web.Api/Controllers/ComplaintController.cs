@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,26 +21,24 @@ namespace Tolk.Web.Api.Controllers
     public class ComplaintController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly TolkApiOptions _options;
         private readonly ComplaintService _complaintService;
         private readonly ApiUserService _apiUserService;
-        private readonly ISwedishClock _timeService;
         private readonly ApiOrderService _apiOrderService;
+        private readonly ILogger _logger;
 
         public ComplaintController(
             TolkDbContext tolkDbContext,
-            IOptions<TolkApiOptions> options,
             ComplaintService complaintService,
             ApiUserService apiUserService,
-            ISwedishClock timeService,
-            ApiOrderService apiOrderService)
+            ApiOrderService apiOrderService,
+            ILogger<ComplaintController> logger
+)
         {
             _dbContext = tolkDbContext;
-            _options = options.Value;
             _apiUserService = apiUserService;
-            _timeService = timeService;
             _complaintService = complaintService;
             _apiOrderService = apiOrderService;
+            _logger = logger;
         }
 
         #region Updating Methods
@@ -94,6 +93,7 @@ namespace Tolk.Web.Api.Controllers
 
         public async Task<JsonResult> View(string orderNumber, string callingUser)
         {
+            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber}");
             try
             {
                 var apiUser = await GetApiUser();
@@ -101,12 +101,12 @@ namespace Tolk.Web.Api.Controllers
                     .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&
                         c.Request.Ranking.BrokerId == apiUser.BrokerId &&
                         c.Request.Status == RequestStatus.Approved);
-            if (complaint == null)
-            {
-                return ReturnError(ErrorCodes.COMPLAINT_NOT_FOUND);
-            }
-            //End of service
-            return Json(GetResponseFromComplaint(complaint, orderNumber));
+                if (complaint == null)
+                {
+                    return ReturnError(ErrorCodes.ComplaintNotFound);
+                }
+                //End of service
+                return Json(GetResponseFromComplaint(complaint, orderNumber));
             }
             catch (InvalidApiCallException ex)
             {
@@ -127,7 +127,7 @@ namespace Tolk.Web.Api.Controllers
                    c.Request.Ranking.BrokerId == brokerId && c.Status == ComplaintStatus.Created);
             if (complaint == null)
             {
-                throw new InvalidApiCallException(ErrorCodes.COMPLAINT_NOT_FOUND);
+                throw new InvalidApiCallException(ErrorCodes.ComplaintNotFound);
             }
             return complaint;
 
@@ -137,7 +137,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }

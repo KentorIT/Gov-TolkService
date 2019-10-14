@@ -394,13 +394,13 @@ namespace BrokerMock.Controllers
 
         #endregion
 
-        private IEnumerable<string> GetExtraInstructions(string description)
+        private static IEnumerable<string> GetExtraInstructions(string description)
         {
             if (string.IsNullOrEmpty(description))
             {
                 return Enumerable.Empty<string>();
             }
-            return description.ToUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
+            return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
         private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)

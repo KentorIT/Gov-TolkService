@@ -41,12 +41,14 @@ namespace Tolk.Web.Models
                : users;
 
             users = !string.IsNullOrWhiteSpace(Name)
+#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
                ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name) || (u.NameFirst + u.NameFamily).Contains(Name.Replace(" ", "")))
+#pragma warning restore CA1307 // 
                : users;
             if (!string.IsNullOrWhiteSpace(OrganisationIdentifier))
             {
                 var org = OrganisationIdentifier.Split("_");
-                var id = int.Parse(org.First());
+                var id = org.First().ToSwedishInt();
                 var type = Enum.Parse<OrganisationType>(org.Last());
                 switch (type)
                 {

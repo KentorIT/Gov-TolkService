@@ -31,8 +31,10 @@ namespace Tolk.Web.Models
 
         internal IQueryable<OutboundEmail> Apply(IQueryable<OutboundEmail> emails)
         {
+#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             emails = !string.IsNullOrWhiteSpace(Receipent) ? emails.Where(e => e.Recipient.Contains(Receipent)) : emails;
             emails = !string.IsNullOrWhiteSpace(Subject) ? emails.Where(e => e.Subject.Contains(Subject)) : emails;
+#pragma warning restore CA1307 // 
             emails = IsSent.HasValue ? emails.Where(e => e.DeliveredAt.HasValue == (IsSent == TrueFalse.Yes)) : emails;
             emails = DateCreated?.Start != null ? emails.Where(o => o.CreatedAt.Date >= DateCreated.Start) : emails;
             emails = DateCreated?.End != null ? emails.Where(o => o.CreatedAt.Date <= DateCreated.End) : emails;

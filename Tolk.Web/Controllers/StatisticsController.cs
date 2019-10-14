@@ -91,8 +91,8 @@ namespace Tolk.Web.Controllers
                         model.ReportItems = _statService.GetNoOfComplaintsForBroker(start, end, brokerId.Value);
                         break;
                 }
-                model.StartDate = start.ToString();
-                model.EndDate = end.ToString();
+                model.StartDate = start.ToSwedishString();
+                model.EndDate = end.ToSwedishString();
                 model.SelectedReportType = model.ReportType;
                 return View(model);
             }
@@ -103,8 +103,8 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public ActionResult GenerateExcelResult(GenerateExcelModel model)
         {
-            DateTimeOffset start = Convert.ToDateTime(model.StartDate);
-            DateTimeOffset end = Convert.ToDateTime(model.EndDate);
+            DateTimeOffset start = model.StartDate.ToSwedishDateTime();
+            DateTimeOffset end = model.EndDate.ToSwedishDateTime();
             var brokerId = User.TryGetBrokerId();
             var organisationId = User.TryGetCustomerOrganisationId();
             var customerUnits = User.IsInRole(Roles.CentralAdministrator) ? null : User.TryGetLocalAdminCustomerUnits();
@@ -152,7 +152,7 @@ namespace Tolk.Web.Controllers
 
         private ActionResult CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
         {
-            string fileName = $"{EnumHelper.GetDescription(reportType)}_{organisationName}_{_clock.SwedenNow.DateTime.ToString("yyyy-MM-dd HH:mm")}.xlsx";
+            string fileName = $"{EnumHelper.GetDescription(reportType)}_{organisationName}_{_clock.SwedenNow.DateTime.ToSwedishString("yyyy-MM-dd HH:mm")}.xlsx";
             return File(_statService.CreateExcelFile(rows, organisationName, reportType), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 

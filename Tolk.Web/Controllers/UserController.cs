@@ -120,7 +120,7 @@ namespace Tolk.Web.Controllers
                 Email = u.Email,
                 Name = $"{u.NameFamily}, {u.NameFirst}",
                 Organisation = u.CustomerOrganisation.Name ?? u.Broker.Name ?? "-",
-                LastLoginAt = string.Format("{0:yyyy-MM-dd}", u.LastLoginAt) ?? "-",
+                LastLoginAt = "{0:yyyy-MM-dd}".FormatSwedish(u.LastLoginAt) ?? "-",
                 IsActive = u.IsActive
             }));
         }
@@ -165,7 +165,7 @@ namespace Tolk.Web.Controllers
                     DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
                     DisplayForAdminUser = UseRolesForAdminUser(user),
-                    LastLoginAt = string.Format("{0:yyyy-MM-dd}", user.LastLoginAt) ?? "-",
+                    LastLoginAt = "{0:yyyy-MM-dd}".FormatSwedish(user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive,
                     IsApplicationAdministrator = user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId),
@@ -445,7 +445,7 @@ namespace Tolk.Web.Controllers
                             if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier))
                             {
                                 var org = model.OrganisationIdentifier.Split("_");
-                                var id = int.Parse(org.First());
+                                var id = org.First().ToSwedishInt();
                                 var type = Enum.Parse<OrganisationType>(org.Last());
                                 switch (type)
                                 {
@@ -817,10 +817,10 @@ namespace Tolk.Web.Controllers
                         {
                             await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId());
                             var broker = _dbContext.Brokers.Single(b => b.BrokerId == brokerId);
-                            if (apiUser.NormalizedEmail != model.Email.ToUpper())
+                            if (apiUser.NormalizedEmail != model.Email.ToSwedishUpper())
                             {
                                 apiUser.Email = model.Email;
-                                apiUser.NormalizedEmail = model.Email.ToUpper();
+                                apiUser.NormalizedEmail = model.Email.ToSwedishUpper();
                                 broker.EmailAddress = model.Email;
                             }
                             broker.OrganizationNumber = model.OrganisationNumber;
@@ -913,7 +913,7 @@ namespace Tolk.Web.Controllers
                     {
                         BackController = bc ?? BackController,
                         BackAction = ba ?? BackAction,
-                        BackId = id?.ToString() ?? BackId
+                        BackId = id?.ToSwedishString() ?? BackId
                     }
                 };
                 return View(model);
@@ -963,7 +963,7 @@ namespace Tolk.Web.Controllers
                         {
                             BackController = bc ?? BackController,
                             BackAction = ba ?? BackAction,
-                            BackId = id?.ToString() ?? BackId
+                            BackId = id?.ToSwedishString() ?? BackId
                         }
                     };
                     return View(model);
@@ -989,13 +989,13 @@ namespace Tolk.Web.Controllers
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.EditDefaultSettings)).Succeeded)
                 {
                     await _userService.LogDefaultSettingsUpdateAsync(model.Id, User.GetUserId());
-                    UpdateDefaultSetting(user, DefaultSettingsType.Region, model.RegionId?.ToString());
-                    UpdateDefaultSetting(user, DefaultSettingsType.CustomerUnit, model.CustomerUnitId?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.Region, model.RegionId?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.CustomerUnit, model.CustomerUnitId?.ToSwedishString());
 
                     //InterpreterLocations
-                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationPrimary, ((int?)model.RankedInterpreterLocationFirst)?.ToString());
-                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationSecondary, ((int?)model.RankedInterpreterLocationSecond)?.ToString());
-                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationThird, ((int?)model.RankedInterpreterLocationThird)?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationPrimary, ((int?)model.RankedInterpreterLocationFirst)?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationSecondary, ((int?)model.RankedInterpreterLocationSecond)?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationThird, ((int?)model.RankedInterpreterLocationThird)?.ToSwedishString());
 
                     UpdateDefaultSetting(user, DefaultSettingsType.OnSiteStreet, model.OnSiteLocationStreet);
                     UpdateDefaultSetting(user, DefaultSettingsType.OnSiteCity, model.OnSiteLocationCity);
@@ -1003,7 +1003,7 @@ namespace Tolk.Web.Controllers
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSiteDesignatedLocationCity, model.OffSiteDesignatedLocationCity);
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSitePhoneContactInformation, model.OffSitePhoneContactInformation);
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSiteVideoContactInformation, model.OffSiteVideoContactInformation);
-                    UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToSwedishString());
                     UpdateDefaultSetting(user, DefaultSettingsType.InvoiceReference, model.InvoiceReference);
 
                     await _dbContext.SaveChangesAsync();
@@ -1057,7 +1057,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var messageToUser = string.Empty;
-                if (user.Email.ToUpper() == model.Email.ToUpper())
+                if (user.Email.ToSwedishUpper() == model.Email.ToSwedishUpper())
                 {
                     ModelState.AddModelError(nameof(model.Email), "Du har inte ändrat på e-postadressen");
                     return View(model);
@@ -1074,7 +1074,7 @@ namespace Tolk.Web.Controllers
                     {
                         await _userService.LogUpdateEmailAsync(model.Id.Value, User.GetUserId());
                         user.Email = model.Email;
-                        user.NormalizedEmail = model.Email.ToUpper();
+                        user.NormalizedEmail = model.Email.ToSwedishUpper();
                         //activate a user that might be inactive due to job that inactivates?
                         user.IsActive = true;
                         await _userManager.UpdateAsync(user);
@@ -1086,7 +1086,7 @@ namespace Tolk.Web.Controllers
                     {
                         await _userService.SetTemporaryEmail(user, model.Email);
                         var code = await _userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-                        await _userService.SendChangedEmailLink(user, model.Email, Url.ChangeEmailCallbackLink(user.Id.ToString(), code), true);
+                        await _userService.SendChangedEmailLink(user, model.Email, Url.ChangeEmailCallbackLink(user.Id.ToSwedishString(), code), true);
                         messageToUser = "För att slutföra ändringen, be användaren att följa instruktionerna i meddelandet som skickats till den nya e-postadressen";
                     }
                 }
@@ -1144,7 +1144,7 @@ namespace Tolk.Web.Controllers
             return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && User.IsInRole(Roles.ApplicationAdministrator) && !user.InterpreterId.HasValue;
         }
 
-        private string BackController => HttpContext.Request.Headers["Referer"].ToString().Contains("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().Contains("Unit") ? "Unit" : "User";
+        private string BackController => HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Unit") ? "Unit" : "User";
 
         private string BackAction => BackController == "User" ? "List" : BackController == "Unit" ? "Users" : "View";
 
@@ -1153,12 +1153,12 @@ namespace Tolk.Web.Controllers
             get
             {
                 var referer = HttpContext.Request.Headers["Referer"].ToString();
-                if (!(referer.Contains("Unit") || referer.Contains("Customer")))
+                if (!(referer.ContainsSwedish("Unit") || referer.ContainsSwedish("Customer")))
                 {
                     return string.Empty;
                 }
                 var id = referer.Split("/").Last();
-                return id.Contains("?") ? id.Split("?").First() : id;
+                return id.Contains("?", StringComparison.OrdinalIgnoreCase) ? id.Split("?").First() : id;
             }
         }
 
@@ -1236,8 +1236,8 @@ namespace Tolk.Web.Controllers
 
         private CustomerUnitUser GetUnitUser(string combinedId)
         {
-            int userId = Convert.ToInt32(combinedId.Split("_")[0]);
-            int customerUnitId = Convert.ToInt32(combinedId.Split("_")[1]);
+            int userId = combinedId.Split("_")[0].ToSwedishInt();
+            int customerUnitId = combinedId.Split("_")[1].ToSwedishInt();
             return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
                 .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
         }
@@ -1290,7 +1290,7 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private IEnumerable<NotificationSettingsModel> GetAvailableNotifications(IEnumerable<UserNotificationSetting> settings)
+        private static IEnumerable<NotificationSettingsModel> GetAvailableNotifications(IEnumerable<UserNotificationSetting> settings)
         {
             foreach (var val in Enum.GetValues(typeof(NotificationType)).OfType<NotificationType>())
             {
@@ -1307,7 +1307,7 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private string GetErrors(IdentityResult result)
+        private static string GetErrors(IdentityResult result)
         {
             string errors = string.Empty;
             foreach (var error in result.Errors)

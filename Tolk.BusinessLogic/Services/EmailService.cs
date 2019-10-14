@@ -75,7 +75,7 @@ namespace Tolk.BusinessLogic.Services
 
                                     email.DeliveredAt = _clock.SwedenNow;
 
-                                    _dbContext.SaveChanges();
+                                    await _dbContext.SaveChangesAsync();
 
                                     trn.Commit();
                                 }

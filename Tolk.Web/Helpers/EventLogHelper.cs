@@ -9,11 +9,6 @@ namespace Tolk.Web.Helpers
 {
     public static class EventLogHelper
     {
-        public struct OrderMetaData
-        {
-            public Request TerminatingRequest { get; set; }
-        }
-
         public static List<EventLogEntryModel> GetEventLog(Order order, Request terminatingRequest = null)
         {
             var customerName = order.CustomerOrganisation.Name;
@@ -133,7 +128,7 @@ namespace Tolk.Web.Helpers
         private static EventLogEntryModel GetEventRowForNewContactPerson(OrderContactPersonHistory cphPrevious, Order order, int findElementAt)
         {
             //try find next row if any else take info from Order.ContactPersonUser
-            string newContactPersonName = order.OrderContactPersonHistory.Count() > findElementAt ? order.OrderContactPersonHistory.ElementAt(findElementAt).PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
+            string newContactPersonName = order.OrderContactPersonHistory.Count > findElementAt ? order.OrderContactPersonHistory.ElementAt(findElementAt).PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
             return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
             {
                 Timestamp = cphPrevious.ChangedAt,

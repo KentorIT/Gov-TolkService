@@ -41,7 +41,7 @@ namespace Tolk.Web.Api.Services
             //First check by cert, then by unamne/key
             return await GetApiUserByCertificate(clientCertInRequest) ??
                 await GetApiUserByApiKey(userName, key) ?? 
-                throw new InvalidApiCallException(ErrorCodes.UNAUTHORIZED);
+                throw new InvalidApiCallException(ErrorCodes.Unauthorized);
         }
 
         public async Task<AspNetUser> GetApiUserByCertificate(X509Certificate2 clientCertInRequest)
@@ -67,7 +67,7 @@ namespace Tolk.Web.Api.Services
             var user = await _dbContext.Users
                 .Include(u => u.Claims)
                 .SingleOrDefaultAsync(u =>
-                u.NormalizedUserName == userName.ToUpper() &&
+                u.NormalizedUserName == userName.ToSwedishUpper() &&
                 u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"));
             var secret = user?.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue;
             var salt = user?.Claims.SingleOrDefault(c => c.ClaimType == "Salt")?.ClaimValue;
@@ -81,7 +81,7 @@ namespace Tolk.Web.Api.Services
         public async Task<AspNetUser> GetBrokerUser(string caller, int? brokerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                await _dbContext.Users.SingleOrDefaultAsync(u => u.NormalizedEmail == caller.ToUpper() && u.BrokerId == brokerId) :
+                await _dbContext.Users.SingleOrDefaultAsync(u => u.NormalizedEmail == caller.ToSwedishUpper() && u.BrokerId == brokerId) :
                 null;
         }
 

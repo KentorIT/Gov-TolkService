@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 
 namespace Tolk.Web.Services
@@ -53,7 +54,7 @@ namespace Tolk.Web.Services
 
             if (!string.IsNullOrEmpty(user.PasswordHash))
             {
-                identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToString()));
+                identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToSwedishString()));
             }
 
             if (user.CustomerOrganisationId.HasValue)
@@ -63,10 +64,10 @@ namespace Tolk.Web.Services
                 {
                     foreach (CustomerUnitUser cu in customerUnits)
                     {
-                        identity.AddClaim(new Claim(TolkClaimTypes.AllCustomerUnits, cu.CustomerUnitId.ToString()));
+                        identity.AddClaim(new Claim(TolkClaimTypes.AllCustomerUnits, cu.CustomerUnitId.ToSwedishString()));
                         if (cu.IsLocalAdmin)
                         {
-                            identity.AddClaim(new Claim(TolkClaimTypes.LocalAdminCustomerUnits, cu.CustomerUnitId.ToString()));
+                            identity.AddClaim(new Claim(TolkClaimTypes.LocalAdminCustomerUnits, cu.CustomerUnitId.ToSwedishString()));
                         }
                     }
                 }

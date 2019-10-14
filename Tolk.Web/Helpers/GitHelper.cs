@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Helpers
 {
@@ -26,7 +24,7 @@ namespace Tolk.Web.Helpers
                 // Local, running in a repo directory.
                 var head = File.ReadAllText($"{gitDir}/HEAD");
                 string gitInfo = string.Empty;
-                if(head.StartsWith("ref: "))
+                if(head.StartsWithSwedish("ref: "))
                 {
                     var refFile = head.Substring(5).TrimEnd('\n');
                     gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();

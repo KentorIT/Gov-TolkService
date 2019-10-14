@@ -388,7 +388,7 @@ namespace Tolk.Web.Models
 
         public bool IsMultipleOrders
         {
-            get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count() > 1 || Occasions.Single().ExtraInterpreter));
+            get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count > 1 || Occasions.Single().ExtraInterpreter));
         }
 
         public OrderOccasionDisplayModel FirstOccasion
@@ -581,9 +581,9 @@ namespace Tolk.Web.Models
             };
         }
 
-        public static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null, bool displayForBroker = false)
+        internal static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null, bool displayForBroker = false)
         {
-            bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+            bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
@@ -601,7 +601,7 @@ namespace Tolk.Web.Models
             {
                 DisplayForBroker = displayForBroker,
                 OrderId = order.OrderId,
-                OrderNumber = order.OrderNumber.ToString(),
+                OrderNumber = order.OrderNumber,
                 ReplacingOrderNumber = order?.ReplacingOrder?.OrderNumber,
                 ReplacedByOrderNumber = order?.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
@@ -687,9 +687,9 @@ namespace Tolk.Web.Models
             };
         }
 
-        public static OrderModel GetModelFromOrderForConfirmation(Order order)
+        internal static OrderModel GetModelFromOrderForConfirmation(Order order)
         {
-            bool useRankedInterpreterLocation = order.InterpreterLocations.Count() > 1;
+            bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
 
             OrderCompetenceRequirement competenceFirst = null;
             OrderCompetenceRequirement competenceSecond = null;
@@ -743,7 +743,7 @@ namespace Tolk.Web.Models
             };
         }
 
-        private OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
+        private static OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
         {
             return new OrderInterpreterLocation
             {

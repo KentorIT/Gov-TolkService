@@ -55,8 +55,8 @@ namespace Tolk.Web.Controllers
             }
             return AjaxDataTableHelper.GetData(request, webhooks.Count(), model.Apply(webhooks), x => x.Select(wh => new WebHookListItemModel
             {
-                CreatedAt = wh.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                DeliveredAt = wh.DeliveredAt != null ? wh.DeliveredAt.Value.ToString("yyyy-MM-dd HH:mm") : "-",
+                CreatedAt = wh.CreatedAt.ToSwedishString("yyyy-MM-dd HH:mm"),
+                DeliveredAt = wh.DeliveredAt != null ? wh.DeliveredAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : "-",
                 FailedTries = wh.FailedTries,
                 HasBeenResent = wh.ResentHookId != null ? "Ja" : "Nej",
                 NotificationType = wh.NotificationType.GetDescription(),
@@ -100,7 +100,7 @@ namespace Tolk.Web.Controllers
                     ReplacedBy = notification.ResentHookId,
                     Replaces = notification.ReplacingWebHook?.OutboundWebHookCallId,
                     FailedTries = notification.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt.DateTime, ErrorMessage = f.ErrorMessage }).ToList(),
-                    AllowResend = notification.FailedCalls.Count() >= 5 && User.TryGetBrokerId() != null && !notification.ResentHookId.HasValue,
+                    AllowResend = notification.FailedCalls.Count >= 5 && User.TryGetBrokerId() != null && !notification.ResentHookId.HasValue,
                     ShowBroker = User.IsInRole(Roles.ApplicationAdministrator)
                 });
             }

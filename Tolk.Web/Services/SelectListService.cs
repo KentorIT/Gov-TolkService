@@ -43,7 +43,7 @@ namespace Tolk.Web.Services
             Region.Regions.OrderBy(r => r.Name)
             .Select(r => new SelectListItem
             {
-                Value = r.RegionId.ToString(),
+                Value = r.RegionId.ToSwedishString(),
                 Text = r.Name
             })
             .ToList().AsReadOnly();
@@ -216,7 +216,7 @@ namespace Tolk.Web.Services
                     items = _dbContext.Languages.Where(l => l.Active)
                         .OrderBy(l => l.Name).Select(l => new ExtendedSelectListItem
                         {
-                            Value = l.LanguageId.ToString(),
+                            Value = l.LanguageId.ToSwedishString(),
                             Text = l.Name,
                             AdditionalDataAttribute = string.IsNullOrEmpty(l.TellusName) ? string.Empty : l.Competences
                         })
@@ -239,7 +239,7 @@ namespace Tolk.Web.Services
                     var items = _dbContext.CustomerUnits.Where(cu => cu.IsActive && customerUnitsIds.Contains(cu.CustomerUnitId))
                         .OrderBy(cu => cu.Name).Select(cu => new SelectListItem
                         {
-                            Value = cu.CustomerUnitId.ToString(),
+                            Value = cu.CustomerUnitId.ToSwedishString(),
                             Text = cu.Name
                         }).ToList();
                     if (items.Any())
@@ -267,7 +267,7 @@ namespace Tolk.Web.Services
                         .Select(b => new SelectListItem
                         {
                             Text = b.Name,
-                            Value = b.BrokerId.ToString(),
+                            Value = b.BrokerId.ToSwedishString(),
                         })
                     .ToList().AsReadOnly();
 
@@ -288,13 +288,13 @@ namespace Tolk.Web.Services
                         .Select(c => new ExtendedSelectListItem
                         {
                             Text = $"{c.Name} ({OrganisationType.GovernmentBody.GetDescription()})",
-                            Value = $"{c.CustomerOrganisationId.ToString()}_{OrganisationType.GovernmentBody}",
+                            Value = $"{c.CustomerOrganisationId.ToSwedishString()}_{OrganisationType.GovernmentBody}",
                             AdditionalDataAttribute = OrganisationType.GovernmentBody.ToString(),
                         }).Union(_dbContext.Brokers.OrderBy(c => c.Name)
                         .Select(b => new ExtendedSelectListItem
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
-                            Value = $"{b.BrokerId.ToString()}_{OrganisationType.Broker }",
+                            Value = $"{b.BrokerId.ToSwedishString()}_{OrganisationType.Broker }",
                             AdditionalDataAttribute = OrganisationType.Broker.ToString(),
                         }).Union(new ExtendedSelectListItem
                         {
@@ -318,7 +318,7 @@ namespace Tolk.Web.Services
                     .Select(c => new SelectListItem
                     {
                         Text = c.Name,
-                        Value = c.CustomerOrganisationId.ToString(),
+                        Value = c.CustomerOrganisationId.ToSwedishString(),
                     })
                 .ToList().AsReadOnly();
         }
@@ -332,7 +332,7 @@ namespace Tolk.Web.Services
                     .Select(c => new SelectListItem
                     {
                         Text = c.Name,
-                        Value = c.CustomerOrganisationId.ToString(),
+                        Value = c.CustomerOrganisationId.ToSwedishString(),
                     })
                 .ToList().AsReadOnly();
             }
@@ -348,7 +348,7 @@ namespace Tolk.Web.Services
                         .Select(c => new SelectListItem
                         {
                             Text = c.Name,
-                            Value = c.CustomerOrganisationId.ToString(),
+                            Value = c.CustomerOrganisationId.ToSwedishString(),
                         })
                     .ToList().AsReadOnly();
 
@@ -379,8 +379,8 @@ namespace Tolk.Web.Services
                         .Select(u => new SelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,
-                            Value = u.Id.ToString(),
-                            Selected = impersonatedUserId == u.Id.ToString(),
+                            Value = u.Id.ToSwedishString(),
+                            Selected = impersonatedUserId == u.Id.ToSwedishString(),
                         }).ToList();
                 }
                 foreach (var item in items)
@@ -401,7 +401,7 @@ namespace Tolk.Web.Services
                     .Select(u => new SelectListItem
                     {
                         Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
-                        Value = u.Id.ToString(),
+                        Value = u.Id.ToSwedishString(),
                     }).ToList();
             }
         }
@@ -416,7 +416,7 @@ namespace Tolk.Web.Services
                     .Select(u => new SelectListItem
                     {
                         Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
-                        Value = u.Id.ToString(),
+                        Value = u.Id.ToSwedishString(),
                     }).ToList();
             }
         }
@@ -430,7 +430,7 @@ namespace Tolk.Web.Services
                 .Select(u => new SelectListItem
                 {
                     Text = $"{u.FullName} ({u.Email})",
-                    Value = u.Id.ToString(),
+                    Value = u.Id.ToSwedishString(),
                 }).OrderBy(e => e.Text).ToList();
         }
 
@@ -447,7 +447,7 @@ namespace Tolk.Web.Services
                     .OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu => new SelectListItem
                     {
                         Text = $"{cu.Name} {(cu.IsActive ? string.Empty : "(Inaktiv)")}",
-                        Value = cu.CustomerUnitId.ToString(),
+                        Value = cu.CustomerUnitId.ToSwedishString(),
                     }).ToList();
             }
         }
@@ -463,7 +463,7 @@ namespace Tolk.Web.Services
                     .Select(u => new SelectListItem
                     {
                         Text = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName,
-                        Value = u.Id.ToString(),
+                        Value = u.Id.ToSwedishString(),
                     }).ToList();
             }
         }
@@ -479,12 +479,12 @@ namespace Tolk.Web.Services
                     .Select(u => new SelectListItem
                     {
                         Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} (Handläggare)" : $"{u.UserName} (Handläggare)",
-                        Value = u.Id.ToString(),
+                        Value = u.Id.ToSwedishString(),
                     }).Union(_dbContext.Users.Where(u => u.Interpreter.Brokers.Any(b => b.BrokerId == brokerId))
                         .Select(u => new SelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName}" : $"{u.UserName} (Tolk)",
-                            Value = u.Id.ToString(),
+                            Value = u.Id.ToSwedishString(),
                         })
                     ).ToList();
             }
@@ -496,14 +496,14 @@ namespace Tolk.Web.Services
         {
             yield return new SelectListItem
             {
-                Value = NewInterpreterId.ToString(),
+                Value = NewInterpreterId.ToSwedishString(),
                 Text = "Ny tolk"
             };
 
             var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId && i.InterpreterBrokerId != interpreterToBeReplacedId && i.IsActive)
             .Select(i => new SelectListItem
             {
-                Value = i.InterpreterBrokerId.ToString(),
+                Value = i.InterpreterBrokerId.ToSwedishString(),
                 Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (KamK tolknr: saknas)" : $"{i.FullName} (KamK tolknr: {i.OfficialInterpreterId})",
             });
 
@@ -513,7 +513,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>().OrderBy(li => li.Text);
+        public static IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>().OrderBy(li => li.Text);
 
         public static IEnumerable<SelectListItem> NotificationTypes => GetList<NotificationType>();
 
@@ -527,7 +527,5 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
         }
-
     }
-
 }

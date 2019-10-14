@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
             return new AssignmentModel
             {
                 OrderId = request.OrderId,
-                OrderNumber = request.Order.OrderNumber.ToString(),
+                OrderNumber = request.Order.OrderNumber,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value,
                 Address = $"{location.Street}, {location.City}",

@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Helpers
 {
-    public class CssClassHelper
+    public static class CssClassHelper
     {
         public static string GetColorClassNameForOrderStatus(OrderStatus status)
         {

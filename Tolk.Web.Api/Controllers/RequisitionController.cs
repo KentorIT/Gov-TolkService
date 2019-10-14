@@ -63,7 +63,7 @@ namespace Tolk.Web.Api.Controllers
                        o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
                 if (order == null)
                 {
-                    return ReturnError(ErrorCodes.ORDER_NOT_FOUND);
+                    return ReturnError(ErrorCodes.OrderNotFound);
                 }
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -71,7 +71,7 @@ namespace Tolk.Web.Api.Controllers
                 var request = order.Requests.SingleOrDefault(r => apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Approved);
                 if (request == null)
                 {
-                    return ReturnError(ErrorCodes.REQUEST_NOT_FOUND);
+                    return ReturnError(ErrorCodes.RequestNotFound);
                 }
                 try
                 {
@@ -90,7 +90,7 @@ namespace Tolk.Web.Api.Controllers
                 catch (InvalidOperationException)
                 {
                     //TODO: Should log the acctual exception here!!
-                    return ReturnError(ErrorCodes.REQUISITION_NOT_IN_CORRECT_STATE);
+                    return ReturnError(ErrorCodes.RequisitionNotInCorrectState);
                 }
                 //End of service
                 return Json(new ResponseBase());
@@ -123,7 +123,7 @@ namespace Tolk.Web.Api.Controllers
                         c.ReplacedByRequisitionId == null);
                 if (requisition == null)
                 {
-                    return ReturnError(ErrorCodes.REQUISITION_NOT_FOUND);
+                    return ReturnError(ErrorCodes.RequisitionNotFound);
                 }
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
@@ -148,7 +148,7 @@ namespace Tolk.Web.Api.Controllers
                     a.Requisition.Request.Order.OrderNumber == orderNumber))?.Attachment;
                 if (attachment == null)
                 {
-                    return ReturnError(ErrorCodes.ATTACHMENT_NOT_FOUND);
+                    return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
 
                 return Json(new FileResponse
@@ -170,7 +170,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }

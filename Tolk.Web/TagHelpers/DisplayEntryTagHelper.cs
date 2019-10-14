@@ -66,7 +66,7 @@ namespace Tolk.Web.TagHelpers
                 if (property != null)
                 {
                     isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
-                    isSubItem = Attribute.IsDefined(property, typeof(SubItem));
+                    isSubItem = Attribute.IsDefined(property, typeof(SubItemAttribute));
                 }
                 if (isDisplayed)
                 {
@@ -104,16 +104,16 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + (((bool)For.ModelExplorer.Model) ? "Ja" : "Nej");
                     break;
                 case OutputType.DateTimeOffset:
-                    text = ValuePrefix + ((DateTimeOffset?)For.ModelExplorer.Model)?.ToString("yyyy-MM-dd HH:mm");
+                    text = ValuePrefix + ((DateTimeOffset?)For.ModelExplorer.Model)?.ToSwedishString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.TimeRange:
                     var timeRange = (TimeRange)For.ModelExplorer.Model;
-                    text = ValuePrefix + timeRange.StartDate.ToString("yyyy-MM-dd") + " "
-                        + timeRange.StartTime.ToString("hh\\:mm") + "-"
-                        + timeRange.EndTime.ToString("hh\\:mm");
+                    text = ValuePrefix + timeRange.StartDate.ToSwedishString("yyyy-MM-dd") + " "
+                        + timeRange.StartTime.ToSwedishString("hh\\:mm") + "-"
+                        + timeRange.EndTime.ToSwedishString("hh\\:mm");
                     break;
                 case OutputType.Currency:
-                    text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToString("#,0.00 SEK");
+                    text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToSwedishString("#,0.00 SEK");
                     break;
                 case OutputType.MultilineText:
                     className += " line-break";

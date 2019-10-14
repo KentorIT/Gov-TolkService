@@ -13,6 +13,10 @@ namespace Tolk.Web.Api.Exceptions
             ErrorCode = errorCode;
         }
 
+        public InvalidApiCallException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
         public string ErrorCode { get; set; }
     }
 }

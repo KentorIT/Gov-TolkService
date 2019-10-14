@@ -51,7 +51,7 @@ namespace Tolk.Web.Controllers
                             Rank = ra.Rank,
                             BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.PriceToUse)
-                                .Select(p => p.PriceToUse.ToString("#,0.00")).ToList(),
+                                .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
                             CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
@@ -71,7 +71,7 @@ namespace Tolk.Web.Controllers
                         Rank = ra.Rank,
                         BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
-                                .Select(p => p.PriceToUse.ToString("#,0.00")).ToList(),
+                                .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
                         CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()

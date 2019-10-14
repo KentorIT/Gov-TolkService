@@ -36,7 +36,7 @@ namespace Tolk.Web.Api.Services
             if (order == null)
             {
                 _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order {orderNumber}, but it could not be returned. This could happen if the order number is wrong, or that the broker has no request connected.");
-                throw new InvalidApiCallException(ErrorCodes.ORDER_NOT_FOUND);
+                throw new InvalidApiCallException(ErrorCodes.OrderNotFound);
             }
             return order;
         }
@@ -51,7 +51,7 @@ namespace Tolk.Web.Api.Services
             if (orderGroup == null)
             {
                 _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order group {orderGroupNumber}, but it could not be returned. This could happen if the order group number is wrong, or that the broker has no request connected.");
-                throw new InvalidApiCallException(ErrorCodes.ORDER_GROUP_NOT_FOUND);
+                throw new InvalidApiCallException(ErrorCodes.OrderGroupNotFound);
             }
             return orderGroup;
         }

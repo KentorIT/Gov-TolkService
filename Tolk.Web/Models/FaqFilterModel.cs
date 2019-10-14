@@ -25,9 +25,11 @@ namespace Tolk.Web.Models
 
         internal IQueryable<Faq> Apply(IQueryable<Faq> faqs)
         {
+#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             faqs = !string.IsNullOrWhiteSpace(QuestionAnswer)
                 ? faqs.Where(f => f.Answer.Contains(QuestionAnswer) || f.Question.Contains(QuestionAnswer))
                 : faqs;
+#pragma warning restore CA1307 // 
             faqs = IsDisplayed.HasValue
                 ? faqs.Where(f => f.IsDisplayed == (IsDisplayed == TrueFalse.Yes))
                 : faqs;

@@ -170,7 +170,7 @@ namespace Tolk.Web.Models
                 Interpreter = request.Interpreter.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
-                OrderNumber = request.Order.OrderNumber.ToString(),
+                OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
                 PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented && !r.ReplacedByRequisitionId.HasValue)),
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation

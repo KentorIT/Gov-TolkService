@@ -244,7 +244,7 @@ namespace Tolk.Web.Controllers
                                             FileName = a.FileName,
                                             Size = a.Blob.Length
                                         }).ToList();
-                                    requestModel.Files = files.Count() > 0 ? files : null;
+                                    requestModel.Files = files.Any() ? files : null;
                                 }
                                 ModelState.AddModelError(nameof(requestModel.InterpreterId), "Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.");
                                 return View(nameof(Process), requestModel);

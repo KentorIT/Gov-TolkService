@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -198,7 +199,7 @@ namespace Tolk.Web.Services
 
         public TellusInterpreterResponse GetInterpreter(string id)
         {
-            var result = _interpreterModels.Where(i => i.InterpreterId.ToString() == id);
+            var result = _interpreterModels.Where(i => i.InterpreterId == id);
             return new TellusInterpreterResponse
             {
                 Result = result,
@@ -214,7 +215,7 @@ namespace Tolk.Web.Services
                 .Select(l => new TellusLanguageModel
                 {
                     Id = l.TellusName,
-                    Value = l.Name.ToLower()
+                    Value = l.Name.ToSwedishLower()
                 }).Concat(_languageModels.Where(l => l.AllwaysAdd || l.AddOnTest)
                     .Select(l => new TellusLanguageModel
                     {
@@ -228,6 +229,7 @@ namespace Tolk.Web.Services
             };
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Is an api mock...")]
         public TellusLanguagesCompetenceInfoResponse GetLanguagesInfo()
         {
             List<TellusLanguagesInfoModel> tellusLanguagesInfo = new List<TellusLanguagesInfoModel> {

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 
 namespace Tolk.Web.Helpers
@@ -48,7 +46,7 @@ namespace Tolk.Web.Helpers
             // This logic is present int he UserManager, but I'm and repeating it here
             // to avoid having to get hold of an instance through DI.
 
-            return int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier));
+            return user.FindFirstValue(ClaimTypes.NameIdentifier).ToSwedishInt();
         }
 
         public static int? TryGetImpersonatorId(this ClaimsPrincipal user)
@@ -78,7 +76,7 @@ namespace Tolk.Web.Helpers
         {
             if (TryGetCustomerOrganisationId(user) != null)
             {
-                return user.FindAll(TolkClaimTypes.AllCustomerUnits).Select(c => int.Parse(c.Value));
+                return user.FindAll(TolkClaimTypes.AllCustomerUnits).Select(c => c.Value.ToSwedishInt());
             }
             return null;
         }
@@ -87,7 +85,7 @@ namespace Tolk.Web.Helpers
         {
             if (TryGetCustomerOrganisationId(user) != null)
             {
-                return user.FindAll(TolkClaimTypes.LocalAdminCustomerUnits).Select(c => int.Parse(c.Value));
+                return user.FindAll(TolkClaimTypes.LocalAdminCustomerUnits).Select(c => c.Value.ToSwedishInt());
             }
             return null;
         }

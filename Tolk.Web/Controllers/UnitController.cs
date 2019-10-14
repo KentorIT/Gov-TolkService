@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -280,7 +281,7 @@ namespace Tolk.Web.Controllers
                     {
                         BackController = "Unit",
                         BackAction = nameof(Users),
-                        BackId = id.ToString()
+                        BackId = id.ToSwedishString()
                     }
                 };
                 return View(model);
@@ -322,13 +323,13 @@ namespace Tolk.Web.Controllers
         private bool IsUniqueEmail(string email, int? customerUnitId = null)
         {
             return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Email.ToUpper() == email.ToUpper() && u.CustomerUnitId != customerUnitId);
+                && u.Email.ToSwedishUpper() == email.ToSwedishUpper() && u.CustomerUnitId != customerUnitId);
         }
 
         private bool IsUniqueName(string name, int? customerUnitId = null)
         {
             return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Name.ToUpper() == name.ToUpper() && u.CustomerUnitId != customerUnitId);
+                && u.Name.ToSwedishUpper() == name.ToSwedishUpper() && u.CustomerUnitId != customerUnitId);
         }
     }
 }

@@ -108,9 +108,9 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private async Task<IEnumerable<StartViewModel.StartList>> GetStartLists()
+        private async Task<IEnumerable<StartList>> GetStartLists()
         {
-            var result = Enumerable.Empty<StartViewModel.StartList>();
+            var result = Enumerable.Empty<StartList>();
 
             if ((await _authorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
             {
@@ -127,7 +127,7 @@ namespace Tolk.Web.Controllers
             return result;
         }
 
-        private IEnumerable<StartViewModel.StartList> GetCustomerStartLists()
+        private IEnumerable<StartList> GetCustomerStartLists()
         {
             var actionList = new List<StartListItemModel>();
             var userId = User.GetUserId();
@@ -244,9 +244,9 @@ namespace Tolk.Web.Controllers
                     ButtonItemTab = "complaint"
                 }));
 
-            var count = actionList.Any() ? actionList.Count() : 0;
+            var count = actionList.Any() ? actionList.Count : 0;
 
-            yield return new StartViewModel.StartList
+            yield return new StartList
             {
                 Header = count > 0 ? $"Kräver handling av myndighet ({count} st)" : "Kräver handling av myndighet",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som kräver handling av myndigheten",
@@ -278,7 +278,7 @@ namespace Tolk.Web.Controllers
 
             count = sentOrders.Any() ? sentOrders.Count() : 0;
 
-            yield return new StartViewModel.StartList
+            yield return new StartList
             {
                 Header = count > 0 ? $"Skickade bokningar ({count} st)" : "Skickade bokningsförfrågningar",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är skickade",
@@ -302,7 +302,7 @@ namespace Tolk.Web.Controllers
 
             count = approvedOrders.Any() ? approvedOrders.Count() : 0;
 
-            yield return new StartViewModel.StartList
+            yield return new StartList
             {
                 Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
@@ -313,7 +313,7 @@ namespace Tolk.Web.Controllers
             //Was removed 2019-05-28 because the requisitions are not in use yet.
         }
 
-        private StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
+        private static StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
         {
             return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled
                 : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered
@@ -323,7 +323,7 @@ namespace Tolk.Web.Controllers
                 : StartListItemStatus.OrderAcceptedForApproval;
         }
 
-        private DateTimeOffset? GetInfoDateForCustomer(Order o)
+        private static DateTimeOffset? GetInfoDateForCustomer(Order o)
         {
             return o.Status == OrderStatus.CancelledByBroker ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt
                 //if status is NoBrokerAcceptedOrder check if last request is answered (denied/declined) else take expiresAt (no answer)
@@ -332,14 +332,15 @@ namespace Tolk.Web.Controllers
                 : o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate;
         }
 
-        private IEnumerable<StartViewModel.StartList> GetBrokerStartLists()
+        private IEnumerable<StartList> GetBrokerStartLists()
         {
             var brokerId = User.GetBrokerId();
             var userId = User.GetUserId();
             var actionList = new List<StartListItemModel>();
             //TODO: SHOULD PROBABLY ONLY GET THE USERS THAT ARE ACCTUALLY VIEWING...
             var allOtherUsersInBroker = _dbContext.Users.Where(u => u.Id != userId && u.BrokerId == brokerId && u.IsActive && !u.IsApiUser)
-                .Select(u => new { 
+                .Select(u => new
+                {
                     Name = u.NameFirst + " " + u.NameFamily,
                     u.Id
                 }).ToList();
@@ -349,41 +350,43 @@ namespace Tolk.Web.Controllers
                     r.Ranking.BrokerId == brokerId &&
                     !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator || rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved)
                 )
-                .Select(r => new StartListItemModel { 
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, 
-                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View", 
-                    DefaulListController = "Request", 
-                    DefaultItemId = r.RequestId, 
-                    InfoDate = GetInfoDateForBroker(r).Value, 
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, 
-                    CustomerName = r.Order.CustomerOrganisation.Name, 
-                    ButtonItemId = r.RequestId, 
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name, 
-                    OrderNumber = r.Order.OrderNumber, 
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0), 
-                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View", 
-                    ButtonController = "Request", 
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null, 
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = r.RequestId,
+                    InfoDate = GetInfoDateForBroker(r).Value,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = r.Order.CustomerOrganisation.Name,
+                    ButtonItemId = r.RequestId,
+                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                    OrderNumber = r.Order.OrderNumber,
+                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0),
+                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    ButtonController = "Request",
+                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
                     ViewedBy = r.RequestViews.FirstOrDefault().ViewedBy
                 }).ToList());
 
             //Complaints
             actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
-                .Select(c => new StartListItemModel { 
-                    Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt }, 
-                    DefaulListAction = "View", 
-                    DefaulListController = "Request", 
-                    DefaultItemId = c.Request.RequestId, 
-                    DefaultItemTab = "complaint", 
-                    InfoDate = c.CreatedAt.DateTime, 
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, 
-                    CustomerName = c.Request.Order.CustomerOrganisation.Name, 
-                    ButtonItemId = c.RequestId, 
-                    Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name, 
-                    OrderNumber = c.Request.Order.OrderNumber, 
-                    Status = StartListItemStatus.ComplaintEvent, 
-                    ButtonAction = "View", 
-                    ButtonController = "Request", 
+                .Select(c => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt },
+                    DefaulListAction = "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = c.Request.RequestId,
+                    DefaultItemTab = "complaint",
+                    InfoDate = c.CreatedAt.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = c.Request.Order.CustomerOrganisation.Name,
+                    ButtonItemId = c.RequestId,
+                    Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name,
+                    OrderNumber = c.Request.Order.OrderNumber,
+                    Status = StartListItemStatus.ComplaintEvent,
+                    ButtonAction = "View",
+                    ButtonController = "Request",
                     ButtonItemTab = "complaint",
                     ViewedBy = c.Request.RequestViews.FirstOrDefault().ViewedBy
                 }).ToList());
@@ -391,15 +394,16 @@ namespace Tolk.Web.Controllers
             //To be reported
             actionList.AddRange(_dbContext.Requests
                 .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt < _clock.SwedenNow && !r.Requisitions.Any() && r.Ranking.BrokerId == brokerId)
-                 .Select(r => new StartListItemModel { 
-                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, 
-                     DefaulListAction = "View", 
-                     DefaulListController = "Request", 
-                     DefaultItemId = r.RequestId, 
+                 .Select(r => new StartListItemModel
+                 {
+                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                     DefaulListAction = "View",
+                     DefaulListController = "Request",
+                     DefaultItemId = r.RequestId,
                      InfoDate = r.Order.EndAt.DateTime,
                      InfoDateDescription = "Utfört: ",
-                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter, 
-                     CustomerName = r.Order.CustomerOrganisation.Name, 
+                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                     CustomerName = r.Order.CustomerOrganisation.Name,
                      ButtonItemId = r.RequestId,
                      Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                      OrderNumber = r.Order.OrderNumber,
@@ -412,9 +416,10 @@ namespace Tolk.Web.Controllers
             //Commented requisitions
             actionList.AddRange(_dbContext.Requisitions
                 .Where(r => r.Request.Ranking.BrokerId == brokerId && !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Commented)
-                .Select(r => new StartListItemModel { 
-                    Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, 
-                    DefaulListAction = "View", 
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
+                    DefaulListAction = "View",
                     DefaulListController = "Request",
                     DefaultItemId = r.RequestId,
                     DefaultItemTab = "requisition",
@@ -430,9 +435,9 @@ namespace Tolk.Web.Controllers
                     ButtonItemTab = "requisition",
                     ViewedBy = r.Request.RequestViews.FirstOrDefault().ViewedBy
                 }).ToList());
-            var count = actionList.Any() ? actionList.Count() : 0;
-            actionList.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty );
-            yield return new StartViewModel.StartList
+            var count = actionList.Any() ? actionList.Count : 0;
+            actionList.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
+            yield return new StartList
             {
                 Header = count > 0 ? $"Kräver handling av förmedling ({count} st)" : "Kräver handling av förmedling",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som kräver handling av förmedling",
@@ -445,8 +450,9 @@ namespace Tolk.Web.Controllers
             var answeredRequests = _dbContext.Requests
                 .Where(r => (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                     r.Order.StartAt > _clock.SwedenNow && !r.Requisitions.Any() && r.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { 
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt }, 
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Request",
                     DefaultItemId = r.RequestId,
@@ -460,10 +466,10 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.RequestViews.FirstOrDefault().ViewedBy
                 }).ToList();
 
-            count = answeredRequests.Any() ? answeredRequests.Count() : 0;
+            count = answeredRequests.Any() ? answeredRequests.Count : 0;
             answeredRequests.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
 
-            yield return new StartViewModel.StartList
+            yield return new StartList
             {
                 Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
@@ -474,13 +480,14 @@ namespace Tolk.Web.Controllers
             //sent requisitions
             var sentRequisitions = _dbContext.Requisitions
                 .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Created && r.Request.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel { 
-                    Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt }, 
-                    DefaulListAction = "View", 
-                    DefaulListController = "Request", 
-                    DefaultItemId = r.RequestId, 
-                    InfoDate = r.CreatedAt.DateTime, 
-                    InfoDateDescription = "Skickad: ", 
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
+                    DefaulListAction = "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = r.RequestId,
+                    InfoDate = r.CreatedAt.DateTime,
+                    InfoDateDescription = "Skickad: ",
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.Request.Order.CustomerOrganisation.Name,
                     Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
@@ -489,10 +496,10 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.Request.RequestViews.FirstOrDefault().ViewedBy
                 }).ToList();
 
-            count = sentRequisitions.Any() ? sentRequisitions.Count() : 0;
+            count = sentRequisitions.Any() ? sentRequisitions.Count : 0;
             sentRequisitions.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
 
-            yield return new StartViewModel.StartList
+            yield return new StartList
             {
                 Header = count > 0 ? $"Skickade rekvisitioner ({count} st)" : "Skickade rekvisitioner",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar med skickad rekvisition",
@@ -501,24 +508,24 @@ namespace Tolk.Web.Controllers
             };
         }
 
-        private DateTime? GetInfoDateForBroker(Request r)
+        private static DateTime? GetInfoDateForBroker(Request r)
         {
             return (r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
         }
 
-        private StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId)
+        private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId)
         {
             return (requestStatus == RequestStatus.Received && replacingOrderId == 0) ? StartListItemStatus.RequestReceived : (requestStatus == RequestStatus.Received && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestReceived : (requestStatus == RequestStatus.Created && replacingOrderId == 0) ? StartListItemStatus.RequestArrived : (requestStatus == RequestStatus.Created && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestArrived : requestStatus == RequestStatus.DeniedByCreator ? StartListItemStatus.RequestDenied : StartListItemStatus.OrderCancelled;
         }
 
-        private IEnumerable<StartViewModel.StartList> GetInterpreterStartLists()
+        private static IEnumerable<StartList> GetInterpreterStartLists()
         {
-            return new List<StartViewModel.StartList>();
+            return Enumerable.Empty<StartList>();
         }
 
-        private IEnumerable<StartViewModel.ConfirmationMessage> GetConfirmationMessages()
+        private static IEnumerable<ConfirmationMessage> GetConfirmationMessages()
         {
-            return Enumerable.Empty<StartViewModel.ConfirmationMessage>();
+            return Enumerable.Empty<ConfirmationMessage>();
         }
 
         public IActionResult About()
@@ -576,7 +583,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    return Forbid();    
+                    return Forbid();
                 }
             }
             if (!status.Success)

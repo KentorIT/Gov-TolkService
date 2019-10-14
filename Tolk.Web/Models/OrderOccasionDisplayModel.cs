@@ -1,8 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Helpers;
+﻿using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -12,7 +9,7 @@ namespace Tolk.Web.Models
         {
         }
 
-        public OrderOccasionDisplayModel(OrderOccasionModel occasion)
+        internal OrderOccasionDisplayModel(OrderOccasionModel occasion)
         {
             OrderOccasionId = occasion.OrderOccasionId;
             OccasionStartDateTime = occasion.OccasionStartDateTime;
@@ -24,11 +21,11 @@ namespace Tolk.Web.Models
 
         public string OrderNumber { get; set; }
 
-        public string Information => $"{OccasionStartDateTime.ToString("yyyy-MM-dd")} {OccasionStartDateTime.ToString("HH\\:mm")} - {OccasionEndDateTime.ToString("HH\\:mm")}";
+        public string Information => $"{OccasionStartDateTime.ToSwedishString("yyyy-MM-dd")} {OccasionStartDateTime.ToSwedishString("HH\\:mm")} - {OccasionEndDateTime.ToSwedishString("HH\\:mm")}";
 
         public PriceInformationModel PriceInformationModel { get; set; }
 
-        public static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel)
+        internal static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel)
         {
             return new OrderOccasionDisplayModel
             {

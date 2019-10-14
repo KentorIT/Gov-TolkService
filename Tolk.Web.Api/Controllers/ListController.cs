@@ -13,6 +13,7 @@ using H = Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
 using System.Threading.Tasks;
 using Tolk.Web.Api.Exceptions;
+using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Controllers
 {
@@ -58,7 +59,7 @@ namespace Tolk.Web.Api.Controllers
             return Json(_dbContext.Regions
                 .OrderBy(r => r.Name).Select(r => new
                 {
-                    Key = r.RegionId.ToString("D2"),
+                    Key = r.RegionId.ToSwedishString("D2"),
                     Desciption = r.Name
                 }));
         }
@@ -170,7 +171,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult ErrorCodes()
         {
-            return Json(_options.ErrorResponses.Select(d => d));
+            return Json(TolkApiOptions.ErrorResponses.Select(d => d));
         }
 
         private JsonResult DescriptionsAsJson<T>()
@@ -189,7 +190,7 @@ namespace Tolk.Web.Api.Controllers
         private JsonResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = _options.ErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
             return Json(message);
         }

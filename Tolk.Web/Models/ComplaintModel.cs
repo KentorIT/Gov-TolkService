@@ -53,7 +53,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static ComplaintModel GetModelFromRequest(Request request)
+        internal static ComplaintModel GetModelFromRequest(Request request)
         {
             return new ComplaintModel
             {
@@ -66,7 +66,7 @@ namespace Tolk.Web.Models
                 StartAt = request.Order.StartAt,
                 InterpreterName = request.Interpreter.CompleteContactInformation,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
-                OrderNumber = request.Order.OrderNumber.ToString(),
+                OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
             };
         }

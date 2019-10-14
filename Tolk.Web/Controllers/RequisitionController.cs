@@ -99,7 +99,7 @@ namespace Tolk.Web.Controllers
                 OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                 Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                 OrderNumber = r.Request.Order.OrderNumber,
-                OrderDateAndTime = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToString("HH\\:mm")}-{r.Request.Order.EndAt.ToString("HH\\:mm")}",
+                OrderDateAndTime = $"{r.Request.Order.StartAt.ToSwedishString("yyyy-MM-dd")} {r.Request.Order.StartAt.ToSwedishString("HH\\:mm")}-{r.Request.Order.EndAt.ToSwedishString("HH\\:mm")}",
                 Status = r.Status,
                 BrokerName = r.Request.Ranking.Broker.Name,
                 CustomerName = r.Request.Order.CustomerOrganisation.Name,
@@ -208,7 +208,7 @@ namespace Tolk.Web.Controllers
                         FileName = a.Attachment.FileName,
                         Size = a.Attachment.Blob.Length
                     }).ToList();
-                    model.Files = files.Count() > 0 ? files : null;
+                    model.Files = files.Any() ? files : null;
                     model.PreviousRequisition.ResultPriceInformationModel = GetRequisitionPriceInformation(previousRequisition, true);
                     model.SessionStartedAt = previousRequisition.SessionStartedAt;
                     model.SessionEndedAt = previousRequisition.SessionEndedAt;
@@ -392,7 +392,7 @@ namespace Tolk.Web.Controllers
 
         private RequisitionViewModel GetPreviousRequisitionView(Request request)
         {
-            if (request.Requisitions == null || request.Requisitions.Count() < 2)
+            if (request.Requisitions == null || request.Requisitions.Count < 2)
             {
                 return null;
             }
