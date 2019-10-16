@@ -417,7 +417,7 @@ namespace Tolk.Web.Controllers
                 var newEmail = user.TemporaryChangedEmailEntry?.EmailAddress;
                 if (!string.IsNullOrEmpty(newEmail))
                 {
-                    await _userService.LogOnUpdateAsync(user.Id);
+                    await _userService.LogUpdateEmailAsync(user.Id);
                     var result = await _userManager.ChangeEmailAsync(user, newEmail, code);
                     if (result.Succeeded)
                     {
