@@ -11,21 +11,21 @@ namespace Tolk.BusinessLogic.Utilities
     {
         public int PriceListRowId { get; set; }
 
-        public DateTimeOffset StartDatePriceList { private get; set; }
+        public DateTimeOffset StartDatePriceList { get; set; }
 
-        public DateTimeOffset EndDatePriceList { private get; set; }
+        public DateTimeOffset EndDatePriceList { get; set; }
 
-        public DateTimeOffset FirstValidDateRanking { private get; set; }
+        public DateTimeOffset FirstValidDateRanking { get; set; }
 
-        public DateTimeOffset LastValidDateRanking { private get; set; }
+        public DateTimeOffset LastValidDateRanking { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal BasePrice { private get; set; }
+        public decimal BasePrice { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]
         public decimal PriceToUse => RoundDecimals ? Math.Round(BasePrice * BrokerFee, MidpointRounding.AwayFromZero) : BasePrice * BrokerFee;
 
-        public bool RoundDecimals { private get; set; }
+        public bool RoundDecimals { get; set; }
 
         public CompetenceLevel CompetenceLevel { get; set; }
 
@@ -37,9 +37,5 @@ namespace Tolk.BusinessLogic.Utilities
         public DateTimeOffset StartDate => StartDatePriceList > FirstValidDateRanking ? StartDatePriceList : FirstValidDateRanking;
 
         public DateTimeOffset EndDate => EndDatePriceList > LastValidDateRanking ? LastValidDateRanking : EndDatePriceList;
-
-
-
-
     }
 }

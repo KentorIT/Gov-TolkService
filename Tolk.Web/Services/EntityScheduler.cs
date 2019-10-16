@@ -47,6 +47,7 @@ namespace Tolk.Web.Services
             _logger.LogInformation("EntityScheduler initialized");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private void Run()
         {
             _logger.LogTrace("EntityScheduler waking up.");

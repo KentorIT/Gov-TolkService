@@ -80,7 +80,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsSingleOccasion
         {
-            get => (Orders == null) || (Orders.Count() <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
+            get => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
         }
 
         public void SetStatus(OrderStatus status)

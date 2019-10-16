@@ -5,6 +5,7 @@
     <UserSecretsId>aspnet-Tolk.Web-F6B1C362-FD18-46EE-BA58-260796BB3A94</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/b5d73a6f-1a31-4c49-b52d-d7213d39db71/resourcegroups/Dev/providers/microsoft.insights/components/tolkdev</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/b5d73a6f-1a31-4c49-b52d-d7213d39db71/resourcegroups/Dev/providers/microsoft.insights/components/tolkdev</ApplicationInsightsAnnotationResourceId>
+    <NeutralLanguage>sv-SE</NeutralLanguage>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

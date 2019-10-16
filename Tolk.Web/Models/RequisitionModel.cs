@@ -33,7 +33,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Tolkens skattsedel")]
         [ClientRequired]
-        public TaxCard? InterpreterTaxCard { get; set; }
+        public TaxCardType? InterpreterTaxCard { get; set; }
 
         [Display(Name = "Tolkförmedling")]
         public string BrokerName { get; set; }

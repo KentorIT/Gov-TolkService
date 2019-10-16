@@ -19,20 +19,17 @@ namespace Tolk.Web.Api.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
-        private readonly HashService _hashService;
         private readonly InterpreterService _interpreterService;
 
         private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public ApiUserService(TolkDbContext dbContext,
             ILogger<ApiUserService> logger,
-            HashService hashService,
             InterpreterService interpreterService
             )
         {
             _logger = logger;
             _dbContext = dbContext;
-            _hashService = hashService;
             _interpreterService = interpreterService;
         }
 
@@ -71,7 +68,7 @@ namespace Tolk.Web.Api.Services
                 u.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"));
             var secret = user?.Claims.SingleOrDefault(c => c.ClaimType == "Secret")?.ClaimValue;
             var salt = user?.Claims.SingleOrDefault(c => c.ClaimType == "Salt")?.ClaimValue;
-            if (secret != null && salt != null && _hashService.AreEqual(key, secret, salt))
+            if (secret != null && salt != null && HashHelper.AreEqual(key, secret, salt))
             {
                 return user;
             }

@@ -48,15 +48,15 @@ namespace Tolk.Web.Services
             })
             .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString());
+        public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserTypes>().Where(s => s.Value != UserTypes.LocalAdministrator.ToString());
 
-        public static IEnumerable<SelectListItem> SearchableRolesForSysAdmin => GetList<UserType>().Where(s => s.Value != UserType.LocalAdministrator.ToString() && s.Value != UserType.ApplicationAdministrator.ToString() && s.Value != UserType.Impersonator.ToString());
+        public static IEnumerable<SelectListItem> SearchableRolesForSysAdmin => GetList<UserTypes>().Where(s => s.Value != UserTypes.LocalAdministrator.ToString() && s.Value != UserTypes.ApplicationAdministrator.ToString() && s.Value != UserTypes.Impersonator.ToString());
 
         public static IEnumerable<SelectListItem> SearchableRolesForCustomers =>
-            GetList(new List<UserType>() { UserType.CentralOrderHandler, UserType.OrderCreator, UserType.OrganisationAdministrator });
+            GetList(new List<UserTypes>() { UserTypes.CentralOrderHandler, UserTypes.OrderCreator, UserTypes.OrganisationAdministrator });
 
         public static IEnumerable<SelectListItem> SearchableRolesForBrokers =>
-            GetList(new List<UserType>() { UserType.Broker, UserType.OrganisationAdministrator });
+            GetList(new List<UserTypes>() { UserTypes.Broker, UserTypes.OrganisationAdministrator });
 
         public static IEnumerable<SelectListItem> ComplaintStatuses => GetList<ComplaintStatus>();
 
@@ -112,20 +112,20 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> TaxCards => GetList<TaxCard>();
+        public static IEnumerable<SelectListItem> TaxCards => GetList<TaxCardType>();
 
         public static IEnumerable<SelectListItem> DesireTypes { get; } =
             EnumHelper.GetAllDescriptions<DesireType>()
                 .OrderByDescending(e => e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<ExtendedSelectListItem> ReportList(UserType userType)
+        public static IEnumerable<ExtendedSelectListItem> ReportList(UserTypes userType)
         {
             List<ExtendedSelectListItem> reports = new List<ExtendedSelectListItem>();
 
             switch (userType)
             {
-                case UserType.OrderCreator:
+                case UserTypes.OrderCreator:
                     reports.Add(new ExtendedSelectListItem
                     {
                         Value = ReportType.OrdersForCustomer.ToString(),
@@ -151,7 +151,7 @@ namespace Tolk.Web.Services
                         AdditionalDataAttribute = ReportType.ComplaintsForCustomer.GetCustomName()
                     });
                     break;
-                case UserType.Broker:
+                case UserTypes.Broker:
                     reports.Add(new ExtendedSelectListItem
                     {
                         Value = ReportType.RequestsForBrokers.ToString(),
@@ -177,7 +177,7 @@ namespace Tolk.Web.Services
                         AdditionalDataAttribute = ReportType.ComplaintsForBroker.GetCustomName()
                     });
                     break;
-                case UserType.SystemAdministrator:
+                case UserTypes.SystemAdministrator:
                     reports.Add(new ExtendedSelectListItem
                     {
                         Value = ReportType.OrdersForSystemAdministrator.ToString(),

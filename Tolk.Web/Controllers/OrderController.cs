@@ -26,7 +26,6 @@ namespace Tolk.Web.Controllers
     public class OrderController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
         private readonly OrderService _orderService;
         private readonly DateCalculationService _dateCalculationService;
@@ -39,7 +38,6 @@ namespace Tolk.Web.Controllers
 
         public OrderController(
             TolkDbContext dbContext,
-            PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
             OrderService orderService,
             DateCalculationService dateCalculationService,
@@ -52,13 +50,12 @@ namespace Tolk.Web.Controllers
             )
         {
             _dbContext = dbContext;
-            _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _orderService = orderService;
             _dateCalculationService = dateCalculationService;
             _clock = clock;
             _logger = logger;
-            _options = options.Value;
+            _options = options?.Value;
             _notificationService = notificationService;
             _userManager = usermanager;
             _mapper = mapper;
@@ -743,7 +740,7 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private PriceInformationModel GetPriceinformationToDisplay(Request request)
+        private static PriceInformationModel GetPriceinformationToDisplay(Request request)
         {
             if (request.PriceRows == null)
             {
@@ -751,13 +748,13 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
             };
         }
 
-        private PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
+        private static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
         {
             if (order.PriceRows == null)
             {
@@ -765,7 +762,7 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse

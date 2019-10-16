@@ -33,7 +33,7 @@ namespace Tolk.BusinessLogic.Services
         }
 
         public Requisition Create(Request request, int userId, int? impersonatorId, string message,decimal? outlay, 
-            DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCard interpreterTaxCard, 
+            DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCardType interpreterTaxCard, 
             List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
             if (!request.CanCreateRequisition)

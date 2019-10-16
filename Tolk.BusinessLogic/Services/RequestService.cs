@@ -145,11 +145,13 @@ namespace Tolk.BusinessLogic.Services
             // 3. several occasions, accept needed.
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public void Acknowledge(Request request, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
             request.Received(acknowledgeTime, userId, impersonatorId);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public void AcknowledgeGroup(RequestGroup requestGroup, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
             requestGroup.Received(acknowledgeTime, userId, impersonatorId);
@@ -288,7 +290,7 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
-        private bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
+        private static bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
         {
             if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
             {
@@ -330,6 +332,7 @@ namespace Tolk.BusinessLogic.Services
         /// Deletes RequestViews that remain in database if session ends for user (session is set to 120 min)
         /// </summary>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task DeleteRequestViews()
         {
             _logger.LogInformation("Start checking for RequestViews to delete");

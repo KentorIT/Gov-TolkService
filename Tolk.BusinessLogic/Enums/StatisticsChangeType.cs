@@ -14,9 +14,9 @@ namespace Tolk.BusinessLogic.Enums
         Unchanged = 3,
 
         [Description("Inget data förra perioden")]
-        NA_NoDataLastWeek = 4,
+        NANoDataLastWeek = 4,
 
         [Description("Inget data denna period")]
-        NA_NoDataThisWeek = 5,
+        NANoDataThisWeek = 5,
     }
 }

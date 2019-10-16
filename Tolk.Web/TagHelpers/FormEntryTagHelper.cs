@@ -30,7 +30,6 @@ namespace Tolk.Web.TagHelpers
 
         private const string ForAttributeName = "asp-for";
         private const string ItemsAttributeName = "asp-items";
-        private const string InputTypeName = "type";
         private const string InputTypeSelect = "select";
         private const string InputTypeDateTimeOffset = "datetime";
         private const string InputTypeText = "text";
@@ -798,7 +797,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
-                GenerateExtendedSelectList(_htmlGenerator, writer, selectList, placeholder, modelExplorer);
+                GenerateExtendedSelectList(writer, selectList, placeholder, modelExplorer);
             }
             else
             {
@@ -853,7 +852,7 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private void GenerateExtendedSelectList(IHtmlGenerator htmlGenerator, TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
+        private void GenerateExtendedSelectList(TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
         {
             writer.WriteLine("<br>");
             TagBuilder tagBuilder = new TagBuilder("select");

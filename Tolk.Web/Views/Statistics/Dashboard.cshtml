@@ -25,7 +25,7 @@
                 @weeklyStatistic.NoOfItems
             </div>
             <div class="statistics-differ">
-                @if (weeklyStatistic.ChangeType != StatisticsChangeType.NA_NoDataLastWeek && weeklyStatistic.ChangeType != StatisticsChangeType.NA_NoDataThisWeek)
+                @if (weeklyStatistic.ChangeType != StatisticsChangeType.NANoDataLastWeek && weeklyStatistic.ChangeType != StatisticsChangeType.NANoDataLastWeek)
                 {
                     <span>
                         @EnumHelper.GetDescription(weeklyStatistic.ChangeType)@weeklyStatistic.DiffPercentage %

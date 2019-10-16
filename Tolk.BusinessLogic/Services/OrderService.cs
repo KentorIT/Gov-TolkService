@@ -52,6 +52,7 @@ namespace Tolk.BusinessLogic.Services
             _tolkBaseOptions = tolkBaseOptions;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task HandleStartedOrders()
         {
             var requestIds = await _tolkDbContext.Requests
@@ -104,6 +105,7 @@ namespace Tolk.BusinessLogic.Services
             await HandleExpiredNonAnsweredRespondedRequests();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async Task HandleExpiredRequests()
         {
             var expiredRequestIds = await _tolkDbContext.Requests
@@ -174,6 +176,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async Task HandleExpiredRequestGroups()
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
@@ -243,6 +246,7 @@ namespace Tolk.BusinessLogic.Services
             await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task HandleExpiredComplaints()
         {
             var expiredComplaintIds = await _tolkDbContext.Complaints
@@ -290,6 +294,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async Task HandleExpiredNonAnsweredRespondedRequests()
         {
             var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
@@ -666,7 +671,7 @@ namespace Tolk.BusinessLogic.Services
             int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
                 .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
-            return _priceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
+            return PriceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
         }
 
         /// <summary>
@@ -706,7 +711,7 @@ namespace Tolk.BusinessLogic.Services
         // This is an auxilary method for calculating initial estimate
         public static CompetenceAndSpecialistLevel SelectCompetenceLevelForPriceEstimation(IEnumerable<CompetenceAndSpecialistLevel> list)
         {
-            if (list == null || list.Count() == 0)
+            if (list == null || list.Any())
             {
                 // If no level is specified, AuthorizedInterpreter should be returned
                 return CompetenceAndSpecialistLevel.AuthorizedInterpreter;
@@ -719,6 +724,7 @@ namespace Tolk.BusinessLogic.Services
             return list.OrderByDescending(item => (int)item).First();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task CleanTempAttachments()
         {
             using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
@@ -730,7 +736,7 @@ namespace Tolk.BusinessLogic.Services
                     var attachmentsGroupsToDelete = await _tolkDbContext.TemporaryAttachmentGroups.Where(ta => ta.CreatedAt < _clock.SwedenNow.AddDays(-1)).ToListAsync();
                     if (attachmentsGroupsToDelete.Any())
                     {
-                        _logger.LogInformation("Cleaning {0} attachmentgroups", attachmentsGroupsToDelete.Count());
+                        _logger.LogInformation("Cleaning {0} attachmentgroups", attachmentsGroupsToDelete.Count);
                         _tolkDbContext.TemporaryAttachmentGroups.RemoveRange(attachmentsGroupsToDelete);
                         await _tolkDbContext.SaveChangesAsync();
                     }
@@ -742,7 +748,7 @@ namespace Tolk.BusinessLogic.Services
                                                                         .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToListAsync();
                     if (attachmentsToDelete.Any())
                     {
-                        _logger.LogInformation("Cleaning {0} attachments", attachmentsToDelete.Count());
+                        _logger.LogInformation("Cleaning {0} attachments", attachmentsToDelete.Count);
                         _tolkDbContext.Attachments.RemoveRange(attachmentsToDelete);
                         await _tolkDbContext.SaveChangesAsync();
                     }

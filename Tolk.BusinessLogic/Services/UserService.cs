@@ -10,6 +10,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -62,8 +63,8 @@ namespace Tolk.BusinessLogic.Services
 
             var link = await GenerateActivationLinkAsync(user);
 
-            plainBody = string.Format(body, link);
-            htmlBody = string.Format(HtmlHelper.ToHtmlBreak(body), HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
+            plainBody = body.FormatSwedish(link);
+            htmlBody = HtmlHelper.ToHtmlBreak(body).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
 
             _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
             await _dbContext.SaveChangesAsync();
@@ -72,7 +73,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task SetTemporaryEmail(AspNetUser user, string newEmail)
         {
-            var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == user.Id);
+            var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == user.Id);
 
             if (emailUser.TemporaryChangedEmailEntry != null)
             {
@@ -309,11 +310,11 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         public string GenerateUserName(string firstName, string lastName, string prefix)
         {
             string userNameStart = $"{prefix.GetPrefix(prefix.Length)}{firstName.GetPrefix()}{lastName.GetPrefix()}";
-            var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWith(userNameStart)).Select(u => u.NormalizedUserName).ToList();
+            var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWithSwedish(userNameStart)).Select(u => u.NormalizedUserName).ToList();
             for (int i = 1; i < 100; ++i)
             {
-                var userName = $"{userNameStart}{i.ToString("D2")}";
-                if (!users.Contains(userName.ToUpper()))
+                var userName = $"{userNameStart}{i.ToSwedishString("D2")}";
+                if (!users.Contains(userName.ToSwedishUpper()))
                 {
                     return userName;
                 }
@@ -322,8 +323,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             _notificationService.CreateEmail(_options.Support.SecondLineEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", addContractInfo: false);
             for (int i = 1; i < 1000; ++i)
             {
-                var userName = $"{userNameStart}{i.ToString("D3")}";
-                if (!users.Contains(userName.ToUpper()))
+                var userName = $"{userNameStart}{i.ToSwedishString("D3")}";
+                if (!users.Contains(userName.ToSwedishUpper()))
                 {
                     return userName;
                 }
@@ -335,9 +336,11 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public bool IsUniqueEmail(string email)
         {
+#pragma warning disable CA1304 // Ef gets better at filtering at server...
             return !_dbContext.Users.Any(u => !u.IsApiUser &&
                      (u.NormalizedEmail == email.ToUpper() ||
                      u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper()));
+#pragma warning restore CA1304 // 
         }
     }
 }

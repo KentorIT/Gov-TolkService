@@ -29,12 +29,13 @@ namespace Tolk.BusinessLogic.Services
         {
             _dbContext = dbContext;
             _logger = logger;
-            _options = options.Smtp;
+            _options = options?.Smtp;
             _clock = clock;
             _senderPrepend = !string.IsNullOrWhiteSpace(options.Env.DisplayName) ? $"{options.Env.DisplayName} " : string.Empty;
             _secondLineSupportMail = options.Support.SecondLineEmail;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task SendEmails()
         {
             var emailIds = await _dbContext.OutboundEmails
@@ -97,6 +98,7 @@ namespace Tolk.BusinessLogic.Services
                 $"Exception message:\n{ex.Message}\n\nException info:\n{ex.ToString()}\n\nStackTrace:\n{ex.StackTrace}");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task SendApplicationManagementEmail(string subject, string messageBody)
         {
             using (var client = new SmtpClient())

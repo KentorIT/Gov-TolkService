@@ -6,7 +6,7 @@ namespace Tolk.BusinessLogic.Utilities
     {
         public string Description { get; set; }
 
-        public string DescriptionToUse { get => HasSeparateSubTotal ? $"Summa {Description.ToLower()}" : Description; }
+        public string DescriptionToUse { get => HasSeparateSubTotal ? $"Summa {Description.ToSwedishLower()}" : Description; }
 
         public decimal Price { get; set; }
 

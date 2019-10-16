@@ -10,15 +10,15 @@ namespace Tolk.BusinessLogic.Utilities
         /// <summary>
         /// Construct a derived class of from a base class
         /// </summary>
-        /// <typeparam name="F">Type of base class</typeparam>
+        /// <typeparam name="TBase">Type of base class</typeparam>
         /// <typeparam name="T">Type of derived class you want</typeparam>
         /// <param name="Base">The instance of the base class</param>
-        public static T Construct<F, T>(F Base) where T : F, new()
+        public static T Construct<TBase, T>(TBase Base) where T : TBase, new()
         {
             // create derived instance
             T derived = new T();
             // get all base class properties
-            PropertyInfo[] properties = typeof(F).GetProperties();
+            PropertyInfo[] properties = typeof(TBase).GetProperties();
             foreach (PropertyInfo bp in properties)
             {
                 // get derived matching property

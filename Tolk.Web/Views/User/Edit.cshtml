@@ -16,7 +16,7 @@
                 <input asp-for="Id" type="hidden" />
                 <form-entry asp-for="NameFirst" />
                 <form-entry asp-for="NameFamily" />
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+                @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator || Model.UserType == UserTypes.OrganisationAdministrator)
                 {
                     @if (Model.DisplayCentralAdmin)
                     {
@@ -47,7 +47,7 @@
             <div class="col-sm-4">
                 <form-entry asp-for="PhoneWork" />
                 <form-entry asp-for="PhoneCellphone" />
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator || Model.UserType == UserType.OrganisationAdministrator)
+                @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator || Model.UserType == UserTypes.OrganisationAdministrator)
                 {
                     <form-entry asp-for="IsActive" />
                 }

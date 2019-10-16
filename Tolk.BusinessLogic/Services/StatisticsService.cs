@@ -30,7 +30,6 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<WeeklyStatisticsModel> GetWeeklyStatistics()
         {
-            DateTimeOffset breakDate = BreakDate;
             yield return GetWeeklyOrderStatistics(BreakDate);
             yield return GetWeeklyDeliveredOrderStatistics(BreakDate);
             yield return GetWeeklyRequisitionStatistics(BreakDate);
@@ -117,14 +116,14 @@ namespace Tolk.BusinessLogic.Services
                 && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).ToList();
         }
 
-        public WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
+        public static WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
         {
             decimal diff = (lastWeek == 0 || thisWeek == 0) ? 0 : (Convert.ToDecimal(thisWeek) - Convert.ToDecimal(lastWeek)) * 100 / lastWeek;
             return new WeeklyStatisticsModel
             {
                 NoOfItems = thisWeek,
                 DiffPercentage = Math.Round(Math.Abs(diff), 1),
-                ChangeType = diff == 0 ? lastWeek == thisWeek ? StatisticsChangeType.Unchanged : lastWeek == 0 ? StatisticsChangeType.NA_NoDataLastWeek : StatisticsChangeType.NA_NoDataThisWeek : thisWeek > lastWeek ? StatisticsChangeType.Increasing : StatisticsChangeType.Decreasing,
+                ChangeType = diff == 0 ? lastWeek == thisWeek ? StatisticsChangeType.Unchanged : lastWeek == 0 ? StatisticsChangeType.NANoDataLastWeek : StatisticsChangeType.NANoDataLastWeek : thisWeek > lastWeek ? StatisticsChangeType.Increasing : StatisticsChangeType.Decreasing,
                 Name = name
             };
         }
@@ -142,22 +141,22 @@ namespace Tolk.BusinessLogic.Services
             yield return GetOrderCustomerStatistics(orders);
         }
 
-        public OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
+        public static OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
         }
 
-        public OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
+        public static OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Mest beställda språk", orders.GroupBy(o => o.Language.Name));
         }
 
-        public OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
+        public static OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
         {
             return GetOrderStats("Myndigheter", orders.GroupBy(o => o.CustomerOrganisation.Name));
         }
 
-        private OrderStatisticsModel GetOrderStats(string name, IQueryable<IGrouping<string, Order>> orders)
+        private static OrderStatisticsModel GetOrderStats(string name, IQueryable<IGrouping<string, Order>> orders)
         {
             return new OrderStatisticsModel
             {
@@ -393,7 +392,8 @@ namespace Tolk.BusinessLogic.Services
 
         #region Generate Excel
 
-        public MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Needed to get better Ef code")]
+        public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, ReportType reportType)
         {
             using (var workbook = new XLWorkbook())
             {
@@ -416,7 +416,7 @@ namespace Tolk.BusinessLogic.Services
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate.ToString());
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
                 rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
                 rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Accepterar restid";
@@ -457,7 +457,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else if (rows.FirstOrDefault() is ReportOrderRow)
                 {
-                    CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter, reportType);
+                    CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
                 }
                 switch (EnumHelper.Parent<ReportType, ReportGroup>(reportType))
                 {
@@ -481,7 +481,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter, ReportType reportType)
+        private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
@@ -513,7 +513,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FulfilledOrderDesiredRequirements);
         }
 
-        private void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
+        private static void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerUnitName);
@@ -527,13 +527,13 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
+        private static void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
         }
 
-        private void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
+        private static void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
@@ -543,13 +543,13 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
+        private static void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
         }
 
-        private void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
+        private static void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
@@ -557,7 +557,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
         }
 
-        private void CreateColumnsForRequisition(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequisitionRow> rows, ref char columnLetter, ReportType reportType)
+        private static void CreateColumnsForRequisition(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequisitionRow> rows, ref char columnLetter, ReportType reportType)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Måltidspauser finns";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasMealbreaks ? "Ja" : "Nej");
@@ -579,21 +579,21 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens skattsedel";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.TaxCard);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Utlägg (SEK)";
-            rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+            rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Outlay);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Bilersättning (km)";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CarCompensation);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Traktamente";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PerDiem ?? string.Empty);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
-            rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+            rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
-            rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+            rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PreliminaryCost);
         }
 
-        private void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRow> rows, ref char columnLetter, ReportType reportType)
+        private static void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRow> rows, ref char columnLetter, ReportType reportType)
         {
             switch (reportType)
             {
@@ -625,6 +625,7 @@ namespace Tolk.BusinessLogic.Services
             return $"{columnLetter}{index}";
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
         public static IEnumerable<ReportRow> GetOrderExcelFileRows(IEnumerable<Order> listItems, ReportType reportType)
         {
             return listItems
@@ -659,7 +660,7 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelDesired1 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.Where(c => c.Rank == 1).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelDesired2 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelRequired1 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
-                        CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any() && o.CompetenceRequirements.Count() > 1) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
+                        CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any() && o.CompetenceRequirements.Count > 1) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
                         OrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
                         OrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
                         FulfilledOrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && o.Requests.Last().RequestId == ra.RequestId)).Count(),
@@ -667,6 +668,7 @@ namespace Tolk.BusinessLogic.Services
                     });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
         public static IEnumerable<ReportRow> GetRequestExcelFileRows(IEnumerable<Request> listItems, ReportType reportType)
         {
             return listItems
@@ -698,7 +700,7 @@ namespace Tolk.BusinessLogic.Services
                         CompetenceLevelDesired1 = (r.Order.LanguageHasAuthorizedInterpreter && !r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.Where(c => c.Rank == 1).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelDesired2 = (r.Order.LanguageHasAuthorizedInterpreter && !r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
                         CompetenceLevelRequired1 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
-                        CompetenceLevelRequired2 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any() && r.Order.CompetenceRequirements.Count() > 1) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
+                        CompetenceLevelRequired2 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any() && r.Order.CompetenceRequirements.Count > 1) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
                         OrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired).Count(),
                         OrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired).Count(),
                         FulfilledOrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement && r.RequestId == ra.RequestId)).Count(),
@@ -706,6 +708,7 @@ namespace Tolk.BusinessLogic.Services
                     });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
         public static IEnumerable<ReportRequisitionRow> GetRequisitionsExcelFileRows(IEnumerable<Requisition> listItems, ReportType reportType)
         {
             var isBroker = EnumHelper.Parent<ReportType, ReportGroup>(reportType) == ReportGroup.BrokerReport;
@@ -750,13 +753,13 @@ namespace Tolk.BusinessLogic.Services
                     .Select(c => new ReportComplaintRow
                     {
                         OrderNumber = c.Request.Order.OrderNumber,
-                        ReportDate = c.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                        ReportDate = c.CreatedAt.ToSwedishString("yyyy-MM-dd HH:mm"),
                         BrokerName = c.Request.Ranking.Broker.Name,
                         Language = c.Request.Order.Language.Name,
                         Region = c.Request.Order.Region.Name,
                         InterpreterId = c.Request.Interpreter?.OfficialInterpreterId ?? string.Empty,
                         ReportPersonToDisplay = reportType == ReportType.ComplaintsForCustomer ? c.CreatedByUser.FullName : c.AnsweringUser?.FullName,
-                        AssignmentDate = $"{c.Request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{c.Request.Order.EndAt.ToString("HH:mm")}",
+                        AssignmentDate = $"{c.Request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{c.Request.Order.EndAt.ToSwedishString("HH:mm")}",
                         Status = c.Status.GetDescription(),
                         CustomerName = c.Request.Order.CustomerOrganisation.Name,
                         AssignmentType = c.Request.Order.AssignentType.GetDescription(),

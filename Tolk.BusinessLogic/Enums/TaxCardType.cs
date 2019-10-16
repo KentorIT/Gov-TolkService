@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Enums
 {
-    public enum TaxCard
+    public enum TaxCardType
     {
         [CustomName("tax_card_a")]
         [Description("A-skatt")]

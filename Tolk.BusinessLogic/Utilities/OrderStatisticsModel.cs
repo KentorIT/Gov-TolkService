@@ -6,7 +6,7 @@ namespace Tolk.BusinessLogic.Utilities
     public class OrderStatisticsModel
     {
 
-        private static readonly int MaxNoOfOrderToDisplayDefault = 5;
+        private const int MaxNoOfOrderToDisplayDefault = 5;
 
         public IEnumerable<OrderStatisticsListItemModel> TotalListItems { get; set; }
 

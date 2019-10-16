@@ -21,7 +21,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ISwedishClock _clock;
         private readonly INotificationService _notificationService;
         private static readonly HttpClient client = new HttpClient();
-        private static readonly int NumberOfTries = 5;
+        private const int NumberOfTries = 5;
 
         public WebHookService(
             TolkDbContext dbContext,
@@ -32,11 +32,12 @@ namespace Tolk.BusinessLogic.Services
         {
             _dbContext = dbContext;
             _logger = logger;
-            _options = options.Value;
+            _options = options?.Value;
             _clock = clock;
             _notificationService = notificationService;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task CallWebHooks()
         {
             var callIds = await _dbContext.OutboundWebHookCalls
@@ -67,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
                         {
                             client.DefaultRequestHeaders.Clear();
                             client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
-                            client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToString());
+                            client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-Delivery", callId.ToSwedishString());
                             string encryptedCallbackKey = call.RecipientUser?.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
                             if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
                             {
@@ -75,14 +76,16 @@ namespace Tolk.BusinessLogic.Services
                             }
                             //Also add cert to call
                             _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, callId);
-                            var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
-                            var response = await client.PostAsync(call.RecipientUrl, content);
-
-                            success = response.IsSuccessStatusCode;
-                            if (!success)
+                            using (var content = new StringContent(call.Payload, Encoding.UTF8, "application/json"))
                             {
-                                _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}, try number {tries}", callId, response.StatusCode, call.FailedTries + 1);
-                                errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}, try number {call.FailedTries + 1}";
+                                var response = await client.PostAsync(call.RecipientUrl, content);
+
+                                success = response.IsSuccessStatusCode;
+                                if (!success)
+                                {
+                                    _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}, try number {tries}", callId, response.StatusCode, call.FailedTries + 1);
+                                    errorMessage = $"Call {callId} failed with the following status code: {response.StatusCode}, try number {call.FailedTries + 1}";
+                                }
                             }
                         }
                     }

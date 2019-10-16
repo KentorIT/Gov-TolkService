@@ -19,14 +19,14 @@ namespace Tolk.Web.Models
         public string OrganisationIdentifier { get; set; }
 
         [Display(Name = "Roll")]
-        public UserType? Roles { get; set; }
+        public UserTypes? Roles { get; set; }
 
         [Display(Name = "Status")]
         public ActiveStatus? Status { get; set; }
 
         public string Email { get; set; }
 
-        public UserType UserType { get; set; }
+        public UserTypes UserType { get; set; }
 
         public bool IsCustomer { get; set; }
 
@@ -67,31 +67,31 @@ namespace Tolk.Web.Models
             }
             if (Roles.HasValue)
             {
-                if ((Roles.Value & UserType.Broker) == UserType.Broker)
+                if ((Roles.Value & UserTypes.Broker) == UserTypes.Broker)
                 {
                     users = users.Where(u => u.BrokerId != null);
                 }
-                if ((Roles.Value & UserType.OrderCreator) == UserType.OrderCreator)
+                if ((Roles.Value & UserTypes.OrderCreator) == UserTypes.OrderCreator)
                 {
                     users = users.Where(u => u.CustomerOrganisationId != null);
                 }
-                if ((Roles.Value & UserType.Interpreter) == UserType.Interpreter)
+                if ((Roles.Value & UserTypes.Interpreter) == UserTypes.Interpreter)
                 {
                     users = users.Where(u => u.InterpreterId != null);
                 }
-                if ((Roles.Value & UserType.SystemAdministrator) == UserType.SystemAdministrator)
+                if ((Roles.Value & UserTypes.SystemAdministrator) == UserTypes.SystemAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SystemAdministrator).Id));
                 }
-                if ((Roles.Value & UserType.ApplicationAdministrator) == UserType.ApplicationAdministrator)
+                if ((Roles.Value & UserTypes.ApplicationAdministrator) == UserTypes.ApplicationAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.ApplicationAdministrator).Id));
                 }
-                if ((Roles.Value & UserType.Impersonator) == UserType.Impersonator)
+                if ((Roles.Value & UserTypes.Impersonator) == UserTypes.Impersonator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.Impersonator).Id));
                 }
-                if ((Roles.Value & UserType.OrganisationAdministrator) == UserType.OrganisationAdministrator)
+                if ((Roles.Value & UserTypes.OrganisationAdministrator) == UserTypes.OrganisationAdministrator)
                 {
                     users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.CentralAdministrator).Id) &&
                         (u.CustomerOrganisationId != null || u.BrokerId != null));

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,21 +21,21 @@ namespace Tolk.Web.Api.Controllers
     public class RequisitionController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly TolkApiOptions _options;
+        private readonly ILogger _logger;
         private readonly RequisitionService _requisitionService;
         private readonly ApiUserService _apiUserService;
         private readonly ApiOrderService _apiOrderService;
 
         public RequisitionController(
             TolkDbContext tolkDbContext,
-            IOptions<TolkApiOptions> options,
+            ILogger<RequisitionController> logger,
             RequisitionService requisitionService,
             ApiUserService apiUserService,
             ApiOrderService apiOrderService
             )
         {
             _dbContext = tolkDbContext;
-            _options = options.Value;
+            _logger = logger;
             _apiUserService = apiUserService;
             _requisitionService = requisitionService;
             _apiOrderService = apiOrderService;
@@ -76,7 +76,7 @@ namespace Tolk.Web.Api.Controllers
                 try
                 {
                     _requisitionService.Create(request, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message,
-                        model.Outlay, model.AcctualStartedAt, model.AcctualEndedAt, model.WasteTime, model.WasteTimeInconvenientHour, EnumHelper.GetEnumByCustomName<TaxCard>(model.TaxCard).Value,
+                        model.Outlay, model.AcctualStartedAt, model.AcctualEndedAt, model.WasteTime, model.WasteTimeInconvenientHour, EnumHelper.GetEnumByCustomName<TaxCardType>(model.TaxCard).Value,
                         new List<RequisitionAttachment>(), Guid.NewGuid(), model.MealBreaks.Select(m => new MealBreak
                         {
                             StartAt = m.StartedAt,
@@ -139,6 +139,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public async Task<JsonResult> File(string orderNumber, int attachmentId, string callingUser)
         {
+            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} connected to requisition on order {orderNumber}");
             try
             {
                 var apiUser = await GetApiUser();
@@ -191,7 +192,7 @@ namespace Tolk.Web.Api.Controllers
                 OrderNumber = orderNumber,
                 Status = requisition.Status.GetCustomName(),
                 Message = requisition.Message,
-                TaxCard = requisition.InterpretersTaxCard.GetValueOrDefault(TaxCard.TaxCardA).GetCustomName(),
+                TaxCard = requisition.InterpretersTaxCard.GetValueOrDefault(TaxCardType.TaxCardA).GetCustomName(),
 
                 CarCompensation = requisition.CarCompensation,
                 MealBreaks = requisition.MealBreaks.Select(m => new MealBreakModel
@@ -208,7 +209,7 @@ namespace Tolk.Web.Api.Controllers
                     OrderNumber = orderNumber,
                     Status = r.Status.GetCustomName(),
                     Message = r.Message,
-                    TaxCard = r.InterpretersTaxCard.GetValueOrDefault(TaxCard.TaxCardA).GetCustomName(),
+                    TaxCard = r.InterpretersTaxCard.GetValueOrDefault(TaxCardType.TaxCardA).GetCustomName(),
                     CarCompensation = r.CarCompensation,
                     MealBreaks = r.MealBreaks.Select(m => new MealBreakModel
                     {

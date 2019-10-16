@@ -17,7 +17,7 @@ namespace Tolk.Web.Models
         public string SearchString { get; set; }
 
         [Display(Name = "Roll")]
-        public UserType? UserType { get; set; }
+        public UserTypes? UserType { get; set; }
 
         public int CentralAdministratorRoleId { get; set; }
 

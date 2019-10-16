@@ -59,7 +59,7 @@ namespace Tolk.Web.Controllers
                 _dbContext.Languages.Where(l => l.Active == true)
                 .OrderBy(l => l.Name).Select(l => new LanguageListItem
                 {
-                    ISO_639_Code = l.ISO_639_Code,
+                    ISO639Code = l.ISO_639_Code,
                     Name = l.Name,
                     TellusName = l.TellusName,
                     HasLegal = l.HasLegal,

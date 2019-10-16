@@ -617,7 +617,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public async Task<JsonResult> File(string orderNumber, int attachmentId, string callingUser)
         {
-            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attacment {attachmentId} on order {orderNumber}");
+            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
 
             try
             {

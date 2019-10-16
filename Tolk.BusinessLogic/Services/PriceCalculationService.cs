@@ -88,7 +88,7 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
             //get lost time and extra charges
-            pricesToUse.AddRange(GetLostTimePriceRows(startAt, endAt, timeWasteNormalTime, timeWasteIWHTime, prices));
+            pricesToUse.AddRange(GetLostTimePriceRows(startAt, timeWasteNormalTime, timeWasteIWHTime, prices));
             return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, outlay, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
         }
 
@@ -96,7 +96,7 @@ namespace Tolk.BusinessLogic.Services
         /// If order passes midnight their might be two rows of same pricetype, merge these to one 
         /// Also check if two duplicate rows have less or equal compensationtime together. Then it should be reduced, e.g. 23:45-00:45 (should be two 30 min periods not three)
         /// </summary>
-        public IEnumerable<PriceRowBase> MergePriceListRowsAndReduceForMealBreak(IEnumerable<PriceRowBase> pricePerType, IDictionary<PriceListRowType, int> mealbreakDictionary = null)
+        public static IEnumerable<PriceRowBase> MergePriceListRowsAndReduceForMealBreak(IEnumerable<PriceRowBase> pricePerType, IDictionary<PriceListRowType, int> mealbreakDictionary = null)
         {
             int newQuantity = 0;
             var duplicatesPriceListrows = pricePerType.GroupBy(x => x.PriceListRow.PriceListRowId)
@@ -151,7 +151,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private int GetReducedQuantityForMealbreak(PriceRowBase newPriceRow, int mealbreakMinutes)
+        private static int GetReducedQuantityForMealbreak(PriceRowBase newPriceRow, int mealbreakMinutes)
         {
             int reducedMinutes = newPriceRow.Minutes - mealbreakMinutes;
             return reducedMinutes > 0 ? reducedMinutes % newPriceRow.PriceListRow.MaxMinutes > 0 ? (reducedMinutes / newPriceRow.PriceListRow.MaxMinutes) + 1 : reducedMinutes / newPriceRow.PriceListRow.MaxMinutes : 0;
@@ -184,12 +184,12 @@ namespace Tolk.BusinessLogic.Services
             return priceInformation;
         }
 
-        private PriceRowBase GetTravelCostRow(DateTimeOffset startAt, DateTimeOffset endAt, decimal? travelCost, PriceRowType travelcostType)
+        private static PriceRowBase GetTravelCostRow(DateTimeOffset startAt, DateTimeOffset endAt, decimal? travelCost, PriceRowType travelcostType)
         {
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = travelCost.Value, Quantity = 1, PriceRowType = travelcostType };
         }
 
-        public PriceRowBase GetRoundedPriceRow(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> allPriceRows)
+        public static PriceRowBase GetRoundedPriceRow(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> allPriceRows)
         {
             decimal roundings = 0;
             allPriceRows.Sum(pr => roundings += pr.Decimals);
@@ -199,7 +199,7 @@ namespace Tolk.BusinessLogic.Services
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = roundings, Quantity = 1, PriceRowType = PriceRowType.RoundedPrice };
         }
 
-        public IEnumerable<PriceRowBase> GetLostTimePriceRows(DateTimeOffset startAt, DateTimeOffset endAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
+        public static IEnumerable<PriceRowBase> GetLostTimePriceRows(DateTimeOffset startAt, int? timeWasteNormalTime, int? timeWasteIWHTime, List<PriceListRow> prices)
         {
             //Get lost times, if any
             if (timeWasteNormalTime.HasValue && timeWasteNormalTime.Value > 0)
@@ -220,7 +220,7 @@ namespace Tolk.BusinessLogic.Services
                 r.StartDate.Date <= startAt.Date && r.EndDate.Date >= startAt.Date).ToList();
         }
 
-        private bool UsePricesOriginTimes(IEnumerable<PriceRowBase> priceRequsition, IEnumerable<PriceRowBase> priceOriginTimes)
+        private static bool UsePricesOriginTimes(IEnumerable<PriceRowBase> priceRequsition, IEnumerable<PriceRowBase> priceOriginTimes)
         {
             return priceOriginTimes.Sum(p => p.TotalPrice) > priceRequsition.Sum(p => p.TotalPrice);
         }
@@ -266,7 +266,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public int GetNoOfDays(DateTimeOffset startAt, DateTimeOffset endAt)
+        public static int GetNoOfDays(DateTimeOffset startAt, DateTimeOffset endAt)
         {
             int days = (endAt.Date - startAt.Date).Days + 1;
             days -= endAt.TimeOfDay == TimeSpan.Zero ? 1 : 0; //if ends at midnight no extra day
@@ -511,7 +511,7 @@ namespace Tolk.BusinessLogic.Services
             return _dateCalculationService.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
         }
 
-        public DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
+        public static DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
         {
             DisplayPriceInformation dpiTotal = new DisplayPriceInformation();
             DisplayPriceInformation separateSubTotalInterpreterCompensation = new DisplayPriceInformation
@@ -544,7 +544,7 @@ namespace Tolk.BusinessLogic.Services
             return dpiTotal;
         }
 
-        private int GetDisplayOrder(PriceRowType type)
+        private static int GetDisplayOrder(PriceRowType type)
         {
             switch (type)
             {
@@ -567,12 +567,12 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private string GetQuantityAndPricePerUnit(PriceRowBase priceRow)
+        private static string GetQuantityAndPricePerUnit(PriceRowBase priceRow)
         {
             return priceRow.Quantity > 1 ? $" ({priceRow.Quantity} st á {priceRow.Price})" : string.Empty;
         }
 
-        private string GetDescriptionHourTax(int maxMinutes)
+        private static string GetDescriptionHourTax(int maxMinutes)
         {
             double noOfHours = (double)maxMinutes / 60;
             return noOfHours == 1 ? $"0-{noOfHours}" : $"{noOfHours - 0.5}-{noOfHours}";

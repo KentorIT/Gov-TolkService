@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
         public new string PerDiem { get; set; }
 
         [Display(Name = "Tidigare angiven skattsedel")]
-        public new TaxCard? InterpreterTaxCard { get; set; }
+        public new TaxCardType? InterpreterTaxCard { get; set; }
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Tidigare angiven specifikation")]

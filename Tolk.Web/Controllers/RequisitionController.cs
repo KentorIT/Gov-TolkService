@@ -25,14 +25,12 @@ namespace Tolk.Web.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly IAuthorizationService _authorizationService;
-        private readonly PriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly RequisitionService _requisitionService;
 
         public RequisitionController(
             TolkDbContext dbContext,
-            PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
@@ -40,10 +38,9 @@ namespace Tolk.Web.Controllers
             )
         {
             _dbContext = dbContext;
-            _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _logger = logger;
-            _options = options.Value;
+            _options = options?.Value;
             _requisitionService = requisitionService;
         }
 
@@ -342,7 +339,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.RequisitionId });
         }
 
-        private PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)
+        private static PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)
         {
             if (requisition.PriceRows == null)
             {
@@ -365,7 +362,7 @@ namespace Tolk.Web.Controllers
 
             PriceInformationModel pi = new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : string.Empty,
                 UseDisplayHideInfo = useDisplayHideInfo,
 
@@ -375,7 +372,7 @@ namespace Tolk.Web.Controllers
             return pi;
         }
 
-        private PriceInformationModel GetRequisitionPriceInformation(Request request)
+        private static PriceInformationModel GetRequisitionPriceInformation(Request request)
         {
             if (request.PriceRows == null)
             {
@@ -383,14 +380,14 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true,
                 Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
             };
         }
 
-        private RequisitionViewModel GetPreviousRequisitionView(Request request)
+        private static RequisitionViewModel GetPreviousRequisitionView(Request request)
         {
             if (request.Requisitions == null || request.Requisitions.Count < 2)
             {

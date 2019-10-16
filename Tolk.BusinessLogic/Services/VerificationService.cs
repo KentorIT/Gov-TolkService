@@ -41,6 +41,7 @@ namespace Tolk.BusinessLogic.Services
             _emailService = emailService;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Part of api, do not want to throw to consumer")]
         public async Task<VerificationResult> VerifyInterpreter(string interpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel, bool reVerify = false)
         {
             if (string.IsNullOrWhiteSpace(interpreterId))
@@ -78,6 +79,7 @@ namespace Tolk.BusinessLogic.Services
             await UpdateTellusLanguagesCompetenceInfo(notify);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Part of api, do not want to throw to consumer")]
         public async Task<ValidateTellusLanguageListResult> ValidateTellusLanguageList(bool notify = false)
         {
             _logger.LogInformation($"Starting {nameof(ValidateTellusLanguageList)}");
@@ -151,6 +153,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task<UpdateLanguagesCompetenceResult> UpdateTellusLanguagesCompetenceInfo(bool notify = false)
         {
             _logger.LogInformation($"Starting {nameof(UpdateTellusLanguagesCompetenceInfo)}");
@@ -225,6 +228,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task<StatusVerificationResult> VerifySystemStatus()
         {
             _logger.LogInformation($"Starting {nameof(VerifySystemStatus)}");
@@ -254,9 +258,11 @@ namespace Tolk.BusinessLogic.Services
                 api_key = _tolkBaseOptions.StatusChecker.UptimeRobotApiKey,
                 format = "json"
             };
-            var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(_tolkBaseOptions.StatusChecker.UptimeRobotCheckUrl, content);
-            return JsonConvert.DeserializeObject<UptimeRobotMonitorResponse>(await response.Content.ReadAsStringAsync());
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                var response = await client.PostAsync(_tolkBaseOptions.StatusChecker.UptimeRobotCheckUrl, content);
+                return JsonConvert.DeserializeObject<UptimeRobotMonitorResponse>(await response.Content.ReadAsStringAsync());
+            }
         }
         private class UptimeRobotMonitorResponse
         {

@@ -465,7 +465,7 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 
-        public static bool isUserStoreInitialized = false;
+        private static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
         {
@@ -474,7 +474,7 @@ namespace Tolk.BusinessLogic.Data
                 if (!isUserStoreInitialized)
                 {
                     // If it is false, we want to check it for every single request.
-                    isUserStoreInitialized = Users.Count() != 0;
+                    isUserStoreInitialized = Users.Any();
                 }
                 return isUserStoreInitialized;
             }

@@ -5,8 +5,8 @@
 @inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Rapporter";
-    var userType = User.TryGetBrokerId() != null ? Tolk.BusinessLogic.Enums.UserType.Broker : User.TryGetCustomerOrganisationId() != null ? Tolk.BusinessLogic.Enums.UserType.OrderCreator : Tolk.BusinessLogic.Enums.UserType.SystemAdministrator;
-    HelpLinkService.PageName = userType == UserType.Broker ? "formedling-rapporter/" : userType == UserType.OrderCreator ? "myndighet-rapporter/" : "admin-rapporter/";
+    var userType = User.TryGetBrokerId() != null ? UserTypes.Broker : User.TryGetCustomerOrganisationId() != null ? UserTypes.OrderCreator : UserTypes.SystemAdministrator;
+    HelpLinkService.PageName = userType == UserTypes.Broker ? "formedling-rapporter/" : userType == UserTypes.OrderCreator ? "myndighet-rapporter/" : "admin-rapporter/";
 }
 <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
 

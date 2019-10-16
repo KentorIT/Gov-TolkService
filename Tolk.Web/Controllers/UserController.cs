@@ -34,7 +34,6 @@ namespace Tolk.Web.Controllers
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
         private readonly INotificationService _notificationService;
-        private readonly HashService _hashService;
         private readonly TolkOptions _options;
 
         public UserController(
@@ -45,7 +44,6 @@ namespace Tolk.Web.Controllers
             UserService userService,
             IAuthorizationService authorizationService,
             INotificationService notificationService,
-            HashService hashService,
             IOptions<TolkOptions> options
 )
         {
@@ -56,10 +54,8 @@ namespace Tolk.Web.Controllers
             _userService = userService;
             _authorizationService = authorizationService;
             _notificationService = notificationService;
-            _hashService = hashService;
-            _options = options.Value;
+            _options = options?.Value;
         }
-
         private int ImpersonatorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.Impersonator).Id;
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
@@ -106,11 +102,11 @@ namespace Tolk.Web.Controllers
             {
                 users = users.Where(u => u.BrokerId == brokerId);
             }
-            else if (model.UserType == UserType.SystemAdministrator)
+            else if (model.UserType == UserTypes.SystemAdministrator)
             {
                 users = users.Where(u => !u.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId || r.RoleId == ImpersonatorRoleId));
             }
-            else if (model.UserType != UserType.ApplicationAdministrator)
+            else if (model.UserType != UserTypes.ApplicationAdministrator)
             {
                 return Forbid();
             }
@@ -129,7 +125,7 @@ namespace Tolk.Web.Controllers
         {
             var userType = HighestLevelLoggedInUserType;
             var definition = AjaxDataTableHelper.GetColumnDefinitions<UserListItemModel>().ToList();
-            definition.Single(d => d.Name == nameof(UserListItemModel.Organisation)).Visible = (userType == UserType.ApplicationAdministrator || userType == UserType.SystemAdministrator);
+            definition.Single(d => d.Name == nameof(UserListItemModel.Organisation)).Visible = (userType == UserTypes.ApplicationAdministrator || userType == UserTypes.SystemAdministrator);
             return Json(definition);
         }
 
@@ -138,7 +134,7 @@ namespace Tolk.Web.Controllers
         {
             var user = GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded &&
-                !(HighestLevelLoggedInUserType == UserType.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+                !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
             {
                 IEnumerable<CustomerUnit> customerUnits = null;
                 if (user.CustomerOrganisationId.HasValue)
@@ -210,7 +206,7 @@ namespace Tolk.Web.Controllers
 
             //get non editable list with unit users where editor user is not localadmin
             IEnumerable<UnitUserModel> nonEditableUnitUsers = null;
-            if (unitUsers != null && HighestLevelLoggedInUserType == UserType.LocalAdministrator)
+            if (unitUsers != null && HighestLevelLoggedInUserType == UserTypes.LocalAdministrator)
             {
                 nonEditableUnitUsers = user.CustomerUnits.Where(c => !unitUsers.Select(uu => uu.CustomerUnitId).Contains(c.CustomerUnitId))
                     .Select(cu => new UnitUserModel
@@ -224,7 +220,7 @@ namespace Tolk.Web.Controllers
             }
 
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded &&
-                 !(HighestLevelLoggedInUserType == UserType.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+                 !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
             {
                 var model = new UserModel
                 {
@@ -270,7 +266,7 @@ namespace Tolk.Web.Controllers
             {
                 var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded &&
-                     !(HighestLevelLoggedInUserType == UserType.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+                     !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
                 {
                     await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId());
                     user.NameFirst = model.NameFirst;
@@ -353,7 +349,7 @@ namespace Tolk.Web.Controllers
                         IsActive = cu.IsActive,
                         IsLocalAdmin = false,
                         Name = cu.Name,
-                        UserIsConnected = (customerUnitId.HasValue && customerUnitId == cu.CustomerUnitId) ? true : (customerUnits.Count() == 1 && HighestLevelLoggedInUserType == UserType.LocalAdministrator) ? true : false,
+                        UserIsConnected = (customerUnitId.HasValue && customerUnitId == cu.CustomerUnitId) ? true : (customerUnits.Count() == 1 && HighestLevelLoggedInUserType == UserTypes.LocalAdministrator) ? true : false,
                         CustomerUnitId = cu.CustomerUnitId
                     }).OrderByDescending(items => items.UserIsConnected).ToList();
             }
@@ -389,12 +385,12 @@ namespace Tolk.Web.Controllers
                     serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten");
                 }
-                else if (HighestLevelLoggedInUserType == UserType.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
+                else if (HighestLevelLoggedInUserType == UserTypes.LocalAdministrator && !model.UnitUsers.Where(uu => uu.UserIsConnected).Any())
                 {
                     serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet");
                 }
-                else if (HighestLevelLoggedInUserType == UserType.ApplicationAdministrator)
+                else if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator)
                 {
                     if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier) && Enum.Parse<OrganisationType>(model.OrganisationIdentifier.Split("_").Last()) == OrganisationType.Owner
                     && !model.IsApplicationAdministrator && !model.IsSystemAdministrator && !model.IsImpersonator)
@@ -503,11 +499,11 @@ namespace Tolk.Web.Controllers
                         {
                             additionalRoles.Add(Roles.SystemAdministrator);
                         }
-                        if (HighestLevelLoggedInUserType == UserType.ApplicationAdministrator && model.IsApplicationAdministrator)
+                        if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator && model.IsApplicationAdministrator)
                         {
                             additionalRoles.Add(Roles.ApplicationAdministrator);
                         }
-                        if (HighestLevelLoggedInUserType == UserType.ApplicationAdministrator && model.IsImpersonator)
+                        if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator && model.IsImpersonator)
                         {
                             additionalRoles.Add(Roles.Impersonator);
                         }
@@ -676,8 +672,8 @@ namespace Tolk.Web.Controllers
                                 await _userManager.RemoveClaimAsync(apiUser, saltClaim);
                             }
 
-                            var salt = _hashService.CreateSalt(32);
-                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", _hashService.GenerateHash(model.ApiKey, salt)));
+                            var salt = HashHelper.CreateSalt(32);
+                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", HashHelper.GenerateHash(model.ApiKey, salt)));
                             await _userManager.AddClaimAsync(apiUser, new Claim("Salt", salt));
                             transaction.Complete();
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
@@ -1214,10 +1210,10 @@ namespace Tolk.Web.Controllers
             }
         }
 
-        private UserType HighestLevelLoggedInUserType =>
-            User.IsInRole(Roles.ApplicationAdministrator) ? UserType.ApplicationAdministrator :
-            User.IsInRole(Roles.SystemAdministrator) ? UserType.SystemAdministrator :
-            User.IsInRole(Roles.CentralAdministrator) ? UserType.OrganisationAdministrator : UserType.LocalAdministrator;
+        private UserTypes HighestLevelLoggedInUserType =>
+            User.IsInRole(Roles.ApplicationAdministrator) ? UserTypes.ApplicationAdministrator :
+            User.IsInRole(Roles.SystemAdministrator) ? UserTypes.SystemAdministrator :
+            User.IsInRole(Roles.CentralAdministrator) ? UserTypes.OrganisationAdministrator : UserTypes.LocalAdministrator;
 
         private IEnumerable<CustomerUnit> LoggedInCustomerUnits => User.TryGetCustomerOrganisationId().HasValue ?
             User.IsInRole(Roles.CentralAdministrator) ?

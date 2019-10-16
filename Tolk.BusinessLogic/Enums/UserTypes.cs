@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace Tolk.BusinessLogic.Enums
 {
     [Flags]
-    public enum UserType
+    public enum UserTypes
     {
         [Description("Avropare")]
         OrderCreator = 1,

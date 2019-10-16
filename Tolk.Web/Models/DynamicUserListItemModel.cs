@@ -49,13 +49,13 @@ namespace Tolk.Web.Models
             {
                 switch (filters.UserType)
                 {
-                    case UserType.OrganisationAdministrator:
+                    case UserTypes.OrganisationAdministrator:
                         filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
                         break;
-                    case UserType.CentralOrderHandler:
+                    case UserTypes.CentralOrderHandler:
                         filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
                         break;
-                    case UserType.OrderCreator:
+                    case UserTypes.OrderCreator:
                     default:
                         break;
                 }

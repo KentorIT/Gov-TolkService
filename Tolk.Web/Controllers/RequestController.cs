@@ -535,14 +535,14 @@ namespace Tolk.Web.Controllers
         {
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
                     _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };
         }
 
-        private PriceInformationModel GetPriceinformationToDisplay(Request request)
+        private static PriceInformationModel GetPriceinformationToDisplay(Request request)
         {
             if (request.PriceRows == null || !request.PriceRows.Any())
             {
@@ -550,7 +550,7 @@ namespace Tolk.Web.Controllers
             }
             return new PriceInformationModel
             {
-                PriceInformationToDisplay = _priceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
             };

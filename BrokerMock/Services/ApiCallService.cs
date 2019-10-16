@@ -180,19 +180,21 @@ namespace BrokerMock.Services
                 Message = "Testar att skicka en ny rekvisition, då",
                 MealBreaks = Enumerable.Empty<MealBreakModel>()
             };
-            var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Requisition/Create", content);
-            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
-            }
-            else
-            {
-                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
-            }
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Requisition/Create", content);
+                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
+                }
+                else
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+                }
 
-            return true;
+                return true;
+            }
         }
 
         private static HttpClientHandler GetCertHandler()

@@ -2,6 +2,7 @@
 
 namespace Tolk.BusinessLogic.Utilities
 {
+    [AttributeUsage(AttributeTargets.Field)]
     public class TellusNameAttribute : Attribute
     {
         public string Name { get; set; }

@@ -112,7 +112,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult TaxCardTypes()
         {
-            return DescriptionsAsJson<TaxCard>();
+            return DescriptionsAsJson<TaxCardType>();
         }
 
         [HttpGet]

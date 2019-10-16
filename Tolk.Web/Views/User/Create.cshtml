@@ -22,7 +22,7 @@
         <div class="row">
             <div class="col-sm-4">
                 <label>Möjliga roller för användaren</label>
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
+                @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
                 {
                     <div class="OrganisationAdministratorCheckBox">
                         <form-entry asp-for="IsOrganisationAdministrator" />
@@ -30,7 +30,7 @@
                     <div class="CentralOrderHandlerCheckBox">
                         <form-entry asp-for="IsCentralOrderHandler" />
                     </div>
-                    @if (Model.UserType == UserType.ApplicationAdministrator)
+                    @if (Model.UserType == UserTypes.ApplicationAdministrator)
                     {
                         <div class="d-none ApplicationAdministratorCheckBox">
                             <form-entry asp-for="IsApplicationAdministrator" />
@@ -43,7 +43,7 @@
                         </div>
                     }
                 }
-                @if (Model.UserType == UserType.OrganisationAdministrator)
+                @if (Model.UserType == UserTypes.OrganisationAdministrator)
                 {
                     @if (Model.DisplayCentralAdmin)
                     {
@@ -60,7 +60,7 @@
                 }
             </div>
             <div class="col-sm-4">
-                @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
+                @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
                 {
                     if (Model.HasSelectedOrganisation)
                     {

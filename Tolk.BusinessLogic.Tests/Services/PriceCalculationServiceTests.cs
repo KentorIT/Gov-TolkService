@@ -104,7 +104,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(100.80, 0.20)]
         public void GetRoundedPriceRow(decimal price, decimal actual)
         {
-            new PriceCalculationService().GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { GetPriceRow(price, 1) }).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, price);
+            PriceCalculationService.GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { GetPriceRow(price, 1) }).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, price);
         }
 
         [Theory]
@@ -118,7 +118,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 priceRows.Add(GetPriceRow(price, 1));
             }
-            new PriceCalculationService().GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), priceRows).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, prices.Sum(pr => pr));
+            PriceCalculationService.GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), priceRows).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, prices.Sum(pr => pr));
         }
 
         [Theory]
@@ -158,30 +158,30 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 0, 0, 0)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 0, 0, 0)]
 
-        public void GetLostTimePriceRows(string startAt, string endAt, CompetenceLevel compLevel, PriceListType priceListType, int lostTime, int lostTimeIWH, int actual)
+        public void GetLostTimePriceRows(string startAt, CompetenceLevel compLevel, PriceListType priceListType, int lostTime, int lostTimeIWH, int actual)
         {
             using (var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
                 var prices = GetPriceList(DateTime.Parse(startAt), compLevel, priceListType);
-                IEnumerable<PriceRowBase> list = new PriceCalculationService(tolkdbContext).GetLostTimePriceRows(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), lostTime, lostTimeIWH, prices);
+                IEnumerable<PriceRowBase> list = PriceCalculationService.GetLostTimePriceRows(DateTime.Parse(startAt).ToDateTimeOffsetSweden().ToDateTimeOffsetSweden(), lostTime, lostTimeIWH, prices);
                 list.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(actual, "number of rows {0}", actual);
             }
         }
@@ -202,7 +202,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-10-10 23:00:00", "2018-10-11 00:00:00", 1)]
         public void GetNoOfDays(string startAt, string endAt, int actual)
         {
-            new PriceCalculationService().GetNoOfDays(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden()).Should().Be(actual, "there are {0} days between {1} and {2}", actual, startAt, endAt);
+            PriceCalculationService.GetNoOfDays(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden()).Should().Be(actual, "there are {0} days between {1} and {2}", actual, startAt, endAt);
         }
 
         [Theory]
@@ -954,7 +954,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                     { GetPriceRowWithPriceListRowForTest(start2, end2,  price, (int)decimal.Round(quant2, MidpointRounding.AwayFromZero), 1101) },
                     { GetPriceRowWithPriceListRowForTest(start3, end3, price, (int)decimal.Round(quant3, MidpointRounding.AwayFromZero), 1101) },
                 };
-                IEnumerable<PriceRowBase> mergedPriceRows = new PriceCalculationService(tolkdbContext).MergePriceListRowsAndReduceForMealBreak(priceRows);
+                IEnumerable<PriceRowBase> mergedPriceRows = PriceCalculationService.MergePriceListRowsAndReduceForMealBreak(priceRows);
                 mergedPriceRows.Count().Should().Be(1);
                 mergedPriceRows.First().StartAt.Should().Be(minStartAt);
                 mergedPriceRows.First().EndAt.Should().Be(maxEndAt);

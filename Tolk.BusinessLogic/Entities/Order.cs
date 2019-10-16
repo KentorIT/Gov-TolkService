@@ -217,7 +217,7 @@ namespace Tolk.BusinessLogic.Entities
                 CompetenceAndSpecialistLevel level = CompetenceAndSpecialistLevel.CourtSpecialist;
                 if (CompetenceRequirements != null && CompetenceRequirements.Any())
                 {
-                    if (CompetenceRequirements.Count() == 1)
+                    if (CompetenceRequirements.Count == 1)
                     {
                         level = CompetenceRequirements.Single().CompetenceLevel;
                     }

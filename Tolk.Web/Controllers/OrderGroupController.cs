@@ -64,8 +64,9 @@ namespace Tolk.Web.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
+        public async Task<IActionResult> View(int id)
         {
+            //, string message = null, string errorMessage = null Add these for message-handling later
             //Get order model from db
             OrderGroup orderGroup = await GetOrderGroup(id);
 

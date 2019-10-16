@@ -38,7 +38,7 @@ namespace Tolk.BusinessLogic.Entities
             : this(email, userName, firstName, lastName)
         {
             CustomerOrganisation = customer;
-            CustomerOrganisationId = customer.CustomerOrganisationId;
+            CustomerOrganisationId = customer?.CustomerOrganisationId;
         }
 
         public AspNetUser(string email, string userName, string firstName, string lastName, Broker broker)

@@ -19,32 +19,32 @@
                 <div class="col-sm-4">
                     <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
                 </div>
-                @if (Model.UserType == UserType.ApplicationAdministrator)
+                @if (Model.UserType == UserTypes.ApplicationAdministrator)
                 {
                     <div class="col-sm-4">
                         <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
                     </div>
                 }
-                else if (Model.UserType == UserType.SystemAdministrator)
+                else if (Model.UserType == UserTypes.SystemAdministrator)
                 {
                     <div class="col-sm-4">
                         <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForSysAdmin" class="allow-clear" />
                     </div>
                 }
-                else if (Model.UserType == UserType.Broker)
+                else if (Model.UserType == UserTypes.Broker)
                 {
                     <div class="col-sm-4">
                         <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
                     </div>
                 }
-                else if (Model.UserType == UserType.OrderCreator)
+                else if (Model.UserType == UserTypes.OrderCreator)
                 {
                     <div class="col-sm-4">
                         <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
                     </div>
                 }
             </div>
-            @if (Model.UserType == UserType.SystemAdministrator || Model.UserType == UserType.ApplicationAdministrator)
+            @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
             {
                 <div class="row">
                     <div class="col-sm-4">

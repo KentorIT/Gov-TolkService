@@ -72,12 +72,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2000, 2008, 0.4, StatisticsChangeType.Increasing)]
         [InlineData(200, 200, 0, StatisticsChangeType.Unchanged)]
         [InlineData(0, 0, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(200, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
-        [InlineData(0, 200, 0, StatisticsChangeType.NA_NoDataLastWeek)]
+        [InlineData(200, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(0, 200, 0, StatisticsChangeType.NANoDataLastWeek)]
 
         public void GetWeeklyStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
-            WeeklyStatisticsModel ws = _statService.GetWeeklyStatistics(weekBefore, thisWeek, string.Empty);
+            WeeklyStatisticsModel ws = StatisticsService.GetWeeklyStatistics(weekBefore, thisWeek, string.Empty);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
         }
@@ -86,8 +86,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(5, 1, 80, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyUserLoginStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
             List<UserLoginLogEntry> usersLogIn = new List<UserLoginLogEntry>();
@@ -113,8 +113,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyNewUserStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
 
@@ -142,8 +142,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyOrderStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
             var orders = _tolkDbContext.Orders.ToList();
@@ -171,8 +171,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyDeliveredOrderStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
             var orders = _tolkDbContext.Orders.ToList();
@@ -206,8 +206,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyRequisitionStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
             var requisitions = _tolkDbContext.Requisitions.ToList();
@@ -235,8 +235,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
         [InlineData(1, 2, 100, StatisticsChangeType.Increasing)]
         [InlineData(1, 1, 0, StatisticsChangeType.Unchanged)]
-        [InlineData(0, 1, 0, StatisticsChangeType.NA_NoDataLastWeek)]
-        [InlineData(1, 0, 0, StatisticsChangeType.NA_NoDataThisWeek)]
+        [InlineData(0, 1, 0, StatisticsChangeType.NANoDataLastWeek)]
+        [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyComplaintStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
             var complaints = _tolkDbContext.Complaints.ToList();
@@ -330,7 +330,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 }
             }
             _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = _statService.GetOrderLanguageStatistics(_tolkDbContext.Orders.Where(o => o.LanguageId > 0).Include(o => o.Language));
+            OrderStatisticsModel os = StatisticsService.GetOrderLanguageStatistics(_tolkDbContext.Orders.Where(o => o.LanguageId > 0).Include(o => o.Language));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;
             foreach (var item in os.TotalListItems)
@@ -413,7 +413,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 }
             }
             _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = _statService.GetOrderRegionStatistics(_tolkDbContext.Orders.Where(o => o.RegionId != regionNotIncludedInTest).Include(o => o.Region));
+            OrderStatisticsModel os = StatisticsService.GetOrderRegionStatistics(_tolkDbContext.Orders.Where(o => o.RegionId != regionNotIncludedInTest).Include(o => o.Region));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;
             foreach (var item in os.TotalListItems)
@@ -496,7 +496,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 }
             }
             _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = _statService.GetOrderCustomerStatistics(_tolkDbContext.Orders.
+            OrderStatisticsModel os = StatisticsService.GetOrderCustomerStatistics(_tolkDbContext.Orders.
                 Where(o => o.CustomerOrganisationId != customerNotIncludedInTest).Include(o => o.CustomerOrganisation));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;

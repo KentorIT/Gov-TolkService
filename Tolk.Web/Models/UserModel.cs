@@ -69,7 +69,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Organisation")]
         public string OrganisationIdentifier { get; set; }
 
-        public UserType UserType { get; set; }
+        public UserTypes UserType { get; set; }
 
         public List<UnitUserModel> UnitUsers { get; set; }
 

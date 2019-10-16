@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
@@ -9,9 +8,9 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public static class EntityExtensions
     {
-        public static IQueryable<Order> CustomerOrders(this IQueryable<Order> orders, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false, bool includeContact = false)
+        public static IQueryable<Order> CustomerOrders(this IQueryable<Order> orders, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false, bool includeContact = false, bool includeOrderGroupOrders = false)
         {
-            var filteredOrders = orders.Where(o => o.CustomerOrganisationId == customerOrganisationId);
+            var filteredOrders = orders.Where(o => o.CustomerOrganisationId == customerOrganisationId && (includeOrderGroupOrders || o.OrderGroupId == null));
             return isCentralAdminOrOrderHandler ? filteredOrders :
                 filteredOrders.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || (includeContact && o.ContactPersonId == userId) ||
                     customerUnits.Contains(o.CustomerUnitId ?? -1));
@@ -19,7 +18,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<Request> BrokerRequests(this IQueryable<Request> requests, int brokerId)
         {
-            return requests.Where(r => r.Ranking.BrokerId == brokerId && 
+            return requests.Where(r => r.Ranking.BrokerId == brokerId &&
                     r.Status != RequestStatus.AwaitingDeadlineFromCustomer &&
                     r.Status != RequestStatus.NoDeadlineFromCustomer &&
                     r.Status != RequestStatus.InterpreterReplaced);
@@ -45,7 +44,7 @@ namespace Tolk.BusinessLogic.Utilities
                 return (i == null ? (T?)null : (T)(object)i.Value) ?? (T?)EnumHelper.Parse<T>(value);
             }
             return null;
-            
+
         }
 
         private static int? TryGetNullableInt(this string value)

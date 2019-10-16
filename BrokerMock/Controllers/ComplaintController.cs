@@ -113,18 +113,20 @@ namespace BrokerMock.Controllers
                 OrderNumber = orderNumber,
                 CallingUser = "regular-user@formedling1.se"
             };
-            var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Complaint/Accept", content);
-            if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
-            }
-            else
-            {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} accepterat reklamation");
-            }
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Complaint/Accept", content);
+                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} accepterat reklamation");
+                }
 
-            return true;
+                return true;
+            }
         }
 
         private async Task<bool> Dispute(string orderNumber, string message)
@@ -135,18 +137,20 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se",
                 Message = message
             };
-            var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Complaint/Dispute", content);
-            if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
-            }
-            else
-            {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute] FAILED:: Boknings-ID: {orderNumber}Bestrider reklamation!");
-            }
+                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Complaint/Dispute", content);
+                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute] FAILED:: Boknings-ID: {orderNumber}Bestrider reklamation!");
+                }
 
-            return true;
+                return true;
+            }
         }
 
         private async Task<ComplaintDetailsResponse> GetComplaint(string orderNumber)
