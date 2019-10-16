@@ -81,32 +81,33 @@ namespace Tolk.Web.Models
                 }
                 if ((Roles.Value & UserTypes.SystemAdministrator) == UserTypes.SystemAdministrator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.SystemAdministrator).Id));
+                    var rollId = roles.Single(role => role.Name == Authorization.Roles.SystemAdministrator).Id;
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == rollId));
                 }
                 if ((Roles.Value & UserTypes.ApplicationAdministrator) == UserTypes.ApplicationAdministrator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.ApplicationAdministrator).Id));
+                    var rollId = roles.Single(role => role.Name == Authorization.Roles.ApplicationAdministrator).Id;
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == rollId));
                 }
                 if ((Roles.Value & UserTypes.Impersonator) == UserTypes.Impersonator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.Impersonator).Id));
+                    var rollId = roles.Single(role => role.Name == Authorization.Roles.Impersonator).Id;
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == rollId));
                 }
                 if ((Roles.Value & UserTypes.OrganisationAdministrator) == UserTypes.OrganisationAdministrator)
                 {
-                    users = users.Where(u => u.Roles.Any(r => r.RoleId == roles.Single(role => role.Name == Authorization.Roles.CentralAdministrator).Id) &&
-                        (u.CustomerOrganisationId != null || u.BrokerId != null));
+                    var rollId = roles.Single(role => role.Name == Authorization.Roles.CentralAdministrator).Id;
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == rollId) && (u.CustomerOrganisationId != null || u.BrokerId != null));
+                }
+                if ((Roles.Value & UserTypes.CentralOrderHandler) == UserTypes.CentralOrderHandler)
+                {
+                    var rollId = roles.Single(role => role.Name == Authorization.Roles.CentralOrderHandler).Id;
+                    users = users.Where(u => u.Roles.Any(r => r.RoleId == rollId) && (u.CustomerOrganisationId != null));
                 }
             }
             if (Status.HasValue)
             {
-                if (Status.Value == ActiveStatus.Active)
-                {
-                    users = users.Where(u => u.IsActive);
-                }
-                else
-                {
-                    users = users.Where(u => !u.IsActive);
-                }
+                users = users.Where(u => u.IsActive == (Status.Value == ActiveStatus.Active));
             }
             return users;
         }
