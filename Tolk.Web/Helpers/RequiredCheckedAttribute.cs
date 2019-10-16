@@ -41,11 +41,15 @@ namespace Tolk.Web.Helpers
             // Argument checks
             if (validationContext == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(validationContext), $"{nameof(validationContext)} cannot be null");
             }
-            if (Min < 0 || Max < 0)
+            if (Min < 0)
             {
-                throw new ArgumentOutOfRangeException("Arguments cannot be negative");
+                throw new ArgumentException($"{nameof(Min)} cannot be negative");
+            }
+            if (Max < 0)
+            {
+                throw new ArgumentException($"{nameof(Max)} cannot be negative");
             }
             if (Min > Max)
             {

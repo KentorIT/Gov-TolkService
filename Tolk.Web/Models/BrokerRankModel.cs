@@ -10,9 +10,9 @@ namespace Tolk.Web.Models
 
         public decimal BrokerFeePercentage { get; set; }
 
-        public List<string> BrokerFeesPerCompetenceLevel { get; set; }
+        public IEnumerable<string> BrokerFeesPerCompetenceLevel { get; set; }
 
-        public List<string> CompetenceDescriptions { get; set; }
+        public IEnumerable<string> CompetenceDescriptions { get; set; }
 
         public string RegionName { get; set; }
 

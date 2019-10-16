@@ -6,6 +6,6 @@ namespace Tolk.Web.Models
     {
         public string Region { get; set; }
 
-        public List<BrokerRankModel> Brokers { get; set; }
+        public IEnumerable<BrokerRankModel> Brokers { get; set; }
     }
 }

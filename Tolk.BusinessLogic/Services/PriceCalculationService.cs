@@ -511,7 +511,7 @@ namespace Tolk.BusinessLogic.Services
             return _dateCalculationService.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
         }
 
-        public static DisplayPriceInformation GetPriceInformationToDisplay(List<PriceRowBase> priceRows)
+        public static DisplayPriceInformation GetPriceInformationToDisplay(IEnumerable<PriceRowBase> priceRows)
         {
             DisplayPriceInformation dpiTotal = new DisplayPriceInformation();
             DisplayPriceInformation separateSubTotalInterpreterCompensation = new DisplayPriceInformation

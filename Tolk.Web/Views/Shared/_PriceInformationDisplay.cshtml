@@ -95,7 +95,7 @@ else
         <div class="col-sm-4">
             <br />
             Följande tolktaxa används för beräkning: <br /><span class="left-padding detail-text"> @Model.PriceInformationToDisplay.PriceListTypeDescription<br /></span> <span class="left-padding detail-text">@Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
-            @if (Model.PriceInformationToDisplay.MealBreaks?.Count > 0)
+            @if (Model.PriceInformationToDisplay.MealBreaks.Any())
             {
                 <span>Avdrag för måltidspauser</span><br />
                 @foreach (MealBreakInformation mealBreak in Model.PriceInformationToDisplay.MealBreaks.OrderBy(m => m.StartAt))

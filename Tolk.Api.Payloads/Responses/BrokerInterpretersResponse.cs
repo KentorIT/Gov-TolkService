@@ -7,6 +7,6 @@ namespace Tolk.Api.Payloads.Responses
 {
     public class BrokerInterpretersResponse : ResponseBase
     {
-        public List<InterpreterModel> Interpreters { get; set; }
+        public IEnumerable<InterpreterModel> Interpreters { get; set; }
     }
 }

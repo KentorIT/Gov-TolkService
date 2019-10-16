@@ -9,3 +9,4 @@
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Initial decision is to not do this", Scope = "module")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Genreated code", Scope = "namespaceanddescendants", Target = "Tolk.BusinessLogic.Entities")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Genreated code", Scope = "namespaceanddescendants", Target = "Tolk.BusinessLogic.Data.Migrations")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "Genreated code", Scope = "namespaceanddescendants", Target = "Tolk.BusinessLogic.Data.Migrations")]

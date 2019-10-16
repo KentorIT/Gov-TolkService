@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
 
         public RequisitionViewModel PreviousRequisitionView { get; set; }
 
-        public List<int> RelatedRequisitions { get; set; }
+        public IEnumerable<int> RelatedRequisitions { get; set; }
 
         #region methods
 

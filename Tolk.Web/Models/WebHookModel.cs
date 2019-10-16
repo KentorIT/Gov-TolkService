@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset CreatedAt { get; set; }
         [Display(Name = "Skickad")]
         public DateTimeOffset? DeliveredAt { get; set; }
-        public List<FailedTryModel> FailedTries { get; set; }
+        public IEnumerable<FailedTryModel> FailedTries { get; set; }
         [Display(Name = "Ersatt av")]
         public int? ReplacedBy { get; set; }
         [Display(Name = "Ersätter")]

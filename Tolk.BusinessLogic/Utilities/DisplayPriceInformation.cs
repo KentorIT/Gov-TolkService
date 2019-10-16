@@ -5,9 +5,9 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public class DisplayPriceInformation
     {
-        public List<DisplayPriceRow> DisplayPriceRows { get; set; } = new List<DisplayPriceRow>();
+        public List<DisplayPriceRow> DisplayPriceRows { get; } = new List<DisplayPriceRow>();
 
-        public List<DisplayPriceInformation> SeparateSubTotal { get; set; } = new List<DisplayPriceInformation>();
+        public List<DisplayPriceInformation> SeparateSubTotal { get; } = new List<DisplayPriceInformation>();
 
         public decimal TotalPrice { get => DisplayPriceRows.Sum(p => p.RoundedPrice); }
 
@@ -16,7 +16,8 @@ namespace Tolk.BusinessLogic.Utilities
         public string CompetencePriceDescription { get; set; }
 
         public string SubPriceHeader { get; set; }
-        public List<MealBreakInformation> MealBreaks { get; set; }
+        
+        public IEnumerable<MealBreakInformation> MealBreaks { get; set; }
 
     }
 }

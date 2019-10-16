@@ -28,7 +28,7 @@ namespace BrokerMock.Services
         public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, IMemoryCache cache)
         {
             _hubContext = hubContext;
-            _options = options.Value;
+            _options = options?.Value;
             _cache = cache;
             client.DefaultRequestHeaders.Accept.Clear();
             if (_options.UseApiKey && !client.DefaultRequestHeaders.Any(h=> h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
@@ -124,7 +124,7 @@ namespace BrokerMock.Services
             if (JsonConvert.DeserializeObject<ResponseBase>(responseString).Success)
             {
                 var interpreterResponse = JsonConvert.DeserializeObject<BrokerInterpretersResponse>(responseString);
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters: {interpreterResponse.Interpreters.Count}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get existing interpreters: {interpreterResponse.Interpreters.Count()}");
                 _cache.Set("BrokerInterpreters", interpreterResponse.Interpreters);
             }
             else

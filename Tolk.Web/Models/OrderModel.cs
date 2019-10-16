@@ -105,6 +105,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Andra hand")]
         public InterpreterLocation? RankedInterpreterLocationSecond { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderOccasionModel> Occasions { get; set; }
 
 
@@ -159,6 +160,7 @@ namespace Tolk.Web.Models
 
         public AttachmentListModel AttachmentListModel { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         public Guid? FileGroupKey { get; set; }
@@ -264,7 +266,7 @@ namespace Tolk.Web.Models
 
         public RequestModel ActiveRequest { get; set; }
 
-        public List<BrokerListModel> PreviousRequests { get; set; }
+        public IEnumerable<BrokerListModel> PreviousRequests { get; set; }
 
         [Display(Name = "Anledning till att svaret inte godtas")]
         [DataType(DataType.MultilineText)]
@@ -286,10 +288,12 @@ namespace Tolk.Web.Models
         #region extra requirements
 
         [Display(Name = "Tillkommande krav och/eller önskemål", Description = "Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
 
         [Display(Name = "Tillkommande önskemål", Description = "Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
         #endregion

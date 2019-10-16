@@ -5,18 +5,20 @@
 
 @if (Model.RelatedRequisitions != null && Model.RelatedRequisitions.Count() > 1)
 {
+    int i = 0;
     <div class="row">
         <div class="col-xs-12" aria-label="breadcrumb">
             <ol class="breadcrumb">
-                @for (int i = 0; i < Model.RelatedRequisitions.Count; i++)
+                @foreach(int id in Model.RelatedRequisitions)
                 {
-                    @if (Model.RequisitionId == Model.RelatedRequisitions[i])
+                    i++;
+                    @if (Model.RequisitionId == id)
                     {
-                        <li class="active">Rekv @(i + 1)</li>
+                        <li class="active">Rekv @(i)</li>
                     }
                     else
                     {
-                        <li><a href="#" onclick="changeRequisition(this, 'Requisition/View?id=@Model.RelatedRequisitions[i]&returnPartial=true', '#requisition')">Rekv @(i + 1)</a></li>
+                        <li><a href="#" onclick="changeRequisition(this, 'Requisition/View?id=@id&returnPartial=true', '#requisition')">Rekv @(i)</a></li>
                     }
                 }
             </ol>

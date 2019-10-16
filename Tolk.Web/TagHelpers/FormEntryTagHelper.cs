@@ -87,7 +87,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeCheckboxGroup:
                     if (Items == null)
                     {
-                        throw new ArgumentNullException("Items", "Items must be set if type is select, radio-group or checkbox-group.");
+                        throw new ArgumentException($"{nameof(Items)} must be set if type is select, radio-group or checkbox-group.");
                     }
                     break;
                 case null:
