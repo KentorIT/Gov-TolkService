@@ -55,8 +55,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public void Create(DateTimeOffset swedenNow, int userId, int? impersonatorId, int customerOrganisationId, string name, string email, int localAdministratorId)
         {
-            List<CustomerUnitUser> customerUnitUser = new List<CustomerUnitUser>();
-            customerUnitUser.Add(new CustomerUnitUser { IsLocalAdmin = true, UserId = localAdministratorId });
+            List<CustomerUnitUser> customerUnitUser = new List<CustomerUnitUser>
+            {
+                new CustomerUnitUser { IsLocalAdmin = true, UserId = localAdministratorId }
+            };
             CreatedAt = swedenNow;
             CreatedBy = userId;
             ImpersonatingCreator = impersonatorId;

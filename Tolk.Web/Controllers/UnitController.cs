@@ -24,16 +24,19 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
         private readonly IAuthorizationService _authorizationService;
+        private readonly UserService _userService;
 
         public UnitController(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            IAuthorizationService authorizationService
+            IAuthorizationService authorizationService,
+            UserService userService
         )
         {
             _dbContext = dbContext;
             _clock = clock;
             _authorizationService = authorizationService;
+            _userService = userService;
         }
 
         public ActionResult List(UnitFilterModel model)
@@ -93,6 +96,7 @@ namespace Tolk.Web.Controllers
                     int? customerId = User.TryGetCustomerOrganisationId();
                     var unit = new CustomerUnit();
                     unit.Create(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), model.Name, model.Email, model.LocalAdministrator);
+                    await _userService.LogCustomerUnitUserUpdateAsync(model.LocalAdministrator, User.GetUserId());
                     await _dbContext.AddAsync(unit);
                     await _dbContext.SaveChangesAsync();
                     return RedirectToAction(nameof(View), new { id = unit.CustomerUnitId });
