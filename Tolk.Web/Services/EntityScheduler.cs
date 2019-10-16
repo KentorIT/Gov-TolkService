@@ -109,7 +109,7 @@ namespace Tolk.Web.Services
             }
             finally
             {
-                Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run());
+                Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
             }
 
             _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs/1000} seconds again");
