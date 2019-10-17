@@ -13,13 +13,17 @@ namespace Tolk.BusinessLogic.Entities
             string payload,
             NotificationType notificationType,
             DateTimeOffset createdAt,
-            int recipientUserId)
+            int recipientUserId,
+            int? resentUserId = null,
+            int? resentImpersonatorUserId = null)
         {
             RecipientUrl = recipientUrl;
             Payload = payload;
             CreatedAt = createdAt;
             NotificationType = notificationType;
             RecipientUserId = recipientUserId;
+            ResentUserId = resentUserId;
+            ResentImpersonatorUserId = resentImpersonatorUserId;
         }
         public int OutboundWebHookCallId { get; private set; }
 
@@ -37,6 +41,16 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(RecipientUserId))]
         public AspNetUser RecipientUser { get; set; }
+
+        public int? ResentUserId { get; private set; }
+
+        [ForeignKey(nameof(ResentUserId))]
+        public AspNetUser ResentUser { get; set; }
+
+        public int? ResentImpersonatorUserId { get; private set; }
+
+        [ForeignKey(nameof(ResentImpersonatorUserId))]
+        public AspNetUser ResentImpersonatorUser { get; set; }
 
         public DateTimeOffset? DeliveredAt { get; set; }
 

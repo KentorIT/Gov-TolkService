@@ -1063,6 +1063,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("ResentHookId");
 
+                    b.Property<int?>("ResentImpersonatorUserId");
+
+                    b.Property<int?>("ResentUserId");
+
                     b.HasKey("OutboundWebHookCallId");
 
                     b.HasIndex("RecipientUserId");
@@ -1070,6 +1074,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("ResentHookId")
                         .IsUnique()
                         .HasFilter("[ResentHookId] IS NOT NULL");
+
+                    b.HasIndex("ResentImpersonatorUserId");
+
+                    b.HasIndex("ResentUserId");
 
                     b.ToTable("OutboundWebHookCalls");
                 });
@@ -2367,6 +2375,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "ResentHook")
                         .WithOne("ReplacingWebHook")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "ResentHookId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ResentImpersonatorUser")
+                        .WithMany()
+                        .HasForeignKey("ResentImpersonatorUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ResentUser")
+                        .WithMany()
+                        .HasForeignKey("ResentUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Quarantine", b =>

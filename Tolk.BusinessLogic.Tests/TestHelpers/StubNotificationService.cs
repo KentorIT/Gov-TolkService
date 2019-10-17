@@ -77,6 +77,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequisitionReviewed(Requisition requisition) { }
 
-        public bool ResendWebHook(OutboundWebHookCall failedCall) { return true; }
+        public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
     }
 }

@@ -1168,7 +1168,7 @@ Sammanställning:
                 .Single(o => o.RequestId == id);
         }
 
-        public bool ResendWebHook(OutboundWebHookCall failedCall)
+        public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null)
         {
             int? brokerId = _dbContext.Users.SingleOrDefault(u => u.Id == failedCall.RecipientUserId)?.BrokerId;
             if (brokerId == null)
@@ -1188,7 +1188,9 @@ Sammanställning:
                 failedCall.Payload,
                 failedCall.NotificationType,
                 _clock.SwedenNow,
-                webhook.RecipientUserId);
+                webhook.RecipientUserId,
+                resentUserId, 
+                resentImpersonatorUserId);
 
             _dbContext.OutboundWebHookCalls.Add(newCall);
             _dbContext.SaveChanges();

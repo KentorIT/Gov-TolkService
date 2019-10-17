@@ -116,7 +116,7 @@ namespace Tolk.Web.Controllers
                 .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == webhookId);
             if (notification != null && (await _authorizationService.AuthorizeAsync(User, notification, Policies.Replace)).Succeeded)
             {
-                _notificationService.ResendWebHook(notification);
+                _notificationService.ResendWebHook(notification, User.GetUserId(), User.TryGetImpersonatorId());
                 return RedirectToAction("List");
             }
             return Forbid();

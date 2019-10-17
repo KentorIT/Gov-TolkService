@@ -219,6 +219,16 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OutboundWebHookCall>()
+                .HasOne(c => c.ResentUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OutboundWebHookCall>()
+                .HasOne(c => c.ResentImpersonatorUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<OutboundEmail>()
                 .HasOne(c => c.ResentByUser)
                 .WithMany()
