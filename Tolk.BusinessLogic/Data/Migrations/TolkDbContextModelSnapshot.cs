@@ -1807,6 +1807,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTimeOffset>("LoggedAt");
 
+                    b.Property<int?>("UpdatedByImpersonatorId");
+
                     b.Property<int?>("UpdatedByUserId");
 
                     b.Property<int>("UserChangeType");
@@ -1814,6 +1816,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("UserId");
 
                     b.HasKey("UserAuditLogEntryId");
+
+                    b.HasIndex("UpdatedByImpersonatorId");
 
                     b.HasIndex("UpdatedByUserId");
 
@@ -2684,6 +2688,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserAuditLogEntry", b =>
                 {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByImpersonatorUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByImpersonatorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId");

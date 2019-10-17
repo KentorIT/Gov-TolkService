@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
                     int? customerId = User.TryGetCustomerOrganisationId();
                     var unit = new CustomerUnit();
                     unit.Create(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), User.GetCustomerOrganisationId(), model.Name, model.Email, model.LocalAdministrator);
-                    await _userService.LogCustomerUnitUserUpdateAsync(model.LocalAdministrator, User.GetUserId());
+                    await _userService.LogCustomerUnitUserUpdateAsync(model.LocalAdministrator, User.GetUserId(), User.TryGetImpersonatorId());
                     await _dbContext.AddAsync(unit);
                     await _dbContext.SaveChangesAsync();
                     return RedirectToAction(nameof(View), new { id = unit.CustomerUnitId });

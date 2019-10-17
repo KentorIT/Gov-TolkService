@@ -13,11 +13,13 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserAuditLogEntryId { get; set; }
 
-        public UserChangeType UserChangeType { get;set;}
+        public UserChangeType UserChangeType { get; set; }
 
         public int UserId { get; set; }
 
         public int? UpdatedByUserId { get; set; }
+
+        public int? UpdatedByImpersonatorId { get; set; }
 
         public DateTimeOffset LoggedAt { get; set; }
 
@@ -25,6 +27,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(UpdatedByUserId))]
         public AspNetUser UpdatedByUser { get; set; }
+
+        [ForeignKey(nameof(UpdatedByImpersonatorId))]
+        public AspNetUser UpdatedByImpersonatorUser { get; set; }
 
         public AspNetUserHistoryEntry UserHistory { get; set; }
 
