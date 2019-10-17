@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolkens kön")]
         Gender = 1,
 
-        [CustomName("specified_dialect", false)]
+        [CustomName("specified_dialect")]
         [Description("Dialekt")]
         Dialect = 2,
 
