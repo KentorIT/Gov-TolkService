@@ -1,6 +1,6 @@
 ﻿@model WebHookModel
 @{
-    ViewData["Title"] = $"Webhook - detaljer ({Model.OutboundWebHookCallId})";
+    ViewData["Title"] = $"Webhook - detaljer (Id {Model.OutboundWebHookCallId})";
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
@@ -11,21 +11,44 @@
         @if (Model.ShowBroker)
         {
             <div class="col-sm-4">
+                <display-entry asp-for="CreatedAt" />
+                <display-entry asp-for="DeliveredAt" />
+            </div>
+            <div class="col-sm-4">
                 <display-entry asp-for="BrokerName" />
+            </div>
+        }
+        else
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedAt" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="DeliveredAt" />
             </div>
         }
     </div>
     <div class="row">
         <div class="col-sm-4">
-            <display-entry asp-for="CreatedAt" />
-            <display-entry asp-for="DeliveredAt" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="ReplacedBy" />
-            <display-entry asp-for="Replaces" />
-        </div>
-        <div class="col-sm-4">
             <display-entry asp-for="RecipientUrl" />
+        </div>
+        <div class="col-sm-4">
+            @if (Model.ReplacedBy.HasValue)
+            {
+                <label>Ersatt av</label><br />
+                <span class="detail-text">Id @Model.ReplacedBy</span> <br /> <a class="do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacedBy })"> Visa ersättande webhook </a><br />
+            }
+            @if (Model.Replaces.HasValue && Model.ReplacedBy.HasValue)
+            {
+                <br />
+            }
+            @if (Model.Replaces.HasValue)
+            {
+                <label>Ersätter</label><br />
+                <span class="detail-text">Id @Model.Replaces</span> <br /> <a class="do-not-check-dirty" href="@Url.Action("View", new { id = Model.Replaces })"> Visa omskickad webhook </a>
+            }
+        </div>
+        <div class="col-sm-4">
             @if (Model.AllowResend)
             {
                 <form method="post" asp-action="Resend">
@@ -35,13 +58,11 @@
             }
         </div>
     </div>
-
     <div class="row">
         <div class="col-sm-12">
             <display-entry asp-for="Payload" />
         </div>
     </div>
-
     @if (Model.FailedTries.Any())
     {
         <div class="row">
@@ -66,4 +87,9 @@
             </div>
         </div>
     }
+    <div class="row">
+        <div class="col-sm-12">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+        </div>
+    </div>
 </section>

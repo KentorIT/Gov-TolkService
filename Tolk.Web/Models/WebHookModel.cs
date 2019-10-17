@@ -9,7 +9,7 @@ namespace Tolk.Web.Models
     {
         [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }
-        [Display(Name = "Skickat till")]
+        [Display(Name = "Mottagande url")]
         public string RecipientUrl { get; set; }
         [Display(Name = "Innehåll")]
         public string Payload { get; set; }
