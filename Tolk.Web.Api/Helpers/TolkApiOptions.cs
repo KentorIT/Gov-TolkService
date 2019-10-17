@@ -13,8 +13,9 @@ namespace Tolk.Web.Api.Helpers
         public static List<ErrorResponse> ErrorResponses => 
                 new List<ErrorResponse>
                 {
+                    new ErrorResponse { StatusCode = 500, ErrorCode = ErrorCodes.UnspecifiedProblem, ErrorMessage = "The api server encountered a problem. Please contact the support if the problem persists." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.Unauthorized, ErrorMessage = "The api user could not be authorized." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found on a request connected to your organsation." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found on a request connected to your organisation." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.ComplaintNotFound, ErrorMessage = "The provided order has no registered complaint." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.ComplaintNotInCorrectState, ErrorMessage = "The complaint was not in a correct state." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestNotFound, ErrorMessage = "The provided order number has no request in the correct state for the call." },
@@ -25,7 +26,7 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestNotCorrectlyAnswered, ErrorMessage = "The request or the underlying order was not correctly answered" },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequisitionNotFound, ErrorMessage = "The provided order has no registered requisition." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequisitionNotInCorrectState, ErrorMessage = "The requisition was not in a correct state." },
-                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.OrderGroupNotFound, ErrorMessage = "The provided order group number could not be found on a request connected to your organsation." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.OrderGroupNotFound, ErrorMessage = "The provided order group number could not be found on a request connected to your organisation." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestGroupNotFound, ErrorMessage = "The provided order group number has no request in the correct state for the call." },
                };
     }

@@ -9,6 +9,7 @@ namespace Tolk.Web.Api.Helpers
 {
     public static class ErrorCodes
     {
+        public const string UnspecifiedProblem = nameof(UnspecifiedProblem);
         public const string Unauthorized = nameof(Unauthorized);
         public const string OrderNotFound = nameof(OrderNotFound);
         public const string ComplaintNotFound = nameof(ComplaintNotFound);

@@ -650,6 +650,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<JsonResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber}");
@@ -675,18 +677,22 @@ namespace Tolk.Web.Api.Controllers
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                         //Must have a request connected to the order for the broker, any status...
                         r.Ranking.BrokerId == apiUser.BrokerId &&
-                        r.ReplacingRequestId == null);
+                        r.ReplacingRequest == null);
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
-                //Possibly the user should be added, if not found?? 
                 //End of service
                 return Json(GetResponseFromRequest(request));
             }
             catch (InvalidApiCallException ex)
             {
                 return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(View)}");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
 
@@ -825,7 +831,7 @@ namespace Tolk.Web.Api.Controllers
                                 })
                             })
                 } : null,
-                Interpreter = new InterpreterModel
+                Interpreter = request.Interpreter != null ? new InterpreterModel
                 {
                     InterpreterId = request.Interpreter.InterpreterBrokerId,
                     Email = request.Interpreter.Email,
@@ -834,9 +840,9 @@ namespace Tolk.Web.Api.Controllers
                     OfficialInterpreterId = request.Interpreter.OfficialInterpreterId,
                     PhoneNumber = request.Interpreter.PhoneNumber,
                     InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
-                },
+                } : null,
                 InterpreterLocation = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
-                InterpreterCompetenceLevel = EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request?.CompetenceLevel),
+                InterpreterCompetenceLevel = EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
                 RequirementAnswers = request.RequirementAnswers

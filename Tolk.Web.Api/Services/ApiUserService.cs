@@ -78,7 +78,8 @@ namespace Tolk.Web.Api.Services
         public async Task<AspNetUser> GetBrokerUser(string caller, int? brokerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                await _dbContext.Users.SingleOrDefaultAsync(u => u.NormalizedEmail == caller.ToSwedishUpper() && u.BrokerId == brokerId) :
+                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) && 
+                    u.BrokerId == brokerId && u.IsActive && !u.IsApiUser) :
                 null;
         }
 
