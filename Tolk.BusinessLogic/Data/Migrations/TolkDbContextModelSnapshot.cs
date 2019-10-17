@@ -1023,6 +1023,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("ReplacingEmailId");
 
+                    b.Property<int?>("ResentByUserId");
+
                     b.Property<string>("Subject")
                         .IsRequired();
 
@@ -1031,6 +1033,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("ReplacingEmailId")
                         .IsUnique()
                         .HasFilter("[ReplacingEmailId] IS NOT NULL");
+
+                    b.HasIndex("ResentByUserId");
 
                     b.ToTable("OutboundEmails");
                 });
@@ -2346,6 +2350,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundEmail", "ReplacingEmail")
                         .WithOne("ReplacedByEmail")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.OutboundEmail", "ReplacingEmailId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ResentByUser")
+                        .WithMany()
+                        .HasForeignKey("ResentByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>

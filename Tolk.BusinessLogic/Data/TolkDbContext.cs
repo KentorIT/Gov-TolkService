@@ -219,6 +219,12 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OutboundEmail>()
+                .HasOne(c => c.ResentByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             builder.Entity<TemporaryAttachmentGroup>()
                 .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
 

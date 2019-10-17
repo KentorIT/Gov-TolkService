@@ -764,7 +764,7 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId)
+        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId)
         {
             _dbContext.Add(new OutboundEmail(
                     recipient,
@@ -772,8 +772,8 @@ Sammanställning:
                     plainBody,
                     htmlBody,
                     _clock.SwedenNow,
-                    replacingEmailId));
-
+                    replacingEmailId, 
+                    resentByUserId));
             _dbContext.SaveChanges();
         }
 

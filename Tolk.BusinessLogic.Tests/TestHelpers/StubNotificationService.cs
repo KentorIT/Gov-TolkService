@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody = null, bool isBrokerMail = false, bool addContractInfo = true) { }
 
-        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId) { }
+        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId) { }
 
         public void FlushNotificationSettings() { }
 

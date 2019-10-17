@@ -85,7 +85,8 @@ namespace Tolk.Web.Controllers
                 oldEmail.Subject,
                 oldEmail.PlainBody,
                 oldEmail.HtmlBody,
-                oldEmail.OutboundEmailId
+                oldEmail.OutboundEmailId,
+                User.GetUserId()
             );
 
             return RedirectToAction(nameof(List));

@@ -13,7 +13,8 @@ namespace Tolk.BusinessLogic.Entities
             string plainBody,
             string htmlBody,
             DateTimeOffset createdAt,
-            int? replacingEmailId = null)
+            int? replacingEmailId = null,
+            int? resentByUserId = null)
         {
             Recipient = recipient;
             Subject = subject;
@@ -21,6 +22,7 @@ namespace Tolk.BusinessLogic.Entities
             HtmlBody = htmlBody;
             CreatedAt = createdAt;
             ReplacingEmailId = replacingEmailId;
+            ResentByUserId = resentByUserId;
         }
 
         public int OutboundEmailId { get; private set; }
@@ -43,13 +45,18 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ReplacingEmailId { get; set; }
 
+        public int? ResentByUserId { get; set; }
+
         [ForeignKey(nameof(ReplacingEmailId))]
         [InverseProperty(nameof(ReplacedByEmail))]
         public OutboundEmail ReplacingEmail { get; set; }
 
         [InverseProperty(nameof(ReplacingEmail))]
         public OutboundEmail ReplacedByEmail { get; set; }
-               
+
+        [ForeignKey(nameof(ResentByUserId))]
+        public AspNetUser ResentByUser { get; set; }
+
         public MimeMessage ToMimeKitMessage(InternetAddress from)
         {
             var message = new MimeMessage();
