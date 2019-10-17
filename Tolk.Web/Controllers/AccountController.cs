@@ -137,7 +137,7 @@ namespace Tolk.Web.Controllers
                             ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
                             return View(model);
                         }
-                        await _userService.LogOnUpdateAsync(user.Id);
+                        await _userService.LogOnUpdateAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
                         user.NameFirst = model.NameFirst;
                         user.NameFamily = model.NameFamily;
                         user.PhoneNumber = model.PhoneWork;
@@ -242,7 +242,7 @@ namespace Tolk.Web.Controllers
 
                     if (result.Succeeded)
                     {
-                        await _userService.LogUpdatePasswordAsync(user.Id);
+                        await _userService.LogUpdatePasswordAsync(user.Id, User.TryGetImpersonatorId());
                         return RedirectToAction(nameof(ResetPasswordConfirmation));
                     }
                     AddErrors(result);

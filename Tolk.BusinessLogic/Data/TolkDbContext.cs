@@ -37,6 +37,11 @@ namespace Tolk.BusinessLogic.Data
                 .HasForeignKey(uale => uale.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<UserAuditLogEntry>()
+                .HasOne(o => o.UpdatedByImpersonatorUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<IdentityUserRole<int>>()
                 .HasOne<AspNetUser>()
                 .WithMany(u => u.Roles)

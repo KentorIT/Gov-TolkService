@@ -268,7 +268,7 @@ namespace Tolk.Web.Controllers
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded &&
                      !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
                 {
-                    await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId());
+                    await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
                     user.NameFirst = model.NameFirst;
                     user.NameFamily = model.NameFamily;
                     user.PhoneNumber = model.PhoneWork;
@@ -522,7 +522,7 @@ namespace Tolk.Web.Controllers
                                 }
                             }
                             await _userService.SendInviteAsync(user);
-                            await _userService.LogCreateAsync(user.Id, User.GetUserId());
+                            await _userService.LogCreateAsync(user.Id, User.GetUserId(), User.TryGetImpersonatorId());
 
                             trn.Commit();
                             return RedirectToAction(model.UserPageMode.BackAction, model.UserPageMode.BackController, new { id = model.UserPageMode.BackId });
@@ -603,7 +603,7 @@ namespace Tolk.Web.Controllers
                     {
                         if (ModelState.IsValid)
                         {
-                            await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId());
+                            await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
                             foreach (var setting in model)
                             {
                                 UpdateNotificationSetting(apiUser, setting.UseEmail, setting.Type, NotificationChannel.Email, setting.SpecificEmail);
@@ -700,7 +700,7 @@ namespace Tolk.Web.Controllers
                     {
                         return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, errorMessage = $"Det går inte att ta bort {user.FullName} som lokal administratör då enheten måste ha minst en användare som lokal administratör. Gör en annan användare till lokal administratör före borttag." });
                     }
-                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
+                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId(), User.TryGetImpersonatorId());
                     _dbContext.CustomerUnitUsers.Remove(unitUser);
                     _dbContext.SaveChanges();
                     return RedirectToAction("Users", "Unit", new
@@ -731,7 +731,7 @@ namespace Tolk.Web.Controllers
                     {
                         return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, errorMessage = $"Det går inte att ta bort {user.FullName} som lokal administratör då enheten måste ha minst en användare som lokal administratör. Gör en annan användare till lokal administratör före borttag." });
                     }
-                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId());
+                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId(), User.TryGetImpersonatorId());
                     unitUser.IsLocalAdmin = !unitUser.IsLocalAdmin;
                     _dbContext.SaveChanges();
                 }
@@ -758,7 +758,7 @@ namespace Tolk.Web.Controllers
             var user = GetUserToHandle(model.ConnectUserId.Value);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
-                await _userService.LogCustomerUnitUserUpdateAsync(model.ConnectUserId.Value, User.GetUserId());
+                await _userService.LogCustomerUnitUserUpdateAsync(model.ConnectUserId.Value, User.GetUserId(), User.TryGetImpersonatorId());
                 _dbContext.CustomerUnitUsers.Add(new CustomerUnitUser { CustomerUnitId = model.CustomerUnitId, UserId = model.ConnectUserId.Value, IsLocalAdmin = model.IsLocalAdministrator });
                 _dbContext.SaveChanges();
                 return RedirectToAction("Users", "Unit", new { id = model.CustomerUnitId, message = $"{user.FullName} är nu kopplad till enheten" });
@@ -811,7 +811,7 @@ namespace Tolk.Web.Controllers
                             .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
                         if (apiUser != null)
                         {
-                            await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId());
+                            await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
                             var broker = _dbContext.Brokers.Single(b => b.BrokerId == brokerId);
                             if (apiUser.NormalizedEmail != model.Email.ToSwedishUpper())
                             {
@@ -984,7 +984,7 @@ namespace Tolk.Web.Controllers
                     .SingleOrDefaultAsync(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.EditDefaultSettings)).Succeeded)
                 {
-                    await _userService.LogDefaultSettingsUpdateAsync(model.Id, User.GetUserId());
+                    await _userService.LogDefaultSettingsUpdateAsync(model.Id, User.GetUserId(), User.TryGetImpersonatorId());
                     UpdateDefaultSetting(user, DefaultSettingsType.Region, model.RegionId?.ToSwedishString());
                     UpdateDefaultSetting(user, DefaultSettingsType.CustomerUnit, model.CustomerUnitId?.ToSwedishString());
 
@@ -1068,7 +1068,7 @@ namespace Tolk.Web.Controllers
                 {
                     if (!user.EmailConfirmed)
                     {
-                        await _userService.LogUpdateEmailAsync(model.Id.Value, User.GetUserId());
+                        await _userService.LogUpdateEmailAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
                         user.Email = model.Email;
                         user.NormalizedEmail = model.Email.ToSwedishUpper();
                         //activate a user that might be inactive due to job that inactivates?

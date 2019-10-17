@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -135,12 +134,13 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
             return activationLink;
         }
 
-        public async Task LogCreateAsync(int userId, int? createdById = null)
+        public async Task LogCreateAsync(int userId, int? createdById = null, int? impersonatingcreatorId = null)
         {
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
                 UpdatedByUserId = createdById,
+                UpdatedByImpersonatorId = impersonatingcreatorId,
                 UserChangeType = UserChangeType.Created,
                 UserId = userId
             });
@@ -184,7 +184,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                            newEmailAddress, user.Id);
         }
 
-        public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null)
+        public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.Claims)
@@ -195,6 +195,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatingUpdatedById,
                 UserChangeType = UserChangeType.Updated,
                 UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
                 RolesHistory = currentUserInformation.Roles.Select(r => new AspNetUserRoleHistoryEntry
@@ -215,7 +216,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null)
+        public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.NotificationSettings)
@@ -225,6 +226,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatorUpdatedById,
                 UserChangeType = UserChangeType.UpdatedNotificationSettings,
                 NotificationsHistory = currentUserInformation.NotificationSettings.Select(n => new UserNotificationSettingHistoryEntry
                 {
@@ -235,7 +237,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             });
             await _dbContext.SaveChangesAsync();
         }
-        public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null)
+        public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.DefaultSettings)
@@ -245,6 +247,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatorUpdatedById,
                 UserChangeType = UserChangeType.UpdatedDefaultSettings,
                 DefaultsHistory = currentUserInformation.DefaultSettings.Select(n => new UserDefaultSettingHistoryEntry
                 {
@@ -255,7 +258,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null)
+        public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                 .Include(u => u.CustomerUnits)
@@ -265,6 +268,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatorUpdatedById,
                 UserChangeType = UserChangeType.UpdatedCustomerUnitUserOnly,
                 CustomerUnitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
                 {
@@ -275,7 +279,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogUpdateEmailAsync(int userId, int? updatedByUserId = null)
+        public async Task LogUpdateEmailAsync(int userId, int? updatedByUserId = null, int? imppersonatorUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
                 .SingleOrDefault(u => u.Id == userId);
@@ -284,18 +288,20 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
                 UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = imppersonatorUpdatedById,
                 UserChangeType = UserChangeType.ChangedEmail,
                 UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
             });
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task LogUpdatePasswordAsync(int userId)
+        public async Task LogUpdatePasswordAsync(int userId, int? impersonatingUpdatedId = null)
         {
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
                 UserId = userId,
+                UpdatedByImpersonatorId = impersonatingUpdatedId,
                 UserChangeType = UserChangeType.ChangedPassword
             });
             await _dbContext.SaveChangesAsync();
