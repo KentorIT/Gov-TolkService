@@ -75,6 +75,10 @@ namespace BrokerMock.Controllers
             {
                 throw new Exception();
             }
+            if (extraInstructions.Contains("VIEW"))
+            {
+                var req = await _apiService.GetOrderRequest(payload.OrderNumber);
+            }
 
             if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
             {

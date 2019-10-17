@@ -24,7 +24,6 @@ namespace Tolk.Web.Api.Controllers
     public class RequestController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly TolkApiOptions _options;
         private readonly RequestService _requestService;
         private readonly ApiUserService _apiUserService;
         private readonly ISwedishClock _timeService;
@@ -33,7 +32,6 @@ namespace Tolk.Web.Api.Controllers
 
         public RequestController(
             TolkDbContext tolkDbContext,
-            IOptions<TolkApiOptions> options,
             RequestService requestService,
             ApiUserService apiUserService,
             ISwedishClock timeService,
@@ -41,7 +39,6 @@ namespace Tolk.Web.Api.Controllers
             ILogger<RequestController> logger)
         {
             _dbContext = tolkDbContext;
-            _options = options?.Value;
             _apiUserService = apiUserService;
             _timeService = timeService;
             _requestService = requestService;
@@ -841,8 +838,8 @@ namespace Tolk.Web.Api.Controllers
                     PhoneNumber = request.Interpreter.PhoneNumber,
                     InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
                 } : null,
-                InterpreterLocation = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
-                InterpreterCompetenceLevel = EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request.CompetenceLevel),
+                InterpreterLocation = request.InterpreterLocation.HasValue ? EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation) : null,
+                InterpreterCompetenceLevel = request.CompetenceLevel.HasValue ? EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request.CompetenceLevel) : null,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
                 RequirementAnswers = request.RequirementAnswers
