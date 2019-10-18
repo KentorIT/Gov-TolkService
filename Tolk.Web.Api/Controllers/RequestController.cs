@@ -762,7 +762,9 @@ namespace Tolk.Web.Api.Controllers
                 EndAt = request.Order.EndAt,
                 Locations = request.Order.InterpreterLocations.Select(l => new LocationModel
                 {
-                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    OffsiteContactInformation = l.OffSiteContactInformation,
+                    Street = l.Street,
+                    City = l.City,
                     Rank = l.Rank,
                     Key = l.InterpreterLocation.GetCustomName()
                 }),

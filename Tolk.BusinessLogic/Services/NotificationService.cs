@@ -772,7 +772,7 @@ Sammanställning:
                     plainBody,
                     htmlBody,
                     _clock.SwedenNow,
-                    replacingEmailId, 
+                    replacingEmailId,
                     resentByUserId));
             _dbContext.SaveChanges();
         }
@@ -1022,7 +1022,9 @@ Sammanställning:
                 EndAt = order.EndAt,
                 Locations = order.InterpreterLocations.Select(l => new LocationModel
                 {
-                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    OffsiteContactInformation = l.OffSiteContactInformation,
+                    Street = l.Street,
+                    City = l.City,
                     Rank = l.Rank,
                     Key = EnumHelper.GetCustomName(l.InterpreterLocation)
                 }),
@@ -1100,7 +1102,9 @@ Sammanställning:
                 ExpiresAt = requestGroup.ExpiresAt,
                 Locations = order.InterpreterLocations.Select(l => new LocationModel
                 {
-                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    OffsiteContactInformation = l.OffSiteContactInformation,
+                    Street = l.Street,
+                    City = l.City,
                     Rank = l.Rank,
                     Key = EnumHelper.GetCustomName(l.InterpreterLocation)
                 }),
@@ -1189,7 +1193,7 @@ Sammanställning:
                 failedCall.NotificationType,
                 _clock.SwedenNow,
                 webhook.RecipientUserId,
-                resentUserId, 
+                resentUserId,
                 resentImpersonatorUserId);
 
             _dbContext.OutboundWebHookCalls.Add(newCall);
