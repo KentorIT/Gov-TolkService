@@ -711,7 +711,7 @@ namespace Tolk.BusinessLogic.Services
         // This is an auxilary method for calculating initial estimate
         public static CompetenceAndSpecialistLevel SelectCompetenceLevelForPriceEstimation(IEnumerable<CompetenceAndSpecialistLevel> list)
         {
-            if (list == null || list.Any())
+            if (list == null || !list.Any())
             {
                 // If no level is specified, AuthorizedInterpreter should be returned
                 return CompetenceAndSpecialistLevel.AuthorizedInterpreter;
