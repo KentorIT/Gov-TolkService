@@ -15,7 +15,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         {
             get
             {
-                if (PriceListRows != null)
+                if (PriceListRows != null && PriceListRows.Any())
                 {
                     return PriceListRows.Sum(r => r.TotalPrice);
                 }
