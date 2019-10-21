@@ -747,6 +747,7 @@ namespace Tolk.Web.Api.Controllers
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = request.Order.CustomerOrganisation.Name,
+                    Key = request.Order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
                     ContactInformation = request.Order.CreatedByUser.CompleteContactInformation,
                     InvoiceReference = request.Order.InvoiceReference

@@ -1006,6 +1006,7 @@ Sammanställning:
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = order.CustomerOrganisation.Name,
+                    Key = order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                     ContactInformation = order.CreatedByUser.CompleteContactInformation,
                     InvoiceReference = order.InvoiceReference
