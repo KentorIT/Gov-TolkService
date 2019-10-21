@@ -67,14 +67,14 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public JsonResult Customers()
         {
-            //How will the customers be identified? Need to have a safe way of declaring this! should it be the SFTI identifier?
-            //Probably a webhook too! Customer_added, to denote the fact that there is a new possible orderer.  
             return Json(_dbContext.CustomerOrganisations
-                .OrderBy(c => c.Name).Select(c => new
+                .OrderBy(c => c.Name).Select(c => new CustomerItemResponse
                 {
-                    Key = c.CustomerOrganisationId,
+                    Key = c.OrganisationPrefix,
+                    OrganisationNumber = c.OrganisationNumber,
                     PriceListType = c.PriceListType.GetCustomName(),
-                    Desciption = c.Name
+                    Name = c.Name, 
+                    Description = c.ParentCustomerOrganisationId != null ? $"Organiserad under {c.ParentCustomerOrganisation.Name}" : null
                 }));
 
         }

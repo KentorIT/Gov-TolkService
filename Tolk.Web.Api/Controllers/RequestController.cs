@@ -747,6 +747,7 @@ namespace Tolk.Web.Api.Controllers
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = request.Order.CustomerOrganisation.Name,
+                    Key = request.Order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
                     ContactInformation = request.Order.CreatedByUser.CompleteContactInformation,
                     InvoiceReference = request.Order.InvoiceReference
@@ -762,7 +763,9 @@ namespace Tolk.Web.Api.Controllers
                 EndAt = request.Order.EndAt,
                 Locations = request.Order.InterpreterLocations.Select(l => new LocationModel
                 {
-                    ContactInformation = l.OffSiteContactInformation ?? l.FullAddress,
+                    OffsiteContactInformation = l.OffSiteContactInformation,
+                    Street = l.Street,
+                    City = l.City,
                     Rank = l.Rank,
                     Key = l.InterpreterLocation.GetCustomName()
                 }),
