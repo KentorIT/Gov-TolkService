@@ -3,8 +3,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using Tolk.Api.Payloads.WebHookPayloads;
@@ -899,7 +901,7 @@ Sammanställning:
         {
             _dbContext.Add(new OutboundWebHookCall(
                 recipientUrl,
-                JsonConvert.SerializeObject(payload, Formatting.Indented),
+                payload.AsJson(),
                 type,
                 _clock.SwedenNow,
                 userId));
@@ -1256,4 +1258,4 @@ Sammanställning:
             }
         }
     }
-}
+ }
