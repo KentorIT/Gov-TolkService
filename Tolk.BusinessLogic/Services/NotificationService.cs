@@ -589,6 +589,34 @@ Sammanställning:
             }
         }
 
+        public void CustomerCreated(CustomerOrganisation customer)
+        {
+            var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systetmet. \n Myndigheten kan identifieras med denna identifierare i systetet:{customer.OrganisationPrefix}";
+            foreach (int brokerId in _dbContext.Brokers.Select(b => b.BrokerId).ToList())
+            {
+                var email = GetBrokerNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Email);
+                if (email != null)
+                {
+                    CreateEmail(email.ContactInformation, $"En ny myndighet har lagts upp i systemet.", body);
+                }
+                var webhook = GetBrokerNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Webhook);
+                if (webhook != null)
+                {
+                    CreateWebHookCall(new CustomerCreatedModel
+                    {
+                        Key = customer.OrganisationPrefix,
+                        OrganisationNumber = customer.OrganisationNumber,
+                        PriceListType = customer.PriceListType.GetCustomName(),
+                        Name = customer.Name,
+                        Description = customer.ParentCustomerOrganisationId != null ? $"Organiserad under {customer.ParentCustomerOrganisation.Name}" : null
+                    },
+                    webhook.ContactInformation,
+                    webhook.NotificationType,
+                    webhook.RecipientUserId);
+                }
+            }
+        }
+
         public void RequestAccepted(Request request)
         {
             string orderNumber = request.Order.OrderNumber;
@@ -1258,4 +1286,4 @@ Sammanställning:
             }
         }
     }
- }
+}

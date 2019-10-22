@@ -27,7 +27,7 @@ namespace Tolk.Web.Models
         public PriceListType PriceListType { get; set; }
 
         [Display(Name = "Namnprefix", Description = "Detta används vid skapande av användarnamn när det skapas en ny användare kopplat till organisationen")]
-        [Required]
+        [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool))]
         public string OrganisationPrefix { get; set; }
 
         [Display(Name = "Organisationsnummer")]
@@ -38,6 +38,8 @@ namespace Tolk.Web.Models
         [Required]
         public string EmailDomain { get; set; }
 
+        public bool IsCreating { get; set; }
+
         public UserPageMode UserPageMode { get; set; }
 
         public CustomerUserFilterModel UserFilterModel { get; set; }
@@ -46,6 +48,7 @@ namespace Tolk.Web.Models
         {
             return new CustomerModel
             {
+                IsCreating = false,
                 CustomerId = customer.CustomerOrganisationId,
                 Name = customer.Name,
                 ParentName = customer.ParentCustomerOrganisation?.Name,

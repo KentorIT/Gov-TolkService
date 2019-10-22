@@ -17,7 +17,8 @@ $.validator.addMethod('requiredif', function (value, element, params) {
             return true;
         case "System.Boolean":
             var booleanValue = params[2] == 'True' ? true : false; /* eslint-disable-line eqeqeq */
-            if (otherElement.checked === booleanValue) {
+            if ($(otherElement).is(":checkbox") && otherElement.checked === booleanValue ||
+                !$(otherElement).is(":checkbox") && $(otherElement).val() === params[2]) {
                 return !isNullOrEmpty(value);
             }
             return true;

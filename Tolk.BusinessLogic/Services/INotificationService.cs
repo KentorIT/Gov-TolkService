@@ -12,6 +12,7 @@ namespace Tolk.BusinessLogic.Services
         void ComplaintTerminatedAsDisputeAccepted(Complaint complaint);
         void CreateEmail(string recipient, string subject, string plainBody, string htmlBody = null, bool isBrokerMail = false, bool addContractInfo = true);
         void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId);
+        void CustomerCreated(CustomerOrganisation customer);
         void FlushNotificationSettings();
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
         void OrderContactPersonChanged(Order order);

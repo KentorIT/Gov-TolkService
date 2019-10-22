@@ -84,5 +84,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Webhookanrop har fallerat för många gånger i rad")]
         [CustomName("error_notification")]
         ErrorNotification = 19,
+
+        [Description("En ny kund har lagts upp i systemet")]
+        [CustomName("customer_added")]
+        CustomerAdded = 20,
     }
 }

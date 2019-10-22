@@ -13,6 +13,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Models;
 using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Identity;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -24,6 +25,7 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly IAuthorizationService _authorizationService;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly INotificationService _notificationService;
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
 
@@ -32,13 +34,16 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             ILogger<ContractController> logger,
             IAuthorizationService authorizationService,
-            RoleManager<IdentityRole<int>> roleManager
+            RoleManager<IdentityRole<int>> roleManager,
+            INotificationService notificationService
+
         )
         {
             _dbContext = dbContext;
             _logger = logger;
             _authorizationService = authorizationService;
             _roleManager = roleManager;
+            _notificationService = notificationService;
         }
 
         public ActionResult Index()
@@ -71,9 +76,9 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> View(int id, string message)
         {
-            var customer = _dbContext.CustomerOrganisations
+            var customer = await _dbContext.CustomerOrganisations
                 .Include(c => c.ParentCustomerOrganisation)
-                .Single(c => c.CustomerOrganisationId == id);
+                .SingleAsync(c => c.CustomerOrganisationId == id);
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.View)).Succeeded)
             {
                 return View(CustomerModel.GetModelFromCustomer(customer, message));
@@ -111,7 +116,7 @@ namespace Tolk.Web.Controllers
 
         public ActionResult Create()
         {
-            return View();
+            return View(new CustomerModel { IsCreating = true });
         }
 
         [HttpPost]
@@ -123,8 +128,12 @@ namespace Tolk.Web.Controllers
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer);
                 customer.PriceListType = model.PriceListType;
-                await _dbContext.AddAsync(customer);
+                _dbContext.Add(customer);
                 await _dbContext.SaveChangesAsync();
+                customer = await _dbContext.CustomerOrganisations
+                    .Include(c => c.ParentCustomerOrganisation)
+                    .SingleAsync(c => c.CustomerOrganisationId == customer.CustomerOrganisationId);
+                _notificationService.CustomerCreated(customer);
                 return RedirectToAction(nameof(View), new { Id = customer.CustomerOrganisationId, Message = "Myndighet har skapats" });
             }
             return View(model);
@@ -171,7 +180,7 @@ namespace Tolk.Web.Controllers
             //Test prefix
             if (_dbContext.CustomerOrganisations.Any(c =>
                  c.CustomerOrganisationId != model.CustomerId &&
-                 c.OrganisationPrefix.Equals(model.OrganisationPrefix, StringComparison.InvariantCultureIgnoreCase)))
+                 c.OrganisationPrefix != null && c.OrganisationPrefix.Equals(model.OrganisationPrefix, StringComparison.InvariantCultureIgnoreCase)))
             {
                 ModelState.AddModelError(nameof(model.OrganisationPrefix), $"Denna Namnprefix används redan i tjänsten.");
                 valid = false;

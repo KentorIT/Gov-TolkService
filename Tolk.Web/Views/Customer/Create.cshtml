@@ -7,6 +7,7 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <form method="post">
+        <input type="hidden" asp-for="IsCreating" />
         <div class="row">
             <div class="col-sm-4">
                 <form-entry asp-for="Name" />
@@ -34,7 +35,7 @@
             <div class="col-sm-4">
                 &nbsp;
             </div>
-            
+
         </div>
         <div class="row">
             <div class="col-sm-4">

@@ -48,5 +48,14 @@ namespace BrokerMock.Controllers
             }
             return new JsonResult("Success");
         }
+        public async Task<JsonResult> CustomerCreated([FromBody] CustomerCreatedModel payload)
+        {
+            //Also add cert to call
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: New Customer created:{payload.Name} with this prefix:{payload.Key} and org-no {payload.OrganisationNumber}");
+            }
+            return new JsonResult("Success");
+        }
     }
 }

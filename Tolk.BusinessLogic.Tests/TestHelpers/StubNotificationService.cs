@@ -21,6 +21,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId) { }
 
+        public void CustomerCreated(CustomerOrganisation customer) { }
+
         public void FlushNotificationSettings() { }
 
         public void NotifyOnFailure(int callId) { }
