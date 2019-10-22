@@ -7,7 +7,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
     {
         public IEnumerable<PriceRowModel> PriceRows { get; set; }
 
-        public decimal TotalPrice { get => PriceRows.Sum(p => p.Price); }
+        public decimal TotalPrice => PriceRows.Sum(p => p.RoundedPrice);
 
         public string PriceCalculatedFromCompetenceLevel { get; set; }
     }

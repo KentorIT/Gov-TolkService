@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Tolk.Api.Payloads.WebHookPayloads
@@ -26,6 +27,8 @@ namespace Tolk.Api.Payloads.WebHookPayloads
                 price = value;
             }
         }
+
+        internal decimal RoundedPrice => decimal.Round(Price, 2, MidpointRounding.AwayFromZero);
 
         public IEnumerable<PriceRowListModel> PriceListRows { get; set; }
 
