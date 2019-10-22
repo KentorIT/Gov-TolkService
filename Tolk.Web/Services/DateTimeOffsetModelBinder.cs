@@ -1,15 +1,17 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
+
 namespace Tolk.Web.Services
 {
     public class DateTimeOffsetModelBinder : IModelBinder
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            NullCheckHelper.ArgumentCheckNull(bindingContext, nameof(DateTimeOffsetModelBinder));
             var dateValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Date");
             var timeValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.TimeOfDay");
             var timeHourValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Hour");

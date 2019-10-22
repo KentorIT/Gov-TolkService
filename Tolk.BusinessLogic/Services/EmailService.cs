@@ -95,7 +95,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task SendErrorEmail(string classname, string methodname, Exception ex)
         {
             await SendApplicationManagementEmail($"Exception in {classname} method {methodname}",
-                $"Exception message:\n{ex.Message}\n\nException info:\n{ex.ToString()}\n\nStackTrace:\n{ex.StackTrace}");
+                $"Exception message:\n{ex?.Message}\n\nException info:\n{ex?.ToString()}\n\nStackTrace:\n{ex?.StackTrace}");
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]

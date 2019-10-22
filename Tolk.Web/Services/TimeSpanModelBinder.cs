@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Services
 {
@@ -11,6 +9,8 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            NullCheckHelper.ArgumentCheckNull(bindingContext, nameof(TimeSpanModelBinder));
+
             var timeValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
 
             if (timeValue == ValueProviderResult.None
@@ -18,7 +18,6 @@ namespace Tolk.Web.Services
             {
                 return Task.CompletedTask;
             }
-
             string timeValueSanitized;
 
             if (timeValue.FirstValue == "0" 

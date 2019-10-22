@@ -32,7 +32,7 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _dbContext = dbContext;
             _dateCalculationService = dateCalculationService;
-            _options = options.Value;
+            _options = options?.Value;
             _cache = cache;
         }
 
@@ -44,6 +44,10 @@ namespace Tolk.BusinessLogic.Services
 
         public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
             return GetPrices(
                 request.Order.StartAt,
                 request.Order.EndAt,

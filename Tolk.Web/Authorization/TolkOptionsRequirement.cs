@@ -36,11 +36,15 @@ namespace Tolk.Web.Authorization
 
         public TolkOptionsRequirementHandler(IOptions<TolkOptions> options)
         {
-            _options = options.Value;
+            _options = options?.Value;
         }
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TolkOptionsRequirement requirement)
         {
+            if (requirement == null || context == null)
+            {
+                throw new ArgumentNullException(context == null ? nameof(context) : nameof(requirement));
+            }
             if (requirement.Evaluate(_options))
             {
                 context.Succeed(requirement);

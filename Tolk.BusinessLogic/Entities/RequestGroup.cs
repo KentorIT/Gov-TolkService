@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private RequestGroup() { }
 
-        public RequestGroup(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
+        internal RequestGroup(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
         {
             requests.ForEach(r => r.RequestGroup = this);
             Ranking = ranking;

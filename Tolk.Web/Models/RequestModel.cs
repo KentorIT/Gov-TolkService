@@ -189,7 +189,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static RequestModel GetModelFromRequest(Request request, bool requestSummaryOnly = false)
+        internal static RequestModel GetModelFromRequest(Request request, bool requestSummaryOnly = false)
         {
             var complaint = request.Complaints?.FirstOrDefault();
             var replacingOrderRequest = requestSummaryOnly ? null : request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);

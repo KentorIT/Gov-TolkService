@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Models;
+using Tolk.Web.Helpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -14,6 +11,7 @@ namespace Tolk.Web.Services
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            NullCheckHelper.ArgumentCheckNull(bindingContext, nameof(CheckboxGroupModelBinder));
             var selectedValues = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
 
             if (selectedValues == ValueProviderResult.None)

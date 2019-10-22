@@ -27,6 +27,10 @@ namespace Tolk.Web.Helpers
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            if (value == null || validationContext == null)
+            {
+                return new ValidationResult("The range values could not be validated due to null values");
+            }
             TimeRange otherRange = GetProperty(OtherRangeProperty, validationContext) as TimeRange;
             TimeRange range = value as TimeRange;
             if (range.StartDateTime >= otherRange.StartDateTime

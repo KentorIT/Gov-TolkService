@@ -76,7 +76,7 @@ namespace Tolk.Web.Helpers
         {
             if (TryGetCustomerOrganisationId(user) != null)
             {
-                return user.FindAll(TolkClaimTypes.AllCustomerUnits).Select(c => c.Value.ToSwedishInt());
+                return user?.FindAll(TolkClaimTypes.AllCustomerUnits).Select(c => c.Value.ToSwedishInt());
             }
             return null;
         }
@@ -85,7 +85,7 @@ namespace Tolk.Web.Helpers
         {
             if (TryGetCustomerOrganisationId(user) != null)
             {
-                return user.FindAll(TolkClaimTypes.LocalAdminCustomerUnits).Select(c => c.Value.ToSwedishInt());
+                return user?.FindAll(TolkClaimTypes.LocalAdminCustomerUnits).Select(c => c.Value.ToSwedishInt());
             }
             return null;
         }

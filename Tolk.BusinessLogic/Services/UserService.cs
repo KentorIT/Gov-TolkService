@@ -32,7 +32,7 @@ namespace Tolk.BusinessLogic.Services
         {
             _dbContext = dbContext;
             _userManager = userManager;
-            _options = options.Value;
+            _options = options?.Value;
             _clock = clock;
             _notificationService = notificationService;
             _logger = logger;
@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
             string body = null;
             string plainBody = null;
             string htmlBody = null;
-
+            NullCheckHelper.ArgumentCheckNull(user, nameof(SendInviteAsync), nameof(UserService));
             if (user.InterpreterId.HasValue)
             {
                 (subject, body) = CreateInterpreterInvite();
@@ -72,6 +72,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task SetTemporaryEmail(AspNetUser user, string newEmail)
         {
+            NullCheckHelper.ArgumentCheckNull(user, nameof(SetTemporaryEmail), nameof(UserService));
             var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == user.Id);
 
             if (emailUser.TemporaryChangedEmailEntry != null)
@@ -149,6 +150,7 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
 
         public async Task SendChangedEmailLink(AspNetUser user, string newEmailAddress, string resetLink, bool changedByAdmin = false)
         {
+            NullCheckHelper.ArgumentCheckNull(user, nameof(SendChangedEmailLink), nameof(UserService));
             string message = changedByAdmin ? $"Om du har begärt byte av e-postadress för '{user.FullName}' så logga in i {Constants.SystemName} med din gamla e-post {user.Email} och klistra därefter in länken nedan i webbläsaren för att verifiera ändringen." : $"Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren för att verifiera ändringen.";
             var bodyPlain =
         $@"Ändring av e-postadress för {Constants.SystemName}
@@ -315,6 +317,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public string GenerateUserName(string firstName, string lastName, string prefix)
         {
+            NullCheckHelper.ArgumentCheckNull(prefix, nameof(GenerateUserName), nameof(UserService));
             string userNameStart = $"{prefix.GetPrefix(prefix.Length)}{firstName.GetPrefix()}{lastName.GetPrefix()}";
             var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWithSwedish(userNameStart)).Select(u => u.NormalizedUserName).ToList();
             for (int i = 1; i < 100; ++i)

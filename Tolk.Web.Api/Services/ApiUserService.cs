@@ -83,63 +83,63 @@ namespace Tolk.Web.Api.Services
                 null;
         }
 
-        public InterpreterBroker GetInterpreter(InterpreterModel interpreterModel, int brokerId, bool updateInformation = true)
+        internal InterpreterBroker GetInterpreter(InterpreterModel interpreterModel, int brokerId, bool updateInformation = true)
         {
             InterpreterBroker interpreter = null;
-            switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreterModel.InterpreterInformationType))
-            {
-                case InterpreterInformationType.ExistingInterpreter:
-                    interpreter = _dbContext.InterpreterBrokers
-                        .SingleOrDefault(i => i.InterpreterBrokerId == interpreterModel.InterpreterId && i.BrokerId == brokerId);
-                    break;
-                case InterpreterInformationType.AuthorizedInterpreterId:
-                    interpreter = _dbContext.InterpreterBrokers
-                        .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
-                    break;
-                case InterpreterInformationType.NewInterpreter:
-                    //check if unique officialInterpreterId for broker 
-                    if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
+                switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreterModel.InterpreterInformationType))
+                {
+                    case InterpreterInformationType.ExistingInterpreter:
+                        interpreter = _dbContext.InterpreterBrokers
+                            .SingleOrDefault(i => i.InterpreterBrokerId == interpreterModel.InterpreterId && i.BrokerId == brokerId);
+                        break;
+                    case InterpreterInformationType.AuthorizedInterpreterId:
+                        interpreter = _dbContext.InterpreterBrokers
+                            .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
+                        break;
+                    case InterpreterInformationType.NewInterpreter:
+                        //check if unique officialInterpreterId for broker 
+                        if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
+                        {
+                            //Create the new interpreter, connected to the provided broker
+                            return new InterpreterBroker(
+                                interpreterModel.FirstName,
+                                interpreterModel.LastName,
+                                brokerId,
+                                interpreterModel.Email,
+                                interpreterModel.PhoneNumber,
+                                interpreterModel.OfficialInterpreterId
+                            );
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException();
+                        }
+                    default:
+                        return null;
+                }
+                if (updateInformation)
+                {
+                    if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
                     {
-                        //Create the new interpreter, connected to the provided broker
-                        return new InterpreterBroker(
-                            interpreterModel.FirstName,
-                            interpreterModel.LastName,
-                            brokerId,
-                            interpreterModel.Email,
-                            interpreterModel.PhoneNumber,
-                            interpreterModel.OfficialInterpreterId
-                        );
+                        interpreter.FirstName = interpreterModel.FirstName;
                     }
-                    else
+                    if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
                     {
-                        throw new InvalidOperationException();
+                        interpreter.LastName = interpreterModel.LastName;
                     }
-                default:
-                    return null;
-            }
-            if (updateInformation)
-            {
-                if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
-                {
-                    interpreter.FirstName = interpreterModel.FirstName;
+                    if (string.IsNullOrWhiteSpace(interpreterModel.Email))
+                    {
+                        interpreter.Email = interpreterModel.Email;
+                    }
+                    if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
+                    {
+                        interpreter.PhoneNumber = interpreterModel.PhoneNumber;
+                    }
+                    if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
+                    {
+                        interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
+                    }
                 }
-                if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
-                {
-                    interpreter.LastName = interpreterModel.LastName;
-                }
-                if (string.IsNullOrWhiteSpace(interpreterModel.Email))
-                {
-                    interpreter.Email = interpreterModel.Email;
-                }
-                if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
-                {
-                    interpreter.PhoneNumber = interpreterModel.PhoneNumber;
-                }
-                if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
-                {
-                    interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
-                }
-            }
             return interpreter;
         }
     }

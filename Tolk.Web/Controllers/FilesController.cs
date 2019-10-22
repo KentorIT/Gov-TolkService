@@ -38,6 +38,14 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Upload(List<IFormFile> files, Guid? groupKey = null)
         {
+            if (files == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    ErrorMessage = $"Inga filer hittades för uppladdning."
+                });
+            }
             var list = new List<FileModel>();
             var uploadedLength = files.Sum(f => f.Length);
             if (uploadedLength < _options.CombinedMaxSizeAttachments && groupKey.HasValue)

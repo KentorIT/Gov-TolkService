@@ -44,11 +44,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Aktiv")]
         public bool IsActive { get; set; }
 
-        public static InterpreterModel GetModelFromInterpreter(InterpreterBroker interpreter)
+        internal static InterpreterModel GetModelFromInterpreter(InterpreterBroker interpreter)
         {
             return new InterpreterModel
             {
-                Id = interpreter.InterpreterBrokerId,
+                Id = interpreter?.InterpreterBrokerId,
                 Email = interpreter.Email,
                 FirstName = interpreter.FirstName,
                 LastName = interpreter.LastName,
@@ -57,7 +57,7 @@ namespace Tolk.Web.Models
                 IsActive = interpreter.IsActive
             };
         }
-        public void UpdateAndChangeStatusInterpreter(InterpreterBroker interpreter, int? userId, int? impersonatorId, DateTimeOffset? inactivatedAt)
+        internal void UpdateAndChangeStatusInterpreter(InterpreterBroker interpreter, int? userId, int? impersonatorId, DateTimeOffset? inactivatedAt)
         {
             UpdateInterpreter(interpreter);
             interpreter.InactivatedAt = inactivatedAt;
@@ -66,7 +66,7 @@ namespace Tolk.Web.Models
             interpreter.IsActive = IsActive;
         }
 
-        public void UpdateInterpreter(InterpreterBroker interpreter)
+        internal void UpdateInterpreter(InterpreterBroker interpreter)
         {
             interpreter.Email = Email;
             interpreter.FirstName = FirstName;

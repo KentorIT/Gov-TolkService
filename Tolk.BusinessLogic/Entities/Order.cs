@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Entities
         private Order() { }
 
         public Order(Order order)
-            :this (order.CreatedByUser, order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
+            :this (order?.CreatedByUser ?? throw new ArgumentNullException(nameof(order)), order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
         {
             AllowExceedingTravelCost = order.AllowExceedingTravelCost;
             AssignentType = order.AssignentType;
@@ -40,11 +40,12 @@ namespace Tolk.BusinessLogic.Entities
                 Street = l.Street
             }).ToList();
         }
+
         public Order(AspNetUser createdByUser, AspNetUser createdByImpersonator, CustomerOrganisation customerOrganisation, DateTimeOffset createdAt)
         {
             CreatedByUser = createdByUser;
             CreatedAt = createdAt;
-            CustomerOrganisation = customerOrganisation;
+            CustomerOrganisation = customerOrganisation ?? throw new ArgumentNullException(nameof(customerOrganisation));
             CustomerOrganisationId = customerOrganisation.CustomerOrganisationId;
             CreatedByImpersonator = createdByImpersonator;
             Status = OrderStatus.Requested;

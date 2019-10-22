@@ -59,7 +59,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint)
+        internal static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint)
         {
             string customerName = complaint.Request.Order.CustomerOrganisation.Name;
             string brokerName = complaint.Request.Ranking.Broker.Name;

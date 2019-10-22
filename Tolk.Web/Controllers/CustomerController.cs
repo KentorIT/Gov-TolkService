@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -22,7 +21,6 @@ namespace Tolk.Web.Controllers
     public class CustomerController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger _logger;
         private readonly IAuthorizationService _authorizationService;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly INotificationService _notificationService;
@@ -32,15 +30,12 @@ namespace Tolk.Web.Controllers
 
         public CustomerController(
             TolkDbContext dbContext,
-            ILogger<ContractController> logger,
             IAuthorizationService authorizationService,
             RoleManager<IdentityRole<int>> roleManager,
             INotificationService notificationService
-
         )
         {
             _dbContext = dbContext;
-            _logger = logger;
             _authorizationService = authorizationService;
             _roleManager = roleManager;
             _notificationService = notificationService;

@@ -12,6 +12,7 @@ namespace Tolk.Web.Helpers
     {
         public void AddValidation(ClientModelValidationContext context)
         {
+            NullCheckHelper.ArgumentCheckNull(context, nameof(ClientRequiredAttribute));
             // Overriding required message manually, as it will default to built-in english messages otherwise
             context.Attributes["data-val-required"] = ErrorMessage ?? Resources.DataAnnotationValidationMessages.Required.FormatSwedish(context.ModelMetadata.DisplayName);
         }
@@ -26,7 +27,8 @@ namespace Tolk.Web.Helpers
         {
             public void CreateValidationMetadata(ValidationMetadataProviderContext context)
             {
-                if(context.Attributes.OfType<ClientRequiredAttribute>().Any())
+                NullCheckHelper.ArgumentCheckNull(context, nameof(ValidationMetadataProvider));
+                if (context.Attributes.OfType<ClientRequiredAttribute>().Any())
                 {
                     context.ValidationMetadata.IsRequired = true;
                 }

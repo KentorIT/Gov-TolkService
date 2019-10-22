@@ -177,72 +177,75 @@ namespace Tolk.Web.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.TagName = "div";
-            output.TagMode = TagMode.StartTagAndEndTag;
-            string className = "form-group";
-
-            using (var writer = new StringWriter())
+            if (output != null)
             {
-                switch (InputType)
-                {
-                    case InputTypeSelect:
-                        WriteLabel(writer);
-                        WriteSelect(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeRadioButtonGroup:
-                        WriteRadioGroup(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeCheckboxGroup:
-                        WriteCheckboxGroup(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeDateTimeOffset:
-                        WriteDateTimeOffsetBlock(writer);
-                        break;
-                    case InputTypePassword:
-                        WriteLabel(writer);
-                        WritePassword(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeCheckbox:
-                        className = "checkbox";
-                        WriteCheckBoxInLabel(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeTextArea:
-                        WriteLabel(writer);
-                        WriteTextArea(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeTime:
-                        WriteLabel(writer);
-                        WriteTimeBox(writer);
-                        WriteValidation(writer);
-                        break;
-                    case InputTypeDateRange:
-                        WriteDateRangeBlock(writer);
-                        break;
-                    case InputTypeTimeRange:
-                        WriteTimeRangeBlock(writer);
-                        break;
-                    case InputTypeSplitTimeRange:
-                        className = "split-time-area";
-                        WriteSplitTimeRangeBlock(writer);
-                        break;
-                    case InputTypeHiddenTimeRangeHidden:
-                        WriteTimeRangeBlock(writer, true);
-                        break;
-                    default:
-                        WriteLabel(writer);
-                        WriteInput(writer);
-                        WriteValidation(writer);
-                        break;
-                }
+                output.TagName = "div";
+                output.TagMode = TagMode.StartTagAndEndTag;
+                string className = "form-group";
 
-                output.AddClass(className, _htmlEncoder);
-                output.Content.AppendHtml(writer.ToString());
+                using (var writer = new StringWriter())
+                {
+                    switch (InputType)
+                    {
+                        case InputTypeSelect:
+                            WriteLabel(writer);
+                            WriteSelect(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeRadioButtonGroup:
+                            WriteRadioGroup(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeCheckboxGroup:
+                            WriteCheckboxGroup(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeDateTimeOffset:
+                            WriteDateTimeOffsetBlock(writer);
+                            break;
+                        case InputTypePassword:
+                            WriteLabel(writer);
+                            WritePassword(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeCheckbox:
+                            className = "checkbox";
+                            WriteCheckBoxInLabel(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeTextArea:
+                            WriteLabel(writer);
+                            WriteTextArea(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeTime:
+                            WriteLabel(writer);
+                            WriteTimeBox(writer);
+                            WriteValidation(writer);
+                            break;
+                        case InputTypeDateRange:
+                            WriteDateRangeBlock(writer);
+                            break;
+                        case InputTypeTimeRange:
+                            WriteTimeRangeBlock(writer);
+                            break;
+                        case InputTypeSplitTimeRange:
+                            className = "split-time-area";
+                            WriteSplitTimeRangeBlock(writer);
+                            break;
+                        case InputTypeHiddenTimeRangeHidden:
+                            WriteTimeRangeBlock(writer, true);
+                            break;
+                        default:
+                            WriteLabel(writer);
+                            WriteInput(writer);
+                            WriteValidation(writer);
+                            break;
+                    }
+
+                    output.AddClass(className, _htmlEncoder);
+                    output.Content.AppendHtml(writer.ToString());
+                }
             }
         }
 

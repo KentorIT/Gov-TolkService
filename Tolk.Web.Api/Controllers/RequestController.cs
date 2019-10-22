@@ -51,6 +51,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Answer([FromBody] RequestAnswerModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -143,6 +147,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> AnswerGroup([FromBody] RequestGroupAnswerModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -191,7 +199,7 @@ namespace Tolk.Web.Api.Controllers
                     //Possibly the interpreter should be added, if not found?? 
                     return ReturnError(ErrorCodes.InterpreterNotFound, "The provided extra interpreter was not found.");
                 }
-                    InterpreterBroker extraInterpreter = null;
+                InterpreterBroker extraInterpreter = null;
                 if (model.ExtraInterpreter != null)
                 {
                     try
@@ -256,6 +264,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -281,6 +293,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> AcknowledgeGroup([FromBody] RequestGroupAcknowledgeModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -306,6 +322,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Decline([FromBody] RequestDeclineModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -341,6 +361,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> DeclineGroup([FromBody] RequestGroupDeclineModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -376,6 +400,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Cancel([FromBody] RequestCancelModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -423,6 +451,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -504,6 +536,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -561,6 +597,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -586,6 +626,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();

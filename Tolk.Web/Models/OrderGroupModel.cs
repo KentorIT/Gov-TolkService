@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.Web.Attributes;
-using Tolk.Web.Helpers;
-using Tolk.Web.Services;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -23,7 +13,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static OrderGroupModel GetModelFromOrderGroup(OrderGroup orderGroup)
+        internal static OrderGroupModel GetModelFromOrderGroup(OrderGroup orderGroup)
         {
             return new OrderGroupModel
             {

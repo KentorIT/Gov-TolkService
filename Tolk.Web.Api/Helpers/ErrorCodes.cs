@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Tolk.Api.Payloads.Responses;
-using Tolk.BusinessLogic.Utilities;
-
+﻿
 namespace Tolk.Web.Api.Helpers
 {
     public static class ErrorCodes
@@ -24,5 +18,6 @@ namespace Tolk.Web.Api.Helpers
         public const string RequisitionNotInCorrectState = nameof(RequisitionNotInCorrectState);
         public const string OrderGroupNotFound = nameof(OrderGroupNotFound);
         public const string RequestGroupNotFound = nameof(RequestGroupNotFound);
+        public const string IncomingPayloadIsMissing = nameof(IncomingPayloadIsMissing);
     }
 }

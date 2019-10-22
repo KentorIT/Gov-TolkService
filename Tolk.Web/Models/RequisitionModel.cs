@@ -154,7 +154,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static RequisitionModel GetModelFromRequest(Request request)
+        internal static RequisitionModel GetModelFromRequest(Request request)
         {
             return new RequisitionModel
             {

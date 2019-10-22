@@ -23,6 +23,10 @@ namespace Tolk.Web.Helpers
 
         public static IActionResult GetData<T, TModel>(IDataTablesRequest request, int totalCount, IQueryable<T> filteredData, Func<IQueryable<T>, IQueryable<TModel>> getModel)
         {
+            if (request == null || getModel == null)
+            {
+                throw new ArgumentNullException(request == null ? nameof(request) : nameof(getModel));
+            }
             var colDefs = GetColumnDefinitions<TModel>();
             var sortColumns = request.Columns.Where(c => c.Sort != null).OrderBy(c => c.Sort.Order).Select(c => c);
             IQueryable<TModel> list = null;

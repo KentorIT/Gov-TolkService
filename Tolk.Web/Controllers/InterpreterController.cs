@@ -19,20 +19,17 @@ namespace Tolk.Web.Controllers
     public class InterpreterController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger<InterpreterController> _logger;
         private readonly IAuthorizationService _authorizationService;
         private readonly InterpreterService _interpreterService;
         private readonly ISwedishClock _clock;
 
         public InterpreterController(
             TolkDbContext dbContext,
-            ILogger<InterpreterController> logger,
             IAuthorizationService authorizationService,
             InterpreterService interpreterService,
             ISwedishClock clock)
         {
             _dbContext = dbContext;
-            _logger = logger;
             _authorizationService = authorizationService;
             _interpreterService = interpreterService;
             _clock = clock;

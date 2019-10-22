@@ -11,6 +11,10 @@ namespace Tolk.Web.Helpers
     {
         public static List<EventLogEntryModel> GetEventLog(Order order, Request terminatingRequest = null)
         {
+            if (order == null)
+            {
+                return new List<EventLogEntryModel>();
+            }
             var customerName = order.CustomerOrganisation.Name;
             var eventLog = new List<EventLogEntryModel>
             {
@@ -141,6 +145,10 @@ namespace Tolk.Web.Helpers
 
         public static List<EventLogEntryModel> GetEventLog(Request request, string customerName, string brokerName, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
         {
+            if (request == null)
+            {
+                return new List<EventLogEntryModel>();
+            }
             var eventLog = new List<EventLogEntryModel>();
             if (isRequestDetailView && request.ReplacingRequestId.HasValue && previousRequests != null)
             {
@@ -390,53 +398,56 @@ namespace Tolk.Web.Helpers
 
         public static IEnumerable<EventLogEntryModel> GetEventLog(IEnumerable<Requisition> requisitions, string customerName, string brokerName)
         {
-            foreach (var requisition in requisitions)
+            if (requisitions != null)
             {
-                // Requisition creation
-                if (requisition.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder)
+                foreach (var requisition in requisitions)
                 {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = requisition.CreatedAt,
-                        EventDetails = "Rekvisition automatiskt genererad pga avbokning",
-                        Actor = "Systemet",
-                    };
-                }
-                else
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = requisition.CreatedAt,
-                        EventDetails = "Rekvisition registrerad",
-                        Actor = requisition.CreatedByUser.FullName,
-                        Organization = brokerName, //interpreter "works" for broker
-                        ActorContactInfo = GetContactinfo(requisition.CreatedByUser),
-                    };
-                }
-                // Requisition processing
-                if (requisition.ProcessedAt.HasValue)
-                {
-                    if (requisition.Status == RequisitionStatus.Reviewed)
+                    // Requisition creation
+                    if (requisition.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder)
                     {
                         yield return new EventLogEntryModel
                         {
-                            Timestamp = requisition.ProcessedAt.Value,
-                            EventDetails = "Rekvisition granskad",
-                            Actor = requisition.ProcessedUser.FullName,
-                            Organization = customerName,
-                            ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
+                            Timestamp = requisition.CreatedAt,
+                            EventDetails = "Rekvisition automatiskt genererad pga avbokning",
+                            Actor = "Systemet",
                         };
                     }
-                    else if (requisition.Status == RequisitionStatus.Commented)
+                    else
                     {
                         yield return new EventLogEntryModel
                         {
-                            Timestamp = requisition.ProcessedAt.Value,
-                            EventDetails = "Rekvisition kommenterad",
-                            Actor = requisition.ProcessedUser.FullName,
-                            Organization = customerName,
-                            ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
+                            Timestamp = requisition.CreatedAt,
+                            EventDetails = "Rekvisition registrerad",
+                            Actor = requisition.CreatedByUser.FullName,
+                            Organization = brokerName, //interpreter "works" for broker
+                            ActorContactInfo = GetContactinfo(requisition.CreatedByUser),
                         };
+                    }
+                    // Requisition processing
+                    if (requisition.ProcessedAt.HasValue)
+                    {
+                        if (requisition.Status == RequisitionStatus.Reviewed)
+                        {
+                            yield return new EventLogEntryModel
+                            {
+                                Timestamp = requisition.ProcessedAt.Value,
+                                EventDetails = "Rekvisition granskad",
+                                Actor = requisition.ProcessedUser.FullName,
+                                Organization = customerName,
+                                ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
+                            };
+                        }
+                        else if (requisition.Status == RequisitionStatus.Commented)
+                        {
+                            yield return new EventLogEntryModel
+                            {
+                                Timestamp = requisition.ProcessedAt.Value,
+                                EventDetails = "Rekvisition kommenterad",
+                                Actor = requisition.ProcessedUser.FullName,
+                                Organization = customerName,
+                                ActorContactInfo = GetContactinfo(requisition.ProcessedUser),
+                            };
+                        }
                     }
                 }
             }
@@ -444,6 +455,10 @@ namespace Tolk.Web.Helpers
 
         public static List<EventLogEntryModel> GetEventLog(Complaint complaint, string customerName, string brokerName)
         {
+            if (complaint == null)
+            {
+                return new List<EventLogEntryModel>();
+            }
             var eventLog = new List<EventLogEntryModel>
             {
                 // Complaint creation

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Tolk.Web.Helpers
 {
@@ -9,15 +6,17 @@ namespace Tolk.Web.Helpers
     {
         public static bool HasGenericTypeBase(Type type, Type genericType)
         {
-            while (type != typeof(object))
+            if (type != null)
             {
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
+                while (type != typeof(object))
                 {
-                    return true;
+                    if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
+                    {
+                        return true;
+                    }
+                    type = type.BaseType;
                 }
-                type = type.BaseType;
             }
-
             return false;
         }
     }

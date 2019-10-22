@@ -99,9 +99,9 @@ namespace Tolk.BusinessLogic.Helpers
 
         #endregion
 
-        public static string ToHtmlBreak(string text)
+        internal static string ToHtmlBreak(string text)
         {
-            return text.Replace("\n", "<br />");
+            return text?.Replace("\n", "<br />");
         }
     }
 }

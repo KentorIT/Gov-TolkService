@@ -6,6 +6,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -36,6 +37,7 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCardType interpreterTaxCard, 
             List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Create), nameof(RequisitionService));
             if (!request.CanCreateRequisition)
             {
                 throw new InvalidOperationException($"Cannot create requisition on order {request.OrderId}");
@@ -102,6 +104,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void Review(Requisition requisition, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(Review), nameof(RequisitionService));
             requisition.Review(_clock.SwedenNow, userId, impersonatorId);
             _dbContext.SaveChanges();
             _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
@@ -110,6 +113,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void Comment(Requisition requisition, int userId, int? impersonatorId, string message)
         {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(Comment), nameof(RequisitionService));
             requisition.Comment(_clock.SwedenNow, userId, impersonatorId, message);
             _dbContext.SaveChanges();
             _logger.LogDebug($"Requisition commented {requisition.RequisitionId}");

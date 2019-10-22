@@ -24,6 +24,11 @@ namespace Tolk.Web.Services
             _logger = logger;
             _clock = clock;
 
+            if (_clock == null)
+            {
+                throw new ArgumentNullException(nameof(clock));
+            }
+
             DateTimeOffset now = _clock.SwedenNow;
             now -= now.TimeOfDay;
 

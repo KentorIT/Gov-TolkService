@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -30,6 +27,10 @@ namespace Tolk.Web.Services
 
         protected override async Task<ClaimsIdentity> GenerateClaimsAsync(AspNetUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
             var identity = await base.GenerateClaimsAsync(user);
 
             if (user.CustomerOrganisationId.HasValue)

@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Services
 {
@@ -11,6 +9,7 @@ namespace Tolk.Web.Services
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
+            NullCheckHelper.ArgumentCheckNull(context, nameof(TimeSpanModelBinderProvider));
             if (context.Metadata.ModelType == typeof(TimeSpan)
                 || context.Metadata.ModelType == typeof(TimeSpan?))
             {

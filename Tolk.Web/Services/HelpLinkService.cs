@@ -11,7 +11,7 @@ namespace Tolk.Web.Services
 
         public HelpLinkService(IConfiguration configuration)
         {
-            BaseAddress = configuration["UserDocumentation:BaseUrl"];
+            BaseAddress = configuration != null ? configuration["UserDocumentation:BaseUrl"] : string.Empty;
         }
 
         public string GenerateUrl(string anchorpoint)

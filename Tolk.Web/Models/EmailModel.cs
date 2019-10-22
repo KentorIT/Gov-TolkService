@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
 
         public int? ReplacingEmailId { get; set; }
 
-        public static EmailModel GetModelFromOutboundEmail(OutboundEmail mail, bool displayResend, string errormessage = null)
+        internal static EmailModel GetModelFromOutboundEmail(OutboundEmail mail, bool displayResend, string errormessage = null)
         {
             return new EmailModel
             {
@@ -58,6 +58,5 @@ namespace Tolk.Web.Models
         }
 
     }
-
 
 }

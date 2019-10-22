@@ -46,6 +46,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Accept([FromBody] ComplaintAcceptModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -68,6 +72,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Dispute([FromBody] ComplaintDisputeModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();

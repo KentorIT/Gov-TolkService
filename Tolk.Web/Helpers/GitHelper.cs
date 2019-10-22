@@ -9,7 +9,7 @@ namespace Tolk.Web.Helpers
     {
         public static string Version { get; } = "N/A";
 
-        public static string FormatVersion(this string rawVersion)
+        private static string FormatVersion(this string rawVersion)
         {
             return $"{rawVersion.Substring(0, 6)}";
         }
@@ -23,8 +23,8 @@ namespace Tolk.Web.Helpers
 
                 // Local, running in a repo directory.
                 var head = File.ReadAllText($"{gitDir}/HEAD");
-                string gitInfo = string.Empty;
-                if(head.StartsWithSwedish("ref: "))
+                string gitInfo;
+                if (head.StartsWithSwedish("ref: "))
                 {
                     var refFile = head.Substring(5).TrimEnd('\n');
                     gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();

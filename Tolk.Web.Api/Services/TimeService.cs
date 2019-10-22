@@ -15,7 +15,7 @@ namespace Tolk.Web.Api.Services
 
         public TimeService(IOptions<TolkApiOptions> options)
         {
-            _options = options.Value;
+            _options = options?.Value;
         }
 
         public DateTimeOffset SwedenNow => GetTimeAsync().Result;

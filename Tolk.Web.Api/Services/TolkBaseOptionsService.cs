@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
-using System.Net.Http;
+﻿using Microsoft.Extensions.Options;
 using Tolk.Web.Api.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
@@ -15,7 +12,7 @@ namespace Tolk.Web.Api.Services
 
         public TolkBaseOptionsService(IOptions<TolkApiOptions> options)
         {
-            _options = options.Value;
+            _options = options?.Value;
         }
 
         public TolkBaseOptions.Environment Env => _options.Env;

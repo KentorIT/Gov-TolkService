@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -59,6 +60,8 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel));
             //Create notification
             switch (request.Status)
@@ -76,8 +79,9 @@ namespace Tolk.BusinessLogic.Services
 
         private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
         {
-             //Get prices
-           var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
+            NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
+            //Get prices
+            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
             // Acccept the request
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
         }
@@ -110,6 +114,8 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
             //1. Set the request group and order group in correct state
             var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter, competenceLevel);
             var extraInterpreterVerificationResult = extraInterpreter != null ?
@@ -148,12 +154,14 @@ namespace Tolk.BusinessLogic.Services
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public void Acknowledge(Request request, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Acknowledge), nameof(RequestService));
             request.Received(acknowledgeTime, userId, impersonatorId);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public void AcknowledgeGroup(RequestGroup requestGroup, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcknowledgeGroup), nameof(RequestService));
             requestGroup.Received(acknowledgeTime, userId, impersonatorId);
         }
 
@@ -167,6 +175,7 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptReplacement), nameof(RequestService));
             request.AcceptReplacementOrder(
                 acceptTime,
                 userId,
@@ -185,6 +194,7 @@ namespace Tolk.BusinessLogic.Services
             int? impersonatorId,
             string message)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
             request.Decline(declinedAt, userId, impersonatorId, message);
             if (!request.Order.ReplacingOrderId.HasValue)
             {
@@ -204,6 +214,7 @@ namespace Tolk.BusinessLogic.Services
             int? impersonatorId,
             string message)
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DeclineGroup), nameof(RequestService));
             requestGroup.Decline(declinedAt, userId, impersonatorId, message);
             await _orderService.CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
             _notificationService.RequestGroupDeclinedByBroker(requestGroup);
@@ -211,6 +222,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void CancelByBroker(Request request, DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(CancelByBroker), nameof(RequestService));
             request.CancelByBroker(cancelledAt, userId, impersonatorId, message);
             _notificationService.RequestCancelledByBroker(request);
         }
@@ -229,6 +241,8 @@ namespace Tolk.BusinessLogic.Services
             string expectedTravelCostInfo
         )
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
             Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true)
             {
                 Order = request.Order,
@@ -276,6 +290,7 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmDenial), nameof(RequestService));
             request.ConfirmDenial(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
@@ -286,6 +301,7 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmCancellation), nameof(RequestService));
             request.ConfirmCancellation(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }

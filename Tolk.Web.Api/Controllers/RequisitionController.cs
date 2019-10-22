@@ -46,6 +46,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         public async Task<JsonResult> Create([FromBody] RequisitionModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();
@@ -108,6 +112,10 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public async Task<JsonResult> View(RequisitionGetDetailsModel model)
         {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
             try
             {
                 var apiUser = await GetApiUser();

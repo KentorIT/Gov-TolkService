@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,16 +16,13 @@ namespace Tolk.Web.Controllers
     [Authorize(Policies.SystemCentralLocalAdmin)]
     public class StatisticsController : Controller
     {
-        private readonly ILogger<StatisticsController> _logger;
         private readonly ISwedishClock _clock;
         private readonly StatisticsService _statService;
 
         public StatisticsController(
-            ILogger<StatisticsController> logger,
             ISwedishClock clock,
             StatisticsService statService)
         {
-            _logger = logger;
             _clock = clock;
             _statService = statService;
         }

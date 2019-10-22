@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 
@@ -13,11 +9,11 @@ namespace Tolk.Web.Services
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
+            NullCheckHelper.ArgumentCheckNull(context, nameof(CheckboxGroupModelBinderProvider));
             if (context.Metadata.ModelType == typeof(CheckboxGroup))
             {
                 return new BinderTypeModelBinder(typeof(CheckboxGroupModelBinder));
             }
-
             return null;
         }
     }

@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Entities
             IsTerminalRequest = isTerminalRequest;
         }
 
-        public Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
+        internal Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             Ranking = ranking;
             Status = RequestStatus.LostDueToQuarantine;
@@ -36,7 +36,7 @@ namespace Tolk.BusinessLogic.Entities
             QuarantineId = quarantine.QuarantineId;
         }
 
-        public Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
+        internal Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
             : this(originalRequest.Ranking, expiry, creationTime)
         {
             Interpreter = originalRequest.Interpreter;
@@ -186,6 +186,10 @@ namespace Tolk.BusinessLogic.Entities
             VerificationResult? verificationResult = null
             )
         {
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber} prisrader saknas");
+            }
             if (!IsToBeProcessedByBroker)
             {
                 throw new InvalidOperationException($"Det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
@@ -267,6 +271,10 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterLocation interpreterLocation,
             PriceInformation priceInformation)
         {
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} saknar prisrader");
+            }
             if (!IsToBeProcessedByBroker)
             {
                 throw new InvalidOperationException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} har redan blivit besvarad");
@@ -312,6 +320,14 @@ namespace Tolk.BusinessLogic.Entities
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}");
+            }
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} saknar prisrader");
+            }
+            if (oldRequest == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} hittar ingen koppling till tidigare förfrågan");
             }
             ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
 

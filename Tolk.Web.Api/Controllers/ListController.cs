@@ -26,7 +26,7 @@ namespace Tolk.Web.Api.Controllers
         public ListController(TolkDbContext tolkDbContext, IOptions<H.TolkApiOptions> options, ApiUserService apiUserService)
         {
             _dbContext = tolkDbContext;
-            _options = options.Value;
+            _options = options?.Value;
             _apiUserService = apiUserService;
         }
 
@@ -73,10 +73,9 @@ namespace Tolk.Web.Api.Controllers
                     Key = c.OrganisationPrefix,
                     OrganisationNumber = c.OrganisationNumber,
                     PriceListType = c.PriceListType.GetCustomName(),
-                    Name = c.Name, 
+                    Name = c.Name,
                     Description = c.ParentCustomerOrganisationId != null ? $"Organiserad under {c.ParentCustomerOrganisation.Name}" : null
                 }));
-
         }
 
         [HttpGet]

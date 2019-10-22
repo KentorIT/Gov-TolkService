@@ -452,7 +452,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
+        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartAt = startAt;

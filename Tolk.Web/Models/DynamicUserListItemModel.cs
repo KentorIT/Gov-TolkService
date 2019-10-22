@@ -33,34 +33,33 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Visible = false, Name = nameof(ColorClassName), IsLeftCssClassName = true)]
         public string ColorClassName => CssClassHelper.GetColorClassNameForItemStatus(IsActive);
 
-        public static IQueryable<AspNetUser> Filter(CustomerUserFilterModel filters, IQueryable<AspNetUser> data)
+        internal static IQueryable<AspNetUser> Filter(CustomerUserFilterModel filters, IQueryable<AspNetUser> data)
         {
             var filteredData = data;
-            if (!string.IsNullOrWhiteSpace(filters.SearchString))
-            {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-                filteredData = filteredData.Where(u =>
-                    u.NameFirst.Contains(filters.SearchString) ||
-                    u.NameFamily.Contains(filters.SearchString) ||
-                    u.Email.Contains(filters.SearchString));
-#pragma warning restore CA1307 // 
-            }
-            if (filters.UserType.HasValue)
-            {
-                switch (filters.UserType)
+                if (!string.IsNullOrWhiteSpace(filters.SearchString))
                 {
-                    case UserTypes.OrganisationAdministrator:
-                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
-                        break;
-                    case UserTypes.CentralOrderHandler:
-                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
-                        break;
-                    case UserTypes.OrderCreator:
-                    default:
-                        break;
+#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
+                    filteredData = filteredData.Where(u =>
+                        u.NameFirst.Contains(filters.SearchString) ||
+                        u.NameFamily.Contains(filters.SearchString) ||
+                        u.Email.Contains(filters.SearchString));
+#pragma warning restore CA1307 // 
                 }
-            }
-
+                if (filters.UserType.HasValue)
+                {
+                    switch (filters.UserType)
+                    {
+                        case UserTypes.OrganisationAdministrator:
+                            filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
+                            break;
+                        case UserTypes.CentralOrderHandler:
+                            filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
+                            break;
+                        case UserTypes.OrderCreator:
+                        default:
+                            break;
+                    }
+                }
             return filteredData;
         }
     }

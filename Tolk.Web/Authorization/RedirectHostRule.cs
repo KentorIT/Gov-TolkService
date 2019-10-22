@@ -17,7 +17,7 @@ namespace Tolk.Web.Authorization
 
         public void ApplyRule(RewriteContext context)
         {
-            var request = context.HttpContext.Request;
+            var request = context?.HttpContext.Request;
             var host = request.Host;
             if (ExcludeLocalhost && string.Equals(host.Host, "localhost", StringComparison.OrdinalIgnoreCase))
             {

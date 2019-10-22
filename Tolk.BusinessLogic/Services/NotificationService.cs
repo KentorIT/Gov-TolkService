@@ -1,14 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -23,7 +18,6 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
-        private readonly PriceCalculationService _priceCalculationService;
         private readonly IMemoryCache _cache;
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly string _senderPrepend;
@@ -36,7 +30,6 @@ namespace Tolk.BusinessLogic.Services
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
             ISwedishClock clock,
-            PriceCalculationService priceCalculationService,
             IMemoryCache cache,
             ITolkBaseOptions tolkBaseOptions
         )
@@ -44,14 +37,16 @@ namespace Tolk.BusinessLogic.Services
             _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
-            _priceCalculationService = priceCalculationService;
             _cache = cache;
             _tolkBaseOptions = tolkBaseOptions;
-            _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions.Env.DisplayName) ? $"{_tolkBaseOptions.Env.DisplayName} " : string.Empty;
+            _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions?.Env.DisplayName) ? $"{_tolkBaseOptions?.Env.DisplayName} " : string.Empty;
         }
+
+
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(OrderCancelledByCustomer), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
 
             //customer send email with info about requisition created 
@@ -107,6 +102,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void OrderContactPersonChanged(Order order)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderContactPersonChanged), nameof(NotificationService));
             AspNetUser previousContactUser = order.OrderContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
             AspNetUser currentContactUser = order.ContactPersonUser;
 
@@ -132,6 +128,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void OrderReplacementCreated(Order order)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderReplacementCreated), nameof(NotificationService));
             Request oldRequest = order.Requests.SingleOrDefault(r => r.Status == RequestStatus.CancelledByCreator);
 
             Order replacementOrder = order.ReplacedByOrder;
@@ -181,6 +178,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void OrderNoBrokerAccepted(Order order)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderNoBrokerAccepted), nameof(NotificationService));
             CreateEmail(GetRecipientsFromOrder(order),
                 $"Bokningsförfrågan {order.OrderNumber} fick ingen tolk",
                 $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {order.OrderNumber}. {GotoOrderPlain(order.OrderId)}",
@@ -190,6 +188,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void RequestCreated(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreated), nameof(NotificationService));
             var order = request.Order;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
             if (email != null)
@@ -234,6 +233,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void RequestGroupCreated(RequestGroup requestGroup)
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupCreated), nameof(NotificationService));
             var orderGroup = requestGroup.OrderGroup;
             var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
             if (email != null)
@@ -278,17 +278,18 @@ namespace Tolk.BusinessLogic.Services
         private string GetOccuranses(IEnumerable<Order> orders)
         {
             var texts = orders.Select(o => $"\t\t{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm")}").ToArray();
-            return String.Join("\n", texts);
+            return string.Join("\n", texts);
         }
 
         private string GetOccuransesAsHtmlList(IEnumerable<Order> orders)
         {
             var texts = orders.Select(o => $"<li>{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm")}").ToArray();
-            return $"<ul>{String.Join("\n", texts)}</ul>";
+            return $"<ul>{string.Join("\n", texts)}</ul>";
         }
 
         public void RequestCreatedWithoutExpiry(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreatedWithoutExpiry), nameof(NotificationService));
             string body = $@"Bokningsförfrågan {request.Order.OrderNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
 
 Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills dess sista svarstid är satt.";
@@ -303,6 +304,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
         public void RequestAnswerAutomaticallyAccepted(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
@@ -319,11 +321,13 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
         public void RequestAnswerApproved(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerApproved), nameof(NotificationService));
             NotifyBrokerOnAcceptedAnswer(request, request.Order.OrderNumber);
         }
 
         public void RequestAnswerDenied(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerDenied), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Email);
             if (email != null)
@@ -353,6 +357,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
         public void RequestExpired(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpired), nameof(NotificationService));
             var orderNumber = request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
@@ -380,6 +385,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
         public void RequestGroupExpired(RequestGroup requestGroup)
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpired), nameof(NotificationService));
             var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
@@ -407,6 +413,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
 
         public void ComplaintCreated(Complaint complaint)
         {
+            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintCreated), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Email);
             if (email != null)
@@ -446,6 +453,7 @@ Angiven reklamationsbeskrivning:
 
         public void ComplaintConfirmed(Complaint complaint)
         {
+            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintConfirmed), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
             CreateEmail(GetRecipientFromComplaint(complaint), $"Reklamation kopplad till tolkuppdrag {orderNumber} har godtagits",
                 $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GotoOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
@@ -455,6 +463,7 @@ Angiven reklamationsbeskrivning:
 
         public void ComplaintDisputed(Complaint complaint)
         {
+            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintDisputed), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
             CreateEmail(GetRecipientFromComplaint(complaint), $"Reklamation kopplad till tolkuppdrag {orderNumber} har bestridits",
                 $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage} {GotoOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
@@ -464,6 +473,7 @@ Angiven reklamationsbeskrivning:
 
         public void ComplaintDisputePendingTrial(Complaint complaint)
         {
+            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintDisputePendingTrial), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Email);
             if (email != null)
@@ -493,6 +503,7 @@ Angiven reklamationsbeskrivning:
 
         public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint)
         {
+            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintTerminatedAsDisputeAccepted), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
             if (email != null)
@@ -522,6 +533,7 @@ Angiven reklamationsbeskrivning:
 
         public void RequisitionCreated(Requisition requisition)
         {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCreated), nameof(NotificationService));
             var order = requisition.Request.Order;
             CreateEmail(GetRecipientsFromOrder(order, true),
                 $"En rekvisition har registrerats för tolkuppdrag {order.OrderNumber}",
@@ -532,6 +544,7 @@ Angiven reklamationsbeskrivning:
 
         public void RequisitionReviewed(Requisition requisition)
         {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionReviewed), nameof(NotificationService));
             string orderNumber = requisition.Request.Order.OrderNumber;
             var body = $@"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har granskats.
 
@@ -563,6 +576,7 @@ Sammanställning:
 
         public void RequisitionCommented(Requisition requisition)
         {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCommented), nameof(NotificationService));
             string orderNumber = requisition.Request.Order.OrderNumber;
             var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.CustomerComment}";
             var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Email);
@@ -591,6 +605,7 @@ Sammanställning:
 
         public void CustomerCreated(CustomerOrganisation customer)
         {
+            NullCheckHelper.ArgumentCheckNull(customer, nameof(CustomerCreated), nameof(NotificationService));
             var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systetmet. \n Myndigheten kan identifieras med denna identifierare i systetet:{customer.OrganisationPrefix}";
             foreach (int brokerId in _dbContext.Brokers.Select(b => b.BrokerId).ToList())
             {
@@ -616,9 +631,9 @@ Sammanställning:
                 }
             }
         }
-
         public void RequestAccepted(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {requireApprovementText}\n\n" +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
@@ -640,6 +655,7 @@ Sammanställning:
 
         public void RequestDeclinedByBroker(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestDeclinedByBroker), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till bokningsförfrågan med följande meddelande:\n{request.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till bokningsförfrågan {orderNumber}",
@@ -649,6 +665,7 @@ Sammanställning:
 
         public void RequestGroupDeclinedByBroker(RequestGroup requestGroup)
         {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupDeclinedByBroker), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             var body = $"Svar på sammanhållna bokningsförfrågan {orderGroupNumber} har inkommit. Förmedling {requestGroup.Ranking.Broker.Name} har tackat nej till den sammanhållna bokningsförfrågan med följande meddelande:\n{requestGroup.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
             CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Förmedling har tackat nej till den sammanhållna bokningsförfrågan {orderGroupNumber}",
@@ -658,6 +675,7 @@ Sammanställning:
 
         public void RequestCancelledByBroker(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCancelledByBroker), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Förmedling {request.Ranking.Broker.Name} har avbokat tolkuppdraget med boknings-ID {orderNumber} med meddelande:\n{request.CancelMessage}";
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har avbokat tolkuppdraget med boknings-ID {orderNumber}",
@@ -667,6 +685,7 @@ Sammanställning:
 
         public void RequestReplamentOrderAccepted(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestReplamentOrderAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             switch (request.Status)
             {
@@ -690,6 +709,7 @@ Sammanställning:
 
         public void RequestReplamentOrderDeclinedByBroker(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestReplamentOrderDeclinedByBroker), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
 
             var body = $"Svar på ersättningsuppdrag {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} " +
@@ -702,6 +722,7 @@ Sammanställning:
 
         public void RequestChangedInterpreter(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestChangedInterpreter), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
@@ -716,6 +737,7 @@ Sammanställning:
 
         public void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestChangedInterpreterAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             //Broker
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Email);
@@ -761,6 +783,7 @@ Sammanställning:
 
         public void RemindUnhandledRequest(Request request)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RemindUnhandledRequest), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             string body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
             + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
@@ -1205,6 +1228,8 @@ Sammanställning:
 
         public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null)
         {
+            NullCheckHelper.ArgumentCheckNull(failedCall, nameof(ResendWebHook), nameof(NotificationService));
+
             int? brokerId = _dbContext.Users.SingleOrDefault(u => u.Id == failedCall.RecipientUserId)?.BrokerId;
             if (brokerId == null)
             {

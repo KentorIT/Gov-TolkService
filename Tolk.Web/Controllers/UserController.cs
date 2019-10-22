@@ -29,7 +29,6 @@ namespace Tolk.Web.Controllers
     {
         private readonly UserManager<AspNetUser> _userManager;
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger _logger;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
@@ -39,7 +38,6 @@ namespace Tolk.Web.Controllers
         public UserController(
             UserManager<AspNetUser> userManager,
             TolkDbContext dbContext,
-            ILogger<UserController> logger,
             RoleManager<IdentityRole<int>> roleManager,
             UserService userService,
             IAuthorizationService authorizationService,
@@ -49,7 +47,6 @@ namespace Tolk.Web.Controllers
         {
             _userManager = userManager;
             _dbContext = dbContext;
-            _logger = logger;
             _roleManager = roleManager;
             _userService = userService;
             _authorizationService = authorizationService;

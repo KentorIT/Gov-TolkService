@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Services
 
         public TolkBaseOptionsService(IOptions<TolkOptions> options)
         {
-            _options = options.Value;
+            _options = options?.Value;
         }
 
         public TolkBaseOptions.Environment Env => _options.Env;

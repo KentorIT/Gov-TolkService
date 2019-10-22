@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -345,6 +344,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)
         {
+            NullCheckHelper.ArgumentCheckNull(group, nameof(CreateRequestGroup), nameof(OrderService));
             RequestGroup requestGroup = null;
             DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(group.ClosestStartAt);
             var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
@@ -412,6 +412,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(CreateRequest), nameof(OrderService));
             Request request = null;
             DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
@@ -478,6 +479,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task TerminateOrderGroup(OrderGroup orderGroup)
         {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(TerminateOrderGroup), nameof(OrderService));
             foreach (Order order in orderGroup.Orders)
             {
                 await TerminateOrder(order, false);
@@ -494,6 +496,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task TerminateOrder(Order order, bool notify = true)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(TerminateOrder), nameof(OrderService));
             if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
             {
                 order.Status = OrderStatus.NoDeadlineFromCustomer;
@@ -520,6 +523,8 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task ReplaceOrder(Order order, Order replacementOrder, int userId, int? impersonatorId, string cancelMessage)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(ReplaceOrder), nameof(OrderService));
+            NullCheckHelper.ArgumentCheckNull(replacementOrder, nameof(ReplaceOrder), nameof(OrderService));
             var request = order.ActiveRequest;
             if (request == null)
             {
@@ -556,6 +561,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void ApproveRequestAnswer(Request request, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ApproveRequestAnswer), nameof(OrderService));
             bool isInterpreterChangeApproval = request.Status == RequestStatus.AcceptedNewInterpreterAppointed;
             request.Approve(_clock.SwedenNow, userId, impersonatorId);
 
@@ -571,6 +577,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task DenyRequestAnswer(Request request, int userId, int? impersonatorId, string message)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(DenyRequestAnswer), nameof(OrderService));
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             await CreateRequest(request.Order, request);
             _notificationService.RequestAnswerDenied(request);
@@ -578,6 +585,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task ConfirmCancellationByBroker(Request request, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmCancellationByBroker), nameof(OrderService));
             if (request.Status != RequestStatus.CancelledByBroker)
             {
                 throw new InvalidOperationException($"The order {request.OrderId} has not been cancelled");
@@ -594,6 +602,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task ConfirmNoAnswer(Order order, int userId, int? impersonatorId)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(ConfirmNoAnswer), nameof(OrderService));
             if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
             {
                 throw new InvalidOperationException($"The order {order.OrderId} has not been denied by all brokers");
@@ -610,6 +619,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(CancelOrder), nameof(OrderService));
             var request = order.ActiveRequest;
             if (order.ActiveRequest == null)
             {
@@ -631,11 +641,11 @@ namespace Tolk.BusinessLogic.Services
 
         public void SetRequestExpiryManually(Request request, DateTimeOffset expiry)
         {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
             {
                 throw new InvalidOperationException($"There is no request awaiting deadline form customer on this order {request.OrderId}");
             }
-
             request.ExpiresAt = expiry;
             request.Order.Status = OrderStatus.Requested;
             request.Status = RequestStatus.Created;
@@ -647,6 +657,7 @@ namespace Tolk.BusinessLogic.Services
 
         public void CreatePriceInformation(OrderGroup orderGroup)
         {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CreatePriceInformation), nameof(OrderService));
             orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
         }
 
@@ -667,6 +678,7 @@ namespace Tolk.BusinessLogic.Services
 
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
         {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(GetOrderPriceinformationForConfirmation), nameof(OrderService));
             CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
             int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))

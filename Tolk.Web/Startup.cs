@@ -18,7 +18,6 @@ using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
-using Tolk.Web.Models;
 using Tolk.Web.Services;
 
 namespace Tolk.Web
@@ -137,9 +136,16 @@ namespace Tolk.Web
 
             if (autoMigrate != null && bool.Parse(autoMigrate))
             {
+                if (dbContext == null)
+                {
+                    throw new ArgumentNullException(nameof(dbContext));
+                }
                 dbContext.Database.Migrate();
             }
-
+            if (roleManager == null)
+            {
+                throw new ArgumentNullException(nameof(roleManager));
+            }
             if (!roleManager.RoleExistsAsync(Roles.SystemAdministrator).Result)
             {
                 IdentityResult roleResult = roleManager.CreateAsync(new IdentityRole<int>(Roles.SystemAdministrator)).Result;

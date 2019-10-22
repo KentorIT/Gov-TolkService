@@ -44,7 +44,7 @@ namespace Tolk.Web.Models
 
         public CustomerUserFilterModel UserFilterModel { get; set; }
 
-        public static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
+        internal static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
         {
             return new CustomerModel
             {

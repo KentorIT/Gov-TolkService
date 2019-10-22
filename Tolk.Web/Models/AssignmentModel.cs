@@ -61,7 +61,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        public static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
+        internal static AssignmentModel GetModelFromRequest(Request request, DateTimeOffset timeNow)
         {
             int? requisitionId = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Created || r.Status == RequisitionStatus.Reviewed)?.RequisitionId;
             var location = request.Order.InterpreterLocations.Single(l => (int)l.InterpreterLocation == request.InterpreterLocation.Value);
