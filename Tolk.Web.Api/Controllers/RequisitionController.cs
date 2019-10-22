@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
+using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -212,6 +213,8 @@ namespace Tolk.Web.Api.Controllers
                 PerDiem = requisition.PerDiem,
                 WasteTime = requisition.TimeWasteNormalTime,
                 WasteTimeInconvenientHour = requisition.TimeWasteIWHTime,
+                PriceInformation = requisition.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName()),
+
                 PreviousRequisitions = includePreiviousRequisitions ? requisition.Request.Requisitions.Select(r => new RequisitionDetailsResponse
                 {
                     OrderNumber = orderNumber,
@@ -228,6 +231,7 @@ namespace Tolk.Web.Api.Controllers
                     PerDiem = r.PerDiem,
                     WasteTime = r.TimeWasteNormalTime,
                     WasteTimeInconvenientHour = r.TimeWasteIWHTime,
+                    PriceInformation = r.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName()),
                 }) : Enumerable.Empty<RequisitionDetailsResponse>()
             };
         }

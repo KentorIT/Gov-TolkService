@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
@@ -51,5 +52,30 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return int.TryParse(value, out var i) ? (int?)i : null;
         }
+
+        public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel)
+        {
+            return new PriceInformationModel
+            {
+                PriceCalculatedFromCompetenceLevel = competenceLevel,
+                PriceRows = priceRows.GroupBy(r => r.PriceRowType)
+                    .Select(p => new PriceRowModel
+                    {
+                        Description = p.Key.GetDescription(),
+                        PriceRowType = p.Key.GetCustomName(),
+                        Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
+                        CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                        CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                        PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                        {
+                            PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
+                            Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                            Price = l.Price,
+                            Quantity = l.Quantity
+                        })
+                    })
+            };
+        }
+
     }
 }

@@ -1103,27 +1103,7 @@ Sammanställning:
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName
                 }),
-                //Need to aggregate the price list types
-                PriceInformation = new PriceInformationModel
-                {
-                    PriceCalculatedFromCompetenceLevel = order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
-                    PriceRows = order.PriceRows.GroupBy(r => r.PriceRowType)
-                        .Select(p => new PriceRowModel
-                        {
-                            Description = p.Key.GetDescription(),
-                            PriceRowType = p.Key.GetCustomName(),
-                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                            {
-                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                                Price = l.Price,
-                                Quantity = l.Quantity
-                            })
-                        })
-                }
+                PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName())
             };
         }
         private string GotoWebHookListPlain()
@@ -1189,26 +1169,7 @@ Sammanställning:
                     StartAt = o.StartAt,
                     EndAt = o.EndAt,
                     IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
-                    PriceInformation = new PriceInformationModel
-                    {
-                        PriceCalculatedFromCompetenceLevel = o.PriceCalculatedFromCompetenceLevel.GetCustomName(),
-                        PriceRows = o.PriceRows.GroupBy(r => r.PriceRowType)
-                       .Select(p => new PriceRowModel
-                       {
-                           Description = p.Key.GetDescription(),
-                           PriceRowType = p.Key.GetCustomName(),
-                           Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                           CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                           CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                           PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                           {
-                               PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                               Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                               Price = l.Price,
-                               Quantity = l.Quantity
-                           })
-                       })
-                    }
+                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName())
                 })
             };
         }

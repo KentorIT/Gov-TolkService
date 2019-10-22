@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Tolk.Api.Payloads.ApiPayloads;
+using Tolk.Api.Payloads.WebHookPayloads;
 
 namespace Tolk.Api.Payloads.Responses
 {
@@ -27,6 +28,9 @@ namespace Tolk.Api.Payloads.Responses
 
         public string Message { get; set; }
 
+        public PriceInformationModel PriceInformation { get; set; }
+
         public IEnumerable<RequisitionDetailsResponse> PreviousRequisitions { get; set; }
+
     }
 }

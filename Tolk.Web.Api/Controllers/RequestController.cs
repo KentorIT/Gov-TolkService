@@ -835,46 +835,10 @@ namespace Tolk.Web.Api.Controllers
                     RequirementId = r.OrderRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                CalculatedPriceInformationFromRequest = new PriceInformationModel
-                {
-                    PriceCalculatedFromCompetenceLevel = request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
-                    PriceRows = request.Order.PriceRows.GroupBy(r => r.PriceRowType)
-                        .Select(p => new PriceRowModel
-                        {
-                            Description = p.Key.GetDescription(),
-                            PriceRowType = p.Key.GetCustomName(),
-                            Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                            CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                            CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                            PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                            {
-                                PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                                Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                                Price = l.Price,
-                                Quantity = l.Quantity
-                            })
-                        })
-                },
-                CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ? new PriceInformationModel
-                {
-                    PriceCalculatedFromCompetenceLevel = EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation),
-                    PriceRows = request.PriceRows.GroupBy(r => r.PriceRowType)
-                            .Select(p => new PriceRowModel
-                            {
-                                Description = p.Key.GetDescription(),
-                                PriceRowType = p.Key.GetCustomName(),
-                                Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                                CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                                CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                                PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
-                                {
-                                    PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                                    Description = l.PriceListRow.PriceListRowType.GetDescription(),
-                                    Price = l.Price,
-                                    Quantity = l.Quantity
-                                })
-                            })
-                } : null,
+                CalculatedPriceInformationFromRequest = request.Order.PriceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName()),
+                CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
+                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName())
+                    : null,
                 Interpreter = request.Interpreter != null ? new InterpreterModel
                 {
                     InterpreterId = request.Interpreter.InterpreterBrokerId,
