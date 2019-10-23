@@ -53,7 +53,7 @@ namespace Tolk.BusinessLogic.Utilities
             return int.TryParse(value, out var i) ? (int?)i : null;
         }
 
-        public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel)
+        public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel, decimal brokerFee)
         {
             return new PriceInformationModel
             {
@@ -64,8 +64,8 @@ namespace Tolk.BusinessLogic.Utilities
                         Description = p.Key.GetDescription(),
                         PriceRowType = p.Key.GetCustomName(),
                         Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
-                        CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                        CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                        CalculationBase = p.Count() == 1 ? p.Key == PriceRowType.BrokerFee ? brokerFee : p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
+                        CalculatedFrom = p.Key == PriceRowType.BrokerFee ? "Note that this is rounded to SEK, no decimals, when calculated" : EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
                         PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
                         {
                             PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
@@ -76,6 +76,5 @@ namespace Tolk.BusinessLogic.Utilities
                     })
             };
         }
-
     }
 }

@@ -9,5 +9,6 @@ namespace Tolk.Api.Payloads.Responses
         public string Name { get; set; }
         public string OrganisationNumber { get; set; }
         public string PriceListType { get; set; }
+        public string TravelCostAgreementType { get; set; }
     }
 }

@@ -123,6 +123,8 @@ namespace Tolk.Web.Controllers
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer);
                 customer.PriceListType = model.PriceListType;
+                customer.OrganisationPrefix = model.OrganisationPrefix;
+                customer.TravelCostAgreementType = model.TravelCostAgreementType;
                 _dbContext.Add(customer);
                 await _dbContext.SaveChangesAsync();
                 customer = await _dbContext.CustomerOrganisations
@@ -151,7 +153,6 @@ namespace Tolk.Web.Controllers
                 LastName = u.NameFamily,
                 Email = u.Email,
                 IsActive = u.IsActive
-
             }));
         }
 

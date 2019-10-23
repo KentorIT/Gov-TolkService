@@ -105,7 +105,7 @@ namespace Tolk.BusinessLogic.Services
                             call.FailedTries++;
                             FailedWebHookCall failedCall = new FailedWebHookCall { OutboundWebHookCallId = callId, ErrorMessage = errorMessage, FailedAt = _clock.SwedenNow };
                             _dbContext.FailedWebHookCalls.Add(failedCall);
-                            if (call.FailedTries == NumberOfTries)
+                            if (call.FailedTries == NumberOfTries && call.NotificationType != Enums.NotificationType.ErrorNotification)
                             {
                                 _notificationService.NotifyOnFailure(callId);
                             }

@@ -123,6 +123,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
 
                 var requisition = _dbContext.Requisitions
+                    .Include(r => r.Request).ThenInclude(r => r.Ranking)
                     .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.MealBreaks)
                     .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.PriceRows)
                     .Include(r => r.MealBreaks)
@@ -213,7 +214,7 @@ namespace Tolk.Web.Api.Controllers
                 PerDiem = requisition.PerDiem,
                 WasteTime = requisition.TimeWasteNormalTime,
                 WasteTimeInconvenientHour = requisition.TimeWasteIWHTime,
-                PriceInformation = requisition.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName()),
+                PriceInformation = requisition.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName(), requisition.Request.Ranking.BrokerFee),
 
                 PreviousRequisitions = includePreiviousRequisitions ? requisition.Request.Requisitions.Select(r => new RequisitionDetailsResponse
                 {
@@ -231,7 +232,7 @@ namespace Tolk.Web.Api.Controllers
                     PerDiem = r.PerDiem,
                     WasteTime = r.TimeWasteNormalTime,
                     WasteTimeInconvenientHour = r.TimeWasteIWHTime,
-                    PriceInformation = r.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName()),
+                    PriceInformation = r.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)requisition.Request.CompetenceLevel).GetCustomName(), requisition.Request.Ranking.BrokerFee),
                 }) : Enumerable.Empty<RequisitionDetailsResponse>()
             };
         }

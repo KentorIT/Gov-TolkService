@@ -26,6 +26,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Prislista")]
         public PriceListType PriceListType { get; set; }
 
+        [Display(Name = "Avtal för bilersättning")]
+        public TravelCostAgreementType TravelCostAgreementType { get; set; }
+
         [Display(Name = "Namnprefix", Description = "Detta används vid skapande av användarnamn när det skapas en ny användare kopplat till organisationen")]
         [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool))]
         public string OrganisationPrefix { get; set; }
@@ -57,6 +60,7 @@ namespace Tolk.Web.Models
                 EmailDomain = customer.EmailDomain,
                 OrganisationPrefix = customer.OrganisationPrefix,
                 OrganisationNumber = customer.OrganisationNumber,
+                TravelCostAgreementType = customer.TravelCostAgreementType,
                 Message = message,
                 UserPageMode = new UserPageMode
                 {
@@ -64,7 +68,7 @@ namespace Tolk.Web.Models
                     BackAction = "View",
                     BackId = customer.CustomerOrganisationId.ToSwedishString()
                 }
-                
+
             };
         }
 
@@ -73,7 +77,6 @@ namespace Tolk.Web.Models
             customer.Name = Name;
             customer.ParentCustomerOrganisationId = ParentId;
             customer.EmailDomain = EmailDomain;
-            customer.OrganisationPrefix = OrganisationPrefix;
             customer.OrganisationNumber = OrganisationNumber;
         }
     }

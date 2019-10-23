@@ -1062,7 +1062,9 @@ Sammanställning:
                     Key = order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                     ContactInformation = order.CreatedByUser.CompleteContactInformation,
-                    InvoiceReference = order.InvoiceReference
+                    InvoiceReference = order.InvoiceReference,
+                    PriceListType = order.CustomerOrganisation.PriceListType.GetCustomName(),
+                    TravelCostAgreementType = order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToSwedishString("D2"),
@@ -1103,7 +1105,7 @@ Sammanställning:
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName
                 }),
-                PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName())
+                PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
         }
         private string GotoWebHookListPlain()
@@ -1169,7 +1171,7 @@ Sammanställning:
                     StartAt = o.StartAt,
                     EndAt = o.EndAt,
                     IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
-                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName())
+                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee)
                 })
             };
         }
@@ -1177,6 +1179,7 @@ Sammanställning:
         private Request GetRequest(int id)
         {
             return _dbContext.Requests
+                .Include(r => r.Ranking)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.Requirements)

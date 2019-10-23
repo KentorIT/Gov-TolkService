@@ -83,6 +83,11 @@ namespace Tolk.Web.Api.Controllers
         {
             return DescriptionsAsJson<PriceListType>();
         }
+        [HttpGet]
+        public JsonResult TravelCostAgreementTypes()
+        {
+            return DescriptionsAsJson<TravelCostAgreementType>();
+        }
 
         [HttpGet]
         public JsonResult PriceRowTypes()

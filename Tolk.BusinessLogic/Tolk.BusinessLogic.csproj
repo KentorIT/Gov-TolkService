@@ -27,6 +27,12 @@
     <Compile Remove="Data\Migrations\20190913094212_RenamedOrgColumn.Designer.cs" />
     <Compile Remove="Data\Migrations\20191007055323_REMOVE.cs" />
     <Compile Remove="Data\Migrations\20191007055323_REMOVE.Designer.cs" />
+    <Compile Remove="Data\Migrations\20191022121726_[Required].cs" />
+    <Compile Remove="Data\Migrations\20191022121726_[Required].Designer.cs" />
+    <Compile Remove="Data\Migrations\20191022121819_TravelCostAgreementType.cs" />
+    <Compile Remove="Data\Migrations\20191022121819_TravelCostAgreementType.Designer.cs" />
+    <Compile Remove="Data\Migrations\20191022123253_TravelCostAgreementType.cs" />
+    <Compile Remove="Data\Migrations\20191022123253_TravelCostAgreementType.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

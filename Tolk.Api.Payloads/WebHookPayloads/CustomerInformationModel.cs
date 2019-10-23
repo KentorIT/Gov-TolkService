@@ -11,6 +11,8 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public string OrganisationNumber{ get; set; }
         public string ContactInformation { get; set; }
         public string InvoiceReference { get; set; }
+        public string PriceListType { get; set; }
+        public string TravelCostAgreementType { get; set; }
 
     }
 }

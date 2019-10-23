@@ -70,6 +70,11 @@ namespace BrokerMock.Services
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get price list types: {items.Count}");
             _cache.Set("PriceListTypes", items);
 
+            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/TravelCostAgreementTypes/".AsUri());
+            items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get travel cost agreement types: {items.Count}");
+            _cache.Set("TravelCostAgreementTypes", items);
+
             response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/PriceRowTypes/".AsUri());
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get price row types: {items.Count}");

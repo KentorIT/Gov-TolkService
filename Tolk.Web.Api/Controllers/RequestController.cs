@@ -794,7 +794,9 @@ namespace Tolk.Web.Api.Controllers
                     Key = request.Order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
                     ContactInformation = request.Order.CreatedByUser.CompleteContactInformation,
-                    InvoiceReference = request.Order.InvoiceReference
+                    InvoiceReference = request.Order.InvoiceReference,
+                    PriceListType = request.Order.CustomerOrganisation.PriceListType.GetCustomName(),
+                    TravelCostAgreementType = request.Order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                 },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
@@ -835,9 +837,9 @@ namespace Tolk.Web.Api.Controllers
                     RequirementId = r.OrderRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                CalculatedPriceInformationFromRequest = request.Order.PriceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName()),
+                CalculatedPriceInformationFromRequest = request.Order.PriceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
                 CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
-                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName())
+                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName(), request.Ranking.BrokerFee)
                     : null,
                 Interpreter = request.Interpreter != null ? new InterpreterModel
                 {

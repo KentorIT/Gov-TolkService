@@ -35,5 +35,8 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         [MaxLength(32)]
         public string OrganisationNumber { get; set; }
+
+        [Required]
+        public TravelCostAgreementType TravelCostAgreementType { get; set; }
     }
 }

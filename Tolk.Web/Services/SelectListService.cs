@@ -82,6 +82,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
         public static IEnumerable<SelectListItem> PriceListTypes => GetList<PriceListType>();
+        public static IEnumerable<SelectListItem> TravelCostAgreementTypes => GetList<TravelCostAgreementType>();
 
         public static IEnumerable<SelectListItem> AssignmentStatuses => GetList<AssignmentStatus>();
 
