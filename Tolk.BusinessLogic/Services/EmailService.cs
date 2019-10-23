@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<EmailService> _logger;
-        private readonly TolkBaseOptions.SmtpSettings _options;
+        private readonly SmtpSettings _options;
         private readonly ISwedishClock _clock;
         private readonly string _senderPrepend;
         private readonly string _secondLineSupportMail;

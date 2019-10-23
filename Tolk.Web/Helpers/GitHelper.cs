@@ -43,7 +43,7 @@ namespace Tolk.Web.Helpers
             }
 
             var activeAzureVersion = 
-                Environment.ExpandEnvironmentVariables(
+                System.Environment.ExpandEnvironmentVariables(
                 "%HOME%\\site\\deployments\\active");
 
             if (File.Exists(activeAzureVersion))

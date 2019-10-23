@@ -15,18 +15,18 @@ namespace Tolk.Web.Api.Services
             _options = options?.Value;
         }
 
-        public TolkBaseOptions.Environment Env => _options.Env;
+        public Environment Env => _options.Env;
 
         public string TolkWebBaseUrl => _options.TolkWebBaseUrl;
 
         public int MonthsToApproveComplaints => _options.MonthsToApproveComplaints;
 
-        public TolkBaseOptions.TellusApi Tellus => _options.Tellus;
+        public TellusApi Tellus => _options.Tellus;
 
-        public TolkBaseOptions.SupportSettings Support => _options.Support;
+        public SupportSettings Support => _options.Support;
 
-        public TolkBaseOptions.SmtpSettings Smtp => _options.Smtp;
+        public SmtpSettings Smtp => _options.Smtp;
 
-        public TolkBaseOptions.StatusCheckerSettings StatusChecker => _options.StatusChecker;
+        public StatusCheckerSettings StatusChecker => _options.StatusChecker;
     }
 }
