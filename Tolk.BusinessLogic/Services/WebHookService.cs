@@ -57,7 +57,7 @@ namespace Tolk.BusinessLogic.Services
                     bool success = false;
                     var call = await _dbContext.OutboundWebHookCalls
                         .Include(c => c.RecipientUser).ThenInclude(u => u.Claims)
-                        .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId);
+                        .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId && e.DeliveredAt == null && e.FailedTries < NumberOfTries);
                     try
                     {
                         if (call == null)

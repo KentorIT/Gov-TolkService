@@ -62,7 +62,7 @@ namespace Tolk.BusinessLogic.Services
                             try
                             {
                                 var email = await _dbContext.OutboundEmails
-                                    .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId);
+                                    .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId && e.DeliveredAt == null);
 
                                 if (email == null)
                                 {

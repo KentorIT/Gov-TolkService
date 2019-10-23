@@ -14,9 +14,13 @@ namespace Tolk.Web.Services
 
         private DateTimeOffset nextDailyRunTime;
 
+        private bool nextRunIsNotifications = true;
+
         private const int timeToRun = 5;
-        private const int timeDelayContinousJobs = 15000;
+        private const int timeDelayContinousJobs = 5000;
         private const int allotedTimeAllTasks = 120000;
+
+
 
         public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock)
         {
@@ -93,14 +97,27 @@ namespace Tolk.Web.Services
                     }
                     else
                     {
-                        tasksToRun = new Task[]
+                        if (nextRunIsNotifications)
                         {
-                            RunContinousJobs(serviceScope.ServiceProvider),
-                        };
+                            //Separate these, to get a better parallellism for the notifications
+                            // They fail to run together with the other Continous jobs , due to recurring deadlocks around the email table...
+                            tasksToRun = new Task[]
+                            {
+                                serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
+                                serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks(),
+                            };
+                        }
+                        else
+                        {
+                            tasksToRun = new Task[]
+                            {
+                                RunContinousJobs(serviceScope.ServiceProvider),
+                            };
+                        }
                     }
                     if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
                     {
-                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks/1000} seconds");
+                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
                     }
                 }
             }
@@ -114,10 +131,11 @@ namespace Tolk.Web.Services
             }
             finally
             {
+                nextRunIsNotifications = !nextRunIsNotifications;
                 Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
             }
 
-            _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs/1000} seconds again");
+            _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs / 1000} seconds again");
         }
 
         private async Task RunDailyJobs(IServiceProvider provider)
@@ -135,8 +153,6 @@ namespace Tolk.Web.Services
             _logger.LogInformation($"Starting {nameof(RunContinousJobs)}");
             await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
-            await provider.GetRequiredService<EmailService>().SendEmails();
-            await provider.GetRequiredService<WebHookService>().CallWebHooks();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }
