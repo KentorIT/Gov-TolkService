@@ -606,7 +606,7 @@ Sammanställning:
         public void CustomerCreated(CustomerOrganisation customer)
         {
             NullCheckHelper.ArgumentCheckNull(customer, nameof(CustomerCreated), nameof(NotificationService));
-            var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systetmet. \n Myndigheten kan identifieras med denna identifierare i systetet:{customer.OrganisationPrefix}";
+            var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systemet. \n Myndigheten kan identifieras med denna identifierare i systemet: {customer.OrganisationPrefix}";
             foreach (int brokerId in _dbContext.Brokers.Select(b => b.BrokerId).ToList())
             {
                 var email = GetBrokerNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Email);
@@ -631,6 +631,7 @@ Sammanställning:
                 }
             }
         }
+
         public void RequestAccepted(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
