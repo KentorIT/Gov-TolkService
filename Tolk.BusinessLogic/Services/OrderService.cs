@@ -105,147 +105,6 @@ namespace Tolk.BusinessLogic.Services
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
-        private async Task HandleExpiredRequests()
-        {
-            var expiredRequestIds = await _tolkDbContext.Requests
-                .Where(r => r.RequestGroupId == null &&
-                    ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)))
-                .Select(r => r.RequestId)
-                .ToListAsync();
-
-            _logger.LogInformation("Found {count} expired requests to process: {requestIds}",
-                expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
-
-            foreach (var requestId in expiredRequestIds)
-            {
-                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                {
-                    try
-                    {
-                        var expiredRequest = await _tolkDbContext.Requests
-                            .Include(r => r.Ranking)
-                            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
-                            .SingleOrDefaultAsync(r =>
-                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
-                                && r.RequestId == requestId);
-
-                        if (expiredRequest == null)
-                        {
-                            _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
-                                requestId);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
-                                expiredRequest.RequestId, expiredRequest.OrderId);
-
-                            var requestAwaitingDeadlineFromCustomer = expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer;
-                            expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
-
-                            if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
-                            {
-                                if (requestAwaitingDeadlineFromCustomer)
-                                {
-                                    expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
-                                }
-                                else
-                                {
-                                    _notificationService.RequestExpired(expiredRequest);
-                                }
-                                await TerminateOrder(expiredRequest.Order);
-                            }
-                            else
-                            {
-                                _notificationService.RequestExpired(expiredRequest);
-                                await CreateRequest(expiredRequest.Order, expiredRequest);
-                            }
-                            trn.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
-                        trn.Rollback();
-                        await SendErrorMail(nameof(HandleExpiredRequests), ex);
-                    }
-                }
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
-        private async Task HandleExpiredRequestGroups()
-        {
-            var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
-                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
-                .Select(r => r.RequestGroupId)
-                .ToListAsync();
-
-            _logger.LogInformation("Found {count} expired request groups to process: {requestGroupIds}",
-                expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
-            foreach (var requestGroupId in expiredRequestGroupIds)
-            {
-                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                {
-                    try
-                    {
-                        var expiredRequestGroup = await _tolkDbContext.RequestGroups
-                            .Include(r => r.Ranking)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
-                            .Include(g => g.Requests).ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(r =>
-                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
-                                && r.RequestGroupId == requestGroupId);
-
-                        if (expiredRequestGroup == null)
-                        {
-                            _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
-                                requestGroupId);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Processing expired request {requestId} for Order group {orderGroupId}.",
-                                expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
-
-                            expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
-
-                            if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
-                            {
-                                expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
-                                await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
-                            }
-                            else
-                            {
-                                _notificationService.RequestGroupExpired(expiredRequestGroup);
-                                await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
-                            }
-
-                            trn.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
-                        trn.Rollback();
-                        await SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
-                    }
-                }
-            }
-        }
-
-        private async Task SendErrorMail(string methodname, Exception ex)
-        {
-            await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task HandleExpiredComplaints()
         {
             var expiredComplaintIds = await _tolkDbContext.Complaints
@@ -288,55 +147,6 @@ namespace Tolk.BusinessLogic.Services
                         _logger.LogError(ex, "Failure processing expired complaint {complaintId}", complaintId);
                         trn.Rollback();
                         await SendErrorMail(nameof(HandleExpiredComplaints), ex);
-                    }
-                }
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
-        private async Task HandleExpiredNonAnsweredRespondedRequests()
-        {
-            var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
-                .Where(r => r.RequestGroupId == null &&
-                    (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    r.Order.StartAt <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))
-                .Select(r => r.RequestId).ToListAsync();
-
-            _logger.LogInformation("Found {count} non answered responded requests that expires: {requestIds}",
-                nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
-
-            foreach (var requestId in nonAnsweredRespondedRequestsId)
-            {
-                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
-                {
-                    try
-                    {
-                        var request = await _tolkDbContext.Requests
-                        .Include(r => r.Order)
-                        .SingleOrDefaultAsync(r => r.Order.StartAt <= _clock.SwedenNow
-                        && (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
-                        && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                        && r.RequestId == requestId);
-                        if (request == null)
-                        {
-                            _logger.LogInformation("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
-                                requestId);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Set new status for non answered responded request {requestId}.",
-                                requestId);
-                            request.Status = RequestStatus.ResponseNotAnsweredByCreator;
-                            request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
-                            await _tolkDbContext.SaveChangesAsync();
-                            trn.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
-                        trn.Rollback();
-                        await SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
                     }
                 }
             }
@@ -555,6 +365,8 @@ namespace Tolk.BusinessLogic.Services
 
             //Generate new price rows from current times, might be subject to change!!!
             CreatePriceInformation(replacementOrder);
+            await _tolkDbContext.SaveChangesAsync();
+
             _notificationService.OrderReplacementCreated(order);
             _logger.LogInformation("Order {orderId} replaced by customer {userId}.", order.OrderId, userId);
         }
@@ -673,7 +485,6 @@ namespace Tolk.BusinessLogic.Services
                 order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
             );
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
-            _tolkDbContext.SaveChanges();
         }
 
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
@@ -778,5 +589,196 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        private async Task HandleExpiredRequests()
+        {
+            var expiredRequestIds = await _tolkDbContext.Requests
+                .Where(r => r.RequestGroupId == null &&
+                    ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
+                    (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)))
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {count} expired requests to process: {requestIds}",
+                expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
+
+            foreach (var requestId in expiredRequestIds)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var expiredRequest = await _tolkDbContext.Requests
+                            .Include(r => r.Ranking)
+                            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
+                            .SingleOrDefaultAsync(r =>
+                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                                || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                && r.RequestId == requestId);
+
+                        if (expiredRequest == null)
+                        {
+                            _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
+                                expiredRequest.RequestId, expiredRequest.OrderId);
+
+                            var requestAwaitingDeadlineFromCustomer = expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer;
+                            expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
+
+                            if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
+                            {
+                                if (requestAwaitingDeadlineFromCustomer)
+                                {
+                                    expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
+                                }
+                                else
+                                {
+                                    _notificationService.RequestExpired(expiredRequest);
+                                }
+                                await TerminateOrder(expiredRequest.Order);
+                            }
+                            else
+                            {
+                                _notificationService.RequestExpired(expiredRequest);
+                                await CreateRequest(expiredRequest.Order, expiredRequest);
+                            }
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
+                        trn.Rollback();
+                        await SendErrorMail(nameof(HandleExpiredRequests), ex);
+                    }
+                }
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        private async Task HandleExpiredRequestGroups()
+        {
+            var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
+                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
+                .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
+                    (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                .Select(r => r.RequestGroupId)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {count} expired request groups to process: {requestGroupIds}",
+                expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
+            foreach (var requestGroupId in expiredRequestGroupIds)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var expiredRequestGroup = await _tolkDbContext.RequestGroups
+                            .Include(r => r.Ranking)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
+                            .Include(g => g.Requests).ThenInclude(r => r.Ranking)
+                            .SingleOrDefaultAsync(r =>
+                                ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
+                                || (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                && r.RequestGroupId == requestGroupId);
+
+                        if (expiredRequestGroup == null)
+                        {
+                            _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestGroupId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Processing expired request {requestId} for Order group {orderGroupId}.",
+                                expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
+
+                            expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
+
+                            if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
+                            {
+                                expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
+                                await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
+                            }
+                            else
+                            {
+                                _notificationService.RequestGroupExpired(expiredRequestGroup);
+                                await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
+                            }
+
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
+                        trn.Rollback();
+                        await SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
+                    }
+                }
+            }
+        }
+
+        private async Task SendErrorMail(string methodname, Exception ex)
+        {
+            await _emailService.SendErrorEmail(nameof(OrderService), methodname, ex);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        private async Task HandleExpiredNonAnsweredRespondedRequests()
+        {
+            var nonAnsweredRespondedRequestsId = await _tolkDbContext.Requests
+                .Where(r => r.RequestGroupId == null &&
+                    (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    r.Order.StartAt <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))
+                .Select(r => r.RequestId).ToListAsync();
+
+            _logger.LogInformation("Found {count} non answered responded requests that expires: {requestIds}",
+                nonAnsweredRespondedRequestsId.Count, string.Join(", ", nonAnsweredRespondedRequestsId));
+
+            foreach (var requestId in nonAnsweredRespondedRequestsId)
+            {
+                using (var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var request = await _tolkDbContext.Requests
+                        .Include(r => r.Order)
+                        .SingleOrDefaultAsync(r => r.Order.StartAt <= _clock.SwedenNow
+                        && (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter)
+                        && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        && r.RequestId == requestId);
+                        if (request == null)
+                        {
+                            _logger.LogInformation("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                requestId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Set new status for non answered responded request {requestId}.",
+                                requestId);
+                            request.Status = RequestStatus.ResponseNotAnsweredByCreator;
+                            request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
+                            await _tolkDbContext.SaveChangesAsync();
+                            trn.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
+                        trn.Rollback();
+                        await SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
+                    }
+                }
+            }
+        }
+
     }
 }
