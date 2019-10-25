@@ -18,6 +18,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic;
 //using System.Net;
 
 namespace Tolk.Web.Controllers
@@ -77,7 +78,7 @@ namespace Tolk.Web.Controllers
             }
             return View(new StartViewModel
             {
-                PageTitle = (User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator)) ? "Startsida för tolkavropstjänsten" : "Aktiva bokningar",
+                PageTitle = (User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator)) ? $"Startsida för {Constants.SystemName}" : "Aktiva bokningar",
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
