@@ -51,51 +51,6 @@ namespace Tolk.BusinessLogic.Services
             _tolkBaseOptions = tolkBaseOptions;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
-        public async Task HandleStartedOrders()
-        {
-            var requestIds = await _tolkDbContext.Requests
-                .Where(r => (r.Order.StartAt <= _clock.SwedenNow && r.Order.Status == OrderStatus.ResponseAccepted) &&
-                     r.Status == RequestStatus.Approved && r.InterpreterCompetenceVerificationResultOnAssign != null &&
-                     r.InterpreterCompetenceVerificationResultOnStart == null)
-                .Select(r => r.RequestId)
-                .ToListAsync();
-
-            _logger.LogInformation("Found {count} requests where the interpreter should be revalidated: {requestIds}",
-                requestIds.Count, string.Join(", ", requestIds));
-
-            foreach (var requestId in requestIds)
-            {
-                try
-                {
-                    var startedRequest = await _tolkDbContext.Requests
-                    .Include(r => r.Interpreter)
-                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
-                    var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
-                    if (startedRequest == null)
-                    {
-                        _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
-                            requestId);
-                    }
-                    else
-                    {
-                        if (_tolkBaseOptions.Tellus.IsActivated)
-                        {
-                            _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
-                                startedRequest.RequestId, startedRequest.OrderId);
-                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(officialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
-                            await _tolkDbContext.SaveChangesAsync();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
-                    await SendErrorMail(nameof(HandleStartedOrders), ex);
-                }
-            }
-        }
-
         public async Task HandleAllScheduledTasks()
         {
             await HandleStartedOrders();
@@ -287,50 +242,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task TerminateOrderGroup(OrderGroup orderGroup)
-        {
-            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(TerminateOrderGroup), nameof(OrderService));
-            foreach (Order order in orderGroup.Orders)
-            {
-                await TerminateOrder(order, false);
-
-            }
-            var terminatedOrderGroup = await _tolkDbContext.OrderGroups
-              .Include(o => o.CreatedByUser)
-              .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
-              .SingleAsync(o => o.OrderGroupId == orderGroup.OrderGroupId);
-            _notificationService.OrderGroupNoBrokerAccepted(terminatedOrderGroup);
-            _logger.LogInformation("Could not create another request group for order group {orderGroupId}, no more available brokers or too close in time.",
-               orderGroup.OrderGroupId);
-        }
-
-        public async Task TerminateOrder(Order order, bool notify = true)
-        {
-            NullCheckHelper.ArgumentCheckNull(order, nameof(TerminateOrder), nameof(OrderService));
-            if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-            {
-                order.Status = OrderStatus.NoDeadlineFromCustomer;
-            }
-            else
-            {
-                order.Status = OrderStatus.NoBrokerAcceptedOrder;
-            }
-
-            //There are no more brokers to ask.
-            // Send an email to tell the order creator, and possibly the other user as well...
-            if (notify)
-            {
-                var terminatedOrder = await _tolkDbContext.Orders
-                   .Include(o => o.CreatedByUser)
-                   .Include(o => o.ContactPersonUser)
-                   .Include(o => o.CustomerUnit)
-                   .SingleAsync(o => o.OrderId == order.OrderId);
-                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
-                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
-                    order.OrderId);
-            }
-        }
-
         public async Task ReplaceOrder(Order order, Order replacementOrder, int userId, int? impersonatorId, string cancelMessage)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(ReplaceOrder), nameof(OrderService));
@@ -467,26 +378,6 @@ namespace Tolk.BusinessLogic.Services
             _notificationService.RequestCreated(request);
         }
 
-        public void CreatePriceInformation(OrderGroup orderGroup)
-        {
-            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CreatePriceInformation), nameof(OrderService));
-            orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
-        }
-
-        public void CreatePriceInformation(Order order)
-        {
-            _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
-                order?.OrderId, order?.CustomerOrganisation?.Name);
-            var priceInformation = _priceCalculationService.GetPrices(
-                order.StartAt,
-                order.EndAt,
-                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
-                order.CustomerOrganisation.PriceListType,
-                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
-            );
-            order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
-        }
-
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(GetOrderPriceinformationForConfirmation), nameof(OrderService));
@@ -588,6 +479,112 @@ namespace Tolk.BusinessLogic.Services
                     await SendErrorMail(nameof(CleanTempAttachments), ex);
                 }
             }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        private async Task HandleStartedOrders()
+        {
+            var requestIds = await _tolkDbContext.Requests
+                .Where(r => (r.Order.StartAt <= _clock.SwedenNow && r.Order.Status == OrderStatus.ResponseAccepted) &&
+                     r.Status == RequestStatus.Approved && r.InterpreterCompetenceVerificationResultOnAssign != null &&
+                     r.InterpreterCompetenceVerificationResultOnStart == null)
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {count} requests where the interpreter should be revalidated: {requestIds}",
+                requestIds.Count, string.Join(", ", requestIds));
+
+            foreach (var requestId in requestIds)
+            {
+                try
+                {
+                    var startedRequest = await _tolkDbContext.Requests
+                    .Include(r => r.Interpreter)
+                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
+                    var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
+                    if (startedRequest == null)
+                    {
+                        _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                            requestId);
+                    }
+                    else
+                    {
+                        if (_tolkBaseOptions.Tellus.IsActivated)
+                        {
+                            _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
+                                startedRequest.RequestId, startedRequest.OrderId);
+                            startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(officialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
+                            await _tolkDbContext.SaveChangesAsync();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
+                    await SendErrorMail(nameof(HandleStartedOrders), ex);
+                }
+            }
+        }
+
+        private async Task TerminateOrderGroup(OrderGroup orderGroup)
+        {
+            foreach (Order order in orderGroup.Orders)
+            {
+                await TerminateOrder(order, false);
+
+            }
+            var terminatedOrderGroup = await _tolkDbContext.OrderGroups
+              .Include(o => o.CreatedByUser)
+              .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+              .SingleAsync(o => o.OrderGroupId == orderGroup.OrderGroupId);
+            _notificationService.OrderGroupNoBrokerAccepted(terminatedOrderGroup);
+            _logger.LogInformation("Could not create another request group for order group {orderGroupId}, no more available brokers or too close in time.",
+               orderGroup.OrderGroupId);
+        }
+
+        private async Task TerminateOrder(Order order, bool notify = true)
+        {
+            if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
+            {
+                order.Status = OrderStatus.NoDeadlineFromCustomer;
+            }
+            else
+            {
+                order.Status = OrderStatus.NoBrokerAcceptedOrder;
+            }
+
+            //There are no more brokers to ask.
+            // Send an email to tell the order creator, and possibly the other user as well...
+            if (notify)
+            {
+                var terminatedOrder = await _tolkDbContext.Orders
+                   .Include(o => o.CreatedByUser)
+                   .Include(o => o.ContactPersonUser)
+                   .Include(o => o.CustomerUnit)
+                   .SingleAsync(o => o.OrderId == order.OrderId);
+                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
+                    order.OrderId);
+            }
+        }
+
+        private void CreatePriceInformation(OrderGroup orderGroup)
+        {
+            orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
+        }
+
+        private void CreatePriceInformation(Order order)
+        {
+            _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
+                order?.OrderId, order?.CustomerOrganisation?.Name);
+            var priceInformation = _priceCalculationService.GetPrices(
+                order.StartAt,
+                order.EndAt,
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
+                order.CustomerOrganisation.PriceListType,
+                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
+            );
+            order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
