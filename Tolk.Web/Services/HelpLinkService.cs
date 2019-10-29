@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System;
+using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.Configuration;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services
 {
@@ -14,7 +16,7 @@ namespace Tolk.Web.Services
             BaseAddress = configuration != null ? configuration["UserDocumentation:BaseUrl"] : string.Empty;
         }
 
-        public string GenerateUrl(string anchorpoint)
+        public Uri GenerateUrl(string anchorpoint)
         {
             string link = BaseAddress;
             link += PageName;
@@ -23,7 +25,7 @@ namespace Tolk.Web.Services
                 link += "#" + anchorpoint;
             }
 
-            return link;
+            return link.AsUri();
         }
 
         public HtmlString Anchor(string anchorpoint) => new HtmlString($"<a href=\"{GenerateUrl(anchorpoint)}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>");

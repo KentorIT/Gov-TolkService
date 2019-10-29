@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -6,9 +7,9 @@ namespace Tolk.BusinessLogic.Utilities
     {
         public bool IsActivated { get; set; }
         public bool IsLanguagesCompetenceActivated { get; set; }
-        public string Uri { get; set; }
-        public string LanguagesUri { get; set; }
-        public string LanguagesCompetenceInfoUri { get; set; }
+        public Uri Uri { get; set; }
+        public Uri LanguagesUri { get; set; }
+        public Uri LanguagesCompetenceInfoUri { get; set; }
         public string UnusedIsoCodes { get; set; }
         public IEnumerable<string> UnusedIsoCodesList
         {

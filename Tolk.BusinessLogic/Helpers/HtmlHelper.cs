@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Helpers
 {
@@ -15,84 +14,46 @@ namespace Tolk.BusinessLogic.Helpers
 
         #region URLs
 
-        public static string GetOrderGroupViewUrl(string origin, int orderGroupId)
+        public static Uri GetOrderGroupViewUrl(Uri origin, int orderGroupId)
         {
-            return $"{origin}/OrderGroup/View/{orderGroupId}";
+            return origin.BuildUri($"OrderGroup/View/{orderGroupId}");
         }
 
-        public static string GetOrderViewUrl(string origin, int orderId)
+        public static Uri GetOrderViewUrl(Uri origin, int orderId, string query = null)
         {
-            return $"{origin}/Order/View/{orderId}";
+            return origin.BuildUri($"Order/View/{orderId}", query);
         }
 
-        public static string GetOrderPrintUrl(string origin, int orderId)
+        public static Uri GetOrderPrintUrl(Uri origin, int orderId)
         {
-            return $"{origin}/Order/Print/{orderId}";
+            return origin.BuildUri($"Order/Print/{orderId}");
         }
 
-        public static string GetRequestViewUrl(string origin, int requestId)
+        public static Uri GetRequestViewUrl(Uri origin, int requestId, string query = null)
         {
-            return $"{origin}/Request/View/{requestId}";
+            return origin.BuildUri($"Request/View/{requestId}", query);
         }
 
-        public static string GetRequestGroupViewUrl(string origin, int requestGroupId)
+        public static Uri GetRequestGroupViewUrl(Uri origin, int requestGroupId)
         {
-            return $"{origin}/RequestGroup/View/{requestGroupId}";
+            return origin.BuildUri($"RequestGroup/View/{requestGroupId}");
         }
 
-        public static string GetWebHookListUrl(string origin)
+        public static Uri GetWebHookListUrl(Uri origin)
         {
-            return $"{origin}/WebHook/List";
+            return origin.BuildUri("WebHook/List");
         }
 
         #endregion
 
         #region Anchors & Buttons
 
-        public static string GetOrderViewAnchorTag(string origin, int orderId, string text, ViewTab tab = ViewTab.Default)
-        {
-            switch (tab)
-            {
-                case ViewTab.Default:
-                default:
-                    return $"{GetAnchorTag(GetOrderViewUrl(origin, orderId), text)}";
-                case ViewTab.Requisition:
-                    return $"{GetAnchorTag(GetOrderViewUrl(origin, orderId), text)}?tab=requisition";
-                case ViewTab.Complaint:
-                    return $"{GetAnchorTag(GetOrderViewUrl(origin, orderId), text)}?tab=complaint";
-            }
-        }
-
-        public static string GetRequestViewAnchorTag(string origin, int requestId, string text, ViewTab tab = ViewTab.Default)
-        {
-            switch (tab)
-            {
-                case ViewTab.Default:
-                default:
-                    return $"{GetAnchorTag(GetRequestViewUrl(origin, requestId), text)}";
-                case ViewTab.Requisition:
-                    return $"{GetAnchorTag(GetRequestViewUrl(origin, requestId), text)}?tab=requisition";
-                case ViewTab.Complaint:
-                    return $"{GetAnchorTag(GetRequestViewUrl(origin, requestId), text)}?tab=complaint";
-            }
-        }
-
-        public static string GetAnchorTag(string href)
-        {
-            return GetAnchorTag(href, href);
-        }
-
-        public static string GetAnchorTag(string href, string text)
-        {
-            return $"<a href=\"{href}\">{text}</a>";
-        }
-
-        public static string GetAnchorTag(string href, string text, string classes)
+        private static string GetAnchorTag(Uri href, string text, string classes)
         {
             return $"<a href=\"{href}\" class=\"{classes}\">{text}</a>";
         }
 
-        public static string GetButtonDefaultLargeTag(string href, string text)
+        public static string GetButtonDefaultLargeTag(Uri href, string text)
         {
             return GetAnchorTag(href, text, "btn btn-default btn-large");
         }
@@ -103,5 +64,6 @@ namespace Tolk.BusinessLogic.Helpers
         {
             return text?.Replace("\n", "<br />");
         }
+
     }
 }

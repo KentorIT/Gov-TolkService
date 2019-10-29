@@ -255,7 +255,7 @@ namespace Tolk.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(string returnUrl = null)
+        public async Task<IActionResult> Login(Uri returnUrl = null)
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -267,7 +267,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, Uri returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
@@ -279,7 +279,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        private async Task<IActionResult> PasswordLogin(LoginViewModel model, string returnUrl)
+        private async Task<IActionResult> PasswordLogin(LoginViewModel model, Uri returnUrl)
         {
             var user = await _userManager.FindByEmailAsync(model.UserName);
             if (user == null)
@@ -849,7 +849,7 @@ supporten på {_options.Support.FirstLineEmail}.";
 
 <div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.</div>
 
-<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Återställ lösenord")}</div>
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink.AsUri(), "Återställ lösenord")}</div>
 
 <div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
 Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
@@ -887,11 +887,11 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             }
         }
 
-        private IActionResult RedirectToLocal(string returnUrl)
+        private IActionResult RedirectToLocal(Uri returnUrl)
         {
-            if (Url.IsLocalUrl(returnUrl))
+            if (Url.IsLocalUrl(returnUrl?.ToString()))
             {
-                return Redirect(returnUrl);
+                return Redirect(returnUrl?.ToString());
             }
             else
             {

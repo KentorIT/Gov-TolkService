@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Utilities;
 
@@ -6,7 +7,7 @@ namespace Tolk.Web.Api.Helpers
 {
     public class TolkApiOptions : TolkBaseOptions
     {
-        public string TolkWebBaseUrl { get; set; }
+        public Uri TolkWebBaseUrl { get; set; }
         public static List<ErrorResponse> ErrorResponses => 
                 new List<ErrorResponse>
                 {

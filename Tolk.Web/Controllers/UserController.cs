@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -604,7 +603,7 @@ namespace Tolk.Web.Controllers
                             foreach (var setting in model)
                             {
                                 UpdateNotificationSetting(apiUser, setting.UseEmail, setting.Type, NotificationChannel.Email, setting.SpecificEmail);
-                                UpdateNotificationSetting(apiUser, setting.UseWebHook, setting.Type, NotificationChannel.Webhook, setting.WebHookUrl);
+                                UpdateNotificationSetting(apiUser, setting.UseWebHook, setting.Type, NotificationChannel.Webhook, setting.WebHookReceipentAddress);
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();
@@ -1295,7 +1294,7 @@ namespace Tolk.Web.Controllers
                     UseEmail = emailSettings != null,
                     SpecificEmail = emailSettings?.ConnectionInformation,
                     UseWebHook = webhookSettings != null,
-                    WebHookUrl = webhookSettings?.ConnectionInformation,
+                    WebHookReceipentAddress = webhookSettings?.ConnectionInformation,
                 };
             }
         }

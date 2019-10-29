@@ -13,7 +13,7 @@ namespace Tolk.Web.Authorization
         public int StatusCode { get; } = (int)HttpStatusCode.MovedPermanently;
         public bool ExcludeLocalhost { get; set; } = true;
         public string InternalHost { get; set; }
-        public string OfficialSiteUrl { get; set; }
+        public string PublicOriginPath { get; set; }
 
         public void ApplyRule(RewriteContext context)
         {
@@ -30,7 +30,7 @@ namespace Tolk.Web.Authorization
                 var response = context.HttpContext.Response;
                 response.StatusCode = StatusCode;
                 response.Headers[HeaderNames.Location] =
-                    $"{OfficialSiteUrl}{request.PathBase}{request.Path}{request.QueryString}";
+                    $"{PublicOriginPath}{request.PathBase}{request.Path}{request.QueryString}";
                 context.Result = RuleResult.EndResponse; // Do not continue processing the request     
                 return;
             }

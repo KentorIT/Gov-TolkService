@@ -421,7 +421,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Answer", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
                 {
                     if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                     {
@@ -453,7 +453,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/AnswerGroup", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AnswerGroup"), content))
                 {
                     if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                     {
@@ -481,7 +481,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/AcceptReplacement", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content))
                 {
                     if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                     {
@@ -507,7 +507,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Acknowledge", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -532,7 +532,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmDenial", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -557,7 +557,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmCancellation", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -582,7 +582,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/AcknowledgeGroup", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcknowledgeGroup"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -608,7 +608,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Decline", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -634,7 +634,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/DeclineGroup", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/DeclineGroup"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -652,7 +652,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)
         {
-            using (var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/File?OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"))
+            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File",$"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
                 var file = response.Content.ReadAsAsync<FileResponse>().Result;
                 if (file.Success)
@@ -682,7 +682,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ChangeInterpreter", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
@@ -708,7 +708,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/Cancel", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {

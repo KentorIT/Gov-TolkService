@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         [ClientRequired]
         [Display(Name = "Webhook url")]
         [Url]
-        public string WebHookUrl { get; set; }
+        public string WebHookReceipentAddress { get; set; }
 
         [Display(Name = "E-post")]
         public bool UseEmail { get; set; }

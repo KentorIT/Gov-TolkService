@@ -969,9 +969,9 @@ Sammanställning:
                     string printInfo = enableOrderPrint ? $"\n\nSkriv ut bokningsbekräftelse: {HtmlHelper.GetOrderPrintUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}" : string.Empty;
                     return $"\n\n\nGå till bokning: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}{printInfo}";
                 case HtmlHelper.ViewTab.Requisition:
-                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition";
+                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId, "tab=requisition")}";
                 case HtmlHelper.ViewTab.Complaint:
-                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=complaint";
+                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId, "tab=complaint")}";
             }
         }
 
@@ -988,9 +988,9 @@ Sammanställning:
                 default:
                     return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}";
                 case HtmlHelper.ViewTab.Requisition:
-                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=requisition";
+                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition")}";
                 case HtmlHelper.ViewTab.Complaint:
-                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint";
+                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint")}";
             }
         }
 
@@ -1013,9 +1013,9 @@ Sammanställning:
                     string printInfo = enableOrderPrint ? $"<br /><br />{HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderPrintUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Skriv ut bokningsbekräftelse")}" : string.Empty;
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId), "Till bokning") + printInfo;
                 case HtmlHelper.ViewTab.Requisition:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=requisition", "Till rekvisition");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId, "tab=requisition"), "Till rekvisition");
                 case HtmlHelper.ViewTab.Complaint:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId)}?tab=complaint", "Till reklamation");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetOrderViewUrl(_tolkBaseOptions.TolkWebBaseUrl, orderId, "tab=complaint"), "Till reklamation");
             }
         }
 
@@ -1037,9 +1037,9 @@ Sammanställning:
                 default:
                     return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), "Till bokning");
                 case HtmlHelper.ViewTab.Requisition:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=requisition", "Till rekvisition");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition"), "Till rekvisition");
                 case HtmlHelper.ViewTab.Complaint:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag($"{HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}?tab=complaint", "Till reklamation");
+                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint"), "Till reklamation");
             }
         }
 

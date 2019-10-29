@@ -5,7 +5,7 @@ namespace Tolk.BusinessLogic.Services
     public interface ITolkBaseOptions
     {
         Environment Env { get; }
-        string TolkWebBaseUrl { get; }
+        System.Uri TolkWebBaseUrl { get; }
         int MonthsToApproveComplaints { get; }
         TellusApi Tellus { get; }
         SupportSettings Support { get; }

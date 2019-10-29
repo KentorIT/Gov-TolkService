@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Services
@@ -23,7 +24,7 @@ namespace Tolk.Web.Api.Services
         private async Task<DateTimeOffset> GetTimeAsync()
         {
             //Also add cert to call
-            var response = await client.GetAsync($"{_options.TolkWebBaseUrl}/Time/");
+            var response = await client.GetAsync(_options.TolkWebBaseUrl.BuildUri("Time/"));
             return await response.Content.ReadAsAsync<DateTimeOffset>();
         }
     }

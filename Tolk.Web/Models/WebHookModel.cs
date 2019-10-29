@@ -10,7 +10,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }
         [Display(Name = "Mottagande url")]
-        public string RecipientUrl { get; set; }
+        public Uri RecipientUrl { get; set; }
         [Display(Name = "Innehåll")]
         public string Payload { get; set; }
         [Display(Name = "Notifikationstyp")]

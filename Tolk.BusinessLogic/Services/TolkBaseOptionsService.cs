@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Services
 
         public Environment Env => _options.Env;
 
-        public string TolkWebBaseUrl => _options.PublicOrigin;
+        public System.Uri TolkWebBaseUrl => _options.PublicOrigin.AsUri();
 
         public int MonthsToApproveComplaints => _options.MonthsToApproveComplaints;
 

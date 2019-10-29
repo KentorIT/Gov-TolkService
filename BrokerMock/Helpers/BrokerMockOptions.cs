@@ -1,13 +1,10 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 
 namespace BrokerMock.Helpers
 {
     public class BrokerMockOptions
     {
-        public string TolkApiBaseUrl { get; set; }
+        public Uri TolkApiBaseUrl { get; set; }
 
         public bool UseApiKey { get; set; }
         public string ApiUserName { get; set; }

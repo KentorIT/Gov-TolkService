@@ -1,22 +1,12 @@
-﻿using BrokerMock.Helpers;
-using BrokerMock.Hubs;
+﻿using BrokerMock.Hubs;
 using BrokerMock.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Tolk.Api.Payloads.ApiPayloads;
-using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Utilities;
@@ -26,14 +16,12 @@ namespace BrokerMock.Controllers
     public class RequisitionController : Controller
     {
         private readonly IHubContext<WebHooksHub> _hubContext;
-        private readonly BrokerMockOptions _options;
         private readonly ApiCallService _apiService;
         private readonly IMemoryCache _cache;
 
-        public RequisitionController(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, ApiCallService apiService, IMemoryCache cache)
+        public RequisitionController(IHubContext<WebHooksHub> hubContext, ApiCallService apiService, IMemoryCache cache)
         {
             _hubContext = hubContext;
-            _options = options.Value;
             _apiService = apiService;
             _cache = cache;
         }

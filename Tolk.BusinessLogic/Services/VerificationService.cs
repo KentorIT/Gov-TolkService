@@ -131,7 +131,7 @@ namespace Tolk.BusinessLogic.Services
                         _logger.LogInformation($"There were differences between this system's and tellus' language lists. Notification sent to {_tolkBaseOptions.Support.SecondLineEmail}");
                         await _emailService.SendApplicationManagementEmail(
                             "Det finns skillnader i systemets språklista och den i Tellus.",
-                            $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/Verify");
+                            $"Gå hit för att se vilka skillnader det var:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/Verify");
                     }
                     else
                     {
@@ -175,7 +175,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             $"Hämtningen av språkkompetenser från Tellus misslyckades!",
-                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
+                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/UpdateCompetences");
                     }
                     _logger.LogWarning($"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}");
                     return new UpdateLanguagesCompetenceResult
@@ -192,7 +192,7 @@ namespace Tolk.BusinessLogic.Services
                     if (notify)
                     {
                         await _emailService.SendApplicationManagementEmail(result.Result.Any() ? "Hämtningen av språkkompetenser från Tellus innehöll endast ej aktiva språk eller Tellusnamn som inte förekommer i tjänsten" : "Hämtningen av språkkompetenser från Tellus innehöll inga språk",
-                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}/Language/UpdateCompetences");
+                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/UpdateCompetences");
                     }
                     return new UpdateLanguagesCompetenceResult
                     {

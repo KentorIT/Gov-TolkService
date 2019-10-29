@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
                     BrokerName = notification.RecipientUser.Broker.Name,
                     Payload = notification.Payload,
                     NotificationType = notification.NotificationType,
-                    RecipientUrl = notification.RecipientUrl,
+                    RecipientUrl = notification.RecipientUrl.AsUri(),
                     ReplacedBy = notification.ResentHookId,
                     Replaces = notification.ReplacingWebHook?.OutboundWebHookCallId,
                     FailedTries = notification.FailedCalls.Select(f => new FailedTryModel { FailedAt = f.FailedAt.DateTime, ErrorMessage = f.ErrorMessage }).ToList(),

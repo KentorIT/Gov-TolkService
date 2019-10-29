@@ -63,8 +63,7 @@ namespace Tolk.BusinessLogic.Services
             var link = await GenerateActivationLinkAsync(user);
 
             plainBody = body.FormatSwedish(link);
-            htmlBody = HtmlHelper.ToHtmlBreak(body).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link, "Registrera användarkonto"));
-
+            htmlBody = HtmlHelper.ToHtmlBreak(body).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"));
             _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
@@ -168,7 +167,7 @@ supporten på {_options.Support.FirstLineEmail}.";
 
 <div>{message}</div>
 
-<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink, "Verifiera e-postadress")}</div>
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink.AsUri(), "Verifiera e-postadress")}</div>
 
 <div>Om du inte har bytt/begärt byte av e-postadress kan du radera det här
 meddelandet och kontakta

@@ -17,7 +17,7 @@ namespace Tolk.Web.Api.Services
 
         public Environment Env => _options.Env;
 
-        public string TolkWebBaseUrl => _options.TolkWebBaseUrl;
+        public System.Uri TolkWebBaseUrl => _options.TolkWebBaseUrl;
 
         public int MonthsToApproveComplaints => _options.MonthsToApproveComplaints;
 

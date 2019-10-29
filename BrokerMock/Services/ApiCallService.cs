@@ -40,91 +40,91 @@ namespace BrokerMock.Services
 
         public async Task GetAllLists()
         {
-            var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/AssignmentTypes/".AsUri());
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/AssignmentTypes/"));
             var items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get assignment types: {items.Count}");
             _cache.Set("AssignmentTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/LocationTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/LocationTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get location types: {items.Count}");
             _cache.Set("LocationTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/CompetenceLevels/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/CompetenceLevels/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get competence levels: {items.Count}");
             _cache.Set("CompetenceLevels", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/Languages/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/Languages/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get languages: {items.Count}");
             _cache.Set("Languages", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/Regions/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/Regions/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get regions: {items.Count}");
             _cache.Set("Regions", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/PriceListTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/PriceListTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get price list types: {items.Count}");
             _cache.Set("PriceListTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/TravelCostAgreementTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/TravelCostAgreementTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get travel cost agreement types: {items.Count}");
             _cache.Set("TravelCostAgreementTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/PriceRowTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/PriceRowTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get price row types: {items.Count}");
             _cache.Set("PriceRowTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/Customers/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/Customers/"));
             var customers = JsonConvert.DeserializeObject<List<CustomerItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get customers: {customers.Count}");
             _cache.Set("Customers", customers);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/RequirementTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequirementTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get requirement types: {items.Count}");
             _cache.Set("RequirementTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/InterpreterInformationTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/InterpreterInformationTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get interpreter information types: {items.Count}");
             _cache.Set("InterpreterInformationTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ComplaintTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/ComplaintTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get complaint types: {items.Count}");
             _cache.Set("ComplaintTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ComplaintStatuses/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/ComplaintStatuses/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get complaint statuses: {items.Count}");
             _cache.Set("ComplaintStatuses", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/RequestStatuses/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequestStatuses/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get request statuses: {items.Count}");
             _cache.Set("RequestStatuses", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/RequisitionStatuses/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequisitionStatuses/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get requisition statuses: {items.Count}");
             _cache.Set("RequisitionStatuses", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/TaxCardTypes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/TaxCardTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get tax card types: {items.Count}");
             _cache.Set("TaxCardTypes", items);
 
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/ErrorCodes/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/ErrorCodes/"));
             var errors = JsonConvert.DeserializeObject<List<ErrorResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get error codes: {errors.Count}");
             _cache.Set("ErrorCodes", errors);
-            response = await client.GetAsync($"{_options.TolkApiBaseUrl}/List/BrokerInterpreters/".AsUri());
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/BrokerInterpreters/"));
             var responseString = await response.Content.ReadAsStringAsync();
             if (JsonConvert.DeserializeObject<ResponseBase>(responseString).Success)
             {
@@ -143,7 +143,7 @@ namespace BrokerMock.Services
 
         public async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
         {
-            var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Request/View?orderNumber={orderNumber}".AsUri());
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/View", $"orderNumber={orderNumber}"));
             if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
@@ -158,7 +158,7 @@ namespace BrokerMock.Services
 
         public async Task<RequestDetailsResponse> GetOrderRequisition(string orderNumber)
         {
-            var response = await client.GetAsync($"{_options.TolkApiBaseUrl}/Requisition/View?orderNumber={orderNumber}&IncludePreviousRequisitions=false");
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/View", $"orderNumber={orderNumber}&IncludePreviousRequisitions=false"));
             if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View]:: Boknings-ID: {orderNumber}");
@@ -187,7 +187,7 @@ namespace BrokerMock.Services
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Requisition/Create", content);
+                var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/Create"), content);
                 if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
