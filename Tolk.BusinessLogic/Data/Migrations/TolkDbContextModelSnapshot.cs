@@ -1601,6 +1601,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("RequestStatusConfirmation");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", b =>
+                {
+                    b.Property<int>("RequestId");
+
+                    b.Property<int?>("ImpersonatorUpdatedBy");
+
+                    b.Property<DateTimeOffset>("UpdatedAt");
+
+                    b.Property<int>("UpdatedBy");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("ImpersonatorUpdatedBy");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.ToTable("RequestUpdateLatestAnswerTime");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>
                 {
                     b.Property<int>("RequestViewId")
@@ -2595,6 +2614,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("RequestStatusConfirmations")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatorUpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>

@@ -113,6 +113,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
                 .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
                 .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
+                .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
                 .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Single(o => o.RequestId == id);
 
@@ -516,6 +517,7 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.Interpreter)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser)
                         .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.Interpreter)
+                        .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
                         .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                         .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser)
                         .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)

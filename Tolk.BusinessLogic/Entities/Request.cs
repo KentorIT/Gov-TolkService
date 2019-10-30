@@ -103,6 +103,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestStatusConfirmation> RequestStatusConfirmations { get; set; }
 
+        public RequestUpdateLatestAnswerTime RequestUpdateLatestAnswerTime { get; set; }
+
         public List<RequestView> RequestViews { get; set; }
 
         [InverseProperty(nameof(ReplacingRequest))]

@@ -362,16 +362,17 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
         }
 
-        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry)
+        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
             {
-                throw new InvalidOperationException($"There is no request awaiting deadline form customer on this order {request.OrderId}");
+                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order {request.OrderId}");
             }
             request.ExpiresAt = expiry;
             request.Order.Status = OrderStatus.Requested;
             request.Status = RequestStatus.Created;
+            request.RequestUpdateLatestAnswerTime = new RequestUpdateLatestAnswerTime { UpdatedAt = _clock.SwedenNow, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");

@@ -161,13 +161,32 @@ namespace Tolk.Web.Helpers
                     }
                 }
             }
-            if (!request.ReplacingRequestId.HasValue && request.ExpiresAt.HasValue)
+            if (!request.ReplacingRequestId.HasValue && request.ExpiresAt.HasValue && request.RequestUpdateLatestAnswerTime == null)
             {
                 // Request creation
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
                     EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter { request.Order.ReplacingOrder.OrderNumber })" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
+                    Actor = "Systemet",
+                });
+            }
+            if (request.RequestUpdateLatestAnswerTime != null)
+            {
+                // Request sent to broker when latest answer time is updated
+                if (!isRequestDetailView)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.RequestUpdateLatestAnswerTime.UpdatedAt,
+                        EventDetails = $"Sista svarstid satt",
+                        Actor = request.RequestUpdateLatestAnswerTime.UpdatedByUser.FullName
+                    });
+                }
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.RequestUpdateLatestAnswerTime.UpdatedAt,
+                    EventDetails = isRequestDetailView ? $"Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
             }
