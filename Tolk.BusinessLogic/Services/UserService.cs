@@ -282,8 +282,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogUpdateEmailAsync(int userId, int? updatedByUserId = null, int? imppersonatorUpdatedById = null)
         {
-            AspNetUser currentUserInformation = _dbContext.Users
-                .SingleOrDefault(u => u.Id == userId);
+            AspNetUser currentUserInformation = await _dbContext.Users
+                .SingleOrDefaultAsync(u => u.Id == userId);
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
