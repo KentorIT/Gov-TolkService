@@ -27,8 +27,6 @@ namespace Tolk.BusinessLogic.Tests.Services
         //constants from MockEntities.PriceListRows
         private const double Price_1H_Court_Comp1 = 352;
         private const double Price_1_5H_Court_Comp1 = 479;
-        private const double Price_1H_Court_Comp2 = 409;
-        private const double Price_1H_Court_Comp3 = 480;
         private const double Price_1H_Court_Comp4 = 606;
 
         private const double Price_2H_Court_Comp1 = 606;
@@ -104,7 +102,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(100.80, 0.20)]
         public void GetRoundedPriceRow(decimal price, decimal actual)
         {
-            PriceCalculationService.GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { GetPriceRow(price, 1) }).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, price);
+            PriceCalculationService.GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), new List<PriceRowBase> { GetPriceRow(price) }).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, price);
         }
 
         [Theory]
@@ -116,7 +114,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             List<PriceRowBase> priceRows = new List<PriceRowBase>();
             foreach (decimal price in prices)
             {
-                priceRows.Add(GetPriceRow(price, 1));
+                priceRows.Add(GetPriceRow(price));
             }
             PriceCalculationService.GetRoundedPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), priceRows).Price.Should().Be(actual, "there are {0} rounded decimals in {1}", actual, prices.Sum(pr => pr));
         }
@@ -186,12 +184,12 @@ namespace Tolk.BusinessLogic.Tests.Services
             }
         }
 
-        private PriceRowBase GetPriceRow(decimal price, int quantity)
+        private PriceRowBase GetPriceRow(decimal price)
         {
-            return GetPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), price, quantity);
+            return GetPriceRow(DateTime.Parse(DefaultStartDate), DateTime.Parse(DefaultEndDate), price);
         }
 
-        private PriceRowBase GetPriceRow(DateTime startAt, DateTime endAt, decimal price, int quantity)
+        private PriceRowBase GetPriceRow(DateTime startAt, DateTime endAt, decimal price)
         {
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = price, Quantity = 1 };
         }

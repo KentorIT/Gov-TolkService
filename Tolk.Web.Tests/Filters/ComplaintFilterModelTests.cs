@@ -11,7 +11,7 @@ namespace Tolk.Web.Tests.Filters
 {
     public class ComplaintFilterModelTests
     {
-        private Complaint[] complaints;
+        private readonly Complaint[] complaints;
 
         public ComplaintFilterModelTests()
         {

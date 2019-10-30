@@ -1,8 +1,6 @@
 ﻿using FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Models;
 using Tolk.Web.Tests.TestHelpers;
@@ -14,9 +12,9 @@ namespace Tolk.Web.Tests.Filters
 {
     public class AssignmentFilterModelTests
     {
-        private Language[] mockLanguages;
-        private Request[] mockRequests;
-        private StubSwedishClock _clock;
+        private readonly Language[] mockLanguages;
+        private readonly Request[] mockRequests;
+        private readonly StubSwedishClock _clock;
 
         public AssignmentFilterModelTests()
         {
@@ -32,7 +30,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByOrderNumber()
+        public void AssignmentFilter_ByOrderNumber()
         {
             var orderNum = "654";
             var filter = new AssignmentFilterModel
@@ -48,7 +46,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByRegion()
+        public void AssignmentFilter_ByRegion()
         {
             var region = Region.Regions.Where(r => r.Name == "Gotland").Single();
             var filter = new AssignmentFilterModel
@@ -64,7 +62,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByCustomer()
+        public void AssignmentFilter_ByCustomer()
         {
             int customerId = 1;
             var filter = new AssignmentFilterModel
@@ -80,7 +78,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByLanguage()
+        public void AssignmentFilter_ByLanguage()
         {
             var language = mockLanguages.Where(l => l.Name == "Chinese").Single();
             var filter = new AssignmentFilterModel
@@ -96,7 +94,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByDateRange()
+        public void AssignmentFilter_ByDateRange()
         {
             var filter = new AssignmentFilterModel
             {
@@ -111,7 +109,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByStatusExecuted()
+        public void AssignmentFilter_ByStatusExecuted()
         {
             var filter = new AssignmentFilterModel
             {
@@ -125,7 +123,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByStatusCancelled()
+        public void AssignmentFilter_ByStatusCancelled()
         {
             var filter = new AssignmentFilterModel
             {
@@ -143,7 +141,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByStatusToBeExecuted()
+        public void AssignmentFilter_ByStatusToBeExecuted()
         {
             var filter = new AssignmentFilterModel
             {
@@ -167,7 +165,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ByStatusToBeReported()
+        public void AssignmentFilter_ByStatusToBeReported()
         {
             var filter = new AssignmentFilterModel
             {
@@ -191,7 +189,7 @@ namespace Tolk.Web.Tests.Filters
         }
 
         [Fact]
-        private void AssignmentFilter_ComboByLanguageStatusRegion()
+        public void AssignmentFilter_ComboByLanguageStatusRegion()
         {
             var region = Region.Regions.Where(r => r.Name == "Uppsala").Single();
             var language = mockLanguages.Where(l => l.Name == "French").Single();
