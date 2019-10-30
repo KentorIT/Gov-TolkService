@@ -53,7 +53,7 @@
                         </div>
                     }
                 </div>
-                @await Html.PartialAsync("_OrderSummary", Model.OrderModel)
+                @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "displayGeneralOrderInfo", false } })
                 @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
                 @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && (Model.Status == RequestStatus.CancelledByCreatorWhenApproved && !Model.AllowConfirmCancellation))
                 {

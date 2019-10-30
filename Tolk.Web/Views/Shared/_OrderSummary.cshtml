@@ -15,6 +15,7 @@
 
     // Collapsible values
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
+    bool displayGeneralOrderInfo = (bool?)ViewData["displayGeneralOrderInfo"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "OrderSummary";
     var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
@@ -41,21 +42,24 @@
 
     <hr />
     <div id="@divId" class="@divClass">
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="LanguageAndDialect" />
+        @if (displayGeneralOrderInfo)
+        {
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="LanguageAndDialect" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="TimeRange" />
+                    @if (Model.LatestAnswerBy != null)
+                    {
+                        <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+                    }
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="RegionName" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="TimeRange" />
-                @if (Model.LatestAnswerBy != null)
-                {
-                    <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
-                }
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="RegionName" />
-            </div>
-        </div>
+        }
         <div class="row">
             <div class="col-sm-4">
                 @if (Model.RankedInterpreterLocationFirstAddressModel != null)

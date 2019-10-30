@@ -131,7 +131,7 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-12">
-                        @await Html.PartialAsync("_OrderSummary", Model, ViewData)
+                        @await Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "displayGeneralOrderInfo", (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer) } })
                     </div>
                 </div>
                 <div class="row">
