@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Helpers
@@ -21,18 +19,6 @@ namespace Tolk.Web.Helpers
         {
             // This attribute should always succeed in the server side validation.
             return ValidationResult.Success;
-        }
-
-        public class ValidationMetadataProvider : IValidationMetadataProvider
-        {
-            public void CreateValidationMetadata(ValidationMetadataProviderContext context)
-            {
-                NullCheckHelper.ArgumentCheckNull(context, nameof(ValidationMetadataProvider));
-                if (context.Attributes.OfType<ClientRequiredAttribute>().Any())
-                {
-                    context.ValidationMetadata.IsRequired = true;
-                }
-            }
         }
     }
 }

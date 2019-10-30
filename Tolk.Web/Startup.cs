@@ -95,7 +95,7 @@ namespace Tolk.Web
                 opt.ModelBinderProviders.Insert(1, new TimeSpanModelBinderProvider());
                 opt.ModelBinderProviders.Insert(2, new RadioButtonGroupModelBinderProvider());
                 opt.ModelBinderProviders.Insert(3, new CheckboxGroupModelBinderProvider());
-                opt.ModelMetadataDetailsProviders.Add(new ClientRequiredAttribute.ValidationMetadataProvider());
+                opt.ModelMetadataDetailsProviders.Add(new ValidationMetadataProvider());
             });
 
             services.AddAutoMapper(Assembly.GetEntryAssembly());

@@ -12,7 +12,7 @@ namespace Tolk.Web.Api.Services
 
     {
         private readonly TolkApiOptions _options;
-        private static HttpClient client = new HttpClient();
+        private readonly static HttpClient client = new HttpClient();
 
         public TimeService(IOptions<TolkApiOptions> options)
         {
