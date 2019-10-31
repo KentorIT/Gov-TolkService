@@ -292,6 +292,16 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<RequestGroupStatusConfirmation>()
+                .HasOne(r => r.ConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestGroupStatusConfirmation>()
+                .HasOne(r => r.ImpersonatingConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<RequestUpdateLatestAnswerTime>()
                 .HasKey(ru => new { ru.RequestId });
 
@@ -453,6 +463,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<OrderAttachment> OrderAttachments { get; set; }
 
         public DbSet<RequestStatusConfirmation> RequestStatusConfirmation { get; set; }
+
+        public DbSet<RequestGroupStatusConfirmation> RequestGroupStatusConfirmations { get; set; }
 
         public DbSet<OrderStatusConfirmation> OrderStatusConfirmation { get; set; }
 

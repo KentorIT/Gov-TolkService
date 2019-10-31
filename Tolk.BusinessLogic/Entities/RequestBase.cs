@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Entities
     {
         public int RankingId { get; set; }
 
-        public RequestStatus Status { get; set; }
+        public virtual RequestStatus Status { get; set; }
 
         public Ranking Ranking { get; set; }
 

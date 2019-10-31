@@ -713,10 +713,23 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<Order> GetOrdersForGroup(OrderModel model)
         {
-            foreach (var occasion in model.UniqueOrdersFromOccasions)
+            var list = new Dictionary<int, Order>();
+            foreach (var occasion in model.UniqueOrdersFromOccasions.OrderBy(o => o.OrderOccasionId))
             {
                 var order = CreateNewOrder();
                 model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
+                if (occasion.ExtraInterpreter)
+                {
+                    if (list.TryGetValue(occasion.ExtraInterpreterFor, out Order parentOrder))
+                    {
+                        order.IsExtraInterpreterForOrder = parentOrder;
+                    }
+                }
+                else
+                {
+                    list.Add(occasion.OrderOccasionId.Value, order);
+                }
+
                 yield return order;
             }
 

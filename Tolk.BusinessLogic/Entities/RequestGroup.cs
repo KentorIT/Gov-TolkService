@@ -41,6 +41,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<Request> Requests { get; set; }
 
+        public List<RequestGroupStatusConfirmation> StatusConfirmations { get; set; }
+
         #endregion
 
         #region Methods
@@ -57,6 +59,19 @@ namespace Tolk.BusinessLogic.Entities
             if (updateRequests)
             {
                 Requests.ForEach(r => r.Status = status);
+            }
+        }
+
+        public override RequestStatus Status
+        {
+            get => base.Status;
+            set
+            {
+                if (value == RequestStatus.CancelledByBroker)
+                {
+                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.CancelledByBroker)}");
+                }
+                base.Status = value;
             }
         }
 
@@ -88,8 +103,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmeras.");
             }
-#warning DET BEHÖVS EN NY TABELL HÄR!!
-            //RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+            StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
         #endregion

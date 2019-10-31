@@ -128,7 +128,7 @@ namespace Tolk.BusinessLogic.Services
                     else
                     {
                         partialAnswer = true;
-                        await Decline(request, answerTime, userId, impersonatorId, extraInterpreter.DeclineMessage, false);
+                        await Decline(request, answerTime, userId, impersonatorId, extraInterpreter.DeclineMessage, false, false);
                         // Add the request to a list of request to created the new group with, later...
                         declinedRequests.Add(request);
                     }
@@ -153,17 +153,13 @@ namespace Tolk.BusinessLogic.Services
                 await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
                 if (requestGroup.RequiresAccept)
                 {
-                    // Which status to set on the request group, I wonder? Probably a new one, that is not allowed to set on a request...
-                    //requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
+                    requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
                     _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
-                    throw new NotImplementedException("har inte gjort alla delar här än...");
                 }
                 else
                 {
-                    // Which status to set on the request group, I wonder? Probably a new one, that is not allowed to set on a request...
-                    //requestGroup.SetStatus(RequestStatus.Appoved, false);
+                    requestGroup.SetStatus(RequestStatus.Approved, false);
                     _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
-                     throw new NotImplementedException("har inte gjort alla delar här än...");
                }
             }
             else
@@ -224,13 +220,17 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId,
             string message,
-            bool notify = true)
+            bool notify = true,
+            bool createNewRequest = true)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
             request.Decline(declinedAt, userId, impersonatorId, message);
             if (!request.Order.ReplacingOrderId.HasValue)
             {
-                await _orderService.CreateRequest(request.Order, request);
+                if (createNewRequest)
+                {
+                    await _orderService.CreateRequest(request.Order, request, notify: notify);
+                }
                 if (notify)
                 {
                     _notificationService.RequestDeclinedByBroker(request);

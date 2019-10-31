@@ -156,6 +156,21 @@ namespace BrokerMock.Services
             return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
         }
 
+        public async Task<RequestGroupDetailsResponse> GetOrderGroupRequest(string orderGroupNumber)
+        {
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/ViewGroup", $"orderGroupNumber={orderGroupNumber}"));
+            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ViewGroup]:: Boknings-ID: {orderGroupNumber}");
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ViewGroup] FAILED:: Boknings-ID: {orderGroupNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+            return JsonConvert.DeserializeObject<RequestGroupDetailsResponse>(await response.Content.ReadAsStringAsync());
+        }
+
         public async Task<RequestDetailsResponse> GetOrderRequisition(string orderNumber)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/View", $"orderNumber={orderNumber}&IncludePreviousRequisitions=false"));

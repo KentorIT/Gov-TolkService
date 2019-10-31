@@ -33,6 +33,8 @@
     <Compile Remove="Data\Migrations\20191022121819_TravelCostAgreementType.Designer.cs" />
     <Compile Remove="Data\Migrations\20191022123253_TravelCostAgreementType.cs" />
     <Compile Remove="Data\Migrations\20191022123253_TravelCostAgreementType.Designer.cs" />
+    <Compile Remove="Data\Migrations\20191031084900_AddRequestGroupStatusConfirmations.cs" />
+    <Compile Remove="Data\Migrations\20191031084900_AddRequestGroupStatusConfirmations.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

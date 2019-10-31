@@ -58,6 +58,8 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("not_used", false)]
         [Description("Förlorad på grund av karantän")]
         LostDueToQuarantine = 19,
-
+        [CustomName("not_used", false)]
+        [Description("Gruppförfrågan har tillsatt tolk, men tillfälle med extra tolk är avböjt")]
+        PartiallyAccepted = 20,
     }
 }

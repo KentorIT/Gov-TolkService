@@ -412,7 +412,7 @@ namespace Tolk.Web.Models
                         yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false, OrderOccasionId = id++ };
                         if (occasion.ExtraInterpreter)
                         {
-                            yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreterFor = id, OrderOccasionId = id++ };
+                            yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreterFor = id - 1, OrderOccasionId = id++ };
                         }
                     }
                 }
@@ -425,7 +425,7 @@ namespace Tolk.Web.Models
                             OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                             OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
                             ExtraInterpreter = false,
-                            OrderOccasionId = id++
+                            OrderOccasionId = id
                         };
                         if (ExtraInterpreter)
                         {
@@ -435,7 +435,7 @@ namespace Tolk.Web.Models
                                 OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
                                 ExtraInterpreter = true,
                                 ExtraInterpreterFor = id,
-                                OrderOccasionId = id++
+                                OrderOccasionId = ++id
                             };
                         }
                     }

@@ -87,6 +87,19 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(QuarantineId))]
         public Quarantine Quarantine { get; set; }
 
+        public override RequestStatus Status
+        {
+            get => base.Status;
+            set
+            {
+                if (value == RequestStatus.PartiallyAccepted)
+                {
+                    throw new InvalidOperationException($"A {nameof(Request)} cannot be set to {nameof(RequestStatus.PartiallyAccepted)}");
+                }
+                base.Status = value;
+            }
+        }
+
         #endregion
 
         #region navigation

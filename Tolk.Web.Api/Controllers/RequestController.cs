@@ -168,6 +168,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
                     .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
                     //.Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
@@ -727,6 +728,37 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        public async Task<JsonResult> ViewGroup(string orderGroupNumber, string callingUser)
+        {
+            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(ViewGroup)} for the active request for the order group {orderGroupNumber}");
+            try
+            {
+                var apiUser = await GetApiUser();
+
+                var requestGroup = await _dbContext.RequestGroups
+                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        r.Ranking.BrokerId == apiUser.BrokerId);
+                if (requestGroup == null)
+                {
+                    return ReturnError(ErrorCodes.OrderGroupNotFound);
+                }
+                //End of service
+                return Json(GetResponseFromRequestGroup(requestGroup));
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(View)}");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
+            }
+        }
+
         #endregion
 
         #region private methods
@@ -748,22 +780,20 @@ namespace Tolk.Web.Api.Controllers
             return request;
         }
 
-
         private async Task<RequestGroup> GetConfirmedRequestGroup(string orderGroupNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {
-            var request = await _dbContext.RequestGroups
+            var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Ranking)
-#warning DENNA TABELL BEHÖVER LÄGGAS TILL
-                //.Include(r => r.RequestStatusConfirmations)
+                .Include(r => r.StatusConfirmations)
                 .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
                     //Must have a request connected to the order for the broker, any status...
                     r.Ranking.BrokerId == brokerId && expectedStatuses.Contains(r.Status));
-            if (request == null)
+            if (requestGroup == null)
             {
                 throw new InvalidApiCallException(ErrorCodes.RequestGroupNotFound);
             }
 
-            return request;
+            return requestGroup;
         }
 
         //Break out to error generator service...
@@ -870,6 +900,14 @@ namespace Tolk.Web.Api.Controllers
                         CanMeetRequirement = r.CanSatisfyRequirement,
                         RequirementId = r.OrderRequirementId
                     }),
+            };
+        }
+
+        private static RequestGroupDetailsResponse GetResponseFromRequestGroup(RequestGroup requestGroup)
+        {
+            return new RequestGroupDetailsResponse
+            {
+                Status = requestGroup.Status.GetCustomName(),
             };
         }
 

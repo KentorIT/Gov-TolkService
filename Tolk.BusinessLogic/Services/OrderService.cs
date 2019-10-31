@@ -240,7 +240,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)
+        public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null, bool notify = true)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(CreateRequest), nameof(OrderService));
             Request request = null;
@@ -286,7 +286,10 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
                         request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
-                    _notificationService.RequestCreated(newRequest);
+                    if (notify)
+                    {
+                        _notificationService.RequestCreated(newRequest);
+                    }
                 }
                 else
                 {
@@ -298,12 +301,15 @@ namespace Tolk.BusinessLogic.Services
                     await _tolkDbContext.SaveChangesAsync();
 
                     _logger.LogInformation($"Created request {request.RequestId} for order {request.OrderId}, but system was unable to calculate expiry.");
-                    _notificationService.RequestCreatedWithoutExpiry(newRequest);
+                    if (notify)
+                    {
+                        _notificationService.RequestCreatedWithoutExpiry(newRequest);
+                    }
                 }
             }
             else
             {
-                await TerminateOrder(order);
+                await TerminateOrder(order, notify);
             }
         }
 

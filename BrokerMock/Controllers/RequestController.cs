@@ -197,6 +197,7 @@ namespace BrokerMock.Controllers
                 {
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
+                        var declineExtraInterpreter = extraInstructions.Contains("DECLINEEXTRAINTERPRETER");
                         var interpreter = _cache.Get<List<InterpreterModel>>("BrokerInterpreters")?.FirstOrDefault();
                         InterpreterModel extraInterpreter = null;
                         if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
@@ -230,7 +231,8 @@ namespace BrokerMock.Controllers
                                     Answer = "Japp",
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
-                                })
+                                }),
+                                declineExtraInterpreter
                             );
                         }
                         else
@@ -238,7 +240,7 @@ namespace BrokerMock.Controllers
                             await AnswerGroup(
                                 payload.OrderGroupNumber,
                                 interpreter,
-                                null,
+                                extraInterpreter ,
                                 payload.Locations.First().Key,
                                 payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                                 payload.Requirements.Select(r => new RequirementAnswerModel
@@ -246,7 +248,8 @@ namespace BrokerMock.Controllers
                                     Answer = "Japp",
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
-                                })
+                                }),
+                                declineExtraInterpreter
                             );
                         }
                     }
@@ -324,6 +327,20 @@ namespace BrokerMock.Controllers
             {
                 await Cancel(payload.OrderNumber);
             }
+
+            return new JsonResult("Success");
+        }
+        [HttpPost]
+        public async Task<JsonResult> GroupAnswerApproved([FromBody] RequestGroupAnswerApprovedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen bokning med Boknings-ID: {payload.OrderGroupNumber} har blivit godkänd");
+            }
+
+            _ = await _apiService.GetOrderGroupRequest(payload.OrderGroupNumber);
+
+            //var extraInstructions = GetExtraInstructions(request.Description);
 
             return new JsonResult("Success");
         }
@@ -452,7 +469,7 @@ namespace BrokerMock.Controllers
             }
         }
 
-        private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, bool declineExtranInterpreter = false)
         {
             var payload = new RequestGroupAnswerModel
             {
@@ -467,15 +484,15 @@ namespace BrokerMock.Controllers
                     ExpectedTravelCosts = 0,
                     RequirementAnswers = requirementAnswers
                 },
-                ExtraInterpreterAnswer = extraInterpreter != null ? new InterpreterGroupAnswerModel
+                ExtraInterpreterAnswer = !declineExtranInterpreter ? new InterpreterGroupAnswerModel
                 {
                     Accepted = true,
-                    Interpreter = interpreter,
+                    Interpreter = extraInterpreter,
                     Location = location,
                     CompetenceLevel = competenceLevel,
                     ExpectedTravelCosts = 0,
                     RequirementAnswers = requirementAnswers
-                } : null,
+                } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt."},
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
