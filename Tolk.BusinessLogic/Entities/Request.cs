@@ -138,8 +138,9 @@ namespace Tolk.BusinessLogic.Entities
             get => !Complaints.Any() && Status == RequestStatus.Approved;
         }
 
-        public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
-            InterpreterLocation.HasValue && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+        public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && InterpreterLocation.HasValue
+            && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite)
+            && ((PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0) > 0);
 
         #endregion
 
@@ -291,6 +292,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
+            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             if (RequiresAccept)
             {
                 Status = RequestStatus.Accepted;
@@ -301,7 +303,6 @@ namespace Tolk.BusinessLogic.Entities
                 Status = RequestStatus.Approved;
                 Order.Status = OrderStatus.ResponseAccepted;
             }
-            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
         }
 
         public void ReplaceInterpreter(
