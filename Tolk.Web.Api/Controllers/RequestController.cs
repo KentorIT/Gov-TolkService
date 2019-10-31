@@ -13,6 +13,7 @@ using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
@@ -163,7 +164,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                var requestGroup = _dbContext.RequestGroups
+                var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
                     .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
@@ -175,48 +176,20 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
-                    .SingleOrDefault(r =>
+                    .SingleOrDefaultAsync(r =>
+                        r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         apiUser.BrokerId == r.Ranking.BrokerId &&
-                        //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
                         (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                InterpreterBroker interpreter;
-                try
-                {
-                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
-                }
-                catch (InvalidOperationException)
-                {
-                    return ReturnError(ErrorCodes.InterpreterOfficialIdAlreadySaved);
-                }
+                var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, apiUser.BrokerId.Value);
 
-                //Does not handle Kammarkollegiets tolknummer
-                if (interpreter == null)
+                InterpreterAnswerModel extraInterpreterAnswer = null;
+                if (requestGroup.HasExtraInterpreter)
                 {
-                    //Possibly the interpreter should be added, if not found?? 
-                    return ReturnError(ErrorCodes.InterpreterNotFound, "The provided extra interpreter was not found.");
-                }
-                InterpreterBroker extraInterpreter = null;
-                if (model.ExtraInterpreter != null)
-                {
-                    try
-                    {
-                        extraInterpreter = _apiUserService.GetInterpreter(model.ExtraInterpreter, apiUser.BrokerId.Value);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        return ReturnError(ErrorCodes.InterpreterOfficialIdAlreadySaved, $"The extra interpreter's official interpreterId {model.ExtraInterpreter.OfficialInterpreterId} for has already been saved.");
-                    }
-
-                    //Does not handle Kammarkollegiets tolknummer
-                    if (extraInterpreter == null)
-                    {
-                        //Possibly the interpreter should be added, if not found?? 
-                        return ReturnError(ErrorCodes.InterpreterNotFound);
-                    }
+                    extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, apiUser.BrokerId.Value, false);
                 }
                 var now = _timeService.SwedenNow;
                 if (requestGroup.Status == RequestStatus.Created)
@@ -230,21 +203,10 @@ namespace Tolk.Web.Api.Controllers
                         now,
                         user?.Id ?? apiUser.Id,
                         (user != null ? (int?)apiUser.Id : null),
-                        interpreter,
-                        extraInterpreter,
-                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
-                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.ExtraInterpreterCompetenceLevel),
-                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
-                        {
-                            Answer = ra.Answer,
-                            CanSatisfyRequirement = ra.CanMeetRequirement,
-                            OrderRequirementId = ra.RequirementId,
-                        }).ToList(),
+                        mainInterpreterAnswer,
+                        extraInterpreterAnswer,
                         //Does not handle attachments yet.
-                        new List<RequestAttachment>(),
-                        model.ExpectedTravelCosts,
-                        model.ExpectedTravelCostInfo
+                        new List<RequestAttachment>()
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
@@ -624,6 +586,34 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> ConfirmGroupDenial([FromBody] ConfirmGroupDenialModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var apiUser = await GetApiUser();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
+                //Get User, if any...
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, apiUser.BrokerId.Value, new[] { RequestStatus.DeniedByCreator });
+                await _requestService.ConfirmGroupDenial(
+                    requestGroup,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUser.Id,
+                    (user != null ? (int?)apiUser.Id : null)
+                );
+                return Json(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
         public async Task<JsonResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
         {
             if (model == null)
@@ -753,6 +743,24 @@ namespace Tolk.Web.Api.Controllers
             if (request == null)
             {
                 throw new InvalidApiCallException(ErrorCodes.RequestNotFound);
+            }
+
+            return request;
+        }
+
+
+        private async Task<RequestGroup> GetConfirmedRequestGroup(string orderGroupNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
+        {
+            var request = await _dbContext.RequestGroups
+                .Include(r => r.Ranking)
+#warning DENNA TABELL BEHÖVER LÄGGAS TILL
+                //.Include(r => r.RequestStatusConfirmations)
+                .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
+                    //Must have a request connected to the order for the broker, any status...
+                    r.Ranking.BrokerId == brokerId && expectedStatuses.Contains(r.Status));
+            if (request == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.RequestGroupNotFound);
             }
 
             return request;

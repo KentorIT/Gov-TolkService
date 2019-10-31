@@ -88,5 +88,13 @@ namespace Tolk.BusinessLogic.Enums
         [Description("En ny kund har lagts upp i systemet")]
         [CustomName("customer_added")]
         CustomerAdded = 20,
+
+        [Description("Svar på sammanhållen förfrågan har accepterats")]
+        [CustomName("request_group_answer_approved")]
+        RequestGroupAnswerApproved = 21,
+
+        [Description("Svar på sammanhållen förfrågan godtogs inte")]
+        [CustomName("request_group_answer_denied")]
+        RequestGroupAnswerDenied = 22,
     }
 }

@@ -4,12 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
     public class OrderGroup
     {
+        #region constructors
+
         private OrderGroup() { }
 
         public OrderGroup(AspNetUser createdByUser, AspNetUser createdByImpersonator, DateTimeOffset createdAt, IEnumerable<Order> orders, bool requireSameInterpreter = true)
@@ -25,6 +28,10 @@ namespace Tolk.BusinessLogic.Entities
             RequestGroups = new List<RequestGroup>();
             RequireSameInterpreter = requireSameInterpreter;
         }
+
+        #endregion
+
+        #region properties
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderGroupId { get; set; }
@@ -42,14 +49,22 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? ImpersonatingCreator { get; set; }
 
+        public bool RequireSameInterpreter { get; set; }
+
+        #endregion
+
+        #region navigation properties
+
         [ForeignKey(nameof(ImpersonatingCreator))]
         public AspNetUser CreatedByImpersonator { get; set; }
-
-        public bool RequireSameInterpreter { get; set; }
 
         public List<Order> Orders { get; set; }
 
         public List<RequestGroup> RequestGroups { get; set; }
+
+        #endregion
+
+        #region methods and read only properties
 
         public void AwaitDeadlineFromCustomer()
         {
@@ -61,27 +76,25 @@ namespace Tolk.BusinessLogic.Entities
             ActiveRequestGroup.IsTerminalRequest = true;
         }
 
-        public RequestGroup ActiveRequestGroup
-        {
-            get => RequestGroups.Single(r => r.IsToBeProcessedByBroker);
-        }
-        public int RegionId { get => FirstOrder.RegionId; }
-        public Order FirstOrder { get => Orders?.OrderBy(o => o.StartAt).FirstOrDefault(); }
+        public RequestGroup ActiveRequestGroup => RequestGroups.Single(r => r.IsToBeProcessedByBroker);
 
-        public Region Region { get => FirstOrder?.Region; }
+        public int RegionId  => FirstOrder.RegionId;
 
-        public AssignmentType AssignmentType { get => FirstOrder.AssignentType; }
+        public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
-        public CustomerOrganisation CustomerOrganisation { get => FirstOrder?.CustomerOrganisation; }
+        public Region Region => FirstOrder?.Region;
 
-        public string LanguageName { get => FirstOrder?.OtherLanguage ?? FirstOrder?.Language?.Name; }
+        public AssignmentType AssignmentType  => FirstOrder.AssignentType; 
 
-        public DateTimeOffset ClosestStartAt { get => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; }
+        public CustomerOrganisation CustomerOrganisation => FirstOrder.CustomerOrganisation; 
 
-        public bool IsSingleOccasion
-        {
-            get => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
-        }
+        public string LanguageName => FirstOrder?.OtherLanguage ?? FirstOrder?.Language?.Name; 
+
+        public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
+
+        public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
+
+        public AllowExceedingTravelCost? AllowExceedingTravelCost => FirstOrder.AllowExceedingTravelCost;
 
         public void SetStatus(OrderStatus status)
         {
@@ -93,7 +106,6 @@ namespace Tolk.BusinessLogic.Entities
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
 
             var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
-
             if (ranking == null)
             {
                 // Rejected by all brokers, close all orders
@@ -113,5 +125,33 @@ namespace Tolk.BusinessLogic.Entities
 
             return requestGroup;
         }
+
+        public RequestGroup CreatePartialRequestGroup(IEnumerable<Request> declinedRequests, IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        {
+            var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
+
+            var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
+            var orders = declinedRequests.GetRequestOrders();
+
+            if (ranking == null)
+            {
+                // Rejected by all brokers, close all orders
+                orders.ToList().ForEach(o => o.Status = OrderStatus.NoBrokerAcceptedOrder);
+                return null;
+            }
+            var requestGroup = new RequestGroup(
+                ranking,
+                newRequestExpiry,
+                newRequestCreationTime,
+                orders.Select(o => o.CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest)).ToList(),
+                isTerminalRequest
+            );
+
+            RequestGroups.Add(requestGroup);
+
+            return requestGroup;
+        }
+
+        #endregion
     }
 }

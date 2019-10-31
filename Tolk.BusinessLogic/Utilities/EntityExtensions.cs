@@ -25,6 +25,15 @@ namespace Tolk.BusinessLogic.Utilities
                     r.Status != RequestStatus.InterpreterReplaced);
         }
 
+        public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
+        {
+            return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
+        }
+        public static IEnumerable<Order> GetRequestOrders(this IEnumerable<Request> requests)
+        {
+            return requests.Select(r => r.Order);
+        }
+
         public static int? GetIntValue(this AspNetUser user, DefaultSettingsType type)
         {
             return user?.GetValue(type).TryGetNullableInt();

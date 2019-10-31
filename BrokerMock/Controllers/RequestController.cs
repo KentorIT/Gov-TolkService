@@ -353,6 +353,18 @@ namespace BrokerMock.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> GroupAnswerDenied([FromBody] RequestGroupAnswerDeniedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Svaret på sammanhållen Boknings-ID: {payload.OrderGroupNumber} har nekats, med meddelande: '{payload.Message}'");
+                await ConfirmGroupDenial(payload.OrderGroupNumber);
+            }
+
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
         public async Task<JsonResult> InformationUpdated([FromBody] RequestInformationUpdatedModel payload)
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
@@ -397,6 +409,8 @@ namespace BrokerMock.Controllers
         }
 
         #endregion
+
+        #region private methods
 
         private static IEnumerable<string> GetExtraInstructions(string description)
         {
@@ -443,13 +457,25 @@ namespace BrokerMock.Controllers
             var payload = new RequestGroupAnswerModel
             {
                 OrderGroupNumber = orderGroupNumber,
-                Interpreter = interpreter,
-                ExtraInterpreter = extraInterpreter,
-                Location = location,
-                CompetenceLevel = competenceLevel,
-                ExpectedTravelCosts = 0,
                 CallingUser = "regular-user@formedling1.se",
-                RequirementAnswers = requirementAnswers
+                InterpreterAnswer = new InterpreterGroupAnswerModel
+                {
+                    Accepted = true,
+                    Interpreter = interpreter,
+                    Location = location,
+                    CompetenceLevel = competenceLevel,
+                    ExpectedTravelCosts = 0,
+                    RequirementAnswers = requirementAnswers
+                },
+                ExtraInterpreterAnswer = extraInterpreter != null ? new InterpreterGroupAnswerModel
+                {
+                    Accepted = true,
+                    Interpreter = interpreter,
+                    Location = location,
+                    CompetenceLevel = competenceLevel,
+                    ExpectedTravelCosts = 0,
+                    RequirementAnswers = requirementAnswers
+                } : null,
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
@@ -541,6 +567,31 @@ namespace BrokerMock.Controllers
                     else
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial] FAILED:: Boknings-ID: {orderNumber} accat nekande");
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private async Task<bool> ConfirmGroupDenial(string orderGroupNumber)
+        {
+            var payload = new ConfirmGroupDenialModel
+            {
+                OrderGroupNumber = orderGroupNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmGroupDenial", content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmGroupDenial]:: Boknings-ID: {orderGroupNumber} accat nekande");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmGroupDenial] FAILED:: Boknings-ID: {orderGroupNumber} accat nekande");
                     }
                 }
 
@@ -734,5 +785,7 @@ namespace BrokerMock.Controllers
             handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
             return handler;
         }
+
+        #endregion
     }
 }

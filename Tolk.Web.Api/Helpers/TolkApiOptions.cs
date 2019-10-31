@@ -18,6 +18,8 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.ComplaintNotInCorrectState, ErrorMessage = "The complaint was not in a correct state." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestNotFound, ErrorMessage = "The provided order number has no request in the correct state for the call." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.InterpreterNotFound, ErrorMessage = "The provided interpreter was not found." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.InterpreterAnswerNotValid, ErrorMessage = "The provided interpreter answer was not valid." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.InterpreterAnswerMainInterpereterDeclined, ErrorMessage = "When answering an order group request, the main interpreter must be provided. If the entire group request is to be declined, use DeclineGroup." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.InterpreterOfficialIdAlreadySaved, ErrorMessage = "The official interpreterId for the provided new interpreter was already saved." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.AttachmentNotFound, ErrorMessage = "The file coould not be found." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestNotInCorrectState, ErrorMessage = "The request or the underlying order was not in a correct state." },

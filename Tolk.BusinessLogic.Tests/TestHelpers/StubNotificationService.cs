@@ -37,13 +37,17 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderReplacementCreated(Order order) { }
 
+        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup) { }
+
+        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }
+
         public void RemindUnhandledRequest(Request request) { }
 
         public void RequestAccepted(Request request) { }
 
         public void RequestAnswerApproved(Request request) { }
 
-        public void RequestAnswerAutomaticallyAccepted(Request request) { }
+        public void RequestAnswerAutomaticallyApproved(Request request) { }
 
         public void RequestAnswerDenied(Request request) { }
 
@@ -60,6 +64,10 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestDeclinedByBroker(Request request) { }
 
         public void RequestExpired(Request request) { }
+
+        public void RequestGroupAccepted(RequestGroup requestGroup) { }
+
+        public void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }
 
         public void RequestGroupCreated(RequestGroup requestGroup) { }
 

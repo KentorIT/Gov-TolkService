@@ -134,7 +134,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (requestGroup != null)
             {
-                var newRequestGroup = _tolkDbContext.RequestGroups
+                var newRequestGroup = await _tolkDbContext.RequestGroups
                     .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
                     .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
                     .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
@@ -148,11 +148,73 @@ namespace Tolk.BusinessLogic.Services
                     .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
                     .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
                     .Include(r => r.Ranking.Broker)
-                    .Single(r => r.RequestGroupId == requestGroup.RequestGroupId);
+                    .SingleAsync(r => r.RequestGroupId == requestGroup.RequestGroupId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
                         requestGroup.RequestGroupId, requestGroup.OrderGroupId, requestGroup.Ranking.BrokerId, requestGroup.ExpiresAt);
+                    _notificationService.RequestGroupCreated(newRequestGroup);
+                    return;
+                }
+                else
+                {
+                    //Note: This is only valid if this is an one occasion, extra interpreter group!
+                    if (group.IsSingleOccasion)
+                    {
+                        // Request expiry information from customer
+                        group.AwaitDeadlineFromCustomer();
+
+                        await _tolkDbContext.SaveChangesAsync();
+
+                        _logger.LogInformation($"Created request group {requestGroup.RequestGroupId} for order group {requestGroup.OrderGroupId}, but system was unable to calculate expiry.");
+                        _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
+                        return;
+                    }
+                }
+            }
+            await TerminateOrderGroup(group);
+        }
+
+        public async Task CreatePartialRequestGroup(RequestGroup requestGroup, IEnumerable<Request> declinedRequests)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(CreatePartialRequestGroup), nameof(OrderService));
+            NullCheckHelper.ArgumentCheckNull(declinedRequests, nameof(CreatePartialRequestGroup), nameof(OrderService));
+
+            if (requestGroup.IsTerminalRequest)
+            {
+                //Possibly a terminatepartial, with its own notification to customer?
+                throw new NotImplementedException("Vet inte riktigt vart vi skall ta vägen om det här händer...");
+            }
+
+            DateTimeOffset? expiry = CalculateExpiryForNewRequest(declinedRequests.ClosestStartAt());
+            OrderGroup group = requestGroup.OrderGroup;
+
+            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
+            RequestGroup partialRequestGroup = group.CreatePartialRequestGroup(declinedRequests, rankings, expiry, _clock.SwedenNow);
+            // Save to get ids for the log message.
+            await _tolkDbContext.SaveChangesAsync();
+
+            if (partialRequestGroup != null)
+            {
+                var newRequestGroup = await _tolkDbContext.RequestGroups
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
+                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
+                    .Include(g => g.Ranking).ThenInclude(r => r.Broker)
+                    .SingleAsync(r => r.RequestGroupId == partialRequestGroup.RequestGroupId);
+                if (expiry.HasValue)
+                {
+                    _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
+                        partialRequestGroup.RequestGroupId, partialRequestGroup.OrderGroupId, partialRequestGroup.Ranking.BrokerId, partialRequestGroup.ExpiresAt);
                     _notificationService.RequestGroupCreated(newRequestGroup);
                     return;
                 }
@@ -170,9 +232,12 @@ namespace Tolk.BusinessLogic.Services
                         _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
                         return;
                     }
+                    else
+                    {
+                        throw new NotImplementedException("Vet inte riktigt vart vi skall ta vägen om det här händer...");
+                    }
                 }
             }
-            await TerminateOrderGroup(group);
         }
 
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null)

@@ -70,85 +70,116 @@ namespace Tolk.BusinessLogic.Services
                     _notificationService.RequestAccepted(request);
                     break;
                 case RequestStatus.Approved:
-                    _notificationService.RequestAnswerAutomaticallyAccepted(request);
+                    _notificationService.RequestAnswerAutomaticallyApproved(request);
                     break;
                 default:
                     throw new NotImplementedException("NOT OK!!");
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
-        {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
-            //Get prices
-            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
-        }
-
-        private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)
-        {
-            VerificationResult? verificationResult = null;
-            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
-            {
-                //Only check if the selected level is other than other.
-                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, orderId , competenceLevel);
-            }
-
-            return verificationResult;
-        }
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Extra interpreter answer is only required if the request group contains a request for an extra interpreter.")]
         public async Task AcceptGroup(
             RequestGroup requestGroup,
-            DateTimeOffset acceptTime,
+            DateTimeOffset answerTime,
             int userId,
             int? impersonatorId,
-            InterpreterBroker interpreter,
-            InterpreterBroker extraInterpreter,
-            CompetenceAndSpecialistLevel competenceLevel,
-            CompetenceAndSpecialistLevel? extraInterpreterCompetenceLevel,
-            InterpreterLocation interpreterLocation,
-            List<OrderRequirementRequestAnswer> requirementAnswers,
-            List<RequestAttachment> attachedFiles,
-            decimal? expectedTravelCosts,
-            string expectedTravelCostInfo
+            InterpreterAnswerModel interpreter,
+            InterpreterAnswerModel extraInterpreter,
+            List<RequestAttachment> attachedFiles
         )
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
-            //1. Set the request group and order group in correct state
-            var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter, competenceLevel);
-            var extraInterpreterVerificationResult = extraInterpreter != null ?
-                await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, extraInterpreter, extraInterpreterCompetenceLevel.Value) :
+            if (requestGroup.HasExtraInterpreter)
+            {
+                NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AcceptGroup), nameof(RequestService));
+            }
+            var declinedRequests = new List<Request>();
+
+            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
+            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+
+            if (hasExtraInterpreter && !isSingleOccasion && !extraInterpreter.Accepted)
+            {
+                throw new InvalidOperationException("I en beställning med flera tillfällen och extra tolk begärt vid minst ett tillfälle, så måste den extra tolken tillsättas.");
+            }
+            bool partialAnswer = false;
+            //1. Get the verification results for the interpreter(s)
+            var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
+            var extraInterpreterVerificationResult = hasExtraInterpreter && extraInterpreter.Accepted ?
+                await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, extraInterpreter.Interpreter, extraInterpreter.CompetenceLevel) :
                 null;
             foreach (var request in requestGroup.Requests)
             {
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
-                AcceptRequest(request, 
-                    acceptTime, 
-                    userId, 
-                    impersonatorId, 
-                    isExtraInterpreterOccasion ? extraInterpreter : interpreter, 
-                    interpreterLocation,
-                    isExtraInterpreterOccasion ? extraInterpreterCompetenceLevel.Value : competenceLevel, 
-                    requirementAnswers, 
-                    attachedFiles, 
-                    expectedTravelCosts, 
-                    expectedTravelCostInfo,
-                    isExtraInterpreterOccasion ? extraInterpreterVerificationResult :  verificationResult);
+                if (isExtraInterpreterOccasion)
+                {
+                    if (extraInterpreter.Accepted)
+                    {
+                        AcceptRequest(request,
+                            answerTime,
+                            userId,
+                            impersonatorId,
+                            extraInterpreter,
+                            attachedFiles,
+                            extraInterpreterVerificationResult
+                       );
+                    }
+                    else
+                    {
+                        partialAnswer = true;
+                        await Decline(request, answerTime, userId, impersonatorId, extraInterpreter.DeclineMessage, false);
+                        // Add the request to a list of request to created the new group with, later...
+                        declinedRequests.Add(request);
+                    }
+                }
+                else
+                {
+                    //TODO: I do not want to add the files to all requests!, have to be able to add them on group level.
+                    // NOTE: This goes for order groups as well...
+                    AcceptRequest(request,
+                        answerTime,
+                        userId,
+                        impersonatorId,
+                        interpreter,
+                        attachedFiles,
+                        verificationResult
+                    );
+                }
             }
-#warning add _notificationService stuff here...
-            //Need to take inte consideration...
-            //1. (NOT REALLY HANDLED YET) one occasion, two interpreters. only one is assigned, the other is not. 
-            //  Then a new RequestGroup should be added, but only connected to the remaining order.
-            //  The order that is sent to the next broker needs to be aware of the fact that it is paired with another order.
-            //  WHAT SHOULD HAPPEN IF 
-            // a. The customer wants to approve cost.
-            // b. The first broker only assigns one.
-            // c. The second broker assigns the other.
-            // d. The customer then has two costs to accept, but does not in the first instance!
-            // 2. several occasions, no accept needed
-            // 3. several occasions, accept needed.
+            if (partialAnswer)
+            {
+                //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
+                await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
+                if (requestGroup.RequiresAccept)
+                {
+                    // Which status to set on the request group, I wonder? Probably a new one, that is not allowed to set on a request...
+                    //requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
+                    _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
+                    throw new NotImplementedException("har inte gjort alla delar här än...");
+                }
+                else
+                {
+                    // Which status to set on the request group, I wonder? Probably a new one, that is not allowed to set on a request...
+                    //requestGroup.SetStatus(RequestStatus.Appoved, false);
+                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
+                     throw new NotImplementedException("har inte gjort alla delar här än...");
+               }
+            }
+            else
+            {
+                //2. Set the request group and order group in correct state
+                if (requestGroup.RequiresAccept)
+                {
+                    requestGroup.SetStatus(RequestStatus.Accepted, false);
+                    _notificationService.RequestGroupAccepted(requestGroup);
+                }
+                else
+                {
+                    requestGroup.SetStatus(RequestStatus.Approved, false);
+                    _notificationService.RequestGroupAnswerAutomaticallyApproved(requestGroup);
+                }
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
@@ -192,18 +223,25 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
-            string message)
+            string message,
+            bool notify = true)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
             request.Decline(declinedAt, userId, impersonatorId, message);
             if (!request.Order.ReplacingOrderId.HasValue)
             {
                 await _orderService.CreateRequest(request.Order, request);
-                _notificationService.RequestDeclinedByBroker(request);
+                if (notify)
+                {
+                    _notificationService.RequestDeclinedByBroker(request);
+                }
             }
             else
             {
-                _notificationService.RequestReplamentOrderDeclinedByBroker(request);
+                if (notify)
+                {
+                    _notificationService.RequestReplamentOrderDeclinedByBroker(request);
+                }
             }
         }
 
@@ -294,6 +332,16 @@ namespace Tolk.BusinessLogic.Services
             request.ConfirmDenial(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
+        public async Task ConfirmGroupDenial(
+            RequestGroup requestGroup,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ConfirmGroupDenial), nameof(RequestService));
+            requestGroup.ConfirmDenial(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
 
         public async Task ConfirmCancellation(
             Request request,
@@ -304,19 +352,6 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmCancellation), nameof(RequestService));
             request.ConfirmCancellation(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
-        }
-
-        private static bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
-        {
-            if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
-            {
-                return true;
-            }
-            decimal largestApprovedAmount = request.Order.Requests
-                .Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced)
-                .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
-                .Max() ?? 0;
-            return largestApprovedAmount >= expectedTravelCosts.Value;
         }
 
         public async Task SendEmailReminders()
@@ -371,6 +406,45 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
             _logger.LogInformation($"No RequestViews to delete");
+        }
+
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
+            //Get prices
+            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
+            // Acccept the request
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
+        }
+
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerModel interpreter, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult)
+        {
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreter.InterpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult);
+        }
+
+        private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)
+        {
+            VerificationResult? verificationResult = null;
+            if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
+            {
+                //Only check if the selected level is other than other.
+                verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, orderId, competenceLevel);
+            }
+
+            return verificationResult;
+        }
+
+        private static bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
+        {
+            if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
+            {
+                return true;
+            }
+            decimal largestApprovedAmount = request.Order.Requests
+                .Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced)
+                .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
+                .Max() ?? 0;
+            return largestApprovedAmount >= expectedTravelCosts.Value;
         }
 
         private async Task SendErrorMail(string methodname, Exception ex)

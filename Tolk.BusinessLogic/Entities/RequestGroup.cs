@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
@@ -44,10 +45,19 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Methods
 
-        public void SetStatus(RequestStatus status)
+        public Request FirstRequest => Requests.First();
+
+        public Request FirstRequestForFirstInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId == null);
+
+        public Request FirstRequestForExtraInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId != null);
+
+        internal void SetStatus(RequestStatus status, bool updateRequests = true)
         {
             Status = status;
-            Requests.ForEach(r => r.Status = status);
+            if (updateRequests)
+            {
+                Requests.ForEach(r => r.Status = status);
+            }
         }
 
         public override void Decline(
@@ -63,10 +73,24 @@ namespace Tolk.BusinessLogic.Entities
             base.Decline(declinedAt, userId, impersonatorId, message);
             OrderGroup.SetStatus(OrderStatus.Requested);
         }
+        
+        public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
-        #endregion
+        public bool RequiresAccept => 
+            OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+            FirstRequest.InterpreterLocation.HasValue && 
+            (FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || 
+                FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
 
-        #region private methods
+        public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.DeniedByCreator)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmeras.");
+            }
+#warning DET BEHÖVS EN NY TABELL HÄR!!
+            //RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
 
         #endregion
     }

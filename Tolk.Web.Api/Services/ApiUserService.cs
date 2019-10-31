@@ -8,10 +8,12 @@ using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Api.Services
 {
@@ -37,7 +39,7 @@ namespace Tolk.Web.Api.Services
         {
             //First check by cert, then by unamne/key
             return await GetApiUserByCertificate(clientCertInRequest) ??
-                await GetApiUserByApiKey(userName, key) ?? 
+                await GetApiUserByApiKey(userName, key) ??
                 throw new InvalidApiCallException(ErrorCodes.Unauthorized);
         }
 
@@ -78,69 +80,120 @@ namespace Tolk.Web.Api.Services
         public async Task<AspNetUser> GetBrokerUser(string caller, int? brokerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) && 
+                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) &&
                     u.BrokerId == brokerId && u.IsActive && !u.IsApiUser) :
                 null;
         }
 
         internal InterpreterBroker GetInterpreter(InterpreterModel interpreterModel, int brokerId, bool updateInformation = true)
         {
+            if (interpreterModel == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.InterpreterAnswerNotValid);
+            }
             InterpreterBroker interpreter = null;
-                switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreterModel.InterpreterInformationType))
+            switch (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreterModel.InterpreterInformationType))
+            {
+                case InterpreterInformationType.ExistingInterpreter:
+                    interpreter = _dbContext.InterpreterBrokers
+                        .SingleOrDefault(i => i.InterpreterBrokerId == interpreterModel.InterpreterId && i.BrokerId == brokerId);
+                    break;
+                case InterpreterInformationType.AuthorizedInterpreterId:
+                    interpreter = _dbContext.InterpreterBrokers
+                        .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
+                    break;
+                case InterpreterInformationType.NewInterpreter:
+                    //check if unique officialInterpreterId for broker 
+                    if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
+                    {
+                        //Create the new interpreter, connected to the provided broker
+                        return new InterpreterBroker(
+                            interpreterModel.FirstName,
+                            interpreterModel.LastName,
+                            brokerId,
+                            interpreterModel.Email,
+                            interpreterModel.PhoneNumber,
+                            interpreterModel.OfficialInterpreterId
+                        );
+                    }
+                    else
+                    {
+                        throw new InvalidApiCallException(ErrorCodes.InterpreterOfficialIdAlreadySaved);
+                    }
+                default:
+                    return null;
+            }
+            if (updateInformation)
+            {
+                if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
                 {
-                    case InterpreterInformationType.ExistingInterpreter:
-                        interpreter = _dbContext.InterpreterBrokers
-                            .SingleOrDefault(i => i.InterpreterBrokerId == interpreterModel.InterpreterId && i.BrokerId == brokerId);
-                        break;
-                    case InterpreterInformationType.AuthorizedInterpreterId:
-                        interpreter = _dbContext.InterpreterBrokers
-                            .SingleOrDefault(i => i.OfficialInterpreterId == interpreterModel.OfficialInterpreterId && i.BrokerId == brokerId);
-                        break;
-                    case InterpreterInformationType.NewInterpreter:
-                        //check if unique officialInterpreterId for broker 
-                        if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
-                        {
-                            //Create the new interpreter, connected to the provided broker
-                            return new InterpreterBroker(
-                                interpreterModel.FirstName,
-                                interpreterModel.LastName,
-                                brokerId,
-                                interpreterModel.Email,
-                                interpreterModel.PhoneNumber,
-                                interpreterModel.OfficialInterpreterId
-                            );
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    default:
-                        return null;
+                    interpreter.FirstName = interpreterModel.FirstName;
                 }
-                if (updateInformation)
+                if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
                 {
-                    if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
-                    {
-                        interpreter.FirstName = interpreterModel.FirstName;
-                    }
-                    if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
-                    {
-                        interpreter.LastName = interpreterModel.LastName;
-                    }
-                    if (string.IsNullOrWhiteSpace(interpreterModel.Email))
-                    {
-                        interpreter.Email = interpreterModel.Email;
-                    }
-                    if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
-                    {
-                        interpreter.PhoneNumber = interpreterModel.PhoneNumber;
-                    }
-                    if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
-                    {
-                        interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
-                    }
+                    interpreter.LastName = interpreterModel.LastName;
                 }
+                if (string.IsNullOrWhiteSpace(interpreterModel.Email))
+                {
+                    interpreter.Email = interpreterModel.Email;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
+                {
+                    interpreter.PhoneNumber = interpreterModel.PhoneNumber;
+                }
+                if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
+                {
+                    interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
+                }
+            }
             return interpreter;
+        }
+
+        internal InterpreterAnswerModel GetInterpreterModel(InterpreterGroupAnswerModel interpreterModel, int brokerId, bool isMainInterpreter = true)
+        {
+            if (interpreterModel == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.InterpreterAnswerNotValid);
+            }
+            if (!interpreterModel.IsValid)
+            {
+                throw new InvalidApiCallException(ErrorCodes.InterpreterAnswerNotValid);
+            }
+            if (isMainInterpreter && !interpreterModel.Accepted)
+            {
+                throw new InvalidApiCallException(ErrorCodes.InterpreterAnswerMainInterpereterDeclined);
+            }
+            if (!isMainInterpreter && !interpreterModel.Accepted)
+            {
+                return new InterpreterAnswerModel
+                {
+                    Accepted = false,
+                    DeclineMessage = interpreterModel.DeclineMessage
+                };
+            }
+
+            InterpreterBroker interpreter;
+            interpreter = GetInterpreter(interpreterModel.Interpreter, brokerId);
+
+            //Does not handle Kammarkollegiets tolknummer
+            if (interpreter == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.InterpreterNotFound);
+            }
+            return new InterpreterAnswerModel
+            {
+                Interpreter = interpreter,
+                CompetenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(interpreterModel.CompetenceLevel).Value,
+                InterpreterLocation = EnumHelper.GetEnumByCustomName<InterpreterLocation>(interpreterModel.Location).Value,
+                RequirementAnswers = interpreterModel.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                {
+                    Answer = ra.Answer,
+                    CanSatisfyRequirement = ra.CanMeetRequirement,
+                    OrderRequirementId = ra.RequirementId,
+                }).ToList(),
+                ExpectedTravelCosts = interpreterModel.ExpectedTravelCosts,
+                ExpectedTravelCostInfo = interpreterModel.ExpectedTravelCostInfo
+            };
         }
     }
 }

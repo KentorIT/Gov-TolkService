@@ -51,10 +51,13 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tillsättning ej besvarad")]
         ResponseNotAnsweredByCreator = 16,
         [Description("Inväntar sista svarstid från myndighet")]
+        [CustomName("not_used", false)]
         AwaitingDeadlineFromCustomer = 17,
         [Description("Ingen sista svarstid från myndighet")]
         NoDeadlineFromCustomer = 18,
+        [CustomName("not_used", false)]
         [Description("Förlorad på grund av karantän")]
         LostDueToQuarantine = 19,
+
     }
 }

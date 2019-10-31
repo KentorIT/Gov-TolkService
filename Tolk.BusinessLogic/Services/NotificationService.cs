@@ -42,8 +42,6 @@ namespace Tolk.BusinessLogic.Services
             _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions?.Env.DisplayName) ? $"{_tolkBaseOptions?.Env.DisplayName} " : string.Empty;
         }
 
-
-
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(OrderCancelledByCustomer), nameof(NotificationService));
@@ -186,6 +184,16 @@ namespace Tolk.BusinessLogic.Services
             );
         }
 
+        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(terminatedOrderGroup, nameof(OrderGroupNoBrokerAccepted), nameof(NotificationService));
+            CreateEmail(GetRecipientsFromOrder(terminatedOrderGroup.FirstOrder),
+                $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen tolk",
+                $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GotoOrderGroupPlain(terminatedOrderGroup.OrderGroupId)}",
+                $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GotoOrderGroupButton(terminatedOrderGroup.OrderGroupId)}"
+            );
+        }
+
         public void RequestCreated(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreated), nameof(NotificationService));
@@ -302,9 +310,25 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             _logger.LogInformation($"Email created for customer regarding missing expiry on request {request.RequestId} for order {request.OrderId}");
         }
 
-        public void RequestAnswerAutomaticallyAccepted(Request request)
+        public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup)
         {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyAccepted), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(newRequestGroup, nameof(RequestGroupCreatedWithoutExpiry), nameof(NotificationService));
+            string orderGroupNumber = newRequestGroup.OrderGroup.OrderGroupNumber;
+            string body = $@"Sammanhållen bokningsförfrågan {orderGroupNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
+
+Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills dess sista svarstid är satt.";
+
+            CreateEmail(GetRecipientsFromOrderGroup(newRequestGroup.OrderGroup),
+                $"Sista svarstid ej satt på sammanhållen bokningsförfrågan {orderGroupNumber}",
+                $"{body} {GotoOrderGroupPlain(newRequestGroup.OrderGroup.OrderGroupId)}",
+                $"{HtmlHelper.ToHtmlBreak(body)} {GotoOrderGroupButton(newRequestGroup.OrderGroup.OrderGroupId)}");
+
+            _logger.LogInformation($"Email created for customer regarding missing expiry on request group {newRequestGroup.RequestGroupId} for order group {newRequestGroup.OrderGroup.OrderGroupId}");
+        }
+
+        public void RequestAnswerAutomaticallyApproved(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 OrderReferenceNumberInfo(request) +
@@ -319,6 +343,28 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true));
 
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
+        }
+
+        public void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            Order order = requestGroup.OrderGroup.FirstOrder;
+
+            var body = $"Svar på  sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
+                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                $"\tTillfällen: \n" +
+                $"{GetOccuranses(requestGroup.OrderGroup.Orders)}\n" +
+                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+            if (requestGroup.HasExtraInterpreter)
+            {
+                body += $"\nExtra tolk: \n" + GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter);
+            }
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+            NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
         }
 
         public void RequestAnswerApproved(Request request)
@@ -660,12 +706,24 @@ Sammanställning:
            return $"Tolkens kompetensnivå: {((CompetenceAndSpecialistLevel?)competenceInfo)?.GetDescription() ?? "Information saknas"}";
         }
 
-        private string GetPossibleInfoNotValidatedInterpreter(Request request)
+ 	public void RequestGroupAccepted(RequestGroup requestGroup)
         {
-            var shouldCheckValidationCode = _tolkBaseOptions.Tellus.IsActivated && request.InterpreterCompetenceVerificationResultOnAssign.HasValue;
-            bool isInterpreterValidationError = shouldCheckValidationCode && (request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.UnknownError || request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.ConnectionError);
-            bool isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated;
-            return isInterpreterValidationError ? "\n\nObservera att tolkens kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            Order order = requestGroup.OrderGroup.FirstOrder;
+            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {requireApprovementText}\n\n" +
+                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                $"\tTillfällen: \n" +
+                $"{GetOccuranses(requestGroup.OrderGroup.Orders)}\n" +
+                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+            if (requestGroup.HasExtraInterpreter)
+            {
+                body += $"\nExtra tolk: \n" + GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter);
+            }
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
         }
 
         public void RequestDeclinedByBroker(Request request)
@@ -818,9 +876,146 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GotoOrderButton(request.Order.OrderId));
         }
 
+        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAccepted), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            Order order = requestGroup.OrderGroup.FirstOrder;
+            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n" +
+                $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {requireApprovementText}\n\n" +
+                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                $"\tTillfällen: \n" +
+                $"{GetOccuranses(requestGroup.OrderGroup.Orders)}\n" +
+                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+        }
+
+        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            Order order = requestGroup.OrderGroup.FirstOrder;
+
+            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n\n" +
+                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                $"\tTillfällen: \n" +
+                $"{GetOccuranses(requestGroup.OrderGroup.Orders)}\n" +
+                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GotoOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+            NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
+        }
+
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody = null, bool isBrokerMail = false, bool addContractInfo = true)
         {
             CreateEmail(new[] { recipient }, subject, plainBody, string.IsNullOrEmpty(htmlBody) ? HtmlHelper.ToHtmlBreak(plainBody) : htmlBody, isBrokerMail, addContractInfo);
+        }
+
+        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId)
+        {
+            _dbContext.Add(new OutboundEmail(
+                    recipient,
+                    subject,
+                    plainBody,
+                    htmlBody,
+                    _clock.SwedenNow,
+                    replacingEmailId,
+                    resentByUserId));
+            _dbContext.SaveChanges();
+        }
+
+        public void NotifyOnFailure(int callId)
+        {
+            OutboundWebHookCall call = _dbContext.OutboundWebHookCalls
+                .Include(c => c.RecipientUser)
+                .Single(c => c.OutboundWebHookCallId == callId);
+            var email = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation, $"Ett webhook-anrop från {Constants.SystemName} har misslyckats fem gånger",
+                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})
+{GotoWebHookListPlain()}",
+                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})<br/>
+{GotoWebHookListButton("Gå till systemets loggsida")}",
+                true
+            );
+            }
+            var webhook = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new ErrorMessageModel
+                    {
+                        ReportedAt = _clock.SwedenNow,
+                        CallId = callId,
+                        NotificationType = call.NotificationType.GetCustomName()
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.ErrorNotification,
+                    webhook.RecipientUserId
+                );
+            }
+            if (_tolkBaseOptions.Support.ReportWebHookFailures)
+            {
+                CreateEmail(
+                    _tolkBaseOptions.Support.SecondLineEmail,
+                    "Ett webhook-anrop har misslyckats fem gånger",
+                    $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()}) till brokerId:{call.RecipientUser.BrokerId.Value}"
+                );
+            }
+        }
+
+        public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null)
+        {
+            NullCheckHelper.ArgumentCheckNull(failedCall, nameof(ResendWebHook), nameof(NotificationService));
+
+            int? brokerId = _dbContext.Users.SingleOrDefault(u => u.Id == failedCall.RecipientUserId)?.BrokerId;
+            if (brokerId == null)
+            {
+                return false;
+            }
+
+            var webhook = GetBrokerNotificationSettings((int)brokerId, failedCall.NotificationType, NotificationChannel.Webhook);
+
+            if (webhook == null)
+            {
+                return false;
+            }
+
+            OutboundWebHookCall newCall = new OutboundWebHookCall(
+                webhook.ContactInformation,
+                failedCall.Payload,
+                failedCall.NotificationType,
+                _clock.SwedenNow,
+                webhook.RecipientUserId,
+                resentUserId,
+                resentImpersonatorUserId);
+
+            _dbContext.OutboundWebHookCalls.Add(newCall);
+            _dbContext.SaveChanges();
+            failedCall.ResentHookId = newCall.OutboundWebHookCallId;
+            _dbContext.SaveChanges();
+
+            return true;
+        }
+
+        //SHOULD PROBABLY NOT BE HERE AT ALL...
+        public void FlushNotificationSettings()
+        {
+            _cache.Remove(brokerSettingsCacheKey);
+        }
+
+        private string GetPossibleInfoNotValidatedInterpreter(Request request)
+        {
+            var shouldCheckValidationCode = _tolkBaseOptions.Tellus.IsActivated && request.InterpreterCompetenceVerificationResultOnAssign.HasValue;
+            bool isInterpreterValidationError = shouldCheckValidationCode && (request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.UnknownError || request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.ConnectionError);
+            bool isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated;
+            return isInterpreterValidationError ? "\n\nObservera att tolkens kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
@@ -838,19 +1033,6 @@ Sammanställning:
                     $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
                     _clock.SwedenNow));
             }
-            _dbContext.SaveChanges();
-        }
-
-        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId)
-        {
-            _dbContext.Add(new OutboundEmail(
-                    recipient,
-                    subject,
-                    plainBody,
-                    htmlBody,
-                    _clock.SwedenNow,
-                    replacingEmailId,
-                    resentByUserId));
             _dbContext.SaveChanges();
         }
 
@@ -876,7 +1058,6 @@ Sammanställning:
 
         private void NotifyBrokerOnAcceptedAnswer(Request request, string orderNumber)
         {
-            //Broker part
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
@@ -896,6 +1077,32 @@ Sammanställning:
                     },
                     webhook.ContactInformation,
                     NotificationType.RequestAnswerApproved,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
+        private void NotifyBrokerOnAcceptedAnswer(RequestGroup requestGroup, string orderGroupNumber)
+        {
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Email);
+            if (email != null)
+            {
+                var body = $"{requestGroup.OrderGroup.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på den sammanhållna bokningsförfrågan {orderGroupNumber}.";
+                CreateEmail(email.ContactInformation, $"Sammanhållen bokning med boknings-ID {orderGroupNumber} verifierat",
+                        body + GotoOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                        body + GotoOrderButton(requestGroup.OrderGroup.OrderGroupId),
+                        true);
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestGroupAnswerApprovedModel
+                    {
+                        OrderGroupNumber = orderGroupNumber
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestGroupAnswerApproved,
                     webhook.RecipientUserId
                 );
             }
@@ -962,14 +1169,6 @@ Sammanställning:
                 }
                 return brokerNotificationSettings;
             }
-        }
-
-        public ITolkBaseOptions TolkBaseOptions => _tolkBaseOptions;
-
-        //SHOULD PROBABLY NOT BE HERE AT ALL...
-        public void FlushNotificationSettings()
-        {
-            _cache.Remove(brokerSettingsCacheKey);
         }
 
         private void CreateWebHookCall(WebHookPayloadBaseModel payload, string recipientUrl, NotificationType type, int userId)
@@ -1132,10 +1331,12 @@ Sammanställning:
                 PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
         }
+
         private string GotoWebHookListPlain()
         {
             return $"\n\n\nGå till systemets loggsida för att få mer information : {HtmlHelper.GetWebHookListUrl(_tolkBaseOptions.TolkWebBaseUrl)}";
         }
+
         private string GotoWebHookListButton(string textOverride, bool autoBreakLines = true)
         {
             string breakLines = autoBreakLines ? "<br /><br /><br />" : "";
@@ -1212,91 +1413,6 @@ Sammanställning:
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Single(o => o.RequestId == id);
-        }
-
-        public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null)
-        {
-            NullCheckHelper.ArgumentCheckNull(failedCall, nameof(ResendWebHook), nameof(NotificationService));
-
-            int? brokerId = _dbContext.Users.SingleOrDefault(u => u.Id == failedCall.RecipientUserId)?.BrokerId;
-            if (brokerId == null)
-            {
-                return false;
-            }
-
-            var webhook = GetBrokerNotificationSettings((int)brokerId, failedCall.NotificationType, NotificationChannel.Webhook);
-
-            if (webhook == null)
-            {
-                return false;
-            }
-
-            OutboundWebHookCall newCall = new OutboundWebHookCall(
-                webhook.ContactInformation,
-                failedCall.Payload,
-                failedCall.NotificationType,
-                _clock.SwedenNow,
-                webhook.RecipientUserId,
-                resentUserId,
-                resentImpersonatorUserId);
-
-            _dbContext.OutboundWebHookCalls.Add(newCall);
-            _dbContext.SaveChanges();
-            failedCall.ResentHookId = newCall.OutboundWebHookCallId;
-            _dbContext.SaveChanges();
-
-            return true;
-        }
-
-        public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup)
-        {
-#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
-        }
-
-        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
-        {
-#warning MÅSTE GÖRA EN HANTERING AV DETTA!!!
-        }
-
-        public void NotifyOnFailure(int callId)
-        {
-            OutboundWebHookCall call = _dbContext.OutboundWebHookCalls
-                .Include(c => c.RecipientUser)
-                .Single(c => c.OutboundWebHookCallId == callId);
-            var email = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Email);
-            if (email != null)
-            {
-                CreateEmail(email.ContactInformation, $"Ett webhook-anrop från {Constants.SystemName} har misslyckats fem gånger",
-                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})
-{GotoWebHookListPlain()}",
-                $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()})<br/>
-{GotoWebHookListButton("Gå till systemets loggsida")}",
-                true
-            );
-            }
-            var webhook = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Webhook);
-            if (webhook != null)
-            {
-                CreateWebHookCall(
-                    new ErrorMessageModel
-                    {
-                        ReportedAt = _clock.SwedenNow,
-                        CallId = callId,
-                        NotificationType = call.NotificationType.GetCustomName()
-                    },
-                    webhook.ContactInformation,
-                    NotificationType.ErrorNotification,
-                    webhook.RecipientUserId
-                );
-            }
-            if (_tolkBaseOptions.Support.ReportWebHookFailures)
-            {
-                CreateEmail(
-                    _tolkBaseOptions.Support.SecondLineEmail,
-                    "Ett webhook-anrop har misslyckats fem gånger",
-                    $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()}) till brokerId:{call.RecipientUser.BrokerId.Value}"
-                );
-            }
         }
     }
 }

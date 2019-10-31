@@ -18,10 +18,12 @@ namespace Tolk.BusinessLogic.Services
         void OrderContactPersonChanged(Order order);
         void OrderNoBrokerAccepted(Order order);
         void OrderReplacementCreated(Order order);
+        void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
+        void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RemindUnhandledRequest(Request request);
         void RequestAccepted(Request request);
         void RequestAnswerApproved(Request request);
-        void RequestAnswerAutomaticallyAccepted(Request request);
+        void RequestAnswerAutomaticallyApproved(Request request);
         void RequestAnswerDenied(Request request);
         void RequestCancelledByBroker(Request request);
         void RequestChangedInterpreter(Request request);
@@ -29,6 +31,8 @@ namespace Tolk.BusinessLogic.Services
         void RequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
+        void RequestGroupAccepted(RequestGroup requestGroup);
+        void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);
         void RequestExpired(Request request);
         void RequestReplamentOrderAccepted(Request request);
