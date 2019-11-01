@@ -247,7 +247,7 @@ namespace Tolk.Web.Helpers
                     });
                 }
             }
-            // Request answer processed by customer organization
+            // Request answer processed by customer organization or system
             if (request.AnswerProcessedAt.HasValue)
             {
                 if (request.Status == RequestStatus.DeniedByCreator)
@@ -274,6 +274,7 @@ namespace Tolk.Web.Helpers
                 }
                 else
                 {
+                    //interpreter changed
                     if (request.ReplacingRequestId.HasValue)
                     {
                         if (request.ProcessingUser != null)
@@ -288,39 +289,50 @@ namespace Tolk.Web.Helpers
                                 ActorContactInfo = GetContactinfo(request.ProcessingUser),
                             });
                         }
+                        //if auto accepted by system 
                         else
                         {
-                            //system automatically approves requests where interpreter is replaced and AllowExceedingTravelCost is true 
-                            //1 hour before order start - then AnswerProcessedAt is set as well
                             eventLog.Add(new EventLogEntryModel
                             {
-                                Weight = 200,
                                 Timestamp = request.AnswerProcessedAt.Value,
-                                EventDetails = $"Tolkbyte automatiskt godkänt",
+                                EventDetails = $"Tolkbyte godkänt av systemet",
                                 Actor = "Systemet",
                             });
                         }
                     }
                     else
                     {
-                        eventLog.Add(new EventLogEntryModel
+                        if (request.ProcessingUser != null)
                         {
-                            Timestamp = request.AnswerProcessedAt.Value,
-                            EventDetails = $"Tillsättning godkänd av myndighet",
-                            Actor = request.ProcessingUser.FullName,
-                            Organization = customerName,
-                            ActorContactInfo = GetContactinfo(request.ProcessingUser),
-                        });
+                            eventLog.Add(new EventLogEntryModel
+                            {
+                                Timestamp = request.AnswerProcessedAt.Value,
+                                EventDetails = $"Tillsättning godkänd av myndighet",
+                                Actor = request.ProcessingUser.FullName,
+                                Organization = customerName,
+                                ActorContactInfo = GetContactinfo(request.ProcessingUser),
+                            });
+                        }
+                        //if auto accepted by system 
+                        else
+                        {
+                            eventLog.Add(new EventLogEntryModel
+                            {
+                                Timestamp = request.AnswerProcessedAt.Value,
+                                EventDetails = $"Tillsättning godkänd av systemet",
+                                Actor = "Systemet",
+                            });
+                        }
                     }
                 }
             }
             else if (request.Status == RequestStatus.ResponseNotAnsweredByCreator)
             {
-                // TODO: Check when unanswered response should expire
+                // For now - unanswered responses don't expire before order start
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = request.Order.StartAt.AddHours(-1.0),
-                    EventDetails = $"Obesvarad tillsättning automatiskt nekad, tiden gick ut",
+                    Timestamp = request.Order.StartAt,
+                    EventDetails = $"Obesvarad tillsättning tiden gick ut",
                     Actor = "Systemet",
                 });
             }

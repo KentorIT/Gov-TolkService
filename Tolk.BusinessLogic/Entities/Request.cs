@@ -230,6 +230,7 @@ namespace Tolk.BusinessLogic.Entities
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             Status = RequiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
             Order.Status = RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            AnswerProcessedAt = RequiresAccept ? null : (DateTimeOffset?)acceptTime;
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
@@ -315,6 +316,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 Status = RequestStatus.Approved;
                 Order.Status = OrderStatus.ResponseAccepted;
+                AnswerProcessedAt = acceptTime;
             }
         }
 
@@ -353,9 +355,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter = interperter;
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
-            AnswerProcessedAt = isAutoAccepted ? oldRequest.AnswerProcessedAt : null;
-            AnswerProcessedBy = isAutoAccepted ? oldRequest.AnswerProcessedBy : null;
-            ImpersonatingAnswerProcessedBy = isAutoAccepted ? oldRequest.ImpersonatingAnswerProcessedBy : null;
+            AnswerProcessedAt = isAutoAccepted ? (DateTimeOffset?)acceptTime : null;
             ReceivedBy = oldRequest.ReceivedBy;
             RecievedAt = oldRequest.RecievedAt;
             ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
