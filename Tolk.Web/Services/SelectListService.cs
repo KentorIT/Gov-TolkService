@@ -100,6 +100,23 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> InterpreterLocations => GetList<InterpreterLocation>();
 
+        public static IEnumerable<SelectListItem> FilteredInterpreterLocations(IEnumerable<InterpreterLocation> filter)
+        {
+            return EnumHelper.GetAllDescriptions<InterpreterLocation>()
+                .Where(e => filter.Contains(e.Value))
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+        }
+
+        public static IEnumerable<SelectListItem> FilteredCompetenceLevels(IEnumerable<CompetenceAndSpecialistLevel> filter)
+        {
+            return EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
+                .Where(e => filter.Contains(e.Value))
+                .OrderByDescending(e => (int)e.Value)
+                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                .ToList().AsReadOnly();
+        }
+
         public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
                 .Where(e => e.Value > 0)

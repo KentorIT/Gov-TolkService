@@ -80,7 +80,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var request = _dbContext.Requests
+            var request = await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
                 .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
@@ -115,7 +115,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
                 .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
                 .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Single(o => o.RequestId == id);
+                .SingleAsync(r => r.RequestId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
@@ -137,7 +137,7 @@ namespace Tolk.Web.Controllers
                 if (!request.IsToBeProcessedByBroker)
                 {
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction("View", new { id });
+                    return RedirectToAction(nameof(View), new { id });
                 }
                 if (request.Status == RequestStatus.Created)
                 {
@@ -308,54 +308,6 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
-        private Request GetRequestToProcess(int requestId)
-        {
-            return _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Requisitions)
-                .Include(r => r.Ranking)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Single(o => o.RequestId == requestId);
-        }
-
-        private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
-        {
-            if (interpreterBrokerId == SelectListService.NewInterpreterId)
-            {
-                if (!_interpreterService.IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
-                {
-                    return null;
-                }
-                var interpreter = new InterpreterBroker(
-                    interpreterInformation.FirstName,
-                    interpreterInformation.LastName,
-                    brokerId,
-                    interpreterInformation.Email,
-                    interpreterInformation.PhoneNumber,
-                    interpreterInformation.OfficialInterpreterId
-                );
-                _dbContext.Add(interpreter);
-                return interpreter;
-            }
-            return _dbContext.InterpreterBrokers.Single(i => i.InterpreterBrokerId == interpreterBrokerId);
-        }
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Cancel(RequestCancelModel model)
@@ -468,6 +420,54 @@ namespace Tolk.Web.Controllers
                 _dbContext.SaveChanges();
             }
             return Json(new { success = true });
+        }
+
+        private Request GetRequestToProcess(int requestId)
+        {
+            return _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Interpreter)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
+                .Include(r => r.Requisitions)
+                .Include(r => r.Ranking)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.RequirementAnswers)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Single(o => o.RequestId == requestId);
+        }
+
+        private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
+        {
+            if (interpreterBrokerId == SelectListService.NewInterpreterId)
+            {
+                if (!_interpreterService.IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
+                {
+                    return null;
+                }
+                var interpreter = new InterpreterBroker(
+                    interpreterInformation.FirstName,
+                    interpreterInformation.LastName,
+                    brokerId,
+                    interpreterInformation.Email,
+                    interpreterInformation.PhoneNumber,
+                    interpreterInformation.OfficialInterpreterId
+                );
+                _dbContext.Add(interpreter);
+                return interpreter;
+            }
+            return _dbContext.InterpreterBrokers.Single(i => i.InterpreterBrokerId == interpreterBrokerId);
         }
 
         private async Task<Request> GetConfirmedRequest(int requestId)
