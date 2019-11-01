@@ -496,16 +496,16 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AnswerGroup"), content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
                 {
                     if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AnswerGroup]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter}");
                     }
                     else
                     {
                         var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AnswerGroup] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
                     }
                 }
 
@@ -600,15 +600,15 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync($"{_options.TolkApiBaseUrl}/Request/ConfirmGroupDenial", content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmGroupDenial]:: Boknings-ID: {orderGroupNumber} accat nekande");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial]:: Boknings-ID: {orderGroupNumber} accat nekande");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmGroupDenial] FAILED:: Boknings-ID: {orderGroupNumber} accat nekande");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial] FAILED:: Boknings-ID: {orderGroupNumber} accat nekande");
                     }
                 }
 
@@ -650,15 +650,15 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcknowledgeGroup"), content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcknowledgeGroup]:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge]:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcknowledgeGroup] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
                     }
                 }
 
@@ -702,15 +702,15 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/DeclineGroup"), content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/DeclineGroup]:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline]:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/DeclineGroup] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
                     }
                 }
 
