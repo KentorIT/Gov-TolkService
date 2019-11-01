@@ -195,7 +195,7 @@ namespace Tolk.Web.Api.Controllers
                 return ReturnError(ex.ErrorCode);
             }
         }
-s
+
         [HttpPost]
         public async Task<JsonResult> ConfirmDenial([FromBody] ConfirmGroupDenialModel model)
         {

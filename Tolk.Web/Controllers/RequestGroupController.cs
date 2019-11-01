@@ -22,7 +22,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policy = Policies.CustomerOrAdmin)]
+    [Authorize(Policy = Policies.Broker)]
     public class RequestGroupController : Controller
     {
         private readonly TolkDbContext _dbContext;
