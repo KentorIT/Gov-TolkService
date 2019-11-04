@@ -239,13 +239,20 @@ namespace Tolk.Web.Controllers
                 panicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
             }
             DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
-            var user = await _userManager.GetUserAsync(User);
+
+            var user = await _userManager.Users
+                .Include(u => u.DefaultSettings)
+                .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
+                .SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+
             var model = new OrderModel()
             {
                 LastTimeForRequiringLatestAnswerBy = panicTime.ToSwedishString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
-                CreatedByName = user.FullName
+                CreatedByName = user.FullName,
+                UserDefaultSettings = DefaultSettingsModel.GetModel(user)
             };
+            model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
         }
 

@@ -19,19 +19,31 @@ $(function () {
             if ($select.val() === $val) {
                 $select.val("").trigger("change");
             }
-            //$select.find($("option[value=" + $val + "]")).attr('disabled', 'disabled');
             if ($next.find(".interpreter-group > select").val() !== "") {
                 $next.next(".location-group").show();
             }
 
             $(this).parents(".location-group").addClass("group-box");
             $(".address-" + $id).show();
+            var isNewOrder = ($("#UserDefaultSettings_OffSitePhoneContactInformation").val() != null);
             if ($val === "OffSitePhone" || $val === "OffSiteVideo") {
                 $(".address-" + $id + " > .address-information").hide();
                 $(".address-" + $id + " > .off-site-information").show();
-            } else {
+                if (isNewOrder) {
+                    var valueToSet = $val === "OffSitePhone" ? $("#UserDefaultSettings_OffSitePhoneContactInformation").val() : $("#UserDefaultSettings_OffSiteVideoContactInformation").val();
+                    $("#" + $id + "AddressModel_OffSiteContactInformation").val(valueToSet);
+                }
+            }
+            else {
+
                 $(".address-" + $id + " > .address-information").show();
                 $(".address-" + $id + " > .off-site-information").hide();
+                if (isNewOrder) {
+                    var streetToSet = $val === "OnSite" ? $("#UserDefaultSettings_OnSiteLocationStreet").val() : $("#UserDefaultSettings_OffSiteDesignatedLocationStreet").val();
+                    var cityToSet = $val === "OnSite" ? $("#UserDefaultSettings_OnSiteLocationCity").val() : $("#UserDefaultSettings_OffSiteDesignatedLocationCity").val();
+                    $("#" + $id + "AddressModel_LocationStreet").val(streetToSet);
+                    $("#" + $id + "AddressModel_LocationCity").val(cityToSet);
+                }
             }
         }
     });

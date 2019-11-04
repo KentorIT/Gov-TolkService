@@ -450,6 +450,8 @@ namespace Tolk.Web.Models
             get => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
         }
 
+        public DefaultSettingsModel UserDefaultSettings { get; set; }
+
         #region methods
 
         internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
@@ -689,6 +691,21 @@ namespace Tolk.Web.Models
                     DenyMessage = r.DenyMessage,
                 }).ToList(),
             };
+        }
+
+        internal void UpdateModelWithDefaultSettings(List<int> units)
+        {
+            if (UserDefaultSettings != null)
+            {
+                RegionId = Region.Regions.Any(r => r.RegionId == UserDefaultSettings.RegionId) ? UserDefaultSettings.RegionId : null;
+                InvoiceReference = UserDefaultSettings.InvoiceReference;
+                CustomerUnitId = (UserDefaultSettings.CustomerUnitId.HasValue && (UserDefaultSettings.CustomerUnitId == 0  || units.Contains(UserDefaultSettings.CustomerUnitId.Value))) ? UserDefaultSettings.CustomerUnitId : null;
+                AllowExceedingTravelCost = UserDefaultSettings.AllowExceedingTravelCost != null ?
+                    new RadioButtonGroup { SelectedItem = SelectListService.AllowExceedingTravelCost.Single(e => e.Value == UserDefaultSettings.AllowExceedingTravelCost.ToString()) } : null;
+                RankedInterpreterLocationFirst = UserDefaultSettings.RankedInterpreterLocationFirst;
+                RankedInterpreterLocationSecond = UserDefaultSettings.RankedInterpreterLocationSecond;
+                RankedInterpreterLocationThird = UserDefaultSettings.RankedInterpreterLocationThird;
+            }
         }
 
         internal static OrderModel GetModelFromOrderForConfirmation(Order order)

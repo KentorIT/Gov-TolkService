@@ -70,6 +70,9 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("checked-index")]
         public string CheckedIndex { get; set; }
 
+        [HtmlAttributeName("checked-value")]
+        public string CheckedValue { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -911,6 +914,8 @@ namespace Tolk.Web.TagHelpers
                     : CheckedIndex == "none" ? (int?)null
                     : CheckedIndex.ToSwedishInt();
 
+            string cv = (string.IsNullOrWhiteSpace(CheckedValue) || CheckedValue == "none") ? string.Empty : CheckedValue;
+
             if (IsDisplayed)
             {
                 writer.WriteLine($"<fieldset id=\"{id}\">");
@@ -937,7 +942,8 @@ namespace Tolk.Web.TagHelpers
                 var item = itArr[i];
                 var itemName = $"{id}_{i}";
                 bool isChecked = CheckedIndex == "none" ? false : i == ci;
-                var checkedAttr = isChecked ? "checked=\"checked\"" : "";
+                bool valueShouldBeChecked = CheckedValue == "none" ? false : item.Value == cv;
+                var checkedAttr = isChecked || valueShouldBeChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
                 var inputElem = $"<input id=\"{itemName}\" name=\"{For.Name}\" type=\"radio\" value=\"{item.Value}\" {checkedAttr}/>";
 

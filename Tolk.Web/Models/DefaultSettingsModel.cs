@@ -77,5 +77,27 @@ namespace Tolk.Web.Models
         public string InvoiceReference { get; set; }
 
         public UserPageMode UserPageMode { get; set; }
+
+        internal static DefaultSettingsModel GetModel(AspNetUser user)
+        {
+            return new DefaultSettingsModel
+            {
+                RegionId = user.GetIntValue(DefaultSettingsType.Region),
+                CustomerUnitId = user.GetIntValue(DefaultSettingsType.CustomerUnit),
+                RankedInterpreterLocationFirst = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationPrimary),
+                RankedInterpreterLocationSecond = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationSecondary),
+                RankedInterpreterLocationThird = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationThird),
+                OnSiteLocationStreet = user.GetValue(DefaultSettingsType.OnSiteStreet),
+                OnSiteLocationCity = user.GetValue(DefaultSettingsType.OnSiteCity),
+                OffSiteDesignatedLocationStreet = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationStreet),
+                OffSiteDesignatedLocationCity = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationCity),
+                OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
+                OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
+                AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
+                InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
+            };
+        }
     }
+
+   
 }
