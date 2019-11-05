@@ -34,7 +34,7 @@ $(function () {
         checkRequirements();
     }).on('hidden.bs.collapse', function () {
         checkRequirements();
-    })
+    });
     var setExpectedTravelcost = function () {
         $(".expected-travel-costs-panel").collapse($("#InterpreterLocation option:selected").val() === "OffSitePhone" || $("#InterpreterLocation option:selected").val() === "OffSiteVideo" || $("#InterpreterLocation option:selected").val() === "" ?
             'hide' : 'show');

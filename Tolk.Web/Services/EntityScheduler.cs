@@ -153,6 +153,7 @@ namespace Tolk.Web.Services
             _logger.LogInformation($"Starting {nameof(RunContinousJobs)}");
             await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
+            await provider.GetRequiredService<RequestService>().DeleteRequestGroupViews();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }

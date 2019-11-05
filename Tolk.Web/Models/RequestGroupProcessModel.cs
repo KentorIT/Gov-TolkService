@@ -123,12 +123,17 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments)
+        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, int userId)
         {
+
             OrderGroup orderGroup = requestGroup.OrderGroup;
             Order order = requestGroup.OrderGroup.FirstOrder;
+            var viewedByUser = requestGroup.Views.Any(rv => rv.ViewedBy != userId) ?
+                requestGroup.Views.First(rv => rv.ViewedBy != userId).ViewedByUser.FullName + " håller också på med denna förfrågan"
+                : string.Empty;
             return new RequestGroupProcessModel
             {
+                ViewedByUser = viewedByUser,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
                 BrokerId = requestGroup.Ranking.BrokerId,

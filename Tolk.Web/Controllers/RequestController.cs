@@ -453,28 +453,6 @@ namespace Tolk.Web.Controllers
                 .Single(o => o.RequestId == requestId);
         }
 
-        private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
-        {
-            if (interpreterBrokerId == Constants.NewInterpreterId)
-            {
-                if (!_interpreterService.IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
-                {
-                    return null;
-                }
-                var interpreter = new InterpreterBroker(
-                    interpreterInformation.FirstName,
-                    interpreterInformation.LastName,
-                    brokerId,
-                    interpreterInformation.Email,
-                    interpreterInformation.PhoneNumber,
-                    interpreterInformation.OfficialInterpreterId
-                );
-                _dbContext.Add(interpreter);
-                return interpreter;
-            }
-            return _dbContext.InterpreterBrokers.Single(i => i.InterpreterBrokerId == interpreterBrokerId);
-        }
-
         private async Task<Request> GetConfirmedRequest(int requestId)
         {
             return await _dbContext.Requests

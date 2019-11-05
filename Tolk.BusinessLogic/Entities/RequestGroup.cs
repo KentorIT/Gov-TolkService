@@ -43,6 +43,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestGroupStatusConfirmation> StatusConfirmations { get; set; }
 
+        public List<RequestGroupView> Views { get; set; }
+
         #endregion
 
         #region Methods
@@ -104,6 +106,19 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmeras.");
             }
             StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
+        public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
+        {
+            if (!Views.Any(rv => rv.ViewedBy == userId))
+            {
+                Views.Add(new RequestGroupView
+                {
+                    ViewedBy = userId,
+                    ImpersonatingViewedBy = impersonatorId,
+                    ViewedAt = swedenNow
+                });
+            }
         }
 
         #endregion

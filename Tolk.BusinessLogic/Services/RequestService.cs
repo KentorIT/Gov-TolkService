@@ -412,6 +412,34 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation($"No RequestViews to delete");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        public async Task DeleteRequestGroupViews()
+        {
+            _logger.LogInformation("Start checking for RequestGroupViews to delete");
+            List<RequestGroupView> viewsToDelete = await _tolkDbContext.RequestGroupViews
+                .Where(rv => rv.ViewedAt < _clock.SwedenNow.AddMinutes(-121)).ToListAsync();
+
+            if (viewsToDelete.Any())
+            {
+                try
+                {
+                    _tolkDbContext.RemoveRange(viewsToDelete);
+                    await _tolkDbContext.SaveChangesAsync();
+                    _logger.LogInformation($"{viewsToDelete.Count} RequestGroupViews deleted");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failing {methodName}", nameof(DeleteRequestGroupViews));
+                    await SendErrorMail(nameof(DeleteRequestGroupViews), ex);
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"No RequestGroupViews to delete");
+            }
+        }
+
         private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));

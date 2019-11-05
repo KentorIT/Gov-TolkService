@@ -355,6 +355,16 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<RequestGroupView>()
+                .HasOne(r => r.ViewedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestGroupView>()
+                .HasOne(r => r.ViewedByImpersonator)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<InterpreterBroker>()
                 .HasOne(o => o.InactivatedByImpersonator)
                 .WithMany()
@@ -493,6 +503,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<UserLoginLogEntry> UserLoginLogEntries { get; set; }
 
         public DbSet<RequestView> RequestViews { get; set; }
+
+        public DbSet<RequestGroupView> RequestGroupViews { get; set; }
 
         public DbSet<FailedWebHookCall> FailedWebHookCalls { get; set; }
 

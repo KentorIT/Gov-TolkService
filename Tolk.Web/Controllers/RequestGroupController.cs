@@ -75,6 +75,7 @@ namespace Tolk.Web.Controllers
         {
             var requestGroup = await _dbContext.RequestGroups
                .Include(g => g.Ranking)
+               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
@@ -98,7 +99,7 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                 }
 
-                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, new Guid(), _options.CombinedMaxSizeAttachments));
+                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, new Guid(), _options.CombinedMaxSizeAttachments, User.GetUserId()));
             }
             return Forbid();
         }
@@ -208,13 +209,13 @@ namespace Tolk.Web.Controllers
         [HttpDelete]
         public async Task<JsonResult> DeleteView(int id)
         {
-            //var requestViews = _dbContext.RequestGroupViews
-            //    .Where(r => r.RequestId == id && r.ViewedBy == User.GetUserId());
-            //if (requestViews.Any())
-            //{
-            //    _dbContext.RequestGroupViews.RemoveRange(requestViews);
-            //    await _dbContext.SaveChangesAsync();
-            //}
+            var requestViews = _dbContext.RequestGroupViews
+                .Where(r => r.RequestGroupId == id && r.ViewedBy == User.GetUserId());
+            if (requestViews.Any())
+            {
+                _dbContext.RequestGroupViews.RemoveRange(requestViews);
+                await _dbContext.SaveChangesAsync();
+            }
             return Json(new { success = true });
         }
 
@@ -222,13 +223,13 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<JsonResult> AddView(int id)
         {
-            //var requestGroup = _dbContext.RequestGroups
-            //   .Include(r => r.Views).Single(r => r.RequestGroupId == id);
-            //if (request != null)
-            //{
-            //    requestGroup.AddView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
-            //    await _dbContext.SaveChangesAsync();
-            //}
+            var requestGroup = _dbContext.RequestGroups
+               .Include(r => r.Views).Single(r => r.RequestGroupId == id);
+            if (requestGroup != null)
+            {
+                requestGroup.AddView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
+                await _dbContext.SaveChangesAsync();
+            }
             return Json(new { success = true });
         }
 
@@ -278,6 +279,5 @@ namespace Tolk.Web.Controllers
                 Interpreter = interpreter
             };
         }
-
     }
 }
