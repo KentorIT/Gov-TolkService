@@ -85,7 +85,7 @@ namespace Tolk.Web.Controllers
                 Email = user.Email ?? "-",
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
-                AllowDefaultSettings = _options.EnableDefaultSettings && customerOrganisationId.HasValue,
+                AllowDefaultSettings = customerOrganisationId.HasValue,
                 CustomerUnits = customerUnits?.Select(cu => new Models.UnitUserModel
                 {
                     IsActive = cu.IsActive,

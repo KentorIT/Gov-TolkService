@@ -144,7 +144,7 @@ namespace Tolk.Web.Controllers
                 {
                     Message = message,
                     Id = id,
-                    AllowDefaultSettings = _options.EnableDefaultSettings && user.CustomerOrganisationId.HasValue,
+                    AllowDefaultSettings = user.CustomerOrganisationId.HasValue,
                     SendNewInvite = !user.EmailConfirmed,
                     UserName = user.UserName,
                     NameFirst = user.NameFirst,
@@ -868,7 +868,7 @@ namespace Tolk.Web.Controllers
                 .Include(u => u.DefaultSettings)
                 .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
                 .SingleOrDefaultAsync(u => u.Id == id);
-            if (_options.EnableDefaultSettings && (await _authorizationService.AuthorizeAsync(User, user, Policies.ViewDefaultSettings)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.ViewDefaultSettings)).Succeeded)
             {
                 var model = DefaultSettingsViewModel.GetModel(user, Region.Regions);
                 model.Id = user.Id;

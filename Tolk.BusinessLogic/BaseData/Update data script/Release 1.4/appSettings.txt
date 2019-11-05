@@ -1,1 +1,2 @@
 StatusChecker-delarna behöver sättas upp i alla webbar.
+EnableDefaultSettings ska bort från configuration
