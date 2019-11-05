@@ -247,32 +247,29 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> ActiveCustomerUnitsForUser
+        public IEnumerable<SelectListItem> ActiveCustomerUnitsForUser(bool selectOneAndOnly = true)
         {
-            get
+            var customerUnitsIds = _httpContextAccessor.HttpContext.User.TryGetAllCustomerUnits();
+            if (customerUnitsIds.Any())
             {
-                var customerUnitsIds = _httpContextAccessor.HttpContext.User.TryGetAllCustomerUnits();
-                if (customerUnitsIds.Any())
-                {
-                    var items = _dbContext.CustomerUnits.Where(cu => cu.IsActive && customerUnitsIds.Contains(cu.CustomerUnitId))
-                        .OrderBy(cu => cu.Name).Select(cu => new SelectListItem
-                        {
-                            Value = cu.CustomerUnitId.ToSwedishString(),
-                            Text = cu.Name
-                        }).ToList();
-                    if (items.Any())
+                var items = _dbContext.CustomerUnits.Where(cu => cu.IsActive && customerUnitsIds.Contains(cu.CustomerUnitId))
+                    .OrderBy(cu => cu.Name).Select(cu => new SelectListItem
                     {
-                        items[0].Selected = items.Count == 1;
-                        items.Add(new SelectListItem
-                        {
-                            Value = "0",
-                            Text = Constants.SelectNoUnit
-                        });
-                    }
-                    return items.AsReadOnly();
+                        Value = cu.CustomerUnitId.ToSwedishString(),
+                        Text = cu.Name
+                    }).ToList();
+                if (items.Any())
+                {
+                    items[0].Selected = selectOneAndOnly && items.Count == 1;
+                    items.Add(new SelectListItem
+                    {
+                        Value = "0",
+                        Text = Constants.SelectNoUnit
+                    });
                 }
-                return null;
+                return items.AsReadOnly();
             }
+            return null;
         }
 
         public IEnumerable<SelectListItem> Brokers

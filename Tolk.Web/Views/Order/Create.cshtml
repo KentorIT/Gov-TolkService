@@ -6,7 +6,7 @@
 @{
     ViewData["Title"] = "Ny Bokning";
 
-    var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser;
+    var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser();
     bool enableOrderGroups = TolkOptions.Value.EnableOrderGroups;
     string orderTimeClass = enableOrderGroups ? "order-group-enabled" : "order-group-disabled";
     var allowExceedingTravelCost = Model.UserDefaultSettings.AllowExceedingTravelCost.HasValue ? Model.UserDefaultSettings.AllowExceedingTravelCost.ToString() : "none";

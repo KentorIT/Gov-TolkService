@@ -168,5 +168,11 @@
     "inputFiles": [
       "wwwroot/js/Order/Print.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Account/Edit.min.js",
+    "inputFiles": [
+      "wwwroot/js/Account/Edit.js"
+    ]
   }
 ]
