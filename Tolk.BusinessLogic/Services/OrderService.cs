@@ -751,7 +751,7 @@ namespace Tolk.BusinessLogic.Services
                         var expiredRequestGroup = await _tolkDbContext.RequestGroups
                             .Include(r => r.Ranking)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders)
+                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requests)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
