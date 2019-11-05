@@ -134,21 +134,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (requestGroup != null)
             {
-                var newRequestGroup = await _tolkDbContext.RequestGroups
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
-                    .Include(r => r.Ranking.Broker)
-                    .SingleAsync(r => r.RequestGroupId == requestGroup.RequestGroupId);
+                RequestGroup newRequestGroup = await GetNewRequestGroup(requestGroup.RequestGroupId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
@@ -196,21 +182,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (partialRequestGroup != null)
             {
-                var newRequestGroup = await _tolkDbContext.RequestGroups
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
-                    .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
-                    .Include(g => g.Ranking).ThenInclude(r => r.Broker)
-                    .SingleAsync(r => r.RequestGroupId == partialRequestGroup.RequestGroupId);
+                RequestGroup newRequestGroup = await GetNewRequestGroup(requestGroup.RequestGroupId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
@@ -220,7 +192,6 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    //TODO: THIS IS ONLY VALID IF THIS IS AN ONE OCCASION, EXTRA INTERPRETER GROUP!!
                     if (group.IsSingleOccasion)
                     {
                         // Request expiry information from customer
@@ -551,6 +522,25 @@ namespace Tolk.BusinessLogic.Services
                     await SendErrorMail(nameof(CleanTempAttachments), ex);
                 }
             }
+        }
+
+        private async Task<RequestGroup> GetNewRequestGroup(int requestGroupId)
+        {
+            return await _tolkDbContext.RequestGroups
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
+                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
+                .Include(r => r.Ranking.Broker)
+                .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
