@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -221,34 +222,11 @@ namespace Tolk.Web.Controllers
                         //if change interpreter or normal accept (no replacementorder)
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
-                            var interpreter = GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
+
+                            var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
                             //if no interpreter was created we want to return model with error message
                             if (interpreter == null)
                             {
-                                request = GetRequestToProcess(model.RequestId);
-                                RequestModel requestModel = GetModel(request);
-                                requestModel.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                                if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                                {
-                                    requestModel.Status = RequestStatus.AcceptedNewInterpreterAppointed;
-                                    requestModel.OldInterpreterId = request.InterpreterBrokerId;
-                                }
-
-                                //Set the temporarly saved Files if any
-                                if (model.Files != null && model.Files.Any())
-                                {
-                                    List<FileModel> files = _dbContext.Attachments.
-                                        Where(a => model.Files.Select(f => f.Id).Contains(a.AttachmentId)).ToList()
-                                        .Select(a => new FileModel
-                                        {
-                                            Id = a.AttachmentId,
-                                            FileName = a.FileName,
-                                            Size = a.Blob.Length
-                                        }).ToList();
-                                    requestModel.Files = files.Any() ? files : null;
-                                }
-                                ModelState.AddModelError(nameof(requestModel.InterpreterId), "Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.");
-                                return View(nameof(Process), requestModel);
                             }
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
@@ -296,6 +274,33 @@ namespace Tolk.Web.Controllers
                             );
                         }
                         await _dbContext.SaveChangesAsync();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        request = GetRequestToProcess(model.RequestId);
+                        RequestModel requestModel = GetModel(request);
+                        requestModel.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        {
+                            requestModel.Status = RequestStatus.AcceptedNewInterpreterAppointed;
+                            requestModel.OldInterpreterId = request.InterpreterBrokerId;
+                        }
+
+                        //Set the temporarly saved Files if any
+                        if (model.Files != null && model.Files.Any())
+                        {
+                            List<FileModel> files = _dbContext.Attachments.
+                                Where(a => model.Files.Select(f => f.Id).Contains(a.AttachmentId)).ToList()
+                                .Select(a => new FileModel
+                                {
+                                    Id = a.AttachmentId,
+                                    FileName = a.FileName,
+                                    Size = a.Blob.Length
+                                }).ToList();
+                            requestModel.Files = files.Any() ? files : null;
+                        }
+                        ModelState.AddModelError(ex.ParamName, ex.Message);
+                        return View(nameof(Process), requestModel);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -450,7 +455,7 @@ namespace Tolk.Web.Controllers
 
         private InterpreterBroker GetInterpreter(int interpreterBrokerId, InterpreterInformation interpreterInformation, int brokerId)
         {
-            if (interpreterBrokerId == SelectListService.NewInterpreterId)
+            if (interpreterBrokerId == Constants.NewInterpreterId)
             {
                 if (!_interpreterService.IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
                 {

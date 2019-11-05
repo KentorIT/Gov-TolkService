@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     <div class="col-sm-3">
-                        <display-entry asp-for="AssignmentType"/>
+                        <display-entry asp-for="AssignmentType" />
                     </div>
                     <div class="col-sm-3">
                         <display-entry asp-for="OrderGroupNumber" />
@@ -45,9 +45,10 @@
                 </div>
             </section>
             <section aria-label="Bokningsuppgifter">
-                <a class="collapsible-section" data-toggle="collapse" data-target="#orderInformation">
-                    <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span>Bokningsuppgifter</h2>
-                </a>
+                <h1 class="normal-weight">
+                    Svara på sammanhållen bokningsförfrågan
+                    @HelpLinkService.HeaderAnchor()
+                </h1>
                 <hr />
                 <div id="orderInformation">
                     <div class="row">
@@ -56,11 +57,6 @@
                         </div>
                         <div class="col-sm-4">
                             <display-entry asp-for="RegionName" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            LISTA MED TILLFÄLLEN!!
                         </div>
                     </div>
 
@@ -125,7 +121,7 @@
                     </div>
                     <div class="row">
                         <div class="col-sm-4">
-                            @if (Model.LanguageHasAuthorizedInterpreter)
+                            @if (!Model.LanguageHasAuthorizedInterpreter)
                             {
                                 <label>Tolkens kompetensnivå</label>
                                 <div class="no-value-info">
@@ -154,8 +150,6 @@
                                 </div>
                             }
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-sm-4">
                             <display-entry asp-for="Description" />
                         </div>
@@ -175,105 +169,19 @@
                 </div>
             </section>
 
-            <div class="row">
-                <div class="col-sm-4">
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
-                </div>
-                <div class="col-sm-4">
-                    <div class="red-border-left">
-                        <display-entry asp-for="ExpiresAt" />
-                    </div>
-                </div>
-            </div>
+            @await Html.PartialAsync("_OccasionList", Model.OccasionList)
             <form method="post">
                 <input asp-for="RequestGroupId" type="hidden" />
-
-                <div class="row">
-                    <div class="col-sm-4">
-                        <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
-                        <div class="collapse" id="new-interpreter">
-                            <form-entry asp-for="NewInterpreterFirstName" />
-                            <form-entry asp-for="NewInterpreterLastName" />
-                            <form-entry asp-for="NewInterpreterOfficialInterpreterId" />
-                            <form-entry asp-for="NewInterpreterEmail" />
-                            <form-entry asp-for="NewInterpreterPhoneNumber" />
-                        </div>
-                        <div class="interpreter-information d-none">
-                            <span class="glyphicon message-icon glyphicon-ok"></span>
-                            <span class="info-message"></span>
-                            <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
-                                  data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        @if (Model.SpecificCompetenceLevelRequired)
-                        {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.FilteredCompetenceLevels(Model.RequestedCompetenceLevels)" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
-                        }
-                        else
-                        {
-                            <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
-                        }
-                    </div>
-                    <div class="col-sm-4">
-                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
-                    </div>
-                </div>
+                <input asp-for="OrderGroupId" type="hidden" />
                 <input asp-for="Status" type="hidden" />
-                @if (Model.AllowExceedingTravelCost)
-                {
-                    <div class="collapse" id="set-expected-travel-costs">
-                        <div class="row">
-                            <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
-                            <div class="col-sm-4">
-                                <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
-                            </div>
-                            <div class="col-sm-4">
-                                <form-entry asp-for="ExpectedTravelCostInfo" />
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div class="row">
                     <div class="col-sm-4">
-                        <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
-                        @if (Model.RequiredRequirementAnswers.Any())
-                        {
-                            @for (var i = 0; i < Model.RequiredRequirementAnswers.Count(); ++i)
-                            {
-                                <div class="border detail-text">
-                                    <span class="detail-text">@Model.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.RequiredRequirementAnswers[i].Description</span>
-                                    <input asp-for="RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
-                                    <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
-                                    <input asp-for="RequiredRequirementAnswers[i].IsRequired" type="hidden" />
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <span class="no-value-info">Inga tillkommande krav är angivna</span>
-                        }
+                        <div class="red-border-left">
+                            <display-entry asp-for="ExpiresAt" />
+                        </div>
                     </div>
                     <div class="col-sm-4">
-                        <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
-                        @if (Model.DesiredRequirementAnswers.Any())
-                        {
-                            @for (var i = 0; i < Model.DesiredRequirementAnswers.Count(); ++i)
-                            {
-                                <div class="border">
-                                    <span class="detail-text">@Model.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.DesiredRequirementAnswers[i].Description</span>
-                                    <input asp-for="DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
-                                    <form-entry asp-for="DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
-                                    <form-entry asp-for="DesiredRequirementAnswers[i].Answer" />
-                                    <input asp-for="DesiredRequirementAnswers[i].IsRequired" type="hidden" />
-                                </div>
-
-                            }
-                        }
-                        else
-                        {
-                            <span class="no-value-info">Inga tillkommande önskemål är angivna</span>
-                        }
+                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
                     </div>
                     <div class="col-sm-4">
                         <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
@@ -282,10 +190,203 @@
                         <br />
                     </div>
                 </div>
+                <div class="row no-gutter interpreter-panel">
+                    <div class="col-sm-4">
+                        <display-entry asp-for="OccasionList.InterpreterOccasionsCompactDisplay" />
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="row no-gutter interpreter-selection-panel">
+                            <div class="col-sm-6">
+                                <form-entry asp-for="InterpreterAnswerModel.InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
+                                <div class="collapse new-interpreter">
+                                    <form-entry asp-for="InterpreterAnswerModel.NewInterpreterFirstName" />
+                                    <form-entry asp-for="InterpreterAnswerModel.NewInterpreterLastName" />
+                                    <form-entry asp-for="InterpreterAnswerModel.NewInterpreterOfficialInterpreterId" />
+                                    <form-entry asp-for="InterpreterAnswerModel.NewInterpreterEmail" />
+                                    <form-entry asp-for="InterpreterAnswerModel.NewInterpreterPhoneNumber" />
+                                </div>
+                                <div class="interpreter-information d-none">
+                                    <span class="glyphicon message-icon glyphicon-ok"></span>
+                                    <span class="info-message"></span>
+                                    <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
+                                          data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                @if (Model.SpecificCompetenceLevelRequired)
+                                {
+                                    <form-entry asp-for="InterpreterAnswerModel.InterpreterCompetenceLevel" type="select" asp-items="SelectListService.FilteredCompetenceLevels(Model.RequestedCompetenceLevels)" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
+                                }
+                                else
+                                {
+                                    <form-entry asp-for="InterpreterAnswerModel.InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
+                                }
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
+                                @if (Model.InterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                                {
+                                    @for (var i = 0; i < Model.InterpreterAnswerModel.RequiredRequirementAnswers.Count(); ++i)
+                                    {
+                                        <div class="border detail-text">
+                                            <span class="detail-text">@Model.InterpreterAnswerModel.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.InterpreterAnswerModel.RequiredRequirementAnswers[i].Description</span>
+                                            <input asp-for="InterpreterAnswerModel.RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                            <form-entry asp-for="InterpreterAnswerModel.RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
+                                            <input asp-for="InterpreterAnswerModel.RequiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="no-value-info">Inga tillkommande krav är angivna</span>
+                                }
+                            </div>
+                            <div class="col-sm-6">
+                                <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
+                                @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                                {
+                                    @for (var i = 0; i < Model.InterpreterAnswerModel.DesiredRequirementAnswers.Count(); ++i)
+                                    {
+                                        <div class="border">
+                                            <span class="detail-text">@Model.InterpreterAnswerModel.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.InterpreterAnswerModel.DesiredRequirementAnswers[i].Description</span>
+                                            <input asp-for="InterpreterAnswerModel.DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                            <form-entry asp-for="InterpreterAnswerModel.DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
+                                            <form-entry asp-for="InterpreterAnswerModel.DesiredRequirementAnswers[i].Answer" />
+                                            <input asp-for="InterpreterAnswerModel.DesiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                        </div>
 
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="no-value-info">Inga tillkommande önskemål är angivna</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (Model.AllowExceedingTravelCost)
+                {
+                    <div class="collapse expected-travel-costs-panel">
+                        <div class="row no-gutter">
+                            <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="InterpreterAnswerModel.ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                            </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="InterpreterAnswerModel.ExpectedTravelCostInfo" />
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (Model.HasExtraInterpreter)
+                {
+                    <div class="outer-extra-interpreter-panel">
+                        <div class="row bg-gray padding-top-10 interpreter-panel ">
+                            <div class="col-sm-4">
+                                <display-entry asp-for="OccasionList.ExtraInterpreterOccasionsCompactDisplay" />
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="row no-gutter extra-interpreter-selection-panel">
+                                    <div class="col-sm-6">
+                                        <form-entry asp-for="ExtraInterpreterAnswerModel.InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, allowDeclineInList : true).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
+                                        <div class="collapse new-interpreter">
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.NewInterpreterFirstName" />
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.NewInterpreterLastName" />
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.NewInterpreterOfficialInterpreterId" />
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.NewInterpreterEmail" />
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.NewInterpreterPhoneNumber" />
+                                        </div>
+                                        <div class="interpreter-information-panel collapse in">
+                                            <div class="interpreter-information d-none">
+                                                <span class="glyphicon message-icon glyphicon-ok"></span>
+                                                <span class="info-message"></span>
+                                                <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
+                                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 collapse decline-message-panel">
+                                        <form-entry asp-for="ExtraInterpreterAnswerModel.DeclineMessage" />
+                                    </div>
+                                    <div class="col-sm-6 interpreter-information-panel collapse in">
+                                        @if (Model.SpecificCompetenceLevelRequired)
+                                        {
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.InterpreterCompetenceLevel" type="select" asp-items="SelectListService.FilteredCompetenceLevels(Model.RequestedCompetenceLevels)" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
+                                        }
+                                        else
+                                        {
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
+                                        }
+                                    </div>
+                                </div>
+                                <div class="row no-gutter interpreter-information-panel collapse in">
+                                    <div class="col-sm-6">
+                                        <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
+                                        @if (Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                                        {
+                                            @for (var i = 0; i < Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Count(); ++i)
+                                            {
+                                                <div class="border detail-text bg-white">
+                                                    <span class="detail-text">@Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers[i].Description</span>
+                                                    <input asp-for="ExtraInterpreterAnswerModel.RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                                    <form-entry asp-for="ExtraInterpreterAnswerModel.RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
+                                                    <input asp-for="ExtraInterpreterAnswerModel.RequiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="no-value-info">Inga tillkommande krav är angivna</span>
+                                        }
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
+                                        @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                                        {
+                                            @for (var i = 0; i < Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Count(); ++i)
+                                            {
+                                                <div class="border bg-white">
+                                                    <span class="detail-text">@Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].Description</span>
+                                                    <input asp-for="ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                                    <form-entry asp-for="ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
+                                                    <form-entry asp-for="ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].Answer" />
+                                                    <input asp-for="ExtraInterpreterAnswerModel.DesiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="no-value-info">Inga tillkommande önskemål är angivna</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.AllowExceedingTravelCost)
+                        {
+                            <div class="interpreter-information-panel collapse in">
+                                <div class="collapse expected-travel-costs-panel ">
+                                    <div class="row bg-gray ">
+                                        <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                                        <div class="col-sm-4">
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.ExpectedTravelCostInfo" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                }
                 <section aria-label="Myndighetens uppgifter">
                     <a class="collapsible-section" data-toggle="collapse" data-target="#customerInfo">
-                        <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> Myndighetens uppgifter</h2>
+                        <h2><span class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></span> Myndighetens uppgifter</h2>
                     </a>
                     <hr />
                     <div id="customerInfo">
@@ -304,7 +405,8 @@
                             </div>
                         </div>
                     </div>
-                </section>                <div class="row">
+                </section>
+                <div class="row">
                     <div class="col-lg-4">
                         <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" id="cancel-go-back">Avbryt <span class="btn-remove-times">&times;</span></a>
                     </div>

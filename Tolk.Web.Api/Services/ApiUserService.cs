@@ -149,7 +149,7 @@ namespace Tolk.Web.Api.Services
             return interpreter;
         }
 
-        internal InterpreterAnswerModel GetInterpreterModel(InterpreterGroupAnswerModel interpreterModel, int brokerId, bool isMainInterpreter = true)
+        internal InterpreterAnswerDto GetInterpreterModel(InterpreterGroupAnswerModel interpreterModel, int brokerId, bool isMainInterpreter = true)
         {
             if (interpreterModel == null)
             {
@@ -165,7 +165,7 @@ namespace Tolk.Web.Api.Services
             }
             if (!isMainInterpreter && !interpreterModel.Accepted)
             {
-                return new InterpreterAnswerModel
+                return new InterpreterAnswerDto
                 {
                     Accepted = false,
                     DeclineMessage = interpreterModel.DeclineMessage
@@ -180,11 +180,10 @@ namespace Tolk.Web.Api.Services
             {
                 throw new InvalidApiCallException(ErrorCodes.InterpreterNotFound);
             }
-            return new InterpreterAnswerModel
+            return new InterpreterAnswerDto
             {
                 Interpreter = interpreter,
                 CompetenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(interpreterModel.CompetenceLevel).Value,
-                InterpreterLocation = EnumHelper.GetEnumByCustomName<InterpreterLocation>(interpreterModel.Location).Value,
                 RequirementAnswers = interpreterModel.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                 {
                     Answer = ra.Answer,

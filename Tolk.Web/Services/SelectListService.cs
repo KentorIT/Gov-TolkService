@@ -508,16 +508,22 @@ namespace Tolk.Web.Services
             }
         }
 
-        public const int NewInterpreterId = -1;
-
-        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null)
+        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null, bool allowDeclineInList = false)
         {
+
             yield return new SelectListItem
             {
-                Value = NewInterpreterId.ToSwedishString(),
+                Value = Constants.NewInterpreterId.ToSwedishString(),
                 Text = "Ny tolk"
             };
-
+            if (allowDeclineInList)
+            {
+                yield return new SelectListItem
+                {
+                    Value = Constants.DeclineInterpreterId.ToSwedishString(),
+                    Text = "Tacka nej till uppdrag"
+                };
+            }
             var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId && i.InterpreterBrokerId != interpreterToBeReplacedId && i.IsActive)
             .Select(i => new SelectListItem
             {

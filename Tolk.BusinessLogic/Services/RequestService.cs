@@ -62,6 +62,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
+            
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel));
             //Create notification
             switch (request.Status)
@@ -83,8 +84,9 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset answerTime,
             int userId,
             int? impersonatorId,
-            InterpreterAnswerModel interpreter,
-            InterpreterAnswerModel extraInterpreter,
+            InterpreterLocation interpreterLocation,
+            InterpreterAnswerDto interpreter,
+            InterpreterAnswerDto extraInterpreter,
             List<RequestAttachment> attachedFiles
         )
         {
@@ -121,6 +123,7 @@ namespace Tolk.BusinessLogic.Services
                             userId,
                             impersonatorId,
                             extraInterpreter,
+                            interpreterLocation,
                             attachedFiles,
                             extraInterpreterVerificationResult
                        );
@@ -142,6 +145,7 @@ namespace Tolk.BusinessLogic.Services
                         userId,
                         impersonatorId,
                         interpreter,
+                        interpreterLocation,
                         attachedFiles,
                         verificationResult
                     );
@@ -160,7 +164,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     requestGroup.SetStatus(RequestStatus.Approved, false);
                     _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
-               }
+                }
             }
             else
             {
@@ -417,9 +421,9 @@ namespace Tolk.BusinessLogic.Services
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerModel interpreter, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult)
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreter.InterpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult);
         }
 
         private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)

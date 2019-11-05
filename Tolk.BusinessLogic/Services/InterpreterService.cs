@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -18,5 +23,29 @@ namespace Tolk.BusinessLogic.Services
         {
             return string.IsNullOrWhiteSpace(officialInterpreterId) ? true : !_dbContext.InterpreterBrokers.Any(i => i.BrokerId == brokerId && i.OfficialInterpreterId.ToSwedishUpper() == officialInterpreterId.ToSwedishUpper() && i.InterpreterBrokerId != interpreterBrokerId);
         }
+
+        public async Task<InterpreterBroker> GetInterpreter(int interpreterId, InterpreterInformation interpreterInformation, int brokerId)
+        {
+            NullCheckHelper.ArgumentCheckNull(interpreterInformation, nameof(GetInterpreter), nameof(OrderService));
+            if (interpreterId == Constants.NewInterpreterId)
+            {
+                if (!IsUniqueOfficialInterpreterId(interpreterInformation.OfficialInterpreterId, brokerId))
+                {
+                    throw new ArgumentException("Er förmedling har redan registrerat en tolk med detta tolknummer (Kammarkollegiets) i tjänsten.", nameof(interpreterId));
+                }
+                var interpreter = new InterpreterBroker(
+                    interpreterInformation.FirstName,
+                    interpreterInformation.LastName,
+                    brokerId,
+                    interpreterInformation.Email,
+                    interpreterInformation.PhoneNumber,
+                    interpreterInformation.OfficialInterpreterId
+                );
+                await _dbContext.AddAsync(interpreter);
+                return interpreter;
+            }
+            return await _dbContext.InterpreterBrokers.SingleAsync(i => i.InterpreterBrokerId == interpreterId);
+        }
+
     }
 }

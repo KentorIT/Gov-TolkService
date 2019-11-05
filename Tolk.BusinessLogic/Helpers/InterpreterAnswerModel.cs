@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Helpers
 {
-    public class InterpreterAnswerModel
+    public class InterpreterAnswerDto
     {
         public bool Accepted { get; set; } = true;
         public string DeclineMessage { get; set; }
@@ -15,6 +15,5 @@ namespace Tolk.BusinessLogic.Helpers
         public IEnumerable<OrderRequirementRequestAnswer> RequirementAnswers { get; set; }
         public decimal? ExpectedTravelCosts { get; set; }
         public string ExpectedTravelCostInfo { get; set; }
-        public InterpreterLocation InterpreterLocation { get; set; }
     }
 }

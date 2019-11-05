@@ -475,11 +475,11 @@ namespace BrokerMock.Controllers
             {
                 OrderGroupNumber = orderGroupNumber,
                 CallingUser = "regular-user@formedling1.se",
-                InterpreterAnswer = new InterpreterGroupAnswerModel
+                     InterpreterLocation = location,
+               InterpreterAnswer = new InterpreterGroupAnswerModel
                 {
                     Accepted = true,
                     Interpreter = interpreter,
-                    Location = location,
                     CompetenceLevel = competenceLevel,
                     ExpectedTravelCosts = 0,
                     RequirementAnswers = requirementAnswers
@@ -488,7 +488,6 @@ namespace BrokerMock.Controllers
                 {
                     Accepted = true,
                     Interpreter = extraInterpreter,
-                    Location = location,
                     CompetenceLevel = competenceLevel,
                     ExpectedTravelCosts = 0,
                     RequirementAnswers = requirementAnswers

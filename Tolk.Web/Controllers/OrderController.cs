@@ -100,7 +100,7 @@ namespace Tolk.Web.Controllers
                     !request.Order.ReplacingOrderId.HasValue;
                 model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
-                model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
+                model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
@@ -404,7 +404,7 @@ namespace Tolk.Web.Controllers
                 {
                     OrderGroupNumber = orderGroup.OrderGroupNumber,
                     OrderOccasionDisplayModels = orderGroup.Orders
-                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, GetPriceinformationToDisplay(o, false)))
+                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o, false)))
                 });
             }
             return Forbid();
@@ -418,7 +418,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 var model = OrderModel.GetModelFromOrder(order);
-                model.OrderCalculatedPriceInformationModel = GetPriceinformationToDisplay(order);
+                model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
                 model.OrderCalculatedPriceInformationModel.CenterHeader = true;
                 return View(model);
             }
@@ -739,7 +739,6 @@ namespace Tolk.Web.Controllers
 
                 yield return order;
             }
-
         }
 
         private IEnumerable<OrderOccasionDisplayModel> GetGroupOrders(OrderModel model, PriceListType pricelistType)
@@ -771,21 +770,6 @@ namespace Tolk.Web.Controllers
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
-            };
-        }
-
-        private static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
-        {
-            if (order.PriceRows == null)
-            {
-                return null;
-            }
-            return new PriceInformationModel
-            {
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
-                UseDisplayHideInfo = true,
-                InitialCollapse = initialCollapse
             };
         }
 

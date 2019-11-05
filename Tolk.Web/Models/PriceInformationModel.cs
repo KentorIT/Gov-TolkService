@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
-
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
@@ -26,5 +27,21 @@ namespace Tolk.Web.Models
         public bool InitialCollapse { get; set; } = true;
 
         public string Description { get; set; }
+
+        internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
+        {
+            if (order.PriceRows == null)
+            {
+                return null;
+            }
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
+                Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
+                UseDisplayHideInfo = true,
+                InitialCollapse = initialCollapse
+            };
+        }
+
     }
 }

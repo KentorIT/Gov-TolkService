@@ -15,7 +15,7 @@ $(function () {
 
     checkRequirements();
     $("#InterpreterCompetenceLevel, #NewInterpreterOfficialInterpreterId").change(function () {
-        validateInterpreter($('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
+        validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
     });
 
     $(document).ready(function () {
@@ -35,7 +35,7 @@ $(function () {
         }
         else {
             $('#new-interpreter').collapse('hide');
-            validateInterpreter($('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
+            validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
         }
     }
 

@@ -571,7 +571,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        private static InterpreterLocationAddressModel GetInterpreterLocation(OrderInterpreterLocation location)
+        internal static InterpreterLocationAddressModel GetInterpreterLocation(OrderInterpreterLocation location)
         {
             if (location == null)
             {

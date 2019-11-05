@@ -18,6 +18,12 @@
 .bg-gray {
   background-color: #F1F4F2;
 }
+.bg-white {
+  background-color: #FFFFFF;
+}
+div.row.no-gutter {
+  padding-bottom: 0;
+}
 body {
   color: black;
   background-image: linear-gradient(180deg, #F1F4F2, #fff);

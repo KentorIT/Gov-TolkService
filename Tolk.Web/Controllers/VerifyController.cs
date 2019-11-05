@@ -28,7 +28,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> InterpreterByInternalId(int id, int orderId, CompetenceAndSpecialistLevel competenceLevel)
+        public async Task<JsonResult> InterpreterByInternalId(int id, CompetenceAndSpecialistLevel competenceLevel, int? orderId, int? orderGroupId)
         {
             int? brokerId = User.TryGetBrokerId();
             VerificationResult result = VerificationResult.NotFound;
@@ -38,17 +38,26 @@ namespace Tolk.Web.Controllers
                 var interpreter = await _dbContext.InterpreterBrokers.SingleOrDefaultAsync(i => i.BrokerId == brokerId && i.InterpreterBrokerId == id);
                 if (interpreter != null)
                 {
-                    return await InterpreterByOfficialId(interpreter.OfficialInterpreterId, orderId, competenceLevel);
+                    return await InterpreterByOfficialId(interpreter.OfficialInterpreterId, competenceLevel, orderId, orderGroupId);
                 }
             }
             return WrapResultInJson(result);
         }
 
         [HttpGet]
-        public async Task<JsonResult> InterpreterByOfficialId(string officialInterpreterId, int orderId, CompetenceAndSpecialistLevel competenceLevel)
+        public async Task<JsonResult> InterpreterByOfficialId(string officialInterpreterId, CompetenceAndSpecialistLevel competenceLevel, int? orderId, int? orderGroupId)
         {
+            if (!orderId.HasValue && orderGroupId.HasValue)
+            {
+                var order =  await _dbContext.Orders.FirstOrDefaultAsync(g => g.OrderGroupId == orderGroupId);
+                orderId = order?.OrderId;
+            }
+            if (!orderId.HasValue)
+            {
+                return WrapResultInJson(VerificationResult.NotFound);
+            }
             _logger.LogInformation($"Verifying interpreterId {officialInterpreterId} for competence {competenceLevel} on order {orderId}");
-            return WrapResultInJson(await _verificationService.VerifyInterpreter(officialInterpreterId, orderId, competenceLevel));
+            return WrapResultInJson(await _verificationService.VerifyInterpreter(officialInterpreterId, orderId.Value, competenceLevel));
         }
 
         private JsonResult WrapResultInJson(VerificationResult result)

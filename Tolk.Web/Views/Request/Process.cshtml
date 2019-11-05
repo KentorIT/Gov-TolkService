@@ -59,7 +59,7 @@
                 else
                 {
                     <div class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-4 interpreter-panel">
                             <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, Model.OldInterpreterId).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
                             <div class="collapse" id="new-interpreter">
                                 <form-entry asp-for="NewInterpreterFirstName" />

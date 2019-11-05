@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -26,48 +27,37 @@ namespace Tolk.Web.Controllers
     public class RequestGroupController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
         private readonly RequestService _requestService;
-        private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
-        private readonly INotificationService _notificationService;
-        private readonly UserManager<AspNetUser> _userManager;
-        private readonly IMapper _mapper;
+        private readonly InterpreterService _interpreterService;
 
         public RequestGroupController(
             TolkDbContext dbContext,
-            PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
             RequestService requestService,
-            DateCalculationService dateCalculationService,
             ISwedishClock clock,
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
-            INotificationService notificationService,
-            UserManager<AspNetUser> usermanager,
-            IMapper mapper
+            InterpreterService interpreterService
             )
         {
             _dbContext = dbContext;
-            _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _requestService = requestService;
-            _dateCalculationService = dateCalculationService;
             _clock = clock;
             _logger = logger;
             _options = options.Value;
-            _notificationService = notificationService;
-            _userManager = usermanager;
-            _mapper = mapper;
+            _interpreterService = interpreterService;
         }
-
 
         public async Task<IActionResult> View(int id)
         {
             var requestGroup = await _dbContext.RequestGroups
+                .Include(g => g.Ranking)
+                .Include(g => g.OrderGroup)
                 .SingleAsync(r => r.RequestGroupId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
@@ -79,19 +69,27 @@ namespace Tolk.Web.Controllers
                 return View(RequestGroupViewModel.GetModelFromRequestGroup(requestGroup));
             }
             return Forbid();
-
         }
 
         public async Task<IActionResult> Process(int id)
         {
             var requestGroup = await _dbContext.RequestGroups
-                .SingleAsync(r => r.RequestGroupId == id);
+               .Include(g => g.Ranking)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+               .SingleAsync(r => r.RequestGroupId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
             {
                 if (!requestGroup.IsToBeProcessedByBroker)
                 {
-                    _logger.LogWarning("Wrong status when trying to process request group. Status: {request.Status}, RequestId: {request.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
+                    _logger.LogWarning("Wrong status when trying to process request group. Status: {request.Status}, RequestGroupId: {request.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
                     return RedirectToAction(nameof(View), new { id });
                 }
                 if (requestGroup.Status == RequestStatus.Created)
@@ -100,8 +98,7 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                 }
 
-                RequestGroupProcessModel model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, new Guid(), _options.CombinedMaxSizeAttachments);
-                return View(model);
+                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, new Guid(), _options.CombinedMaxSizeAttachments));
             }
             return Forbid();
         }
@@ -110,12 +107,177 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Process(RequestGroupProcessModel model)
         {
-            if (ModelState.IsValid)
-            {
-            }
-            await _dbContext.SaveChangesAsync();
+            var requestGroup = await _dbContext.RequestGroups
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
+                .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
+                .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
+               //.Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+               .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
 
-            return View(nameof(Process), model);
+            if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
+            {
+                if (!requestGroup.IsToBeProcessedByBroker)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                }
+                InterpreterAnswerDto interpreterModel = null;
+                try
+                {
+                    interpreterModel = await GetInterpreter(model.InterpreterAnswerModel, requestGroup.Ranking.BrokerId);
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError($"{nameof(model.InterpreterAnswerModel)}.{ex.ParamName}", ex.Message);
+                }
+                InterpreterAnswerDto extrainterpreterModel = null;
+                try
+                {
+                    extrainterpreterModel = model.ExtraInterpreterAnswerModel != null ? await GetInterpreter(model.ExtraInterpreterAnswerModel, requestGroup.Ranking.BrokerId) : null;
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError($"{nameof(model.ExtraInterpreterAnswerModel)}.{ex.ParamName}", ex.Message);
+                }
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        //Collect, if any, attachments
+                        await _requestService.AcceptGroup(
+                            requestGroup, 
+                            _clock.SwedenNow, 
+                            User.GetUserId(), 
+                            User.TryGetImpersonatorId(), 
+                            model.InterpreterLocation.Value, 
+                            interpreterModel, 
+                            extrainterpreterModel, 
+                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList()
+                        );
+                        await _dbContext.SaveChangesAsync();
+                        return RedirectToAction("Index", "Home", new { message = "Svar har skickats på sammanhållen bokning" });
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        _logger.LogInformation(e, e.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = e.Message });
+                    }
+                }
+
+                        //Should return to Process if error is of a kind that can be handled in the ui.
+                return View(nameof(Process), model);
+            }
+            return Forbid();
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Decline(RequestGroupDeclineModel model)
+        {
+            var requestGroup = await _dbContext.RequestGroups
+                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(r => r.RequestGroupId == model.DeniedRequestGroupId);
+            if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
+            {
+                if (!requestGroup.IsToBeProcessedByBroker)
+                {
+                    _logger.LogWarning("Wrong status when trying to process request group. Status: {request.Status}, RequestGroupId: {request.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
+                    return RedirectToAction(nameof(View), new { model.DeniedRequestGroupId });
+                }
+                await _requestService.DeclineGroup(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction(nameof(View), new { id = model.DeniedRequestGroupId });
+            }
+            return Forbid();
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [HttpDelete]
+        public async Task<JsonResult> DeleteView(int id)
+        {
+            //var requestViews = _dbContext.RequestGroupViews
+            //    .Where(r => r.RequestId == id && r.ViewedBy == User.GetUserId());
+            //if (requestViews.Any())
+            //{
+            //    _dbContext.RequestGroupViews.RemoveRange(requestViews);
+            //    await _dbContext.SaveChangesAsync();
+            //}
+            return Json(new { success = true });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<JsonResult> AddView(int id)
+        {
+            //var requestGroup = _dbContext.RequestGroups
+            //   .Include(r => r.Views).Single(r => r.RequestGroupId == id);
+            //if (request != null)
+            //{
+            //    requestGroup.AddView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
+            //    await _dbContext.SaveChangesAsync();
+            //}
+            return Json(new { success = true });
+        }
+
+        private async Task<InterpreterAnswerDto> GetInterpreter(InterpreterAnswerModel interpreterModel, int brokerId)
+        {
+            if (interpreterModel.InterpreterId == Constants.DeclineInterpreterId)
+            {
+                return new InterpreterAnswerDto
+                {
+                    Accepted = false,
+                    DeclineMessage = interpreterModel.DeclineMessage
+                };
+            }
+            var newInterpreterInformation = new InterpreterInformation
+            {
+                FirstName = interpreterModel.NewInterpreterFirstName,
+                LastName = interpreterModel.NewInterpreterLastName,
+                Email = interpreterModel.NewInterpreterEmail,
+                PhoneNumber = interpreterModel.NewInterpreterPhoneNumber,
+                OfficialInterpreterId = interpreterModel.NewInterpreterOfficialInterpreterId
+            };
+            var interpreter = await _interpreterService.GetInterpreter(interpreterModel.InterpreterId.Value, newInterpreterInformation, brokerId);
+            var requirementAnswers = interpreterModel.RequiredRequirementAnswers?.Select(ra => new OrderRequirementRequestAnswer
+            {
+                OrderRequirementId = ra.OrderRequirementId,
+                Answer = ra.Answer,
+                CanSatisfyRequirement = ra.CanMeetRequirement
+            }).ToList() ?? new List<OrderRequirementRequestAnswer>();
+
+            if (interpreterModel.DesiredRequirementAnswers != null)
+            {
+                requirementAnswers.AddRange(interpreterModel.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                {
+                    OrderRequirementId = ra.OrderRequirementId,
+                    Answer = ra.Answer,
+                    CanSatisfyRequirement = ra.CanMeetRequirement
+                }).ToList());
+            }
+            //Collect the interpreter information
+            return new InterpreterAnswerDto
+            {
+                Accepted = true,
+                CompetenceLevel = interpreterModel.InterpreterCompetenceLevel.Value,
+                ExpectedTravelCosts = interpreterModel.ExpectedTravelCosts,
+                ExpectedTravelCostInfo = interpreterModel.ExpectedTravelCostInfo,
+                RequirementAnswers = requirementAnswers,
+                Interpreter = interpreter
+            };
+        }
+
     }
 }

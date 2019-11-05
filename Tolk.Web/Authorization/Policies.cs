@@ -259,11 +259,11 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
-                case Request request:
+                    return order.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
+                case RequestBase request:
                     return request.Ranking.BrokerId == user.GetBrokerId();
                 case Requisition requisition:
-                    return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
+                    return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
@@ -271,7 +271,7 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return complaint.Request.Order.IsAuthorizedAsCreatorOrContact(user.TryGetAllCustomerUnits(), customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
+                        return complaint.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
                     }
                     return false;
                 default:
@@ -304,7 +304,7 @@ namespace Tolk.Web.Authorization
                         return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler));
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
-                case Request request:
+                case RequestBase request:
                     return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId();
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))

@@ -91,7 +91,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, apiUser.BrokerId.Value);
 
-                InterpreterAnswerModel extraInterpreterAnswer = null;
+                InterpreterAnswerDto extraInterpreterAnswer = null;
                 if (requestGroup.HasExtraInterpreter)
                 {
                     extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, apiUser.BrokerId.Value, false);
@@ -108,6 +108,7 @@ namespace Tolk.Web.Api.Controllers
                         now,
                         user?.Id ?? apiUser.Id,
                         (user != null ? (int?)apiUser.Id : null),
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.InterpreterLocation).Value,
                         mainInterpreterAnswer,
                         extraInterpreterAnswer,
                         //Does not handle attachments yet.

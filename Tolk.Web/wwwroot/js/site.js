@@ -185,6 +185,16 @@ $(function () {
         }
     });
 
+    $(".design-only-table").DataTable({
+        paging: false,
+        info: false,
+        searching: false,
+        sorting: false,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+        }
+    });
+
     $(".searchable-only-table").DataTable({
         paging: false,
         info: false,
@@ -206,7 +216,7 @@ $(function () {
         };
     };
 
-    var  repeatStringNumTimes = function(string, times) {
+    var repeatStringNumTimes = function (string, times) {
         if (times < 0) {
             return "";
         }
@@ -260,7 +270,7 @@ $(function () {
                                 // Read values and append to data
                                 $($filterSelector + " :input").each(function () {
                                     if ($(this).is(":checkbox")) {
-                                        data[$(this).prop("name")] = $(this).is(":checked") ? "true": "false";
+                                        data[$(this).prop("name")] = $(this).is(":checked") ? "true" : "false";
                                     } else {
                                         data[$(this).prop("name")] = $(this).val();
                                     }
