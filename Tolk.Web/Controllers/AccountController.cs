@@ -14,10 +14,12 @@ using System.Collections.Generic;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 using Tolk.Web.Models.AccountViewModels;
 using Tolk.BusinessLogic.Utilities;
 
@@ -467,10 +469,10 @@ namespace Tolk.Web.Controllers
                     }
                     return RedirectToAction(nameof(ResetPasswordConfirmation));
                 }
-                    AddErrors(result);
-                }
-                return View();
+                AddErrors(result);
             }
+            return View();
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -731,6 +733,84 @@ namespace Tolk.Web.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize(Policies.Customer)]
+        public async Task<ActionResult> ViewDefaultSettings(string message)
+        {
+            return View(DefaultSettingsViewModel.GetModel(await UserForDefaultSettings, Region.Regions, message));
+        }
+
+
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> EditDefaultSettings()
+        {
+            return View(DefaultSettingsModel.GetModel(await UserForDefaultSettings));
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> EditDefaultSettings(DefaultSettingsModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (ModelState.IsValid)
+            {
+                if (user != null)
+                {
+                    await _userService.LogDefaultSettingsUpdateAsync(user.Id, impersonatorUpdatedById: User.TryGetImpersonatorId());
+                    UpdateDefaultSetting(user, DefaultSettingsType.Region, model.RegionId?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.CustomerUnit, model.CustomerUnitId?.ToSwedishString());
+
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationPrimary, ((int?)model.RankedInterpreterLocationFirst)?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationSecondary, ((int?)model.RankedInterpreterLocationSecond)?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InterpreterLocationThird, ((int?)model.RankedInterpreterLocationThird)?.ToSwedishString());
+
+                    UpdateDefaultSetting(user, DefaultSettingsType.OnSiteStreet, model.OnSiteLocationStreet);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OnSiteCity, model.OnSiteLocationCity);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteDesignatedLocationStreet, model.OffSiteDesignatedLocationStreet);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteDesignatedLocationCity, model.OffSiteDesignatedLocationCity);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSitePhoneContactInformation, model.OffSitePhoneContactInformation);
+                    UpdateDefaultSetting(user, DefaultSettingsType.OffSiteVideoContactInformation, model.OffSiteVideoContactInformation);
+                    UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToSwedishString());
+                    UpdateDefaultSetting(user, DefaultSettingsType.InvoiceReference, model.InvoiceReference);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(ViewDefaultSettings), new
+                    {
+                        message = "Ändringarna sparades",
+                    });
+                }
+                return Forbid();
+            }
+            return View(model);
+        }
+
+        private Task<AspNetUser> UserForDefaultSettings => _userManager.Users.Include(u => u.DefaultSettings)
+            .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
+            .SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+
+        private void UpdateDefaultSetting(AspNetUser user, DefaultSettingsType type, string value)
+        {
+            var setting = user.DefaultSettings.SingleOrDefault(s => s.DefaultSettingType == type);
+            if (setting == null && !string.IsNullOrEmpty(value))
+            {
+                user.DefaultSettings.Add(new UserDefaultSetting
+                {
+                    DefaultSettingType = type,
+                    Value = value,
+                });
+            }
+            else if (setting != null && !string.IsNullOrEmpty(value))
+            {
+                setting.Value = value;
+            }
+            else if (setting != null && string.IsNullOrEmpty(value))
+            {
+                _dbContext.UserDefaultSettings.Remove(setting);
+            }
         }
 
         [AllowAnonymous]

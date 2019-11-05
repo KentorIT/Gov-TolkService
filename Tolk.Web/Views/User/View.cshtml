@@ -91,20 +91,20 @@
             <a class="btn btn-large btn-default" asp-action="Edit" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Ändra användaruppgifter</a>
         </div>
         <div class="col-sm-4">
-            <a class="btn btn-default btn-large" asp-action="ChangeEmail" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">@buttonText</a>
+            <a class="btn btn-default btn-large" asp-action="ChangeEmail" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">@buttonText</a>
         </div>
     </div>
     <div class="row">
         @if (Model.SendNewInvite)
         {
             <div class="col-sm-4">
-                <a class="btn btn-default btn-large" asp-action="SendNewInvite" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skicka ny inbudan</a>
+                <a class="btn btn-default btn-large" asp-action="SendNewInvite" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skicka ny inbudan</a>
             </div>
         }
         @if (Model.AllowDefaultSettings)
         {
             <div class="col-sm-4">
-                <a class="btn btn-primary btn-large" asp-action="ViewDefaultSettings" asp-route-id="@Model.Id" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Se bokningsinställningar</a>
+                <a class="btn btn-primary btn-large" asp-action="ViewDefaultSettings" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Se bokningsinställningar</a>
             </div>
         }
     </div>

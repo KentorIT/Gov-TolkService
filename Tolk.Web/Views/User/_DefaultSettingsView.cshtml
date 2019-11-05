@@ -1,0 +1,75 @@
+﻿@model DefaultSettingsViewModel
+
+@{
+    ViewData["Title"] = "Bokningsinställningar";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    @if (!string.IsNullOrEmpty(@Model.Message))
+    {
+        <div class="row">
+            <div class="col-xs-12">
+                <br />
+                <div class="system-action-info">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span class="info-message" role="status">
+                        @Model.Message
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="Region" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="InvoiceReference" />
+        </div>
+        @if (Model.ShowUnitSelection)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="CustomerUnit" />
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="RankedInterpreterLocationFirst" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="RankedInterpreterLocationSecond" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="RankedInterpreterLocationThird" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <fieldset>
+                <legend>På plats adress</legend>
+                <display-entry asp-for="OnSiteLocationStreet" />
+                <display-entry asp-for="OnSiteLocationCity" />
+            </fieldset>
+        </div>
+        <div class="col-sm-4">
+            <fieldset>
+                <legend>Address till anvisad lokal</legend>
+                <display-entry asp-for="OffSiteDesignatedLocationStreet" />
+                <display-entry asp-for="OffSiteDesignatedLocationCity" />
+            </fieldset>
+        </div>
+        <div class="col-sm-4">
+            <fieldset>
+                <legend>Kontaktuppgifter vid distanstolkning</legend>
+                <display-entry asp-for="OffSitePhoneContactInformation" />
+                <display-entry asp-for="OffSiteVideoContactInformation" />
+            </fieldset>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <display-entry asp-for="AllowExceedingTravelCost" />
+        </div>
+    </div>
+</section>

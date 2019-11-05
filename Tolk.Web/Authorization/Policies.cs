@@ -16,6 +16,7 @@ namespace Tolk.Web.Authorization
         public const string Broker = nameof(Broker);
         public const string Interpreter = nameof(Interpreter);
         public const string Edit = nameof(Edit);
+        public const string Connect = nameof(Connect);
         public const string EditDefaultSettings = nameof(EditDefaultSettings);
         public const string EditContact = nameof(EditContact);
         public const string CreateRequisition = nameof(CreateRequisition);
@@ -43,6 +44,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
                 opt.AddPolicy(EditContact, builder => builder.RequireAssertion(EditContactHandler));
                 opt.AddPolicy(Edit, builder => builder.RequireAssertion(EditHandler));
+                opt.AddPolicy(Connect, builder => builder.RequireAssertion(ConnectHandler));
                 opt.AddPolicy(EditDefaultSettings, builder => builder.RequireAssertion(EditDefaultSettingsHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
@@ -186,8 +188,8 @@ namespace Tolk.Web.Authorization
                 case Order order:
                     return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
                 case OutboundWebHookCall webHookCall:
-                    return user.IsInRole(Roles.CentralAdministrator) && 
-                        !webHookCall.ResentHookId.HasValue && 
+                    return user.IsInRole(Roles.CentralAdministrator) &&
+                        !webHookCall.ResentHookId.HasValue &&
                         webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
                 default:
                     throw new NotImplementedException();
@@ -339,8 +341,16 @@ namespace Tolk.Web.Authorization
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
-                        return (user.IsInRole(Roles.CentralAdministrator) || localAdminCustomerUnits.Any())
-                            && viewUser.CustomerOrganisationId == user.GetCustomerOrganisationId();
+                        if (user.IsInRole(Roles.CentralAdministrator))
+                        {
+                            return viewUser.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
+                        }
+                        //check that viewed user has at least one of the same units as users localadminunits
+                        else if (localAdminCustomerUnits.Any())
+                        {
+                            var editedUsersCustomerUnits = viewUser.CustomerUnits.Select(cu => cu.CustomerUnitId);
+                            return editedUsersCustomerUnits.Intersect(localAdminCustomerUnits).Any();
+                        }
                     }
                     return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case InterpreterBroker interpreter:
@@ -366,18 +376,38 @@ namespace Tolk.Web.Authorization
             switch (context.Resource)
             {
                 case AspNetUser viewedUser:
-                    return viewedUser.CustomerOrganisationId.HasValue &&
-                    (
-                        user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator) ||
-                        (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && 
-                            user.TryGetCustomerOrganisationId() == viewedUser.CustomerOrganisationId && 
-                            (viewedUser.Id == user.GetUserId() || user.IsInRole(Roles.CentralAdministrator)))
-                    );
+                    if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
+                    {
+                        if (user.IsInRole(Roles.CentralAdministrator))
+                        {
+                            return viewedUser.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
+                        }
+                        //check that viewed user has at least one of the same units as users localadminunits
+                        else if (localAdminCustomerUnits.Any())
+                        {
+                            var editedUsersCustomerUnits = viewedUser.CustomerUnits.Select(cu => cu.CustomerUnitId);
+                            return editedUsersCustomerUnits.Intersect(localAdminCustomerUnits).Any();
+                        }
+                    }
+                    return viewedUser.CustomerOrganisationId.HasValue && (user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator));
                 case CustomerOrganisation organisation:
                     return user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == organisation.CustomerOrganisationId;
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unit.CustomerOrganisationId) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private readonly static Func<AuthorizationHandlerContext, bool> ConnectHandler = (context) =>
+        {
+            var user = context.User;
+            var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
+            switch (context.Resource)
+            {
+                case AspNetUser userToBeconnected:
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && (user.IsInRole(Roles.CentralAdministrator) || localAdminCustomerUnits.Any()) && userToBeconnected.CustomerOrganisationId == user.TryGetCustomerOrganisationId();
                 default:
                     throw new NotImplementedException();
             }

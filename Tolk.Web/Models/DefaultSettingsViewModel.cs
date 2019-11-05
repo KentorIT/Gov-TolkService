@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
-using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
-using Tolk.Web.Services;
-using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic;
 
 namespace Tolk.Web.Models
 {
@@ -64,8 +59,30 @@ namespace Tolk.Web.Models
 
         public string Message { get; set; }
         public bool ShowUnitSelection { get; set; }
-        public bool AllowChange { get; set; }
 
         public UserPageMode UserPageMode { get; set; }
+
+        internal static DefaultSettingsViewModel GetModel(AspNetUser user, Region[] regions, string message = null)
+        {
+            int? customerUnit = user.GetIntValue(DefaultSettingsType.CustomerUnit);
+            return new DefaultSettingsViewModel
+            {
+                Message = message,
+                ShowUnitSelection = user.CustomerUnits.Any(),
+                Region = regions.SingleOrDefault(r => r.RegionId == user.GetIntValue(DefaultSettingsType.Region))?.Name,
+                CustomerUnit = customerUnit == 0 ? Constants.SelectNoUnit : user.CustomerUnits.SingleOrDefault(c => c.CustomerUnitId == customerUnit)?.CustomerUnit.Name,
+                RankedInterpreterLocationFirst = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationPrimary),
+                RankedInterpreterLocationSecond = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationSecondary),
+                RankedInterpreterLocationThird = user.TryGetEnumValue<InterpreterLocation>(DefaultSettingsType.InterpreterLocationThird),
+                OnSiteLocationStreet = user.GetValue(DefaultSettingsType.OnSiteStreet),
+                OnSiteLocationCity = user.GetValue(DefaultSettingsType.OnSiteCity),
+                OffSiteDesignatedLocationStreet = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationStreet),
+                OffSiteDesignatedLocationCity = user.GetValue(DefaultSettingsType.OffSiteDesignatedLocationCity),
+                OffSitePhoneContactInformation = user.GetValue(DefaultSettingsType.OffSitePhoneContactInformation),
+                OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
+                AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
+                InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
+            };
+        }
     }
 }

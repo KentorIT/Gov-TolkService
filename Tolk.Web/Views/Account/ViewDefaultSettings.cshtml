@@ -1,0 +1,10 @@
+﻿@model DefaultSettingsViewModel
+@await Html.PartialAsync("../User/_DefaultSettingsView", Model)
+<div class="row">
+    <div class="col-sm-8">
+        <a class="btn btn-warning btn-large pull-left" asp-action="Index"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka </a>
+    </div>
+    <div class="col-sm-4">
+        <a class="btn btn-primary btn-large pull-left" asp-action="EditDefaultSettings">Ändra</a>
+    </div>
+</div>
