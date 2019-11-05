@@ -161,7 +161,7 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocation.Value, 
                             interpreterModel, 
                             extrainterpreterModel, 
-                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList()
+                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList()
                         );
                         await _dbContext.SaveChangesAsync();
                         return RedirectToAction("Index", "Home", new { message = "Svar har skickats på sammanhållen bokning" });

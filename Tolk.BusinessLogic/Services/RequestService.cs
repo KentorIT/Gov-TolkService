@@ -87,7 +87,7 @@ namespace Tolk.BusinessLogic.Services
             InterpreterLocation interpreterLocation,
             InterpreterAnswerDto interpreter,
             InterpreterAnswerDto extraInterpreter,
-            List<RequestAttachment> attachedFiles
+            List<RequestGroupAttachment> attachedFiles
         )
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
@@ -124,7 +124,7 @@ namespace Tolk.BusinessLogic.Services
                             impersonatorId,
                             extraInterpreter,
                             interpreterLocation,
-                            attachedFiles,
+                            Enumerable.Empty<RequestAttachment>().ToList(),
                             extraInterpreterVerificationResult
                        );
                     }
@@ -146,11 +146,15 @@ namespace Tolk.BusinessLogic.Services
                         impersonatorId,
                         interpreter,
                         interpreterLocation,
-                        attachedFiles,
+                        Enumerable.Empty<RequestAttachment>().ToList(),
                         verificationResult
                     );
                 }
             }
+
+            // add the attachmnents to the group...
+            requestGroup.Attachments = attachedFiles;
+
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...

@@ -112,7 +112,7 @@ namespace Tolk.Web.Api.Controllers
                         mainInterpreterAnswer,
                         extraInterpreterAnswer,
                         //Does not handle attachments yet.
-                        new List<RequestAttachment>()
+                        new List<RequestGroupAttachment>()
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service

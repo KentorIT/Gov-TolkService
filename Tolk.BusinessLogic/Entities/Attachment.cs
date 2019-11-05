@@ -36,6 +36,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequisitionAttachment> Requisitions { get; set; }
 
         public List<RequestAttachment> Requests { get; set; }
+        public List<RequestGroupAttachment> RequestGroups { get; set; }
 
         public List<OrderAttachment> Orders { get; set; }
 

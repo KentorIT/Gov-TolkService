@@ -44,6 +44,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequestGroupStatusConfirmation> StatusConfirmations { get; set; }
 
         public List<RequestGroupView> Views { get; set; }
+        public List<RequestGroupAttachment> Attachments { get; set; }
 
         #endregion
 
