@@ -67,9 +67,6 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("id-override")]
         public string IdOverride { get; set; }
 
-        [HtmlAttributeName("checked-index")]
-        public string CheckedIndex { get; set; }
-
         [HtmlAttributeName("checked-value")]
         public string CheckedValue { get; set; }
 
@@ -900,7 +897,6 @@ namespace Tolk.Web.TagHelpers
             return new HtmlContentBuilder().AppendHtml(builder);
         }
 
-
         private void WriteRadioGroup(TextWriter writer)
         {
 
@@ -910,11 +906,7 @@ namespace Tolk.Web.TagHelpers
 
             var id = IdOverride ?? For.Name;
 
-            int? ci = CheckedIndex == null ? 0
-                    : CheckedIndex == "none" ? (int?)null
-                    : CheckedIndex.ToSwedishInt();
-
-            string cv = (string.IsNullOrWhiteSpace(CheckedValue) || CheckedValue == "none") ? string.Empty : CheckedValue;
+            string checkedValue = (string.IsNullOrWhiteSpace(CheckedValue) || CheckedValue == "none") ? string.Empty : CheckedValue;
 
             if (IsDisplayed)
             {
@@ -941,9 +933,8 @@ namespace Tolk.Web.TagHelpers
             {
                 var item = itArr[i];
                 var itemName = $"{id}_{i}";
-                bool isChecked = CheckedIndex == "none" ? false : i == ci;
-                bool valueShouldBeChecked = CheckedValue == "none" ? false : item.Value == cv;
-                var checkedAttr = isChecked || valueShouldBeChecked ? "checked=\"checked\"" : "";
+                bool valueShouldBeChecked = string.IsNullOrWhiteSpace(checkedValue) ? false : item.Value == checkedValue;
+                var checkedAttr = valueShouldBeChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
                 var inputElem = $"<input id=\"{itemName}\" name=\"{For.Name}\" type=\"radio\" value=\"{item.Value}\" {checkedAttr}/>";
 

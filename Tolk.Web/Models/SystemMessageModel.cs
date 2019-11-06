@@ -12,7 +12,7 @@ namespace Tolk.Web.Models
         [Required]
         public RadioButtonGroup SystemMessageType { get; set; }
 
-        public string SystemMessageTypeCheckedIndex { get; set; } = "1";
+        public SystemMessageType SystemMessageTypeValue { get; set; } = BusinessLogic.Enums.SystemMessageType.Information;
 
         [Required]
         [StringLength(255)]

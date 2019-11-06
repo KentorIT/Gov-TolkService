@@ -1,11 +1,12 @@
 ﻿@model Tolk.Web.Models.OrderRequirementModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
-    <form class="do-not-check-dirty">
-        <form-entry asp-for="RequirementType" type="select" asp-items="SelectListService.RequirementTypes" />
-        <form-entry asp-for="RequirementDescription" />
-        <form-entry asp-for="Gender" type="radio-group" asp-items="SelectListService.Genders" />
-        <div class="d-none">
-            <form-entry asp-for="RequirementIsRequired" />
-        </div>
-    </form>
+@using Tolk.BusinessLogic.Enums
+<form class="do-not-check-dirty">
+    <form-entry asp-for="RequirementType" type="select" asp-items="SelectListService.RequirementTypes" />
+    <form-entry asp-for="RequirementDescription" />
+    <form-entry asp-for="Gender" type="radio-group" checked-value="@Gender.Female" asp-items="SelectListService.Genders" />
+    <div class="d-none">
+        <form-entry asp-for="RequirementIsRequired" />
+    </div>
+</form>

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -14,7 +12,6 @@ using Tolk.Web.Models;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Helpers;
-using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -67,15 +64,13 @@ namespace Tolk.Web.Controllers
             var systemMessage = _dbContext.SystemMessages
                 .Single(s => s.SystemMessageId == id);
 
-            var selectedItem = GetSelectedSystemMessageType(systemMessage.SystemMessageType);
-
             return View(new SystemMessageModel
             {
                 SystemMessageId = systemMessage.SystemMessageId,
                 SystemMessageText = systemMessage.SystemMessageText,
                 SystemMessageHeader = systemMessage.SystemMessageHeader,
                 DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
-                SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToSwedishString(),
+                SystemMessageTypeValue = systemMessage.SystemMessageType,
                 DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
             });
         }
@@ -106,8 +101,7 @@ namespace Tolk.Web.Controllers
         {
             if (model.DisplayDate.Start > model.DisplayDate.End)
             {
-                var selectedItem = GetSelectedSystemMessageType(EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value));
-                model.SystemMessageTypeCheckedIndex = SelectListService.SystemMessageTypes.ToList().IndexOf(selectedItem).ToSwedishString();
+                model.SystemMessageTypeValue = EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value);
                 ModelState.AddModelError($"{nameof(model.DisplayDate)}.{nameof(model.DisplayDate.Start)}", "Visningsdatum för nyheten är fel. Från och med datum kan inte vara större än till och med datum.");
             }
             else
@@ -128,11 +122,6 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction("List");
             }
             return View(model);
-        }
-
-        private static SelectListItem GetSelectedSystemMessageType(SystemMessageType systemMessageType)
-        {
-            return SelectListService.SystemMessageTypes.Single(e => e.Value == systemMessageType.ToString());
         }
 
     }

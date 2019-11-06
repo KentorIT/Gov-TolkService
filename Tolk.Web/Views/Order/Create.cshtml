@@ -1,5 +1,6 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @using Microsoft.Extensions.Options;
+@using Tolk.BusinessLogic.Enums;
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
@@ -9,7 +10,7 @@
     var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser();
     bool enableOrderGroups = TolkOptions.Value.EnableOrderGroups;
     string orderTimeClass = enableOrderGroups ? "order-group-enabled" : "order-group-disabled";
-    var allowExceedingTravelCost = Model.UserDefaultSettings.AllowExceedingTravelCost.HasValue ? Model.UserDefaultSettings.AllowExceedingTravelCost.ToString() : "none";
+    var allowExceedingTravelCost = Model.UserDefaultSettings.AllowExceedingTravelCost.HasValue ? Model.UserDefaultSettings.AllowExceedingTravelCost.ToString() : string.Empty;
 }
 @using Tolk.Web.Services
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
@@ -53,7 +54,7 @@
                             <input type="hidden" asp-for="UserDefaultSettings.OffSiteDesignatedLocationCity" />
                             <input type="hidden" asp-for="UserDefaultSettings.OffSitePhoneContactInformation" />
                             <input type="hidden" asp-for="UserDefaultSettings.OffSiteVideoContactInformation" />
-                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
+                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" checked-value="@AssignmentType.Interpretation.ToString()" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
                             <div class="row">
                                 <div class="col-sm-4">
                                     <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" help-link="@HelpLinkService.GenerateUrl("nybokning_sprak")" />
@@ -201,7 +202,7 @@
                                 <div class="d-none" id="divCompetenceLevel">
                                     <div class="row">
                                         <div class="col-sm-4">
-                                            <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" help-link="@HelpLinkService.GenerateUrl("nybokning_kompetensniva")" checked-index="none" />
+                                            <form-entry asp-for="CompetenceLevelDesireType" asp-items="SelectListService.DesireTypes" help-link="@HelpLinkService.GenerateUrl("nybokning_kompetensniva")" />
                                             <div id="CompetenceLevelDesireTypeValidator" class="d-none text-danger body"></div>
                                         </div>
                                         <div class="col-sm-8">
