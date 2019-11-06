@@ -743,9 +743,9 @@ namespace Tolk.Web.Controllers
 
 
         [Authorize(Policy = Policies.Customer)]
-        public async Task<ActionResult> EditDefaultSettings()
+        public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            return View(DefaultSettingsModel.GetModel(await UserForDefaultSettings));
+            return View(DefaultSettingsModel.GetModel(await UserForDefaultSettings, isFirstTimeUser));
         }
 
         [ValidateAntiForgeryToken]
@@ -778,10 +778,9 @@ namespace Tolk.Web.Controllers
 
                     await _dbContext.SaveChangesAsync();
 
-                    return RedirectToAction(nameof(ViewDefaultSettings), new
-                    {
-                        message = "Ändringarna sparades",
-                    });
+                    return model.IsFirstTimeUser ? 
+                        RedirectToAction(nameof(Index), "Home", new { message = "Bokningsinställningar sparade. Du kan nu börja använda tjänsten!" }) :
+                        RedirectToAction(nameof(ViewDefaultSettings), new { message = "Ändringarna sparades" });
                 }
                 return Forbid();
             }
@@ -869,6 +868,7 @@ namespace Tolk.Web.Controllers
                             user.LastLoginAt = _clock.SwedenNow;
                             result = await _userManager.UpdateAsync(user);
                             await _userService.LogLoginAsync(user.Id);
+                            model.IsCustomer = user.CustomerOrganisationId.HasValue;
                             if (result.Succeeded)
                             {
                                 _logger.LogInformation("Successfully created new user {userId}", user.Id);

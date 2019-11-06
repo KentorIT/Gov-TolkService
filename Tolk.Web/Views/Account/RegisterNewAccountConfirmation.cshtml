@@ -9,7 +9,15 @@
             <div class="row padding-bottom-30px">
                 <div class="col-xs-12">
                     <h1 class="padding-bottom-30px">@ViewData["Title"]</h1>
-                    <h2>Användarkontot är registrerat <span class="glyphicon glyphicon-ok"></span></h2>
+                    @if (Model.IsCustomer)
+                    {
+                        <h2>Användaruppgifter registrerade <span class="glyphicon glyphicon-ok"></span></h2>
+                        <span class="important-info">I tjänsten finns det möjlighet att ändra de användaruppgifter som precis angivits.</span>
+                    }
+                    else
+                    {
+                        <h2>Användarkontot är registrerat <span class="glyphicon glyphicon-ok"></span></h2>
+                    }
                 </div>
             </div>
             <div class="row">
@@ -29,19 +37,37 @@
                 </div>
             </div>
             <hr />
-            <div class="row">
-                <div class="col-xs-12">
-                    <p>
-                        Klicka på knappen Gå till startsida nedan för att börja använda @Constants.SystemName.
-                        I tjänsten finns det möjlighet att ändra de användaruppgifter som precis angivits.
-                    </p>
+            @if (Model.IsCustomer)
+            {
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>
+                            För att slutföra dina användarinställningar så klicka på knappen Bokningsinställningar nedan för att ange uppgifter som du vanligtvis använder när du gör en bokning av tolk.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-12 text-align-center">
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-default btn-large">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+                <div class="row">
+                    <div class="col-xs-12 text-align-center">
+                        <a asp-action="EditDefaultSettings" asp-route-isFirstTimeUser="true" class="btn btn-default btn-large">Bokningsinställningar <span class="glyphicon glyphicon-triangle-right"></span></a>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>
+                            Klicka på knappen Gå till startsida nedan för att börja använda @Constants.SystemName.
+                            I tjänsten finns det möjlighet att ändra de användaruppgifter som precis angivits.
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 text-align-center">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-default btn-large">Gå till startsida <span class="glyphicon glyphicon-triangle-right"></span></a>
+                    </div>
+                </div>
+            }
         </div>
         <div class="col-sm-4 welcome-info">
             @await Html.PartialAsync("_AppInfoSmall")

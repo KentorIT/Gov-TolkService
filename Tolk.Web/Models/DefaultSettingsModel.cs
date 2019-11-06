@@ -71,7 +71,9 @@ namespace Tolk.Web.Models
 
         public UserPageMode UserPageMode { get; set; }
 
-        internal static DefaultSettingsModel GetModel(AspNetUser user)
+        public bool IsFirstTimeUser { get; set; }
+
+        internal static DefaultSettingsModel GetModel(AspNetUser user, bool isFirstTimeUser = false)
         {
             return new DefaultSettingsModel
             {
@@ -88,6 +90,7 @@ namespace Tolk.Web.Models
                 OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
                 AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
+                IsFirstTimeUser = isFirstTimeUser
             };
         }
 

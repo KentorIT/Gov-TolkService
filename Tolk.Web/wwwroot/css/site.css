@@ -1304,6 +1304,11 @@ ul.pagination > li.paginate_button.active > a {
   font-weight: 300;
   color: #767676;
 }
+.medium-header {
+  font-size: 18px;
+  padding-bottom: 13px;
+  padding-top: 8px;
+}
 .list-line {
   margin-top: 30px;
   overflow: hidden;
