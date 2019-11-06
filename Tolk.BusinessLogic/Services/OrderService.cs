@@ -527,6 +527,7 @@ namespace Tolk.BusinessLogic.Services
         private async Task<RequestGroup> GetNewRequestGroup(int requestGroupId)
         {
             return await _tolkDbContext.RequestGroups
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
@@ -534,7 +535,6 @@ namespace Tolk.BusinessLogic.Services
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)

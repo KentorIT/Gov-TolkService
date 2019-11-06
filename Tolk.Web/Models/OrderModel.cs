@@ -454,7 +454,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false)
+        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartAt = startAt;
@@ -462,7 +462,10 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
-            order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
+            if (!isGroupOrder)
+            {
+                order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
+            }
             order.InvoiceReference = InvoiceReference;
 
             if (isReplace)

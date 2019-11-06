@@ -117,19 +117,18 @@ namespace Tolk.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> Download(int id)
         {
-            var attachment = _dbContext.Attachments
+            var attachment = await _dbContext.Attachments
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
                 .Include(a => a.Orders).ThenInclude(o => o.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
-                .SingleOrDefault(a => a.AttachmentId == id);
-            //Add validation...
-            if (attachment == null)
-            {
-                throw new FileNotFoundException();
-            }
-            if ((await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
+                .Include(a => a.OrderGroups).ThenInclude(o => o.OrderGroup).ThenInclude(r => r.Orders)
+                .Include(a => a.OrderGroups).ThenInclude(o => o.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking)
+                .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(r => r.Ranking)
+                .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(o => o.OrderGroup).ThenInclude(r => r.Orders)
+                .SingleOrDefaultAsync(a => a.AttachmentId == id);
+            if (attachment == null || (await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
             {
                 return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
             }
@@ -138,18 +137,21 @@ namespace Tolk.Web.Controllers
 
         [HttpDelete]
         [ValidateAntiForgeryToken]
-        public JsonResult Delete(int id, Guid groupKey)
+        public async Task<JsonResult> Delete(int id, Guid groupKey)
         {
-            var attachment = _dbContext.Attachments
+            var attachment = await _dbContext.Attachments
                 .Include(a => a.TemporaryAttachmentGroup)
                 .Include(a => a.Requisitions)
                 .Include(a => a.Requests)
-                .SingleOrDefault(a => a.AttachmentId == id && a.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey);
+                .Include(a => a.Orders)
+                .Include(a => a.RequestGroups)
+                .Include(a => a.OrderGroups)
+                .SingleOrDefaultAsync(a => a.AttachmentId == id && a.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey);
             //Add check for if the user is allowed to remove the attachment
             // Check if the file is not connected to any requisitions or requests. If it is, just remove the temp-connection.
             if (attachment != null)
             {
-                if (attachment.Requisitions.Any() || attachment.Requests.Any())
+                if (attachment.Requisitions.Any() || attachment.Requests.Any() || attachment.RequestGroups.Any() || attachment.Orders.Any() || attachment.OrderGroups.Any())
                 {
                     _dbContext.TemporaryAttachmentGroups.Remove(attachment.TemporaryAttachmentGroup);
                 }
@@ -157,7 +159,7 @@ namespace Tolk.Web.Controllers
                 {
                     _dbContext.Attachments.Remove(attachment);
                 }
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
             }
             return Json(new { success = true });
         }

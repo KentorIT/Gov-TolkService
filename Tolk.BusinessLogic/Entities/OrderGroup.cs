@@ -62,6 +62,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestGroup> RequestGroups { get; set; }
 
+        public List<OrderGroupAttachment> Attachments { get; set; }
+
         #endregion
 
         #region methods and read only properties
@@ -95,6 +97,16 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
 
         public AllowExceedingTravelCost? AllowExceedingTravelCost => FirstOrder.AllowExceedingTravelCost;
+
+        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
+        {
+            return FirstOrder.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole);
+        }
+
+        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
+        {
+            return FirstOrder.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole);
+        }
 
         public void SetStatus(OrderStatus status)
         {

@@ -260,6 +260,41 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<JsonResult> File(string orderGroupNumber, int attachmentId, string callingUser)
+        {
+            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
+
+            try
+            {
+                var apiUser = await GetApiUser();
+                var orderGroup = _dbContext.OrderGroups
+                    .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .SingleOrDefault(o => o.OrderGroupNumber == orderGroupNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        o.RequestGroups.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                if (orderGroup == null)
+                {
+                    return ReturnError(ErrorCodes.OrderGroupNotFound);
+                }
+
+                var attachment = orderGroup.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
+                if (attachment == null)
+                {
+                    return ReturnError(ErrorCodes.AttachmentNotFound);
+                }
+
+                return Json(new FileResponse
+                {
+                    FileBase64 = Convert.ToBase64String(attachment.Blob)
+                });
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
         #endregion
 
         #region private methods

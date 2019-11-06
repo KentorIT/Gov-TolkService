@@ -277,6 +277,7 @@ namespace Tolk.Web.Controllers
                     if (model.IsMultipleOrders)
                     {
                         var orderGroup = CreateNewOrderGroup(GetOrdersForGroup(model).ToList());
+                        orderGroup.Attachments = model.Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList();
                         await _dbContext.AddAsync(orderGroup);
                         //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
                         await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
@@ -729,7 +730,7 @@ namespace Tolk.Web.Controllers
             foreach (var occasion in model.UniqueOrdersFromOccasions.OrderBy(o => o.OrderOccasionId))
             {
                 var order = CreateNewOrder();
-                model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
+                model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 if (occasion.ExtraInterpreter)
                 {
                     if (list.TryGetValue(occasion.ExtraInterpreterFor, out Order parentOrder))
@@ -752,7 +753,7 @@ namespace Tolk.Web.Controllers
             {
                 Order groupOrder = CreateNewOrder();
                 // Add list of occasions, with the price information
-                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
+                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
                     Header = "Beräknat preliminärt pris",

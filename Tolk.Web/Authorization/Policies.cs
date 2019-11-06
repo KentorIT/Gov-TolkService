@@ -317,7 +317,7 @@ namespace Tolk.Web.Authorization
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case Attachment attachment:
-                    if (!attachment.Requisitions.Any() && !attachment.Requests.Any() && !attachment.Orders.Any())
+                    if (!attachment.Requisitions.Any() && !attachment.Requests.Any() && !attachment.Orders.Any() && !attachment.RequestGroups.Any() && !attachment.OrderGroups.Any())
                     {
                         return userId == attachment.CreatedBy;
                     }
@@ -325,15 +325,19 @@ namespace Tolk.Web.Authorization
                     {
                         return attachment.Requisitions.Any(a => a.Requisition.Request.Ranking.BrokerId == user.GetBrokerId()) ||
                             attachment.Requests.Any(a => a.Request.Ranking.BrokerId == user.GetBrokerId()) ||
-                            attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId()));
+                            attachment.Orders.Any(o => o.Order.Requests.Any(r => r.Ranking.BrokerId == user.GetBrokerId())) ||
+                            attachment.OrderGroups.Any(o => o.OrderGroup.RequestGroups.Any(r => r.Ranking.BrokerId == user.GetBrokerId())) ||
+                            attachment.RequestGroups.Any(o => o.RequestGroup.Ranking.BrokerId == user.GetBrokerId());
                     }
                     else if (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId))
                     {
                         return attachment.Requisitions.Any(a => a.Requisition.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)))
                                  || attachment.Requests.Any(ra => ra.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)))
-                                 || attachment.Orders.Any(oa => oa.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)));
+                                 || attachment.Orders.Any(oa => oa.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)))
+                                 || attachment.OrderGroups.Any(o => o.OrderGroup.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)))
+                                 || attachment.RequestGroups.Any(ra => ra.RequestGroup.OrderGroup.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler)));
                     }
-                    return user.IsInRole(Roles.SystemAdministrator);
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case AspNetUser viewUser:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {

@@ -1385,7 +1385,7 @@ Sammanställning:
                     RequirementId = r.OrderRequirementId,
                     RequirementType = EnumHelper.GetCustomName(r.RequirementType)
                 }),
-                Attachments = order.Attachments.Select(a => new AttachmentInformationModel
+                Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName

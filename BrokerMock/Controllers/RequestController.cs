@@ -256,7 +256,12 @@ namespace BrokerMock.Controllers
                 }
                 //Get the headers:
                 //X-Kammarkollegiet-InterpreterService-Delivery
+
             }
+                if (extraInstructions.Contains("GETFILE"))
+                {
+                    await GetGroupFile(payload.OrderGroupNumber, payload.Attachments.First().AttachmentId);
+                }
             return new JsonResult("Success");
         }
 
@@ -729,6 +734,24 @@ namespace BrokerMock.Controllers
                 else
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> GetGroupFile(string orderGroupNumber, int attachmentId)
+        {
+            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            {
+                var file = response.Content.ReadAsAsync<FileResponse>().Result;
+                if (file.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File]:: Boknings-ID: {orderGroupNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File] FAILED:: Boknings-ID: {orderGroupNumber} accat mottagande");
                 }
             }
 

@@ -76,6 +76,7 @@ namespace Tolk.Web.Controllers
             var requestGroup = await _dbContext.RequestGroups
                .Include(g => g.Ranking)
                .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)

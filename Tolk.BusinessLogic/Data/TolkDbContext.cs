@@ -295,6 +295,19 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany(a => a.Orders)
                 .HasForeignKey(map => map.AttachmentId);
 
+            builder.Entity<OrderGroupAttachment>()
+                .HasKey(oa => new { oa.OrderGroupId, oa.AttachmentId });
+
+            builder.Entity<OrderGroupAttachment>()
+                .HasOne(oa => oa.OrderGroup)
+                .WithMany(g => g.Attachments)
+                .HasForeignKey(map => map.OrderGroupId);
+
+            builder.Entity<OrderGroupAttachment>()
+                .HasOne(map => map.Attachment)
+                .WithMany(a => a.OrderGroups)
+                .HasForeignKey(map => map.AttachmentId);
+
             builder.Entity<RequestStatusConfirmation>()
                 .HasOne(r => r.ConfirmedByUser)
                 .WithMany()
@@ -486,6 +499,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RequestGroupAttachment> RequestGroupAttachments { get; set; }
 
         public DbSet<OrderAttachment> OrderAttachments { get; set; }
+
+        public DbSet<OrderGroupAttachment> OrderGroupAttachments { get; set; }
 
         public DbSet<RequestStatusConfirmation> RequestStatusConfirmation { get; set; }
 

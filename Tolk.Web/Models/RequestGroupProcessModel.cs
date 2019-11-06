@@ -142,6 +142,19 @@ namespace Tolk.Web.Models
                 CombinedMaxSizeAttachments = combinedMaxSizeAttachments,
                 CreatedAt = requestGroup.CreatedAt,
                 ExpiresAt = requestGroup.ExpiresAt.Value,
+                AttachmentListModel = new AttachmentListModel
+                {
+                    AllowDelete = false,
+                    AllowDownload = true,
+                    AllowUpload = false,
+                    DisplayFiles = orderGroup.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList()
+                },
+
                 //NEW
                 InterpreterAnswerModel = new InterpreterAnswerModel
                 {
