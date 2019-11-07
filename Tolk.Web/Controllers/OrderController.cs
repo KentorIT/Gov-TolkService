@@ -340,12 +340,17 @@ namespace Tolk.Web.Controllers
                 updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
 
             }
+            var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0  ? _dbContext.CustomerUnits
+                .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
+
+            order.CustomerUnit = customerUnit;
 
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
 
-            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ? model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" : _dbContext.CustomerUnits
-                .Single(cu => cu.CustomerUnitId == model.CustomerUnitId).Name : "Du tillhör ingen enhet i systemet";
+            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ? 
+                model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" : 
+                customerUnit.Name : "Du tillhör ingen enhet i systemet";
             Language language = _dbContext.Languages
                 .Single(l => l.LanguageId == model.LanguageId);
 
@@ -373,7 +378,7 @@ namespace Tolk.Web.Controllers
 
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
-            updatedModel.CreatedBy = user.CompleteContactInformation;
+            updatedModel.CreatedBy = order.ContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
             updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
             return PartialView(nameof(Confirm), updatedModel);

@@ -268,6 +268,8 @@ namespace Tolk.BusinessLogic.Entities
             return request;
         }
 
+        public string ContactInformation => CustomerUnit == null ? CreatedByUser.CompleteContactInformation : $"{CreatedByUser.FullName}\n{CustomerUnit.Name}\n{CustomerUnit.Email}";
+
         public void DeliverRequisition()
         {
             if (Status != OrderStatus.ResponseAccepted && Status != OrderStatus.Delivered)

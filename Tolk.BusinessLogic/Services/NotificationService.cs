@@ -1284,7 +1284,7 @@ Sammanställning:
                     Name = order.CustomerOrganisation.Name,
                     Key = order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
-                    ContactInformation = order.CreatedByUser.CompleteContactInformation,
+                    ContactInformation = order.ContactInformation,
                     InvoiceReference = order.InvoiceReference,
                     PriceListType = order.CustomerOrganisation.PriceListType.GetCustomName(),
                     TravelCostAgreementType = order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
@@ -1411,6 +1411,7 @@ Sammanställning:
                 .Include(r => r.Order).ThenInclude(o => o.Region)
                 .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                 .Single(o => o.RequestId == id);
         }

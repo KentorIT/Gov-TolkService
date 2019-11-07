@@ -525,6 +525,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Include(r => r.Interpreter)
                     .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Region)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
@@ -611,7 +612,7 @@ namespace Tolk.Web.Api.Controllers
                     Name = request.Order.CustomerOrganisation.Name,
                     Key = request.Order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
-                    ContactInformation = request.Order.CreatedByUser.CompleteContactInformation,
+                    ContactInformation = request.Order.ContactInformation,
                     InvoiceReference = request.Order.InvoiceReference,
                     PriceListType = request.Order.CustomerOrganisation.PriceListType.GetCustomName(),
                     TravelCostAgreementType = request.Order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),

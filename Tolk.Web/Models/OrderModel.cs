@@ -9,7 +9,6 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -199,6 +198,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset CreatedAt { get; set; }
 
         [Display(Name = "Bokning skapad av")]
+
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }
 
@@ -612,7 +612,7 @@ namespace Tolk.Web.Models
                 ReplacedByOrderNumber = order?.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
                 ReplacingOrderId = order.ReplacingOrderId,
-                CreatedBy = order.CreatedByUser.CompleteContactInformation,
+                CreatedBy = order.ContactInformation,
                 CreatedById = order.CreatedBy,
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
                 ChangeContactPersonId = order.ContactPersonId,
