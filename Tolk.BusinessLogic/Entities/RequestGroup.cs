@@ -91,13 +91,13 @@ namespace Tolk.BusinessLogic.Entities
             base.Decline(declinedAt, userId, impersonatorId, message);
             OrderGroup.SetStatus(OrderStatus.Requested);
         }
-        
+
         public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
-        public bool RequiresAccept => 
+        public bool RequiresAccept =>
             OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
-            FirstRequest.InterpreterLocation.HasValue && 
-            (FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || 
+            FirstRequest.InterpreterLocation.HasValue &&
+            (FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
                 FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
@@ -107,6 +107,35 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmeras.");
             }
             StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
+        public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        {
+            if (!IsAccepted)
+            {
+                throw new InvalidOperationException($"Request {RequestGroupId} is {Status}. Only Accepted requests can be approved");
+            }
+
+            Status = RequestStatus.Approved;
+            OrderGroup.SetStatus(OrderStatus.ResponseAccepted);
+            AnswerProcessedAt = approveTime;
+            AnswerProcessedBy = userId;
+            ImpersonatingAnswerProcessedBy = impersonatorId;
+        }
+
+        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles)
+        {
+            if (!IsToBeProcessedByBroker)
+            {
+                throw new InvalidOperationException($"Det gick inte att svara på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
+            }
+
+            AnswerDate = acceptTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            Attachments = attachedFiles;
+            AnswerProcessedAt = RequiresAccept ? null : (DateTimeOffset?)acceptTime;
+            OrderGroup.SetStatus(RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted);
         }
 
         public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)

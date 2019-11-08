@@ -62,7 +62,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
-            
+
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel));
             //Create notification
             switch (request.Status)
@@ -153,7 +153,7 @@ namespace Tolk.BusinessLogic.Services
             }
 
             // add the attachmnents to the group...
-            requestGroup.Attachments = attachedFiles;
+            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles);
 
             if (partialAnswer)
             {
