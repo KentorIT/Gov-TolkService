@@ -202,7 +202,7 @@ namespace Tolk.BusinessLogic.Services
             if (email != null)
             {
                 string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
-                    $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}\n" +
+                    $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
                     $"\tRegion: {order.Region.Name}\n" +
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tStart: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
@@ -211,7 +211,7 @@ namespace Tolk.BusinessLogic.Services
                     GotoRequestPlain(request.RequestId);
                 string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
 <ul>
-<li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignentType)}</li>
+<li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}</li>
 <li>Region: {order.Region.Name}</li>
 <li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
 <li>Start: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
@@ -1313,7 +1313,7 @@ Sammanställning:
                     Rank = c.Rank ?? 0
                 }),
                 AllowExceedingTravelCost = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
-                AssignentType = EnumHelper.GetCustomName(order.AssignentType),
+                AssignentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
                 Requirements = order.Requirements.Select(r => new RequirementModel
@@ -1375,7 +1375,7 @@ Sammanställning:
                     Rank = c.Rank ?? 0
                 }),
                 AllowExceedingTravelCost = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
-                AssignentType = EnumHelper.GetCustomName(order.AssignentType),
+                AssignentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
                 Requirements = order.Requirements.Select(r => new RequirementModel

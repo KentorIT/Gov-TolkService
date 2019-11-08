@@ -9,7 +9,7 @@ using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class Order
+    public class Order : OrderBase
     {
         private Order() { }
 
@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Entities
             :this (order?.CreatedByUser ?? throw new ArgumentNullException(nameof(order)), order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
         {
             AllowExceedingTravelCost = order.AllowExceedingTravelCost;
-            AssignentType = order.AssignentType;
+            AssignmentType = order.AssignmentType;
             Language = order.Language;
             OtherLanguage = order.OtherLanguage;
             Region = order.Region;
@@ -56,8 +56,6 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceRequirements = new List<OrderCompetenceRequirement>();
         }
 
-        private OrderStatus _status;
-
         #region base information
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -66,23 +64,16 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         public string OrderNumber { get; set; }
 
-        public DateTimeOffset CreatedAt { get; set; }
-
-        public int CreatedBy { get; set; }
-
-        [ForeignKey(nameof(CreatedBy))]
-        public AspNetUser CreatedByUser { get; set; }
-
         public int? OrderGroupId { get; set; }
 
         [ForeignKey(nameof(OrderGroupId))]
         public OrderGroup Group { get; set; }
 
-        public OrderStatus Status
+        public override OrderStatus Status
         {
             get
             {
-                return _status;
+                return base.Status;
             }
             set
             {
@@ -97,24 +88,9 @@ namespace Tolk.BusinessLogic.Entities
                     throw new InvalidOperationException($"Order {OrderId} is in the wrong state to be set as accepted.");
                 }
 
-                _status = value;
+                base.Status = value;
             }
         }
-
-        public int CustomerOrganisationId { get; set; }
-
-        [ForeignKey(nameof(CustomerOrganisationId))]
-        public CustomerOrganisation CustomerOrganisation { get; set; }
-
-        public int? CustomerUnitId { get; set; }
-
-        [ForeignKey(nameof(CustomerUnitId))]
-        public CustomerUnit CustomerUnit { get; set; }
-
-        public int RegionId { get; set; }
-
-        [ForeignKey(nameof(RegionId))]
-        public Region Region { get; set; }
 
         public int? ReplacingOrderId { get; set; }
 
@@ -148,20 +124,6 @@ namespace Tolk.BusinessLogic.Entities
 
         #region order information
 
-        public int? LanguageId { get; set; }
-
-        [ForeignKey(nameof(LanguageId))]
-        public Language Language { get; set; }
-
-        [MaxLength(255)]
-        public string OtherLanguage { get; set; }
-
-        public bool LanguageHasAuthorizedInterpreter { get; set; }
-
-        public AssignmentType AssignentType { get; set; }
-
-        public bool SpecificCompetenceLevelRequired { get; set; }
-
         public DateTimeOffset StartAt { get; set; }
 
         private DateTimeOffset _endAt;
@@ -179,15 +141,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
-
         [MaxLength(1000)]
         public string Description { get; set; }
-
-        public int? ImpersonatingCreator { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingCreator))]
-        public AspNetUser CreatedByImpersonator { get; set; }
 
         public int? IsExtraInterpreterForOrderId { get; set; }
 
@@ -301,19 +256,6 @@ namespace Tolk.BusinessLogic.Entities
             ContactPersonUser = contactPerson;
         }
 
-        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
-        {
-            return HasCorrectAdminRoleForCustomer(customerOrganisationId, hasCorrectAdminRole) 
-                || CreatedByUserWithoutUnit(customerOrganisationId, userId) 
-                || CreatedByUsersUnit(customerUnits);
-        }
-
-        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
-        {
-            return IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole) 
-                || UserIsContact(userId);
-        }
-
         private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
         {
             var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
@@ -340,24 +282,9 @@ namespace Tolk.BusinessLogic.Entities
             return request;
         }
 
-        private bool HasCorrectAdminRoleForCustomer(int? customerOrganisationId, bool hasCorrectAdminRole = false)
-        {
-            return hasCorrectAdminRole && CustomerOrganisationId == customerOrganisationId;
-        }
-
-        private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId)
-        {
-            return CustomerOrganisationId == customerOrganisationId && CustomerUnitId == null && CreatedBy == userId;
-        }
-
-        private bool UserIsContact(int userId)
+        internal override bool UserIsContact(int userId)
         {
             return ContactPersonId == userId;
-        }
-
-        private bool CreatedByUsersUnit(IEnumerable<int> customerUnits)
-        {
-            return CustomerUnitId != null && (customerUnits?.Contains(CustomerUnitId.Value) ?? false);
         }
 
         #endregion

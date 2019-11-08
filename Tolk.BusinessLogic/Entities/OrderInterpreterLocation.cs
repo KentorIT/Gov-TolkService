@@ -7,12 +7,8 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class OrderInterpreterLocation
+    public class OrderInterpreterLocation : OrderInterpreterLocationBase
     {
-        public InterpreterLocation InterpreterLocation { get; set; }
-
-        public int Rank { get; set; }
-
         public int OrderId { get; set; }
 
         [ForeignKey(nameof(OrderId))]

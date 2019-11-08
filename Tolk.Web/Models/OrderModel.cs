@@ -493,7 +493,7 @@ namespace Tolk.Web.Models
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
                 order.RegionId = RegionId.Value;
-                order.AssignentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
+                order.AssignmentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
                 order.CustomerUnitId = (CustomerUnitId.HasValue && CustomerUnitId > 0) ? CustomerUnitId : null;
                 if (HasOnsiteLocation && AllowExceedingTravelCost != null)
                 {
@@ -630,7 +630,7 @@ namespace Tolk.Web.Models
                 LanguageId = order.LanguageId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
-                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
+                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignmentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -730,7 +730,7 @@ namespace Tolk.Web.Models
             return new OrderModel
             {
                 AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
-                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignentType.ToString()) },
+                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignmentType.ToString()) },
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 CustomerUnitId = order.CustomerUnitId,

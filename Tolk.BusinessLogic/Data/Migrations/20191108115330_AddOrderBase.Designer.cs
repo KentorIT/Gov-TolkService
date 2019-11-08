@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191108115330_AddOrderBase")]
+    partial class AddOrderBase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -921,54 +923,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("AttachmentId");
 
                     b.ToTable("OrderGroupAttachments");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupCompetenceRequirement", b =>
-                {
-                    b.Property<int>("OrderGroupId");
-
-                    b.Property<int>("CompetenceLevel");
-
-                    b.Property<int?>("Rank");
-
-                    b.HasKey("OrderGroupId", "CompetenceLevel");
-
-                    b.ToTable("OrderGroupCompetenceRequirements");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupInterpreterLocation", b =>
-                {
-                    b.Property<int>("OrderGroupId");
-
-                    b.Property<int>("InterpreterLocation");
-
-                    b.Property<int>("Rank");
-
-                    b.HasKey("OrderGroupId", "InterpreterLocation");
-
-                    b.ToTable("OrderGroupInterpreterLocations");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupRequirement", b =>
-                {
-                    b.Property<int>("OrderGroupRequirementId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000);
-
-                    b.Property<bool>("IsRequired");
-
-                    b.Property<int>("OrderGroupId");
-
-                    b.Property<int>("RequirementType");
-
-                    b.HasKey("OrderGroupRequirementId");
-
-                    b.HasIndex("OrderGroupId");
-
-                    b.ToTable("OrderGroupRequirements");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -2493,30 +2447,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("Attachments")
-                        .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupCompetenceRequirement", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
-                        .WithMany("CompetenceRequirements")
-                        .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupInterpreterLocation", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
-                        .WithMany("InterpreterLocations")
-                        .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupRequirement", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
-                        .WithMany("Requirements")
                         .HasForeignKey("OrderGroupId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

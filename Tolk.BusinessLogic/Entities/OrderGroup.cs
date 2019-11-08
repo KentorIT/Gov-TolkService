@@ -9,7 +9,7 @@ using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class OrderGroup
+    public class OrderGroup : OrderBase
     {
         #region constructors
 
@@ -40,23 +40,11 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         public string OrderGroupNumber { get; set; }
 
-        public DateTimeOffset CreatedAt { get; set; }
-
-        public int CreatedBy { get; set; }
-
-        [ForeignKey(nameof(CreatedBy))]
-        public AspNetUser CreatedByUser { get; set; }
-
-        public int? ImpersonatingCreator { get; set; }
-
         public bool RequireSameInterpreter { get; set; }
 
         #endregion
 
         #region navigation properties
-
-        [ForeignKey(nameof(ImpersonatingCreator))]
-        public AspNetUser CreatedByImpersonator { get; set; }
 
         public List<Order> Orders { get; set; }
 
@@ -64,53 +52,40 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderGroupAttachment> Attachments { get; set; }
 
+        public List<OrderGroupRequirement> Requirements { get; set; }
+
+        public List<OrderGroupCompetenceRequirement> CompetenceRequirements { get; set; }
+
+        public List<OrderGroupInterpreterLocation> InterpreterLocations { get; set; }
+
         #endregion
 
         #region methods and read only properties
 
         public void AwaitDeadlineFromCustomer()
         {
-            foreach (Order order in Orders)
-            {
-                order.Status = OrderStatus.AwaitingDeadlineFromCustomer;
-            }
+            SetStatus(OrderStatus.AwaitingDeadlineFromCustomer);
             ActiveRequestGroup.Status = RequestStatus.AwaitingDeadlineFromCustomer;
             ActiveRequestGroup.IsTerminalRequest = true;
         }
 
         public RequestGroup ActiveRequestGroup => RequestGroups.Single(r => r.IsToBeProcessedByBroker);
 
-        public int RegionId  => FirstOrder.RegionId;
-
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
-        public Region Region => FirstOrder?.Region;
-
-        public AssignmentType AssignmentType  => FirstOrder.AssignentType; 
-
-        public CustomerOrganisation CustomerOrganisation => FirstOrder.CustomerOrganisation; 
-
-        public string LanguageName => FirstOrder?.OtherLanguage ?? FirstOrder?.Language?.Name; 
+        public string LanguageName => FirstOrder?.OtherLanguage ?? FirstOrder?.Language?.Name;
 
         public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
 
         public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
 
-        public AllowExceedingTravelCost? AllowExceedingTravelCost => FirstOrder.AllowExceedingTravelCost;
-
-        public bool IsAuthorizedAsCreator(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
+        public void SetStatus(OrderStatus status, bool updateOrders = true)
         {
-            return FirstOrder.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole);
-        }
-
-        public bool IsAuthorizedAsCreatorOrContact(IEnumerable<int> customerUnits, int? customerOrganisationId, int userId, bool hasCorrectAdminRole = false)
-        {
-            return FirstOrder.IsAuthorizedAsCreatorOrContact(customerUnits, customerOrganisationId, userId, hasCorrectAdminRole);
-        }
-
-        public void SetStatus(OrderStatus status)
-        {
-            Orders.ForEach(o => o.Status = status);
+            Status = status;
+            if (updateOrders)
+            {
+                Orders.ForEach(o => o.Status = status);
+            }
         }
 
         public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
@@ -148,6 +123,7 @@ namespace Tolk.BusinessLogic.Entities
             if (ranking == null)
             {
                 // Rejected by all brokers, close all orders
+                SetStatus(OrderStatus.NoBrokerAcceptedOrder, false);
                 orders.ToList().ForEach(o => o.Status = OrderStatus.NoBrokerAcceptedOrder);
                 return null;
             }

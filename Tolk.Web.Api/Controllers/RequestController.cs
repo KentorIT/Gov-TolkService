@@ -642,7 +642,7 @@ namespace Tolk.Web.Api.Controllers
                 CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
                 AllowExceedingTravelCost = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 Description = request.Order.Description,
-                AssignentType = request.Order.AssignentType.GetCustomName(),
+                AssignentType = request.Order.AssignmentType.GetCustomName(),
                 //Should the attachemts from the broker be applied too? Yes I suppose...
                 Attachments = request.Order.Attachments.Select(a => new AttachmentInformationModel
                 {

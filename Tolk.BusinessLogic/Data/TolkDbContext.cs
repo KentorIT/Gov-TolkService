@@ -78,6 +78,12 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<OrderInterpreterLocation>()
                 .HasKey(oil => new { oil.OrderId, oil.InterpreterLocation });
 
+            builder.Entity<OrderGroupInterpreterLocation>()
+                .HasKey(oil => new { oil.OrderGroupId, oil.InterpreterLocation });
+
+            builder.Entity<OrderGroupCompetenceRequirement>()
+                .HasKey(ogir => new { ogir.OrderGroupId, ogir.CompetenceLevel });
+
             builder.Entity<Holiday>()
                 .HasKey(h => new { h.Date, h.DateType });
 
@@ -446,6 +452,11 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(f => f.LastUpdatedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //builder.Entity<OrderGroup>()
+            //    .HasOne(f => f.Region)
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -455,6 +466,12 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerOrganisation> CustomerOrganisations { get; set; }
 
         public DbSet<OrderRequirement> OrderRequirements { get; set; }
+
+        public DbSet<OrderGroupRequirement> OrderGroupRequirements { get; set; }
+
+        public DbSet<OrderGroupCompetenceRequirement> OrderGroupCompetenceRequirements { get; set; }
+
+        public DbSet<OrderGroupInterpreterLocation> OrderGroupInterpreterLocations { get; set; }
 
         public DbSet<OrderCompetenceRequirement> OrderCompetenceRequirements { get; set; }
 
