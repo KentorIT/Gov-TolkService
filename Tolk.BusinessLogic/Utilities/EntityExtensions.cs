@@ -9,6 +9,14 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public static class EntityExtensions
     {
+        public static IQueryable<OrderGroup> CustomerOrderGroups(this IQueryable<OrderGroup> orderGroups, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
+        {
+            //var filteredOrders = orderGroups.Where(o => o.CustomerOrganisationId == customerOrganisationId);
+            var filteredOrders = orderGroups.Where(og => og.Orders.Any(o => o.CustomerOrganisationId == customerOrganisationId));
+            return isCentralAdminOrOrderHandler ? filteredOrders :
+                filteredOrders.Where(og => og.Orders.Any(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || customerUnits.Contains(o.CustomerUnitId ?? -1)));
+        }
+
         public static IQueryable<Order> CustomerOrders(this IQueryable<Order> orders, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false, bool includeContact = false, bool includeOrderGroupOrders = false)
         {
             var filteredOrders = orders.Where(o => o.CustomerOrganisationId == customerOrganisationId && (includeOrderGroupOrders || o.OrderGroupId == null));
@@ -29,6 +37,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
         }
+
         public static IEnumerable<Order> GetRequestOrders(this IEnumerable<Request> requests)
         {
             return requests.Select(r => r.Order);
