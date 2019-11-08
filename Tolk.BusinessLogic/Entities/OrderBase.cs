@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Validation;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -69,24 +67,13 @@ namespace Tolk.BusinessLogic.Entities
                 || UserIsContact(userId);
         }
 
-        private bool HasCorrectAdminRoleForCustomer(int? customerOrganisationId, bool hasCorrectAdminRole = false)
-        {
-            return hasCorrectAdminRole && CustomerOrganisationId == customerOrganisationId;
-        }
-        private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId)
-        {
-            return CustomerOrganisationId == customerOrganisationId && CustomerUnitId == null && CreatedBy == userId;
-        }
+        private bool HasCorrectAdminRoleForCustomer(int? customerOrganisationId, bool hasCorrectAdminRole = false) => hasCorrectAdminRole && CustomerOrganisationId == customerOrganisationId;
 
-        internal virtual bool UserIsContact(int userId)
-        {
-            return false;
-        }
+        private bool CreatedByUserWithoutUnit(int? customerOrganisationId, int userId) => CustomerOrganisationId == customerOrganisationId && CustomerUnitId == null && CreatedBy == userId;
 
-        private bool CreatedByUsersUnit(IEnumerable<int> customerUnits)
-        {
-            return CustomerUnitId != null && (customerUnits?.Contains(CustomerUnitId.Value) ?? false);
-        }
+        internal virtual bool UserIsContact(int userId) => false;
+
+        private bool CreatedByUsersUnit(IEnumerable<int> customerUnits) => CustomerUnitId != null && (customerUnits?.Contains(CustomerUnitId.Value) ?? false);
 
     }
 }

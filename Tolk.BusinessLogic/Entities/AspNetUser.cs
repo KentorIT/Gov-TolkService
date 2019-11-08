@@ -57,6 +57,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public string CompleteContactInformation => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; 
 
+        public string PhoneNumbers => string.IsNullOrWhiteSpace(PhoneNumber) && string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? null : $"Tel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; 
+
         [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }
         public List<IdentityUserRole<int>> Roles { get; set; }

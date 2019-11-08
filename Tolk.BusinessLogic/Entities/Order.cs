@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Entities
         private Order() { }
 
         public Order(Order order)
-            :this (order?.CreatedByUser ?? throw new ArgumentNullException(nameof(order)), order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
+            : this(order?.CreatedByUser ?? throw new ArgumentNullException(nameof(order)), order.CreatedByImpersonator, order.CustomerOrganisation, order.CreatedAt)
         {
             AllowExceedingTravelCost = order.AllowExceedingTravelCost;
             AssignmentType = order.AssignmentType;
@@ -225,6 +225,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public string ContactInformation => CustomerUnit == null ? CreatedByUser.CompleteContactInformation : $"{CreatedByUser.FullName}\n{CustomerUnit.Name}\n{CustomerUnit.Email}";
 
+        public string ContactEmail => CustomerUnit == null ? CreatedByUser.Email : CustomerUnit.Email;
+
+        public string ContactPhone => CustomerUnit == null ? CreatedByUser.PhoneNumbers : null;
+
         public void DeliverRequisition()
         {
             if (Status != OrderStatus.ResponseAccepted && Status != OrderStatus.Delivered)
@@ -282,10 +286,7 @@ namespace Tolk.BusinessLogic.Entities
             return request;
         }
 
-        internal override bool UserIsContact(int userId)
-        {
-            return ContactPersonId == userId;
-        }
+        internal override bool UserIsContact(int userId) => ContactPersonId == userId;
 
         #endregion
     }

@@ -80,6 +80,12 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(1000)]
         public string TerminationMessage { get; set; }
 
+        public bool CanAnswerDispute => Status == ComplaintStatus.Disputed;
+
+        public bool CanAnswer => Status == ComplaintStatus.Created;
+
+        public string ContactEmail => Request.Order.CustomerUnit == null ? CreatedByUser.Email : Request.Order.CustomerUnit.Email;
+
         public void AnswerDispute(DateTimeOffset answerDisputedAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
         {
             if (Status != ComplaintStatus.Disputed)
@@ -95,11 +101,6 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDisputedBy = userId;
             ImpersonatingAnswerDisputedBy = impersonatorId;
             AnswerDisputedMessage = message;
-        }
-
-        public bool CanAnswerDispute
-        {
-            get { return Status == ComplaintStatus.Disputed; }
         }
 
         public void Answer(DateTimeOffset answeredAt, int userId, int? impersonatorId, string message, ComplaintStatus status)
@@ -119,9 +120,5 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
         }
 
-        public bool CanAnswer
-        {
-            get { return Status == ComplaintStatus.Created; }
-        }
     }
 }
