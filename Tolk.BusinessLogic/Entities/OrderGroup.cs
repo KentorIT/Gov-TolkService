@@ -15,18 +15,24 @@ namespace Tolk.BusinessLogic.Entities
 
         private OrderGroup() { }
 
-        public OrderGroup(AspNetUser createdByUser, AspNetUser createdByImpersonator, DateTimeOffset createdAt, IEnumerable<Order> orders, bool requireSameInterpreter = true)
+        public OrderGroup(AspNetUser createdByUser, AspNetUser createdByImpersonator, CustomerOrganisation customerOrganisation, DateTimeOffset createdAt, IEnumerable<Order> orders, bool requireSameInterpreter = true)
         {
             //Verify that all orders have the same customer, region and language
             Validate.Ensure(orders.GroupBy(o => o.CustomerOrganisationId).Count() == 1, "A group cannot have orders connected to several customers.");
             Validate.Ensure(orders.GroupBy(o => o.LanguageId).Count() == 1, "A group cannot have orders connected to several languages.");
             Validate.Ensure(orders.GroupBy(o => o.RegionId).Count() == 1, "A group cannot have orders connected to several regions.");
             Orders = orders.ToList();
+            CustomerOrganisation = customerOrganisation;
+            CustomerOrganisationId = customerOrganisation.CustomerOrganisationId;
             CreatedAt = createdAt;
             CreatedByUser = createdByUser;
             CreatedByImpersonator = createdByImpersonator;
             RequestGroups = new List<RequestGroup>();
             RequireSameInterpreter = requireSameInterpreter;
+            Status = OrderStatus.Requested;
+            Requirements = new List<OrderGroupRequirement>();
+            InterpreterLocations = new List<OrderGroupInterpreterLocation>();
+            CompetenceRequirements = new List<OrderGroupCompetenceRequirement>();
         }
 
         #endregion

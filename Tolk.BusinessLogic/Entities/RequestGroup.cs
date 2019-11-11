@@ -50,8 +50,6 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Methods
 
-        public Request FirstRequest => Requests.First();
-
         public Request FirstRequestForFirstInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId == null);
 
         public Request FirstRequestForExtraInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId != null);
@@ -89,16 +87,19 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Det gick inte att tacka nej till den sammanhållna bokningen med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
+            SetStatus(RequestStatus.DeclinedByBroker);
             OrderGroup.SetStatus(OrderStatus.Requested);
         }
 
         public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
-        public bool RequiresAccept =>
-            OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
-            FirstRequest.InterpreterLocation.HasValue &&
-            (FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
-                FirstRequest.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+        public bool RequiresAccept(bool hasTravelCosts)
+        {
+            return hasTravelCosts &&
+                OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+                Requests.Any(r => r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
+                    r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+        }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
@@ -117,13 +118,13 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             Status = RequestStatus.Approved;
-            OrderGroup.SetStatus(OrderStatus.ResponseAccepted);
+            OrderGroup.SetStatus(OrderStatus.ResponseAccepted, false);
             AnswerProcessedAt = approveTime;
             AnswerProcessedBy = userId;
             ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
-        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles)
+        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer)
         {
             if (!IsToBeProcessedByBroker)
             {
@@ -134,8 +135,10 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             Attachments = attachedFiles;
-            AnswerProcessedAt = RequiresAccept ? null : (DateTimeOffset?)acceptTime;
-            OrderGroup.SetStatus(RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted);
+            AnswerProcessedAt = RequiresAccept(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
+            OrderGroup.SetStatus(RequiresAccept(hasTravelCosts) ? 
+                partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.RequestResponded :
+                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.ResponseAccepted, false);
         }
 
         public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)

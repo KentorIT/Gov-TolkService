@@ -137,7 +137,7 @@ namespace Tolk.Web.Models
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
                 BrokerId = requestGroup.Ranking.BrokerId,
-                OrderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber,
+                OrderGroupNumber = orderGroup.OrderGroupNumber,
                 FileGroupKey = fileGroupKey,
                 CombinedMaxSizeAttachments = combinedMaxSizeAttachments,
                 CreatedAt = requestGroup.CreatedAt,
@@ -158,16 +158,16 @@ namespace Tolk.Web.Models
                 //NEW
                 InterpreterAnswerModel = new InterpreterAnswerModel
                 {
-                    RequiredRequirementAnswers = order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderRequirementId,
+                        OrderRequirementId = r.OrderGroupRequirementId,
                         IsRequired = true,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                     }).ToList(),
-                    DesiredRequirementAnswers = order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderRequirementId,
+                        OrderRequirementId = r.OrderGroupRequirementId,
                         IsRequired = false,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
@@ -175,16 +175,16 @@ namespace Tolk.Web.Models
                 },
                 ExtraInterpreterAnswerModel = requestGroup.HasExtraInterpreter ? new InterpreterAnswerModel
                 {
-                    RequiredRequirementAnswers = order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderRequirementId,
+                        OrderRequirementId = r.OrderGroupRequirementId,
                         IsRequired = true,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                     }).ToList(),
-                    DesiredRequirementAnswers = order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderRequirementId,
+                        OrderRequirementId = r.OrderGroupRequirementId,
                         IsRequired = false,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
@@ -196,27 +196,27 @@ namespace Tolk.Web.Models
                         .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o)))
                 },
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
-                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
                 AssignmentType = orderGroup.AssignmentType,
                 CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
                 CustomerName = orderGroup.CustomerOrganisation.Name,
                 //AttachmentListModel
                 CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
-                CustomerUnitName = order.CustomerUnit?.Name,
+                CustomerUnitName = orderGroup.CustomerUnit?.Name,
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
-                Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
-                LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
+                Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
+                LanguageHasAuthorizedInterpreter = orderGroup.LanguageHasAuthorizedInterpreter,
                 RankedInterpreterLocationFirstAddressModel = OrderModel.GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
                 RankedInterpreterLocationSecondAddressModel = OrderModel.GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
                 RankedInterpreterLocationThirdAddressModel = OrderModel.GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
                 RegionName = orderGroup.Region.Name,
-                SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired,
+                SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,
                 UnitName = order.UnitName,
-                RequestedCompetenceLevelFirst = order.CompetenceRequirements.SingleOrDefault(l => l.Rank == 1 || l.Rank == null)?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = order.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel,
+                RequestedCompetenceLevelFirst = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 1 || l.Rank == null)?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel,
             };
         }
 

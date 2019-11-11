@@ -4,7 +4,6 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum StartListItemStatus
     {
-
         [Description("Bokningsförfrågan avbokad")]
         OrderCancelled = 1,
 
@@ -64,5 +63,8 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Ersättningsuppdrag skickat")]
         ReplacementOrderCreated = 20,
+
+        [Description("En tolk tillsatt (godkännande krävs)")]
+        PartialGroupReaponseAwaitingApproval = 21,
     }
 }

@@ -277,7 +277,7 @@ namespace Tolk.Web.Controllers
                     if (model.IsMultipleOrders)
                     {
                         var orderGroup = CreateNewOrderGroup(GetOrdersForGroup(model).ToList());
-                        orderGroup.Attachments = model.Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList();
+                        model.UpdateOrderGroup(orderGroup);
                         await _dbContext.AddAsync(orderGroup);
                         //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
                         await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
@@ -341,7 +341,7 @@ namespace Tolk.Web.Controllers
                 updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
 
             }
-            var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0  ? _dbContext.CustomerUnits
+            var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
                 .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
 
             order.CustomerUnit = customerUnit;
@@ -349,8 +349,8 @@ namespace Tolk.Web.Controllers
             updatedModel.RegionName = _dbContext.Regions
                 .Single(r => r.RegionId == model.RegionId).Name;
 
-            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ? 
-                model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" : 
+            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ?
+                model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" :
                 customerUnit.Name : "Du tillhör ingen enhet i systemet";
             Language language = _dbContext.Languages
                 .Single(l => l.LanguageId == model.LanguageId);
@@ -781,21 +781,19 @@ namespace Tolk.Web.Controllers
 
         private OrderGroup CreateNewOrderGroup(List<Order> orders)
         {
-            var user = _dbContext.Users
-               .Include(u => u.CustomerOrganisation)
-               .Single(u => u.Id == User.GetUserId());
-            var impersonator = User.TryGetImpersonatorId();
-            AspNetUser impersonatingUser = null;
-            if (impersonator.HasValue)
-            {
-                impersonatingUser = _dbContext.Users.Single(u => u.Id == impersonator);
-            }
-            return new OrderGroup(user, impersonatingUser, _clock.SwedenNow, orders);
+            (AspNetUser user, AspNetUser impersonatingUser) = GetUsers();
+            return new OrderGroup(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow, orders);
         }
 
         private Order CreateNewOrder()
         {
-            var user = _dbContext.Users
+            (AspNetUser user, AspNetUser impersonatingUser) = GetUsers();
+            return new Order(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow);
+        }
+
+        private (AspNetUser, AspNetUser) GetUsers()
+        {
+            AspNetUser user = _dbContext.Users
                .Include(u => u.CustomerOrganisation)
                .Single(u => u.Id == User.GetUserId());
             var impersonator = User.TryGetImpersonatorId();
@@ -804,7 +802,7 @@ namespace Tolk.Web.Controllers
             {
                 impersonatingUser = _dbContext.Users.Single(u => u.Id == impersonator);
             }
-            return new Order(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow);
+            return (user, impersonatingUser);
         }
 
         private Order GetOrder(int id)

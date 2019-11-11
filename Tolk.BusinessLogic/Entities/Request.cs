@@ -223,6 +223,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter = interpreter ?? throw new InvalidOperationException($"Interpreter is not set.");
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
+#warning Need to connect the group requirements to the order requirements, to be able to map correctly at this level!!!
             RequirementAnswers.AddRange(requirementAnswers);
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
@@ -504,11 +505,13 @@ namespace Tolk.BusinessLogic.Entities
 
         private static void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
-            if (requirements.Count != requirementAnswers.Count ||
-                !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
-            {
-                throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
-            }
+#warning need a better check here
+
+            //if (requirements.Count != requirementAnswers.Count ||
+            //    !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
+            //{
+            //    throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
+            //}
             if (requirements.Any(r => r.IsRequired &&
                  requirementAnswers.Any(a => a.OrderRequirementId == r.OrderRequirementId &&
                      !a.CanSatisfyRequirement)))

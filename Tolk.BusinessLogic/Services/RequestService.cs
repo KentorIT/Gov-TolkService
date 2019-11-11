@@ -105,6 +105,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException("I en beställning med flera tillfällen och extra tolk begärt vid minst ett tillfälle, så måste den extra tolken tillsättas.");
             }
+            bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 && (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             bool partialAnswer = false;
             //1. Get the verification results for the interpreter(s)
             var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
@@ -153,27 +154,27 @@ namespace Tolk.BusinessLogic.Services
             }
 
             // add the attachmnents to the group...
-            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles);
+            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer);
 
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
                 await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
-                if (requestGroup.RequiresAccept)
+                if (requestGroup.RequiresAccept(hasTravelCosts))
                 {
                     requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
                     _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
                 }
                 else
                 {
-                    requestGroup.SetStatus(RequestStatus.Approved, false);
+                    requestGroup.SetStatus(RequestStatus.PartiallyApproved, false);
                     _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
                 }
             }
             else
             {
                 //2. Set the request group and order group in correct state
-                if (requestGroup.RequiresAccept)
+                if (requestGroup.RequiresAccept(hasTravelCosts))
                 {
                     requestGroup.SetStatus(RequestStatus.Accepted, false);
                     _notificationService.RequestGroupAccepted(requestGroup);

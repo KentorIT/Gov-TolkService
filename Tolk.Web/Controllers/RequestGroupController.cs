@@ -78,13 +78,13 @@ namespace Tolk.Web.Controllers
                .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
                .SingleAsync(r => r.RequestGroupId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
@@ -100,7 +100,7 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                 }
 
-                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, new Guid(), _options.CombinedMaxSizeAttachments, User.GetUserId()));
+                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId()));
             }
             return Forbid();
         }

@@ -188,7 +188,7 @@ namespace Tolk.BusinessLogic.Services
         public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
         {
             NullCheckHelper.ArgumentCheckNull(terminatedOrderGroup, nameof(OrderGroupNoBrokerAccepted), nameof(NotificationService));
-            CreateEmail(GetRecipientsFromOrder(terminatedOrderGroup.FirstOrder),
+            CreateEmail(GetRecipientsFromOrderGroup(terminatedOrderGroup),
                 $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen tolk",
                 $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GoToOrderGroupPlain(terminatedOrderGroup.OrderGroupId)}",
                 $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GoToOrderGroupButton(terminatedOrderGroup.OrderGroupId)}"
@@ -1119,20 +1119,10 @@ Sammanställning:
             }
         }
 
-        //We can rewrite this (use FirstOrder.ContactEmail or an own for Group)
-        //no need to check sendToContactPersons cause it's only true when requisition is created and that is not done on group level
-        //to avoid possible conflicts - wait rewriting
-        private static IEnumerable<string> GetRecipientsFromOrderGroup(OrderGroup orderGroup, bool sendToContactPersons = false)
+        private static IEnumerable<string> GetRecipientsFromOrderGroup(OrderGroup orderGroup)
         {
-            var unit = orderGroup.FirstOrder.CustomerUnit;
+            var unit = orderGroup.CustomerUnit;
             yield return unit != null ? unit.Email : orderGroup.CreatedByUser.Email;
-            if (sendToContactPersons)
-            {
-                foreach (var order in orderGroup.Orders)
-                {
-                    yield return order.ContactPersonUser.Email;
-                }
-            }
         }
 
         private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type, NotificationChannel channel)
@@ -1343,14 +1333,14 @@ Sammanställning:
             {
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
-                Customer = order.CustomerOrganisation.Name,
-                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                Customer = orderGroup.CustomerOrganisation.Name,
+                CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
                 //D2 pads any single digit with a zero 1 -> "01"
-                Region = order.Region.RegionId.ToSwedishString("D2"),
+                Region = orderGroup.Region.RegionId.ToSwedishString("D2"),
                 Language = new LanguageModel
                 {
-                    Key = orderGroup.FirstOrder.Language?.ISO_639_Code,
-                    Description = order.OtherLanguage ?? order.Language.Name,
+                    Key = orderGroup.Language?.ISO_639_Code,
+                    Description = orderGroup.OtherLanguage ?? orderGroup.Language.Name,
                 },
                 ExpiresAt = requestGroup.ExpiresAt,
                 Locations = order.InterpreterLocations.Select(l => new LocationModel
@@ -1361,20 +1351,20 @@ Sammanställning:
                     Rank = l.Rank,
                     Key = EnumHelper.GetCustomName(l.InterpreterLocation)
                 }),
-                CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
+                CompetenceLevels = orderGroup.CompetenceRequirements.Select(c => new CompetenceModel
                 {
                     Key = EnumHelper.GetCustomName(c.CompetenceLevel),
                     Rank = c.Rank ?? 0
                 }),
-                AllowExceedingTravelCost = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
-                AssignentType = EnumHelper.GetCustomName(order.AssignmentType),
+                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AssignentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
                 Description = order.Description,
-                CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
-                Requirements = order.Requirements.Select(r => new RequirementModel
+                CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,
+                Requirements = orderGroup.Requirements.Select(r => new RequirementModel
                 {
                     Description = r.Description,
                     IsRequired = r.IsRequired,
-                    RequirementId = r.OrderRequirementId,
+                    RequirementId = r.OrderGroupRequirementId,
                     RequirementType = EnumHelper.GetCustomName(r.RequirementType)
                 }),
                 Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel

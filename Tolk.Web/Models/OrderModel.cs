@@ -454,6 +454,103 @@ namespace Tolk.Web.Models
 
         #region methods
 
+        internal void UpdateOrderGroup(OrderGroup orderGroup)
+        {
+            orderGroup.Attachments = Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList();
+            var location = RankedInterpreterLocationFirst.Value;
+            orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 1, InterpreterLocation = location});
+            if (RankedInterpreterLocationSecond.HasValue)
+            {
+                orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 2, InterpreterLocation = RankedInterpreterLocationSecond.Value });
+                if (RankedInterpreterLocationThird.HasValue)
+                {
+                    orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 3, InterpreterLocation = RankedInterpreterLocationThird.Value });
+                }
+            }
+            orderGroup.LanguageId = LanguageId;
+            orderGroup.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
+            orderGroup.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
+            orderGroup.RegionId = RegionId.Value;
+            orderGroup.AssignmentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
+            orderGroup.CustomerUnitId = (CustomerUnitId.HasValue && CustomerUnitId > 0) ? CustomerUnitId : null;
+            if (HasOnsiteLocation && AllowExceedingTravelCost != null)
+            {
+                orderGroup.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
+            }
+            orderGroup.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+                if (Dialect != null)
+                {
+                    orderGroup.Requirements.Add(new OrderGroupRequirement
+                    {
+                        RequirementType = RequirementType.Dialect,
+                        IsRequired = DialectIsRequired,
+                        Description = Dialect
+                    });
+                }
+                if (OrderRequirements != null)
+                {
+                    // add all extra requirements
+                    foreach (var req in OrderRequirements)
+                    {
+                        OrderGroupRequirement requirement = new OrderGroupRequirement
+                        {
+                            RequirementType = req.RequirementType.Value,
+                            IsRequired = true,
+                            Description = req.RequirementDescription
+                        };
+                        orderGroup.Requirements.Add(requirement);
+                    }
+                }
+                if (OrderDesiredRequirements != null)
+                {
+                    // add all extra desired requirements
+                    foreach (var req in OrderDesiredRequirements)
+                    {
+                    OrderGroupRequirement requirement = new OrderGroupRequirement
+                    {
+                            RequirementType = req.DesiredRequirementType.Value,
+                            IsRequired = false,
+                            Description = req.DesiredRequirementDescription
+                        };
+                        orderGroup.Requirements.Add(requirement);
+                    }
+                }
+            // OrderCompetenceRequirements
+            //set OtherInterpreter as a requirement for languages that lacks authorized interpreters
+            if (LanguageHasAuthorizedInterpreter.HasValue && !LanguageHasAuthorizedInterpreter.Value)
+            {
+                orderGroup.SpecificCompetenceLevelRequired = true;
+                orderGroup.CompetenceRequirements.Add(new OrderGroupCompetenceRequirement
+                {
+                    CompetenceLevel = CompetenceAndSpecialistLevel.OtherInterpreter
+                });
+            }
+            else
+            {
+                if (RequestedCompetenceLevels.Any())
+                {
+                    // Counting rank for cases where e.g. first option is undefined, but second is defined
+                    int rank = 0;
+                    if (RequestedCompetenceLevelFirst.HasValue)
+                    {
+                        orderGroup.CompetenceRequirements.Add(new OrderGroupCompetenceRequirement
+                        {
+                            CompetenceLevel = RequestedCompetenceLevelFirst.Value,
+                            Rank = ++rank
+                        });
+                    }
+                    if (RequestedCompetenceLevelSecond.HasValue)
+                    {
+                        orderGroup.CompetenceRequirements.Add(new OrderGroupCompetenceRequirement
+                        {
+                            CompetenceLevel = RequestedCompetenceLevelSecond.Value,
+                            Rank = ++rank
+                        });
+                    }
+                }
+            }
+        }
+
         internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
@@ -587,6 +684,18 @@ namespace Tolk.Web.Models
                 LocationStreet = location.Street,
                 LocationCity = location.City,
                 OffSiteContactInformation = location.OffSiteContactInformation
+            };
+        }
+        internal static InterpreterLocationAddressModel GetInterpreterLocation(OrderGroupInterpreterLocation location)
+        {
+            if (location == null)
+            {
+                return null;
+            }
+            return new InterpreterLocationAddressModel
+            {
+                InterpreterLocation = location.InterpreterLocation,
+                Rank = location.Rank,
             };
         }
 

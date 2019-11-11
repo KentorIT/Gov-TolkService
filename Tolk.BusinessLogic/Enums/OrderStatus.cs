@@ -41,5 +41,9 @@ namespace Tolk.BusinessLogic.Enums
         AwaitingDeadlineFromCustomer = 16,
         [Description("Uppdrag avbokat, sista svarstid ej satt")]
         NoDeadlineFromCustomer = 17,
+        [Description("Tolk är tillsatt och väntar på godkännande i grupp med två tolkar")]
+        RequestAwaitingPartialAccept = 18,
+        [Description("Tillsättning är godkänd för ena tolken, andra har inte tillsatts än")]
+        GroupAwaitingPartialResponse = 19,
     }
 }
