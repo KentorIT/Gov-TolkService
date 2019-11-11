@@ -474,8 +474,10 @@ namespace Tolk.BusinessLogic.Entities
 
         private void ValidateAgainstOrder(InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
-            ValidateRequirements(Order.Requirements, requirementAnswers);
-
+            if (!RequestGroupId.HasValue)
+            {
+                ValidateRequirements(Order.Requirements, requirementAnswers);
+            }
             if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
             {
                 throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
@@ -505,13 +507,12 @@ namespace Tolk.BusinessLogic.Entities
 
         private static void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
-#warning need a better check here
 
-            //if (requirements.Count != requirementAnswers.Count ||
-            //    !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
-            //{
-            //    throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
-            //}
+            if (requirements.Count != requirementAnswers.Count ||
+                !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
+            {
+                throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
+            }
             if (requirements.Any(r => r.IsRequired &&
                  requirementAnswers.Any(a => a.OrderRequirementId == r.OrderRequirementId &&
                      !a.CanSatisfyRequirement)))
