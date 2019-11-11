@@ -4,7 +4,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class RequestGroupStatusConfirmation
+    public class RequestGroupStatusConfirmation : StatusConfirmationBase
     {
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -16,17 +16,5 @@ namespace Tolk.BusinessLogic.Entities
         public RequestGroup RequestGroup { get; set; }
 
         public RequestStatus RequestStatus { get; set; }
-
-        public DateTimeOffset ConfirmedAt { get; set; }
-
-        public int ConfirmedBy { get; set; }
-
-        [ForeignKey(nameof(ConfirmedBy))]
-        public AspNetUser ConfirmedByUser { get; set; }
-
-        public int? ImpersonatingConfirmedBy { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingConfirmedBy))]
-        public AspNetUser ImpersonatingConfirmedByUser { get; set; }
     }
 }

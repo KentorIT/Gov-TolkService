@@ -4,7 +4,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class OrderStatusConfirmation
+    public class OrderStatusConfirmation : StatusConfirmationBase
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderStatusConfirmationId { get; set; }
@@ -15,17 +15,5 @@ namespace Tolk.BusinessLogic.Entities
         public Order Order { get; set; }
 
         public OrderStatus OrderStatus { get; set; }
-
-        public DateTimeOffset? ConfirmedAt { get; set; }
-
-        public int? ConfirmedBy { get; set; }
-
-        [ForeignKey(nameof(ConfirmedBy))]
-        public AspNetUser ConfirmedByUser { get; set; }
-
-        public int? ImpersonatingConfirmedBy { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingConfirmedBy))]
-        public AspNetUser ImpersonatingConfirmedByUser { get; set; }
     }
 }

@@ -119,7 +119,7 @@ namespace Tolk.Web.Helpers
             {
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt.Value,
+                    Timestamp = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedAt,
                     EventDetails = $"Bekräftat bokningsförfrågan avslutad",
                     Actor = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser.FullName,
                     Organization = customerName,
@@ -264,7 +264,7 @@ namespace Tolk.Web.Helpers
                     {
                         eventLog.Add(new EventLogEntryModel
                         {
-                            Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedAt.Value,
+                            Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedAt,
                             EventDetails = $"Avböjande bekräftat",
                             Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.DeniedByCreator).ConfirmedByUser.FullName,
                             Organization = brokerName,
@@ -380,7 +380,7 @@ namespace Tolk.Web.Helpers
                 RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = rsc.ConfirmedAt.Value,
+                    Timestamp = rsc.ConfirmedAt,
                     EventDetails = $"Avbokning bekräftad av förmedling",
                     Actor = rsc.ConfirmedByUser.FullName,
                     Organization = brokerName,
@@ -392,7 +392,7 @@ namespace Tolk.Web.Helpers
                 RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByBroker);
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = rsc.ConfirmedAt.Value,
+                    Timestamp = rsc.ConfirmedAt,
                     EventDetails = $"Avbokning bekräftad av myndighet",
                     Actor = rsc.ConfirmedByUser.FullName,
                     Organization = customerName,
