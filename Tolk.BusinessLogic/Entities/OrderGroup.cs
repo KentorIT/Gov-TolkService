@@ -63,6 +63,8 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderGroupCompetenceRequirement> CompetenceRequirements { get; set; }
 
         public List<OrderGroupInterpreterLocation> InterpreterLocations { get; set; }
+        
+        public List<OrderGroupStatusConfirmation> StatusConfirmations { get; set; }
 
         #endregion
 

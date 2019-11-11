@@ -219,6 +219,28 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Order"
                 }));
 
+            actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                .Include(og => og.Language)
+                .Include(og => og.RequestGroups)
+                .Include(og => og.StatusConfirmations)
+                .Include(og => og.Orders)
+                .Where(og => og.Status == OrderStatus.NoBrokerAcceptedOrder && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)).ToList()
+                .Select(og => new StartListItemModel
+                {
+                    Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                    DefaulListAction = "View",
+                    DefaulListController = "OrderGroup",
+                    DefaultItemId = og.OrderGroupId,
+                    InfoDate = GetInfoDateForCustomer(og)?.DateTime,
+                    CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
+                    ButtonItemId = og.OrderGroupId,
+                    Language = og.OtherLanguage ?? og.Language.Name,
+                    OrderNumber = og.OrderGroupNumber,
+                    Status = StartListItemStatus.OrderNotAnswered,
+                    ButtonAction = "View",
+                    ButtonController = "OrderGroup"
+                }));
+
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Include(o => o.Language)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
