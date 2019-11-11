@@ -413,7 +413,10 @@ namespace Tolk.BusinessLogic.Services
                     await SendErrorMail(nameof(DeleteRequestViews), ex);
                 }
             }
-            _logger.LogInformation($"No RequestViews to delete");
+            else
+            {
+                _logger.LogInformation($"No RequestViews to delete");
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
