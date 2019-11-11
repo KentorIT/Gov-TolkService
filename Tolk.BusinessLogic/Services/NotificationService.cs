@@ -1023,7 +1023,7 @@ Sammanställning:
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
         {
             string noReply = "Detta e-postmeddelande går inte att svara på.";
-            string handledBy = "Detta ärende hanteras i Kammarkollegiets Tolktjänst.";
+            string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
             string contractInfo = "Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16";
 
             foreach (string recipient in recipients)
