@@ -268,7 +268,7 @@
                             <div class="kamk-footer-heading">Avropstjänst för tolkar</div>
                             <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
                             <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
-                            <a href="https://www.avropa.se/innehall/avropstjanst-tolk/" target="_blank">Aktuell information</a><br />
+                            <a href="@Options.Value.ExternalLinks.CurrentInfo" target="_blank">Aktuell information</a><br />
                             @if (!string.IsNullOrWhiteSpace(userManual))
                             {
                                 <a href=@userManual target="_blank">Användarmanual</a><br />
@@ -281,9 +281,9 @@
                         </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Om oss</div>
-                            <a href="https://www.kammarkollegiet.se/statens-inkopscentral" target="_blank">Statens inköpscentral</a><br />
-                            <a href="https://www.kammarkollegiet.se/om-oss/vara-uppgifter/forteckning-over-vara-uppgifter/rattsavdelningen/auktorisation-av-tolkar-och-oversattare" target="_blank">Auktorisation av tolkar och god tolksed</a><br />
-                            <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
+                            <a href="@Options.Value.ExternalLinks.GovernmentalCentralPurchasing" target="_blank">Statens inköpscentral</a><br />
+                            <a href="@Options.Value.ExternalLinks.AuthorizingInterpreterInfo" target="_blank">Auktorisation av tolkar och god tolksed</a><br />
+                            <a href="@Options.Value.ExternalLinks.AgreementInfo" target="_blank">Ramavtal för tolkförmedlingstjänster</a><br />
                         </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Service Desk</div>

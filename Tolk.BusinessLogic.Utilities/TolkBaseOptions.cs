@@ -8,5 +8,6 @@
         public SupportSettings Support { get; set; }
         public SmtpSettings Smtp { get; set; }
         public StatusCheckerSettings StatusChecker { get; set; }
+        public ExternalLinksSettings ExternalLinks { get; set; }
     }
 }
