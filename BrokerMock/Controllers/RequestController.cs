@@ -249,7 +249,8 @@ namespace BrokerMock.Controllers
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
                                 }),
-                                declineExtraInterpreter
+                                declineExtraInterpreter,
+                                extraInstructions.Contains("ADDTRAVELCOSTS") ? 100 : 0
                             );
                         }
                     }
@@ -474,7 +475,7 @@ namespace BrokerMock.Controllers
             }
         }
 
-        private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, bool declineExtranInterpreter = false)
+        private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, bool declineExtranInterpreter = false, decimal expectedTravelCosts = 0)
         {
             var payload = new RequestGroupAnswerModel
             {
@@ -486,7 +487,7 @@ namespace BrokerMock.Controllers
                     Accepted = true,
                     Interpreter = interpreter,
                     CompetenceLevel = competenceLevel,
-                    ExpectedTravelCosts = 0,
+                    ExpectedTravelCosts = expectedTravelCosts,
                     RequirementAnswers = requirementAnswers
                 },
                 ExtraInterpreterAnswer = !declineExtranInterpreter ? new InterpreterGroupAnswerModel
@@ -494,7 +495,7 @@ namespace BrokerMock.Controllers
                     Accepted = true,
                     Interpreter = extraInterpreter,
                     CompetenceLevel = competenceLevel,
-                    ExpectedTravelCosts = 0,
+                    ExpectedTravelCosts = expectedTravelCosts,
                     RequirementAnswers = requirementAnswers
                 } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt."},
             };

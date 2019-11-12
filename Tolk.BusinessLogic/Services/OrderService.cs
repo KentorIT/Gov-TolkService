@@ -182,7 +182,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (partialRequestGroup != null)
             {
-                RequestGroup newRequestGroup = await GetNewRequestGroup(requestGroup.RequestGroupId);
+                RequestGroup newRequestGroup = await GetNewRequestGroup(partialRequestGroup.RequestGroupId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",

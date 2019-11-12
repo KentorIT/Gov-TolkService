@@ -137,8 +137,8 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             AnswerProcessedAt = RequiresAccept(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
             OrderGroup.SetStatus(RequiresAccept(hasTravelCosts) ? 
-                partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.RequestResponded :
-                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.ResponseAccepted, false);
+                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
+                partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
         }
 
         public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)

@@ -105,7 +105,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException("I en beställning med flera tillfällen och extra tolk begärt vid minst ett tillfälle, så måste den extra tolken tillsättas.");
             }
-            bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 && (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
+            bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             bool partialAnswer = false;
             //1. Get the verification results for the interpreter(s)
             var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
