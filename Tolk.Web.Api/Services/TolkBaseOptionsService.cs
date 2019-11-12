@@ -28,5 +28,7 @@ namespace Tolk.Web.Api.Services
         public SmtpSettings Smtp => _options.Smtp;
 
         public StatusCheckerSettings StatusChecker => _options.StatusChecker;
+
+        public bool RunEntityScheduler => false;
     }
 }

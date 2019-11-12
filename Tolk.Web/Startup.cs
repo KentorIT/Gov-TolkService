@@ -109,7 +109,11 @@ namespace Tolk.Web
 
             services.AddSingleton<IValidationAttributeAdapterProvider, SwedishValidationAttributeAdapterProvider>();
 
-            services.AddSingleton<EntityScheduler>();
+            var runEntityScheduler = Configuration["RunEntityScheduler"] == null ? true : bool.Parse(Configuration["RunEntityScheduler"]);
+            if (runEntityScheduler)
+            {
+                services.AddSingleton<EntityScheduler>();
+            }
 
             services.AddTolkBusinessLogicServices();
             services.RegisterDataTables();

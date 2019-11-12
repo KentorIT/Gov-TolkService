@@ -11,5 +11,6 @@ namespace Tolk.BusinessLogic.Services
         SupportSettings Support { get; }
         SmtpSettings Smtp { get; }
         StatusCheckerSettings StatusChecker { get; }
+        bool RunEntityScheduler { get; }
     }
 }

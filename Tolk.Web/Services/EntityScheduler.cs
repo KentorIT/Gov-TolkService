@@ -132,7 +132,13 @@ namespace Tolk.Web.Services
             finally
             {
                 nextRunIsNotifications = !nextRunIsNotifications;
-                Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
+                using (var serviceScope = _services.CreateScope())
+                {
+                    if (serviceScope.ServiceProvider.GetRequiredService<ITolkBaseOptions>().RunEntityScheduler)
+                    {
+                        Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
+                    }
+                }
             }
 
             _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs / 1000} seconds again");

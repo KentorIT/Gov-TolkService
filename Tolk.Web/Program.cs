@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tolk.Web.Services;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web
 {
@@ -12,8 +13,13 @@ namespace Tolk.Web
         {
             var host = BuildWebHost(args);
 
-            host.Services.GetRequiredService<EntityScheduler>().Init();
-
+            using (var scope = host.Services.CreateScope())
+            {
+                if (scope.ServiceProvider.GetRequiredService<ITolkBaseOptions>().RunEntityScheduler)
+                {
+                    host.Services.GetRequiredService<EntityScheduler>().Init();
+                }
+            }
             host.Run();
         }
 

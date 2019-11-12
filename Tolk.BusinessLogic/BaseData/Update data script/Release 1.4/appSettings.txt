@@ -1,9 +1,13 @@
 StatusChecker-delarna behöver sättas upp i alla webbar.
 EnableDefaultSettings ska bort från configuration
 
+Lägg till:
+
   "ExternalLinks": {
     "CurrentInfo": "https://www.avropa.se/innehall/avropstjanst-tolk/",
     "AuthorizingInterpreterInfo": "https://www.kammarkollegiet.se/download/18.27f1fe4c168c1d817515205f/1551777027993/God_tolksed_mars2019.pdf",
     "AgreementInfo": "https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/",
     "GovernmentalCentralPurchasing": "https://www.kammarkollegiet.se/statens-inkopscentral"
   }
+
+  "RunEntityScheduler": true

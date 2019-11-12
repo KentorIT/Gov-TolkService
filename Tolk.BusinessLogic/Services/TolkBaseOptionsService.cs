@@ -27,5 +27,7 @@ namespace Tolk.BusinessLogic.Services
         public SmtpSettings Smtp => _options.Smtp;
 
         public StatusCheckerSettings StatusChecker => _options.StatusChecker;
+
+        public bool RunEntityScheduler => _options?.RunEntityScheduler?? true;
     }
 }
