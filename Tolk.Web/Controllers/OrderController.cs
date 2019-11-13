@@ -314,13 +314,18 @@ namespace Tolk.Web.Controllers
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             OrderModel updatedModel = null;
             var firstOccasion = model.FirstOccasion;
+            string warningOrderTimeInfo = string.Empty;
             model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
             updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
                 updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
                 updatedModel.SeveralOccasions = true;
-                //TODO: THERE ARE WARNINGS TO ADD HERE, TOO!!
+                updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime);
+                warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
+                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? 
+                    CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
+                    $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
             }
             else
             {
@@ -332,14 +337,9 @@ namespace Tolk.Web.Controllers
                     UseDisplayHideInfo = true,
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
-
-                //check reasonable duration time for order (more than 10h or less than 1h)
-                int minutes = (int)(order.EndAt - order.StartAt).TotalMinutes;
-                updatedModel.WarningOrderTimeInfo = minutes > 600 ? "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : minutes < 60 ? "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty;
-
-                //check if order is far in future (more than 2 years ahead)
-                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(updatedModel.WarningOrderTimeInfo) ? order.StartAt.DateTime.AddYears(-2) > _clock.SwedenNow.DateTime ? "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg genom att klicka på Ändra, om angiven tid är korrekt kan bokningen skickas som vanligt." : string.Empty : updatedModel.WarningOrderTimeInfo;
-
+                warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
+                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) : 
+                    $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
             }
             var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
                 .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
@@ -383,6 +383,46 @@ namespace Tolk.Web.Controllers
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
             updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
             return PartialView(nameof(Confirm), updatedModel);
+        }
+
+        private static string CheckReasonableDurationTimeOrderGroup(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+        {
+            string message = string.Empty;
+            foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
+            {
+                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.OccasionEndDateTime, true);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    return message;
+                }
+            }
+            return message;
+        }
+
+        private static string CheckReasonableDurationTime(DateTime start, DateTime end, bool isOrderGroup = false)
+        {
+            int minutes = (int)(end - start).TotalMinutes;
+            return minutes > 600 ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                minutes < 60 ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." : 
+                string.Empty;
+        }
+
+        private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
+        {
+            return orderStart.AddYears(-2) > _clock.SwedenNow.DateTime ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." : 
+                "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                string.Empty;
+        }
+
+        private string CheckOrderGroupCloseInTime(DateTime orderStart)
+        {
+            return orderStart < _clock.SwedenNow.AddDays(7) ?
+                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
         }
 
         private static string CheckOrderCompetenceRequirements(Order o, Language l)

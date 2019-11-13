@@ -8,8 +8,8 @@ $(function () {
     var allowLatestAnswerBy = true;
 
     var occasionButtons = '<div class="pull-right">' +
-        '<a class="btn btn-warning table-button change">Ändra <span class="glyphicon glyphicon-edit"></span></a>&nbsp;' +
-        '<a class="btn btn-danger table-button remove">Ta bort <span class="glyphicon glyphicon-remove"></span></a>' +
+        '<a class="btn btn-warning small-button-row change">Ändra <span class="glyphicon glyphicon-edit"></span></a>&nbsp;' +
+        '<a class="btn btn-danger small-button remove">Ta bort <span class="btn-remove-times-small">&times;</span></a>' +
         '</div>';
 
     var requiredModal = $("#req").parents(".modal-content");
@@ -207,6 +207,7 @@ $(function () {
         }
     });
 
+
     $("body").on("click", ".remove-desiredRequirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -274,7 +275,7 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-
+    
     $("body").on("click", ".save-desiredRequirement", function (event) {
         event.preventDefault();
         var modalContent = $(this).parents(".modal-content");
@@ -495,7 +496,6 @@ $(function () {
         document.documentElement.scrollTop = 0;
     });
 
-
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
         if ($(this).val() === "YesShouldBeApproved") {
             $(".allow-more-travel-cost-information").show();
@@ -509,11 +509,11 @@ $(function () {
         }
     });
 
-    $("body").on("click", "tr > td > div > a.table-button.change", function () {
+    $("body").on("click", "tr > td > div > a.small-button-row.change", function () {
         alert("add functionality for taking the info in the row reading into the occasion input above the row...");
     });
 
-    $("body").on("click", "tr > td > div > a.table-button.remove", function () {
+    $("body").on("click", "tr > td > div > a.small-button.remove", function () {
         var table = $('.several-occasions-table table').DataTable();
         table.row($(this).parents('tr')).remove().draw();
         //if last row was removed, uncheck the severaloccasions
