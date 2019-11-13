@@ -91,8 +91,24 @@ $(function () {
     };
 
     var addOccasion = function () {
+        $('#OccasionValidator').empty();
         if (!allowLatestAnswerBy) {
-            alert("Det går inte att lägga till tillfällen för nära i tiden när man vill beställa flera tillfällen.");
+            triggerOrderValidator("Det går inte att lägga till tillfällen för nära i tiden när man vill boka flera tillfällen.", $('#OccasionValidator'));
+            return;
+        }
+        if (!hasValidOccasion())
+        {
+            triggerOrderValidator("Fyll i datum och tid", $('#OccasionValidator'));
+            return;
+        }
+        var occStartDateAndTime = getDate($("#SplitTimeRange_StartDate").val(), $("#SplitTimeRange_StartTimeHour").val(), $("#SplitTimeRange_StartTimeMinutes").val());
+        var occEndDateAndTime = getDate($("#SplitTimeRange_StartDate").val(), $("#SplitTimeRange_EndTimeHour").val(), $("#SplitTimeRange_EndTimeMinutes").val());
+        if (occEndDateAndTime < occStartDateAndTime) {
+            occEndDateAndTime.addDays(1);
+        }
+        var validationMessage = checkEachOccasion(occStartDateAndTime, occEndDateAndTime);
+        if (validationMessage !== "") {
+            triggerOrderValidator(validationMessage, $('#OccasionValidator'));
             return;
         }
         var $form = $('.order-datepicker').closest('form');
@@ -187,6 +203,35 @@ $(function () {
             $("#SplitTimeRange_EndTimeMinutes").val() === "");
     };
 
+    function checkEachOccasion(start, end) {
+        var now = new Date($("#now").val());
+        if (now - start === 0 || now > start) {
+            return "Tid och datum för tillfället har redan passerat.";
+        }
+        var message = "";
+        var occTbody = $("#occasion-tbody");
+        var $rows = occTbody.find("tr");
+        if ($rows.length === 1 && currentOccasionId === 0) {
+            return message;
+        }
+        else {
+            $rows.each(function () {
+                var tdStart = $(this).find("input[name$='OccasionStartDateTime']").val();
+                var tdEnd = $(this).find("input[name$='OccasionEndDateTime']").val();
+                //check added occasion against previous occasions
+                if (new Date(tdStart) - end === 0 || new Date(tdEnd) - start === 0 || new Date(tdStart) - start === 0 || new Date(tdEnd) - end === 0) {
+                    message = "Detta tillfälle startar eller slutar samtidigt som ett tidigare tillagt tillfälle startar eller slutar. Det måste vara mellanrum mellan tillfällena.";
+                    return;
+                }
+                else if ((new Date(tdStart) > start && new Date(tdStart) < end) || (new Date(tdStart) < start && new Date(tdEnd) > start)) {
+                    message = "Detta tillfälle överlappar med ett tidigare tillagt tillfälle.";
+                    return;
+                }
+            });
+            return message;
+        }
+    }
+
     $("body").on("click", ".remove-requirement-row", function () {
         var $tbody = $(this).closest("tbody");
         $(this).closest("tr").remove();
@@ -275,7 +320,7 @@ $(function () {
             $("#addRequirement").modal("hide");
         }
     });
-    
+
     $("body").on("click", ".save-desiredRequirement", function (event) {
         event.preventDefault();
         var modalContent = $(this).parents(".modal-content");
@@ -539,6 +584,8 @@ $(function () {
             $(".add-date-button-row").show();
             addOccasion();
         } else {
+            $("#OccasionValidator").show();
+            $("#OccasionValidator").empty();
             $(".several-occasions-table").hide();
             $(".add-date-button-row").hide();
             var table = $('.several-occasions-table table').DataTable();
@@ -758,6 +805,12 @@ $(function () {
             $("#send").blur();
         }
     });
+
+    function triggerOrderValidator(message, validatorId) {
+        validatorId.empty();
+        validatorId.append(message);
+        validatorId.show();
+    }
 
     $("body").on("mousedown", ".wizard-forward-button", function () {
         //This is done to make sure that the wizard validation does not validate date add stuff when it shouldn't

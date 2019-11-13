@@ -80,6 +80,7 @@
                                         <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" />
                                     }
                                 </div>
+                                <div id="OccasionValidator" class="col-sm-12 d-none text-danger body"></div>
                             </div>
                             @if (enableOrderGroups)
                             {
@@ -104,7 +105,7 @@
                                                         <th data-sortable="false"></th>
                                                     </tr>
                                                 </thead>
-                                                <tbody></tbody>
+                                                <tbody id="occasion-tbody"></tbody>
                                             </table>
                                         </div>
                                     </div>
