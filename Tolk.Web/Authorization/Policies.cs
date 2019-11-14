@@ -70,7 +70,7 @@ namespace Tolk.Web.Authorization
 
         private readonly static Func<AuthorizationHandlerContext, bool> ViewMenuAndStartListsHandler = (context) =>
         {
-            return context.User.HasClaim(c => c.Type == TolkClaimTypes.PersonalName);
+            return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet) || context.User.IsImpersonated();
         };
 
         private readonly static Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>

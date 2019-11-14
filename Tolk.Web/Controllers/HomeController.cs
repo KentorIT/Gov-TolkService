@@ -20,7 +20,6 @@ using Tolk.Web.Models;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic;
 using Microsoft.Extensions.Options;
-//using System.Net;
 
 namespace Tolk.Web.Controllers
 {
@@ -69,13 +68,11 @@ namespace Tolk.Web.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
                 {
-                    var hasPassword = await _userManager.HasPasswordAsync(user);
-
-                    if (!hasPassword)
+                    if (!await _userManager.HasPasswordAsync(user))
                     {
                         return RedirectToAction("RegisterNewAccount", "Account");
                     }
-                    if (!(await _authorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded)
+                    if (!User.HasClaim(c => c.Type == TolkClaimTypes.PersonalName))
                     {
                         return RedirectToAction("Edit", "Account");
                     }

@@ -49,7 +49,7 @@
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    @if (userHasPassword)
+    @if ((await AuthorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded)
     {
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
