@@ -100,11 +100,8 @@ namespace Tolk.BusinessLogic.Services
 
             bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
             bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+            ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
-            if (hasExtraInterpreter && !isSingleOccasion && !extraInterpreter.Accepted)
-            {
-                throw new InvalidOperationException("I en beställning med flera tillfällen och extra tolk begärt vid minst ett tillfälle, så måste den extra tolken tillsättas.");
-            }
             bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             bool partialAnswer = false;
             //1. Get the verification results for the interpreter(s)
@@ -126,21 +123,20 @@ namespace Tolk.BusinessLogic.Services
                             extraInterpreter,
                             interpreterLocation,
                             Enumerable.Empty<RequestAttachment>().ToList(),
-                            extraInterpreterVerificationResult
+                            extraInterpreterVerificationResult,
+                            hasTravelCosts
+
                        );
                     }
                     else
                     {
                         partialAnswer = true;
                         await Decline(request, answerTime, userId, impersonatorId, extraInterpreter.DeclineMessage, false, false);
-                        // Add the request to a list of request to created the new group with, later...
                         declinedRequests.Add(request);
                     }
                 }
                 else
                 {
-                    //TODO: I do not want to add the files to all requests!, have to be able to add them on group level.
-                    // NOTE: This goes for order groups as well...
                     AcceptRequest(request,
                         answerTime,
                         userId,
@@ -148,19 +144,20 @@ namespace Tolk.BusinessLogic.Services
                         interpreter,
                         interpreterLocation,
                         Enumerable.Empty<RequestAttachment>().ToList(),
-                        verificationResult
+                        verificationResult,
+                        hasTravelCosts
                     );
                 }
             }
 
-            // add the attachmnents to the group...
+            // add the attachments to the group...
             requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer);
 
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
                 await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
-                if (requestGroup.RequiresAccept(hasTravelCosts))
+                if (requestGroup.RequiresApproval(hasTravelCosts))
                 {
                     requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
                     _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
@@ -174,7 +171,7 @@ namespace Tolk.BusinessLogic.Services
             else
             {
                 //2. Set the request group and order group in correct state
-                if (requestGroup.RequiresAccept(hasTravelCosts))
+                if (requestGroup.RequiresApproval(hasTravelCosts))
                 {
                     requestGroup.SetStatus(RequestStatus.Accepted, false);
                     _notificationService.RequestGroupAccepted(requestGroup);
@@ -448,18 +445,44 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult)
+        private void ValidateInterpreters(InterpreterAnswerDto interpreter, InterpreterAnswerDto extraInterpreter, bool hasExtraInterpreter)
+        {
+            if (!interpreter.Accepted && !hasExtraInterpreter)
+            {
+                throw new InvalidOperationException("Ingen tolk är tillsatt. använd \"Tacka nej till bokning\" om intentionen är att inte tillsätta någon tolk.");
+            }
+
+            if (!interpreter.Accepted && hasExtraInterpreter && extraInterpreter.Accepted)
+            {
+                throw new InvalidOperationException("Om den sammanhållna bokningen beställer två tolkar så måste den första tolken tillsättas.");
+            }
+            if (!interpreter.Accepted && hasExtraInterpreter && !extraInterpreter.Accepted)
+            {
+                throw new InvalidOperationException("Ingen tolk är tillsatt. använd \"Tacka nej till bokning\" om intentionen är att inte tillsätta någon tolk.");
+            }
+
+            if (hasExtraInterpreter && !extraInterpreter.Accepted && !_tolkBaseOptions.AllowDeclineExtraInterpreterOnRequestGroups)
+            {
+                throw new InvalidOperationException("Om den sammanhållna bokningen beställer två tolkar så måste den extra tolken tillsättas.");
+            }
+            if (hasExtraInterpreter && interpreter.Accepted && extraInterpreter.Accepted && interpreter.Interpreter.InterpreterBrokerId == extraInterpreter.Interpreter.InterpreterBrokerId)
+            {
+                throw new InvalidOperationException("Man kan inte tillsätta samma tolk som extra tolk.");
+            }
+        }
+
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, bool overrideRequireAccept = false)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
             // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult);
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult, overrideRequireAccept);
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult)
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, overrideRequireAccept);
         }
 
         private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)

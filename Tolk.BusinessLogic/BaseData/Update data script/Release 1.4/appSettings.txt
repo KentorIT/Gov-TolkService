@@ -11,3 +11,5 @@ Lägg till:
   }
 
   "RunEntityScheduler": true
+
+  "AllowDeclineExtraInterpreterOnRequestGroups" : false

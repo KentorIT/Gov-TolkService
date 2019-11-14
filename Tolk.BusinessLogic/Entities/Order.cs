@@ -85,7 +85,7 @@ namespace Tolk.BusinessLogic.Entities
                        (base.Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
                     Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
                 {
-                    throw new InvalidOperationException($"Order {OrderId} is in the wrong state to be set as accepted.");
+                    throw new InvalidOperationException($"Betällning {OrderNumber} Kan inte sättas till {OrderStatus.ResponseAccepted.GetDescription()}.");
                 }
 
                 base.Status = value;

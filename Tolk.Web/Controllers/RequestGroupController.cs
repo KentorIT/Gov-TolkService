@@ -83,8 +83,9 @@ namespace Tolk.Web.Controllers
                .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
                .SingleAsync(r => r.RequestGroupId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
@@ -100,7 +101,7 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                 }
 
-                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId()));
+                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups));
             }
             return Forbid();
         }

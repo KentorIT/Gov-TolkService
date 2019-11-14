@@ -19,6 +19,7 @@ using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic;
+using Microsoft.Extensions.Options;
 //using System.Net;
 
 namespace Tolk.Web.Controllers
@@ -31,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<HomeController> _logger;
         private readonly VerificationService _verificationService;
+        private readonly TolkOptions _options;
 
         public HomeController(
             TolkDbContext dbContext,
@@ -38,7 +40,9 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             IAuthorizationService authorizationService,
             ILogger<HomeController> logger,
-            VerificationService verificationService)
+            VerificationService verificationService,
+            IOptions<TolkOptions> options
+            )
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -46,6 +50,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _logger = logger;
             _verificationService = verificationService;
+            _options = options?.Value;
         }
 
         public async Task<IActionResult> Index(string message, string errorMessage)
@@ -154,11 +159,11 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order"
                 }));
-            //Accepted order groups to approve and order groups awaiting deadline
+            //Accepted order groups to approve 
             actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
                 .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
-                .Where(og => og.Status == OrderStatus.RequestResponded || og.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
+                .Where(og => og.Status == OrderStatus.RequestResponded).ToList()
                 .Select(og => new StartListItemModel
                 {
                     Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
@@ -175,29 +180,31 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "OrderGroup"
                 }));
-            actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                .Include(og => og.Language)
-                .Include(og => og.Orders)
-                .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
-                .Where(og => og.Status == OrderStatus.RequestAwaitingPartialAccept).ToList()
-                .Select(og => new StartListItemModel
-                {
-                    Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
-                    DefaulListAction = "View",
-                    DefaulListController = "OrderGroup",
-                    DefaultItemId = og.OrderGroupId,
-                    InfoDate = GetInfoDateForCustomer(og)?.DateTime,
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)og.RequestGroups.Where(req => req.Status == RequestStatus.PartiallyAccepted).First()
-                        .Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    ButtonItemId = og.OrderGroupId,
-                    Language = og.OtherLanguage ?? og.Language.Name,
-                    OrderNumber = og.OrderGroupNumber,
-                    Status = GetStartListStatusForCustomer(og.Status, 0),
-                    ButtonAction = "View",
-                    ButtonController = "OrderGroup"
-                }));
-
-            //ADD OrderGroupStatusConfirmations
+            //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
+            if (_options.AllowDeclineExtraInterpreterOnRequestGroups)
+            {
+                actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                    .Include(og => og.Language)
+                    .Include(og => og.Orders)
+                    .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
+                    .Where(og => og.Status == OrderStatus.RequestAwaitingPartialAccept).ToList()
+                    .Select(og => new StartListItemModel
+                    {
+                        Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                        DefaulListAction = "View",
+                        DefaulListController = "OrderGroup",
+                        DefaultItemId = og.OrderGroupId,
+                        InfoDate = GetInfoDateForCustomer(og)?.DateTime,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)og.RequestGroups.Where(req => req.Status == RequestStatus.PartiallyAccepted).First()
+                            .Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        ButtonItemId = og.OrderGroupId,
+                        Language = og.OtherLanguage ?? og.Language.Name,
+                        OrderNumber = og.OrderGroupNumber,
+                        Status = GetStartListStatusForCustomer(og.Status, 0),
+                        ButtonAction = "View",
+                        ButtonController = "OrderGroup"
+                    }));
+            }
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Include(o => o.Language)
                 .Include(o => o.Requests)

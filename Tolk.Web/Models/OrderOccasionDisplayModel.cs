@@ -25,7 +25,7 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel PriceInformationModel { get; set; }
 
-        internal static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel)
+        internal static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel = null)
         {
             return new OrderOccasionDisplayModel
             {
@@ -33,7 +33,7 @@ namespace Tolk.Web.Models
                 OccasionStartDateTime = order.StartAt.DateTime,
                 OccasionEndDateTime = order.EndAt.DateTime,
                 ExtraInterpreter = order.IsExtraInterpreterForOrderId.HasValue,
-                PriceInformationModel = priceInformationModel
+                PriceInformationModel = priceInformationModel,
             };
         }
     }

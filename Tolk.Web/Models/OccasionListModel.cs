@@ -9,11 +9,13 @@ namespace Tolk.Web.Models
     public class OccasionListModel
     {
         public IEnumerable<OrderOccasionDisplayModel> Occasions { get; set; }
+        public IEnumerable<OrderOccasionDisplayModel> AllOccasions { get; set; }
+        public IEnumerable<OrderOccasionDisplayModel> DisplayableOccasions => Occasions.Union(AllOccasions.Where(a => !Occasions.Any(o => o.OrderNumber == a.OrderNumber)));
 
         [DataType(DataType.MultilineText)]
         [Display(Name = "Tillfällen för tolk")]
         public string InterpreterOccasionsCompactDisplay =>
-            string.Join("\n", Occasions
+            string.Join("\n", AllOccasions
                 .Where(o => !o.ExtraInterpreter)
                 .OrderBy(o => o.Information)
                 .Select(o => o.Information));
@@ -21,7 +23,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Display(Name = "Tillfällen för extra tolk")]
         public string ExtraInterpreterOccasionsCompactDisplay =>
-            string.Join("\n", Occasions
+            string.Join("\n", AllOccasions
                 .Where(o => o.ExtraInterpreter)
                 .OrderBy(o => o.Information)
                 .Select(o => o.Information));

@@ -199,7 +199,8 @@ namespace Tolk.BusinessLogic.Entities
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation,
             string expectedTravelCostInfo,
-            VerificationResult? verificationResult = null
+            VerificationResult? verificationResult = null,
+            bool overrideRequireAccept = false
             )
         {
             if (priceInformation == null)
@@ -229,9 +230,12 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
-            Status = RequiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
-            Order.Status = RequiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
-            AnswerProcessedAt = RequiresAccept ? null : (DateTimeOffset?)acceptTime;
+
+            var requiresAccept = overrideRequireAccept || RequiresAccept;
+
+            Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
+            Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)acceptTime;
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)

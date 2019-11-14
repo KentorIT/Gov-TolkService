@@ -107,7 +107,7 @@ namespace Tolk.Web.Api.Services
                     if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId))
                     {
                         //Create the new interpreter, connected to the provided broker
-                        return new InterpreterBroker(
+                        var newInterpreter = new InterpreterBroker(
                             interpreterModel.FirstName,
                             interpreterModel.LastName,
                             brokerId,
@@ -115,6 +115,8 @@ namespace Tolk.Web.Api.Services
                             interpreterModel.PhoneNumber,
                             interpreterModel.OfficialInterpreterId
                         );
+                        _dbContext.Add(newInterpreter);
+                        return newInterpreter;
                     }
                     else
                     {
@@ -143,7 +145,15 @@ namespace Tolk.Web.Api.Services
                 }
                 if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
                 {
-                    interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
+                    if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId, interpreter.InterpreterBrokerId))
+                    {
+                        interpreter.OfficialInterpreterId = interpreterModel.OfficialInterpreterId;
+                    }
+                    else
+                    {
+                        throw new InvalidApiCallException(ErrorCodes.InterpreterOfficialIdAlreadySaved);
+                    }
+
                 }
             }
             return interpreter;

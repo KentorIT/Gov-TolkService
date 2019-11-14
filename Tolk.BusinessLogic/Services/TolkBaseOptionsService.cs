@@ -29,5 +29,7 @@ namespace Tolk.BusinessLogic.Services
         public StatusCheckerSettings StatusChecker => _options.StatusChecker;
 
         public bool RunEntityScheduler => _options?.RunEntityScheduler?? true;
+
+        public bool AllowDeclineExtraInterpreterOnRequestGroups => _options.AllowDeclineExtraInterpreterOnRequestGroups;
     }
 }

@@ -121,18 +121,24 @@ namespace Tolk.Web.Models
         //ROWS with occasions!!
         public OccasionListModel OccasionList { get; set; }
 
+        //The following two properties will be used later, if AllowDeclineExtraInterpreter is allowed.
+        public bool ShouldAssignInterpreter { get; set; } = true;
+        public bool ShouldAssignExtraInterpreter { get; set; } = true;
+
+        public bool AllowDeclineExtraInterpreter { get; set; }
+
         #region methods
 
-        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, int userId)
+        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, int userId, bool allowDeclineExtraInterpreter)
         {
-
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            Order order = requestGroup.OrderGroup.FirstOrder;
+            Order order = requestGroup.Requests.First().Order;
             var viewedByUser = requestGroup.Views.Any(rv => rv.ViewedBy != userId) ?
                 requestGroup.Views.First(rv => rv.ViewedBy != userId).ViewedByUser.FullName + " håller också på med denna förfrågan"
                 : string.Empty;
             return new RequestGroupProcessModel
             {
+                AllowDeclineExtraInterpreter = allowDeclineExtraInterpreter,
                 ViewedByUser = viewedByUser,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
@@ -154,8 +160,6 @@ namespace Tolk.Web.Models
                         Size = a.Attachment.Blob.Length
                     }).ToList()
                 },
-
-                //NEW
                 InterpreterAnswerModel = new InterpreterAnswerModel
                 {
                     RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
@@ -192,15 +196,15 @@ namespace Tolk.Web.Models
                 } : null,
                 OccasionList = new OccasionListModel
                 {
-                    Occasions = orderGroup.Orders
-                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o)))
+                    Occasions = requestGroup.Requests.Select(r => r.Order)
+                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o))),
+                    AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o))
                 },
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
                 AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
                 AssignmentType = orderGroup.AssignmentType,
                 CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
                 CustomerName = orderGroup.CustomerOrganisation.Name,
-                //AttachmentListModel
                 CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 CustomerUnitName = orderGroup.CustomerUnit?.Name,

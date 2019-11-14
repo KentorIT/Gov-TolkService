@@ -93,7 +93,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
-        public bool RequiresAccept(bool hasTravelCosts)
+        public bool RequiresApproval(bool hasTravelCosts)
         {
             return hasTravelCosts &&
                 OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
@@ -135,8 +135,8 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             Attachments = attachedFiles;
-            AnswerProcessedAt = RequiresAccept(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
-            OrderGroup.SetStatus(RequiresAccept(hasTravelCosts) ? 
+            AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
+            OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ? 
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
         }
