@@ -149,7 +149,7 @@ namespace Tolk.Web.Controllers
                     IsCentralOrderHandler = user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId),
                     DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
-                    DisplayForAdminUser = IsSysOrAppAdmin,
+                    DisplayForAdminUser = UseRolesForAdminUser(user),
                     LastLoginAt = "{0:yyyy-MM-dd}".FormatSwedish(user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive,
@@ -222,7 +222,7 @@ namespace Tolk.Web.Controllers
                     IsSystemAdministrator = user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId),
                     DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
-                    DisplayForAdminUser = IsSysOrAppAdmin,
+                    DisplayForAdminUser = UseRolesForAdminUser(user),
                     IsActive = user.IsActive,
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     UserType = HighestLevelLoggedInUserType,
@@ -269,7 +269,7 @@ namespace Tolk.Web.Controllers
                     {
                         await UpdateCentralOrderHandlerRoleAsync(model, user);
                     }
-                    if (IsSysOrAppAdmin)
+                    if (UseRolesForAdminUser(user))
                     {
                         await UpdateRolesForAdminUserAsync(model, user);
                     }
@@ -990,6 +990,10 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        private bool UseRolesForAdminUser(AspNetUser user)
+        {
+            return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && !user.InterpreterId.HasValue && IsSysOrAppAdmin;
+        }
         private bool IsSysOrAppAdmin => User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator);
 
         private string BackController => HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Unit") ? "Unit" : "User";
