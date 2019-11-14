@@ -19,16 +19,10 @@
                 <div class="col-sm-4">
                     <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
                 </div>
-                @if (Model.UserType == UserTypes.ApplicationAdministrator)
+                @if (Model.UserType == UserTypes.ApplicationAdministrator || Model.UserType == UserTypes.SystemAdministrator)
                 {
                     <div class="col-sm-4">
                         <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
-                    </div>
-                }
-                else if (Model.UserType == UserTypes.SystemAdministrator)
-                {
-                    <div class="col-sm-4">
-                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForSysAdmin" class="allow-clear" />
                     </div>
                 }
                 else if (Model.UserType == UserTypes.Broker)

@@ -30,18 +30,15 @@
                     <div class="CentralOrderHandlerCheckBox">
                         <form-entry asp-for="IsCentralOrderHandler" />
                     </div>
-                    @if (Model.UserType == UserTypes.ApplicationAdministrator)
-                    {
-                        <div class="d-none ApplicationAdministratorCheckBox">
-                            <form-entry asp-for="IsApplicationAdministrator" />
-                        </div>
-                        <div class="d-none SystemAdministratorCheckBox">
-                            <form-entry asp-for="IsSystemAdministrator" />
-                        </div>
-                        <div class="d-none ImpersonatorCheckBox">
-                            <form-entry asp-for="IsImpersonator" />
-                        </div>
-                    }
+                    <div class="d-none ApplicationAdministratorCheckBox">
+                        <form-entry asp-for="IsApplicationAdministrator" />
+                    </div>
+                    <div class="d-none SystemAdministratorCheckBox">
+                        <form-entry asp-for="IsSystemAdministrator" />
+                    </div>
+                    <div class="d-none ImpersonatorCheckBox">
+                        <form-entry asp-for="IsImpersonator" />
+                    </div>
                 }
                 @if (Model.UserType == UserTypes.OrganisationAdministrator)
                 {

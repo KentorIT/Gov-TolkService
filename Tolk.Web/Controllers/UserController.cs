@@ -10,7 +10,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
-using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -98,11 +97,7 @@ namespace Tolk.Web.Controllers
             {
                 users = users.Where(u => u.BrokerId == brokerId);
             }
-            else if (model.UserType == UserTypes.SystemAdministrator)
-            {
-                users = users.Where(u => !u.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId || r.RoleId == ImpersonatorRoleId));
-            }
-            else if (model.UserType != UserTypes.ApplicationAdministrator)
+            else if (!IsSysOrAppAdmin)
             {
                 return Forbid();
             }
@@ -119,9 +114,8 @@ namespace Tolk.Web.Controllers
 
         public JsonResult ListColumnDefinition()
         {
-            var userType = HighestLevelLoggedInUserType;
             var definition = AjaxDataTableHelper.GetColumnDefinitions<UserListItemModel>().ToList();
-            definition.Single(d => d.Name == nameof(UserListItemModel.Organisation)).Visible = (userType == UserTypes.ApplicationAdministrator || userType == UserTypes.SystemAdministrator);
+            definition.Single(d => d.Name == nameof(UserListItemModel.Organisation)).Visible = IsSysOrAppAdmin;
             return Json(definition);
         }
 
@@ -129,8 +123,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> View(int id, string message, string bc = null, string ba = null, string bi = null)
         {
             var user = await GetUserToHandle(id);
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded &&
-                !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
                 IEnumerable<CustomerUnit> customerUnits = null;
                 if (user.CustomerOrganisationId.HasValue)
@@ -156,7 +149,7 @@ namespace Tolk.Web.Controllers
                     IsCentralOrderHandler = user.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId),
                     DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
-                    DisplayForAdminUser = UseRolesForAdminUser(user),
+                    DisplayForAdminUser = IsSysOrAppAdmin,
                     LastLoginAt = "{0:yyyy-MM-dd}".FormatSwedish(user.LastLoginAt) ?? "-",
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     IsActive = user.IsActive,
@@ -211,8 +204,7 @@ namespace Tolk.Web.Controllers
                     });
             }
 
-            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded &&
-                 !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
                 var model = new UserModel
                 {
@@ -230,7 +222,7 @@ namespace Tolk.Web.Controllers
                     IsSystemAdministrator = user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId),
                     DisplayCentralOrderHandler = user.CustomerOrganisationId.HasValue,
                     DisplayCentralAdmin = user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue,
-                    DisplayForAdminUser = UseRolesForAdminUser(user),
+                    DisplayForAdminUser = IsSysOrAppAdmin,
                     IsActive = user.IsActive,
                     Organisation = user.CustomerOrganisation?.Name ?? user.Broker?.Name ?? "-",
                     UserType = HighestLevelLoggedInUserType,
@@ -257,8 +249,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefaultAsync(u => u.Id == model.Id);
-                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded &&
-                     !(HighestLevelLoggedInUserType == UserTypes.SystemAdministrator && user.Roles.Any(r => r.RoleId == ImpersonatorRoleId && r.RoleId == ApplicationAdministratorRoleId)))
+                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
                     await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
                     user.NameFirst = model.NameFirst;
@@ -278,7 +269,7 @@ namespace Tolk.Web.Controllers
                     {
                         await UpdateCentralOrderHandlerRoleAsync(model, user);
                     }
-                    if (UseRolesForAdminUser(user))
+                    if (IsSysOrAppAdmin)
                     {
                         await UpdateRolesForAdminUserAsync(model, user);
                     }
@@ -382,7 +373,7 @@ namespace Tolk.Web.Controllers
                     serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Du måste koppla användaren till minst en enhet");
                 }
-                else if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator)
+                else if (IsSysOrAppAdmin)
                 {
                     if (!string.IsNullOrWhiteSpace(model.OrganisationIdentifier) && Enum.Parse<OrganisationType>(model.OrganisationIdentifier.Split("_").Last()) == OrganisationType.Owner
                     && !model.IsApplicationAdministrator && !model.IsSystemAdministrator && !model.IsImpersonator)
@@ -423,7 +414,7 @@ namespace Tolk.Web.Controllers
                         var organisationPrefix = string.Empty;
                         int? customerId = null;
                         int? brokerId = null;
-                        if (!User.IsInRole(Roles.ApplicationAdministrator) && !User.IsInRole(Roles.SystemAdministrator))
+                        if (!IsSysOrAppAdmin)
                         {
                             customerId = User.TryGetCustomerOrganisationId();
                             brokerId = User.TryGetBrokerId();
@@ -486,16 +477,16 @@ namespace Tolk.Web.Controllers
                         {
                             additionalRoles.Add(Roles.CentralOrderHandler);
                         }
-                        //if no role is selected and KamK user = (SysAdmin creator or if AppAdmin does not sekect any)
-                        if ((!brokerId.HasValue && !customerId.HasValue && !model.IsApplicationAdministrator && !model.IsImpersonator) || model.IsSystemAdministrator)
+                        //roles that only sysadmin or appadmin can add
+                        if (IsSysOrAppAdmin && model.IsSystemAdministrator)
                         {
                             additionalRoles.Add(Roles.SystemAdministrator);
                         }
-                        if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator && model.IsApplicationAdministrator)
+                        if (IsSysOrAppAdmin && model.IsApplicationAdministrator)
                         {
                             additionalRoles.Add(Roles.ApplicationAdministrator);
                         }
-                        if (HighestLevelLoggedInUserType == UserTypes.ApplicationAdministrator && model.IsImpersonator)
+                        if (IsSysOrAppAdmin && model.IsImpersonator)
                         {
                             additionalRoles.Add(Roles.Impersonator);
                         }
@@ -999,10 +990,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        private bool UseRolesForAdminUser(AspNetUser user)
-        {
-            return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && User.IsInRole(Roles.ApplicationAdministrator) && !user.InterpreterId.HasValue;
-        }
+        private bool IsSysOrAppAdmin => User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator);
 
         private string BackController => HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Unit") ? "Unit" : "User";
 

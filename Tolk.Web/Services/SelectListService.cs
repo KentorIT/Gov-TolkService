@@ -50,8 +50,6 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> SearchableRoles => GetList<UserTypes>().Where(s => s.Value != UserTypes.LocalAdministrator.ToString());
 
-        public static IEnumerable<SelectListItem> SearchableRolesForSysAdmin => GetList<UserTypes>().Where(s => s.Value != UserTypes.LocalAdministrator.ToString() && s.Value != UserTypes.ApplicationAdministrator.ToString() && s.Value != UserTypes.Impersonator.ToString());
-
         public static IEnumerable<SelectListItem> SearchableRolesForCustomers =>
             GetList(new List<UserTypes>() { UserTypes.CentralOrderHandler, UserTypes.OrderCreator, UserTypes.OrganisationAdministrator });
 
