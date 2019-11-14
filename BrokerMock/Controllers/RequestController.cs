@@ -98,14 +98,7 @@ namespace BrokerMock.Controllers
 
                         if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
-                            interpreter = new InterpreterModel
-                            {
-                                Email = "newguy@new.guy",
-                                FirstName = "New",
-                                LastName = "Goy",
-                                PhoneNumber = "12121345",
-                                InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
-                            };
+                            interpreter = GetNewInterpreter();
                         }
                         if (extraInstructions.Contains("BADLOCATION"))
                         {
@@ -206,14 +199,7 @@ namespace BrokerMock.Controllers
                         }
                         if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
-                            interpreter = new InterpreterModel
-                            {
-                                Email = "newguy@new.guy",
-                                FirstName = "New",
-                                LastName = "Goy",
-                                PhoneNumber = "12121345",
-                                InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
-                            };
+                            interpreter = GetNewInterpreter();
                         }
                         if (extraInstructions.Contains("BADLOCATION"))
                         {
@@ -435,6 +421,21 @@ namespace BrokerMock.Controllers
 
         #region private methods
 
+        private static InterpreterModel GetNewInterpreter()
+        {
+            InterpreterModel interpreter;
+            var newName = DateTime.Now.ToSwedishString("yyyyMMdd-fff");
+            interpreter = new InterpreterModel
+            {
+                Email = $"{newName}@new.guy",
+                FirstName = newName,
+                LastName = "Goy",
+                PhoneNumber = "12121345",
+                InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
+            };
+            return interpreter;
+        }
+
         private static IEnumerable<string> GetExtraInstructions(string description)
         {
             if (string.IsNullOrEmpty(description))
@@ -460,14 +461,15 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
                 {
-                    if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                    var answer = response.Content.ReadAsAsync<AnswerResponse>().Result;
+                    if (answer.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} skickad tolk: {interpreter}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer]:: Boknings-ID: {orderNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}");
                     }
                     else
                     {
                         var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer] FAILED:: Boknings-ID: {orderNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer] FAILED:: Boknings-ID: {orderNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
                     }
                 }
 
@@ -503,14 +505,15 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
                 {
-                    if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                    var answer = response.Content.ReadAsAsync<GroupAnswerResponse>().Result;
+                    if (answer.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
                     }
                     else
                     {
                         var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter} ErrorMessage: {errorResponse.ErrorMessage}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
                     }
                 }
 

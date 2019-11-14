@@ -160,8 +160,11 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Order"
                 }));
             //Accepted order groups to approve 
-            actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+            if (_options.EnableOrderGroups)
+            {
+                actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
+                .Include(og => og.Orders)
                 .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
                 .Where(og => og.Status == OrderStatus.RequestResponded).ToList()
                 .Select(og => new StartListItemModel
@@ -180,6 +183,7 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "OrderGroup"
                 }));
+            }
             //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
             if (_options.AllowDeclineExtraInterpreterOnRequestGroups)
             {
@@ -225,8 +229,10 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order"
                 }));
+            if (_options.EnableOrderGroups)
+            {
 
-            actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
                 .Include(og => og.RequestGroups)
                 .Include(og => og.StatusConfirmations)
@@ -247,7 +253,7 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "OrderGroup"
                 }));
-
+            }
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Include(o => o.Language)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
@@ -343,8 +349,10 @@ namespace Tolk.Web.Controllers
                     OrderNumber = o.OrderNumber,
                     Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : StartListItemStatus.OrderCreated
                 }).ToList();
+            if (_options.EnableOrderGroups)
+            {
 
-            sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Where(og => og.Status == OrderStatus.Requested && og.Orders.Any(o => o.EndAt > _clock.SwedenNow))
                 .Select(og => new StartListItemModel
                 {
@@ -367,6 +375,7 @@ namespace Tolk.Web.Controllers
                     OrderNumber = og.OrderGroupNumber,
                     Status = StartListItemStatus.OrderCreated
                 }).ToList());
+            }
             count = sentOrders.Any() ? sentOrders.Count : 0;
 
             yield return new StartList

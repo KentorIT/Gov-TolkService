@@ -26,7 +26,7 @@ namespace Tolk.Api.Payloads.Responses
         public IEnumerable<LocationModel> Locations { get; set; }
         public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }
         public bool CompetenceLevelsAreRequired { get; set; }
-        public bool AllowExceedingTravelCost { get; set; }
+        public bool AllowMoreThanTwoHoursTravelTime { get; set; }
         public string Description { get; set; }
         public string AssignentType { get; set; }
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }

@@ -116,7 +116,11 @@ namespace Tolk.Web.Api.Controllers
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
-                    return Json(new ResponseBase());
+                    return Json(new GroupAnswerResponse
+                    {
+                        InterpreterId = mainInterpreterAnswer.Interpreter.InterpreterBrokerId,
+                        ExtraInterpreterId = extraInterpreterAnswer?.Interpreter?.InterpreterBrokerId
+                    });
                 }
                 catch (InvalidOperationException ex)
                 {

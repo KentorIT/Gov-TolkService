@@ -132,7 +132,7 @@ namespace Tolk.Web.Api.Controllers
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
-                    return Json(new ResponseBase());
+                    return Json(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId});
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -645,7 +645,7 @@ namespace Tolk.Web.Api.Controllers
                     Rank = c.Rank ?? 0
                 }),
                 CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
-                AllowExceedingTravelCost = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 Description = request.Order.Description,
                 AssignentType = request.Order.AssignmentType.GetCustomName(),
                 //Should the attachemts from the broker be applied too? Yes I suppose...
