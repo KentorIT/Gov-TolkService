@@ -1,13 +1,17 @@
 ﻿@model IEnumerable<StatusVerificationItemModel>
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
 @{
-    ViewData["Title"] = "Statussida";
+    HelpLinkService.PageName = "admin-systemstatus/";
+    ViewData["Title"] = "Systemstatus";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         <div class="col-sm-12">
-            Denna sida testar att alla externa beroenden är uppe.<br />
-            Den testar också om agenten som jobbar på puls, som bland annat skickar notifieringar och ta hand om förfrågningar som skall gå vidare på grund av inaktivitet.
+            <span class="important-info">
+                Denna sida kontrollerar att tjänstens externa beroenden är uppe. Den kontrollerar också att agenten, som bland annat skickar notifieringar och tar hand om bokningsförfrågningar som skall gå vidare till nästa förmedling, utfört sina jobb.
+            </span>
             @if (Model.Any())
             {
                 <div class="table-responsive table-datatable">

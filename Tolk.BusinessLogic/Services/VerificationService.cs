@@ -315,7 +315,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 new StatusVerificationItem
                 {
-                    Test = "Inga epost väntar på att skickas",
+                    Test = "Inga e-postmeddelanden väntar på att skickas",
                     Success = !(await _dbContext.OutboundEmails.AnyAsync(o => !o.DeliveredAt.HasValue && o.CreatedAt < _clock.SwedenNow.AddMinutes(delay)))
                 },
                 new StatusVerificationItem
@@ -330,17 +330,17 @@ namespace Tolk.BusinessLogic.Services
                 },
                 new StatusVerificationItem
                 {
-                    Test = "Inga förfrågningar väntar på att gå vidare till nästa förmedling när tiden gått ut.",
+                    Test = "Inga förfrågningar väntar på att gå vidare till nästa förmedling när tiden gått ut",
                     Success = !(await _dbContext.Requests.AnyAsync(r => !r.RequestGroupId.HasValue && r.ExpiresAt < _clock.SwedenNow.AddMinutes(delay) && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)))
                 },
                 new StatusVerificationItem
                 {
-                    Test = "Inga ordrar väntar på att kunden skall sätta sista svarstid, efter uppdragsstart.",
+                    Test = "Inga ordrar väntar på att kunden skall sätta sista svarstid, efter uppdragsstart",
                     Success = !(await _dbContext.Orders.AnyAsync(o => !o.OrderGroupId.HasValue && o.StartAt < _clock.SwedenNow.AddMinutes(delay) && o.Status == OrderStatus.AwaitingDeadlineFromCustomer ))
                 },
                 new StatusVerificationItem
                 {
-                    Test = "Inga ordrar väntar på att kunden skall godkänna reskostnad, efter uppdragsstart.",
+                    Test = "Inga ordrar väntar på att kunden skall godkänna reskostnad, efter uppdragsstart",
                     Success = !(await _dbContext.Requests.AnyAsync(r => r.RequestGroupId == null &&
                         (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
                         r.Order.StartAt < _clock.SwedenNow.AddMinutes(delay) && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
