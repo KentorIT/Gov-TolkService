@@ -5,8 +5,8 @@ using Tolk.Api.Payloads.ApiPayloads;
 
 namespace Tolk.Api.Payloads.Responses
 {
-    public class BrokerInterpretersResponse : ResponseBase
+    public class CreateInterpreterResponse : ResponseBase
     {
-        public IEnumerable<InterpreterDetailsModel> Interpreters { get; set; }
+        public InterpreterDetailsModel Interpreter { get; set; }
     }
 }

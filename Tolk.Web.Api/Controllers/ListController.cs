@@ -130,8 +130,9 @@ namespace Tolk.Web.Api.Controllers
                 {
                     Interpreters = _dbContext.InterpreterBrokers
                     .Where(i => i.BrokerId == apiUser.BrokerId)
-                    .Select(i => new InterpreterModel
+                    .Select(i => new InterpreterDetailsModel
                     {
+                        IsActive = i.IsActive,
                         InterpreterId = i.InterpreterBrokerId,
                         Email = i.Email,
                         FirstName = i.FirstName,

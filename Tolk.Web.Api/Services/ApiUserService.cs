@@ -85,7 +85,7 @@ namespace Tolk.Web.Api.Services
                 null;
         }
 
-        internal InterpreterBroker GetInterpreter(InterpreterModel interpreterModel, int brokerId, bool updateInformation = true)
+        internal InterpreterBroker GetInterpreter(InterpreterDetailsModel interpreterModel, int brokerId, bool updateInformation = true)
         {
             if (interpreterModel == null)
             {
@@ -127,23 +127,24 @@ namespace Tolk.Web.Api.Services
             }
             if (updateInformation)
             {
-                if (string.IsNullOrWhiteSpace(interpreterModel.FirstName))
+                interpreter.IsActive = interpreterModel.IsActive;
+                if (!string.IsNullOrWhiteSpace(interpreterModel.FirstName))
                 {
                     interpreter.FirstName = interpreterModel.FirstName;
                 }
-                if (string.IsNullOrWhiteSpace(interpreterModel.LastName))
+                if (!string.IsNullOrWhiteSpace(interpreterModel.LastName))
                 {
                     interpreter.LastName = interpreterModel.LastName;
                 }
-                if (string.IsNullOrWhiteSpace(interpreterModel.Email))
+                if (!string.IsNullOrWhiteSpace(interpreterModel.Email))
                 {
                     interpreter.Email = interpreterModel.Email;
                 }
-                if (string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
+                if (!string.IsNullOrWhiteSpace(interpreterModel.PhoneNumber))
                 {
                     interpreter.PhoneNumber = interpreterModel.PhoneNumber;
                 }
-                if (string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
+                if (!string.IsNullOrWhiteSpace(interpreterModel.OfficialInterpreterId))
                 {
                     if (_interpreterService.IsUniqueOfficialInterpreterId(interpreterModel.OfficialInterpreterId, brokerId, interpreter.InterpreterBrokerId))
                     {
@@ -157,6 +158,20 @@ namespace Tolk.Web.Api.Services
                 }
             }
             return interpreter;
+        }
+
+        internal async Task<InterpreterDetailsModel> GetInterpreterModelFromId(int interpreterId, int brokerId)
+        {
+             return GetModelFromEntity(await _dbContext.InterpreterBrokers
+                .Where(i => i.InterpreterBrokerId == interpreterId && i.BrokerId == brokerId)
+                .SingleOrDefaultAsync());
+        }
+
+        internal async Task<InterpreterDetailsModel> GetInterpreterModelFromId(string officialnterpreterId, int brokerId)
+        {
+            return GetModelFromEntity(await _dbContext.InterpreterBrokers
+                .Where(i => i.OfficialInterpreterId == officialnterpreterId && i.BrokerId == brokerId)
+                .SingleOrDefaultAsync());
         }
 
         internal InterpreterAnswerDto GetInterpreterModel(InterpreterGroupAnswerModel interpreterModel, int brokerId, bool isMainInterpreter = true)
@@ -182,8 +197,7 @@ namespace Tolk.Web.Api.Services
                 };
             }
 
-            InterpreterBroker interpreter;
-            interpreter = GetInterpreter(interpreterModel.Interpreter, brokerId);
+            InterpreterBroker interpreter = GetInterpreter(new InterpreterDetailsModel(interpreterModel.Interpreter), brokerId);
 
             //Does not handle Kammarkollegiets tolknummer
             if (interpreter == null)
@@ -202,6 +216,21 @@ namespace Tolk.Web.Api.Services
                 }).ToList(),
                 ExpectedTravelCosts = interpreterModel.ExpectedTravelCosts,
                 ExpectedTravelCostInfo = interpreterModel.ExpectedTravelCostInfo
+            };
+        }
+
+        internal static InterpreterDetailsModel GetModelFromEntity(InterpreterBroker interpreter)
+        {
+            return new InterpreterDetailsModel
+            {
+                IsActive = interpreter.IsActive,
+                Email = interpreter.Email,
+                FirstName = interpreter.FirstName,
+                InterpreterId = interpreter.InterpreterBrokerId,
+                LastName = interpreter.LastName,
+                InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter),
+                OfficialInterpreterId = interpreter.OfficialInterpreterId,
+                PhoneNumber = interpreter.PhoneNumber
             };
         }
     }

@@ -69,6 +69,7 @@ namespace BrokerMock.Controllers
             {
                 await _apiService.GetAllLists();
             }
+            var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
             var extraInstructions = GetExtraInstructions(payload.Description);
 
             if (extraInstructions.Contains("THROW"))
@@ -94,7 +95,7 @@ namespace BrokerMock.Controllers
                 {
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
-                        var interpreter = _cache.Get<List<InterpreterModel>>("BrokerInterpreters")?.FirstOrDefault();
+                        var interpreter = interpreters?.FirstOrDefault();
 
                         if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
@@ -156,6 +157,44 @@ namespace BrokerMock.Controllers
                 //X-Kammarkollegiet-InterpreterService-Delivery
             }
 
+            if (extraInstructions.Contains("CREATEINTERPRETER"))
+            {
+                await CreateInterpreter(new InterpreterDetailsModel(GetNewInterpreter()));
+            }
+            if (extraInstructions.Contains("UPDATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                await UpdateInterpreter(interpreters.OrderBy(i => i.FirstName).First());
+            }
+            if (extraInstructions.Contains("INACTIVATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                var interpreter = interpreters.Where(i => i.IsActive).OrderBy(i => i.LastName).First();
+                await ToggleIfInterpreterIsActive(interpreter);
+            }
+            if (extraInstructions.Contains("ACTIVATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                var interpreter = interpreters.Where(i => !i.IsActive).OrderBy(i => i.LastName).FirstOrDefault();
+                if (interpreter == null)
+                {
+                    interpreter = interpreters.Where(i => i.IsActive).OrderBy(i => i.LastName).First();
+                    interpreter = await ToggleIfInterpreterIsActive(interpreter);
+                }
+                await ToggleIfInterpreterIsActive(interpreter);
+            }
+            if (extraInstructions.Contains("VIEWINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                var interpreter = interpreters.Where(i => i.OfficialInterpreterId != null).OrderBy(i => i.Email).First();
+                await _apiService.GetInterpreter(interpreter.InterpreterId.Value);
+                await _apiService.GetInterpreter(interpreter.OfficialInterpreterId);
+            }
+
             if (extraInstructions.Contains("GETFILE"))
             {
                 await GetFile(payload.OrderNumber, payload.Attachments.First().AttachmentId);
@@ -191,11 +230,11 @@ namespace BrokerMock.Controllers
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
                         var declineExtraInterpreter = extraInstructions.Contains("DECLINEEXTRAINTERPRETER");
-                        var interpreter = _cache.Get<List<InterpreterModel>>("BrokerInterpreters")?.FirstOrDefault();
+                        var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.FirstOrDefault();
                         InterpreterModel extraInterpreter = null;
                         if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
                         {
-                            extraInterpreter = _cache.Get<List<InterpreterModel>>("BrokerInterpreters")?.LastOrDefault();
+                            extraInterpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.LastOrDefault();
                         }
                         if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
@@ -226,7 +265,7 @@ namespace BrokerMock.Controllers
                             await AnswerGroup(
                                 payload.OrderGroupNumber,
                                 interpreter,
-                                extraInterpreter ,
+                                extraInterpreter,
                                 payload.Locations.First().Key,
                                 payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                                 payload.Requirements.Select(r => new RequirementAnswerModel
@@ -245,10 +284,10 @@ namespace BrokerMock.Controllers
                 //X-Kammarkollegiet-InterpreterService-Delivery
 
             }
-                if (extraInstructions.Contains("GETFILE"))
-                {
-                    await GetGroupFile(payload.OrderGroupNumber, payload.Attachments.First().AttachmentId);
-                }
+            if (extraInstructions.Contains("GETFILE"))
+            {
+                await GetGroupFile(payload.OrderGroupNumber, payload.Attachments.First().AttachmentId);
+            }
             return new JsonResult("Success");
         }
 
@@ -421,11 +460,80 @@ namespace BrokerMock.Controllers
 
         #region private methods
 
-        private static InterpreterModel GetNewInterpreter()
+        private async Task<bool> CreateInterpreter(InterpreterDetailsModel payload)
         {
-            InterpreterModel interpreter;
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content))
+                {
+                    CreateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<CreateInterpreterResponse>().Result;
+                    if (responseInterpreter.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Create]:: Tolk {responseInterpreter.Interpreter.Email} skapades med detta id: {responseInterpreter.Interpreter.InterpreterId}");
+                    }
+                    else
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Create] FAILED:: Tolk {payload.Email} kunde inte skapas, med detta fel: {errorResponse.ErrorMessage}");
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private async Task<bool> UpdateInterpreter(InterpreterDetailsModel payload)
+        {
+            var originalFirstName = payload.FirstName;
+            payload.FirstName = $"Ö{payload.FirstName}";
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
+                {
+                    UpdateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<UpdateInterpreterResponse>().Result;
+                    if (responseInterpreter.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update]:: Tolk {responseInterpreter.Interpreter.Email} förnamnet ändrades från: {originalFirstName} till: {responseInterpreter.Interpreter.FirstName}");
+                    }
+                    else
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED:: Tolk {payload.Email} förnamnet kunde inte ändras, med följande fel: {errorResponse.ErrorMessage}");
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private async Task<InterpreterDetailsModel> ToggleIfInterpreterIsActive(InterpreterDetailsModel payload)
+        {
+            payload.IsActive = !payload.IsActive;
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
+                {
+                    UpdateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<UpdateInterpreterResponse>().Result;
+                    if (responseInterpreter.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update]:: Tolk {responseInterpreter.Interpreter.Email} {(payload.IsActive ? "aktiverades" : "inaktiverades")}");
+                        return responseInterpreter.Interpreter;
+                    }
+                    else
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED:: Tolk {payload.Email} kunde inte : {errorResponse.ErrorMessage}");
+                        return null;
+                    }
+                }
+
+            }
+        }
+
+        private static InterpreterDetailsModel GetNewInterpreter()
+        {
             var newName = DateTime.Now.ToSwedishString("yyyyMMdd-fff");
-            interpreter = new InterpreterModel
+            return new InterpreterDetailsModel
             {
                 Email = $"{newName}@new.guy",
                 FirstName = newName,
@@ -433,7 +541,6 @@ namespace BrokerMock.Controllers
                 PhoneNumber = "12121345",
                 InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.NewInterpreter)
             };
-            return interpreter;
         }
 
         private static IEnumerable<string> GetExtraInstructions(string description)
@@ -483,8 +590,8 @@ namespace BrokerMock.Controllers
             {
                 OrderGroupNumber = orderGroupNumber,
                 CallingUser = "regular-user@formedling1.se",
-                     InterpreterLocation = location,
-               InterpreterAnswer = new InterpreterGroupAnswerModel
+                InterpreterLocation = location,
+                InterpreterAnswer = new InterpreterGroupAnswerModel
                 {
                     Accepted = true,
                     Interpreter = interpreter,
@@ -499,7 +606,7 @@ namespace BrokerMock.Controllers
                     CompetenceLevel = competenceLevel,
                     ExpectedTravelCosts = expectedTravelCosts,
                     RequirementAnswers = requirementAnswers
-                } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt."},
+                } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt." },
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
@@ -728,7 +835,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)
         {
-            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File",$"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
                 var file = response.Content.ReadAsAsync<FileResponse>().Result;
                 if (file.Success)

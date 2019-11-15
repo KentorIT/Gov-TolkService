@@ -91,7 +91,7 @@ namespace Tolk.Web.Api.Controllers
                 InterpreterBroker interpreter;
                 try
                 {
-                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), apiUser.BrokerId.Value);
                 }
                 catch (InvalidOperationException)
                 {
@@ -138,6 +138,10 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, ex.Message);
                 }
+                catch (ArgumentNullException ex)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, ex.Message);
+                }
             }
             catch (InvalidApiCallException ex)
             {
@@ -173,7 +177,6 @@ namespace Tolk.Web.Api.Controllers
                 return ReturnError(ex.ErrorCode);
             }
         }
-
 
         [HttpPost]
         public async Task<JsonResult> Decline([FromBody] RequestDeclineModel model)
@@ -213,7 +216,6 @@ namespace Tolk.Web.Api.Controllers
                 return ReturnError(ex.ErrorCode);
             }
         }
-
 
         [HttpPost]
         public async Task<JsonResult> Cancel([FromBody] RequestCancelModel model)
@@ -303,7 +305,7 @@ namespace Tolk.Web.Api.Controllers
                 InterpreterBroker interpreter;
                 try
                 {
-                    interpreter = _apiUserService.GetInterpreter(model.Interpreter, apiUser.BrokerId.Value);
+                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), apiUser.BrokerId.Value);
                 }
                 catch (InvalidOperationException)
                 {

@@ -124,7 +124,12 @@ namespace BrokerMock.Services
             var errors = JsonConvert.DeserializeObject<List<ErrorResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get error codes: {errors.Count}");
             _cache.Set("ErrorCodes", errors);
-            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/BrokerInterpreters/"));
+            await GetInterpreters();
+        }
+
+        public async Task GetInterpreters()
+        {
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/BrokerInterpreters/"));
             var responseString = await response.Content.ReadAsStringAsync();
             if (JsonConvert.DeserializeObject<ResponseBase>(responseString).Success)
             {
@@ -215,6 +220,38 @@ namespace BrokerMock.Services
 
                 return true;
             }
+        }
+
+        public async Task<RequestDetailsResponse> GetInterpreter(string officialInterpreterId)
+        {
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/View", $"officialInterpreterId={officialInterpreterId}"));
+            ViewInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<ViewInterpreterResponse>().Result;
+            if (responseInterpreter.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View]:: Hämtade Tolk {responseInterpreter.Interpreter.Email} med hjälp av kamkid: {officialInterpreterId}");
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View] FAILED:: Tolk med kamkid: {officialInterpreterId} kunde inte hämtas. ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+            return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
+        }
+
+        public async Task<RequestDetailsResponse> GetInterpreter(int interpreterId)
+        {
+            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/View", $"interpreterId={interpreterId}"));
+            ViewInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<ViewInterpreterResponse>().Result;
+            if (responseInterpreter.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View]:: Hämtade Tolk {responseInterpreter.Interpreter.Email} med hjälp av id: {interpreterId}");
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View] FAILED:: Tolk med id: {interpreterId} kunde inte hämtas. ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+            return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
         }
 
         private static HttpClientHandler GetCertHandler()

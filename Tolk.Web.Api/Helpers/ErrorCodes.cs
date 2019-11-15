@@ -10,6 +10,7 @@ namespace Tolk.Web.Api.Helpers
         public const string ComplaintNotInCorrectState = nameof(ComplaintNotInCorrectState);
         public const string RequestNotFound = nameof(RequestNotFound);
         public const string InterpreterNotFound = nameof(InterpreterNotFound);
+        public const string InterpreterFaultyIntention = nameof(InterpreterFaultyIntention);
         public const string InterpreterAnswerNotValid = nameof(InterpreterAnswerNotValid);
         public const string InterpreterAnswerMainInterpereterDeclined = nameof(InterpreterAnswerMainInterpereterDeclined);
         public const string InterpreterOfficialIdAlreadySaved = nameof(InterpreterOfficialIdAlreadySaved);
