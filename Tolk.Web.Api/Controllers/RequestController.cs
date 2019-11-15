@@ -325,8 +325,14 @@ namespace Tolk.Web.Api.Controllers
                     //Possibly the interpreter should be added, if not found?? 
                     return ReturnError(ErrorCodes.InterpreterNotFound);
                 }
-                var competenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value;
-
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                }
+                if (model.CompetenceLevel == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "CompetenceLevel was missing");
+                }
                 try
                 {
                     await _requestService.ChangeInterpreter(
@@ -336,7 +342,8 @@ namespace Tolk.Web.Api.Controllers
                         (user != null ? (int?)apiUser.Id : null),
                         interpreter,
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
-                        competenceLevel,
+                        EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                        model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
                         model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                         {
                             Answer = ra.Answer,
@@ -397,6 +404,10 @@ namespace Tolk.Web.Api.Controllers
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
+                }
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
                 }
                 var now = _timeService.SwedenNow;
                 //Add transaction here!!!
