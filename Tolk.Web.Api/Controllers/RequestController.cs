@@ -345,7 +345,7 @@ namespace Tolk.Web.Api.Controllers
                     //TODO: Should log the acctual exception here!!
                     return ReturnError(ErrorCodes.RequestNotInCorrectState);
                 }
-                return Json(new ResponseBase());
+                return Json(new ChangeInterpreterResponse { InterpreterId = interpreter.InterpreterBrokerId });
             }
             catch (InvalidApiCallException ex)
             {

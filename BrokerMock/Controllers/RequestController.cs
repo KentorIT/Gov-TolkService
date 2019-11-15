@@ -141,7 +141,7 @@ namespace BrokerMock.Controllers
                         Thread.Sleep(3000);
                         await ChangeInterpreter(
                             payload.OrderNumber,
-                            _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
+                            interpreters.Last(),
                             payload.Locations.Last().Key,
                             payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                             payload.Requirements.Select(r => new RequirementAnswerModel
@@ -343,7 +343,7 @@ namespace BrokerMock.Controllers
             {
                 await ChangeInterpreter(
                     payload.OrderNumber,
-                    _cache.Get<List<InterpreterModel>>("BrokerInterpreters").Last(),
+                    _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters").Last(),
                     request.Locations.Last().Key,
                     request.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                     request.Requirements.Select(r => new RequirementAnswerModel
@@ -885,13 +885,15 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    var answer = response.Content.ReadAsAsync<ChangeInterpreterResponse>().Result;
+                    if (answer.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter}");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter}");
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED:: Boknings-ID: {orderNumber} skickade tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
                     }
                 }
 

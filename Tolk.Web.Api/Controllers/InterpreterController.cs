@@ -130,30 +130,6 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        //[HttpGet]
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        //public async Task<JsonResult> View(string officialInterpreterId, string callingUser)
-        //{
-        //    _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with officialInterpreterId {officialInterpreterId}");
-        //    try
-        //    {
-        //        var apiUser = await GetApiUser();
-        //        return Json(new ViewInterpreterResponse
-        //        {
-        //            Interpreter = await _apiUserService.GetInterpreterModelFromId(officialInterpreterId, apiUser.BrokerId.Value)
-        //        });
-        //    }
-        //    catch (InvalidApiCallException ex)
-        //    {
-        //        return ReturnError(ex.ErrorCode);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(View)}");
-        //        return ReturnError(ErrorCodes.UnspecifiedProblem);
-        //    }
-        //}
-
         #endregion
 
         #region SAME AS IN REQUEST, SHOULD BE MOVED
