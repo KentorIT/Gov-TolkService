@@ -104,6 +104,14 @@ namespace Tolk.Web.Api.Controllers
                     //Possibly the interpreter should be added, if not found?? 
                     return ReturnError(ErrorCodes.InterpreterNotFound);
                 }
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                }
+                if (model.CompetenceLevel == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "CompetenceLevel was missing");
+                }
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
@@ -119,6 +127,7 @@ namespace Tolk.Web.Api.Controllers
                         interpreter,
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                         EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+                        model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
                         model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                         {
                             Answer = ra.Answer,
@@ -132,7 +141,7 @@ namespace Tolk.Web.Api.Controllers
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
-                    return Json(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId});
+                    return Json(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
                 }
                 catch (InvalidOperationException ex)
                 {
