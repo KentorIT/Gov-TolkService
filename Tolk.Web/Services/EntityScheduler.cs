@@ -1,7 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Services
@@ -11,6 +18,7 @@ namespace Tolk.Web.Services
         private readonly IServiceProvider _services;
         private readonly ILogger<EntityScheduler> _logger;
         private readonly ISwedishClock _clock;
+        private readonly TolkOptions _options;
 
         private DateTimeOffset nextDailyRunTime;
 
@@ -22,11 +30,12 @@ namespace Tolk.Web.Services
 
 
 
-        public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock)
+        public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock, IOptions<TolkOptions> options)
         {
             _services = services;
             _logger = logger;
             _clock = clock;
+            _options = options?.Value;
 
             if (_clock == null)
             {
@@ -51,13 +60,13 @@ namespace Tolk.Web.Services
 
         public void Init()
         {
-            Task.Run(() => Run());
+            Task.Run(() => Run(true));
 
             _logger.LogInformation("EntityScheduler initialized");
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
-        private void Run()
+        private async void Run(bool isInit = false)
         {
             _logger.LogTrace("EntityScheduler waking up.");
 
@@ -76,35 +85,48 @@ namespace Tolk.Web.Services
                 }
             }
 
+            if (isInit)
+            {
+                using (TolkDbContext context = _options.GetContext())
+                {
+                    await context.OutboundEmails.Where(e => e.IsHandling == true)
+                        .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                    await context.OutboundWebHookCalls.Where(e => e.IsHandling == true)
+                        .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                    await context.SaveChangesAsync();
+                }
+            }
+
             try
             {
-                //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...
-                using (var serviceScope = _services.CreateScope())
+                if (nextRunIsNotifications)
                 {
-                    Task[] tasksToRun;
-
-                    if (_clock.SwedenNow > nextDailyRunTime)
+                    //Separate these, to get a better parallellism for the notifications
+                    // They fail to run together with the other Continous jobs , due to recurring deadlocks around the email table...
+                    List<Task> tasksToRunNotifications = new List<Task>
                     {
-                        nextDailyRunTime = nextDailyRunTime.AddDays(1);
-                        nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
-                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
-                        _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
-
-                        tasksToRun = new Task[]
-                        {
-                            RunDailyJobs(serviceScope.ServiceProvider),
-                        };
-                    }
-                    else
+                        Task.Factory.StartNew(() => _services.GetRequiredService<EmailService>().SendEmails(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
+                        Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
+                    };
+                    await Task.Factory.ContinueWhenAny(tasksToRunNotifications.ToArray(), r => { });
+            }
+                else
+                {
+                    //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...
+                    using (var serviceScope = _services.CreateScope())
                     {
-                        if (nextRunIsNotifications)
+                        Task[] tasksToRun;
+
+                        if (_clock.SwedenNow > nextDailyRunTime)
                         {
-                            //Separate these, to get a better parallellism for the notifications
-                            // They fail to run together with the other Continous jobs , due to recurring deadlocks around the email table...
+                            nextDailyRunTime = nextDailyRunTime.AddDays(1);
+                            nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
+                            nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
+                            _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
+
                             tasksToRun = new Task[]
                             {
-                                serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendEmails(),
-                                serviceScope.ServiceProvider.GetRequiredService<WebHookService>().CallWebHooks(),
+                            RunDailyJobs(serviceScope.ServiceProvider),
                             };
                         }
                         else
@@ -114,30 +136,24 @@ namespace Tolk.Web.Services
                                 RunContinousJobs(serviceScope.ServiceProvider),
                             };
                         }
-                    }
-                    if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
-                    {
-                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
+                        if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
+                        {
+                            throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Entity Scheduler failed ({message}).", ex.Message);
-                using (var serviceScope = _services.CreateScope())
-                {
-                    _ = serviceScope.ServiceProvider.GetRequiredService<EmailService>().SendErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
-                }
+                _ = _services.GetRequiredService<EmailService>().SendErrorEmail(nameof(EntityScheduler), nameof(Run), ex);
             }
             finally
             {
                 nextRunIsNotifications = !nextRunIsNotifications;
-                using (var serviceScope = _services.CreateScope())
+                if (_services.GetRequiredService<ITolkBaseOptions>().RunEntityScheduler)
                 {
-                    if (serviceScope.ServiceProvider.GetRequiredService<ITolkBaseOptions>().RunEntityScheduler)
-                    {
-                        Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
-                    }
+                    await Task.Delay(timeDelayContinousJobs).ContinueWith(t => Run(), TaskScheduler.Default);
                 }
             }
 
@@ -160,6 +176,7 @@ namespace Tolk.Web.Services
             await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
             await provider.GetRequiredService<RequestService>().DeleteRequestGroupViews();
+            await provider.GetRequiredService<ErrorNotificationService>().CheckForFailuresToReport();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }

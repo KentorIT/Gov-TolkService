@@ -37,7 +37,6 @@ namespace BrokerMock.Controllers
             _options = options.Value;
             _apiService = apiService;
             _cache = cache;
-            client.DefaultRequestHeaders.Accept.Clear();
             if (_options.UseApiKey && !client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
             {
                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
@@ -71,6 +70,11 @@ namespace BrokerMock.Controllers
             }
             var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
             var extraInstructions = GetExtraInstructions(payload.Description);
+
+            if (extraInstructions.Contains("SLEEP20"))
+            {
+                Thread.Sleep(20000);
+            }
 
             if (extraInstructions.Contains("THROW"))
             {

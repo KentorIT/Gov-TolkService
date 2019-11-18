@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class OutboundWebHookCall
+    public class OutboundWebHookCall : NotificationBase
     {
         public OutboundWebHookCall(
             string recipientUrl,
@@ -16,10 +16,10 @@ namespace Tolk.BusinessLogic.Entities
             int recipientUserId,
             int? resentUserId = null,
             int? resentImpersonatorUserId = null)
+            :base(createdAt)
         {
             RecipientUrl = recipientUrl;
             Payload = payload;
-            CreatedAt = createdAt;
             NotificationType = notificationType;
             RecipientUserId = recipientUserId;
             ResentUserId = resentUserId;
@@ -34,8 +34,6 @@ namespace Tolk.BusinessLogic.Entities
         public string Payload { get; private set; }
 
         public NotificationType NotificationType { get; private set; }
-
-        public DateTimeOffset CreatedAt { get; private set; }
 
         public int RecipientUserId { get; private set; }
 
@@ -52,8 +50,6 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ResentImpersonatorUserId))]
         public AspNetUser ResentImpersonatorUser { get; set; }
 
-        public DateTimeOffset? DeliveredAt { get; set; }
-
         public int FailedTries { get; set; }
 
         public int? ResentHookId { get; set; }
@@ -64,5 +60,6 @@ namespace Tolk.BusinessLogic.Entities
         public OutboundWebHookCall ReplacingWebHook { get; set; }
 
         public ICollection<FailedWebHookCall> FailedCalls { get; set; }
+        public bool? HasNotifiedFailure { get; set; }
     }
 }

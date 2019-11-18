@@ -2,91 +2,112 @@
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
     public class EmailService
     {
-        private readonly TolkDbContext _dbContext;
         private readonly ILogger<EmailService> _logger;
-        private readonly SmtpSettings _options;
+        private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
         private readonly string _senderPrepend;
         private readonly string _secondLineSupportMail;
 
         public EmailService(
-            TolkDbContext dbContext,
             ILogger<EmailService> logger,
-            ITolkBaseOptions options,
+            IOptions<TolkOptions> options,
             ISwedishClock clock)
         {
-            _dbContext = dbContext;
             _logger = logger;
-            _options = options?.Smtp;
+            _options = options?.Value;
             _clock = clock;
-            _senderPrepend = !string.IsNullOrWhiteSpace(options.Env.DisplayName) ? $"{options.Env.DisplayName} " : string.Empty;
-            _secondLineSupportMail = options.Support.SecondLineEmail;
+            _senderPrepend = !string.IsNullOrWhiteSpace(_options.Env.DisplayName) ? $"{_options.Env.DisplayName} " : string.Empty;
+            _secondLineSupportMail = _options.Support?.SecondLineEmail;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task SendEmails()
         {
-            var emailIds = await _dbContext.OutboundEmails
-                .Where(e => e.DeliveredAt == null)
+            using (TolkDbContext context = _options.GetContext())
+            {
+                var emailIds = await context.OutboundEmails
+                .Where(e => e.DeliveredAt == null && !e.IsHandling)
                 .Select(e => e.OutboundEmailId)
                 .ToListAsync();
 
-            _logger.LogInformation("Found {count} emails to send: {emailIds}",
-                emailIds.Count, string.Join(", ", emailIds));
+                _logger.LogInformation("Found {count} emails to send: {emailIds}",
+                    emailIds.Count, string.Join(", ", emailIds));
 
-            if (emailIds.Any())
-            {
-                using (var client = new SmtpClient())
+                if (emailIds.Any())
                 {
-                    await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_options.UserName, _options.Password);
-
-                    var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.FromAddress);
-
-                    foreach (var emailId in emailIds)
+                    try
                     {
-                        using (var trn = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable))
+                        var emails = context.OutboundEmails
+                            .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == false)
+                            .Select(c => c);
+                        await emails.ForEachAsync(c => c.IsHandling = true);
+                        await context.SaveChangesAsync();
+
+                        using (var client = new SmtpClient())
                         {
-                            try
+                            await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, SecureSocketOptions.StartTls);
+                            await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+
+                            var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
+
+                            foreach (var emailId in emailIds)
                             {
-                                var email = await _dbContext.OutboundEmails
+                                var email = await context.OutboundEmails
                                     .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId && e.DeliveredAt == null);
-
-                                if (email == null)
+                                try
                                 {
-                                    _logger.LogInformation("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
+                                    if (email == null)
+                                    {
+                                        _logger.LogInformation("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
+                                    }
+                                    else
+                                    {
+                                        email.IsHandling = true;
+                                        await context.SaveChangesAsync();
+                                        _logger.LogInformation("Sending email {emailId} to {recipient}", emailId, email.Recipient);
+
+                                        await client.SendAsync(email.ToMimeKitMessage(from));
+                                        email.DeliveredAt = _clock.SwedenNow;
+                                    }
                                 }
-                                else
+                                catch (Exception ex)
                                 {
-                                    _logger.LogInformation("Sending email {emailId} to {recipient}", emailId, email.Recipient);
-
-                                    await client.SendAsync(email.ToMimeKitMessage(from));
-
-                                    email.DeliveredAt = _clock.SwedenNow;
-
-                                    await _dbContext.SaveChangesAsync();
-
-                                    trn.Commit();
+                                    _logger.LogError(ex, "Failure sending e-mail {emailId}");
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Failure sending e-mail {emailId}");
-                                trn.Rollback();
+                                finally
+                                {
+                                    email.IsHandling = false;
+                                    await context.SaveChangesAsync();
+                                }
                             }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Something went wrong when sending emails");
+                    }
+                    finally
+                    {
+                        //Making sure no emails are left hanging
+                        var emails = context.OutboundEmails
+                            .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == true)
+                            .Select(c => c);
+                        await emails.ForEachAsync(c => c.IsHandling = false);
+                        await context.SaveChangesAsync();
                     }
                 }
             }
@@ -103,9 +124,9 @@ namespace Tolk.BusinessLogic.Services
         {
             using (var client = new SmtpClient())
             {
-                await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync(_options.UserName, _options.Password);
-                var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.FromAddress);
+                await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+                var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
                 var message = new MimeMessage();
 
                 message.From.Add(from);

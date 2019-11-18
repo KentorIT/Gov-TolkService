@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Validation;
 
@@ -17,6 +18,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public OrderGroup(AspNetUser createdByUser, AspNetUser createdByImpersonator, CustomerOrganisation customerOrganisation, DateTimeOffset createdAt, IEnumerable<Order> orders, bool requireSameInterpreter = true)
         {
+            NullCheckHelper.ArgumentCheckNull(customerOrganisation, nameof(OrderGroup), nameof(OrderGroup));
             //Verify that all orders have the same customer, region and language
             Validate.Ensure(orders.GroupBy(o => o.CustomerOrganisationId).Count() == 1, "A group cannot have orders connected to several customers.");
             Validate.Ensure(orders.GroupBy(o => o.LanguageId).Count() == 1, "A group cannot have orders connected to several languages.");

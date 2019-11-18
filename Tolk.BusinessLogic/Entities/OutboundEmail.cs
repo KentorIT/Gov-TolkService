@@ -5,7 +5,7 @@ using MimeKit;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class OutboundEmail
+    public class OutboundEmail : NotificationBase
     {
         public OutboundEmail(
             string recipient,
@@ -15,18 +15,18 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset createdAt,
             int? replacingEmailId = null,
             int? resentByUserId = null)
+            :base(createdAt)
         {
             Recipient = recipient;
             Subject = subject;
             PlainBody = plainBody;
             HtmlBody = htmlBody;
-            CreatedAt = createdAt;
             ReplacingEmailId = replacingEmailId;
             ResentByUserId = resentByUserId;
         }
 
         public int OutboundEmailId { get; private set; }
-        
+
         [Required]
         public string Recipient { get; private set; }
 
@@ -38,10 +38,6 @@ namespace Tolk.BusinessLogic.Entities
 
         [Required]
         public string HtmlBody { get; private set; }
-
-        public DateTimeOffset CreatedAt { get; private set; }
-
-        public DateTimeOffset? DeliveredAt { get; set; }
 
         public int? ReplacingEmailId { get; set; }
 

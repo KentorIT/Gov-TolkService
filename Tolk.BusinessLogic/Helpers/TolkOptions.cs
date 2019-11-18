@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Helpers
@@ -19,6 +22,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableRegisterUser { get; set; }
 
+        public TolkConnectionStrings ConnectionStrings { get; set; }
+
         public void Validate()
         {
             if (string.IsNullOrEmpty(PublicOrigin)
@@ -33,5 +38,12 @@ namespace Tolk.BusinessLogic.Helpers
                 throw new InvalidOperationException($"First line support e-mail config missing.");
             }
         }
+
+        public TolkDbContext GetContext()
+        {
+            var ob = new DbContextOptionsBuilder<TolkDbContext>().UseSqlServer(ConnectionStrings.DBConnection);
+            return new TolkDbContext(ob.Options);
+        }
+
     }
 }
