@@ -1,5 +1,11 @@
-StatusChecker-delarna behöver sättas upp i alla webbar.
-EnableDefaultSettings ska bort från configuration
+StatusChecker-delarna:
+
+  "StatusChecker": {
+    "Enabled": true,
+    "CheckUptimeRobot": true,
+    "UptimeRobotApiKey": "ur710487-c1f4651b5bdcc481273924e7",
+    "UptimeRobotCheckUrl": "https://api.uptimerobot.com/v2/getMonitors"
+  },
 
 Lägg till:
 
@@ -13,3 +19,5 @@ Lägg till:
   "RunEntityScheduler": true
 
   "AllowDeclineExtraInterpreterOnRequestGroups" : false
+
+  EnableDefaultSettings ska bort från configuration
