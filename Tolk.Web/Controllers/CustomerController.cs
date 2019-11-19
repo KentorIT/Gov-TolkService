@@ -122,9 +122,9 @@ namespace Tolk.Web.Controllers
             {
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer);
-                customer.PriceListType = model.PriceListType;
+                customer.PriceListType = model.PriceListType.Value;
                 customer.OrganisationPrefix = model.OrganisationPrefix;
-                customer.TravelCostAgreementType = model.TravelCostAgreementType;
+                customer.TravelCostAgreementType = model.TravelCostAgreementType.Value;
                 _dbContext.Add(customer);
                 await _dbContext.SaveChangesAsync();
                 customer = await _dbContext.CustomerOrganisations

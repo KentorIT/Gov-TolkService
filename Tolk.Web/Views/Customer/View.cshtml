@@ -18,32 +18,29 @@
             </div>
         </div>
     }
-<div class="row">
-    <div class="col-sm-4">
-        <display-entry asp-for="Name" />
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="Name" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="EmailDomain" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="ParentName" />
+        </div>
     </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="EmailDomain" />
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="OrganisationNumber" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="OrganisationPrefix" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="PriceListType" />
+            <display-entry asp-for="TravelCostAgreementType" />
+        </div>
     </div>
-    <div class="col-sm-4">
-        <display-entry asp-for="ParentName" />
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-3">
-        <display-entry asp-for="OrganisationNumber" />
-    </div>
-    <div class="col-sm-3">
-        <display-entry asp-for="OrganisationPrefix" />
-    </div>
-    <div class="col-sm-3">
-        <display-entry asp-for="PriceListType" />
-    </div>
-    <div class="col-sm-3">
-        <display-entry asp-for="TravelCostAgreementType" />
-    </div>
-</div>
-
     <div class="row">
         <div class="col-sm-4">
             <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>

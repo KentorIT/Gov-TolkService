@@ -24,13 +24,16 @@ namespace Tolk.Web.Models
         public int? ParentId { get; set; }
 
         [Display(Name = "Prislista")]
-        public PriceListType PriceListType { get; set; }
+        [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        public PriceListType? PriceListType { get; set; }
 
         [Display(Name = "Avtal för bilersättning")]
-        public TravelCostAgreementType TravelCostAgreementType { get; set; }
+        [SubItem]
+        [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        public TravelCostAgreementType? TravelCostAgreementType { get; set; }
 
         [Display(Name = "Namnprefix", Description = "Detta används vid skapande av användarnamn när det skapas en ny användare kopplat till organisationen")]
-        [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool))]
+        [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         public string OrganisationPrefix { get; set; }
 
         [Display(Name = "Organisationsnummer")]

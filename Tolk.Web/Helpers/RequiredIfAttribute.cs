@@ -28,6 +28,8 @@ namespace Tolk.Web.Helpers
 
         public Type OtherPropertyType { get; set; } = typeof(string);
 
+        public bool AlwaysDisplayRequiredStar { get; set; } = false;
+
         public new string ErrorMessageString { get; set; } = null;
 
         public RequiredIfAttribute() { }
