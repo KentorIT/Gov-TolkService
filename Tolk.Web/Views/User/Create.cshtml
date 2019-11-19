@@ -8,6 +8,7 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <form method="post">
+        <input type="hidden" asp-for="IsEditOrCreate" />
         <div class="row">
             <div class="col-sm-4">
                 <form-entry asp-for="Email" />

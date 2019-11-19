@@ -22,12 +22,12 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string Email { get; set; }
 
-        [Required]
+        [RequiredIf(nameof(IsEditOrCreate), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         [Display(Name = "Förnamn")]
         [StringLength(255)]
         public string NameFirst { get; set; }
 
-        [Required]
+        [RequiredIf(nameof(IsEditOrCreate), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         [Display(Name = "Efternamn")]
         [StringLength(255)]
         public string NameFamily { get; set; }
@@ -94,6 +94,8 @@ namespace Tolk.Web.Models
         public bool AllowDefaultSettings { get; set; }
 
         public bool SendNewInvite { get; set; }
+
+        public bool IsEditOrCreate { get; set; } = true;
 
         public string Message { get; set; }
 

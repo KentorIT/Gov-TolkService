@@ -887,6 +887,7 @@ namespace Tolk.Web.Controllers
                     NameFamily = user.NameFamily,
                     Email = user.Email,
                     SendNewInvite = !user.EmailConfirmed,
+                    IsEditOrCreate = false,
                     UserPageMode = new UserPageMode
                     {
                         BackController = bc ?? BackController,
@@ -907,6 +908,8 @@ namespace Tolk.Web.Controllers
             var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
             if (ModelState.IsValid)
             {
+                model.SendNewInvite = !user.EmailConfirmed;
+                model.IsEditOrCreate = false;
                 var messageToUser = string.Empty;
                 if (user.Email.ToSwedishUpper() == model.Email.ToSwedishUpper())
                 {
@@ -959,6 +962,7 @@ namespace Tolk.Web.Controllers
                     Id = user.Id,
                     NameFirst = user.NameFirst,
                     NameFamily = user.NameFamily,
+                    IsEditOrCreate = false,
                     UserPageMode = new UserPageMode
                     {
                         BackController = bc,

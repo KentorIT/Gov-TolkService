@@ -6,8 +6,7 @@
     <h1>@ViewData["Title"]</h1>
     <form method="post" class="do-not-check-dirty">
         <input asp-for="Id" type="hidden" />
-        <input asp-for="NameFirst" type="hidden" />
-        <input asp-for="NameFamily" type="hidden" />
+        <input type="hidden" asp-for="IsEditOrCreate" />
         <div class="row">
             <div class="col-md-12 important-info">
                 Här kan du skicka en ny inbjudan till en användare som inte har verifierat sitt konto som användare.
