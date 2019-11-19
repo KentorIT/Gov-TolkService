@@ -340,12 +340,28 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void ApproveRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ApproveRequestGroupAnswer), nameof(OrderService));
+            requestGroup.Approve(_clock.SwedenNow, userId, impersonatorId);
+
+                _notificationService.RequestGroupAnswerApproved(requestGroup);
+        }
+
         public async Task DenyRequestAnswer(Request request, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(DenyRequestAnswer), nameof(OrderService));
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             await CreateRequest(request.Order, request);
             _notificationService.RequestAnswerDenied(request);
+        }
+
+        public async Task DenyRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId, string message)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DenyRequestGroupAnswer), nameof(OrderService));
+            requestGroup.Deny(_clock.SwedenNow, userId, impersonatorId, message);
+            await CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
+            _notificationService.RequestGroupAnswerDenied(requestGroup);
         }
 
         public async Task ConfirmCancellationByBroker(Request request, int userId, int? impersonatorId)
@@ -382,11 +398,28 @@ namespace Tolk.BusinessLogic.Services
             });
         }
 
+        public async Task ConfirmNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmNoAnswer), nameof(OrderService));
+            if (orderGroup.Status != OrderStatus.NoBrokerAcceptedOrder)
+            {
+                throw new InvalidOperationException($"The order group {orderGroup.OrderGroupId} has not been denied by all brokers");
+            }
+            await _tolkDbContext.AddAsync(new OrderGroupStatusConfirmation
+            {
+                OrderGroup = orderGroup,
+                ConfirmedBy = userId,
+                ImpersonatingConfirmedBy = impersonatorId,
+                OrderStatus = orderGroup.Status,
+                ConfirmedAt = _clock.SwedenNow
+            });
+        }
+
         public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(CancelOrder), nameof(OrderService));
             var request = order.ActiveRequest;
-            if (order.ActiveRequest == null)
+            if (request == null)
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
@@ -402,6 +435,26 @@ namespace Tolk.BusinessLogic.Services
                 _notificationService.OrderCancelledByCustomer(request, createFullCompensationRequisition);
             }
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
+        }
+
+        public void CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message, bool isReplaced = false)
+        {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CancelOrderGroup), nameof(OrderService));
+            var requestGroup = orderGroup.ActiveRequestGroup;
+            if (requestGroup == null)
+            {
+                throw new InvalidOperationException($"Order group {orderGroup.OrderGroupId} has no active request group that can be cancelled");
+            }
+            var now = _clock.SwedenNow;
+            //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
+            // But only if the order has not been replaced!
+            foreach (var order in orderGroup.Orders.Where(o => o.StartAt > _clock.SwedenNow))
+                //Add filter for correct statuses, only "active" orders can be cancelled.
+            {
+                CancelOrder(order, userId, impersonatorId, message);
+            }
+            //Add code for canceling the actual order group and also the underlying (might be more than one) requestGroups.
+            _logger.LogInformation("Order group {orderGroupId} cancelled by customer {userId}.", orderGroup.OrderGroupId, userId);
         }
 
         public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)

@@ -404,6 +404,36 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
+        public void RequestGroupAnswerDenied(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerDenied), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Svar på sammanhållen bokningsförfrågan med boknings-ID {orderGroupNumber} har underkänts",
+                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber} underkändes med följande meddelande:\n{requestGroup.DenyMessage}. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber} underkändes med följande meddelande:<br />{requestGroup.DenyMessage}. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
+                    true
+                );
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                     new RequestGroupAnswerDeniedModel
+                     {
+                         OrderGroupNumber = orderGroupNumber,
+                         Message = requestGroup.DenyMessage
+                     },
+                     webhook.ContactInformation,
+                     NotificationType.RequestGroupAnswerDenied,
+                     webhook.RecipientUserId
+                 );
+            }
+        }
+
         public void RequestExpired(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpired), nameof(NotificationService));
@@ -726,6 +756,12 @@ Sammanställning:
                 $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
                 body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+        }
+
+        public void RequestGroupAnswerApproved(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerApproved), nameof(NotificationService));
+            NotifyBrokerOnAcceptedAnswer(requestGroup, requestGroup.OrderGroup.OrderGroupNumber);
         }
 
         public void RequestDeclinedByBroker(Request request)

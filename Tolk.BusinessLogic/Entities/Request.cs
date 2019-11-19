@@ -168,24 +168,29 @@ namespace Tolk.BusinessLogic.Entities
             Complaints.Add(complaint);
         }
 
-        public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        public override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        {
+            if (Status != RequestStatus.Created)
+            {
+                throw new InvalidOperationException($"Tried to mark request as received by {userId}({impersonatorId}) but it is already {Status}");
+            }
+
+            base.Received(receiveTime, userId, impersonatorId);
+        }
+
+        public override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
             }
-
             var approvedRequest = Order.Requests.FirstOrDefault(r => r.Status == RequestStatus.Approved);
             if (approvedRequest != null)
             {
                 throw new InvalidOperationException($"Can only approve one request for an order. Order {OrderId} already has an approved request {approvedRequest.RequestId}.");
             }
-
-            Status = RequestStatus.Approved;
+            base.Approve(approveTime, userId, impersonatorId);
             Order.Status = OrderStatus.ResponseAccepted;
-            AnswerProcessedAt = approveTime;
-            AnswerProcessedBy = userId;
-            ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
         public void Accept(
@@ -385,19 +390,14 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        public override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (!CanDeny)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be denied.");
             }
-
-            Status = RequestStatus.DeniedByCreator;
-            AnswerProcessedAt = denyTime;
-            AnswerProcessedBy = userId;
-            ImpersonatingAnswerProcessedBy = impersonatorId;
+            base.Deny(denyTime, userId, impersonatorId, message);
             Order.Status = OrderStatus.Requested;
-            DenyMessage = message;
         }
 
         public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false)

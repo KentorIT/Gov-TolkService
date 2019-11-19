@@ -12,6 +12,7 @@ namespace Tolk.Web.Models
 {
     public class RequestGroupViewModel : RequestGroupBaseModel
     {
+        public bool AllowConfirmationDenial => true;
 
         #region methods
 
@@ -22,6 +23,7 @@ namespace Tolk.Web.Models
                 OrderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber,
                 Status = requestGroup.Status,
                 CreatedAt = requestGroup.CreatedAt,
+                RequestGroupId = requestGroup.RequestGroupId,
             };
         }
 

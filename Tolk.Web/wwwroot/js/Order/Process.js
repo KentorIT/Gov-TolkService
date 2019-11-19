@@ -83,7 +83,6 @@ $(function () {
         event.preventDefault();
         $("#cancelMessageDialog").openDialog();
     });
-
     $("body").on("click", "#cancelMessageDialog .send-message", function (event) {
         event.preventDefault();
         //Before we start, validate the form!

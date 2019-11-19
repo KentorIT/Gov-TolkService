@@ -76,6 +76,16 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
+
+        public bool RequiresApproval(bool hasTravelCosts)
+        {
+            return hasTravelCosts &&
+                OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+                Requests.Any(r => r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
+                    r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+        }
+
         public override void Decline(
             DateTimeOffset declinedAt,
             int userId,
@@ -87,18 +97,31 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Det gick inte att tacka nej till den sammanhållna bokningen med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
-            SetStatus(RequestStatus.DeclinedByBroker);
-            OrderGroup.SetStatus(OrderStatus.Requested);
+            Requests.ForEach(r => r.Decline(declinedAt, userId, impersonatorId, message));
+            SetStatus(RequestStatus.DeclinedByBroker, false);
+            OrderGroup.SetStatus(OrderStatus.Requested, false);
         }
 
-        public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
-
-        public bool RequiresApproval(bool hasTravelCosts)
+        public override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
-            return hasTravelCosts &&
-                OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
-                Requests.Any(r => r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
-                    r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+            if (!CanDeny)
+            {
+                throw new InvalidOperationException($"RequestGRoup {RequestGroupId} is {Status}. Only Accepted request groups can be denied.");
+            }
+            base.Deny(denyTime, userId, impersonatorId, message);
+            Requests.ForEach(r => r.Deny(denyTime, userId, impersonatorId, message));
+            OrderGroup.SetStatus(OrderStatus.Requested, false);
+        }
+
+        public override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        {
+            if (Status != RequestStatus.Created)
+            {
+                throw new InvalidOperationException($"Tried to mark request as received by {userId}({impersonatorId}) but it is already {Status}");
+            }
+
+            base.Received(receiveTime, userId, impersonatorId);
+            Requests.ForEach(r => r.Received(receiveTime, userId, impersonatorId));
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
@@ -110,18 +133,15 @@ namespace Tolk.BusinessLogic.Entities
             StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
-        public void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        public override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
             {
                 throw new InvalidOperationException($"Request {RequestGroupId} is {Status}. Only Accepted requests can be approved");
             }
-
-            Status = RequestStatus.Approved;
+            base.Approve(approveTime, userId, impersonatorId);
+            Requests.ForEach(r => r.Approve(approveTime, userId, impersonatorId));
             OrderGroup.SetStatus(OrderStatus.ResponseAccepted, false);
-            AnswerProcessedAt = approveTime;
-            AnswerProcessedBy = userId;
-            ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
         public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer)

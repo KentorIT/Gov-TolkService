@@ -67,7 +67,11 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestGroupAccepted(RequestGroup requestGroup) { }
 
+        public void RequestGroupAnswerApproved(RequestGroup requestGroup) { }
+
         public void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }
+
+        public void RequestGroupAnswerDenied(RequestGroup requestGroup) { }
 
         public void RequestGroupCreated(RequestGroup requestGroup) { }
 

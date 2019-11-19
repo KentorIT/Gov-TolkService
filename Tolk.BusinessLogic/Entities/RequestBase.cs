@@ -124,18 +124,14 @@ namespace Tolk.BusinessLogic.Entities
             get => Status == RequestStatus.Created || Status == RequestStatus.Received;
         }
 
-        public void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        public virtual void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
-            if (Status != RequestStatus.Created)
-            {
-                throw new InvalidOperationException($"Tried to mark request as received by {userId}({impersonatorId}) but it is already {Status}");
-            }
-
             Status = RequestStatus.Received;
             RecievedAt = receiveTime;
             ReceivedBy = userId;
             ImpersonatingReceivedBy = impersonatorId;
         }
+
         public virtual void Decline(
             DateTimeOffset declinedAt,
             int userId,
@@ -147,6 +143,23 @@ namespace Tolk.BusinessLogic.Entities
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             DenyMessage = message;
+        }
+
+        public virtual void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        {
+            Status = RequestStatus.DeniedByCreator;
+            AnswerProcessedAt = denyTime;
+            AnswerProcessedBy = userId;
+            ImpersonatingAnswerProcessedBy = impersonatorId;
+            DenyMessage = message;
+        }
+
+        public virtual void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        {
+            Status = RequestStatus.Approved;
+            AnswerProcessedAt = approveTime;
+            AnswerProcessedBy = userId;
+            ImpersonatingAnswerProcessedBy = impersonatorId;
         }
 
         #endregion

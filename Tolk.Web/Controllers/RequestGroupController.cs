@@ -206,6 +206,23 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmDenial(int requestGroupId)
+        {
+            RequestGroup requestGroup =  await _dbContext.RequestGroups
+                .Include(r => r.Ranking)
+                .Include(r => r.Requests)
+                .Include(r => r.StatusConfirmations)
+                .SingleAsync(r => r.RequestGroupId == requestGroupId);
+
+            if (requestGroup.Status == RequestStatus.DeniedByCreator && (await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
+            {
+                await _requestService.ConfirmGroupDenial(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+            }
+            return Forbid();
+        }
 
         [ValidateAntiForgeryToken]
         [HttpDelete]

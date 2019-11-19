@@ -2,11 +2,19 @@
 @{
     ViewData["Title"] = "Sammanhållen bokning - " + Model.OrderGroupNumber;
 }
-<section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="OrderGroupNumber" />
+    <section aria-label="@ViewData["Title"]">
+        <h1>@ViewData["Title"]</h1>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="OrderGroupNumber" />
+            </div>
         </div>
-    </div>
-</section>
+        @if (Model.AllowConfirmationDenial)
+        {
+            <br />
+            <form method="post" action="@Url.Action("ConfirmDenial", "RequestGroup", new { RequestGroupId = Model.RequestGroupId })" asp-antiforgery="true">
+                <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+            </form>
+            <br /><br />
+        }
+    </section>

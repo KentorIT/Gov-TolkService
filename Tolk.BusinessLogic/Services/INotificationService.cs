@@ -33,7 +33,9 @@ namespace Tolk.BusinessLogic.Services
         void RequestDeclinedByBroker(Request request);
         void RequestGroupAccepted(RequestGroup requestGroup);
         void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
+        void RequestGroupAnswerApproved(RequestGroup requestGroup);
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);
+        void RequestGroupAnswerDenied(RequestGroup requestGroup);
         void RequestExpired(Request request);
         void RequestReplamentOrderAccepted(Request request);
         void RequestReplamentOrderDeclinedByBroker(Request request);

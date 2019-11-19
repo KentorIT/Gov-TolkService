@@ -77,9 +77,108 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Approve(ProcessRequestGroupModel model)
+        {
+            var requestGroup = await _dbContext.RequestGroups
+                .Include(r => r.Requests).ThenInclude(r => r.Order)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, requestGroup.OrderGroup, Policies.Accept)).Succeeded)
+            {
+                if (!requestGroup.CanApprove)
+                {
+                    _logger.LogWarning("Wrong status when trying to Approve request group. Status: {requestGroup.Status}, RequestGroupId: {requestGroup.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
+                    return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
+                }
+                _orderService.ApproveRequestGroupAnswer(requestGroup, User.GetUserId(), User.TryGetImpersonatorId());
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Cancel(CancelOrderGroupModel model)
+        {
+            var orderGroup = await _dbContext.OrderGroups
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.Orders)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests)
+                .SingleAsync(o => o.OrderGroupId == model.OrderGroupId );
+
+            if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded)
+            {
+                if (orderGroup.CanCancel(_clock.SwedenNow))
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att avboka den sammanhållna bokningen." });
+                }
+                //_orderService.CancelOrderGroup(orderGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                //await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Index", "Home", new { errorMessage = "Det funkar inte att avboka en sammanhållen bokning än" });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> ConfirmNoAnswer(int orderGroupId)
+        {
+            var orderGroup = await _dbContext.OrderGroups.SingleAsync(o => o.OrderGroupId == orderGroupId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
+            {
+                if (orderGroup.Status != OrderStatus.NoBrokerAcceptedOrder)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna sammanhållna bokning var inte avböjd av samtliga förmedlingar." });
+                }
+                await _orderService.ConfirmNoAnswer(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Deny(ProcessRequestGroupModel model)
+        {
+            var requestGroup = await _dbContext.RequestGroups
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.Requests)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups)
+                .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, requestGroup.OrderGroup, Policies.Accept)).Succeeded)
+            {
+                if (!requestGroup.CanDeny)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att neka denna tillsättning" });
+                }
+                await _orderService.DenyRequestGroupAnswer(requestGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
+            }
+            return Forbid();
+        }
+
         private async Task<OrderGroup> GetOrderGroup(int id)
         {
             return await _dbContext.OrderGroups
+                .Include(o => o.RequestGroups)
                 .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .SingleAsync(o => o.OrderGroupId == id);
         }

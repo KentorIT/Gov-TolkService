@@ -1,4 +1,9 @@
 ﻿@model OrderGroupModel
+@inject HelpLinkService HelpLinkService
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
+@using Tolk.BusinessLogic.Enums
+
 @{
     ViewData["Title"] = "Sammanhållen bokning - " + Model.OrderGroupNumber;
 }
@@ -8,5 +13,121 @@
         <div class="col-sm-4">
             <display-entry asp-for="OrderGroupNumber" />
         </div>
+
+    </div>
+    <div class="row">
+        @if (Model.AllowNoAnswerConfirmation)
+        {
+            <div class="col-sm-6">
+                <form method="post" action="@Url.Action("ConfirmNoAnswer", "OrderGroup", new { OrderGroupId = Model.OrderGroupId })" asp-antiforgery="true">
+                    <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                </form>
+                <br />
+            </div>
+        }
+
+        @if (Model.ActiveRequestIsAnswered && Model.HasOtherCompetenceLevel)
+        {
+            <div class="col-sm-12 important-info">
+                Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
+            </div>
+        }
+        @if (Model.AllowProcessing)
+        {
+            <div class="col-sm-12 to-accept-info">
+                Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas uppgår till: <span class="bold">@Model.ExpectedTravelCosts SEK</span>
+            </div>
+            <div class="col-sm-12">
+                <display-entry asp-for="ExpectedTravelCostInfo" />
+                <br />
+            </div>
+        }
+        @if (Model.AllowOrderGroupCancellation)
+        {
+            <div class="col-sm-4">
+                <form method="post" class="cancel-form" action="@Url.Action("Cancel", "OrderGroup", new { OrderGroupId = Model.OrderGroupId })" asp-antiforgery="true">
+                    <input name="CancelMessage" type="hidden" />
+                    <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
+                    @HelpLinkService.ButtonHelpIcon("myndighet-avboka-uppdrag")
+                </form>
+            </div>
+        }
+        @if (Model.AllowPrint)
+        {
+            <div class="col-sm-4">
+                <a class="btn btn-primary btn-large" href="@Url.Action("Print", "OrderGroup", new { id = Model.OrderGroupId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
+            </div>
+        }
+        @if (Model.AllowProcessing)
+        {
+            <div class="col-sm-4">
+                @if (Model.AllowDenial)
+                {
+                    <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "OrderGroup", new { RequestGroupId = Model.RequestGroupId})" asp-antiforgery="true">
+                        <input name="DenyMessage" type="hidden" />
+                        <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
+                        @HelpLinkService.ButtonHelpIcon("myndighet-underkann-tillsattning")
+                    </form>
+                }
+            </div>
+            <div class="col-sm-4 pull-right">
+                <form method="post" action="@Url.Action("Approve", "OrderGroup", new { RequestGroupId = Model.RequestGroupId})" asp-antiforgery="true">
+                    <button class="btn btn-default btn-success btn-large">Godkänn tillsättning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    @HelpLinkService.ButtonHelpIcon("myndighet-godkann-tillsattning")
+                </form>
+            </div>
+        }
     </div>
 </section>
+
+<div id="cancelMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Meddelande vid avbokning</h2>
+            </div>
+            <div class="modal-body">
+                <form class="do-not-check-dirty">
+                    <form-entry asp-for="CancelMessage" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default send-message pull-right">Avboka</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="denyMessageDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Meddelande vid underkännande</h2>
+            </div>
+            <div class="modal-body">
+                <form class="do-not-check-dirty">
+                    <form-entry asp-for="DenyMessage" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-default send-message pull-right">Skicka</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/OrderGroup/View.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/OrderGroup/View.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

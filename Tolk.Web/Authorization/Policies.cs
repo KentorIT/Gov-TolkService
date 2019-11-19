@@ -217,6 +217,8 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
+                case OrderGroup orderGroup:
+                    return orderGroup.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
                 case Request request:
                     return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) &&
                         request.Ranking.BrokerId == user.GetBrokerId() &&
@@ -260,6 +262,8 @@ namespace Tolk.Web.Authorization
             {
                 case Order order:
                     return order.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
+                case OrderGroup orderGroup:
+                    return orderGroup.IsAuthorizedAsCreator(customerUnits, customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
                 case RequestBase request:
                     return request.Ranking.BrokerId == user.GetBrokerId();
                 case Requisition requisition:

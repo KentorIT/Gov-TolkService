@@ -65,9 +65,23 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderGroupCompetenceRequirement> CompetenceRequirements { get; set; }
 
         public List<OrderGroupInterpreterLocation> InterpreterLocations { get; set; }
-        
+
         public List<OrderGroupStatusConfirmation> StatusConfirmations { get; set; }
 
+        public bool CanCancel(DateTimeOffset now)
+        {
+            return 
+            (Status == OrderStatus.AwaitingDeadlineFromCustomer ||
+            Status == OrderStatus.GroupAwaitingPartialResponse ||
+            Status == OrderStatus.RequestAwaitingPartialAccept ||
+            Status == OrderStatus.Requested ||
+            Status == OrderStatus.RequestResponded ||
+            Status == OrderStatus.ResponseAccepted) &&
+            Orders.Any(o => o.StartAt > now && (o.Status == OrderStatus.AwaitingDeadlineFromCustomer ||
+                Status == OrderStatus.Requested ||
+                Status == OrderStatus.RequestResponded ||
+                Status == OrderStatus.ResponseAccepted));
+            }
         #endregion
 
         #region methods and read only properties
@@ -79,7 +93,7 @@ namespace Tolk.BusinessLogic.Entities
             ActiveRequestGroup.IsTerminalRequest = true;
         }
 
-        public RequestGroup ActiveRequestGroup => RequestGroups.Single(r => r.IsToBeProcessedByBroker);
+        public RequestGroup ActiveRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
