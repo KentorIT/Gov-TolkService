@@ -9,12 +9,12 @@ namespace Tolk.Web.Models.AccountViewModels
 
         public string PasswordToken { get; set; }
 
-        [ClientRequired]
+        [Required]
         [Display(Name = "Förnamn")]
         [StringLength(255)]
         public string NameFirst { get; set; }
 
-        [ClientRequired]
+        [Required]
         [Display(Name = "Efternamn")]
         [StringLength(255)]
         public string NameFamily { get; set; }
