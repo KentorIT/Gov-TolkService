@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
@@ -15,7 +14,6 @@ namespace Tolk.BusinessLogic.Services
     public class PriceCalculationService
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly IMemoryCache _cache;
         private readonly DateCalculationService _dateCalculationService;
@@ -23,13 +21,11 @@ namespace Tolk.BusinessLogic.Services
         private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public PriceCalculationService(TolkDbContext dbContext,
-            ILogger<PriceCalculationService> logger,
             DateCalculationService dateCalculationService,
             IOptions<TolkOptions> options,
             IMemoryCache cache = null
             )
         {
-            _logger = logger;
             _dbContext = dbContext;
             _dateCalculationService = dateCalculationService;
             _options = options?.Value;
@@ -54,16 +50,17 @@ namespace Tolk.BusinessLogic.Services
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,
                 request.RankingId,
+                request.Order.CreatedAt,
                 expectedTravelCost);
         }
 
-        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, decimal? travelCost = null)
+        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, DateTimeOffset orderCreatedDate, decimal? travelCost = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost);
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices)).ToList(), rankingId, travelCost, orderCreatedDate);
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, List<MealBreak> mealbreaks = null)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, DateTimeOffset orderCreatedDate, List<MealBreak> mealbreaks = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
 
@@ -93,7 +90,7 @@ namespace Tolk.BusinessLogic.Services
             }
             //get lost time and extra charges
             pricesToUse.AddRange(GetLostTimePriceRows(startAt, timeWasteNormalTime, timeWasteIWHTime, prices));
-            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, outlay, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
+            return CompletePricesWithExtraCharges(startAt, endAt, competenceLevel, pricesToUse, rankingId, null, orderCreatedDate, outlay, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee));
         }
 
         /// <summary>
@@ -161,13 +158,13 @@ namespace Tolk.BusinessLogic.Services
             return reducedMinutes > 0 ? reducedMinutes % newPriceRow.PriceListRow.MaxMinutes > 0 ? (reducedMinutes / newPriceRow.PriceListRow.MaxMinutes) + 1 : reducedMinutes / newPriceRow.PriceListRow.MaxMinutes : 0;
         }
 
-        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, decimal? outlay = null, PriceRowBase requestBrokerFeeForRequisition = null)
+        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, List<PriceRowBase> priceListRowsPerPriceType, int rankingId, decimal? travelCost, DateTimeOffset orderCreatedDate, decimal? outlay = null, PriceRowBase requestBrokerFeeForRequisition = null)
         {
             List<PriceRowBase> allPriceRows = new List<PriceRowBase>
             {
                 GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType),
                 GetPriceRowAdministrativeCharge(startAt, endAt, priceListRowsPerPriceType),
-                GetPriceRowBrokerFee(startAt, endAt, competenceLevel, rankingId, requestBrokerFeeForRequisition)
+                GetPriceRowBrokerFee(startAt, endAt, competenceLevel, rankingId, requestBrokerFeeForRequisition, orderCreatedDate)
             };
             allPriceRows.AddRange(priceListRowsPerPriceType);
             if (travelCost != null && travelCost > 0)
@@ -197,7 +194,7 @@ namespace Tolk.BusinessLogic.Services
         {
             decimal roundings = 0;
             allPriceRows.Sum(pr => roundings += pr.Decimals);
-            roundings = roundings - Math.Floor(roundings);
+            roundings -= Math.Floor(roundings);
             roundings = roundings > Convert.ToDecimal(0.5) ? 1 - roundings : -roundings;
             //if roundings = 0 we create a row with 0 to display anyway
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = roundings, Quantity = 1, PriceRowType = PriceRowType.RoundedPrice };
@@ -245,7 +242,7 @@ namespace Tolk.BusinessLogic.Services
             return new PriceRowBase { StartAt = startAt, EndAt = endAt, Price = chargeRow.ChargePercentage * priceListRowsPerPriceType.Sum(m => m.TotalPrice) / 100, Quantity = 1, PriceRowType = chargeType == ChargeType.SocialInsuranceCharge ? PriceRowType.SocialInsuranceCharge : PriceRowType.AdministrativeCharge, PriceCalculationChargeId = chargeRow.PriceCalculationChargeId };
         }
 
-        private PriceRowBase GetPriceRowBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, PriceRowBase brokerFeeToUse)
+        private PriceRowBase GetPriceRowBrokerFee(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, PriceRowBase brokerFeeToUse, DateTimeOffset orderCreatedDate)
         {
             if (brokerFeeToUse != null)
             {
@@ -255,8 +252,10 @@ namespace Tolk.BusinessLogic.Services
             {
                 //One broker fee per day
                 int days = GetNoOfDays(startAt, endAt);
-
-                var priceRow = BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date);
+                //if there is no priceRowBrokerFee for the orderStart, try to get if for the orderCreatedDate (contract has ended, but order was created when contract/ranking was valid)
+                var priceRow = BrokerFeePriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date).Count() == 1 ?
+                    BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date) :
+                    BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= orderCreatedDate.Date && br.EndDate.Date >= orderCreatedDate.Date);
 
                 return new PriceRowBase
                 {

@@ -481,7 +481,7 @@ namespace Tolk.BusinessLogic.Services
             int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
                 .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
-            return PriceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId).PriceRows);
+            return PriceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId, order.CreatedAt).PriceRows);
         }
 
         /// <summary>
@@ -697,8 +697,8 @@ namespace Tolk.BusinessLogic.Services
                 order.EndAt,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
                 order.CustomerOrganisation.PriceListType,
-                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId
-            );
+                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId,
+                order.CreatedAt);
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
         }
 
