@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -34,11 +35,15 @@ namespace Tolk.Web.Models
 
         public bool IsCustomerCentralAdminOrOrderHandler { get; set; }
 
-        public bool IsBrokerUser { get; set; }
+        public bool IsBroker { get; set; }
 
-        public bool HasCustomerUnits { get; set; }
+        public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
 
-        public bool HasActiveFilters => CustomerContactId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || BrokerContactId.HasValue || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
+        public bool IsAdmin { get; set; }
+
+        public int UserId { get; set; }
+
+        public IEnumerable<int> CustomerUnits { get; set; }
 
         internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
@@ -51,8 +56,20 @@ namespace Tolk.Web.Models
             items = BrokerId.HasValue ? items.Where(c => c.Request.Ranking.BrokerId == BrokerId) : items;
             items = CustomerOrganisationId.HasValue ? items.Where(c => c.Request.Order.CustomerOrganisationId == CustomerOrganisationId) : items;
             items = CustomerUnitId.HasValue ? items.Where(c => c.Request.Order.CustomerUnitId == CustomerUnitId) : items;
-            items = FilterByInactiveUnits.HasValue ? items.Where(c => c.Request.Order.CustomerUnit == null || c.Request.Order.CustomerUnit.IsActive) : items;
+            items = FilterByInactiveUnits ?? false ? items.Where(c => c.Request.Order.CustomerUnit == null || c.Request.Order.CustomerUnit.IsActive) : items;
             return items;
+        }
+
+        internal IQueryable<Complaint> GetComplaintsFromOrders(IQueryable<Order> orders)
+        {
+            return IsBroker ? orders.Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Complaints) :
+                orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCustomerCentralAdminOrOrderHandler, true)
+                .Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Complaints);
+        }
+
+        internal IQueryable<Complaint> GetComplaintsFromRequests(IQueryable<Request> requests)
+        {
+            return requests.BrokerRequests(BrokerId.Value).SelectMany(r => r.Complaints);
         }
     }
 }

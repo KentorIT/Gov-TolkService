@@ -3,51 +3,49 @@
 @using Tolk.Web.Services
 <section aria-label="Filtrera">
     <div class="col-sm-12">
-        <form method="get" class="filter-form do-not-check-dirty">
-            <div class="row">
-                <div class="col-xs-4">
-                    <h2>Filtrera</h2>
-                </div>
-                <div class="col-xs-8">
-                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
-                </div>
+        <div class="row">
+            <div class="col-xs-4">
+                <h2>Filtrera</h2>
             </div>
-            <div class="row">
-                <div class="col-sm-3">
-                    <form-entry asp-for="OrderNumber" />
-                </div>
-                <div class="col-sm-3">
-                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.ComplaintStatuses" Class="allow-clear" />
-                </div>
-                @if (!Model.IsBrokerUser)
-                {
-                    <div class="col-sm-3">
-                        <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
-                    </div>
-                    if (Model.HasCustomerUnits)
-                    {
-                        <div class="col-sm-3">
-                            <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
-                            <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
-                        </div>
-                    }
-                }
-                @if (Model.IsCustomerCentralAdminOrOrderHandler)
-                {
-                    <div class="col-sm-3">
-                        <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
-                    </div>
-                }
-                @if (Model.IsBrokerUser)
-                {
-                    <div class="col-sm-3">
-                        <form-entry asp-for="BrokerContactId" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
-                    </div>
-                    <div class="col-sm-3">
-                        <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
-                    </div>
-                }
+            <div class="col-xs-8">
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
             </div>
-        </form>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <form-entry asp-for="OrderNumber" />
+            </div>
+            <div class="col-sm-3">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.ComplaintStatuses" Class="allow-clear" />
+            </div>
+            @if (!Model.IsBroker)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
+                </div>
+                if (Model.HasCustomerUnits)
+                {
+                    <div class="col-sm-3">
+                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="SelectListService.CustomerUnitsForCurrentUser" class="allow-clear" />
+                        <form-entry asp-for="FilterByInactiveUnits" type="checkbox" />
+                    </div>
+                }
+            }
+            @if (Model.IsCustomerCentralAdminOrOrderHandler)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="CustomerContactId" type="select" asp-items="SelectListService.CustomerUsers" Class="allow-clear" />
+                </div>
+            }
+            @if (Model.IsBroker)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="BrokerContactId" type="select" asp-items="SelectListService.BrokerUsers" Class="allow-clear" />
+                </div>
+                <div class="col-sm-3">
+                    <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
+                </div>
+            }
+        </div>
     </div>
 </section>

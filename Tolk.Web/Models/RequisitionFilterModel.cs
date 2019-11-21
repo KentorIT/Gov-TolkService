@@ -34,8 +34,6 @@ namespace Tolk.Web.Models
 
         public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
 
-        public bool HasActiveFilters => CreatedById.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || CustomerOrganisationId.HasValue || BrokerId.HasValue;
-
         public bool IsBroker { get; set; }
 
         [Display(Name = "Skapad av")]

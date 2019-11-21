@@ -27,8 +27,6 @@ namespace Tolk.Web.Models
         [NoDisplayName]
         public string FilterMessage { get; set; }
 
-        public bool HasActiveFilters => IsSent.HasValue || !string.IsNullOrWhiteSpace(Receipent) || DateCreated?.Start != null || DateCreated?.End != null;
-
         internal IQueryable<OutboundEmail> Apply(IQueryable<OutboundEmail> emails)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...

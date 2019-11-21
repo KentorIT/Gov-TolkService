@@ -49,12 +49,6 @@ namespace Tolk.Web.Models
 
         public bool IsAdmin { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => RegionId.HasValue || CreatedBy.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(CustomerReferenceNumber) ||
-                LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue || BrokerId.HasValue || CustomerOrganisationId.HasValue;
-        }
-
         public int UserId { get; set; }
 
         internal IQueryable<Order> GetOrders(IQueryable<Order> orders)

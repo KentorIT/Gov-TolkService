@@ -33,12 +33,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Besvarad av")]
         public int? AnsweredById { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => AnsweredById.HasValue || RegionId.HasValue || CustomerOrganizationId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || !string.IsNullOrWhiteSpace(OrderNumber) || 
-                LanguageId.HasValue || OrderDateRange?.Start != null || OrderDateRange?.End != null || AnswerByDateRange?.Start != null || AnswerByDateRange?.End != null || Status.HasValue; 
-        }
-
         internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...

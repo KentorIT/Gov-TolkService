@@ -4,7 +4,7 @@
 @using Tolk.Web.Services
 @{
     ViewData["Title"] = "Historik - Reklamationer";
-    if (Model.FilterModel.IsBrokerUser)
+    if (Model.FilterModel.IsBroker)
     {
         HelpLinkService.PageName = "formedling-historik/";
     }
@@ -15,61 +15,30 @@
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor("historik-reklamationer")</h1>
-    <div class="row">
-        @await Html.PartialAsync("_Filter", Model.FilterModel)
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            @if (Model.Items.Any())
-            {
-                <div class="table-responsive standard-table table-paging table-datatable">
-                    <table class="table table-hover full-row-height clickable-rows-with-action search-table">
-                        <thead>
-                            <tr>
-                                <th class="defaultSortDesc">BokningsID</th>
-                                <th>Län</th>
-                                <th>Skapad</th>
-                                <th>Typ av reklamation</th>
-                                <th>Status</th>
-                                @if (Model.FilterModel.IsBrokerUser)
-                                {
-                                    <th>Myndighet</th>
-                                }
-                                else
-                                {
-                                    <th>Förmedling</th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.Items)
-                            {
-                                <tr data-id="@item.OrderRequestId" data-click-action-url="@Url.Action("View", item.Controller, new { id = item.OrderRequestId, tab = "complaint"})">
-                                    <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
-                                    <td class="gray-border-bottom">@item.RegionName</td>
-                                    <td class="gray-border-bottom">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td class="gray-border-bottom">@EnumHelper.GetDescription(item.ComplaintType)</td>
-                                    <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                                    @if (Model.FilterModel.IsBrokerUser)
-                                    {
-                                        <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
-                                    }
-                                    else
-                                    {
-                                        <td class="gray-border-bottom gray-border-right">@item.BrokerName</td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
+    @if (Model.FilterModel.IsAdmin)
+    {
+        <div class="row">
+            <div class="col-md-12 important-info">
+                Du har inte behörighet att lista reklamationer.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row filter-panel">
+            @await Html.PartialAsync("_Filter", Model.FilterModel)
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-responsive ajax-listing table-datatable">
+                    <table class="table table-hover full-row-height clickable-rows-with-action search-table" data-order="[[ 1, &quot;desc&quot; ]]"
+                           data-ajax-path="@Url.Action(nameof(Tolk.Web.Controllers.ComplaintController.ListComplaints), "Complaint")"
+                           data-ajax-column-definition="@Url.Action(nameof(Tolk.Web.Controllers.ComplaintController.ListColumnDefinition), "Complaint")"
+                           data-click-action-url="@Url.Action("View", Model.FilterModel.IsBroker ? "Request" : "Order", new { tab = "complaint" })"
+                           data-filter-selector=".filter-panel">
                     </table>
                 </div>
-            }
-            else if (Model.FilterModel.HasActiveFilters)
-            {
-                <span class="no-result-message">
-                    Sökningen gav inget resultat.
-                </span>
-            }
+            </div>
         </div>
-    </div>
+    }
 </section>

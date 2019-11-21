@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DataTables.AspNet.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
@@ -36,53 +37,65 @@ namespace Tolk.Web.Controllers
             _complaintService = complaintService;
         }
 
-        public IActionResult List(ComplaintFilterModel model)
+        public IActionResult List()
         {
-            if (model == null)
+            return View(new ComplaintListModel
             {
-                model = new ComplaintFilterModel();
-            }
-            var customerId = User.TryGetCustomerOrganisationId();
-            var brokerId = User.TryGetBrokerId();
-            var userId = User.GetUserId();
-            var isCustomerCentralAdminOrOrderHandler = (User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler)) && customerId.HasValue;
-            model.IsCustomerCentralAdminOrOrderHandler = isCustomerCentralAdminOrOrderHandler;
-
-            IEnumerable<int> customerUnits = null;
-            if (customerId.HasValue)
-            {
-                customerUnits = _dbContext.CustomerUnits.Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerId &&
-                        (isCustomerCentralAdminOrOrderHandler || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId)))
-                    .Select(cu => cu.CustomerUnitId).ToList();
-            }
-            model.IsBrokerUser = brokerId.HasValue;
-            model.HasCustomerUnits = customerUnits != null && customerUnits.Any();
-
-            var items = _dbContext.Complaints
-                .Where(c => c.Request.Ranking.Broker.BrokerId == brokerId || c.Request.Order.CustomerOrganisationId == customerId);
-
-            items = customerId.HasValue ? items.Where(c => c.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, customerId.Value, userId, model.IsCustomerCentralAdminOrOrderHandler)) : items;
-
-            items = model.Apply(items);
-
-            return View(
-                new ComplaintListModel
+                FilterModel = new ComplaintFilterModel
                 {
-                    Items = items.Select(c => new ComplaintListItemModel
-                    {
-                        OrderRequestId = customerId.HasValue ? c.Request.OrderId : c.RequestId,
-                        BrokerName = c.Request.Ranking.Broker.Name,
-                        CustomerName = c.Request.Order.CustomerOrganisation.Name,
-                        ComplaintType = c.ComplaintType,
-                        CreatedAt = c.CreatedAt,
-                        OrderNumber = c.Request.Order.OrderNumber,
-                        RegionName = c.Request.Order.Region.Name,
-                        Status = c.Status,
-                        Controller = customerId.HasValue ? "Order" : "Request",
-                    }),
-                    FilterModel = model
-                });
+                    CustomerUnits = User.TryGetAllCustomerUnits(),
+                    IsBroker = User.TryGetBrokerId().HasValue,
+                    IsAdmin = User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator),
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListComplaints(IDataTablesRequest request)
+        {
+            var model = new ComplaintFilterModel();
+            await TryUpdateModelAsync(model);
+            model.IsCustomerCentralAdminOrOrderHandler = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
+            var brokerId = User.TryGetBrokerId();
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            model.IsBroker = brokerId.HasValue;
+            if (model.IsBroker)
+            {
+                model.BrokerId = brokerId;
+            }
+            else
+            {
+                model.CustomerOrganisationId = customerOrganisationId;
+                model.UserId = User.GetUserId();
+                model.CustomerUnits = User.TryGetAllCustomerUnits();
+            }
+            IQueryable<Complaint> complaints = customerOrganisationId.HasValue ?
+                 model.GetComplaintsFromOrders(_dbContext.Orders.Select(o => o)) : brokerId.HasValue ?
+                  complaints = model.GetComplaintsFromRequests(_dbContext.Requests.Select(o => o)) : null;
+            if (complaints == null)
+            {
+                return Forbid();
+            }
+            return AjaxDataTableHelper.GetData(request, complaints.Count(), model.Apply(complaints), x => x.Select(c => new ComplaintListItemModel
+            {
+                OrderRequestId = customerOrganisationId.HasValue ? c.Request.OrderId : c.RequestId,
+                BrokerName = c.Request.Ranking.Broker.Name,
+                CustomerName = c.Request.Order.CustomerOrganisation.Name,
+                ComplaintType = c.ComplaintType,
+                CreatedAt = c.CreatedAt.ToSwedishString("yyyy-MM-dd HH:mm"),
+                OrderNumber = c.Request.Order.OrderNumber,
+                RegionName = c.Request.Order.Region.Name,
+                Status = c.Status,
+            }));
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<ComplaintListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(ComplaintListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue; //or is sys/app admin 
+            definition.Single(d => d.Name == nameof(ComplaintListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue; //or is sys/app admin 
+            return Json(definition);
         }
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)

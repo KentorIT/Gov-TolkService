@@ -32,8 +32,6 @@ namespace Tolk.Web.Models
 
         public bool IsBroker { get; set; }
 
-        public bool HasActiveFilters => !string.IsNullOrWhiteSpace(OrganisationIdentifier) || !string.IsNullOrWhiteSpace(Name) || Roles.HasValue || Status.HasValue;
-
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
             //used when user is created to display only the created user
