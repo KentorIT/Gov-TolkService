@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using DataTables.AspNet.Core;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
@@ -35,31 +36,34 @@ namespace Tolk.Web.Controllers
             _clock = clock;
         }
 
-        public IActionResult List(InterpreterFilterModel model)
+        public IActionResult List(InterpreterListModel model = null)
         {
-            if (model == null)
-            {
-                model = new InterpreterFilterModel();
-            }
-            var items = _dbContext.InterpreterBrokers
-                .Where(r => r.BrokerId == User.GetBrokerId());
-            // Filters
-            items = model.Apply(items);
+            return model.Message == null ? View(new InterpreterListModel { FilterModel = new InterpreterFilterModel() }) : View(model);
+        }
 
-            return View(
-                new InterpreterListModel
-                {
-                    Items = items.Select(i => new InterpreterListItemModel
-                    {
-                        Id = i.InterpreterBrokerId,
-                        Email = i.Email,
-                        Name = i.FullName,
-                        OfficialInterpreterId = i.OfficialInterpreterId,
-                        IsActive = i.IsActive
-                    }),
-                    FilterModel = model,
-                    Message = model.Message
-                });
+        [HttpPost]
+        public async Task<IActionResult> ListInterpreters(IDataTablesRequest request)
+        {
+            var model = new InterpreterFilterModel();
+            await TryUpdateModelAsync(model);
+
+            IQueryable<InterpreterBroker> interpreters = _dbContext.InterpreterBrokers
+            .Where(r => r.BrokerId == User.GetBrokerId());
+
+            return AjaxDataTableHelper.GetData(request, interpreters.Count(), model.Apply(interpreters), x => x.Select(i => new InterpreterListItemModel
+            {
+                Id = i.InterpreterBrokerId,
+                Email = i.Email,
+                Name = i.FullName,
+                OfficialInterpreterId = i.OfficialInterpreterId,
+                IsActive = i.IsActive
+            }));
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<InterpreterListItemModel>());
         }
 
         public async Task<IActionResult> View(int id)
@@ -106,7 +110,7 @@ namespace Tolk.Web.Controllers
                             model.UpdateInterpreter(interpreter);
                         }
                         await _dbContext.SaveChangesAsync();
-                        return RedirectToAction(nameof(List), new InterpreterFilterModel { Message = "Tolkinformation har sparats" });
+                        return RedirectToAction(nameof(List), new InterpreterListModel { Message = "Tolkinformation har sparats" });
                     }
                 }
             }
@@ -134,7 +138,7 @@ namespace Tolk.Web.Controllers
                     model.UpdateInterpreter(interpreter);
                     await _dbContext.AddAsync(interpreter);
                     await _dbContext.SaveChangesAsync();
-                    return RedirectToAction(nameof(List), new InterpreterFilterModel { Message = "Ny tolk har skapats" });
+                    return RedirectToAction(nameof(List), new InterpreterListModel { Message = "Ny tolk har skapats" });
                 }
             }
             return View(model);

@@ -7,7 +7,6 @@ namespace Tolk.Web.Models
 {
     public class InterpreterFilterModel
     {
-        public string Message { get; set; }
 
         [Display(Name = "Kammarkollegiets tolknummer")]
         public string OfficialInterpreterId { get; set; }
@@ -15,10 +14,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Namn")]
         public string Name { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => !string.IsNullOrWhiteSpace(OfficialInterpreterId) || !string.IsNullOrWhiteSpace(Name); 
-        }
+        [Display(Name = "E-postadress")]
+        public string Email { get; set; }
 
         internal IQueryable<InterpreterBroker> Apply(IQueryable<InterpreterBroker> items)
         {
@@ -29,6 +26,9 @@ namespace Tolk.Web.Models
             items = !string.IsNullOrWhiteSpace(Name)
                ? items.Where(i => i.FirstName.Contains(Name) || i.LastName.Contains(Name) || (i.FirstName + i.LastName).Contains(Name.Replace(" ", "")))
                : items;
+            items = !string.IsNullOrWhiteSpace(Email)
+              ? items.Where(i => i.Email.Contains(Email))
+              : items;
 #pragma warning restore CA1307 // 
             return items;
         }

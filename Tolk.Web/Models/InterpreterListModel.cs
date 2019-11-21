@@ -14,8 +14,6 @@ namespace Tolk.Web.Models
     {
         public InterpreterFilterModel FilterModel { get; set; }
 
-        public IEnumerable<InterpreterListItemModel> Items { get; set; }
-
         public string Message { get; set; }
     }
 }
