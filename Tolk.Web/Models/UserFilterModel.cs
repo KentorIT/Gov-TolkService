@@ -24,6 +24,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Status")]
         public ActiveStatus? Status { get; set; }
 
+        [Display(Name = "E-postadress")]
         public string Email { get; set; }
 
         public UserTypes UserType { get; set; }
@@ -34,12 +35,10 @@ namespace Tolk.Web.Models
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
-            //used when user is created to display only the created user
-            users = !string.IsNullOrWhiteSpace(Email) ? users.Where(u => u.Email == Email)
-               : users;
-
-            users = !string.IsNullOrWhiteSpace(Name)
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
+            users = !string.IsNullOrWhiteSpace(Email) ? users.Where(u => u.Email.Contains(Email))
+               : users;
+            users = !string.IsNullOrWhiteSpace(Name)
                ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name) || (u.NameFirst + u.NameFamily).Contains(Name.Replace(" ", "")))
 #pragma warning restore CA1307 // 
                : users;

@@ -11,7 +11,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 1, Name = nameof(Name), ColumnName = "NameFamily", SortOnWebServer = false, Title = "Namn")]
         public string Name { get; set; }
 
-        [ColumnDefinitions(Index = 2, Name = nameof(Email), Title = "Epost")]
+        [ColumnDefinitions(Index = 2, Name = nameof(Email), Title = "E-postadress")]
         public string Email { get; set; }
 
         [ColumnDefinitions(Index = 3, Name = nameof(Organisation), Title = "Organisation")]

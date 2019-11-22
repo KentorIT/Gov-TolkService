@@ -4,47 +4,50 @@
 @using Tolk.BusinessLogic.Enums
 <section aria-label="Filtrera">
     <div class="col-sm-12">
-            <div class="row">
-                <div class="col-xs-4">
-                    <h2>Filtrera</h2>
-                </div>
-                <div class="col-xs-8">
-                    <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
-                </div>
+        <div class="row">
+            <div class="col-xs-4">
+                <h2>Filtrera</h2>
             </div>
-            <div class="row">
-                <div class="col-sm-4">
-                    <form-entry asp-for="Name" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
-                </div>
-                @if (Model.UserType == UserTypes.ApplicationAdministrator || Model.UserType == UserTypes.SystemAdministrator)
-                {
-                    <div class="col-sm-4">
-                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
-                    </div>
-                }
-                else if (Model.UserType == UserTypes.Broker)
-                {
-                    <div class="col-sm-4">
-                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
-                    </div>
-                }
-                else if (Model.UserType == UserTypes.OrderCreator)
-                {
-                    <div class="col-sm-4">
-                        <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
-                    </div>
-                }
+            <div class="col-xs-8">
+                <a class="btn btn-primary do-not-check-dirty reset-filter-button" href="@Url.Action("List")">Rensa filter <span class="btn-small-remove-times">&times;</span></a>
             </div>
-            @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <form-entry asp-for="Name" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="Status" type="select" asp-items="SelectListService.ActiveStatuses" class="allow-clear" />
+            </div>
+            @if (Model.UserType == UserTypes.ApplicationAdministrator || Model.UserType == UserTypes.SystemAdministrator)
             {
-                <div class="row">
-                    <div class="col-sm-4">
-                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
-                    </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRoles" class="allow-clear" />
                 </div>
             }
+            else if (Model.IsBroker)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForBrokers" class="allow-clear" />
+                </div>
+            }
+            else if (Model.IsCustomer)
+            {
+                <div class="col-sm-4">
+                    <form-entry asp-for="Roles" type="select" asp-items="SelectListService.SearchableRolesForCustomers" class="allow-clear" />
+                </div>
+            }
+        </div>
+        @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
+        {
+            <div class="row">
+                <div class="col-sm-4">
+                    <form-entry asp-for="Email" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
+                </div>
+            </div>
+        }
     </div>
 </section>
