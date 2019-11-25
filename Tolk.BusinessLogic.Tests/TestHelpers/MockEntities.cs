@@ -381,6 +381,84 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             return orders;
         }
 
+        public static OrderGroup[] MockOrderGroups(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
+        {
+            var baseDate = new DateTimeOffset(2018, 06, 07, 13, 00, 00, new TimeSpan(02, 00, 00));
+            return new[]
+            {
+                CreateOrderGroup(
+                    "JUSTCREATED",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
+                    mockRankings,
+                    Enumerable.Empty<RequestStatus>().ToList()
+                ),
+                CreateOrderGroup(
+                    "REQUESTSJUSTCREATED",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
+                    mockRankings,
+                    new List<RequestStatus>(){ RequestStatus.Created }
+                ),
+                CreateOrderGroup(
+                    "REQUESTGROUPAWAITINGAPPROVAL",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
+                    mockRankings,
+                    new List<RequestStatus>(){ RequestStatus.Accepted },
+                    AllowExceedingTravelCost.YesShouldBeApproved
+                ),
+                CreateOrderGroup(
+                    "REQUESTGROUPALLOWEXCEEDINGJUSTCREATED",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null,
+                    new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite }, new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation } }).ToList(),
+                    mockRankings,
+                    new List<RequestStatus>(){ RequestStatus.Created },
+                    AllowExceedingTravelCost.YesShouldBeApproved,
+                    new List<OrderGroupInterpreterLocation>() { new OrderGroupInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite }, new OrderGroupInterpreterLocation { InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation } }
+
+                ),
+                CreateOrderGroup(
+                    "REQUESTGROUPDENIED",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
+                    mockRankings,
+                    new List<RequestStatus>(){ RequestStatus.DeniedByCreator }
+                ),
+            };
+        }
+
         public static Request[] GetRequestsFromOrders(Order[] mockOrders)
         {
             List<Request> mockRequests = new List<Request>();
@@ -700,5 +778,66 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             new PriceListRow() { PriceListRowId = 1128, CompetenceLevel = CompetenceLevel.SpecializedInterpreter, StartDate = new DateTime(2018,01,01), EndDate = new DateTime(2099,01,01), Price = 136, MaxMinutes = 30, PriceListType = PriceListType.Other, PriceListRowType = PriceListRowType.LostTimeIWH }
         };
 
+        private static IEnumerable<Order> CreateOrders(AspNetUser createdBy, List<int> ids, DateTimeOffset createdAt, Region region, Language language, OrderStatus status, CustomerUnit unit, List<OrderInterpreterLocation> locations = null)
+        {
+            foreach (var id in ids)
+            {
+                yield return new Order(createdBy, null, createdBy.CustomerOrganisation, createdAt)
+                {
+                    OrderId = id,
+                    CreatedBy = createdBy.Id,
+                    CustomerOrganisationId = createdBy.CustomerOrganisation.CustomerOrganisationId,
+                    OrderNumber = $"2018-1{id.ToString().PadLeft(5 - id.ToString().Length, '0')}",
+                    StartAt = createdAt.AddDays(14),
+                    EndAt = createdAt.AddDays(14).AddHours(2),
+                    Region = region,
+                    Language = language,
+                    Status = status,
+                    CustomerUnit = unit,
+                    CustomerUnitId = unit?.CustomerUnitId,
+                    InterpreterLocations = locations
+                };
+            }
+        }
+
+        private static OrderGroup CreateOrderGroup(string groupName, AspNetUser createdBy, int id, DateTimeOffset createdAt, Region region, Language language, OrderStatus status, CustomerUnit unit, List<Order> orders, Ranking[] mockRankings, List<RequestStatus> requestStatuses, AllowExceedingTravelCost allowExceedingTravelCost = AllowExceedingTravelCost.No, List<OrderGroupInterpreterLocation> locations = null)
+        {
+            int mocRank = 0;
+            var requestGroups = new List<RequestGroup>();
+            var orderGroup = new OrderGroup(createdBy, null, createdBy.CustomerOrganisation, createdAt, orders);
+            foreach (var requestStatus in requestStatuses)
+            {
+                var requests = new List<Request>();
+                foreach (Order order in orders)
+                {
+                    var request = new Request(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank)) { Status = requestStatus, Order = order };
+                    requests.Add(request);
+                    order.Requests.Add(request);
+                }
+                var requestGroup = new RequestGroup(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank), requests) { 
+                    Status = requestStatus,
+                    OrderGroup = orderGroup,
+                    StatusConfirmations = new List<RequestGroupStatusConfirmation>(),
+                    Views = new List<RequestGroupView>()
+                };
+                requestGroups.Add(requestGroup);
+                mocRank++;
+            }
+            orderGroup.OrderGroupId = id;
+            orderGroup.CreatedBy = createdBy.Id;
+            orderGroup.CustomerOrganisationId = createdBy.CustomerOrganisation.CustomerOrganisationId;
+            orderGroup.OrderGroupNumber = groupName;
+            orderGroup.Region = region;
+            orderGroup.RegionId = region.RegionId;
+            orderGroup.Language = language;
+            orderGroup.LanguageId = language.LanguageId;
+            orderGroup.Status = status;
+            orderGroup.RequestGroups = requestGroups;
+            orderGroup.CustomerUnit = unit;
+            orderGroup.CustomerUnitId = unit?.CustomerUnitId;
+            orderGroup.AllowExceedingTravelCost = allowExceedingTravelCost;
+            orderGroup.InterpreterLocations = locations;
+            return orderGroup;
+        }
     }
 }

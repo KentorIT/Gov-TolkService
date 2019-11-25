@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Entities
     {
         #region constructors
 
-        private RequestGroup() { }
+        internal RequestGroup() { }
 
         internal RequestGroup(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
         {
@@ -44,6 +44,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequestGroupStatusConfirmation> StatusConfirmations { get; set; }
 
         public List<RequestGroupView> Views { get; set; }
+
         public List<RequestGroupAttachment> Attachments { get; set; }
 
         #endregion
@@ -71,6 +72,14 @@ namespace Tolk.BusinessLogic.Entities
                 if (value == RequestStatus.CancelledByBroker)
                 {
                     throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.CancelledByBroker)}");
+                }
+                if (value == RequestStatus.AcceptedNewInterpreterAppointed)
+                {
+                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.AcceptedNewInterpreterAppointed)}");
+                }
+                if (value == RequestStatus.InterpreterReplaced)
+                {
+                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.InterpreterReplaced)}");
                 }
                 base.Status = value;
             }
@@ -159,6 +168,9 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ? 
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
+            SetStatus(RequiresApproval(hasTravelCosts) ?
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.Accepted :
+                partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
         }
 
         public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)

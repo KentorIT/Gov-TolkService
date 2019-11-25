@@ -581,16 +581,16 @@ namespace Tolk.BusinessLogic.Services
         {
             return await _tolkDbContext.RequestGroups
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerUnit)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Region)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Language)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CompetenceRequirements)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requirements)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CreatedByUser)
                 .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
                 .Include(r => r.Ranking.Broker)
                 .SingleAsync(r => r.RequestGroupId == requestGroupId);

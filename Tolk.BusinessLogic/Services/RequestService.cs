@@ -159,12 +159,10 @@ namespace Tolk.BusinessLogic.Services
                 await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
                 if (requestGroup.RequiresApproval(hasTravelCosts))
                 {
-                    requestGroup.SetStatus(RequestStatus.PartiallyAccepted, false);
                     _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
                 }
                 else
                 {
-                    requestGroup.SetStatus(RequestStatus.PartiallyApproved, false);
                     _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
                 }
             }
@@ -173,12 +171,10 @@ namespace Tolk.BusinessLogic.Services
                 //2. Set the request group and order group in correct state
                 if (requestGroup.RequiresApproval(hasTravelCosts))
                 {
-                    requestGroup.SetStatus(RequestStatus.Accepted, false);
                     _notificationService.RequestGroupAccepted(requestGroup);
                 }
                 else
                 {
-                    requestGroup.SetStatus(RequestStatus.Approved, false);
                     _notificationService.RequestGroupAnswerAutomaticallyApproved(requestGroup);
                 }
             }

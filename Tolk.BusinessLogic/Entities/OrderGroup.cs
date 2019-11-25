@@ -97,7 +97,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
-        public string LanguageName => FirstOrder?.OtherLanguage ?? FirstOrder?.Language?.Name;
+        public string LanguageName => OtherLanguage ?? Language?.Name;
 
         public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
 
