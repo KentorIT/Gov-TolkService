@@ -128,7 +128,7 @@ namespace Tolk.Web.Controllers
                 .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(r => r.Ranking)
                 .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(o => o.OrderGroup).ThenInclude(r => r.Orders)
                 .SingleOrDefaultAsync(a => a.AttachmentId == id);
-            if (attachment == null || (await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
+            if (attachment != null && (await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
             {
                 return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
             }
