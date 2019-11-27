@@ -178,6 +178,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var request = _dbContext.Requests
+                    .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)

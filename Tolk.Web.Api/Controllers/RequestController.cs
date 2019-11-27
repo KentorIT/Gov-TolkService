@@ -291,6 +291,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
+                    .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.PriceRows)

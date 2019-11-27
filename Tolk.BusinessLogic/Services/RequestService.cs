@@ -283,7 +283,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true)
+            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
