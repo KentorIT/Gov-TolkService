@@ -18,7 +18,6 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -92,12 +91,14 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Order).ThenInclude(o => o.Group)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
                 .Include(r => r.Interpreter)
+                .Include(r => r.RequestGroup)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)

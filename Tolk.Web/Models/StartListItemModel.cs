@@ -51,6 +51,8 @@ namespace Tolk.Web.Models
 
         public bool HasExtraInterpreter { get; set; } = false;
 
+        public bool IsInOrderGroup { get; set; } = false;
+
     }
 
 }

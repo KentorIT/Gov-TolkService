@@ -298,7 +298,8 @@ namespace Tolk.Web.Controllers
                     Status = StartListItemStatus.RequisitonArrived,
                     ButtonAction = "View",
                     ButtonController = "Order",
-                    ButtonItemTab = "requisition"
+                    ButtonItemTab = "requisition",
+                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
                 }));
 
             //Disputed complaints
@@ -321,7 +322,8 @@ namespace Tolk.Web.Controllers
                     Status = StartListItemStatus.ComplaintEvent,
                     ButtonAction = "View",
                     ButtonController = "Order",
-                    ButtonItemTab = "complaint"
+                    ButtonItemTab = "complaint",
+                    IsInOrderGroup = c.Request.Order.OrderGroupId != null
                 }));
 
             var count = actionList.Any() ? actionList.Count : 0;
@@ -354,7 +356,7 @@ namespace Tolk.Web.Controllers
             if (_options.EnableOrderGroups)
             {
                 sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                .Include(og => og.Orders)
+                .Include(og => og.Orders).ThenInclude(o => o.Language)
                 .Where(og => og.Status == OrderStatus.Requested && og.Orders.Any(o => o.EndAt > _clock.SwedenNow))
                 .ToList()
                 .Select(og => new StartListItemModel
@@ -402,7 +404,8 @@ namespace Tolk.Web.Controllers
                 CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
                 Language = o.OtherLanguage ?? o.Language.Name,
                 OrderNumber = o.OrderNumber,
-                Status = StartListItemStatus.OrderApproved
+                Status = StartListItemStatus.OrderApproved,
+                IsInOrderGroup = o.OrderGroupId != null
             }).ToList();
 
             count = answeredOrders.Any() ? answeredOrders.Count : 0;
@@ -536,7 +539,8 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Request",
                     ButtonItemTab = "complaint",
-                    ViewedBy = c.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = c.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsInOrderGroup = c.Request.Order.OrderGroupId != null
                 }).ToList());
 
             //To be reported
@@ -558,7 +562,8 @@ namespace Tolk.Web.Controllers
                      Status = StartListItemStatus.RequisitionToBeCreated,
                      ButtonAction = "Create",
                      ButtonController = "Requisition",
-                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                     IsInOrderGroup = r.Order.OrderGroupId != null
                  }).ToList());
 
             //Commented requisitions
@@ -581,7 +586,9 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Request",
                     ButtonItemTab = "requisition",
-                    ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
+
                 }).ToList());
 
             var count = actionList.Any() ? actionList.Count : 0;
@@ -667,7 +674,8 @@ namespace Tolk.Web.Controllers
                     Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                     OrderNumber = r.Order.OrderNumber,
                     Status = StartListItemStatus.OrderApproved,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsInOrderGroup = r.Order.OrderGroupId != null
                 }).ToList();
 
             count = approvedRequestAnswers.Any() ? answeredRequests.Count : 0;
@@ -697,7 +705,8 @@ namespace Tolk.Web.Controllers
                     Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                     OrderNumber = r.Request.Order.OrderNumber,
                     Status = StartListItemStatus.RequisitionCreated,
-                    ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
                 }).ToList();
 
             count = sentRequisitions.Any() ? sentRequisitions.Count : 0;

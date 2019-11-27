@@ -138,6 +138,10 @@
                                         {
                                             <span class="glyphicon glyphicon-user color-red" title="  @item.ViewedByUser"></span>
                                         }
+                                        @if (item.IsInOrderGroup)
+                                        {
+                                            <br /><span class="red-border-left startlist-subrow">Del av sammanhållen bokning</span>
+                                        }
                                     </td>
                                     <td class="gray-border-bottom">
                                         @if (item.HasExtraInterpreter)

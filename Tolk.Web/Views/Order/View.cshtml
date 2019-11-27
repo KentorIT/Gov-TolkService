@@ -25,6 +25,17 @@
     <div id="order" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
+                @if (Model.IsInOrderGroup)
+                {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <br />
+                            <div class="green-border-left">
+                                Tillhör sammanhållen bokning: <a asp-controller="OrderGroup" asp-action="View" asp-route-id="@Model.OrderGroupId">@Model.OrderGroupNumber</a>
+                            </div>
+                        </div>
+                    </div>
+                }
                 @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
                 {
                     <div class="row">

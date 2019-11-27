@@ -859,6 +859,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
+                .Include(o => o.Group)
                 .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)

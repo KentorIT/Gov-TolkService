@@ -23,6 +23,10 @@ namespace Tolk.Web.Models
 
         public int? ReplacingOrderId { get; set; }
 
+        public int? OrderGroupId { get; set; }
+
+        public string OrderGroupNumber { get; set; }
+
         public string LastTimeForRequiringLatestAnswerBy { get; set; }
 
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
@@ -82,15 +86,10 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string OtherLanguage { get; set; }
 
-
-
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderOccasionModel> Occasions { get; set; }
 
         public bool DisplayForBroker { get; set; } = false;
-
-
 
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
@@ -99,8 +98,6 @@ namespace Tolk.Web.Models
         public string WarningOrderGroupCloseInTime { get; set; } = string.Empty;
 
         public PriceInformation PriceInformation { get; set; }
-
-
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
@@ -126,15 +123,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Ersätter BokningsID")]
         public string ReplacingOrderNumber { get; set; }
 
-
-
         public int CreatedById { get; set; }
 
-
-
-
         public PriceInformationModel ActiveRequestPriceInformationModel { get; set; }
-
 
 
         [Display(Name = "Status på aktiv förfrågan")]
@@ -145,7 +136,6 @@ namespace Tolk.Web.Models
         public RequestModel ActiveRequest { get; set; }
 
         public IEnumerable<BrokerListModel> PreviousRequests { get; set; }
-
 
         [Display(Name = "Anledning till att bokningen avbokas")]
         [DataType(DataType.MultilineText)]
@@ -182,14 +172,13 @@ namespace Tolk.Web.Models
 
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
+        public bool IsInOrderGroup => OrderGroupId.HasValue;
+
         public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
 
         public EventLogModel EventLog { get; set; }
-
-
-
 
         public IEnumerable<InterpreterLocation> RankedInterpreterLocations
         {
@@ -262,8 +251,6 @@ namespace Tolk.Web.Models
                 }
             }
         }
-
-
 
         public DefaultSettingsModel UserDefaultSettings { get; set; }
 
@@ -513,6 +500,8 @@ namespace Tolk.Web.Models
                 ReplacedByOrderNumber = order?.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderId = order?.ReplacedByOrder?.OrderId,
                 ReplacingOrderId = order.ReplacingOrderId,
+                OrderGroupId = order.OrderGroupId,
+                OrderGroupNumber = order.OrderGroupId.HasValue ? order.Group.OrderGroupNumber : string.Empty,
                 CreatedBy = order.ContactInformation,
                 CreatedById = order.CreatedBy,
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
