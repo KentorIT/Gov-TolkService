@@ -273,7 +273,7 @@ namespace Tolk.Web.Controllers
                 }));
 
             //Requisitions to review
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
                 .Where(o => o.Status == OrderStatus.Delivered)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Requisitions)
@@ -297,7 +297,7 @@ namespace Tolk.Web.Controllers
                 }));
 
             //Disputed complaints
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
                 .SelectMany(o => o.Requests)
                 .SelectMany(r => r.Complaints)
                 .Where(c => c.Status == ComplaintStatus.Disputed)
