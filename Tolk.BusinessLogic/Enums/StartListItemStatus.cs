@@ -65,6 +65,24 @@ namespace Tolk.BusinessLogic.Enums
         ReplacementOrderCreated = 20,
 
         [Description("En tolk tillsatt (godkännande krävs)")]
-        PartialGroupReaponseAwaitingApproval = 21,
+        PartialGroupResponseAwaitingApproval = 21,
+
+        [Description("Sammanhållen bokning - tolk tillsatt (godkännande krävs)")]
+        OrderGroupAwaitingApproval = 22,
+
+        [Description("Sammanhållen bokning - tillsättning avböjd")]
+        RequestGroupDenied = 23,
+
+        [Description("Sammanhållen bokning skickad")]
+        OrderGroupCreated = 24,
+
+        [Description("Sammanhållen bokningsförfrågan inkommen")]
+        RequestGroupArrived = 25,
+
+        [Description("Sammanhållen bokningsförfrågan mottagen")]
+        RequestGroupReceived = 26,
+
+        [Description("Sammanhållen bokningsförfrågan ej besvarad")]
+        OrderGroupNotAnswered = 27,
     }
 }

@@ -140,7 +140,12 @@
                                         }
                                     </td>
                                     <td class="gray-border-bottom">
-                                        <br />
+                                        @if (item.HasExtraInterpreter)
+                                        {
+                                            <span class="red-border-left startlist-subrow">Extra tolk finns (annan kompetens kan förekomma)</span><br />
+                                        }
+                                        else
+                                        { <br /> }
                                         @EnumHelper.GetDescription(item.CompetenceLevel)<br /><br />
                                         @if (item.InfoDate.HasValue)
                                         {
@@ -168,12 +173,28 @@
                                     }
                                     @if (startlist.HasReviewAction)
                                     {
-                                        <td class="gray-border-bottom"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                        <td class="gray-border-bottom">
+                                            @if (!item.IsSingleOccasion)
+                                            {
+                                                <span class="red-border-left startlist-subrow">OBS! Första av flera tillfällen:<br /></span>
+                                            }
+                                            else
+                                            { <br />}
+                                            <display-entry asp-for="@item.Orderdate" /><br /><br />
+                                        </td>
                                         <td class="gray-border-bottom gray-border-right"><br /><a class="btn btn-datatable btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId" asp-route-tab="@item.ButtonItemTab">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
                                     }
                                     else
                                     {
-                                        <td class="gray-border-bottom gray-border-right"><br /><display-entry asp-for="@item.Orderdate" /><br /><br /></td>
+                                        <td class="gray-border-bottom gray-border-right">
+                                            @if (!item.IsSingleOccasion)
+                                            {
+                                                <span class="red-border-left startlist-subrow">OBS! Första av flera tillfällen:<br /></span>
+                                            }
+                                            else
+                                            { <br />}
+                                            <display-entry asp-for="@item.Orderdate" /><br /><br />
+                                        </td>
                                     }
                                 </tr>
                             }

@@ -176,9 +176,11 @@ namespace Tolk.Web.Controllers
                     ButtonItemId = og.OrderGroupId,
                     Language = og.OtherLanguage ?? og.Language.Name,
                     OrderNumber = og.OrderGroupNumber,
-                    Status = GetStartListStatusForCustomer(og.Status, 0),
+                    Status = GetStartListStatusForCustomer(og.Status, 0, true),
                     ButtonAction = "View",
-                    ButtonController = "OrderGroup"
+                    ButtonController = "OrderGroup",
+                    IsSingleOccasion = og.IsSingleOccasion,
+                    HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
             }
             //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
@@ -201,9 +203,11 @@ namespace Tolk.Web.Controllers
                         ButtonItemId = og.OrderGroupId,
                         Language = og.OtherLanguage ?? og.Language.Name,
                         OrderNumber = og.OrderGroupNumber,
-                        Status = GetStartListStatusForCustomer(og.Status, 0),
+                        Status = GetStartListStatusForCustomer(og.Status, 0, true),
                         ButtonAction = "View",
-                        ButtonController = "OrderGroup"
+                        ButtonController = "OrderGroup",
+                        IsSingleOccasion = og.IsSingleOccasion,
+                        HasExtraInterpreter = og.HasExtraInterpreter,
                     }));
             }
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
@@ -228,7 +232,6 @@ namespace Tolk.Web.Controllers
                 }));
             if (_options.EnableOrderGroups)
             {
-
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
                 .Include(og => og.RequestGroups)
@@ -246,9 +249,11 @@ namespace Tolk.Web.Controllers
                     ButtonItemId = og.OrderGroupId,
                     Language = og.OtherLanguage ?? og.Language.Name,
                     OrderNumber = og.OrderGroupNumber,
-                    Status = StartListItemStatus.OrderNotAnswered,
+                    Status = StartListItemStatus.OrderGroupNotAnswered,
                     ButtonAction = "View",
-                    ButtonController = "OrderGroup"
+                    ButtonController = "OrderGroup",
+                    IsSingleOccasion = og.IsSingleOccasion,
+                    HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
             }
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
@@ -348,9 +353,10 @@ namespace Tolk.Web.Controllers
                 }).ToList();
             if (_options.EnableOrderGroups)
             {
-
                 sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                .Include(og => og.Orders)
                 .Where(og => og.Status == OrderStatus.Requested && og.Orders.Any(o => o.EndAt > _clock.SwedenNow))
+                .ToList()
                 .Select(og => new StartListItemModel
                 {
                     Orderdate = og.Orders.Where(o => o.Status == OrderStatus.Requested)
@@ -370,8 +376,10 @@ namespace Tolk.Web.Controllers
                         .OrderBy(v => v.StartAt)
                         .Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
                     OrderNumber = og.OrderGroupNumber,
-                    Status = StartListItemStatus.OrderCreated
-                }).ToList());
+                    Status = StartListItemStatus.OrderGroupCreated,
+                    IsSingleOccasion = og.IsSingleOccasion,
+                    HasExtraInterpreter = og.HasExtraInterpreter,
+                }));
             }
             count = sentOrders.Any() ? sentOrders.Count : 0;
 
@@ -410,15 +418,15 @@ namespace Tolk.Web.Controllers
             //Was removed 2019-05-28 because the requisitions are not in use yet.
         }
 
-        private static StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId)
+        private static StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId, bool isGroup = false)
         {
             return status == OrderStatus.CancelledByBroker ? StartListItemStatus.OrderCancelled
                 : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderNotAnswered
-                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? StartListItemStatus.OrderNotAnswered
+                : (status == OrderStatus.NoBrokerAcceptedOrder && replacingOrderId == 0) ? isGroup ? StartListItemStatus.OrderGroupNotAnswered : StartListItemStatus.OrderNotAnswered
                 : status == OrderStatus.RequestRespondedNewInterpreter ? StartListItemStatus.NewInterpreterForApproval
                 : status == OrderStatus.AwaitingDeadlineFromCustomer ? StartListItemStatus.AwaitingDeadlineFromCustomer
-                : status == OrderStatus.RequestAwaitingPartialAccept ? StartListItemStatus.PartialGroupReaponseAwaitingApproval
-                : StartListItemStatus.OrderAcceptedForApproval;
+                : status == OrderStatus.RequestAwaitingPartialAccept ? StartListItemStatus.PartialGroupResponseAwaitingApproval
+                : isGroup ? StartListItemStatus.OrderGroupAwaitingApproval : StartListItemStatus.OrderAcceptedForApproval;
         }
 
         private static DateTimeOffset? GetInfoDateForCustomer(Order o)
@@ -476,7 +484,7 @@ namespace Tolk.Web.Controllers
                     ButtonItemId = r.RequestId,
                     Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                     OrderNumber = r.Order.OrderNumber,
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0),
+                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
                     ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
                     ButtonController = "Request",
                     LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
@@ -487,8 +495,7 @@ namespace Tolk.Web.Controllers
             actionList.AddRange(_dbContext.RequestGroups
                 .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator) &&
                     r.Ranking.BrokerId == brokerId &&
-                    !r.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator)
-                )
+                    !r.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
@@ -501,11 +508,13 @@ namespace Tolk.Web.Controllers
                     ButtonItemId = r.RequestGroupId,
                     Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
                     OrderNumber = r.OrderGroup.OrderGroupNumber,
-                    Status = GetStartListStatusForBroker(r.Status, 0),
+                    Status = GetStartListStatusForBroker(r.Status, 0, true),
                     ButtonAction = "View",
                     ButtonController = "RequestGroup",
                     LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
-                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null),
+                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null)
                 }).ToList());
 
             //Complaints
@@ -624,8 +633,10 @@ namespace Tolk.Web.Controllers
                     CustomerName = r.OrderGroup.Orders.OrderBy(v => v.StartAt).FirstOrDefault().CustomerOrganisation.Name,
                     Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
                     OrderNumber = r.OrderGroup.OrderGroupNumber,
-                    Status = StartListItemStatus.OrderAcceptedForApproval,
-                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    Status = StartListItemStatus.OrderGroupAwaitingApproval,
+                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null),
+                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null)
                 }).ToList());
 
             count = answeredRequests.Any() ? answeredRequests.Count : 0;
@@ -711,9 +722,16 @@ namespace Tolk.Web.Controllers
             return r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
         }
 
-        private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId)
+        private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId, bool isGroup = false)
         {
-            return (requestStatus == RequestStatus.Received && replacingOrderId == 0) ? StartListItemStatus.RequestReceived : (requestStatus == RequestStatus.Received && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestReceived : (requestStatus == RequestStatus.Created && replacingOrderId == 0) ? StartListItemStatus.RequestArrived : (requestStatus == RequestStatus.Created && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestArrived : requestStatus == RequestStatus.DeniedByCreator ? StartListItemStatus.RequestDenied : StartListItemStatus.OrderCancelled;
+            return (requestStatus == RequestStatus.Received && replacingOrderId == 0) ?
+                isGroup ? StartListItemStatus.RequestGroupReceived : StartListItemStatus.RequestReceived
+                : (requestStatus == RequestStatus.Received && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestReceived
+                : (requestStatus == RequestStatus.Created && replacingOrderId == 0) ?
+                isGroup ? StartListItemStatus.RequestGroupArrived : StartListItemStatus.RequestArrived
+                : (requestStatus == RequestStatus.Created && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestArrived
+                : requestStatus == RequestStatus.DeniedByCreator ? isGroup ? StartListItemStatus.RequestGroupDenied : StartListItemStatus.RequestDenied
+                : StartListItemStatus.OrderCancelled;
         }
 
         private static IEnumerable<StartList> GetInterpreterStartLists()

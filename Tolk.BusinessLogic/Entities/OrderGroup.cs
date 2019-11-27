@@ -103,7 +103,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
 
-        public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
+        public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && HasExtraInterpreter);
+
+        public bool HasExtraInterpreter => Orders == null ? false : Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
         public void SetStatus(OrderStatus status, bool updateOrders = true)
         {
