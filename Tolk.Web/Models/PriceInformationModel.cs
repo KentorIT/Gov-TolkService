@@ -31,7 +31,7 @@ namespace Tolk.Web.Models
             {
                 return null;
             }
-            else if (order.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Any())
+            else if (order.Requests != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Any())
             {
                 return new PriceInformationModel
                 {
