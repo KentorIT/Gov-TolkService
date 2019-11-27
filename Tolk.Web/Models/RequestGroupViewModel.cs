@@ -20,7 +20,6 @@ namespace Tolk.Web.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
 
-
         [Display(Name = "Tillsatt tolk")]
         [DataType(DataType.MultilineText)]
         public string Interpreter { get; set; }
@@ -96,7 +95,8 @@ namespace Tolk.Web.Models
                 OrderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber,
                 Status = requestGroup.Status,
                 CreatedAt = requestGroup.CreatedAt,
-                RequestGroupId = requestGroup.RequestGroupId
+                RequestGroupId = requestGroup.RequestGroupId,
+                AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator)
             };
         }
 

@@ -58,6 +58,7 @@ namespace Tolk.Web.Controllers
             var requestGroup = await _dbContext.RequestGroups
                 .Include(g => g.Ranking)
                 .Include(g => g.OrderGroup)
+                .Include(g => g.StatusConfirmations)
                 .SingleAsync(r => r.RequestGroupId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
