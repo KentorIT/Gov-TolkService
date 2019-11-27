@@ -1,4 +1,4 @@
-﻿@model OrderModel
+﻿@model OrderBaseModel
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
@@ -46,17 +46,17 @@ else
         <div class="col-sm-4">
             <display-entry asp-for="LanguageAndDialect" />
         </div>
-        <div class="col-sm-4">
+        @*<div class="col-sm-4">
             @if (Model.LatestAnswerBy != null)
             {
                 <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
             }
-        </div>
+        </div>*@
         <div class="col-sm-4">
             <display-entry asp-for="RegionName" />
         </div>
     </div>
-    @if (Model.OrderOccasionDisplayModels.Any())
+    @if (Model.OrderOccasionDisplayModels != null && Model.OrderOccasionDisplayModels.Any())
     {
         <div class="row list-of-occasions">
             <div class="col-sm-12 col-md-10 col-lg-8">

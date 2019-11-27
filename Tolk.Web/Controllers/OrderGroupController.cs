@@ -70,9 +70,26 @@ namespace Tolk.Web.Controllers
             //Get order model from db
             OrderGroup orderGroup = await GetOrderGroup(id);
 
+            var activeRequestGroup = orderGroup.ActiveRequestToBeProcessedForCustomer ?? orderGroup.RequestGroups.OrderBy(r => r.RequestGroupId).Last();
+
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
-                return View(OrderGroupModel.GetModelFromOrderGroup(orderGroup));
+                var model = OrderGroupModel.GetModelFromOrderGroup(orderGroup, activeRequestGroup);
+                model.CustomerInformationModel = new CustomerInformationModel
+                {
+                    IsCustomer = true,
+                    Name = model.CustomerName,
+                    CreatedBy = model.CreatedBy,
+                    OrganisationNumber = model.CustomerOrganisationNumber,
+                    UnitName = model.CustomerUnitName,
+                    DepartmentName = model.UnitName,
+                    ReferenceNumber = model.CustomerReferenceNumber,
+                    InvoiceReference = model.InvoiceReference
+                };
+                model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
+                model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroupCustomer(activeRequestGroup);
+                model.AllowOrderGroupCancellation = false;
+                return View(model);
             }
             return Forbid();
         }
@@ -178,9 +195,29 @@ namespace Tolk.Web.Controllers
         private async Task<OrderGroup> GetOrderGroup(int id)
         {
             return await _dbContext.OrderGroups
-                .Include(o => o.RequestGroups)
+                .Include(o => o.Language)
+                .Include(o => o.CompetenceRequirements)
+                .Include(o => o.Requirements)
+                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(o => o.Region)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.CustomerUnit)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(o => o.RequestGroups).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.AnsweringUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.ProcessingUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.CancelledByUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Order)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Interpreter)
                 .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+                .Include(o => o.Orders).ThenInclude(o => o.Requirements)
                 .SingleAsync(o => o.OrderGroupId == id);
         }
+
     }
 }

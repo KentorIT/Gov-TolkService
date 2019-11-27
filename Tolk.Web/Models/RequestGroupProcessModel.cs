@@ -1,79 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class RequestGroupProcessModel : RequestGroupBaseModel
     {
-        public int OrderGroupId { get; set; } 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
-        public List<FileModel> Files { get; set; }
 
-        public AttachmentListModel AttachmentListModel { get; set; }
+        //ROWS with occasions!!
+        public OccasionListModel OccasionList { get; set; }
 
-        public Guid? FileGroupKey { get; set; }
+        //The following two properties will be used later, if AllowDeclineExtraInterpreter is allowed.
+        public bool ShouldAssignInterpreter { get; set; } = true;
+        public bool ShouldAssignExtraInterpreter { get; set; } = true;
 
-        public long? CombinedMaxSizeAttachments { get; set; }
+        public bool AllowDeclineExtraInterpreter { get; set; }
 
-        [Display(Name = "Orsak till avböjande")]
-        [DataType(DataType.MultilineText)]
-        [ClientRequired]
-        [StringLength(1000)]
-        [Placeholder("Beskriv anledning tydligt.")]
-        public string DenyMessage { get; set; }
-
-        [Display(Name = "Svara senast")]
-        public DateTimeOffset ExpiresAt { get; set; }
-
-        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
-
-        //INTERPRETER REPLACEMENT
-        public InterpreterAnswerModel InterpreterAnswerModel { get; set; }
-        public InterpreterAnswerModel ExtraInterpreterAnswerModel { get; set; }
-
-        [ClientRequired]
-        [Display(Name = "Inställelsesätt")]
-        public InterpreterLocation? InterpreterLocation { get; set; }
-
-        [Display(Name = "Uppdragstyp")]
-        public AssignmentType AssignmentType { get; set; }
-
-        [Display(Name = "Språk och dialekt")]
-        [DataType(DataType.MultilineText)]
-        public string LanguageAndDialect => $"{LanguageName}\n{Dialect}";
-        [Display(Name = "Region")]
-        public string RegionName { get; set; }
-        [Display(Name = "Myndighet")]
-        public string CustomerName { get; set; }
-        [Display(Name = "Skapad av")]
-        [DataType(DataType.MultilineText)]
-        public string CreatedBy { get; set; }
-        [Display(Name = "Myndighetens enhet")]
-        public string CustomerUnitName { get; set; }
-        [Display(Name = "Myndighetens avdelning")]
-        public string UnitName { get; set; }
-        [Display(Name = "Myndighetens organisationsnummer")]
-        public string CustomerOrganisationNumber { get; set; }
-        [Display(Name = "Myndighetens ärendenummer")]
-        public string CustomerReferenceNumber { get; set; }
-        [Display(Name = "Övrig information om uppdraget")]
-        public string Description { get; set; }
-
-        public string LanguageName { get; set; }
-        public string Dialect { get; set; }
-
-        public bool SpecificCompetenceLevelRequired { get; set; }
-        public bool LanguageHasAuthorizedInterpreter { get; set; }
-        public bool HasExtraInterpreter { get; set; }
-        public bool AllowExceedingTravelCost { get; set; }
         public IEnumerable<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {
             get
@@ -117,15 +63,6 @@ namespace Tolk.Web.Models
                 }
             }
         }
-
-        //ROWS with occasions!!
-        public OccasionListModel OccasionList { get; set; }
-
-        //The following two properties will be used later, if AllowDeclineExtraInterpreter is allowed.
-        public bool ShouldAssignInterpreter { get; set; } = true;
-        public bool ShouldAssignExtraInterpreter { get; set; } = true;
-
-        public bool AllowDeclineExtraInterpreter { get; set; }
 
         #region methods
 
@@ -223,6 +160,7 @@ namespace Tolk.Web.Models
                 RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel,
             };
         }
+
 
         #endregion
     }

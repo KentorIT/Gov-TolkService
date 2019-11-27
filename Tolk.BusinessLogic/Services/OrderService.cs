@@ -440,7 +440,7 @@ namespace Tolk.BusinessLogic.Services
         public void CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message, bool isReplaced = false)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CancelOrderGroup), nameof(OrderService));
-            var requestGroup = orderGroup.ActiveRequestGroup;
+            var requestGroup = orderGroup.ActiveUnAnsweredRequestGroup;
             if (requestGroup == null)
             {
                 throw new InvalidOperationException($"Order group {orderGroup.OrderGroupId} has no active request group that can be cancelled");

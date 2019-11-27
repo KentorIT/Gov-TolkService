@@ -89,11 +89,13 @@ namespace Tolk.BusinessLogic.Entities
         public void AwaitDeadlineFromCustomer()
         {
             SetStatus(OrderStatus.AwaitingDeadlineFromCustomer);
-            ActiveRequestGroup.Status = RequestStatus.AwaitingDeadlineFromCustomer;
-            ActiveRequestGroup.IsTerminalRequest = true;
+            ActiveUnAnsweredRequestGroup.Status = RequestStatus.AwaitingDeadlineFromCustomer;
+            ActiveUnAnsweredRequestGroup.IsTerminalRequest = true;
         }
 
-        public RequestGroup ActiveRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
+        public RequestGroup ActiveUnAnsweredRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
+
+        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAccepted);
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 

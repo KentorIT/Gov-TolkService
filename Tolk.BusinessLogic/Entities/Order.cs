@@ -223,11 +223,6 @@ namespace Tolk.BusinessLogic.Entities
             return request;
         }
 
-        public string ContactInformation => CustomerUnit == null ? CreatedByUser.CompleteContactInformation : $"{CreatedByUser.FullName}\n{CustomerUnit.Name}\n{CustomerUnit.Email}";
-
-        public string ContactEmail => CustomerUnit == null ? CreatedByUser.Email : CustomerUnit.Email;
-
-        public string ContactPhone => CustomerUnit == null ? CreatedByUser.PhoneNumbers : null;
 
         public void DeliverRequisition()
         {

@@ -144,7 +144,7 @@ namespace Tolk.Web.Controllers
                             Size = a.Attachment.Blob.Length
                         }).ToList()
                     };
-                    model.AllowProcessing = model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
+                    model.AllowProcessing = order.OrderGroupId == null && model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                 }
                 model.EventLog = new EventLogModel
                 {
@@ -501,7 +501,6 @@ namespace Tolk.Web.Controllers
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
                 model.InterpreterLocationInfoAnswer = GetInterpreterLocationInfoAnswer(order, request.InterpreterLocation.Value);
                 model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
-                model.AllowProcessing = model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                 model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
                 model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
                 model.ActiveRequest.OrderModel = model;

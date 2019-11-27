@@ -30,6 +30,8 @@ namespace Tolk.Web.Models
 
         public bool HasSeveralOccasions { get; set; }
 
+        public bool DisplayDetailedList { get; set; } = false;
+
         public bool ShowInformation { get; set; }
 
         public decimal TotalPrice => Occasions?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
