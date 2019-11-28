@@ -116,16 +116,15 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
-               //.Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
-               .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
+                .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
             {
@@ -157,13 +156,13 @@ namespace Tolk.Web.Controllers
                     {
                         //Collect, if any, attachments
                         await _requestService.AcceptGroup(
-                            requestGroup, 
-                            _clock.SwedenNow, 
-                            User.GetUserId(), 
-                            User.TryGetImpersonatorId(), 
-                            model.InterpreterLocation.Value, 
-                            interpreterModel, 
-                            extrainterpreterModel, 
+                            requestGroup,
+                            _clock.SwedenNow,
+                            User.GetUserId(),
+                            User.TryGetImpersonatorId(),
+                            model.InterpreterLocation.Value,
+                            interpreterModel,
+                            extrainterpreterModel,
                             model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList()
                         );
                         await _dbContext.SaveChangesAsync();
@@ -176,7 +175,7 @@ namespace Tolk.Web.Controllers
                     }
                 }
 
-                        //Should return to Process if error is of a kind that can be handled in the ui.
+                //Should return to Process if error is of a kind that can be handled in the ui.
                 return View(nameof(Process), model);
             }
             return Forbid();
@@ -211,7 +210,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestGroupId)
         {
-            RequestGroup requestGroup =  await _dbContext.RequestGroups
+            RequestGroup requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Ranking)
                 .Include(r => r.Requests)
                 .Include(r => r.StatusConfirmations)

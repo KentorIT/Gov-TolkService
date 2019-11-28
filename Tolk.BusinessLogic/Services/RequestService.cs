@@ -116,7 +116,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraInterpreter.Accepted)
                     {
-                        AcceptRequest(request,
+                        AcceptReqestGroupRequest(request,
                             answerTime,
                             userId,
                             impersonatorId,
@@ -137,7 +137,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    AcceptRequest(request,
+                    AcceptReqestGroupRequest(request,
                         answerTime,
                         userId,
                         impersonatorId,
@@ -476,9 +476,22 @@ namespace Tolk.BusinessLogic.Services
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult, overrideRequireAccept);
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, bool overrideRequireAccept = false)
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, interpreter.RequirementAnswers.ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, overrideRequireAccept);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, overrideRequireAccept);
+        }
+
+        private IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)
+        {
+            foreach (var answer in requirementAnswers)
+            {
+                yield return new OrderRequirementRequestAnswer
+                {
+                    OrderRequirementId = requirements.Single(r => r.OrderGroupRequirementId == answer.OrderRequirementId).OrderRequirementId,
+                    Answer = answer.Answer,
+                    CanSatisfyRequirement = answer.CanSatisfyRequirement,
+                };
+            }
         }
 
         private async Task<VerificationResult?> VerifyInterpreter(int orderId, InterpreterBroker interpreter, CompetenceAndSpecialistLevel competenceLevel)

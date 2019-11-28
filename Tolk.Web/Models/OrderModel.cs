@@ -57,7 +57,7 @@ namespace Tolk.Web.Models
         public int? ChangeContactPersonId { get; set; }
 
         public AttachmentListModel RequestAttachmentListModel { get; set; }
-  
+
 
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         [ClientRequired(ErrorMessage = "Ange datum")]
@@ -260,7 +260,7 @@ namespace Tolk.Web.Models
         {
             orderGroup.Attachments = Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList();
             var location = RankedInterpreterLocationFirst.Value;
-            orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 1, InterpreterLocation = location});
+            orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 1, InterpreterLocation = location });
             if (RankedInterpreterLocationSecond.HasValue)
             {
                 orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 2, InterpreterLocation = RankedInterpreterLocationSecond.Value });
@@ -280,43 +280,74 @@ namespace Tolk.Web.Models
                 orderGroup.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
             }
             orderGroup.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
-                if (Dialect != null)
+            if (Dialect != null)
+            {
+                var requirement = new OrderGroupRequirement
                 {
-                    orderGroup.Requirements.Add(new OrderGroupRequirement
+                    RequirementType = RequirementType.Dialect,
+                    IsRequired = DialectIsRequired,
+                    Description = Dialect
+                };
+                orderGroup.Requirements.Add(requirement);
+                foreach (Order order in orderGroup.Orders)
+                {
+                    order.Requirements.Add(new OrderRequirement
                     {
+                        OrderGroupRequirement = requirement,
                         RequirementType = RequirementType.Dialect,
                         IsRequired = DialectIsRequired,
                         Description = Dialect
                     });
                 }
-                if (OrderRequirements != null)
+            }
+            if (OrderRequirements != null)
+            {
+                // add all extra requirements
+                foreach (var req in OrderRequirements)
                 {
-                    // add all extra requirements
-                    foreach (var req in OrderRequirements)
+                    OrderGroupRequirement requirement = new OrderGroupRequirement
                     {
-                        OrderGroupRequirement requirement = new OrderGroupRequirement
+                        RequirementType = req.RequirementType.Value,
+                        IsRequired = true,
+                        Description = req.RequirementDescription
+                    };
+                    orderGroup.Requirements.Add(requirement);
+                    foreach (Order order in orderGroup.Orders)
+                    {
+                        order.Requirements.Add(new OrderRequirement
                         {
+                            OrderGroupRequirement = requirement,
                             RequirementType = req.RequirementType.Value,
                             IsRequired = true,
                             Description = req.RequirementDescription
-                        };
-                        orderGroup.Requirements.Add(requirement);
+                        });
                     }
                 }
-                if (OrderDesiredRequirements != null)
+            }
+            if (OrderDesiredRequirements != null)
+            {
+                // add all extra desired requirements
+                foreach (var req in OrderDesiredRequirements)
                 {
-                    // add all extra desired requirements
-                    foreach (var req in OrderDesiredRequirements)
-                    {
                     OrderGroupRequirement requirement = new OrderGroupRequirement
                     {
+                        RequirementType = req.DesiredRequirementType.Value,
+                        IsRequired = false,
+                        Description = req.DesiredRequirementDescription
+                    };
+                    orderGroup.Requirements.Add(requirement);
+                    foreach (Order order in orderGroup.Orders)
+                    {
+                        order.Requirements.Add(new OrderRequirement
+                        {
+                            OrderGroupRequirement = requirement,
                             RequirementType = req.DesiredRequirementType.Value,
                             IsRequired = false,
                             Description = req.DesiredRequirementDescription
-                        };
-                        orderGroup.Requirements.Add(requirement);
+                        });
                     }
                 }
+            }
             // OrderCompetenceRequirements
             //set OtherInterpreter as a requirement for languages that lacks authorized interpreters
             if (LanguageHasAuthorizedInterpreter.HasValue && !LanguageHasAuthorizedInterpreter.Value)
@@ -399,41 +430,44 @@ namespace Tolk.Web.Models
                     order.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
                 }
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
-                if (Dialect != null)
+                if (!isGroupOrder)
                 {
-                    order.Requirements.Add(new OrderRequirement
+                    if (Dialect != null)
                     {
-                        RequirementType = RequirementType.Dialect,
-                        IsRequired = DialectIsRequired,
-                        Description = Dialect
-                    });
-                }
-                if (OrderRequirements != null)
-                {
-                    // add all extra requirements
-                    foreach (var req in OrderRequirements)
-                    {
-                        OrderRequirement requirement = new OrderRequirement
+                        order.Requirements.Add(new OrderRequirement
                         {
-                            RequirementType = req.RequirementType.Value,
-                            IsRequired = true,
-                            Description = req.RequirementDescription
-                        };
-                        order.Requirements.Add(requirement);
+                            RequirementType = RequirementType.Dialect,
+                            IsRequired = DialectIsRequired,
+                            Description = Dialect
+                        });
                     }
-                }
-                if (OrderDesiredRequirements != null)
-                {
-                    // add all extra desired requirements
-                    foreach (var req in OrderDesiredRequirements)
+                    if (OrderRequirements != null)
                     {
-                        OrderRequirement requirement = new OrderRequirement
+                        // add all extra requirements
+                        foreach (var req in OrderRequirements)
                         {
-                            RequirementType = req.DesiredRequirementType.Value,
-                            IsRequired = false,
-                            Description = req.DesiredRequirementDescription
-                        };
-                        order.Requirements.Add(requirement);
+                            OrderRequirement requirement = new OrderRequirement
+                            {
+                                RequirementType = req.RequirementType.Value,
+                                IsRequired = true,
+                                Description = req.RequirementDescription
+                            };
+                            order.Requirements.Add(requirement);
+                        }
+                    }
+                    if (OrderDesiredRequirements != null)
+                    {
+                        // add all extra desired requirements
+                        foreach (var req in OrderDesiredRequirements)
+                        {
+                            OrderRequirement requirement = new OrderRequirement
+                            {
+                                RequirementType = req.DesiredRequirementType.Value,
+                                IsRequired = false,
+                                Description = req.DesiredRequirementDescription
+                            };
+                            order.Requirements.Add(requirement);
+                        }
                     }
                 }
             }
@@ -472,7 +506,7 @@ namespace Tolk.Web.Models
                 }
             }
         }
-       
+
 
 
         internal static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null, bool displayForBroker = false)
@@ -589,7 +623,7 @@ namespace Tolk.Web.Models
             {
                 RegionId = Region.Regions.Any(r => r.RegionId == UserDefaultSettings.RegionId) ? UserDefaultSettings.RegionId : null;
                 InvoiceReference = UserDefaultSettings.InvoiceReference;
-                CustomerUnitId = (UserDefaultSettings.CustomerUnitId.HasValue && (UserDefaultSettings.CustomerUnitId == 0  || units.Contains(UserDefaultSettings.CustomerUnitId.Value))) ? UserDefaultSettings.CustomerUnitId : null;
+                CustomerUnitId = (UserDefaultSettings.CustomerUnitId.HasValue && (UserDefaultSettings.CustomerUnitId == 0 || units.Contains(UserDefaultSettings.CustomerUnitId.Value))) ? UserDefaultSettings.CustomerUnitId : null;
                 AllowExceedingTravelCost = UserDefaultSettings.AllowExceedingTravelCost != null ?
                     new RadioButtonGroup { SelectedItem = SelectListService.AllowExceedingTravelCost.Single(e => e.Value == UserDefaultSettings.AllowExceedingTravelCost.ToString()) } : null;
                 RankedInterpreterLocationFirst = UserDefaultSettings.RankedInterpreterLocationFirst;
