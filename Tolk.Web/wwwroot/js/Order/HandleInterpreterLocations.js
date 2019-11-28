@@ -14,12 +14,7 @@ $(function () {
         else {
             var $next = $groupBox.next(".location-group");
             $next.show();
-            var $select = $next.find(".interpreter-group > select");
-            // Make sure that the following cannot select the selected value, and if this is the selected value, unmake the selection in the siling.
-            if ($select.val() === $val) {
-                $select.val("").trigger("change");
-            }
-            if ($next.find(".interpreter-group > select").val() !== "") {
+            if (hasValue($next.find(".interpreter-group > select").val())) {
                 $next.next(".location-group").show();
             }
 
@@ -71,7 +66,7 @@ function checkInterpreterLocation() {
 }
 
 function hasValue(selectedValue) {
-    return (selectedValue !== null && selectedValue.length > 0);
+    return (selectedValue != null && selectedValue.length > 0);
 }
 
 function triggerValidator(message, validatorId) {
