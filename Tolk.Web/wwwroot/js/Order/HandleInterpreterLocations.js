@@ -55,19 +55,23 @@ function checkInterpreterLocation() {
     var no2 = $("#RankedInterpreterLocationSecond").val();
     var no3 = $("#RankedInterpreterLocationThird").val();
     var validator = $("#interpreterLocationValidator");
-    if (no1 != "" && no1 == no2) {
+    if (hasValue(no1) && no1 === no2) {
         triggerValidator("Inställelsesätt i första och andra hand kan inte vara samma", validator);
     }
-    else if (no1 != "" && no1 == no3) {
+    else if (hasValue(no1) && hasValue(no2) && no1 === no3) {
         triggerValidator("Inställelsesätt i första och tredje hand kan inte vara samma", validator);
     }
-    else if (no2 != "" && no2 == no3) {
+    else if (hasValue(no2) && no2 === no3) {
         triggerValidator("Inställelsesätt i andra och tredje hand kan inte vara samma", validator);
     }
     else {
         validator.hide();
         $('#send').attr('disabled', false);
     }
+}
+
+function hasValue(selectedValue) {
+    return (selectedValue !== null && selectedValue.length > 0);
 }
 
 function triggerValidator(message, validatorId) {
