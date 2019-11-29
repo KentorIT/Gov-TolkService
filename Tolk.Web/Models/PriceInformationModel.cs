@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Utilities;
-using Tolk.Web.Helpers;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Entities;
 
@@ -33,6 +30,16 @@ namespace Tolk.Web.Models
             if (order.PriceRows == null)
             {
                 return null;
+            }
+            else if (order.Requests != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Any())
+            {
+                return new PriceInformationModel
+                {
+                    PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.OfType<PriceRowBase>().ToList()),
+                    Header = "Beräknat pris enligt bekräftelse",
+                    UseDisplayHideInfo = true,
+                    InitialCollapse = initialCollapse
+                };
             }
             return new PriceInformationModel
             {

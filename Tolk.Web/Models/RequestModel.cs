@@ -25,6 +25,8 @@ namespace Tolk.Web.Models
 
         public int? ReplacedByOrderRequestId { get; set; }
 
+        public int? RequestGroupId { get; set; }
+
         public OrderModel OrderModel { get; set; }
 
         public int? OrderId
@@ -206,6 +208,7 @@ namespace Tolk.Web.Models
                 BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
+                RequestGroupId = request.RequestGroup?.RequestGroupId,
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,

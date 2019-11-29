@@ -131,6 +131,10 @@ namespace Tolk.Web.Api.Controllers
             {
                 return ReturnError(ex.ErrorCode);
             }
+            catch (Exception ex)
+            {
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
+            }
         }
 
         [HttpPost]

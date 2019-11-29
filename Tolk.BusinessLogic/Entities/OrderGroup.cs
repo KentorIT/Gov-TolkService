@@ -89,11 +89,13 @@ namespace Tolk.BusinessLogic.Entities
         public void AwaitDeadlineFromCustomer()
         {
             SetStatus(OrderStatus.AwaitingDeadlineFromCustomer);
-            ActiveRequestGroup.Status = RequestStatus.AwaitingDeadlineFromCustomer;
-            ActiveRequestGroup.IsTerminalRequest = true;
+            ActiveUnAnsweredRequestGroup.Status = RequestStatus.AwaitingDeadlineFromCustomer;
+            ActiveUnAnsweredRequestGroup.IsTerminalRequest = true;
         }
 
-        public RequestGroup ActiveRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
+        public RequestGroup ActiveUnAnsweredRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
+
+        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAccepted);
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
@@ -101,7 +103,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
 
-        public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
+        public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && HasExtraInterpreter);
+
+        public bool HasExtraInterpreter => Orders == null ? false : Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
         public void SetStatus(OrderStatus status, bool updateOrders = true)
         {

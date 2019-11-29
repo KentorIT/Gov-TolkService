@@ -17,6 +17,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 
+        public int? OrderGroupRequirementId { get; set; }
+
+        [ForeignKey(nameof(OrderGroupRequirementId))]
+        public OrderGroupRequirement OrderGroupRequirement { get; set; }
+
         #endregion
 
         #region navigation

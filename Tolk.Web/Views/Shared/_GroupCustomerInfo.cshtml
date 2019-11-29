@@ -1,0 +1,31 @@
+﻿@model CustomerInformationModel
+
+<section aria-label="Myndighetens uppgifter">
+    <a class="collapsible-section" data-toggle="collapse" data-target="#customerInfo">
+        <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> Myndighetens uppgifter</h2>
+    </a>
+    <hr />
+    <div id="customerInfo" class="collapse">
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="Name" />
+                <display-entry asp-for="InvoiceReference" />
+                <display-entry asp-for="CreatedBy" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="UnitName" />
+                <display-entry asp-for="DepartmentName" />
+                @if (Model.IsCustomer)
+                {
+                    <div class="important-info">
+                        För att se och hantera person med rätt att granska rekvisition så gå in på de enskilda tolktillfällena.
+                    </div>
+                }
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="OrganisationNumber" />
+                <display-entry asp-for="ReferenceNumber" />
+            </div>
+        </div>
+    </div>
+</section>

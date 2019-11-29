@@ -18,6 +18,17 @@
     <div id="request" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
+                @if (Model.OrderModel.IsInOrderGroup)
+                {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <br />
+                            <div class="green-border-left">
+                                Tillhör sammanhållen bokning: <a asp-controller="RequestGroup" asp-action="View" asp-route-id="@Model.RequestGroupId">@Model.OrderModel.OrderGroupNumber</a>
+                            </div>
+                        </div>
+                    </div>
+                }
                 @if (Model.AllowConfirmCancellation)
                 {
                     <br />

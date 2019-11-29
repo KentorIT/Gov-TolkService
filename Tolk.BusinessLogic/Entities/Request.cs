@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request() { }
 
-        public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isChangeInterpreter = false)
+        public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isChangeInterpreter = false, RequestGroup requestGroup = null)
         {
             if (!isChangeInterpreter && expiry.HasValue && expiry < creationTime)
             {
@@ -25,6 +25,7 @@ namespace Tolk.BusinessLogic.Entities
             ExpiresAt = expiry;
             CreatedAt = creationTime;
             IsTerminalRequest = isTerminalRequest;
+            RequestGroup = requestGroup;
         }
 
         internal Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
