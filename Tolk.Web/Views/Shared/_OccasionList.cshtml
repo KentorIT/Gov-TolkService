@@ -32,38 +32,38 @@
                         {
                             @if (Model.DisplayDetailedList)
                             {
-                        <tr class="table-row">
-                            <td class="@occasion.OrderColorClassName">
-                                <a asp-controller="@occasion.ControllerName" asp-action="View" asp-route-id="@occasion.RouteId">@occasion.OrderNumber</a>
-                            </td>
-                            <td>
-                                @EnumHelper.GetDescription(occasion.OrderStatus)
-                            </td>
-                            <td>
-                                @occasion.Information
-                            </td>
-                            <td>
-                                @(occasion.ExtraInterpreter ? "Extra tolk" : "")
-                            </td>
-                            @if (occasion.PriceInformationModel != null)
-                            {
-                                <td class="currency">
-                                    @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
-                                </td>
-                                <td class="gray-border-right">
-                                    <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
-                                </td>
-                            }
-                            else
-                            {
-                                <td class="currency">
-                                    MER INFO
-                                </td>
-                                <td>
-                                    HÄR
-                                </td>
-                            }
-                        </tr>
+                                <tr class="table-row">
+                                    <td class="@occasion.ColorClassName">
+                                        <a asp-controller="@occasion.ControllerName" asp-action="View" asp-route-id="@occasion.RouteId">@occasion.OrderNumber</a>
+                                    </td>
+                                    <td>
+                                        @occasion.StatusName
+                                    </td>
+                                    <td>
+                                        @occasion.Information
+                                    </td>
+                                    <td>
+                                        @(occasion.ExtraInterpreter ? "Extra tolk" : "")
+                                    </td>
+                                    @if (occasion.PriceInformationModel != null)
+                                    {
+                                        <td class="currency">
+                                            @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
+                                        </td>
+                                        <td class="gray-border-right">
+                                            <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="currency">
+                                            MER INFO
+                                        </td>
+                                        <td>
+                                            HÄR
+                                        </td>
+                                    }
+                                </tr>
                                 @if (occasion.PriceInformationModel != null)
                                 {
                                     <tr class="table-price-row">
@@ -81,7 +81,7 @@
                             else
                             {
                                 <tr class="table-row">
-                                    <td class="@occasion.OrderColorClassName">
+                                    <td class="@occasion.ColorClassName">
                                         @occasion.OrderNumber
                                     </td>
                                     <td>

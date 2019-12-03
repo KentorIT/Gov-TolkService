@@ -1,0 +1,37 @@
+﻿@model RequestGroupBaseModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
+@{
+   HelpLinkService.PageName = "formedling-detaljvy-av-sammanhallen-bokning/";
+}
+<section aria-label="Bokningshuvud">
+    <div class="row">
+        <div class="col-sm-12 order-header-contract-info">
+            Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+            <div class="help-sign-big">
+                @HelpLinkService.HeaderAnchor()
+            </div>
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(Model.ViewedByUser))
+    {
+        <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ViewedByUser</span>
+        <br /><br />
+    }
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="@Model.ColorClassName">
+                <display-entry asp-for="Status" />
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="AssignmentType" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="OrderGroupNumber" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="CreatedAt" />
+        </div>
+    </div>
+</section>

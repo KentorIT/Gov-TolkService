@@ -9,11 +9,6 @@ namespace Tolk.Web.Models
 {
     public class RequestGroupProcessModel : RequestGroupBaseModel
     {
-
-
-        //ROWS with occasions!!
-        public OccasionListModel OccasionList { get; set; }
-
         //The following two properties will be used later, if AllowDeclineExtraInterpreter is allowed.
         public bool ShouldAssignInterpreter { get; set; } = true;
         public bool ShouldAssignExtraInterpreter { get; set; } = true;
@@ -133,18 +128,23 @@ namespace Tolk.Web.Models
                 } : null,
                 OccasionList = new OccasionListModel
                 {
-                    Occasions = requestGroup.Requests.Select(r => r.Order)
-                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o))),
-                    AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o))
+                    Occasions = requestGroup.Requests.Select(r => r)
+                        .Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(r.Order), r)),
+                    AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, request: o.Requests.OrderBy(re => re.RequestId).Last()))
                 },
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
                 AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
                 AssignmentType = orderGroup.AssignmentType,
-                CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
-                CustomerName = orderGroup.CustomerOrganisation.Name,
-                CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
-                CustomerReferenceNumber = order.CustomerReferenceNumber,
-                CustomerUnitName = orderGroup.CustomerUnit?.Name,
+                CustomerInformationModel = new CustomerInformationModel
+                {
+                    CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
+                    Name = orderGroup.CustomerOrganisation.Name,
+                    UnitName = orderGroup.CustomerUnit?.Name,
+                    DepartmentName = order.UnitName,
+                    InvoiceReference = order.InvoiceReference,
+                    OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    ReferenceNumber = order.CustomerReferenceNumber
+                },
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
                 Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
@@ -155,7 +155,6 @@ namespace Tolk.Web.Models
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,
-                UnitName = order.UnitName,
                 RequestedCompetenceLevelFirst = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 1 || l.Rank == null)?.CompetenceLevel,
                 RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel,
             };

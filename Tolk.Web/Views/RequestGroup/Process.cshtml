@@ -13,37 +13,7 @@
 <section aria-label="@ViewData["Title"]">
     <div class="row">
         <div class="col-sm-12">
-            <section aria-label="Bokningshuvud">
-                <div class="row">
-                    <div class="col-sm-12 order-header-contract-info">
-                        Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
-                        <div class="help-sign-big">
-                            @HelpLinkService.HeaderAnchor()
-                        </div>
-                    </div>
-                </div>
-                @if (!string.IsNullOrEmpty(Model.ViewedByUser))
-                {
-                    <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ViewedByUser</span>
-                    <br /><br />
-                }
-                <div class="row">
-                    <div class="col-sm-3">
-                        <div class="@Model.ColorClassName">
-                            <display-entry asp-for="Status" />
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <display-entry asp-for="AssignmentType" />
-                    </div>
-                    <div class="col-sm-3">
-                        <display-entry asp-for="OrderGroupNumber" />
-                    </div>
-                    <div class="col-sm-3">
-                        <display-entry asp-for="CreatedAt" />
-                    </div>
-                </div>
-            </section>
+            @await Html.PartialAsync("_OrderGroupHeader", Model)
             <section aria-label="Bokningsuppgifter">
                 <h1 class="normal-weight">
                     Svara på sammanhållen bokningsförfrågan
@@ -397,28 +367,8 @@
                     <div class="no-value-info">Här bör det stå något bra om att det finns fler tillfällen kopplade till denna sammanhållna bokning, men att dessa inte skall tillsättas av denna förmedling, typ.</div>
                 }
             }
-            <section aria-label="Myndighetens uppgifter">
-                <a class="collapsible-section" data-toggle="collapse" data-target="#customerInfo">
-                    <h2><span class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></span> Myndighetens uppgifter</h2>
-                </a>
-                <hr />
-                <div id="customerInfo">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <display-entry asp-for="CustomerName" />
-                            <display-entry asp-for="CreatedBy" />
-                        </div>
-                        <div class="col-sm-4">
-                            <display-entry asp-for="CustomerUnitName" />
-                            <display-entry asp-for="UnitName" />
-                        </div>
-                        <div class="col-sm-4">
-                            <display-entry asp-for="CustomerOrganisationNumber" />
-                            <display-entry asp-for="CustomerReferenceNumber" />
-                        </div>
-                    </div>
-                </div>
-            </section>
+            @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
+
             <div class="row">
                 <div class="col-lg-4">
                     <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" id="cancel-go-back">Avbryt <span class="btn-remove-times">&times;</span></a>

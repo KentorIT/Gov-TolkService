@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using DataTables.AspNet.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -55,39 +52,26 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var requestGroup = await _dbContext.RequestGroups
-                .Include(g => g.Ranking)
-                .Include(g => g.OrderGroup)
-                .Include(g => g.StatusConfirmations)
-                .SingleAsync(r => r.RequestGroupId == id);
-
+            var requestGroup = await GetRequestGroupToView(id);
+            var brokerId = User.TryGetBrokerId();
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
             {
                 if (requestGroup.IsToBeProcessedByBroker)
                 {
                     return RedirectToAction(nameof(Process), new { id = requestGroup.RequestGroupId });
                 }
-                return View(RequestGroupViewModel.GetModelFromRequestGroup(requestGroup));
+                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, false);
+                model.CustomerInformationModel.IsCustomer = false;
+                model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, requestGroup, true);
+                return View(model);
             }
             return Forbid();
         }
 
         public async Task<IActionResult> Process(int id)
         {
-            var requestGroup = await _dbContext.RequestGroups
-               .Include(g => g.Ranking)
-               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
-               .SingleAsync(r => r.RequestGroupId == id);
+            var requestGroup = await GetRequestGroupToProcess(id);
+            
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
             {
@@ -101,8 +85,9 @@ namespace Tolk.Web.Controllers
                     _requestService.AcknowledgeGroup(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     await _dbContext.SaveChangesAsync();
                 }
-
-                return View(RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups));
+                var model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups);
+                model.CustomerInformationModel.IsCustomer = false;
+                return View(model);
             }
             return Forbid();
         }
@@ -297,6 +282,52 @@ namespace Tolk.Web.Controllers
                 RequirementAnswers = requirementAnswers,
                 Interpreter = interpreter
             };
+        }
+
+        private async Task<RequestGroup> GetRequestGroupToProcess(int requestGroupId)
+        {
+            return await _dbContext.RequestGroups
+               .Include(g => g.Ranking)
+               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
+               .SingleAsync(r => r.RequestGroupId == requestGroupId);
+        }
+
+        private async Task<RequestGroup> GetRequestGroupToView(int requestGroupId)
+        {
+            return await _dbContext.RequestGroups
+               .Include(g => g.Ranking).ThenInclude(r => r.Broker)
+               .Include(g => g.StatusConfirmations)
+               .Include(g => g.AnsweringUser)
+               .Include(g => g.ProcessingUser)
+               .Include(g => g.CancelledByUser)
+               .Include(g => g.Attachments).ThenInclude(a => a.Attachment)
+               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
+               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.Requirements)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
+               .Include(g => g.Requests).ThenInclude(r => r.RequirementAnswers)
+               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
+               .Include(g => g.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+               .Include(g => g.Requests).ThenInclude(r => r.Interpreter)
+               .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
     }
 }

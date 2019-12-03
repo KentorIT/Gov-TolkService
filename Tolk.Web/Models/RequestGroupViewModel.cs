@@ -85,45 +85,49 @@ namespace Tolk.Web.Models
 
         public bool ExtraInterpreterRequestIsDeclinedByBroker => ExtraInterpreterStatus == RequestStatus.DeclinedByBroker || ExtraInterpreterStatus == RequestStatus.DeniedByTimeLimit;
 
+        public OrderBaseModel OrderGroupModel { get; set; }
 
         #region methods
 
-        internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup)
-        {
-            return new RequestGroupViewModel
-            {
-                OrderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber,
-                Status = requestGroup.Status,
-                CreatedAt = requestGroup.CreatedAt,
-                RequestGroupId = requestGroup.RequestGroupId,
-                AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator)
-            };
-        }
 
-        internal static RequestGroupViewModel GetModelFromRequestGroupCustomer(RequestGroup requestGroup)
+        internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup, bool isCustomer = true)
         {
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            Order order = requestGroup.Requests.First().Order;
+            Order order = requestGroup.FirstRequestForFirstInterpreter.Order;
             Request request = requestGroup.FirstRequestForFirstInterpreter;
             Request requestExtraInterpreter = requestGroup.HasExtraInterpreter ? requestGroup.FirstRequestForExtraInterpreter : null;
+            Order orderExtraInterpreter = requestExtraInterpreter?.Order;
 
-            var verificationResult = (request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign);
+            var verificationResult = request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign;
             bool? isInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null;
             var extraInterpreterVerificationResult = requestExtraInterpreter != null ? (requestExtraInterpreter.InterpreterCompetenceVerificationResultOnStart ?? requestExtraInterpreter.InterpreterCompetenceVerificationResultOnAssign) : null;
             bool? isExtraInterpreterVerified = extraInterpreterVerificationResult.HasValue ? (bool?)(extraInterpreterVerificationResult == VerificationResult.Validated) : null;
 
             return new RequestGroupViewModel
             {
-
+                AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator),
+                AssignmentType = order.AssignmentType,
+                CreatedAt = orderGroup.CreatedAt,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
-                AnsweredBy = request.AnsweringUser?.CompleteContactInformation,
-                BrokerName = request.Ranking?.Broker?.Name,
-                BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
-                DenyMessage = request.DenyMessage,
-                CancelMessage = request.CancelMessage,
-                ExpiresAt = requestGroup.ExpiresAt,
+                AnsweredBy = requestGroup.AnsweringUser?.CompleteContactInformation,
+                BrokerName = requestGroup.Ranking.Broker.Name,
+                BrokerOrganizationNumber = requestGroup.Ranking?.Broker.OrganizationNumber,
+                DenyMessage = requestGroup.DenyMessage,
+                CancelMessage = requestGroup.CancelMessage,
+                ExpiresAt = requestGroup.ExpiresAt ?? null,
+                CustomerInformationModel = new CustomerInformationModel
+                {
+                    CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
+                    Name = orderGroup.CustomerOrganisation.Name,
+                    UnitName = orderGroup.CustomerUnit?.Name,
+                    DepartmentName = order.UnitName,
+                    InvoiceReference = order.InvoiceReference,
+                    OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    ReferenceNumber = order.CustomerReferenceNumber
+                },
+
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,
@@ -137,39 +141,53 @@ namespace Tolk.Web.Models
                         Size = a.Attachment.Blob.Length
                     }).ToList()
                 },
-                //svaren är inte kopplade här ännu annars bör man bara visa första här? om ej ändras
+                OccasionList = new OccasionListModel
+                {
+                    Occasions = requestGroup.Requests.Select(r => r)
+                        .Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(r.Order), request: isCustomer ? null : r)),
+                    AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, request: isCustomer ? null : o.Requests.OrderBy(re => re.RequestId).Last())),
+                    DisplayDetailedList = true
+                },
                 InterpreterAnswerModel = new InterpreterAnswerModel
                 {
-                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    RequiredRequirementAnswers = order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderGroupRequirementId,
+                        OrderRequirementId = r.OrderRequirementId,
                         IsRequired = true,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
+                        Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                     }).ToList(),
-                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    DesiredRequirementAnswers = order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderGroupRequirementId,
+                        OrderRequirementId = r.OrderRequirementId,
                         IsRequired = false,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
+                        Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                     }).ToList(),
                 },
                 ExtraInterpreterAnswerModel = requestGroup.HasExtraInterpreter ? new InterpreterAnswerModel
                 {
-                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    RequiredRequirementAnswers = orderExtraInterpreter.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderGroupRequirementId,
+                        OrderRequirementId = r.OrderRequirementId,
                         IsRequired = true,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
+                        Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                     }).ToList(),
-                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    DesiredRequirementAnswers = orderExtraInterpreter.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
-                        OrderRequirementId = r.OrderGroupRequirementId,
+                        OrderRequirementId = r.OrderRequirementId,
                         IsRequired = false,
                         Description = r.Description,
                         RequirementType = r.RequirementType,
+                        Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
+                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                     }).ToList(),
                 } : null,
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
@@ -195,37 +213,11 @@ namespace Tolk.Web.Models
                 ExtraInterpreterExpectedTravelCostInfo = requestGroup.HasExtraInterpreter ? requestExtraInterpreter.ExpectedTravelCostInfo : null,
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
-                Status = request.Status,
+                Status = requestGroup.Status,
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
-                RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
-                {
-                    OrderRequirementId = r.OrderRequirementId,
-                    IsRequired = r.IsRequired,
-                    Description = r.Description,
-                    RequirementType = r.RequirementType,
-                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                }).ToList(),
-                RequiredRequirementAnswers = request.Order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                {
-                    OrderRequirementId = r.OrderRequirementId,
-                    IsRequired = true,
-                    Description = r.Description,
-                    RequirementType = r.RequirementType,
-                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                }).ToList(),
-                DesiredRequirementAnswers = request.Order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                {
-                    OrderRequirementId = r.OrderRequirementId,
-                    IsRequired = false,
-                    Description = r.Description,
-                    RequirementType = r.RequirementType,
-                    Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                }).ToList()
             };
+            
         }
 
         private static bool GetDisplayExpectedTravelCostInfo(Order o, int locationAnswer)

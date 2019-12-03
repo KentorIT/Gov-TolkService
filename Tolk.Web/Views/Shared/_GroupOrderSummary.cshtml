@@ -10,13 +10,15 @@
     const string ShowCalculatedPriceKey = "OrderSummary_ShowCalculatedPrice";
 
     // ViewData values
-    string header = (string)ViewData["header"] ?? "Bokningssammanfattning";
+    string header = (string)ViewData["header"] ?? "Sammanfattning av sammanhållen bokning";
     bool ShowCalculatedPrice = ViewData.ContainsKey(ShowCalculatedPriceKey) ? (bool)ViewData[ShowCalculatedPriceKey] : false;
 
     // Collapsible values
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "OrderSummary";
+
+    bool displayGeneralOrderInfo = (bool?)ViewData["displayGeneralOrderInfo"] ?? true;
 
     HelpLinkService.PageName = (string)ViewData["helplink"];
     var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
@@ -42,20 +44,17 @@ else
 
 <hr />
 <div id="@divId" class="@divClass">
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="LanguageAndDialect" />
+    @if (displayGeneralOrderInfo)
+    {
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="LanguageAndDialect" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="RegionName" />
+            </div>
         </div>
-        @*<div class="col-sm-4">
-                @if (Model.LatestAnswerBy != null)
-                {
-                    <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
-                }
-            </div>*@
-        <div class="col-sm-4">
-            <display-entry asp-for="RegionName" />
-        </div>
-    </div>
+    }
     @if (Model.OrderOccasionDisplayModels != null && Model.OrderOccasionDisplayModels.Any())
     {
         <div class="row list-of-occasions">

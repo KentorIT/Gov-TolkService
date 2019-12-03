@@ -51,7 +51,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Svara senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
-        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
+        public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
 
         //INTERPRETER REPLACEMENT
         public InterpreterAnswerModel InterpreterAnswerModel { get; set; }
@@ -71,24 +71,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Län")]
         public string RegionName { get; set; }
 
-        [Display(Name = "Myndighet")]
-        public string CustomerName { get; set; }
-
-        [Display(Name = "Skapad av")]
-        [DataType(DataType.MultilineText)]
-        public string CreatedBy { get; set; }
-
-        [Display(Name = "Myndighetens enhet")]
-        public string CustomerUnitName { get; set; }
-
-        [Display(Name = "Myndighetens avdelning")]
-        public string UnitName { get; set; }
-
-        [Display(Name = "Myndighetens organisationsnummer")]
-        public string CustomerOrganisationNumber { get; set; }
-
-        [Display(Name = "Myndighetens ärendenummer")]
-        public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Övrig information om uppdraget")]
         public string Description { get; set; }
@@ -105,6 +87,9 @@ namespace Tolk.Web.Models
 
         public bool AllowExceedingTravelCost { get; set; }
 
+        public CustomerInformationModel CustomerInformationModel { get; set; }
+
+        public OccasionListModel OccasionList { get; set; }
 
     }
 }

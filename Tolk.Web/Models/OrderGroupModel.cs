@@ -66,7 +66,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal static OrderGroupModel GetModelFromOrderGroup(OrderGroup orderGroup, RequestGroup activeRequestGroup)
+        internal static OrderGroupModel GetModelFromOrderGroup(OrderGroup orderGroup, RequestGroup activeRequestGroup, bool displayForBroker = false)
         {
             bool useRankedInterpreterLocation = orderGroup.FirstOrder.InterpreterLocations.Count > 1;
             OrderCompetenceRequirement competenceFirst = null;
@@ -82,8 +82,7 @@ namespace Tolk.Web.Models
 
             var model = new OrderGroupModel
             {
-                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString()) },
-
+                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString()) },
                 Description = orderGroup.FirstOrder.Description,
 
                 CompetenceLevelDesireType = new RadioButtonGroup
@@ -107,11 +106,7 @@ namespace Tolk.Web.Models
                     OrderRequirementId = r.OrderGroupRequirementId,
                     RequirementDescription = r.Description,
                     RequirementIsRequired = r.IsRequired,
-                    RequirementType = r.RequirementType,
-                    CanSatisfyRequirement = true,
-                    Answer = "Yes we can!"
-                    //CanSatisfyRequirement = r.?.SingleOrDefault(a => a.RequestId == activeRequestId)?.CanSatisfyRequirement,
-                    //Answer = r.RequirementAnswers?.SingleOrDefault(a => a.RequestId == activeRequestId)?.Answer
+                    RequirementType = r.RequirementType
                 }).ToList(),
                 AttachmentListModel = new AttachmentListModel
                 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -106,7 +105,7 @@ namespace Tolk.Web.Models
 
         public long? CombinedMaxSizeAttachments { get; set; }
 
-        public override DateTimeOffset? StartAt => TimeRange.StartDateTime;
+        public override DateTimeOffset? StartAt => TimeRange?.StartDateTime;
 
         #region details
 

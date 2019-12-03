@@ -1,21 +1,14 @@
-﻿using AutoMapper;
-using DataTables.AspNet.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -26,42 +19,24 @@ namespace Tolk.Web.Controllers
     public class OrderGroupController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly PriceCalculationService _priceCalculationService;
         private readonly IAuthorizationService _authorizationService;
         private readonly OrderService _orderService;
-        private readonly DateCalculationService _dateCalculationService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
-        private readonly TolkOptions _options;
-        private readonly INotificationService _notificationService;
-        private readonly UserManager<AspNetUser> _userManager;
-        private readonly IMapper _mapper;
 
         public OrderGroupController(
             TolkDbContext dbContext,
-            PriceCalculationService priceCalculationService,
             IAuthorizationService authorizationService,
             OrderService orderService,
-            DateCalculationService dateCalculationService,
             ISwedishClock clock,
-            ILogger<OrderController> logger,
-            IOptions<TolkOptions> options,
-            INotificationService notificationService,
-            UserManager<AspNetUser> usermanager,
-            IMapper mapper
+            ILogger<OrderController> logger
             )
         {
             _dbContext = dbContext;
-            _priceCalculationService = priceCalculationService;
             _authorizationService = authorizationService;
             _orderService = orderService;
-            _dateCalculationService = dateCalculationService;
             _clock = clock;
             _logger = logger;
-            _options = options.Value;
-            _notificationService = notificationService;
-            _userManager = usermanager;
-            _mapper = mapper;
         }
 
         public async Task<IActionResult> View(int id)
@@ -87,7 +62,7 @@ namespace Tolk.Web.Controllers
                     InvoiceReference = model.InvoiceReference
                 };
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
-                model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroupCustomer(activeRequestGroup);
+                model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
                 model.AllowOrderGroupCancellation = false;
                 model.AllowUpdateExpiry = orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 return View(model);
@@ -231,12 +206,12 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.RequestGroups).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.AnsweringUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.ProcessingUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.CancelledByUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.ProcessingUser)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.CancelledByUser)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Order)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Interpreter)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
                 .Include(o => o.Orders).ThenInclude(o => o.Requirements)

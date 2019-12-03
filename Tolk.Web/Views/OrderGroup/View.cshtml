@@ -92,7 +92,7 @@
                     </div>
                 }
                 @await Html.PartialAsync("_OccasionList", Model.OccasionList)
-                @await Html.PartialAsync("_GroupOrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "header", "Sammanfattning av sammanhållen bokning" }, { "helplink", "myndighet-sammanfattning-av-bokning/" } })
+                @await Html.PartialAsync("_GroupOrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer) }, { "helplink", "myndighet-sammanfattning-sammanhallen-bokning/" } })
                 <div class="padding-top-10"></div>
                 @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
                 @if (Model.AllowNoAnswerConfirmation)
