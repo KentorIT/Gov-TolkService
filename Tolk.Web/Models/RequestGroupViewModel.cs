@@ -123,7 +123,7 @@ namespace Tolk.Web.Models
                 BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
-                ExpiresAt = requestGroup.ExpiresAt.Value,
+                ExpiresAt = requestGroup.ExpiresAt,
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,

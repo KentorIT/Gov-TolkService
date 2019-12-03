@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Tolk.BusinessLogic.Helpers;
 namespace Tolk.Web.Models
 {
     public class OccasionListModel
@@ -33,6 +33,19 @@ namespace Tolk.Web.Models
         public bool DisplayDetailedList { get; set; } = false;
 
         public bool ShowInformation { get; set; }
+
+        public DateTimeOffset? FirstStartDateTime
+        {
+            get
+            {
+                var startDateTime = AllOccasions.OrderBy(o => o.OccasionStartDateTime).First().OccasionStartDateTime;
+                if (startDateTime.Year < 2)
+                {
+                    return null;
+                }
+                return startDateTime.ToDateTimeOffsetSweden();
+            }
+        }
 
         public decimal TotalPrice => Occasions?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
     }

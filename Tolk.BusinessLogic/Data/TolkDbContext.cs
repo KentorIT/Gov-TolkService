@@ -356,6 +356,19 @@ namespace Tolk.BusinessLogic.Data
                .WithMany()
                .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<RequestGroupUpdateLatestAnswerTime>()
+                .HasKey(ru => new { ru.RequestGroupId });
+
+            builder.Entity<RequestGroupUpdateLatestAnswerTime>()
+               .HasOne(ru => ru.UpdatedByUser)
+               .WithMany()
+               .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequestGroupUpdateLatestAnswerTime>()
+               .HasOne(ru => ru.UpdatedByImpersonator)
+               .WithMany()
+               .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<OrderStatusConfirmation>()
                 .HasOne(o => o.ConfirmedByUser)
                 .WithMany()

@@ -49,7 +49,7 @@ namespace Tolk.Web.Models
         public string CancelMessage { get; set; }
 
         [Display(Name = "Svara senast")]
-        public DateTimeOffset ExpiresAt { get; set; }
+        public DateTimeOffset? ExpiresAt { get; set; }
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
 

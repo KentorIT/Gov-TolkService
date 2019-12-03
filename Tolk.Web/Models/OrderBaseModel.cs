@@ -182,7 +182,6 @@ namespace Tolk.Web.Models
 
         public string InterpreterLocationInfoAnswer { get; set; }
 
-
         #region extra requirements
 
         [Display(Name = "Tillkommande krav och/eller önskemål", Description = "Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål.")]
@@ -195,6 +194,11 @@ namespace Tolk.Web.Models
         public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
         #endregion
+
+        public virtual DateTimeOffset? StartAt
+        {
+            get;
+        }
 
         public bool AllowOrderCancellation { get; set; } = false;
 
@@ -221,7 +225,6 @@ namespace Tolk.Web.Models
             }
         }
 
-
         internal static InterpreterLocationAddressModel GetInterpreterLocation(OrderInterpreterLocation location)
         {
             if (location == null)
@@ -237,8 +240,6 @@ namespace Tolk.Web.Models
                 OffSiteContactInformation = location.OffSiteContactInformation
             };
         }
-
-
 
     }
 }

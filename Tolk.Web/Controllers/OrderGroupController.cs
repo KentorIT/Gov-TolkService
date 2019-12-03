@@ -89,6 +89,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroupCustomer(activeRequestGroup);
                 model.AllowOrderGroupCancellation = false;
+                model.AllowUpdateExpiry = orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 return View(model);
             }
             return Forbid();
@@ -191,6 +192,29 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> UpdateExpiry(int orderGroupId, DateTimeOffset latestAnswerBy)
+        {
+            OrderGroup orderGroup = await GetOrderGroup(orderGroupId);
+
+            if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded)
+            {
+                var requestGroup = orderGroup.RequestGroups.SingleOrDefault(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+                if (requestGroup == null)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna sammanhållna bokning behöver inte få sista svarstid satt." });
+                }
+
+                _orderService.SetRequestGroupExpiryManually(requestGroup, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för sammanhållen bokning {orderGroup.OrderGroupNumber} är satt" });
+            }
+            return Forbid();
+        }
+
 
         private async Task<OrderGroup> GetOrderGroup(int id)
         {

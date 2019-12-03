@@ -112,6 +112,8 @@ namespace Tolk.Web.Authorization
             var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
+                case OrderGroup orderGroup:
+                    return orderGroup.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
                 case Order order:
                     return order.IsAuthorizedAsCreator(user.TryGetAllCustomerUnits(), customerOrganisationId, user.GetUserId(), user.IsInRole(Roles.CentralOrderHandler));
                 case InterpreterBroker interpreter:

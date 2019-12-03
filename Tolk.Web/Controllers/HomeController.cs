@@ -202,8 +202,30 @@ namespace Tolk.Web.Controllers
                     IsSingleOccasion = og.IsSingleOccasion,
                     HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
-            }
             //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
+                actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+                .Include(og => og.Language)
+                .Include(og => og.Orders)
+                .Include(og => og.RequestGroups)
+                .Where(og => og.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
+                .Select(og => new StartListItemModel
+                {
+                    Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                    DefaulListAction = "View",
+                    DefaulListController = "OrderGroup",
+                    DefaultItemId = og.OrderGroupId,
+                    InfoDate = GetInfoDateForCustomer(og)?.DateTime,
+                    CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
+                    ButtonItemId = og.OrderGroupId,
+                    Language = og.OtherLanguage ?? og.Language.Name,
+                    OrderNumber = og.OrderGroupNumber,
+                    Status = GetStartListStatusForCustomer(og.Status, 0, true),
+                    ButtonAction = "View",
+                    ButtonController = "OrderGroup",
+                    IsSingleOccasion = og.IsSingleOccasion,
+                    HasExtraInterpreter = og.HasExtraInterpreter,
+                }));
+            }
             if (_options.AllowDeclineExtraInterpreterOnRequestGroups)
             {
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)

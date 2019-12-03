@@ -217,7 +217,7 @@
             <form method="post" action="@Url.Action("UpdateExpiry", "Order", new { OrderId = Model.OrderId})" asp-antiforgery="true">
                 <div class="row">
                     <div class="col-sm-8">
-                        <input asp-for="TimeRange.StartDateTime" type="hidden" />
+                        <input asp-for="StartAt" type="hidden" />
                         <form-entry asp-for="LatestAnswerBy"></form-entry>
                     </div>
                 </div>
@@ -316,11 +316,13 @@
 }
 @section Scripts {
     <environment include="Development">
+        <script src="~/js/Order/SetExpiry.js" asp-append-version="true"></script>
         <script src="~/js/Order/Process.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
         <script src="~/js/Files.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
+        <script src="~/js/Order/SetExpiry.min.js" asp-append-version="true"></script>
         <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
         <script src="~/js/Files.min.js" asp-append-version="true"></script>

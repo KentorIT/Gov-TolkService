@@ -230,7 +230,6 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter = interpreter ?? throw new InvalidOperationException($"Interpreter is not set.");
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
-#warning Need to connect the group requirements to the order requirements, to be able to map correctly at this level!!!
             RequirementAnswers.AddRange(requirementAnswers);
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));

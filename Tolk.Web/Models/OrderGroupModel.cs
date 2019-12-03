@@ -7,6 +7,7 @@ using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Services;
+using System;
 
 namespace Tolk.Web.Models
 {
@@ -23,6 +24,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Uppdragstyp")]
         public AssignmentType AssignmentType { get; set; }
 
+        public override DateTimeOffset? StartAt => OccasionList.FirstStartDateTime;
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForOrderStatus(Status);
 
@@ -48,6 +50,11 @@ namespace Tolk.Web.Models
         public bool AllowOrderGroupCancellation { get; set; } = false;
         public bool AllowPrint { get; set; } = false;
         public bool AllowDenial { get; set; } = false;
+        public bool AllowUpdateExpiry { get; set; } = false;
+
+        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges.")]
+        [ClientRequired(ErrorMessage = "Ange sista svarstid")]
+        public DateTimeOffset? LatestAnswerBy { get; set; }
 
         public CustomerInformationModel CustomerInformationModel { get; set; }
 
@@ -76,7 +83,7 @@ namespace Tolk.Web.Models
             var model = new OrderGroupModel
             {
                 AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString()) },
- 
+
                 Description = orderGroup.FirstOrder.Description,
 
                 CompetenceLevelDesireType = new RadioButtonGroup

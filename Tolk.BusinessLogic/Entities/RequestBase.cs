@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Entities
         public string CancelMessage { get; set; }
 
         /// <summary>
-        /// If true, this Request wil not be followed by another to the next broker.
+        /// If true, this Request will not be followed by another to the next broker.
         /// </summary>
         public bool IsTerminalRequest { get; set; }
 

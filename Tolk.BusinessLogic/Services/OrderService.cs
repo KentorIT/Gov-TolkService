@@ -112,14 +112,20 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(group, nameof(CreateRequestGroup), nameof(OrderService));
             RequestGroup requestGroup = null;
             DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(group.ClosestStartAt);
+
+            if ((!expiry.HasValue && !group.IsSingleOccasion) || (expiredRequestGroup?.IsTerminalRequest ?? false))
+            {
+                //Does not handle no expiry for several occasions order.
+                await TerminateOrderGroup(group);
+                await _tolkDbContext.SaveChangesAsync();
+                return;
+            }
+
             var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
 
             if (expiredRequestGroup != null)
             {
-                if (!expiredRequestGroup.IsTerminalRequest)
-                {
-                    requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow);
-                }
+                requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow);
             }
             else
             {
@@ -154,11 +160,13 @@ namespace Tolk.BusinessLogic.Services
 
                         _logger.LogInformation($"Created request group {requestGroup.RequestGroupId} for order group {requestGroup.OrderGroupId}, but system was unable to calculate expiry.");
                         _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
-                        return;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("Not a valid state!");
                     }
                 }
             }
-            await TerminateOrderGroup(group);
         }
 
         public async Task CreatePartialRequestGroup(RequestGroup requestGroup, IEnumerable<Request> declinedRequests)
@@ -345,7 +353,7 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ApproveRequestGroupAnswer), nameof(OrderService));
             requestGroup.Approve(_clock.SwedenNow, userId, impersonatorId);
 
-                _notificationService.RequestGroupAnswerApproved(requestGroup);
+            _notificationService.RequestGroupAnswerApproved(requestGroup);
         }
 
         public async Task DenyRequestAnswer(Request request, int userId, int? impersonatorId, string message)
@@ -449,7 +457,7 @@ namespace Tolk.BusinessLogic.Services
             //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
             // But only if the order has not been replaced!
             foreach (var order in orderGroup.Orders.Where(o => o.StartAt > _clock.SwedenNow))
-                //Add filter for correct statuses, only "active" orders can be cancelled.
+            //Add filter for correct statuses, only "active" orders can be cancelled.
             {
                 CancelOrder(order, userId, impersonatorId, message);
             }
@@ -472,6 +480,23 @@ namespace Tolk.BusinessLogic.Services
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
             _notificationService.RequestCreated(request);
+        }
+
+        public void SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(SetRequestGroupExpiryManually), nameof(OrderService));
+            if (requestGroup.Status != RequestStatus.AwaitingDeadlineFromCustomer)
+            {
+                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order group {requestGroup.OrderGroupId}");
+            }
+            requestGroup.ExpiresAt = expiry;
+            requestGroup.OrderGroup.SetStatus(OrderStatus.Requested);
+            requestGroup.SetStatus(RequestStatus.Created);
+            requestGroup.RequestGroupUpdateLatestAnswerTime = new RequestGroupUpdateLatestAnswerTime { UpdatedAt = _clock.SwedenNow, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
+
+            // Log and notify
+            _logger.LogInformation($"Expiry {expiry} manually set on request group {requestGroup.RequestGroupId}");
+            _notificationService.RequestGroupCreated(requestGroup);
         }
 
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
@@ -643,10 +668,13 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task TerminateOrderGroup(OrderGroup orderGroup)
         {
-            foreach (Order order in orderGroup.Orders)
+            if (orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer)
             {
-                await TerminateOrder(order, false);
-
+                orderGroup.SetStatus(OrderStatus.NoDeadlineFromCustomer);
+            }
+            else
+            {
+                orderGroup.SetStatus(OrderStatus.NoBrokerAcceptedOrder);
             }
             var terminatedOrderGroup = await _tolkDbContext.OrderGroups
               .Include(o => o.CreatedByUser)
@@ -779,7 +807,7 @@ namespace Tolk.BusinessLogic.Services
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
                 .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
                 .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                    (r.OrderGroup.Orders.OrderBy(o => o.StartAt).First().StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
@@ -799,7 +827,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.OrderGroup.ClosestStartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                || (r.OrderGroup.Orders.OrderBy(o => o.StartAt).First().StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestGroupId == requestGroupId);
 
                         if (expiredRequestGroup == null)
@@ -812,7 +840,6 @@ namespace Tolk.BusinessLogic.Services
                             _logger.LogInformation("Processing expired request {requestId} for Order group {orderGroupId}.",
                                 expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
 
-                            expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
 
                             if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
                             {
@@ -821,6 +848,7 @@ namespace Tolk.BusinessLogic.Services
                             }
                             else
                             {
+                                expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
                                 _notificationService.RequestGroupExpired(expiredRequestGroup);
                                 await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                             }

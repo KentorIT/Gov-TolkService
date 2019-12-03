@@ -47,6 +47,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequestGroupAttachment> Attachments { get; set; }
 
+        public RequestGroupUpdateLatestAnswerTime RequestGroupUpdateLatestAnswerTime { get; set; }
+
         #endregion
 
         #region Methods

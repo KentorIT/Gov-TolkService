@@ -48,7 +48,7 @@ DBCC CHECKIDENT('OrderGroups', RESEED, 0)
 DBCC CHECKIDENT('RequestGroups', RESEED, 0)
 DBCC CHECKIDENT('FAQ', RESEED, 0)
 DBCC CHECKIDENT('OutboundEmails', RESEED, 0)
-DBCC CHECKIDENT('OutboundWebhooks', RESEED, 0)
+DBCC CHECKIDENT('OutboundWebhookCalls', RESEED, 0)
 
 Commit TRAN
 
