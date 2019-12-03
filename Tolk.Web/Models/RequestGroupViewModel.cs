@@ -191,7 +191,6 @@ namespace Tolk.Web.Models
                     }).ToList(),
                 } : null,
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
-                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
                 Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,

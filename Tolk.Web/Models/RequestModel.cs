@@ -163,6 +163,8 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmationDenial { get; set; } = false;
 
+        public bool AllowProcessing { get; set; } = true;
+
         public bool DisplayExpectedTravelCostInfo { get; set; }
 
         public EventLogModel EventLog { get; set; }
@@ -208,7 +210,7 @@ namespace Tolk.Web.Models
                 BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
-                RequestGroupId = request.RequestGroup?.RequestGroupId,
+                RequestGroupId = request.RequestGroupId,
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,

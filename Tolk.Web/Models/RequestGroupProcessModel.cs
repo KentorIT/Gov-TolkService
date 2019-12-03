@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Services;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -58,6 +60,8 @@ namespace Tolk.Web.Models
                 }
             }
         }
+
+        public bool IsOnSiteOrOffSiteDesignatedLocationSelected => RankedInterpreterLocations.Any(i => i == BusinessLogic.Enums.InterpreterLocation.OnSite || i == BusinessLogic.Enums.InterpreterLocation.OffSiteDesignatedLocation);
 
         #region methods
 
@@ -133,7 +137,8 @@ namespace Tolk.Web.Models
                     AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, request: o.Requests.OrderBy(re => re.RequestId).Last()))
                 },
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
-                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
+                OrderHasAllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString()) },
                 AssignmentType = orderGroup.AssignmentType,
                 CustomerInformationModel = new CustomerInformationModel
                 {

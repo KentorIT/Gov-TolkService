@@ -10,7 +10,6 @@ namespace Tolk.Web.Models
 {
     public class RequestGroupBaseModel
     {
-
         public int RequestGroupId { get; set; }
 
         [Display(Name = "Status på förfrågan")]
@@ -85,11 +84,16 @@ namespace Tolk.Web.Models
 
         public bool HasExtraInterpreter { get; set; }
 
-        public bool AllowExceedingTravelCost { get; set; }
+        public bool OrderHasAllowExceedingTravelCost { get; set; }
+
+        [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
+        public RadioButtonGroup AllowExceedingTravelCost { get; set; }
 
         public CustomerInformationModel CustomerInformationModel { get; set; }
 
         public OccasionListModel OccasionList { get; set; }
+
+       
 
     }
 }

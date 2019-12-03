@@ -151,6 +151,7 @@ namespace Tolk.Web.Controllers
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.ExpectedTravelCosts = null;
+                model.AllowProcessing = !request.RequestGroupId.HasValue;
                 return View(model);
             }
             return Forbid();

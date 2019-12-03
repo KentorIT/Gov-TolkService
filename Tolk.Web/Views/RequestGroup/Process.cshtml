@@ -89,6 +89,14 @@
                             }
                         </div>
                     </div>
+                    @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <display-entry asp-for="AllowExceedingTravelCost" />
+                            </div>
+                        </div>
+                    }
                     <div class="row">
                         <div class="col-sm-4">
                             @if (!Model.LanguageHasAuthorizedInterpreter)
@@ -239,7 +247,7 @@
                         </div>
                     </div>
                 </div>
-                @if (Model.AllowExceedingTravelCost)
+                @if (Model.OrderHasAllowExceedingTravelCost)
                 {
                     <div class="collapse expected-travel-costs-panel">
                         <div class="row no-gutter">
@@ -344,7 +352,7 @@
                                 </div>
                             </div>
                         </div>
-                        @if (Model.AllowExceedingTravelCost)
+                        @if (Model.OrderHasAllowExceedingTravelCost)
                         {
                             <div class="interpreter-information-panel collapse in">
                                 <div class="collapse expected-travel-costs-panel ">
