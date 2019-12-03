@@ -34,9 +34,9 @@ namespace Tolk.Web.Models
 
         public string ControllerName { get; set; }
 
-        public string ColorClassName => RequestStatus == null ? CssClassHelper.GetColorClassNameForOrderStatus(OrderStatus) : CssClassHelper.GetColorClassNameForRequestStatus(RequestStatus.Value);
+        public string ColorClassName => RequestStatus.HasValue ? CssClassHelper.GetColorClassNameForRequestStatus(RequestStatus.Value) : CssClassHelper.GetColorClassNameForOrderStatus(OrderStatus);
 
-        public string StatusName => RequestStatus == null ? OrderStatus.GetDescription() : RequestStatus.Value.GetDescription();
+        public string StatusName => RequestStatus.HasValue ? RequestStatus.Value.GetDescription() : OrderStatus.GetDescription();
         
         public string Information => $"{OccasionStartDateTime.ToSwedishString("yyyy-MM-dd")} {OccasionStartDateTime.ToSwedishString("HH\\:mm")}-{OccasionEndDateTime.ToSwedishString("HH\\:mm")}";
 

@@ -46,6 +46,10 @@ namespace Tolk.Web.Models
 
         public Guid? FileGroupKey { get; set; }
 
+        public RequestStatus? RequestGroupStatus { get; set; }
+
+        public string GroupStatusCssClassColor => RequestGroupStatus.HasValue ? CssClassHelper.GetColorClassNameForRequestStatus(RequestGroupStatus.Value) : string.Empty;
+
         public long? CombinedMaxSizeAttachments { get; set; }
 
         [Display(Name = "Förfrågan besvarad av")]
@@ -211,6 +215,7 @@ namespace Tolk.Web.Models
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
                 RequestGroupId = request.RequestGroupId,
+                RequestGroupStatus = request.RequestGroup?.Status,
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,

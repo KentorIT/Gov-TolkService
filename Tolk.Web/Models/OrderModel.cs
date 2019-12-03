@@ -26,6 +26,10 @@ namespace Tolk.Web.Models
 
         public string OrderGroupNumber { get; set; }
 
+        public OrderStatus? OrderGroupStatus { get; set; }
+
+        public string GroupStatusCssClassColor => OrderGroupStatus.HasValue ? CssClassHelper.GetColorClassNameForOrderStatus(OrderGroupStatus.Value) : string.Empty;
+
         public string LastTimeForRequiringLatestAnswerBy { get; set; }
 
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
@@ -536,6 +540,7 @@ namespace Tolk.Web.Models
                 ReplacingOrderId = order.ReplacingOrderId,
                 OrderGroupId = order.OrderGroupId,
                 OrderGroupNumber = order.OrderGroupId.HasValue ? order.Group.OrderGroupNumber : string.Empty,
+                OrderGroupStatus = order.Group?.Status,
                 CreatedBy = order.ContactInformation,
                 CreatedById = order.CreatedBy,
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
