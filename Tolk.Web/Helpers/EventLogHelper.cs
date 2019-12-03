@@ -207,7 +207,7 @@ namespace Tolk.Web.Helpers
             {
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = request.ExpiresAt.Value,
+                    Timestamp = request.ExpiresAt ?? request.Order.StartAt,
                     EventDetails = "Förfrågan obesvarad, tiden gick ut",
                     Actor = "Systemet",
                 });

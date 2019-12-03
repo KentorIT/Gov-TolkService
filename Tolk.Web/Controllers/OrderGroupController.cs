@@ -64,6 +64,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
                 model.AllowOrderGroupCancellation = false;
+                model.AllowNoAnswerConfirmation = orderGroup.Status == OrderStatus.NoBrokerAcceptedOrder && !orderGroup.StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 model.AllowUpdateExpiry = orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 return View(model);
             }
@@ -137,7 +138,7 @@ namespace Tolk.Web.Controllers
                 }
                 await _orderService.ConfirmNoAnswer(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
-                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
             }
             return Forbid();
         }
@@ -202,6 +203,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.CustomerUnit)
+                .Include(o => o.StatusConfirmations)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
                 .Include(o => o.RequestGroups).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)

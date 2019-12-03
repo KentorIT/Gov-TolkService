@@ -52,15 +52,15 @@
                                 <span>Ingen sista svarstid satt av myndighet, bokningsförfrågan avslutad.</span>
                             }
                         </div>
-                        @*@if (Model.AllowNoAnswerConfirmation)
-                {
-                    <div class="col-sm-6">
-                        <form method="post" action="@Url.Action("ConfirmNoAnswer", "Order", new { OrderId = Model.OrderId })" asp-antiforgery="true">
-                            <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-                        </form>
-                        <br />
-                    </div>
-                }*@
+                        @if (Model.AllowNoAnswerConfirmation)
+                        {
+                            <div class="col-sm-6">
+                                <form method="post" action="@Url.Action("ConfirmNoAnswer", "OrderGroup", new { OrderGroupId = Model.OrderGroupId })" asp-antiforgery="true">
+                                    <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                                </form>
+                                <br />
+                            </div>
+                        }
                     </div>
                 }
                 else
@@ -95,15 +95,7 @@
                 @await Html.PartialAsync("_GroupOrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer) }, { "helplink", "myndighet-sammanfattning-sammanhallen-bokning/" } })
                 <div class="padding-top-10"></div>
                 @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
-                @if (Model.AllowNoAnswerConfirmation)
-                {
-                    <div class="col-sm-6">
-                        <form method="post" action="@Url.Action("ConfirmNoAnswer", "OrderGroup", new { OrderGroupId = Model.OrderGroupId })" asp-antiforgery="true">
-                            <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-                        </form>
-                        <br />
-                    </div>
-                }
+
                 @if (Model.AllowProcessing)
                 {
                     <div class="col-sm-12 to-accept-info">
