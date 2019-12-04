@@ -102,7 +102,9 @@ namespace Tolk.BusinessLogic.Services
             bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
             ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
+            //TODO check if travelcost > 0 when AllowExceedingTravelCost == No or if InterpreterLocation is Phone or Video
             bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
+            var travelCostsShouldBeApproved = hasTravelCosts && requestGroup.OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             bool partialAnswer = false;
             //1. Get the verification results for the interpreter(s)
             var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
@@ -124,8 +126,7 @@ namespace Tolk.BusinessLogic.Services
                             interpreterLocation,
                             Enumerable.Empty<RequestAttachment>().ToList(),
                             extraInterpreterVerificationResult,
-                            hasTravelCosts
-
+                            travelCostsShouldBeApproved
                        );
                     }
                     else
@@ -145,7 +146,7 @@ namespace Tolk.BusinessLogic.Services
                         interpreterLocation,
                         Enumerable.Empty<RequestAttachment>().ToList(),
                         verificationResult,
-                        hasTravelCosts
+                        travelCostsShouldBeApproved
                     );
                 }
             }
