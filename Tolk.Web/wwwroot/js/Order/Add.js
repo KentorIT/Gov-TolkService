@@ -8,7 +8,6 @@ $(function () {
     var allowLatestAnswerBy = true;
 
     var occasionButtons = '<div class="pull-right">' +
-        '<a class="btn btn-warning small-button-row change">Ändra <span class="glyphicon glyphicon-edit"></span></a>&nbsp;' +
         '<a class="btn btn-danger small-button remove">Ta bort <span class="btn-remove-times-small">&times;</span></a>' +
         '</div>';
 
@@ -552,10 +551,6 @@ $(function () {
             $(".allow-more-travel-cost-information").hide();
             $(".allow-no-review-travel-cost-information").hide();
         }
-    });
-
-    $("body").on("click", "tr > td > div > a.small-button-row.change", function () {
-        alert("add functionality for taking the info in the row reading into the occasion input above the row...");
     });
 
     $("body").on("click", "tr > td > div > a.small-button.remove", function () {
