@@ -670,10 +670,9 @@ namespace Tolk.Web.Controllers
                 DisplayCustomer = true
             };
 
-            //approved and accepted (not approved but answered) requests 
+            //accepted requests (including individual requests that belong to a group if AcceptedNewInterpreterAppointed)
             var answeredRequests = _dbContext.Requests
-                .Where(r => r.RequestGroupId == null &&
-                    (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                .Where(r => ((r.RequestGroupId == null & r.Status == RequestStatus.Accepted) || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                     r.Order.StartAt > _clock.SwedenNow && r.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel
                 {
@@ -688,16 +687,14 @@ namespace Tolk.Web.Controllers
                     Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                     OrderNumber = r.Order.OrderNumber,
                     Status = r.Status == RequestStatus.AcceptedNewInterpreterAppointed ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    IsInOrderGroup = r.Order.OrderGroupId != null
                 }).ToList();
 
-            //ADD REQUESTGROUPS HERE
-            //TODO: Separera approved och accepted. De som väntar på att kunden godkänner skall grupperas inom sin 
             answeredRequests.AddRange(_dbContext.RequestGroups
                 .Where(r => r.Status == RequestStatus.Accepted && !r.OrderGroup.Orders.Any(o => o.StartAt < _clock.SwedenNow) && r.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel
                 {
-                    //Need a list of competences and order
                     Orderdate = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
@@ -724,9 +721,7 @@ namespace Tolk.Web.Controllers
                 StartListObjects = answeredRequests,
                 DisplayCustomer = true
             };
-
-            //EGEN LISTA
-            //VIKTIGT ATT FÅ MED GRUPP IDT HIT, OM REQUESTEN INGÅR I EN GRUPP
+            //including individual requests that belong to a group 
             var approvedRequestAnswers = _dbContext.Requests
                 .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt > _clock.SwedenNow && r.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel

@@ -143,7 +143,7 @@ namespace Tolk.Web.Models
                 },
                 OccasionList = new OccasionListModel
                 {
-                    Occasions = requestGroup.Requests.Select(r => r)
+                    Occasions = requestGroup.Requests.Where(r => r.Status != RequestStatus.InterpreterReplaced)
                         .Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(r.Order), request: isCustomer ? null : r)),
                     AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, request: isCustomer ? null : o.Requests.OrderBy(re => re.RequestId).Last())),
                     DisplayDetailedList = true
