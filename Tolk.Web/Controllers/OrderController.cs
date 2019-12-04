@@ -326,7 +326,7 @@ namespace Tolk.Web.Controllers
             {
                 updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
                 updatedModel.SeveralOccasions = true;
-                updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime);
+                updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
                 warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
                 updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? 
                     CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
@@ -424,10 +424,13 @@ namespace Tolk.Web.Controllers
                 string.Empty;
         }
 
-        private string CheckOrderGroupCloseInTime(DateTime orderStart)
+        private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
         {
-            return orderStart < _clock.SwedenNow.AddDays(7) ?
-                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
+            if (orderOccasionDisplayModels.Count() == 2 && orderOccasionDisplayModels.Any(o => o.ExtraInterpreter))
+                return string.Empty;
+            var firstOrderStart = orderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime;
+            return firstOrderStart < _clock.SwedenNow.AddDays(7) ?
+                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {firstOrderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
         }
 
         private static string CheckOrderCompetenceRequirements(Order o, Language l)
