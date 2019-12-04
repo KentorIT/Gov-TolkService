@@ -128,19 +128,19 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Status Checks
 
-        public bool CanCancel
-        {
-            get => (Order.Status == OrderStatus.Requested ||
-                    Order.Status == OrderStatus.RequestResponded ||
-                    Order.Status == OrderStatus.RequestRespondedNewInterpreter ||
-                    Order.Status == OrderStatus.ResponseAccepted) &&
-                    (IsToBeProcessedByBroker || IsAcceptedOrApproved);
-        }
+        public bool CanCancel => CanCancelRequestBelongsToGroup || CanCancelRequestNotBelongsToGroup;
 
-        public bool CanChangeInterpreter(DateTimeOffset swedenNow)
-        {
-            return IsAcceptedOrApproved && Order.StartAt > swedenNow;
-        }
+        private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue && (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded 
+            || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
+            (IsToBeProcessedByBroker || IsAcceptedOrApproved);
+
+        private bool CanCancelRequestBelongsToGroup => Order.OrderGroupId.HasValue && 
+            (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
+            (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed);
+
+        public bool CanChangeInterpreter(DateTimeOffset swedenNow) => Order.StartAt > swedenNow &&
+            ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
+            (RequestGroupId.HasValue && Status == RequestStatus.Approved));
 
         public bool CanCreateRequisition
         {

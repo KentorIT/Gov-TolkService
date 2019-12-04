@@ -98,9 +98,22 @@
 
                 @if (Model.AllowProcessing)
                 {
-                    <div class="col-sm-12 to-accept-info">
-                        Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är per tillfälle och tolk. Se information ovan för bedömd kostnad och eventuell information.
-                    </div>
+                    if (Model.ActiveRequestGroup.HasExtraInterpreter)
+                    {
+                        <div class="col-sm-12 to-accept-info">
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är per tillfälle och tolk. Se information ovan för bedömd kostnad och eventuell information.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-sm-12 to-accept-info">
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas uppgår till: <span class="bold">@Model.ExpectedTravelCosts SEK</span>
+                        </div>
+                        <div class="col-sm-12">
+                            <display-entry asp-for="ExpectedTravelCostInfo" />
+                            <br />
+                        </div>
+                    }
                 }
                 @if (Model.AllowOrderGroupCancellation)
                 {

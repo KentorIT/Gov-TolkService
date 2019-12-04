@@ -90,8 +90,7 @@ namespace Tolk.Web.Controllers
                                         r.Status != RequestStatus.DeclinedByBroker &&
                                         r.Status != RequestStatus.LostDueToQuarantine);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                model.AllowOrderCancellation = request != null &&
-                    request.CanCancel &&
+                model.AllowOrderCancellation = request != null && request.CanCancel &&
                     order.StartAt > _clock.SwedenNow &&
                     (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
@@ -144,7 +143,7 @@ namespace Tolk.Web.Controllers
                             Size = a.Attachment.Blob.Length
                         }).ToList()
                     };
-                    model.AllowProcessing = order.OrderGroupId == null && model.ActiveRequestIsAnswered && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
+                    model.AllowProcessing = AllowProcessing(order, model) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                 }
                 model.EventLog = new EventLogModel
                 {
@@ -172,6 +171,12 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
+
+        private static bool AllowProcessing(Order o, OrderModel model) => model.ActiveRequestIsAnswered && (AllowProcessingOrderBelongsToGroup(o, model) || AllowProcessingOrderNotBelongsToGroup(o, model));
+
+        private static bool AllowProcessingOrderBelongsToGroup(Order o, OrderModel model) => o.OrderGroupId.HasValue && model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed;
+
+        private static bool AllowProcessingOrderNotBelongsToGroup(Order o, OrderModel model) => !o.OrderGroupId.HasValue && (model.RequestStatus == RequestStatus.Accepted || model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed);
 
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)

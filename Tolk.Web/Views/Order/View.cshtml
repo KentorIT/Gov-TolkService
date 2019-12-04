@@ -205,6 +205,14 @@
                     </form>
                 </div>
             }
+            else if (Model.OrderGroupId.HasValue && Model.Status == OrderStatus.RequestResponded)
+            {
+                <div class="row col-sm-12">
+                    <div class="col-sm-12 to-accept-info">
+                        Denna förfrågan tillhör en sammanhållen bokning och måste besvaras i sin helhet i vyn för den sammanhållna bokningsförfrågan. Gå till sammanhållen bokning: <a asp-controller="OrderGroup" asp-action="View" asp-route-id="@Model.OrderGroupId">@Model.OrderGroupNumber</a>
+                    </div>
+                </div>
+            }
             @if (Model.AllowComplaintCreation)
             {
                 <div class="col-sm-4">
