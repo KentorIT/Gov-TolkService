@@ -44,6 +44,12 @@
     ]
   },
   {
+    "outputFileName": "wwwroot/js/RequestGroup/Process.min.js",
+    "inputFiles": [
+      "wwwroot/js/RequestGroup/Process.js"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/lib/jquery-sortable/jquery-sortable.min.js",
     "inputFiles": [
       "wwwroot/lib/jquery-sortable/jquery-sortable.js"
