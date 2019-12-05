@@ -116,6 +116,12 @@
     ]
   },
   {
+    "outputFileName": "wwwroot/js/Order/SetExpiry.min.js",
+    "inputFiles": [
+      "wwwroot/js/Order/SetExpiry.js"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/js/JSDateExtensions.min.js",
     "inputFiles": [
       "wwwroot/js/JSDateExtensions.js"
