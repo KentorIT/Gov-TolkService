@@ -166,7 +166,8 @@ namespace BrokerMock.Services
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"orderGroupNumber={orderGroupNumber}"));
             if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Boknings-ID: {orderGroupNumber}");
+                var viewResponse = JsonConvert.DeserializeObject<RequestGroupDetailsResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Boknings-ID: {viewResponse.OrderGroupNumber}");
             }
             else
             {

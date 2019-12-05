@@ -566,7 +566,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
                 //End of service
-                return Json(GetResponseFromRequest(request));
+                return Json(ApiOrderService.GetResponseFromRequest(request));
             }
             catch (InvalidApiCallException ex)
             {

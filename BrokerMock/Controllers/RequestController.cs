@@ -373,7 +373,7 @@ namespace BrokerMock.Controllers
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen bokning med Boknings-ID: {payload.OrderGroupNumber} har blivit godkänd");
             }
 
-            _ = await _apiService.GetOrderGroupRequest(payload.OrderGroupNumber);
+            var request = await _apiService.GetOrderGroupRequest(payload.OrderGroupNumber);
 
             //var extraInstructions = GetExtraInstructions(request.Description);
 

@@ -66,21 +66,23 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
-                //Possibly the user should be added, if not found?? 
+
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
                     .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
                     .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
-                    //.Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Requirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
                     .SingleOrDefaultAsync(r =>
                         r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         apiUser.BrokerId == r.Ranking.BrokerId &&
@@ -133,6 +135,7 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to handle request group answer");
                 return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
@@ -247,6 +250,32 @@ namespace Tolk.Web.Api.Controllers
                 var apiUser = await GetApiUser();
 
                 var requestGroup = await _dbContext.RequestGroups
+                    .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
+                    .Include(r => r.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(r => r.Requests).ThenInclude(r => r.Interpreter)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requirements)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                    .Include(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
+                    .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Requirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.InterpreterLocations)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Attachments)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
                     .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
                         //Must have a request connected to the order for the broker, any status...
                         r.Ranking.BrokerId == apiUser.BrokerId);
@@ -255,7 +284,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
                 //End of service
-                return Json(GetResponseFromRequestGroup(requestGroup));
+                return Json(ApiOrderService.GetResponseFromRequestGroup(requestGroup));
             }
             catch (InvalidApiCallException ex)
             {
@@ -263,7 +292,7 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(View)}");
+                _logger.LogError(e, $"Unexpected error occured when client called RequestGroup/{nameof(View)}");
                 return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
@@ -342,14 +371,6 @@ namespace Tolk.Web.Api.Controllers
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
             Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
             return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
-        }
-
-        private static RequestGroupDetailsResponse GetResponseFromRequestGroup(RequestGroup requestGroup)
-        {
-            return new RequestGroupDetailsResponse
-            {
-                Status = requestGroup.Status.GetCustomName(),
-            };
         }
 
         #endregion
