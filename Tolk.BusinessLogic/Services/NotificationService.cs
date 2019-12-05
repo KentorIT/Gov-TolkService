@@ -1238,7 +1238,7 @@ Sammanställning:
             }
         }
 
-        private string GoToRequestGroupPlain(int requestGroupId) => $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId)}";
+        private string GoToRequestGroupPlain(int requestGroupId) => $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId)}";
 
         private string GoToOrderButton(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, string textOverride = null, bool autoBreakLines = true, bool enableOrderPrint = false)
         {
