@@ -738,14 +738,14 @@ namespace Tolk.Web.Controllers
             {
                 model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
             }
-
+            
             var orders = model.GetOrders(_dbContext.Orders.Select(o => o));
             var filteredData = model.Apply(orders);
             return AjaxDataTableHelper.GetData(request, orders.Count(), filteredData, d => d.Select(o => new OrderListItemModel
             {
                 OrderId = o.OrderId,
                 Language = o.OtherLanguage ?? o.Language.Name,
-                OrderNumber = o.OrderNumber,
+                OrderNumber = o.OrderGroupId.HasValue ? $"{o.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {o.Group.OrderGroupNumber}</span>" : o.OrderNumber,
                 RegionName = o.Region.Name,
                 OrderDateAndTime = $"{o.StartAt.ToSwedishString("yyyy-MM-dd")} {o.StartAt.ToSwedishString("HH\\:mm")}-{o.EndAt.ToSwedishString("HH\\:mm")}",
                 Status = o.Status,

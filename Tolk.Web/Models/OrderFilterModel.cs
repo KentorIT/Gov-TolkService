@@ -41,6 +41,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapad av")]
         public int? CreatedBy { get; set; }
 
+        [Display(Name = "Sök med BokningsID sammanhållen bokning", Description = "Kryssa i denna om du vill söka med BokningsId för sammanhållen bokning, samt fyll i BokningsId ovan")]
+        public bool? SearchOrderGroupNumber { get; set; }
+
         public bool IsCentralAdminOrOrderHandler { get; set; }
 
         public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
@@ -54,7 +57,7 @@ namespace Tolk.Web.Models
         internal IQueryable<Order> GetOrders(IQueryable<Order> orders)
         {
             return !IsAdmin
-                ? orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true)
+                ? orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true, true)
                 : orders;
 
         }
@@ -62,9 +65,12 @@ namespace Tolk.Web.Models
         internal IQueryable<Order> Apply(IQueryable<Order> orders)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-            orders = !string.IsNullOrWhiteSpace(OrderNumber)
+            orders = (!(SearchOrderGroupNumber?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
                 ? orders.Where(o => o.OrderNumber.Contains(OrderNumber))
                 : orders;
+            orders = ((SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
+              ? orders.Where(o => o.OrderGroupId.HasValue && o.Group.OrderGroupNumber.Contains(OrderNumber))
+              : orders;
             orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? orders.Where(o => o.CustomerReferenceNumber != null && o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : orders;
@@ -100,7 +106,6 @@ namespace Tolk.Web.Models
             orders = DateRange?.End != null
                     ? orders.Where(o => o.StartAt.Date <= DateRange.End)
                     : orders;
-
             return orders;
         }
     }

@@ -33,11 +33,17 @@ namespace Tolk.Web.Models
         [Display(Name = "Besvarad av")]
         public int? AnsweredById { get; set; }
 
+        [Display(Name = "Sök med BokningsID sammanhållen bokning", Description = "Kryssa i denna om du vill söka med BokningsId för sammanhållen bokning, samt fyll i BokningsId ovan")]
+        public bool? SearchOrderGroupNumber { get; set; }
+
         internal IQueryable<Request> Apply(IQueryable<Request> items)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-            items = !string.IsNullOrWhiteSpace(OrderNumber)
+            items = (!(SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
                 ? items.Where(i => i.Order.OrderNumber.Contains(OrderNumber))
+                : items;
+            items = ((SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
+                ? items.Where(i => i.Order.OrderGroupId.HasValue && i.Order.Group.OrderGroupNumber.Contains(OrderNumber))
                 : items;
             items = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? items.Where(i => i.Order.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
@@ -65,8 +71,8 @@ namespace Tolk.Web.Models
                 ? items.Where(i => i.ExpiresAt.Value.Date <= AnswerByDateRange.End)
                 : items;
             items = Status.HasValue
-                ? Status.Value == RequestStatus.ToBeProcessedByBroker 
-                    ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) 
+                ? Status.Value == RequestStatus.ToBeProcessedByBroker
+                    ? items.Where(r => r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
                     : items.Where(r => r.Status == Status)
                 : items;
             items = AnsweredById.HasValue

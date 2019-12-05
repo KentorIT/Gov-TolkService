@@ -49,7 +49,7 @@ namespace Tolk.Web.Models
             {
                 RequestId = r.RequestId,
                 Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                OrderNumber = r.Order.OrderNumber,
+                OrderNumber = r.Order.OrderGroupId.HasValue ? $"{ r.Order.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {r.Order.Group.OrderGroupNumber}</span>" : r.Order.OrderNumber,
                 CustomerName = r.Order.CustomerOrganisation.Name,
                 RegionName = r.Order.Region.Name,
                 OrderDateAndTime = $"{r.Order.StartAt.ToSwedishString("yyyy-MM-dd")} {r.Order.StartAt.ToSwedishString("HH\\:mm")}-{r.Order.EndAt.ToSwedishString("HH\\:mm")}",

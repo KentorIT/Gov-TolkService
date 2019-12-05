@@ -1426,6 +1426,10 @@ ul.pagination > li.paginate_button.active > a {
   border-right: 1px solid #DDD;
   border-top: 1px solid #DDD;
 }
+.small-red-border-left {
+  border-left: 2px solid #E45C5C;
+  padding-left: 4px;
+}
 .ajax-listing table tbody > tr td,
 table.styled-listing tbody > tr td {
   font-weight: 300;
