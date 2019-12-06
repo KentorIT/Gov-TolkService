@@ -60,8 +60,8 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> RequestStatuses { get; } =
             EnumHelper.GetAllDescriptions<RequestStatus>()
-                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer && 
-                    e.Value != RequestStatus.NoDeadlineFromCustomer && 
+                .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer &&
+                    e.Value != RequestStatus.NoDeadlineFromCustomer &&
                     e.Value != RequestStatus.InterpreterReplaced)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
@@ -87,7 +87,7 @@ namespace Tolk.Web.Services
         public static IEnumerable<SelectListItem> AssignmentTypes => GetList<AssignmentType>();
 
         public static IEnumerable<SelectListItem> SystemMessageTypes { get; } = GetList<SystemMessageType>();
-   
+
         public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups => GetList<SystemMessageUserTypeGroup>();
 
         public static IEnumerable<SelectListItem> Genders => GetList<Gender>();
@@ -503,29 +503,30 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null, bool allowDeclineInList = false)
+        public IEnumerable<ExtendedSelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null, bool allowDeclineInList = false)
         {
-
-            yield return new SelectListItem
+            yield return new ExtendedSelectListItem
             {
                 Value = Constants.NewInterpreterId.ToSwedishString(),
-                Text = "Ny tolk"
+                Text = "Ny tolk",
+                AdditionalDataAttribute = string.Empty
             };
             if (allowDeclineInList)
             {
-                yield return new SelectListItem
+                yield return new ExtendedSelectListItem
                 {
                     Value = Constants.DeclineInterpreterId.ToSwedishString(),
-                    Text = "Tacka nej till uppdrag"
+                    Text = "Tacka nej till uppdrag",
+                    AdditionalDataAttribute = string.Empty
                 };
             }
             var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId && i.InterpreterBrokerId != interpreterToBeReplacedId && i.IsActive)
-            .Select(i => new SelectListItem
+            .Select(i => new ExtendedSelectListItem
             {
                 Value = i.InterpreterBrokerId.ToSwedishString(),
                 Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (KamK tolknr: saknas)" : $"{i.FullName} (KamK tolknr: {i.OfficialInterpreterId})",
+                AdditionalDataAttribute = i.InterpreterId.HasValue ? i.Interpreter.IsProtected ? "Protected" : string.Empty : string.Empty
             });
-
             foreach (var i in interpretersInDb)
             {
                 yield return i;

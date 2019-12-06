@@ -598,6 +598,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsProtected");
+
                     b.HasKey("InterpreterId");
 
                     b.ToTable("Interpreters");

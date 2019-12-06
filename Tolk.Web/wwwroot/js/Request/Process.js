@@ -15,7 +15,7 @@ $(function () {
 
     checkRequirements();
     $("#InterpreterCompetenceLevel, #NewInterpreterOfficialInterpreterId").change(function () {
-        validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
+        validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val(), null, $("#InterpreterId option:selected").attr('data-additional') === "Protected");
     });
 
     $(document).ready(function () {
@@ -35,7 +35,7 @@ $(function () {
         }
         else {
             $('#new-interpreter').collapse('hide');
-            validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val());
+            validateInterpreter(".interpreter-panel", $('#InterpreterId').val(), $('#NewInterpreterOfficialInterpreterId').val(), $("#InterpreterCompetenceLevel").val(), $("#OrderId").val(), null, $("#InterpreterId option:selected").attr('data-additional') === "Protected");
         }
     }
 

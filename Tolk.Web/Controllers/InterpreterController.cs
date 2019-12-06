@@ -48,7 +48,7 @@ namespace Tolk.Web.Controllers
             await TryUpdateModelAsync(model);
 
             IQueryable<InterpreterBroker> interpreters = _dbContext.InterpreterBrokers
-            .Where(r => r.BrokerId == User.GetBrokerId());
+            .Where(ib => ib.BrokerId == User.GetBrokerId() && (ib.InterpreterId.HasValue ? !ib.Interpreter.IsProtected : true));
 
             return AjaxDataTableHelper.GetData(request, interpreters.Count(), model.Apply(interpreters), x => x.Select(i => new InterpreterListItemModel
             {

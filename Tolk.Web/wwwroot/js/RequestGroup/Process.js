@@ -16,8 +16,9 @@
     };
 
     var checkSameInterpreter = function () {
-        //TODO ska få lägga till två skyddade
-        if ($("#InterpreterAnswerModel_InterpreterId").val() != "" && $("#InterpreterAnswerModel_InterpreterId").val() !== "-1" && $("#InterpreterAnswerModel_InterpreterId").val() === $("#ExtraInterpreterAnswerModel_InterpreterId").val()) {
+        if ($("#InterpreterAnswerModel_InterpreterId").val() != "" && $("#InterpreterAnswerModel_InterpreterId").val() !== "-1"
+            && $("#InterpreterAnswerModel_InterpreterId").val() === $("#ExtraInterpreterAnswerModel_InterpreterId").val()
+            && $("#InterpreterAnswerModel_InterpreterId option:selected").attr('data-additional') !== "Protected") {
             triggerValidator("Det går inte att tillsätta samma tolk, ändra på någon av de tillsatta tolkarna", $("#interpreterIdValidator"))
             return false;
         }
@@ -45,7 +46,7 @@
             $(panel + " .new-interpreter").collapse('show');
         } else {
             $(panel + " .new-interpreter").collapse('hide');
-            validateInterpreter(panel, $(panel + " select[id$='InterpreterId']").val(), $(panel + " input[id$='NewInterpreterOfficialInterpreterId']").val(), $(panel + " select[id$='InterpreterCompetenceLevel']").val(), null, $("#OrderGroupId").val());
+            validateInterpreter(panel, $(panel + " select[id$='InterpreterId']").val(), $(panel + " input[id$='NewInterpreterOfficialInterpreterId']").val(), $(panel + " select[id$='InterpreterCompetenceLevel']").val(), null, $("#OrderGroupId").val(), $(panel + " select[id$='InterpreterId'] option:selected").attr('data-additional') === "Protected");
         }
     };
     var handlePartialDecline = function (panel) {
@@ -72,11 +73,11 @@
     setInterpreter();
 
     $("#InterpreterAnswerModel_InterpreterCompetenceLevel, #InterpreterAnswerModel_NewInterpreterOfficialInterpreterId").change(function () {
-        validateInterpreter(".interpreter-selection-panel", $('#InterpreterAnswerModel_InterpreterId').val(), $('#InterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#InterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val());
+        validateInterpreter(".interpreter-selection-panel", $('#InterpreterAnswerModel_InterpreterId').val(), $('#InterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#InterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val(), $("#InterpreterAnswerModel_InterpreterId option:selected").attr('data-additional') === "Protected");
     });
 
     $("#ExtraInterpreterAnswerModel_InterpreterCompetenceLevel, #ExtraInterpreterAnswerModel_NewInterpreterOfficialInterpreterId").change(function () {
-        validateInterpreter(".extra-interpreter-selection-panel", $('#ExtraInterpreterAnswerModel_InterpreterId').val(), $('#ExtraInterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#ExtraInterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val());
+        validateInterpreter(".extra-interpreter-selection-panel", $('#ExtraInterpreterAnswerModel_InterpreterId').val(), $('#ExtraInterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#ExtraInterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val(), $("#ExtraInterpreterAnswerModel_InterpreterId option:selected").attr('data-additional') === "Protected");
     });
 
     $('#InterpreterAnswerModel_InterpreterId').change(function () {

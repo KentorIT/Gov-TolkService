@@ -860,7 +860,7 @@ namespace Tolk.Web.TagHelpers
 
         private void GenerateExtendedSelectList(TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
         {
-            writer.WriteLine("<br>");
+            writer.WriteLine("<br />");
             TagBuilder tagBuilder = new TagBuilder("select");
             tagBuilder.Attributes.Add("data-placeholder", placeholder);
             tagBuilder.AddCssClass("form-control");
@@ -869,7 +869,8 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("data-val", "true");
                 tagBuilder.Attributes.Add("data-val-required", $"{For.Metadata.DisplayName ?? "Värde"} måste anges.");
             }
-            tagBuilder.Attributes.Add("id", For.Name);
+            //check if Name contains "." (when it is a property of a property, subproperty), then the Id should be with underscore "_" instead of the name with "." 
+            tagBuilder.Attributes.Add("id", For.Name.Contains(".", StringComparison.OrdinalIgnoreCase) ? For.Name.Replace(".", "_", StringComparison.OrdinalIgnoreCase) : For.Name);
             tagBuilder.Attributes.Add("name", For.Name);
 
             //this is for the default option -- Välj --  

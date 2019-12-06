@@ -4,11 +4,11 @@ var $interpreterId;
 var $officialInterpreterId;
 var $competenceLevel;
 
-var validateInterpreter = function (interpreterPanel, interpreterId, officialInterpreterId, competenceLevel, orderId, orderGroupId) {
+var validateInterpreter = function (interpreterPanel, interpreterId, officialInterpreterId, competenceLevel, orderId, orderGroupId, isProtected) {
     var $infoPanel = $(interpreterPanel + ' .interpreter-information');
     var $infoMessage = $(interpreterPanel + ' .interpreter-information > span.info-message');
     var $infoBox = $(interpreterPanel + ' .interpreter-information > span.form-entry-information');
-   if (competenceLevel === undefined || competenceLevel === "" || competenceLevel === "OtherInterpreter" || interpreterId === "") {
+    if (isProtected || competenceLevel === undefined || competenceLevel === "" || competenceLevel === "OtherInterpreter" || interpreterId === "") {
        $infoMessage.removeAttr("role");
        $infoPanel.addClass("d-none");
     } else {
