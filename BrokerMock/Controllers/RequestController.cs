@@ -224,45 +224,75 @@ namespace BrokerMock.Controllers
                 if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))
                 {
                     await AcknowledgeGroup(payload.OrderGroupNumber);
+                    if (extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    {
+                        return new JsonResult("Success");
+                    }
                 }
-                if (extraInstructions.Contains("DECLINE"))
+                if (extraInstructions.Contains("ACKNOWLEDGESINGLEOCCASION"))
+                {
+                    await Acknowledge(payload.Occasions.First().OrderNumber);
+                }
+
+                else if (extraInstructions.Contains("DECLINESINGLEOCCASION"))
+                {
+                    await Decline(payload.Occasions.First().OrderNumber, "Nix pix i rutan");
+                }
+                else if (extraInstructions.Contains("DECLINE"))
                 {
                     await DeclineGroup(payload.OrderGroupNumber, "Vill inte, kan inte bör inte...");
                 }
                 else
                 {
-                    if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    var declineExtraInterpreter = extraInstructions.Contains("DECLINEEXTRAINTERPRETER");
+                    var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.FirstOrDefault();
+                    InterpreterModel extraInterpreter = null;
+                    if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
                     {
-                        var declineExtraInterpreter = extraInstructions.Contains("DECLINEEXTRAINTERPRETER");
-                        var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.FirstOrDefault();
-                        InterpreterModel extraInterpreter = null;
-                        if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
-                        {
-                            extraInterpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.LastOrDefault();
-                        }
-                        if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
-                        {
-                            interpreter = GetNewInterpreter();
-                        }
-                        if (extraInstructions.Contains("BADLOCATION"))
-                        {
-                            var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
-                            //Find a location that is not present in payload
+                        extraInterpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.LastOrDefault();
+                    }
+                    if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
+                    {
+                        interpreter = GetNewInterpreter();
+                    }
+                    if (extraInstructions.Contains("BADLOCATION"))
+                    {
+                        var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
+                        //Find a location that is not present in payload
 
-                            await AnswerGroup(
-                                payload.OrderGroupNumber,
+                        await AnswerGroup(
+                            payload.OrderGroupNumber,
+                            interpreter,
+                            extraInterpreter,
+                            badLocation,
+                            payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            }),
+                            declineExtraInterpreter
+                        );
+                    }
+                    else
+                    {
+                        if (extraInstructions.Contains("ANSWERSINGLEOCCASION"))
+                        {
+                            //This should not be allowed
+                            await AssignInterpreter(
+                                payload.Occasions.First().OrderNumber,
                                 interpreter,
-                                extraInterpreter,
-                                badLocation,
+                                payload.Locations.First().Key,
                                 payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
                                 payload.Requirements.Select(r => new RequirementAnswerModel
                                 {
                                     Answer = "Japp",
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
-                                }),
-                                declineExtraInterpreter
+                                })
                             );
+
                         }
                         else
                         {

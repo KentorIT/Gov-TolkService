@@ -813,6 +813,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     var request = new Request(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank)) { Status = requestStatus, Order = order };
                     requests.Add(request);
                     order.Requests.Add(request);
+                    order.OrderGroupId = id;
+                    order.Group = orderGroup;
                 }
                 var requestGroup = new RequestGroup(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank), requests) { 
                     Status = requestStatus,

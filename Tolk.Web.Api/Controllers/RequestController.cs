@@ -78,6 +78,11 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
+                if (order.OrderGroupId != null)
+                {
+                    return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
+                }
+
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = order.Requests.SingleOrDefault(r =>
@@ -169,8 +174,13 @@ namespace Tolk.Web.Api.Controllers
             {
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                if (order.OrderGroupId != null)
+                {
+                    return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
+                }
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
+                    .Include(r => r.Order)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
                 if (request == null)
                 {
@@ -198,6 +208,10 @@ namespace Tolk.Web.Api.Controllers
             {
                 var apiUser = await GetApiUser();
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                if (order.OrderGroupId != null)
+                {
+                    return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
+                }
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 var request = await _dbContext.Requests
@@ -384,6 +398,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
+                .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.CreatedByUser)

@@ -29,6 +29,7 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequisitionNotInCorrectState, ErrorMessage = "The requisition was not in a correct state." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.OrderGroupNotFound, ErrorMessage = "The provided order group number could not be found on a request connected to your organisation." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestGroupNotFound, ErrorMessage = "The provided order group number has no request in the correct state for the call." },
+                    new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.RequestIsPartOfAGroup, ErrorMessage = "The provided order is part of an order group. I cannot be accepted, acknowledged or declined separately" },
                     new ErrorResponse { StatusCode = 500, ErrorCode = ErrorCodes.IncomingPayloadIsMissing, ErrorMessage = "The incoming payload seems to be missing. Please contact the support if the problem persists." },
                };
     }

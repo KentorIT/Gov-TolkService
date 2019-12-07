@@ -108,7 +108,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Det gick inte att tacka nej till den sammanhållna bokningen med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
-            Requests.ForEach(r => r.Decline(declinedAt, userId, impersonatorId, message));
+            Requests.ForEach(r => r.DeclineInGroup(declinedAt, userId, impersonatorId, message));
             SetStatus(RequestStatus.DeclinedByBroker, false);
             OrderGroup.SetStatus(OrderStatus.Requested, false);
         }
@@ -132,7 +132,7 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             base.Received(receiveTime, userId, impersonatorId);
-            Requests.ForEach(r => r.Received(receiveTime, userId, impersonatorId));
+            Requests.ForEach(r => r.ReceivedInGroup(receiveTime, userId, impersonatorId));
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)

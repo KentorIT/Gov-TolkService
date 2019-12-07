@@ -179,6 +179,16 @@ namespace Tolk.BusinessLogic.Entities
             base.Received(receiveTime, userId, impersonatorId);
         }
 
+        internal void ReceivedInGroup(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        {
+            if (Order.OrderGroupId == null)
+            {
+                throw new InvalidOperationException($"Beställningen {Order.OrderNumber}, tillhör inte en sammanhållen bokning. Anropa rätt metod för detta.");
+            }
+
+            Received(receiveTime, userId, impersonatorId);
+        }
+
         public override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
@@ -288,6 +298,20 @@ namespace Tolk.BusinessLogic.Entities
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
             Order.Status = !Order.ReplacingOrderId.HasValue ? OrderStatus.Requested : OrderStatus.NoBrokerAcceptedOrder;
+        }
+
+        internal void DeclineInGroup(
+            DateTimeOffset declinedAt,
+            int userId,
+            int? impersonatorId,
+            string message)
+        {
+            if (Order.OrderGroupId == null)
+            {
+                throw new InvalidOperationException($"Beställningen {Order.OrderNumber}, tillhör inte en sammanhållen bokning. Anropa rätt metod för att tacka nej till en del av en grupp.");
+            }
+
+            Decline(declinedAt, userId, impersonatorId, message);
         }
 
         public void AcceptReplacementOrder(

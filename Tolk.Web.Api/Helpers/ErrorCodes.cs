@@ -22,5 +22,6 @@ namespace Tolk.Web.Api.Helpers
         public const string OrderGroupNotFound = nameof(OrderGroupNotFound);
         public const string RequestGroupNotFound = nameof(RequestGroupNotFound);
         public const string IncomingPayloadIsMissing = nameof(IncomingPayloadIsMissing);
+        public const string RequestIsPartOfAGroup = nameof(RequestIsPartOfAGroup);
     }
 }
