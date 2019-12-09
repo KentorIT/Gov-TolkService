@@ -1127,8 +1127,8 @@ Sammanställning:
             {
                 var body = $"{requestGroup.OrderGroup.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på den sammanhållna bokningsförfrågan {orderGroupNumber}.";
                 CreateEmail(email.ContactInformation, $"Sammanhållen bokning med boknings-ID {orderGroupNumber} verifierat",
-                        body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                        body + GoToOrderButton(requestGroup.OrderGroup.OrderGroupId),
+                        body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
+                        body + GoToRequestGroupButton(requestGroup.RequestGroupId),
                         true);
             }
             var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Webhook);
