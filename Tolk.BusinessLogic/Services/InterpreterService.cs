@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
                 await _dbContext.AddAsync(interpreter);
                 return interpreter;
             }
-            return await _dbContext.InterpreterBrokers.SingleAsync(i => i.InterpreterBrokerId == interpreterId);
+            return await _dbContext.InterpreterBrokers.Include(ib => ib.Interpreter).SingleAsync(i => i.InterpreterBrokerId == interpreterId);
         }
 
     }

@@ -462,7 +462,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException("Om den sammanhållna bokningen beställer två tolkar så måste den extra tolken tillsättas.");
             }
-            if (hasExtraInterpreter && interpreter.Accepted && extraInterpreter.Accepted && interpreter.Interpreter.InterpreterBrokerId == extraInterpreter.Interpreter.InterpreterBrokerId)
+            if (hasExtraInterpreter && interpreter.Accepted && extraInterpreter.Accepted && interpreter.Interpreter.InterpreterBrokerId == extraInterpreter.Interpreter.InterpreterBrokerId && !(interpreter.Interpreter.Interpreter?.IsProtected ?? false))
             {
                 throw new InvalidOperationException("Man kan inte tillsätta samma tolk som extra tolk.");
             }
