@@ -56,10 +56,13 @@
 
     $("body").on("click", "#updateLatestAnswerBy", function (event) {
         // Validate LatestAnswerBy time
-        if (!validateLastAnswerBy()
-            || !validateLastAnswerByAgainstStartTime()) {
+        if (!validateLastAnswerBy()) {
             event.preventDefault();
-            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, vänligen kontrollera sista svarstid.");
+            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, kan inte sätta en tid innan nu.");
+        }
+        if (!validateLastAnswerByAgainstStartTime()) {
+            event.preventDefault();
+            validatorMessage("LatestAnswerBy.Date", "Ogiltig tid, kan inte sätta en tid efter tolktillfället startar.");
         }
     });
 });
