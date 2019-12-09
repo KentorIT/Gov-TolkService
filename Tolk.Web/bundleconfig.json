@@ -186,5 +186,11 @@
     "inputFiles": [
       "wwwroot/js/Account/Edit.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/OrderGroup/View.min.js",
+    "inputFiles": [
+      "wwwroot/js/OrderGroup/View.js"
+    ]
   }
 ]
