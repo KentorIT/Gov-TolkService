@@ -30,7 +30,8 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly InterpreterService _interpreterService;
-
+        private readonly PriceCalculationService _priceCalculationService;
+        
         public RequestGroupController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
@@ -38,8 +39,8 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
-            InterpreterService interpreterService
-            )
+            InterpreterService interpreterService,
+            PriceCalculationService priceCalculationService)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
@@ -48,6 +49,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options.Value;
             _interpreterService = interpreterService;
+            _priceCalculationService = priceCalculationService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -87,6 +89,17 @@ namespace Tolk.Web.Controllers
                 }
                 var model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups);
                 model.CustomerInformationModel.IsCustomer = false;
+                //if not first broker in rank (requests are not answered and have no pricerows) we need to get a calculated price with correct broker fee 
+                if (requestGroup.Ranking.Rank != 1)
+                {
+                    List<OrderOccasionDisplayModel> tempOccasionList = new List<OrderOccasionDisplayModel>();
+                    foreach (OrderOccasionDisplayModel occasion in model.OccasionList.Occasions)
+                    {
+                        var request = requestGroup.Requests.Single(r => r.RequestId == occasion.RouteId);
+                        tempOccasionList.Add(OrderOccasionDisplayModel.GetModelFromOrder(request.Order, GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels.ToList()), request));
+                    }
+                    model.OccasionList.Occasions = tempOccasionList;
+                }
                 return View(model);
             }
             return Forbid();
@@ -328,6 +341,17 @@ namespace Tolk.Web.Controllers
                .Include(g => g.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                .Include(g => g.Requests).ThenInclude(r => r.Interpreter)
                .SingleAsync(r => r.RequestGroupId == requestGroupId);
+        }
+
+        private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
+        {
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
+                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                Header = "Beräknat pris enligt bokningsförfrågan",
+                UseDisplayHideInfo = true
+            };
         }
     }
 }

@@ -37,7 +37,7 @@
         }
         <div class="price-body col-sm-12 collapse detail-price-info">
             <span class="price-header bold">@Model.Header</span><br />
-            <span class="important-info">Följande tolktaxa har använts för beräkning: @Model.PriceInformationToDisplay.PriceListTypeDescription @Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
+            <span class="important-info">Följande tolktaxa har använts för beräkning: @Model.PriceInformationToDisplay.PriceListTypeDescription. @Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
             @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
             {
                 <table>
