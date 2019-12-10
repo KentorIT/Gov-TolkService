@@ -16,6 +16,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.BusinessLogic.Helpers;
+using System.Collections.Generic;
 
 namespace Tolk.Web.Api.Services
 {
@@ -60,13 +61,13 @@ namespace Tolk.Web.Api.Services
             return orderGroup;
         }
 
-        public static RequestDetailsResponse GetResponseFromRequest(Request request)
+        public RequestDetailsResponse GetResponseFromRequest(Request request, bool getAttachments = true)
         {
             if (request == null)
             {
                 return null;
             }
-            var attach = request.Attachments;
+            var attachments = getAttachments ? GetAttachments(request.RequestId) : Enumerable.Empty<AttachmentInformationModel>();
             return new RequestDetailsResponse
             {
                 Status = request.Status.GetCustomName(),
@@ -114,12 +115,7 @@ namespace Tolk.Web.Api.Services
                 AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 Description = request.Order.Description,
                 AssignentType = request.Order.AssignmentType.GetCustomName(),
-                //Should the attachemts from the broker be applied too? Yes I suppose...
-                Attachments = request.Order.Attachments.Select(a => new AttachmentInformationModel
-                {
-                    AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
-                }),
+                Attachments = attachments,
                 Requirements = request.Order.Requirements.Select(r => new RequirementModel
                 {
                     Description = r.Description,
@@ -154,20 +150,37 @@ namespace Tolk.Web.Api.Services
                     }),
             };
         }
-        
-        public static RequestGroupDetailsResponse GetResponseFromRequestGroup(RequestGroup requestGroup)
+
+        public RequestGroupDetailsResponse GetResponseFromRequestGroup(RequestGroup requestGroup)
         {
             if (requestGroup == null)
             {
                 return null;
             }
-            OrderGroup orderGroup = requestGroup.OrderGroup; 
+            OrderGroup orderGroup = requestGroup.OrderGroup;
+            var occasions =  _dbContext.Requests
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.RequirementAnswers)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Interpreter)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Requirements)
+                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Where(r => r.RequestGroupId == requestGroup.RequestGroupId && r.ReplacedByRequest == null)
+                .Select(r => GetResponseFromRequest(r, false)).ToList();
             return new RequestGroupDetailsResponse
             {
                 Status = requestGroup.Status.GetCustomName(),
                 StatusMessage = requestGroup.DenyMessage ?? requestGroup.CancelMessage,
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
+                Description = orderGroup.Orders.First().Description,
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = orderGroup.CustomerOrganisation.Name,
@@ -200,12 +213,15 @@ namespace Tolk.Web.Api.Services
                 CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,
                 AllowMoreThanTwoHoursTravelTime = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 AssignentType = orderGroup.AssignmentType.GetCustomName(),
-                //Should the attachemts from the broker be applied too? Yes I suppose...
                 Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName
-                }),
+                }).Union(requestGroup.Attachments.Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.Attachment.AttachmentId,
+                    FileName = a.Attachment.FileName,
+                })),
                 Requirements = orderGroup.Requirements.Select(r => new RequirementModel
                 {
                     Description = r.Description,
@@ -213,8 +229,27 @@ namespace Tolk.Web.Api.Services
                     RequirementId = r.OrderGroupRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                Occasions = requestGroup.Requests.Select(r => GetResponseFromRequest(r))
+                Occasions = occasions
             };
+        }
+
+        private IEnumerable<AttachmentInformationModel> GetAttachments(int requestId)
+        {
+            return _dbContext.Attachments
+                .Include(a => a.Orders).ThenInclude(a => a.Attachment)
+                .Include(a => a.OrderGroups).ThenInclude(a => a.Attachment)
+                .Include(a => a.RequestGroups).ThenInclude(a => a.Attachment)
+                .Include(a => a.Requests).ThenInclude(a => a.Attachment)
+                .Where(a =>
+                    a.Requests.Any(r => r.RequestId == requestId) ||
+                    a.RequestGroups.Any(rg => rg.RequestGroup.Requests.Any(r => r.RequestId == requestId)) ||
+                    a.OrderGroups.Any(og => og.OrderGroup.Orders.Any(o => o.Requests.Any(r => r.RequestId == requestId))) ||
+                    a.Orders.Any(o => o.Order.Requests.Any(r => r.RequestId == requestId)))
+                .Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.FileName,
+                });
         }
     }
 }

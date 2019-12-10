@@ -141,7 +141,12 @@ namespace Tolk.Web.Controllers
                             Id = a.Attachment.AttachmentId,
                             FileName = a.Attachment.FileName,
                             Size = a.Attachment.Blob.Length
-                        }).ToList()
+                        }).Union(request.RequestGroup?.Attachments.Select(a => new FileModel
+                        {
+                            Id = a.Attachment.AttachmentId,
+                            FileName = a.Attachment.FileName,
+                            Size = a.Attachment.Blob.Length
+                        }) ?? Enumerable.Empty<FileModel>()).ToList()
                     };
                     model.AllowProcessing = AllowProcessing(order, model) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                 }
@@ -853,7 +858,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.InterpreterLocations)
                 .Include(o => o.CompetenceRequirements)
-                .Include(o => o.Group)
+                .Include(o => o.Group).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
                 .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
@@ -879,6 +884,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
                 .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
+                .Include(o => o.Requests).ThenInclude(r => r.RequestGroup).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
         }

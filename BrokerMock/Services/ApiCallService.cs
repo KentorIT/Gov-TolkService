@@ -152,13 +152,14 @@ namespace BrokerMock.Services
             if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
+                return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
             }
             else
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
             }
-            return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
+            return null;
         }
 
         public async Task<RequestGroupDetailsResponse> GetOrderGroupRequest(string orderGroupNumber)

@@ -805,9 +805,8 @@ namespace Tolk.BusinessLogic.Services
         private async Task HandleExpiredRequestGroups()
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
-                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
                 .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.OrderGroup.Orders.OrderBy(o => o.StartAt).First().StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                    (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
@@ -827,7 +826,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.OrderGroup.Orders.OrderBy(o => o.StartAt).First().StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                || (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
                                 && r.RequestGroupId == requestGroupId);
 
                         if (expiredRequestGroup == null)

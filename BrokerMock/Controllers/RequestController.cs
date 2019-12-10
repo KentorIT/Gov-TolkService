@@ -403,9 +403,17 @@ namespace BrokerMock.Controllers
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen bokning med Boknings-ID: {payload.OrderGroupNumber} har blivit godkänd");
             }
 
-            var request = await _apiService.GetOrderGroupRequest(payload.OrderGroupNumber);
+            var requestGroup = await _apiService.GetOrderGroupRequest(payload.OrderGroupNumber);
 
-            //var extraInstructions = GetExtraInstructions(request.Description);
+            var extraInstructions = GetExtraInstructions(requestGroup.Description);
+            if (extraInstructions.Contains("GETFIRSTOCCASION"))
+            {
+                var request = await _apiService.GetOrderRequest(requestGroup.Occasions.First().OrderNumber);
+                if (request != null)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]::Boknings-ID {request.OrderNumber}, tillhör Sammanhållen bokning {payload.OrderGroupNumber}. ");
+                }
+            }
 
             return new JsonResult("Success");
         }

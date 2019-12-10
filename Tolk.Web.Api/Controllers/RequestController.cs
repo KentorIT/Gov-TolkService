@@ -570,7 +570,6 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                         //Must have a request connected to the order for the broker, any status...
@@ -581,7 +580,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
                 //End of service
-                return Json(ApiOrderService.GetResponseFromRequest(request));
+                return Json(_apiOrderService.GetResponseFromRequest(request));
             }
             catch (InvalidApiCallException ex)
             {

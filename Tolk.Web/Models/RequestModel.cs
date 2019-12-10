@@ -272,7 +272,12 @@ namespace Tolk.Web.Models
                         Id = a.Attachment.AttachmentId,
                         FileName = a.Attachment.FileName,
                         Size = a.Attachment.Blob.Length
-                    }).ToList()
+                    }).Union(request.RequestGroup?.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }) ?? Enumerable.Empty<FileModel>()).ToList()
                 }
             };
         }
