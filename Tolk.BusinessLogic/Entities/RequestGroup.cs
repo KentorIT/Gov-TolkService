@@ -23,6 +23,16 @@ namespace Tolk.BusinessLogic.Entities
             Requests = requests;
         }
 
+        internal RequestGroup(Ranking ranking, DateTimeOffset creationTime, List<Request> requests, Quarantine quarantine)
+        {
+            requests.ForEach(r => r.RequestGroup = this);
+            Ranking = ranking;
+            Status = RequestStatus.LostDueToQuarantine;
+            CreatedAt = creationTime;
+            Quarantine = quarantine;
+            QuarantineId = quarantine.QuarantineId;
+        }
+
         #endregion
 
         #region properties

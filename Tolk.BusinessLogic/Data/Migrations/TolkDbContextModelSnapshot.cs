@@ -1636,6 +1636,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("OrderGroupId");
 
+                    b.Property<int?>("QuarantineId");
+
                     b.Property<int>("RankingId");
 
                     b.Property<int?>("ReceivedBy");
@@ -1661,6 +1663,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("ImpersonatingReceivedBy");
 
                     b.HasIndex("OrderGroupId");
+
+                    b.HasIndex("QuarantineId");
 
                     b.HasIndex("RankingId");
 
@@ -2861,6 +2865,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany("RequestGroups")
                         .HasForeignKey("OrderGroupId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Quarantine", "Quarantine")
+                        .WithMany()
+                        .HasForeignKey("QuarantineId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
                         .WithMany()

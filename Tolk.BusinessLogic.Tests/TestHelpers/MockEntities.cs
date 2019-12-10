@@ -53,8 +53,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         {
             get => new[]
             {
-                new Ranking { RankingId = 1, BrokerId = 1, Rank = 1 },
-                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2 },
+                new Ranking { RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new List<Quarantine>() },
+                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new List<Quarantine>() },
             };
         }
 
@@ -816,7 +816,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     order.OrderGroupId = id;
                     order.Group = orderGroup;
                 }
-                var requestGroup = new RequestGroup(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank), requests) { 
+                var requestGroup = new RequestGroup(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank), requests)
+                {
                     Status = requestStatus,
                     OrderGroup = orderGroup,
                     StatusConfirmations = new List<RequestGroupStatusConfirmation>(),

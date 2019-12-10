@@ -116,11 +116,11 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public RequestGroup CreateRequestGroup(IQueryable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
 
-            var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
+            var ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
             {
                 // Rejected by all brokers, close all orders
@@ -138,6 +138,32 @@ namespace Tolk.BusinessLogic.Entities
 
             RequestGroups.Add(requestGroup);
 
+            return requestGroup;
+        }
+
+        private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
+        {
+            var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
+            var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
+     
+            if (ranking != null)
+            {
+                var quarantine = ranking.Quarantines.FirstOrDefault(q => q.CustomerOrganisationId == CustomerOrganisationId 
+                    && q.ActiveFrom <= newRequestCreationTime && q.ActiveTo >= newRequestCreationTime);
+                if (quarantine != null)
+                {
+                    //Create a quarantined requestGroup, and get next ranking
+                    CreateQuarantinedRequestGroup(ranking, newRequestCreationTime, quarantine);
+                    ranking = GetNextRanking(rankings, newRequestCreationTime);
+                }
+            }
+            return ranking;
+        }
+
+        private RequestGroup CreateQuarantinedRequestGroup(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
+        {
+            var requestGroup = new RequestGroup(ranking, creationTime, Orders.Select(o => o.CreateQuarantinedRequest(ranking, creationTime, quarantine)).ToList(), quarantine);
+            RequestGroups.Add(requestGroup);
             return requestGroup;
         }
 

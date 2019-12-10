@@ -85,6 +85,11 @@ namespace Tolk.BusinessLogic.Entities
         /// </summary>
         public bool IsTerminalRequest { get; set; }
 
+        public int? QuarantineId { get; set; }
+
+        [ForeignKey(nameof(QuarantineId))]
+        public Quarantine Quarantine { get; set; }
+
         #region Status checks
 
         public bool IsAcceptedOrApproved

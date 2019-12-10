@@ -31,7 +31,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
-        
+
         public RequestGroupController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
@@ -55,7 +55,6 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> View(int id)
         {
             var requestGroup = await GetRequestGroupToView(id);
-            var brokerId = User.TryGetBrokerId();
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
             {
                 if (requestGroup.IsToBeProcessedByBroker)
@@ -65,6 +64,16 @@ namespace Tolk.Web.Controllers
                 var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, false);
                 model.CustomerInformationModel.IsCustomer = false;
                 model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, requestGroup, true);
+                if (requestGroup.QuarantineId.HasValue)
+                {
+                    List<OrderOccasionDisplayModel> tempOccasionList = new List<OrderOccasionDisplayModel>();
+                    foreach (OrderOccasionDisplayModel occasion in model.OccasionList.Occasions)
+                    {
+                        var request = requestGroup.Requests.Single(r => r.RequestId == occasion.RouteId);
+                        tempOccasionList.Add(OrderOccasionDisplayModel.GetModelFromOrder(request.Order, GetPriceinformationOrderToDisplay(request, model.OrderGroupModel.RequestedCompetenceLevels.ToList()), request));
+                    }
+                    model.OccasionList.Occasions = tempOccasionList;
+                }
                 return View(model);
             }
             return Forbid();
@@ -73,7 +82,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Process(int id)
         {
             var requestGroup = await GetRequestGroupToProcess(id);
-            
+
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
             {

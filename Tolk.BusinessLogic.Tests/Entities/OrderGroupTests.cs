@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -18,13 +17,30 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(1, OrderStatus.Requested)]
-        public void CreateRequestGroup(int requestGroups, OrderStatus expectedStatus)
+        [InlineData(1, OrderStatus.Requested, RequestStatus.Created)]
+        public void CreateRequestGroup(int requestGroups, OrderStatus expectedStatus, RequestStatus expectedRequestStatus)
         {
             var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
-            orderGroup.CreateRequestGroup(MockEntities.MockRankings, null, orderGroup.CreatedAt.AddMinutes(1));
+            orderGroup.CreateRequestGroup(MockEntities.MockRankings.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
             Assert.Equal(requestGroups, orderGroup.RequestGroups.Count());
+            Assert.Equal(orderGroup.RequestGroups.First().Requests.Count, orderGroup.Orders.Count);
             Assert.Equal(expectedStatus, orderGroup.Status);
+            Assert.Equal(orderGroup.Status, orderGroup.Orders.First().Status);
+            Assert.Equal(expectedRequestStatus, orderGroup.RequestGroups.First().Status);
+            Assert.Equal(orderGroup.RequestGroups.First().Requests.First().Status, orderGroup.RequestGroups.First().Status);
+        }
+
+        [Theory]
+        [InlineData(2, OrderStatus.Requested, RequestStatus.LostDueToQuarantine, RequestStatus.Created)]
+        public void CreateRequestGroupWithQuarantine(int requestGroups, OrderStatus expectedStatus, RequestStatus quarantinedStatus, RequestStatus requestedStatus)
+        {
+            var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
+            orderGroup.CreateRequestGroup(MockEntities.MockRankingsWithQuarantines.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
+            Assert.Equal(requestGroups, orderGroup.RequestGroups.Count());
+            Assert.Equal(orderGroup.RequestGroups.Last().Requests.Count, orderGroup.Orders.Count);
+            Assert.Equal(expectedStatus, orderGroup.Status);
+            Assert.Equal(quarantinedStatus, orderGroup.RequestGroups.First().Status);
+            Assert.Equal(requestedStatus, orderGroup.RequestGroups.Last().Status);
         }
 
         [Theory]

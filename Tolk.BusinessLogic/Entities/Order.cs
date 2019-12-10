@@ -274,7 +274,7 @@ namespace Tolk.BusinessLogic.Entities
             return ranking;
         }
 
-        private Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
+        internal Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             var request = new Request(ranking, creationTime, quarantine);
             Requests.Add(request);

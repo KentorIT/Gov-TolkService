@@ -83,11 +83,6 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacedByRequest))]
         public Request ReplacingRequest { get; set; }
 
-        public int? QuarantineId { get; set; }
-
-        [ForeignKey(nameof(QuarantineId))]
-        public Quarantine Quarantine { get; set; }
-
         public override RequestStatus Status
         {
             get => base.Status;
