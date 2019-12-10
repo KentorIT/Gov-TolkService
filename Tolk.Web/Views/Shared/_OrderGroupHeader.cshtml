@@ -2,7 +2,7 @@
 @using Tolk.Web.Services
 @inject HelpLinkService HelpLinkService
 @{
-   HelpLinkService.PageName = "formedling-detaljvy-av-sammanhallen-bokning/";
+    HelpLinkService.PageName = "formedling-detaljvy-av-sammanhallen-bokning/";
 }
 <section aria-label="Bokningshuvud">
     <div class="row">
@@ -33,5 +33,13 @@
         <div class="col-sm-3">
             <display-entry asp-for="CreatedAt" />
         </div>
+        @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
+        {
+            <div class="col-sm-12">
+                <span class="gray-border-left">
+                    Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
+                </span>
+            </div>
+        }
     </div>
 </section>

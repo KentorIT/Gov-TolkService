@@ -32,6 +32,14 @@
             <div class="col-sm-3">
                 <display-entry asp-for="CreatedAt" />
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
+            {
+                <div class="col-sm-12">
+                    <span class="gray-border-left">
+                        Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
+                    </span>
+                </div>
+            }
         </div>
     </section>
     <section aria-label="Sammanhållen bokning">

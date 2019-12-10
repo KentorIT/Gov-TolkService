@@ -74,5 +74,13 @@
                 <display-entry asp-for="ActiveRequest.CreatedAt" />
             }
         </div>
+        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
+        {
+            <div class="col-sm-12">
+                <span class="gray-border-left">
+                    Myndighetens ärendenummer: @Model.CustomerReferenceNumber
+                </span>
+            </div>
+        }
     </div>
 </section>
