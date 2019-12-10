@@ -21,10 +21,13 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-sm-4 important-info">
+                Ange alltid en personlig e-postadress till användaren. Det är sedan möjligt att använda en annan funktion för att styra om e-post till gemensamma funktionsbrevlådor.
+            </div>
             <div class="col-sm-4">
-                <label>Möjliga roller för användaren</label>
                 @if (Model.UserType == UserTypes.SystemAdministrator || Model.UserType == UserTypes.ApplicationAdministrator)
                 {
+                    <label>Möjliga roller för användaren</label>
                     <div class="OrganisationAdministratorCheckBox">
                         <form-entry asp-for="IsOrganisationAdministrator" />
                     </div>
@@ -43,6 +46,7 @@
                 }
                 @if (Model.UserType == UserTypes.OrganisationAdministrator)
                 {
+                    <label>Möjliga roller för användaren</label>
                     @if (Model.DisplayCentralAdmin)
                     {
                         <div class="OrganisationAdministratorCheckBox">
@@ -70,8 +74,6 @@
                         <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.Organisations" class="allow-clear" />
                     }
                 }
-            </div>
-            <div class="col-sm-4">
             </div>
         </div>
         <div class="row">
