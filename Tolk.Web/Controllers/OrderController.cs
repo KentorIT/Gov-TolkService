@@ -113,7 +113,7 @@ namespace Tolk.Web.Controllers
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;
-                    model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
+                    model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
                     model.RequestId = request.RequestId;
                     model.AnsweredBy = request.AnsweringUser?.CompleteContactInformation;
                     model.ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
@@ -458,7 +458,7 @@ namespace Tolk.Web.Controllers
                 {
                     OrderGroupNumber = orderGroup.OrderGroupNumber,
                     OrderOccasionDisplayModels = orderGroup.Orders
-                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o, false)))
+                        .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o, initialCollapse: false)))
                 });
             }
             return Forbid();
@@ -500,7 +500,7 @@ namespace Tolk.Web.Controllers
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.BrokerName = request.Ranking.Broker.Name;
                 model.CreatedBy = request.Order.CreatedByUser.FullName;
-                model.ActiveRequestPriceInformationModel = GetPriceinformationToDisplay(request);
+                model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
                 model.RequestId = request.RequestId;
                 model.AnsweredBy = request.AnsweringUser?.FullName;
                 model.AnsweredAt = request.AnswerDate;
@@ -810,20 +810,6 @@ namespace Tolk.Web.Controllers
                 };
                 yield return occasion;
             }
-        }
-
-        private static PriceInformationModel GetPriceinformationToDisplay(Request request)
-        {
-            if (request.PriceRows == null)
-            {
-                return null;
-            }
-            return new PriceInformationModel
-            {
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt bokningsbekräftelse",
-                UseDisplayHideInfo = true
-            };
         }
 
         private OrderGroup CreateNewOrderGroup(List<Order> orders)

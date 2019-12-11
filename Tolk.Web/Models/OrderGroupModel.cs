@@ -142,7 +142,7 @@ namespace Tolk.Web.Models
                 OccasionList = new OccasionListModel
                 {
                     Occasions = orderGroup.Orders
-                         .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o))),
+                         .Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(o, alwaysUseOrderPriceRows: false))),
                     AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o)),
                     DisplayDetailedList = true
                 },

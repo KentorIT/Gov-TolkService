@@ -25,26 +25,35 @@ namespace Tolk.Web.Models
 
         public string Description { get; set; }
 
-        internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true)
+        internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true, bool alwaysUseOrderPriceRows = true)
         {
             if (order.PriceRows == null)
             {
                 return null;
             }
-            else if (order.Requests != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Any())
+            else if (!alwaysUseOrderPriceRows && order.Requests != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null && order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Any())
             {
-                return new PriceInformationModel
-                {
-                    PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.Requests.OrderBy(r => r.RequestId).Last().PriceRows.OfType<PriceRowBase>().ToList()),
-                    Header = "Beräknat pris enligt bekräftelse",
-                    UseDisplayHideInfo = true,
-                    InitialCollapse = initialCollapse
-                };
+                return GetPriceinformationToDisplay(order.Requests.OrderBy(r => r.RequestId).Last(), initialCollapse);
             }
             return new PriceInformationModel
             {
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
+                UseDisplayHideInfo = true,
+                InitialCollapse = initialCollapse
+            };
+        }
+
+        internal static PriceInformationModel GetPriceinformationToDisplay(Request request, bool initialCollapse = true)
+        {
+            if (request.PriceRows == null || !request.PriceRows.Any())
+            {
+                return null;
+            }
+            return new PriceInformationModel
+            {
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
+                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse
             };

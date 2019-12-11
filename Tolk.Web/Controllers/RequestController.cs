@@ -470,7 +470,7 @@ namespace Tolk.Web.Controllers
         {
             var model = RequestModel.GetModelFromRequest(request);
             model.OrderModel.ActiveRequest = model; //We're only interested in the request we have access to
-            model.RequestCalculatedPriceInformationModel = GetPriceinformationToDisplay(request);
+            model.RequestCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
             model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)
             {
@@ -526,20 +526,6 @@ namespace Tolk.Web.Controllers
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
                     _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
-                UseDisplayHideInfo = true
-            };
-        }
-
-        private static PriceInformationModel GetPriceinformationToDisplay(Request request)
-        {
-            if (request.PriceRows == null || !request.PriceRows.Any())
-            {
-                return null;
-            }
-            return new PriceInformationModel
-            {
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true
             };
         }
