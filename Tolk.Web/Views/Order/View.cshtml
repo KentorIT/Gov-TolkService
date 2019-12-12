@@ -255,15 +255,22 @@
             <div class="modal-body">
                 <form class="do-not-check-dirty">
                     <form-entry asp-for="CancelMessage" />
-                    @if (Model.ReplacingOrderId.HasValue)
+                    @if (Model.TimeIsValidForOrderReplacement)
                     {
-                        <div class="important-info">Uppdraget som ska avbokas är ett ersättningsuppdrag. Det är inte möjligt att skapa ytterligare ett ersättningsuppdrag för detta uppdrag.</div>
+                        @if (Model.AllowReplacementOnCancel)
+                        {
+                            <form-entry asp-for="AddReplacementOrder" />
+                        }
+                        else if (Model.ReplacingOrderId.HasValue)
+                        {
+                            <div class="important-info">Uppdraget som ska avbokas är ett ersättningsuppdrag. Det är inte möjligt att skapa ytterligare ett ersättningsuppdrag för detta uppdrag.</div>
+                        }
+                        else if (Model.OrderGroupId.HasValue)
+                        {
+                            <div class="important-info">Uppdraget som ska avbokas ingår i en sammanhållen bokning det är därför inte möjligt att skapa ett ersättningsuppdrag för detta uppdrag.</div>
+                        }
                     }
-                    @if (Model.AllowReplacementOnCancel)
-                    {
-                        <form-entry asp-for="AddReplacementOrder" />
-                    }
-                </form>
+                    </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>

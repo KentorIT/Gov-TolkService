@@ -83,9 +83,15 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        /// <summary>
+        /// Returns -1 if firstDate > secondDate
+        /// </summary>
+        /// <param name="firstDate"></param>
+        /// <param name="secondDate"></param>
+        /// <returns></returns>
         public int GetNoOf24HsPeriodsWorkDaysBetween(DateTime firstDate, DateTime secondDate)
         {
-            return ReturnWorkingPeriod(firstDate, secondDate, true);
+            return secondDate < firstDate ? -1 : ReturnWorkingPeriod(firstDate, secondDate, true);
         }
 
         public int GetNoOfHoursOfWorkDaysBetween(DateTime firstDate, DateTime secondDate)

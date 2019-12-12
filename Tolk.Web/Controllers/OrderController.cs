@@ -81,7 +81,6 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var now = _clock.SwedenNow;
                 //TODO: Handle this better. Preferably with a list that you can use contains on
                 var request = order.Requests.SingleOrDefault(r =>
                                         r.Status != RequestStatus.InterpreterReplaced &&
@@ -93,10 +92,8 @@ namespace Tolk.Web.Controllers
                 model.AllowOrderCancellation = request != null && request.CanCancel &&
                     order.StartAt > _clock.SwedenNow &&
                     (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
-                model.AllowReplacementOnCancel = model.AllowOrderCancellation &&
-                    request.Status == RequestStatus.Approved &&
-                    _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2 &&
-                    !request.Order.ReplacingOrderId.HasValue;
+                model.TimeIsValidForOrderReplacement = model.AllowOrderCancellation && TimeIsValidForOrderReplacement(order.StartAt);
+                model.AllowReplacementOnCancel = model.AllowOrderCancellation  && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
                 model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
@@ -178,6 +175,11 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart) {
+            var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
+            return noOfDays > -1 && noOfDays < 2;
+        }
+
         private static bool AllowProcessing(Order o, OrderModel model) => model.ActiveRequestIsAnswered && (AllowProcessingOrderBelongsToGroup(o, model) || AllowProcessingOrderNotBelongsToGroup(o, model));
 
         private static bool AllowProcessingOrderBelongsToGroup(Order o, OrderModel model) => o.OrderGroupId.HasValue && model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed;
@@ -191,25 +193,32 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
-                ReplaceOrderModel model = _mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
-                model.ReplacedTimeRange = new TimeRange
+                if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    StartDateTime = order.StartAt,
-                    EndDateTime = order.EndAt
-                };
-                model.OrderId = null;
-                model.ReplacingOrderNumber = order.OrderNumber;
-                model.ReplacingOrderId = replacingOrderId;
-                model.CancelMessage = cancelMessage;
-                //Set the Files-list and the used FileGroupKey
-                List<FileModel> files = order.Attachments.Select(a => new FileModel
+                    ReplaceOrderModel model = _mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
+                    model.ReplacedTimeRange = new TimeRange
+                    {
+                        StartDateTime = order.StartAt,
+                        EndDateTime = order.EndAt
+                    };
+                    model.OrderId = null;
+                    model.ReplacingOrderNumber = order.OrderNumber;
+                    model.ReplacingOrderId = replacingOrderId;
+                    model.CancelMessage = cancelMessage;
+                    //Set the Files-list and the used FileGroupKey
+                    List<FileModel> files = order.Attachments.Select(a => new FileModel
+                    {
+                        Id = a.Attachment.AttachmentId,
+                        FileName = a.Attachment.FileName,
+                        Size = a.Attachment.Blob.Length
+                    }).ToList();
+                    model.Files = files.Any() ? files : null;
+                    return View(model);
+                }
+                else
                 {
-                    Id = a.Attachment.AttachmentId,
-                    FileName = a.Attachment.FileName,
-                    Size = a.Attachment.Blob.Length
-                }).ToList();
-                model.Files = files.Any() ? files : null;
-                return View(model);
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det gick inte att skapa ett ersättningsuppdrag för uppdraget, så ingen avbokning kunde heller ske" });
+                }
             }
             return Forbid();
         }
@@ -224,14 +233,21 @@ namespace Tolk.Web.Controllers
                 Order order = GetOrder(model.ReplacingOrderId.Value);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
-                    using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                    if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                     {
-                        Order replacementOrder = new Order(order);
-                        model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, true);
-                        await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
-                        await _dbContext.SaveChangesAsync();
-                        trn.Commit();
-                        return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
+                        using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                        {
+                            Order replacementOrder = new Order(order);
+                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, true);
+                            await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                            await _dbContext.SaveChangesAsync();
+                            trn.Commit();
+                            return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
+                        }
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Det gick inte att skapa ett ersättningsuppdrag för uppdraget, så ingen avbokning kunde heller ske" });
                     }
                 }
             }
@@ -597,12 +613,19 @@ namespace Tolk.Web.Controllers
             {
                 if (order.ActiveRequest == null)
                 {
-                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Beställningen kunde inte avbokas" });
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Uppdraget kunde inte avbokas" });
                 }
                 if (model.AddReplacementOrder)
                 {
-                    //Forward the message
-                    return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
+                    if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                    {
+                        //Forward the message to replace
+                        return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Det gick inte att skapa ett ersättningsuppdrag för uppdraget, så ingen avbokning kunde heller ske" });
+                    }
                 }
                 _orderService.CancelOrder(order, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                 await _dbContext.SaveChangesAsync();

@@ -204,6 +204,8 @@ namespace Tolk.Web.Models
 
         public bool AllowReplacementOnCancel { get; set; } = false;
 
+        public bool TimeIsValidForOrderReplacement { get; set; } = false;
+
         public bool AllowProcessing { get; set; } = false;
 
         public bool TerminateOnDenial { get; set; } = false;

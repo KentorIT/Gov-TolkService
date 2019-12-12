@@ -125,7 +125,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel => CanCancelRequestBelongsToGroup || CanCancelRequestNotBelongsToGroup;
 
-        private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue && (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded 
+        private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue && 
+            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded 
             || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
             (IsToBeProcessedByBroker || IsAcceptedOrApproved);
 
@@ -133,20 +134,16 @@ namespace Tolk.BusinessLogic.Entities
             (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
             (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
+        public bool CanCreateReplacementOrderOnCancel => !Order.OrderGroupId.HasValue && !Order.ReplacingOrderId.HasValue && Status == RequestStatus.Approved;
+
         public bool CanChangeInterpreter(DateTimeOffset swedenNow) => Order.StartAt > swedenNow &&
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
             (RequestGroupId.HasValue && Status == RequestStatus.Approved));
 
-        public bool CanCreateRequisition
-        {
-            get => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
-        }
+        public bool CanCreateRequisition => (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
 
-        public bool CanCreateComplaint
-        {
-            get => !Complaints.Any() && Status == RequestStatus.Approved;
-        }
-
+        public bool CanCreateComplaint => !Complaints.Any() && Status == RequestStatus.Approved;
+        
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
         public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && InterpreterLocation.HasValue
