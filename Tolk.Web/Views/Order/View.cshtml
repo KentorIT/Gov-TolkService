@@ -284,6 +284,10 @@
             <div class="modal-body">
                 <form class="do-not-check-dirty">
                     <form-entry asp-for="DenyMessage" />
+                    @if (Model.TerminateOnDenial)
+                    {
+                        <div class="important-info">Observera att denna bokning kommer att avslutas vid underkännande då denna bokning är en del av en sammanhållen bokning. Övriga tillfällen i den sammanhällna bokningen påverkas inte.</div>
+                    }
                 </form>
             </div>
             <div class="modal-footer">

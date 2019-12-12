@@ -149,6 +149,7 @@ namespace Tolk.Web.Controllers
                         }) ?? Enumerable.Empty<FileModel>()).ToList()
                     };
                     model.AllowProcessing = AllowProcessing(order, model) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
+                    model.TerminateOnDenial = request.TerminateOnDenial;
                 }
                 model.EventLog = new EventLogModel
                 {
@@ -667,11 +668,12 @@ namespace Tolk.Web.Controllers
             {
                 if (!request.CanDeny)
                 {
-                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att neka denna tillsättningen" });
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att underkänna denna tillsättning" });
                 }
+                var requestWillTerminate = request.TerminateOnDenial;
                 await _orderService.DenyRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 await _dbContext.SaveChangesAsync();
-                return RedirectToAction(nameof(View), new { id = request.OrderId });
+                return RedirectToAction(nameof(View), new { id = request.OrderId, message = requestWillTerminate ? "Tillsättning är nu underkänd och bokningsförfrågan avslutad" : string.Empty });
             }
             return Forbid();
         }

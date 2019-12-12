@@ -206,6 +206,8 @@ namespace Tolk.Web.Models
 
         public bool AllowProcessing { get; set; } = false;
 
+        public bool TerminateOnDenial { get; set; } = false;
+
         private string DialectDescription
         {
             get

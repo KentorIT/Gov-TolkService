@@ -359,11 +359,18 @@ namespace Tolk.BusinessLogic.Services
         public async Task DenyRequestAnswer(Request request, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(DenyRequestAnswer), nameof(OrderService));
+            var createRequest = !request.TerminateOnDenial;
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
-            await CreateRequest(request.Order, request);
+            if (createRequest)
+            {
+                await CreateRequest(request.Order, request);
+            }
+            else
+            {
+                await TerminateOrder(request.Order, true);
+            }
             _notificationService.RequestAnswerDenied(request);
         }
-
         public async Task DenyRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DenyRequestGroupAnswer), nameof(OrderService));
