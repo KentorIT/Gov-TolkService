@@ -39,7 +39,7 @@ namespace Tolk.Web.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public static IEnumerable<SelectListItem> Regions { get; } =
+        public static IEnumerable<SelectListItem> Regions =>
             Region.Regions.OrderBy(r => r.Name)
             .Select(r => new SelectListItem
             {
@@ -58,27 +58,31 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> ComplaintStatuses => GetList<ComplaintStatus>();
 
-        public static IEnumerable<SelectListItem> RequestStatuses { get; } =
+        public static IEnumerable<SelectListItem> RequestStatuses => 
             EnumHelper.GetAllDescriptions<RequestStatus>()
                 .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer &&
                     e.Value != RequestStatus.NoDeadlineFromCustomer &&
-                    e.Value != RequestStatus.InterpreterReplaced)
+                    e.Value != RequestStatus.InterpreterReplaced &&
+                    e.Value != RequestStatus.PartiallyAccepted &&
+                    e.Value != RequestStatus.PartiallyApproved)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
         public static IEnumerable<SelectListItem> ComplaintTypes => GetList<ComplaintType>();
 
-        public static IEnumerable<SelectListItem> RequisitionStatuses { get; } =
+        public static IEnumerable<SelectListItem> RequisitionStatuses => 
             EnumHelper.GetAllDescriptions<RequisitionStatus>()
                 .Where(e => e.Value != RequisitionStatus.Approved && e.Value != RequisitionStatus.DeniedByCustomer)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> OrderStatuses { get; } =
+        public static IEnumerable<SelectListItem> OrderStatuses => 
             EnumHelper.GetAllDescriptions<OrderStatus>()
-            .Where(e => e.Value != OrderStatus.DeliveryAccepted)
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+            .Where(e => e.Value != OrderStatus.DeliveryAccepted &&
+                e.Value != OrderStatus.GroupAwaitingPartialResponse &&
+                e.Value != OrderStatus.RequestAwaitingPartialAccept)
+            .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+            .ToList().AsReadOnly();
         public static IEnumerable<SelectListItem> PriceListTypes => GetList<PriceListType>();
         public static IEnumerable<SelectListItem> TravelCostAgreementTypes => GetList<TravelCostAgreementType>();
 
@@ -86,7 +90,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> AssignmentTypes => GetList<AssignmentType>();
 
-        public static IEnumerable<SelectListItem> SystemMessageTypes { get; } = GetList<SystemMessageType>();
+        public static IEnumerable<SelectListItem> SystemMessageTypes => GetList<SystemMessageType>();
 
         public static IEnumerable<SelectListItem> SystemMessageUserTypeGroups => GetList<SystemMessageUserTypeGroup>();
 
@@ -115,14 +119,14 @@ namespace Tolk.Web.Services
                 .ToList().AsReadOnly();
         }
 
-        public static IEnumerable<SelectListItem> CompetenceLevels { get; } =
+        public static IEnumerable<SelectListItem> CompetenceLevels => 
             EnumHelper.GetAllDescriptions<CompetenceAndSpecialistLevel>()
                 .Where(e => e.Value > 0)
                 .OrderByDescending(e => (int)e.Value)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> RequirementTypes { get; } =
+        public static IEnumerable<SelectListItem> RequirementTypes => 
             EnumHelper.GetAllDescriptions<RequirementType>()
                 .Where(e => e.Value != RequirementType.Dialect)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
@@ -130,7 +134,7 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> TaxCards => GetList<TaxCardType>();
 
-        public static IEnumerable<SelectListItem> DesireTypes { get; } =
+        public static IEnumerable<SelectListItem> DesireTypes => 
             EnumHelper.GetAllDescriptions<DesireType>()
                 .OrderByDescending(e => e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
