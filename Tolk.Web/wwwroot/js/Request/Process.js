@@ -43,6 +43,9 @@ $(function () {
         if ($("#InterpreterLocation option:selected").val() === "OffSitePhone" || $("#InterpreterLocation option:selected").val() === "OffSiteVideo" || $("#InterpreterLocation option:selected").val() === "") {
             $('#set-expected-travel-costs').collapse('hide');
         }
+        else if ($("#InterpreterLocation").val() === "OffSitePhone" || $("#InterpreterLocation").val() === "OffSiteVideo") {
+            $('#set-expected-travel-costs').collapse('hide');
+        }
         else {
             $('#set-expected-travel-costs').collapse('show');
         }
