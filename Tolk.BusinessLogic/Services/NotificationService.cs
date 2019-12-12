@@ -1101,8 +1101,8 @@ Sammanställning:
             {
                 var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}.";
                 CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} verifierat",
-                        body + GoToOrderPlain(request.Order.OrderId),
-                        body + GoToOrderButton(request.Order.OrderId),
+                        body + GoToRequestPlain(request.RequestId),
+                        body + GoToRequestButton(request.RequestId),
                         true);
             }
             var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Webhook);
