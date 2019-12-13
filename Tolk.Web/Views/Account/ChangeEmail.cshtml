@@ -1,4 +1,5 @@
 ﻿@model ChangeEmailModel;
+@using Tolk.Web.Helpers;
 @{
     ViewData["Title"] = "Ändra E-postadress";
 }
@@ -10,6 +11,12 @@
                 <form-entry asp-for="NewEmailAddress" />
                 <form-entry asp-for="CurrentPassword" />
             </div>
+            @if (User.TryGetCustomerOrganisationId().HasValue)
+            {
+                <div class="col-sm-4 important-info">
+                    <br />Obs! Ange alltid en personlig e-postadress till ditt konto i tjänsten. Ni kan använda enheter för att styra om er e-post till gemensamma funktionsbrevlådor.
+                </div>
+            }
         </div>
         <div class="row">
             <div class="col-sm-4">
