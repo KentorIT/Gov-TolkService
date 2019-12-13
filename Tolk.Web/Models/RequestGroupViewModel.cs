@@ -30,11 +30,11 @@ namespace Tolk.Web.Models
 
         public bool? IsInterpreterVerified { get; set; }
 
-        public bool? IsExtraInterpreterInterpreterVerified { get; set; }
+        public bool? IsExtraInterpreterVerified { get; set; }
 
         public string InterpreterVerificationMessage { get; set; }
 
-        public string ExtraInterpreterInterpreterVerificationMessage { get; set; }
+        public string ExtraInterpreterVerificationMessage { get; set; }
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
 
@@ -48,7 +48,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        [Display(Name = "Bedömd resekostnad")]
+        [Display(Name = "Bedömd resekostnad per tillfälle")]
         [DataType(DataType.Currency)]
         public decimal? ExpectedTravelCosts { get; set; }
 
@@ -56,11 +56,11 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ExpectedTravelCostInfo { get; set; }
 
-        [Display(Name = "Bedömd resekostnad för extra tolk")]
+        [Display(Name = "Bedömd resekostnad per tillfälle")]
         [DataType(DataType.Currency)]
         public decimal? ExtraInterpreterExpectedTravelCosts { get; set; }
 
-        [Display(Name = "Kommentar till bedömd resekostnad för extra tolk")]
+        [Display(Name = "Kommentar till bedömd resekostnad")]
         [DataType(DataType.MultilineText)]
         public string ExtraInterpreterExpectedTravelCostInfo { get; set; }
 
@@ -72,7 +72,7 @@ namespace Tolk.Web.Models
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [Required]
-        [Display(Name = "Extra tolks kompetensnivå")]
+        [Display(Name = "Tolks kompetensnivå")]
         public CompetenceAndSpecialistLevel? ExtraInterpreterCompetenceLevel { get; set; }
 
         public RequestStatus? ExtraInterpreterStatus { get; set; }
@@ -201,9 +201,9 @@ namespace Tolk.Web.Models
                 ExtraInterpreter = requestGroup.HasExtraInterpreter ? requestExtraInterpreter.Interpreter?.CompleteContactInformation : null,
 
                 IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
-                IsExtraInterpreterInterpreterVerified = extraInterpreterVerificationResult.HasValue ? (bool?)(extraInterpreterVerificationResult == VerificationResult.Validated) : null,
+                IsExtraInterpreterVerified = extraInterpreterVerificationResult.HasValue ? (bool?)(extraInterpreterVerificationResult == VerificationResult.Validated) : null,
                 InterpreterVerificationMessage = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
-                ExtraInterpreterInterpreterVerificationMessage = extraInterpreterVerificationResult.HasValue ? extraInterpreterVerificationResult.Value.GetDescription() : null,
+                ExtraInterpreterVerificationMessage = extraInterpreterVerificationResult.HasValue ? extraInterpreterVerificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExtraInterpreterCompetenceLevel = requestGroup.HasExtraInterpreter ? (CompetenceAndSpecialistLevel?)requestExtraInterpreter.CompetenceLevel : null,
                 ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,

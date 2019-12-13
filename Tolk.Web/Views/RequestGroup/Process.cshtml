@@ -253,7 +253,7 @@
                         <div class="row no-gutter">
                             <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
                             <div class="col-sm-4">
-                                <form-entry asp-for="InterpreterAnswerModel.ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                                <form-entry asp-for="InterpreterAnswerModel.ExpectedTravelCosts" label-override="Bedömd resekostnad per tillfälle" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
                             </div>
                             <div class="col-sm-4">
                                 <form-entry asp-for="InterpreterAnswerModel.ExpectedTravelCostInfo" />
@@ -360,7 +360,7 @@
                                     <div class="row bg-gray ">
                                         <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
                                         <div class="col-sm-4">
-                                            <form-entry asp-for="ExtraInterpreterAnswerModel.ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                                            <form-entry asp-for="ExtraInterpreterAnswerModel.ExpectedTravelCosts" label-override="Bedömd resekostnad per tillfälle" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
                                         </div>
                                         <div class="col-sm-4">
                                             <form-entry asp-for="ExtraInterpreterAnswerModel.ExpectedTravelCostInfo" />
