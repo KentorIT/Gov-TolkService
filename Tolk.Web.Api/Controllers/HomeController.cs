@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tolk.BusinessLogic.Services;
@@ -29,6 +30,14 @@ namespace Tolk.Web.Api.Controllers
 
             return clientCertInRequest?.SerialNumber;
         }
+
+        [HttpGet]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
+        public ActionResult<string> Version()
+        {
+            return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+        }
+
         [HttpGet]
         public ActionResult<string> TestTime()
         {
