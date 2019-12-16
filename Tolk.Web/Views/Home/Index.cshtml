@@ -138,19 +138,25 @@
                                         {
                                             <span class="glyphicon glyphicon-user color-red" title="  @item.ViewedByUser"></span>
                                         }
-                                        @if (item.IsInOrderGroup)
+                                        @if (!string.IsNullOrEmpty(item.OrderGroupNumber))
                                         {
-                                            <br /><span class="small-red-border-left startlist-subrow">Del av sammanhållen bokning</span>
+                                            <br /><span class="small-red-border-left startlist-subrow">@item.OrderGroupNumber</span>
                                         }
                                     </td>
                                     <td class="gray-border-bottom">
                                         @if (item.HasExtraInterpreter)
                                         {
-                                            <span class="small-red-border-left startlist-subrow">Extra tolk finns (annan kompetens kan förekomma)</span><br />
+                                            <span class="small-red-border-left startlist-subrow">Extra tolk</span><br />
                                         }
                                         else
-                                        { <br /> }
-                                        @EnumHelper.GetDescription(item.CompetenceLevel)<br /><br />
+                                        { <br />}
+                                        @EnumHelper.GetDescription(item.CompetenceLevel)<br />
+                                        @if (item.HasExtraInterpreter)
+                                        {
+                                            @EnumHelper.GetDescription(item.ExtraCompetenceLevel)<br />
+                                        }
+                                        <br />
+                                        <br />
                                         @if (item.InfoDate.HasValue)
                                         {
                                             <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate?.ToString("yyyy-MM-dd HH:mm")</span>
@@ -180,7 +186,7 @@
                                         <td class="gray-border-bottom">
                                             @if (!item.IsSingleOccasion)
                                             {
-                                                <span class="small-red-border-left startlist-subrow">OBS! Första av flera tillfällen:<br /></span>
+                                                <span class="small-red-border-left startlist-subrow">OBS! Första av flera tillfällen<br /></span>
                                             }
                                             else
                                             { <br />}

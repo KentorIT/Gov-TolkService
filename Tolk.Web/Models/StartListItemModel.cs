@@ -33,6 +33,8 @@ namespace Tolk.Web.Models
 
         public CompetenceAndSpecialistLevel? CompetenceLevel { get; set; }
 
+        public CompetenceAndSpecialistLevel? ExtraCompetenceLevel { get; set; }
+
         public string Language { get; set; }
 
         public DateTime? InfoDate { get; set; }
@@ -51,7 +53,7 @@ namespace Tolk.Web.Models
 
         public bool HasExtraInterpreter { get; set; } = false;
 
-        public bool IsInOrderGroup { get; set; } = false;
+        public string OrderGroupNumber { get; set; }
 
     }
 

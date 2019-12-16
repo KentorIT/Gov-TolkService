@@ -174,7 +174,7 @@ namespace Tolk.Web.Controllers
                     Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0),
                     ButtonAction = "View",
                     ButtonController = "Order",
-                    IsInOrderGroup = o.OrderGroupId != null
+                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
                 }));
             //Accepted order groups to approve 
             if (_options.EnableOrderGroups)
@@ -193,6 +193,8 @@ namespace Tolk.Web.Controllers
                     InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First()
                         .Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    ExtraCompetenceLevel = !og.HasExtraInterpreter ? CompetenceAndSpecialistLevel.NoInterpreter :
+                        (CompetenceAndSpecialistLevel?)og.RequestGroups.First(req => req.Status == RequestStatus.Accepted).FirstRequestForExtraInterpreter.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     ButtonItemId = og.OrderGroupId,
                     Language = og.OtherLanguage ?? og.Language.Name,
                     OrderNumber = og.OrderGroupNumber,
@@ -317,8 +319,7 @@ namespace Tolk.Web.Controllers
                     Status = StartListItemStatus.OrderCancelled,
                     ButtonAction = "View",
                     ButtonController = "Order",
-                    IsInOrderGroup = o.OrderGroupId != null
-
+                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
                 }));
 
             //Requisitions to review
@@ -343,7 +344,7 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order",
                     ButtonItemTab = "requisition",
-                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
+                    OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
                 }));
 
             //Disputed complaints
@@ -367,7 +368,7 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order",
                     ButtonItemTab = "complaint",
-                    IsInOrderGroup = c.Request.Order.OrderGroupId != null
+                    OrderGroupNumber = c.Request.Order.OrderGroupId.HasValue ? $"Del av {c.Request.Order.Group.OrderGroupNumber}" : string.Empty
                 }));
 
             var count = actionList.Any() ? actionList.Count : 0;
@@ -445,11 +446,12 @@ namespace Tolk.Web.Controllers
                 DefaulListController = "Order",
                 DefaultItemId = o.OrderId,
                 InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime,
-                CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
+                CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : 
+                    CompetenceAndSpecialistLevel.NoInterpreter,
                 Language = o.OtherLanguage ?? o.Language.Name,
                 OrderNumber = o.OrderNumber,
                 Status = StartListItemStatus.OrderApproved,
-                IsInOrderGroup = o.OrderGroupId != null
+                OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
             }).ToList();
 
             count = answeredOrders.Any() ? answeredOrders.Count : 0;
@@ -559,7 +561,7 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Request",
                     LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = r.Order.OrderGroupId != null
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
 
             //ADD REQUESTGROUPS HERE (statuses received, created, denied)
@@ -574,7 +576,11 @@ namespace Tolk.Web.Controllers
                     DefaulListController = "RequestGroup",
                     DefaultItemId = r.RequestGroupId,
                     InfoDate = GetInfoDateForBroker(r).Value,
-                    CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ? (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
+                    CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ?
+                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
+                    ExtraCompetenceLevel = !r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ? CompetenceAndSpecialistLevel.NoInterpreter :
+                    r.Status == RequestStatus.DeniedByCreator ?
+                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.OrderGroup.Orders.OrderBy(v => v.StartAt).FirstOrDefault().CustomerOrganisation.Name,
                     ButtonItemId = r.RequestGroupId,
                     Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
@@ -584,8 +590,8 @@ namespace Tolk.Web.Controllers
                     ButtonController = "RequestGroup",
                     LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
                     ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null),
-                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null)
+                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue),
+                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue)
                 }).ToList());
 
             //Complaints
@@ -608,7 +614,7 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Request",
                     ButtonItemTab = "complaint",
                     ViewedBy = c.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = c.Request.Order.OrderGroupId != null
+                    OrderGroupNumber = c.Request.Order.OrderGroupId.HasValue ? $"Del av {c.Request.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
 
             //To be reported
@@ -631,7 +637,7 @@ namespace Tolk.Web.Controllers
                      ButtonAction = "Create",
                      ButtonController = "Requisition",
                      ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                     IsInOrderGroup = r.Order.OrderGroupId != null
+                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                  }).ToList());
 
             //Commented requisitions
@@ -655,8 +661,7 @@ namespace Tolk.Web.Controllers
                     ButtonController = "Request",
                     ButtonItemTab = "requisition",
                     ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
-
+                    OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
 
             var count = actionList.Any() ? actionList.Count : 0;
@@ -688,7 +693,7 @@ namespace Tolk.Web.Controllers
                     OrderNumber = r.Order.OrderNumber,
                     Status = r.Status == RequestStatus.AcceptedNewInterpreterAppointed ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval,
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = r.Order.OrderGroupId != null
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList();
 
             answeredRequests.AddRange(_dbContext.RequestGroups
@@ -701,14 +706,17 @@ namespace Tolk.Web.Controllers
                     DefaultItemId = r.RequestGroupId,
                     InfoDate = r.AnswerDate.Value.DateTime,
                     InfoDateDescription = "Tillsatt: ",
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.Accepted && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel,
+                    ExtraCompetenceLevel = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ?
+                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.Accepted && req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel :
+                        CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.OrderGroup.Orders.OrderBy(v => v.StartAt).FirstOrDefault().CustomerOrganisation.Name,
                     Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
                     OrderNumber = r.OrderGroup.OrderGroupNumber,
                     Status = StartListItemStatus.OrderGroupAwaitingApproval,
                     ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null),
-                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null)
+                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue),
+                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue)
                 }).ToList());
 
             count = answeredRequests.Any() ? answeredRequests.Count : 0;
@@ -738,7 +746,7 @@ namespace Tolk.Web.Controllers
                     OrderNumber = r.Order.OrderNumber,
                     Status = StartListItemStatus.OrderApproved,
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = r.Order.OrderGroupId != null
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList();
 
             count = approvedRequestAnswers.Any() ? answeredRequests.Count : 0;
@@ -769,7 +777,7 @@ namespace Tolk.Web.Controllers
                     OrderNumber = r.Request.Order.OrderNumber,
                     Status = StartListItemStatus.RequisitionCreated,
                     ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsInOrderGroup = r.Request.Order.OrderGroupId != null
+                    OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList();
 
             count = sentRequisitions.Any() ? sentRequisitions.Count : 0;
