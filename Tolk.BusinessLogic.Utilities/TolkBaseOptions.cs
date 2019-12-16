@@ -9,7 +9,6 @@
         public SmtpSettings Smtp { get; set; }
         public StatusCheckerSettings StatusChecker { get; set; }
         public ExternalLinksSettings ExternalLinks { get; set; }
-        public bool RunEntityScheduler { get; set; } = true;
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; } = false;
     }
 }

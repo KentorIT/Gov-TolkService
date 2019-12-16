@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Utilities;
 
@@ -21,6 +20,8 @@ namespace Tolk.BusinessLogic.Helpers
         public long CombinedMaxSizeAttachments { get; set; }
 
         public bool EnableRegisterUser { get; set; }
+
+        public bool RunEntityScheduler { get; set; } = true;
 
         public TolkConnectionStrings ConnectionStrings { get; set; }
 
