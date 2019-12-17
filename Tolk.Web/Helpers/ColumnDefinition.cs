@@ -16,6 +16,7 @@ namespace Tolk.Web.Helpers
         public bool SortOnWebServer { get; set; }
         public bool Visible { get; set; }
         public bool IsLeftCssClassName { get; set; }
+        public bool IsOverrideClickLinkUrlColumn { get; set; }
         public static bool Searchable => false;
     }
 }

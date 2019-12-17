@@ -93,7 +93,7 @@ namespace Tolk.Web.Controllers
                     order.StartAt > _clock.SwedenNow &&
                     (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.TimeIsValidForOrderReplacement = model.AllowOrderCancellation && TimeIsValidForOrderReplacement(order.StartAt);
-                model.AllowReplacementOnCancel = model.AllowOrderCancellation  && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
+                model.AllowReplacementOnCancel = model.AllowOrderCancellation && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
                 model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
@@ -175,7 +175,8 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart) {
+        private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
+        {
             var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
             return noOfDays > -1 && noOfDays < 2;
         }
@@ -350,7 +351,7 @@ namespace Tolk.Web.Controllers
                 updatedModel.SeveralOccasions = true;
                 updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
                 warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
-                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? 
+                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ?
                     CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
                     $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
             }
@@ -365,7 +366,7 @@ namespace Tolk.Web.Controllers
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
                 warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
-                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) : 
+                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
                     $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
             }
             var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
@@ -434,14 +435,14 @@ namespace Tolk.Web.Controllers
                 "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 minutes < 60 ? isOrderGroup ?
                 $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." : 
+                "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 string.Empty;
         }
 
         private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
         {
             return orderStart.AddYears(-2) > _clock.SwedenNow.DateTime ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." : 
+                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 string.Empty;
         }
@@ -768,27 +769,35 @@ namespace Tolk.Web.Controllers
             {
                 model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
             }
-            
-            var orders = model.GetOrders(_dbContext.Orders.Select(o => o));
-            var filteredData = model.Apply(orders);
-            return AjaxDataTableHelper.GetData(request, orders.Count(), filteredData, d => d.Select(o => new OrderListItemModel
+
+            var entities = model.GetEntities(_dbContext.OrderListRows.Select(o => o));
+            var filteredData = model.Apply(entities);
+            return AjaxDataTableHelper.GetData(request, entities.Count(), filteredData, d => d.Select(o => new OrderListItemModel
             {
-                OrderId = o.OrderId,
-                Language = o.OtherLanguage ?? o.Language.Name,
-                OrderNumber = o.OrderGroupId.HasValue ? $"{o.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {o.Group.OrderGroupNumber}</span>" : o.OrderNumber,
-                RegionName = o.Region.Name,
-                OrderDateAndTime = $"{o.StartAt.ToSwedishString("yyyy-MM-dd")} {o.StartAt.ToSwedishString("HH\\:mm")}-{o.EndAt.ToSwedishString("HH\\:mm")}",
+                EntityId = o.EntityId,
+                Language = o.LanguageName,
+                OrderNumber = o.EntityNumber,//o.OrderGroupId.HasValue ? $"{o.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {o.Group.OrderGroupNumber}</span>" : o.OrderNumber,
+                ParentOrderNumber = o.EntityParentNumber,
+                RegionName = o.RegionName,
                 Status = o.Status,
-                CreatorName = o.CreatedByUser.FullName,
-                BrokerName = o.Requests.Where(r =>
-                    r.Status == RequestStatus.Created ||
-                    r.Status == RequestStatus.Received ||
-                    r.Status == RequestStatus.Accepted ||
-                    r.Status == RequestStatus.Approved ||
-                    r.Status == RequestStatus.AcceptedNewInterpreterAppointed ||
-                    r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
-                   .Select(r => r.Ranking.Broker.Name).FirstOrDefault(),
-                CustomerName = o.CustomerOrganisation.Name
+                CreatorName = o.CreatorName,
+                BrokerName = o.BrokerName,
+                CustomerName = o.CustomerName,
+                //Filters
+                BrokerId = o.BrokerId,
+                RegionId = o.RegionId,
+                CustomerUnitId = o.CustomerUnitId,
+                LanguageId = o.LanguageId,
+                CreatedBy = o.CreatedBy,
+                CreatedAt = o.CreatedAt,
+                CustomerOrganisationId = o.CustomerOrganisationId,
+                CustomerUnitIsActive = o.CustomerUnitIsActive,
+                RowType = o.RowType,
+                StartAt = o.StartAt,
+                EndAt = o.EndAt,
+                CustomerReferenceNumber = o.CustomerReferenceNumber,
+                LinkOverride = o.RowType == OrderRowType.OrderGroup ? "/OrderGroup/View": string.Empty
+
             }));
         }
 
@@ -913,5 +922,11 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
         }
+    }
+    public class OrderListItemDto
+    {
+        public int Id => OrderId ?? OrderGroupId ?? 0;
+        public int? OrderId { get; set; }
+        public int? OrderGroupId { get; set; }
     }
 }

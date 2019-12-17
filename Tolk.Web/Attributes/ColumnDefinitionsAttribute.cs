@@ -25,6 +25,7 @@ namespace Tolk.Web.Attributes
         /// Useful when for example a date column is formatted.
         /// </summary>
         public bool SortOnWebServer { get; set; } = true;
+        public bool IsOverrideClickLinkUrlColumn { get; set; } = false;
 
         public ColumnDefinitionsAttribute() { }
 
@@ -38,7 +39,8 @@ namespace Tolk.Web.Attributes
             Sortable = Sortable,
             Visible = Visible,
             SortOnWebServer = SortOnWebServer,
-            IsLeftCssClassName = IsLeftCssClassName
+            IsLeftCssClassName = IsLeftCssClassName,
+            IsOverrideClickLinkUrlColumn = IsOverrideClickLinkUrlColumn
         };
     }
 }

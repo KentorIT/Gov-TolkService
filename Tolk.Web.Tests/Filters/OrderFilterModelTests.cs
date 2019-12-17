@@ -30,291 +30,291 @@ namespace Tolk.Web.Tests.Filters
             mockOrders[5].Requests[0].Status = RequestStatus.CancelledByBroker;
         }
 
-        [Fact]
-        public void OrderFilter_ByOrderNumber()
-        {
-            var firstUser = MockCustomerUsers.First();
-            var filterFirst = new OrderFilterModel
-            {
-                OrderNumber = "337",
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                OrderNumber = "2018-001337",
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByOrderNumber()
+        //{
+        //    var firstUser = MockCustomerUsers.First();
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        OrderNumber = "337",
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        OrderNumber = "2018-001337",
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.OrderNumber.Contains(filterFirst.OrderNumber));
-            var actualSecond = mockOrders.Where(o => o.OrderNumber.Contains(filterSecond.OrderNumber));
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.OrderNumber.Contains(filterFirst.OrderNumber));
+        //    var actualSecond = mockOrders.Where(o => o.OrderNumber.Contains(filterSecond.OrderNumber));
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ByDate()
-        {
-            var filterFirst = new OrderFilterModel
-            {
-                DateRange = new DateRange { Start = new DateTime(2018,06,01), End = new DateTime(2018,08,31) },
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                DateRange = new DateRange { Start = new DateTime(2018, 09, 01), End = new DateTime(2018, 11, 01) },
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByDate()
+        //{
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        DateRange = new DateRange { Start = new DateTime(2018,06,01), End = new DateTime(2018,08,31) },
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        DateRange = new DateRange { Start = new DateTime(2018, 09, 01), End = new DateTime(2018, 11, 01) },
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
 
-            listFirst.Should().HaveCount(4);
-            listFirst.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2], mockOrders[7] });
+        //    listFirst.Should().HaveCount(4);
+        //    listFirst.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2], mockOrders[7] });
 
-            listSecond.Should().HaveCount(4);
-            listSecond.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[5], mockOrders[6] });
-        }
+        //    listSecond.Should().HaveCount(4);
+        //    listSecond.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[5], mockOrders[6] });
+        //}
 
-        [Theory]
-        [InlineData("x", 0)]
-        [InlineData("Number2", 1)]
-        [InlineData("Numb", 8)]
-        public void OrderFilter_ByCustomerOrderNumber(string input, int count)
-        {
-            var filter = new OrderFilterModel
-            {
-                CustomerReferenceNumber = input,
-                IsAdmin = true
-            };
+        //[Theory]
+        //[InlineData("x", 0)]
+        //[InlineData("Number2", 1)]
+        //[InlineData("Numb", 8)]
+        //public void OrderFilter_ByCustomerOrderNumber(string input, int count)
+        //{
+        //    var filter = new OrderFilterModel
+        //    {
+        //        CustomerReferenceNumber = input,
+        //        IsAdmin = true
+        //    };
 
-            var list = filter.Apply(mockOrders.AsQueryable());
+        //    var list = filter.Apply(mockOrders.AsQueryable());
 
-            list.Should().HaveCount(count);
-        }
+        //    list.Should().HaveCount(count);
+        //}
 
-        [Fact]
-        public void OrderFilter_ByStatus()
-        {
-            var filterFirst = new OrderFilterModel
-            {
-                Status = OrderStatus.Delivered,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                Status = OrderStatus.CancelledByCreator,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByStatus()
+        //{
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        Status = OrderStatus.Delivered,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        Status = OrderStatus.CancelledByCreator,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.Status == filterFirst.Status);
-            var actualSecond = mockOrders.Where(o => o.Status == filterSecond.Status);
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.Status == filterFirst.Status);
+        //    var actualSecond = mockOrders.Where(o => o.Status == filterSecond.Status);
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ByRegion()
-        {
-            var regionFirst = Region.Regions.Where(r => r.Name == "Västra Götaland").Single();
-            var regionSecond = Region.Regions.Where(r => r.Name == "Gotland").Single();
-            var filterFirst = new OrderFilterModel
-            {
-                RegionId = regionFirst.RegionId,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                RegionId = regionSecond.RegionId,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByRegion()
+        //{
+        //    var regionFirst = Region.Regions.Where(r => r.Name == "Västra Götaland").Single();
+        //    var regionSecond = Region.Regions.Where(r => r.Name == "Gotland").Single();
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        RegionId = regionFirst.RegionId,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        RegionId = regionSecond.RegionId,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.Region == regionFirst);
-            var actualSecond = mockOrders.Where(o => o.Region == regionSecond);
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.Region == regionFirst);
+        //    var actualSecond = mockOrders.Where(o => o.Region == regionSecond);
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ByLanguage()
-        {
-            var languageFirst = mockLanguages.Where(l => l.Name == "English").Single();
-            var languageSecond = mockLanguages.Where(l => l.Name == "German").Single();
-            var filterFirst = new OrderFilterModel
-            {
-                LanguageId = languageFirst.LanguageId,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                LanguageId = languageSecond.LanguageId,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByLanguage()
+        //{
+        //    var languageFirst = mockLanguages.Where(l => l.Name == "English").Single();
+        //    var languageSecond = mockLanguages.Where(l => l.Name == "German").Single();
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        LanguageId = languageFirst.LanguageId,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        LanguageId = languageSecond.LanguageId,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.Language == languageFirst);
-            var actualSecond = mockOrders.Where(o => o.Language == languageSecond);
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.Language == languageFirst);
+        //    var actualSecond = mockOrders.Where(o => o.Language == languageSecond);
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ByBroker()
-        {
-            var brokerFirst = 1;
-            var brokerSecond = 2;
-            var filterFirst = new OrderFilterModel
-            {
-                BrokerId = brokerFirst,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                BrokerId = brokerSecond,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ByBroker()
+        //{
+        //    var brokerFirst = 1;
+        //    var brokerSecond = 2;
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        BrokerId = brokerFirst,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        BrokerId = brokerSecond,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.Requests.Any(r => r.Ranking.BrokerId == brokerFirst 
-                && (r.Status == RequestStatus.Created 
-                || r.Status == RequestStatus.Received 
-                || r.Status == RequestStatus.Accepted 
-                || r.Status == RequestStatus.Approved 
-                || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
-            var actualSecond = mockOrders.Where(o => o.Requests.Any(r => r.Ranking.BrokerId == brokerSecond
-                && (r.Status == RequestStatus.Created
-                || r.Status == RequestStatus.Received
-                || r.Status == RequestStatus.Accepted
-                || r.Status == RequestStatus.Approved
-                || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.Requests.Any(r => r.Ranking.BrokerId == brokerFirst 
+        //        && (r.Status == RequestStatus.Created 
+        //        || r.Status == RequestStatus.Received 
+        //        || r.Status == RequestStatus.Accepted 
+        //        || r.Status == RequestStatus.Approved 
+        //        || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
+        //    var actualSecond = mockOrders.Where(o => o.Requests.Any(r => r.Ranking.BrokerId == brokerSecond
+        //        && (r.Status == RequestStatus.Created
+        //        || r.Status == RequestStatus.Received
+        //        || r.Status == RequestStatus.Accepted
+        //        || r.Status == RequestStatus.Approved
+        //        || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ComboByRegionLanguage()
-        {
-            var languageFirst = mockLanguages.Where(l => l.Name == "Chinese").Single();
-            var languageSecond = mockLanguages.Where(l => l.Name == "German").Single();
-            var regionFirst = Region.Regions.Where(r => r.Name == "Västra Götaland").Single();
-            var regionSecond = Region.Regions.Where(r => r.Name == "Stockholm").Single();
-            var filterFirst = new OrderFilterModel
-            {
-                LanguageId = languageFirst.LanguageId,
-                RegionId = regionFirst.RegionId,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                LanguageId = languageSecond.LanguageId,
-                RegionId = regionSecond.RegionId,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ComboByRegionLanguage()
+        //{
+        //    var languageFirst = mockLanguages.Where(l => l.Name == "Chinese").Single();
+        //    var languageSecond = mockLanguages.Where(l => l.Name == "German").Single();
+        //    var regionFirst = Region.Regions.Where(r => r.Name == "Västra Götaland").Single();
+        //    var regionSecond = Region.Regions.Where(r => r.Name == "Stockholm").Single();
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        LanguageId = languageFirst.LanguageId,
+        //        RegionId = regionFirst.RegionId,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        LanguageId = languageSecond.LanguageId,
+        //        RegionId = regionSecond.RegionId,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
-            var actualFirst = mockOrders.Where(o => o.Language == languageFirst
-                && o.Region == regionFirst);
-            var actualSecond = mockOrders.Where(o => o.Language == languageSecond
-                && o.Region == regionSecond);
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var actualFirst = mockOrders.Where(o => o.Language == languageFirst
+        //        && o.Region == regionFirst);
+        //    var actualSecond = mockOrders.Where(o => o.Language == languageSecond
+        //        && o.Region == regionSecond);
 
-            listFirst.Should().HaveCount(actualFirst.Count());
-            listFirst.Should().Contain(actualFirst);
+        //    listFirst.Should().HaveCount(actualFirst.Count());
+        //    listFirst.Should().Contain(actualFirst);
 
-            listSecond.Should().HaveCount(actualSecond.Count());
-            listSecond.Should().Contain(actualSecond);
-        }
+        //    listSecond.Should().HaveCount(actualSecond.Count());
+        //    listSecond.Should().Contain(actualSecond);
+        //}
 
-        [Fact]
-        public void OrderFilter_ComboByTimeBroker()
-        {
-            var filterFirst = new OrderFilterModel
-            {
-                DateRange = new DateRange { Start = new DateTime(2018,09,01), End = new DateTime(2018,10,30) },
-                BrokerId = 1,
-                IsAdmin = true
-            };
-            var filterSecond = new OrderFilterModel
-            {
-                DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 08, 31) },
-                BrokerId = 2,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_ComboByTimeBroker()
+        //{
+        //    var filterFirst = new OrderFilterModel
+        //    {
+        //        DateRange = new DateRange { Start = new DateTime(2018,09,01), End = new DateTime(2018,10,30) },
+        //        BrokerId = 1,
+        //        IsAdmin = true
+        //    };
+        //    var filterSecond = new OrderFilterModel
+        //    {
+        //        DateRange = new DateRange { Start = new DateTime(2018, 06, 01), End = new DateTime(2018, 08, 31) },
+        //        BrokerId = 2,
+        //        IsAdmin = true
+        //    };
 
-            var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
-            var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
+        //    var listFirst = filterFirst.Apply(mockOrders.AsQueryable());
+        //    var listSecond = filterSecond.Apply(mockOrders.AsQueryable());
 
-            listFirst.Should().HaveCount(3);
-            listFirst.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[6], });
+        //    listFirst.Should().HaveCount(3);
+        //    listFirst.Should().Contain(new[] { mockOrders[3], mockOrders[4], mockOrders[6], });
 
-            listSecond.Should().OnlyContain(o => o == mockOrders[0]);
-        }
+        //    listSecond.Should().OnlyContain(o => o == mockOrders[0]);
+        //}
 
-        [Fact]
-        public void OrderFilter_DateInclusivity()
-        {
-            var filter = new OrderFilterModel
-            {
-                DateRange = new DateRange { Start = new DateTime(2018, 06, 07), End = new DateTime(2018, 08, 07) },
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_DateInclusivity()
+        //{
+        //    var filter = new OrderFilterModel
+        //    {
+        //        DateRange = new DateRange { Start = new DateTime(2018, 06, 07), End = new DateTime(2018, 08, 07) },
+        //        IsAdmin = true
+        //    };
 
-            var list = filter.Apply(mockOrders.AsQueryable());
+        //    var list = filter.Apply(mockOrders.AsQueryable());
 
-            list.Should().HaveCount(3);
-            list.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2] }, because: "these orders fall within these dates");
-        }
+        //    list.Should().HaveCount(3);
+        //    list.Should().Contain(new[] { mockOrders[0], mockOrders[1], mockOrders[2] }, because: "these orders fall within these dates");
+        //}
 
-        [Fact]
-        public void OrderFilter_NoSettings()
-        {
-            var filter = new OrderFilterModel {IsAdmin = true};
+        //[Fact]
+        //public void OrderFilter_NoSettings()
+        //{
+        //    var filter = new OrderFilterModel {IsAdmin = true};
 
-            var list = filter.Apply(mockOrders.AsQueryable());
+        //    var list = filter.Apply(mockOrders.AsQueryable());
 
-            list.Should().HaveCount(mockOrders.Count());
-            list.Should().Contain(mockOrders, because: "no filter parameters are specified");
-        }
+        //    list.Should().HaveCount(mockOrders.Count());
+        //    list.Should().Contain(mockOrders, because: "no filter parameters are specified");
+        //}
 
-        [Fact]
-        public void OrderFilter_NoResults()
-        {
-            var filter = new OrderFilterModel
-            {
-                BrokerId = 3,
-                IsAdmin = true
-            };
+        //[Fact]
+        //public void OrderFilter_NoResults()
+        //{
+        //    var filter = new OrderFilterModel
+        //    {
+        //        BrokerId = 3,
+        //        IsAdmin = true
+        //    };
 
-            var list = filter.Apply(mockOrders.AsQueryable());
+        //    var list = filter.Apply(mockOrders.AsQueryable());
 
-            list.Should().BeEmpty("no order is assigned to {0}", filter.BrokerId);
-        }
+        //    list.Should().BeEmpty("no order is assigned to {0}", filter.BrokerId);
+        //}
     }
 }

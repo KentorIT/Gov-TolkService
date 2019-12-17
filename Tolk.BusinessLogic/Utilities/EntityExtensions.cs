@@ -15,6 +15,12 @@ namespace Tolk.BusinessLogic.Utilities
             return isCentralAdminOrOrderHandler ? filteredOrderGroups :
                 filteredOrderGroups.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || customerUnits.Contains(o.CustomerUnitId ?? -1));
         }
+        public static IQueryable<OrderListRow> CustomerOrderListRows(this IQueryable<OrderListRow> entities, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
+        {
+            var filteredOrderGroups = entities.Where(o => o.CustomerOrganisationId == customerOrganisationId);
+            return isCentralAdminOrOrderHandler ? filteredOrderGroups :
+                filteredOrderGroups.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || o.ContactPersonId == userId || customerUnits.Contains(o.CustomerUnitId ?? -1));
+        }
 
         public static IQueryable<Order> CustomerOrders(this IQueryable<Order> orders, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false, bool includeContact = false, bool includeOrderGroupOrders = false)
         {

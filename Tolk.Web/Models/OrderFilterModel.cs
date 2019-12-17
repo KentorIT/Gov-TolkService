@@ -41,9 +41,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapad av")]
         public int? CreatedBy { get; set; }
 
-        [Display(Name = "Sök med BokningsID sammanhållen bokning", Description = "Kryssa i denna om du vill söka med BokningsId för sammanhållen bokning, samt fyll i BokningsId ovan")]
-        public bool? SearchOrderGroupNumber { get; set; }
-
         public bool IsCentralAdminOrOrderHandler { get; set; }
 
         public bool HasCustomerUnits => CustomerUnits != null && CustomerUnits.Any();
@@ -54,22 +51,18 @@ namespace Tolk.Web.Models
 
         public int UserId { get; set; }
 
-        internal IQueryable<Order> GetOrders(IQueryable<Order> orders)
+        internal IQueryable<OrderListRow> GetEntities(IQueryable<OrderListRow> entities)
         {
             return !IsAdmin
-                ? orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true, true)
-                : orders;
-
+                ? entities.CustomerOrderListRows(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler)
+                : entities;
         }
 
-        internal IQueryable<Order> Apply(IQueryable<Order> orders)
+        internal IQueryable<OrderListRow> Apply(IQueryable<OrderListRow> orders)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-            orders = (!(SearchOrderGroupNumber?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
-                ? orders.Where(o => o.OrderNumber.Contains(OrderNumber))
-                : orders;
-            orders = ((SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
-              ? orders.Where(o => o.OrderGroupId.HasValue && o.Group.OrderGroupNumber.Contains(OrderNumber))
+            orders = !string.IsNullOrWhiteSpace(OrderNumber)
+              ? orders.Where(o => o.EntityNumber.Contains(OrderNumber))
               : orders;
             orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? orders.Where(o => o.CustomerReferenceNumber != null && o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
@@ -92,19 +85,17 @@ namespace Tolk.Web.Models
                     ? orders.Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter)
                 : orders.Where(o => o.Status == Status) : orders;
             orders = BrokerId.HasValue
-                ? orders.Where(o => o.Requests.Any(req => req.Ranking.BrokerId == BrokerId && (req.IsToBeProcessedByBroker || req.IsAcceptedOrApproved)))
-                : orders;
+                ? orders.Where(o => o.BrokerId == BrokerId) : orders;
             orders = CustomerOrganisationId.HasValue
                 ? orders.Where(o => o.CustomerOrganisationId == CustomerOrganisationId)
                 : orders;
             orders = FilterByInactiveUnits ?? false
-                ? orders.Where(o => o.CustomerUnit == null || o.CustomerUnit.IsActive)
-                : orders;
+                ? orders.Where(o => o.CustomerUnitId == null || o.CustomerUnitIsActive) : orders;
             orders = DateRange?.Start != null
                     ? orders.Where(o => o.StartAt.Date >= DateRange.Start)
                     : orders;
             orders = DateRange?.End != null
-                    ? orders.Where(o => o.StartAt.Date <= DateRange.End)
+                    ? orders.Where(o => o.EndAt.Date <= DateRange.End)
                     : orders;
             return orders;
         }

@@ -236,6 +236,9 @@ $(function () {
                 url: $table.data("ajax-column-definition"),
                 success: function (json) {
                     var $columnDefinition = json;
+                    var $overrideClickLinkUrlColumn = $columnDefinition.filter(function (o) {
+                        return o.isOverrideClickLinkUrlColumn;
+                    });
                     var $idColumn = $columnDefinition.filter(function (o) {
                         return o.isIdColumn;
                     });
@@ -252,6 +255,10 @@ $(function () {
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
                                 var $action = $table.data("click-action-url");
+                                if ($overrideClickLinkUrlColumn.length > 0 && data[$overrideClickLinkUrlColumn[0].data] !== null && data[$overrideClickLinkUrlColumn[0].data] !== "") {
+                                    $action = data[$overrideClickLinkUrlColumn[0].data];
+                                }
+
                                 if ($action.indexOf("?") > -1) {
                                     $(row).data("click-action-url", $action.replace("?", "/" + data[$idColumn[0].data] + "?"));
 
