@@ -95,8 +95,7 @@ $(function () {
             triggerOrderValidator("Det går inte att lägga till tillfällen för nära i tiden när man vill boka flera tillfällen.", $('#OccasionValidator'));
             return;
         }
-        if (!hasValidOccasion())
-        {
+        if (!hasValidOccasion()) {
             triggerOrderValidator("Fyll i datum och tid", $('#OccasionValidator'));
             return;
         }
@@ -399,6 +398,7 @@ $(function () {
     }
 
     $("body").on("change", "input[name=CompetenceLevelDesireType]", function () {
+        hideValidatorMessage("CompetenceLevelDesireType");
         var items = $(this).filter('input:checked');
         if ($(items[0]).val() === 'Request') {
             // Is request
@@ -414,6 +414,17 @@ $(function () {
         else {
             $("#competence-requested, #competence-required, #competence-prio-list, #competence-not-available, #competence-info-requirement").hide();
             $("#competence-info").show();
+        }
+    });
+
+    $("body").on("change", "input[name=CreatorIsInterpreterUser]", function () {
+        hideValidatorMessage("CreatorIsInterpreterUser");
+        var items = $(this).filter('input:checked');
+        if ($(items[0]).val() === 'No') {
+            $("#CreatorIsNotInterpreterUserInfo").show();
+        }
+        else {
+            $("#CreatorIsNotInterpreterUserInfo").hide();
         }
     });
 
@@ -541,6 +552,7 @@ $(function () {
     });
 
     $("body").on("click", "input[name=AllowExceedingTravelCost]", function () {
+        hideValidatorMessage("AllowExceedingTravelCost");
         if ($(this).val() === "YesShouldBeApproved") {
             $(".allow-more-travel-cost-information").show();
             $(".allow-no-review-travel-cost-information").hide();
@@ -699,6 +711,10 @@ $(function () {
             $("[name=CompetenceLevelDesireType]").filter(":checked").length > 0;
     };
 
+    var validateCreatorIsInterpreterUser = function () {
+        return $("[name=CreatorIsInterpreterUser]").filter(":checked").length > 0;
+    };
+
     var validateAllowExceedingTravelCost = function () {
         if ($("#AllowExceedingTravelCost").is(":hidden")) {
             return true;
@@ -713,6 +729,12 @@ $(function () {
         $(validatorQuery).append(message);
         $(validatorQuery).show();
     }
+
+    function hideValidatorMessage(forName) {
+        var validatorQuery = "[data-valmsg-for=\"" + forName + "\"]";
+        $(validatorQuery).hide();
+    }
+
     var $this = $(".wizard");
     $this.tolkWizard({
         backHandler: function (event) {
@@ -732,6 +754,10 @@ $(function () {
             }
             if (!validateAllowExceedingTravelCost()) {
                 validatorMessage("AllowExceedingTravelCost", "Ange huruvida restid eller resväg som överskriver gränsvärden accepteras");
+                errors++;
+            }
+            if (!validateCreatorIsInterpreterUser()) {
+                validatorMessage("CreatorIsInterpreterUser", "Ange om tolkanvändare är samma person som bokar");
                 errors++;
             }
             var competenceMessage = validateSelectedCompetences();

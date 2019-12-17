@@ -238,7 +238,7 @@ namespace Tolk.Web.Controllers
                         using (var trn = await _dbContext.Database.BeginTransactionAsync())
                         {
                             Order replacementOrder = new Order(order);
-                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, true);
+                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, isReplace: true);
                             await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                             await _dbContext.SaveChangesAsync();
                             trn.Commit();

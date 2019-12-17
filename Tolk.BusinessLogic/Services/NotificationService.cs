@@ -1334,6 +1334,7 @@ Sammanställning:
                     Rank = c.Rank ?? 0
                 }),
                 AllowMoreThanTwoHoursTravelTime = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser,
                 AssignentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
@@ -1393,6 +1394,7 @@ Sammanställning:
                     Rank = c.Rank ?? 0
                 }),
                 AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser,
                 AssignentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,

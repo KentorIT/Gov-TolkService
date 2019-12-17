@@ -720,6 +720,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("CreatedBy");
 
+                    b.Property<bool?>("CreatorIsInterpreterUser");
+
                     b.Property<int>("CustomerOrganisationId");
 
                     b.Property<string>("CustomerReferenceNumber")
@@ -867,6 +869,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<int>("CreatedBy");
+
+                    b.Property<bool?>("CreatorIsInterpreterUser");
 
                     b.Property<int>("CustomerOrganisationId");
 

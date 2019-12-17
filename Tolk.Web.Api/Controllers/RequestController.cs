@@ -683,6 +683,7 @@ namespace Tolk.Web.Api.Controllers
                 }),
                 CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
                 AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                CreatorIsInterpreterUser = request.Order.CreatorIsInterpreterUser,
                 Description = request.Order.Description,
                 AssignentType = request.Order.AssignmentType.GetCustomName(),
                 //Should the attachemts from the broker be applied too? Yes I suppose...

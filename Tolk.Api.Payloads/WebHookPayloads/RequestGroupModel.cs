@@ -17,6 +17,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }
         public bool CompetenceLevelsAreRequired { get; set; }
         public bool AllowExceedingTravelCost { get; set; }
+        public bool? CreatorIsInterpreterUser { get; set; }
         public string Description { get; set; }
         public string AssignentType { get; set; }
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }

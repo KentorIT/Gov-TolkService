@@ -278,6 +278,7 @@ namespace Tolk.Web.Models
             orderGroup.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
             orderGroup.RegionId = RegionId.Value;
             orderGroup.AssignmentType = EnumHelper.Parse<AssignmentType>(AssignmentType.SelectedItem.Value);
+            orderGroup.CreatorIsInterpreterUser = EnumHelper.Parse<TrueFalse>(CreatorIsInterpreterUser.SelectedItem.Value) == TrueFalse.Yes;
             orderGroup.CustomerUnitId = (CustomerUnitId.HasValue && CustomerUnitId > 0) ? CustomerUnitId : null;
             if (HasOnsiteLocation && AllowExceedingTravelCost != null)
             {
@@ -434,6 +435,7 @@ namespace Tolk.Web.Models
                     order.AllowExceedingTravelCost = EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value);
                 }
                 order.SpecificCompetenceLevelRequired = SpecificCompetenceLevelRequired;
+                order.CreatorIsInterpreterUser = EnumHelper.Parse<TrueFalse>(CreatorIsInterpreterUser.SelectedItem.Value) == TrueFalse.Yes;
                 if (!isGroupOrder)
                 {
                     if (Dialect != null)
@@ -557,6 +559,7 @@ namespace Tolk.Web.Models
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignmentType.ToString()) },
+                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 TimeRange = new TimeRange
@@ -662,6 +665,7 @@ namespace Tolk.Web.Models
             {
                 AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignmentType.ToString()) },
+                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
                 RegionId = order.RegionId,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 CustomerUnitId = order.CustomerUnitId,

@@ -197,9 +197,6 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                <display-entry asp-for="Description" />
-            </div>
-            <div class="col-sm-4">
                 @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
                 {
                     @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
@@ -211,12 +208,28 @@
                 }
             </div>
             <div class="col-sm-4">
-                @if (ShowCalculatedPrice && Model.OrderCalculatedPriceInformationModel != null)
+                @if (Model.CreatorIsInterpreterUser != null && Model.CreatorIsInterpreterUser.SelectedItem != null)
                 {
-                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                    <display-entry asp-for="CreatorIsInterpreterUser" />
+                }
+                else
+                {
+                    <label>Är tolkanvändare samma person som bokar</label>
+                    <div class="no-value-info">Ej angivet</div>
                 }
             </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="Description" />
+            </div>
         </div>
-        <br />
+        @if (ShowCalculatedPrice && Model.OrderCalculatedPriceInformationModel != null)
+        {
+            <div class="row">
+                <div class="col-sm-4">
+                    @await Html.PartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel)
+                </div>
+            </div>
+        }
     </div>
+
 </section>

@@ -89,6 +89,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
         public RadioButtonGroup AllowExceedingTravelCost { get; set; }
 
+        [Display(Name = "Är tolkanvändare samma person som bokar")]
+        public RadioButtonGroup CreatorIsInterpreterUser { get; set; }
+
         public CustomerInformationModel CustomerInformationModel { get; set; }
 
         public OccasionListModel OccasionList { get; set; }

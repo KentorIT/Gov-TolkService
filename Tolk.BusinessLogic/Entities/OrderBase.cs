@@ -49,6 +49,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
 
+        public bool? CreatorIsInterpreterUser { get; set; }
+
         public int? ImpersonatingCreator { get; set; }
 
         [ForeignKey(nameof(ImpersonatingCreator))]

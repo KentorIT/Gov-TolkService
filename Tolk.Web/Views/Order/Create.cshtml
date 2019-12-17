@@ -251,7 +251,12 @@
                                     </div>
                                 </div>
                             </section>
+
                             <div class="row">
+                                <div class="col-sm-6">
+                                    <form-entry asp-for="CreatorIsInterpreterUser" asp-items="SelectListService.BoolList" />
+                                    <div id="CreatorIsNotInterpreterUserInfo" class="d-none text-danger body">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.</div>
+                                </div>
                                 <div class="col-sm-6">
                                     <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
                                 </div>

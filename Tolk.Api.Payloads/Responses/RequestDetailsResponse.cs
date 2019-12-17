@@ -27,13 +27,13 @@ namespace Tolk.Api.Payloads.Responses
         public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }
         public bool CompetenceLevelsAreRequired { get; set; }
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
+        public bool? CreatorIsInterpreterUser { get; set; }
         public string Description { get; set; }
         public string AssignentType { get; set; }
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }
         public IEnumerable<RequirementModel> Requirements { get; set; }
         public PriceInformationModel CalculatedPriceInformationFromRequest { get; set; }
         public PriceInformationModel CalculatedPriceInformationFromAnswer { get; set; }
-
         public InterpreterModel Interpreter { get; set; }
         public string InterpreterLocation { get; set; }
         public string InterpreterCompetenceLevel { get; set; }

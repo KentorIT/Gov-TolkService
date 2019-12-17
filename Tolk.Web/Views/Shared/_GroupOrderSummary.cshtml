@@ -244,9 +244,6 @@ else
     </div>
     <div class="row">
         <div class="col-sm-4">
-            <display-entry asp-for="Description" />
-        </div>
-        <div class="col-sm-4">
             @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
             {
                 @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
@@ -256,6 +253,20 @@ else
                 <label>Bifogade filer</label>
                 <div class="no-value-info">Inga filer har bifogats</div>
             }
+        </div>
+        <div class="col-sm-4">
+            @if (Model.CreatorIsInterpreterUser != null && Model.CreatorIsInterpreterUser.SelectedItem != null)
+            {
+                <display-entry asp-for="CreatorIsInterpreterUser" />
+            }
+            else
+            {
+                <label>Är tolkanvändare samma person som bokar</label>
+                <div class="no-value-info">Ej angivet</div>
+            }
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="Description" />
         </div>
     </div>
     <br />

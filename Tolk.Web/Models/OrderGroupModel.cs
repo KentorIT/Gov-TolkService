@@ -15,7 +15,6 @@ namespace Tolk.Web.Models
     {
         public int? OrderGroupId { get; set; }
 
-
         [Display(Name = "Sammanhållet bokningsID")]
         public string OrderGroupNumber { get; set; }
 
@@ -27,7 +26,6 @@ namespace Tolk.Web.Models
         public override DateTimeOffset? StartAt => OccasionList.FirstStartDateTime;
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForOrderStatus(Status);
-
 
         [Display(Name = "Anledning till att bokningen avbokas")]
         [DataType(DataType.MultilineText)]
@@ -82,7 +80,17 @@ namespace Tolk.Web.Models
 
             var model = new OrderGroupModel
             {
-                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString()) },
+                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup {
+                    SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : 
+                    SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString()) } : 
+                    new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : 
+                    SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString())
+                    },
+                CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup {
+                    SelectedItem = SelectListService.BoolList.Single(e => e.Value == (orderGroup.CreatorIsInterpreterUser.Value ? 
+                    TrueFalse.Yes.ToString() : TrueFalse.No.ToString()))
+                } : null,
+
                 Description = orderGroup.FirstOrder.Description,
 
                 CompetenceLevelDesireType = new RadioButtonGroup

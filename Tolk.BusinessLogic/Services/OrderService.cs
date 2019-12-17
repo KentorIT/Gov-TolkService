@@ -305,7 +305,7 @@ namespace Tolk.BusinessLogic.Services
             replacementOrder.Requests.Add(replacingRequest);
             await _tolkDbContext.AddAsync(replacementOrder);
             CancelOrder(order, userId, impersonatorId, cancelMessage, true);
-
+            replacementOrder.CreatorIsInterpreterUser = order.CreatorIsInterpreterUser;
             replacementOrder.CreatedAt = _clock.SwedenNow;
             replacementOrder.CreatedBy = userId;
             replacementOrder.ImpersonatingCreator = impersonatorId;
