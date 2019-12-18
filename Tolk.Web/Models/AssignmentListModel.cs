@@ -8,7 +8,5 @@ namespace Tolk.Web.Models
     public class AssignmentListModel
     {
         public AssignmentFilterModel FilterModel { get; set; }
-
-        public IEnumerable<RequestListItemModel> Items { get; set; }
     }
 }

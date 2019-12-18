@@ -27,11 +27,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Uppdragets status")]
         public AssignmentStatus? Status { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => RegionId.HasValue|| CustomerOrganizationId.HasValue || !string.IsNullOrWhiteSpace(OrderNumber) || LanguageId.HasValue || DateRange?.Start != null || DateRange?.End != null || Status.HasValue; 
-        }
-
         internal IQueryable<Request> Apply(IQueryable<Request> requests, ISwedishClock clock)
         {
             requests = !string.IsNullOrWhiteSpace(OrderNumber)

@@ -9,6 +9,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Services;
+using DataTables.AspNet.Core;
 
 namespace Tolk.Web.Controllers
 {
@@ -27,38 +28,48 @@ namespace Tolk.Web.Controllers
             _clock = clock;
         }
 
-        public IActionResult List(AssignmentFilterModel filterModel)
+        public IActionResult List()
         {
-            if (filterModel == null)
-            {
-                filterModel = new AssignmentFilterModel();
-            }
-            var requests = _dbContext.Requests.Include(r => r.Order)
-                .Where(r => r.Status == RequestStatus.Approved || 
-                r.Status == RequestStatus.CancelledByBroker || 
+            return View(new AssignmentListModel { FilterModel = new AssignmentFilterModel() });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ListAssignments(IDataTablesRequest request)
+        {
+            var model = new AssignmentFilterModel();
+            await TryUpdateModelAsync(model);
+            var requests = _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+            .Where(r => r.Interpreter.InterpreterId == User.GetInterpreterId() &&
+                (r.Status == RequestStatus.Approved ||
+                r.Status == RequestStatus.CancelledByBroker ||
                 r.Status == RequestStatus.CancelledByCreator ||
-                r.Status == RequestStatus.CancelledByCreatorWhenApproved);
+                r.Status == RequestStatus.CancelledByCreatorWhenApproved));
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
-            var interpreterId = User.TryGetInterpreterId();
-            var brokerId = User.TryGetBrokerId();
 
-            if (interpreterId.HasValue)
+            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests, _clock), x => x.Select( r =>
+            new RequestListItemModel
             {
-                requests = requests.Where(r => r.InterpreterBrokerId == interpreterId);
-            }
-            if (brokerId.HasValue)
-            {
-                requests = requests.Where(r => r.Ranking.BrokerId == brokerId);
-            }
+                RequestId = r.RequestId,
+                LanguageName = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                OrderNumber = r.Order.OrderNumber,
+                CustomerName = r.Order.CustomerOrganisation.Name,
+                RegionName = r.Order.Region.Name,
+                ExpiresAt = r.ExpiresAt,
+                StartAt = r.Order.StartAt,
+                EndAt = r.Order.EndAt,
+                Status = r.Status
+            }));
+        }
 
-            requests = filterModel.Apply(requests, _clock);
-
-            return View(
-               new AssignmentListModel
-               {
-                   FilterModel = filterModel,
-//                   Items = requests.SelectRequestListItemModel()
-               });
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public JsonResult ListColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<RequestListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(RequestListItemModel.ExpiresAtDisplay)).Visible = false;
+            return Json(definition);
         }
 
         public async Task<IActionResult> View(int id)
@@ -66,6 +77,7 @@ namespace Tolk.Web.Controllers
             var request = _dbContext.Requests
                     .Include(r => r.PriceRows)
                     .Include(r => r.Requisitions)
+                    .Include(r => r.Interpreter)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)

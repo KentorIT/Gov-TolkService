@@ -310,8 +310,11 @@ namespace Tolk.Web.Authorization
                         return requisition.Request.Order.IsAuthorizedAsCreatorOrContact(customerUnits, user.GetCustomerOrganisationId(), userId, user.IsInRole(Roles.CentralAdministrator) || user.IsInRole(Roles.CentralOrderHandler));
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
-                case RequestBase request:
-                    return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId();
+                case Request request:
+                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId()) ||
+                        (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId) && request.Interpreter.InterpreterId == user.GetInterpreterId());
+                case RequestGroup requestGroup:
+                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && requestGroup.Ranking.BrokerId == user.GetBrokerId());
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
