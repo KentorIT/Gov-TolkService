@@ -54,6 +54,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
         public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
 
+        [Display(Name = "Är tolkanvändare samma person som bokar")]
+        public bool? CreatorIsInterpreterUser { get; set; }
+
         [Display(Name = "Fakturareferens")]
         public string InvoiceReference { get; set; }
 
@@ -65,6 +68,7 @@ namespace Tolk.Web.Models
         internal static DefaultSettingsViewModel GetModel(AspNetUser user, Region[] regions, string message = null)
         {
             int? customerUnit = user.GetIntValue(DefaultSettingsType.CustomerUnit);
+            var creatorIsInterpreterUser = user.GetValue(DefaultSettingsType.CreatorIsInterpreterUser);
             return new DefaultSettingsViewModel
             {
                 Message = message,
@@ -82,6 +86,7 @@ namespace Tolk.Web.Models
                 OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
                 AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
+                CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (bool?)(creatorIsInterpreterUser == "Yes") : null,
             };
         }
     }

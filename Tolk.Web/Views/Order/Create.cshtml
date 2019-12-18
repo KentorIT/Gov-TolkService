@@ -11,6 +11,7 @@
     bool enableOrderGroups = TolkOptions.Value.EnableOrderGroups;
     string orderTimeClass = enableOrderGroups ? "order-group-enabled" : "order-group-disabled";
     var allowExceedingTravelCost = Model.UserDefaultSettings.AllowExceedingTravelCost.HasValue ? Model.UserDefaultSettings.AllowExceedingTravelCost.ToString() : string.Empty;
+    var creatorIsInterpreterUser = Model.UserDefaultSettings.CreatorIsInterpreterUser.HasValue ? Model.UserDefaultSettings.CreatorIsInterpreterUser.ToString() : string.Empty;
 }
 @using Tolk.Web.Services
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
@@ -254,10 +255,10 @@
 
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <form-entry asp-for="CreatorIsInterpreterUser" asp-items="SelectListService.BoolList" />
-                                    <div id="CreatorIsNotInterpreterUserInfo" class="d-none text-danger body">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.</div>
+                                    <form-entry asp-for="CreatorIsInterpreterUser" asp-items="SelectListService.BoolList" checked-value="@creatorIsInterpreterUser" />
+                                    <div id="CreatorIsNotInterpreterUserInfo" class="d-none warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.</span></div>
                                 </div>
-                                <div class="col-sm-6">
+                                <div class="col-sm-6"> 
                                     <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
                                 </div>
                             </div>

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.BusinessLogic.Enums
 {
@@ -31,5 +30,7 @@ namespace Tolk.BusinessLogic.Enums
         AllowExceedingTravelCost = 12,
         [Description("Fakturareferens")]
         InvoiceReference = 13,
+        [Description("Är tolkanvändare samma person som bokar")]
+        CreatorIsInterpreterUser = 14,
     }
 }

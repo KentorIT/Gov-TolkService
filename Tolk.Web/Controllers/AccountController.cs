@@ -775,6 +775,7 @@ namespace Tolk.Web.Controllers
                     UpdateDefaultSetting(user, DefaultSettingsType.OffSiteVideoContactInformation, model.OffSiteVideoContactInformation);
                     UpdateDefaultSetting(user, DefaultSettingsType.AllowExceedingTravelCost, ((int?)model.AllowExceedingTravelCost)?.ToSwedishString());
                     UpdateDefaultSetting(user, DefaultSettingsType.InvoiceReference, model.InvoiceReference);
+                    UpdateDefaultSetting(user, DefaultSettingsType.CreatorIsInterpreterUser, model.CreatorIsInterpreterUser.HasValue ? model.CreatorIsInterpreterUser.ToString() : null);
 
                     await _dbContext.SaveChangesAsync();
 

@@ -17,16 +17,13 @@ namespace Tolk.Web.Controllers
     public class EmailController : Controller
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ISwedishClock _clock;
         private readonly INotificationService _notificationService;
 
         public EmailController(
             TolkDbContext dbContext,
-            ISwedishClock clock,
             INotificationService notificationService)
         {
             _dbContext = dbContext;
-            _clock = clock;
             _notificationService = notificationService;
         }
 
