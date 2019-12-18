@@ -68,7 +68,7 @@ namespace Tolk.Web.Controllers
             var model = new RequestFilterModel();
             await TryUpdateModelAsync(model);
 
-            var requests = _dbContext.Requests.BrokerRequests(User.GetBrokerId());
+            var requests = _dbContext.RequestListRows.Where(r=> r.BrokerId == User.GetBrokerId()).Select(o => o);
             return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests), r => r.SelectRequestListItemModel());
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
@@ -17,8 +18,8 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 2, Name = nameof(StatusName), Title = "Status")]
         public string StatusName => Status.GetDescription();
 
-        [ColumnDefinitions(Index = 3, Name = nameof(Language), Title = "Språk")]
-        public string Language { get; set; }
+        [ColumnDefinitions(Index = 3, Name = nameof(LanguageName), Title = "Språk")]
+        public string LanguageName { get; set; }
 
         [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), ColumnName = "StartAt", SortOnWebServer = false, Title = "Datum för uppdrag")]
         public string OrderDateAndTime => $"{StartAt.ToSwedishString("yyyy-MM-dd")} {StartAt.ToSwedishString("HH\\:mm")}-{EndAt.ToSwedishString("HH\\:mm")}";
@@ -38,20 +39,7 @@ namespace Tolk.Web.Models
         public string OrderNumber { get; set; }
         public string ParentOrderNumber { get; set; }
 
-        public OrderRowType RowType { get; set; }
-
         public OrderStatus Status { get; set; }
-
-        public string CustomerReferenceNumber { get; set; }
-
-        public int RegionId { get; set; }
-        public int? CustomerUnitId { get; set; }
-        public int? LanguageId { get; set; }
-        public int CreatedBy { get; set; }
-        public int CustomerOrganisationId { get; set; }
-        public int? BrokerId { get; set; }
-        public bool CustomerUnitIsActive { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset StartAt { get; set; }
         public DateTimeOffset EndAt { get; set; }
 

@@ -600,6 +600,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 
         public DbQuery<OrderListRow> OrderListRows{ get; set; }
+        
+        public DbQuery<RequestListRow> RequestListRows { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

@@ -11,20 +11,21 @@ namespace Tolk.Web.Models
 {
     public class RequestListItemModel
     {
+
         [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(RequestId), Visible = false)]
         public int RequestId { get; set; }
 
-        [ColumnDefinitions(Index = 1, Name = nameof(OrderNumber), Title = "BokningsID")]
-        public string OrderNumber { get; set; }
+        [ColumnDefinitions(Index = 1, Name = nameof(OrderDescriptor), ColumnName = "CreatedAt", SortOnWebServer = false, Title = "BokningsID")]
+        public string OrderDescriptor => !string.IsNullOrEmpty(ParentOrderNumber) ? $"{OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {ParentOrderNumber}</span>" : OrderNumber;
 
         [ColumnDefinitions(Index = 2, Name = nameof(StatusName), Title = "Status")]
         public string StatusName => Status.GetDescription();
 
-        [ColumnDefinitions(Index = 3, Name = nameof(Language), Title = "Språk")]
-        public string Language { get; set; }
+        [ColumnDefinitions(Index = 3, Name = nameof(LanguageName), Title = "Språk")]
+        public string LanguageName { get; set; }
 
-        [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), Title = "Datum för uppdrag")]
-        public string OrderDateAndTime { get; set; }
+        [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), ColumnName = nameof(StartAt), SortOnWebServer = false, Title = "Datum för uppdrag")]
+        public string OrderDateAndTime => $"{StartAt.ToSwedishString("yyyy-MM-dd")} {StartAt.ToSwedishString("HH\\:mm")}-{EndAt.ToSwedishString("HH\\:mm")}";
 
         [ColumnDefinitions(Index = 5, Name = nameof(RegionName), Title = "Län")]
         public string RegionName { get; set; }
@@ -32,28 +33,40 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 6, Name = nameof(CustomerName), Title = "Myndighet")]
         public string CustomerName { get; set; }
 
-        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAt), SortOnWebServer = false, Title = "Svar innan")]
-        public string ExpiresAt { get; set; }
+        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAtDisplay), ColumnName = nameof(ExpiresAt), SortOnWebServer = false, Title = "Svar innan")]
+        public string ExpiresAtDisplay => ExpiresAt.HasValue ? ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : null;
 
         [ColumnDefinitions(IsLeftCssClassName = true, Name = nameof(ColorClassName), Visible = false)]
         public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
 
+        public string OrderNumber { get; set; }
+        public string ParentOrderNumber { get; set; }
         public RequestStatus Status { get; set; }
-    }
+
+        [ColumnDefinitions(IsOverrideClickLinkUrlColumn = true, Name = nameof(LinkOverride), Visible = false)]
+        public string LinkOverride { get; set; }
+        public DateTimeOffset StartAt { get; set; }
+        public DateTimeOffset EndAt { get; set; }
+
+         public DateTimeOffset? ExpiresAt { get; set; }
+   }
 
     public static class IQueryableOfRequestExtensions
     {
-        public static IQueryable<RequestListItemModel> SelectRequestListItemModel(this IQueryable<Request> requests)
+        public static IQueryable<RequestListItemModel> SelectRequestListItemModel(this IQueryable<RequestListRow> requests)
         {
             return requests.Select(r => new RequestListItemModel
             {
-                RequestId = r.RequestId,
-                Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                OrderNumber = r.Order.OrderGroupId.HasValue ? $"{ r.Order.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {r.Order.Group.OrderGroupNumber}</span>" : r.Order.OrderNumber,
-                CustomerName = r.Order.CustomerOrganisation.Name,
-                RegionName = r.Order.Region.Name,
-                OrderDateAndTime = $"{r.Order.StartAt.ToSwedishString("yyyy-MM-dd")} {r.Order.StartAt.ToSwedishString("HH\\:mm")}-{r.Order.EndAt.ToSwedishString("HH\\:mm")}",
-                ExpiresAt = r.ExpiresAt.HasValue ? r.ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : null,
+                RequestId = r.EntityId,
+                LanguageName = r.LanguageName,
+                OrderNumber = r.EntityNumber,
+                ParentOrderNumber= r.EntityParentNumber,
+                CustomerName = r.CustomerName,
+                RegionName = r.RegionName,
+                ExpiresAt = r.ExpiresAt,
+                StartAt = r.StartAt,
+                EndAt = r.EndAt,
+                LinkOverride = r.RowType == OrderRowType.OrderGroup ? "/RequestGroup/View" : string.Empty,
                 Status = r.Status
             });
         }

@@ -57,7 +57,7 @@ namespace Tolk.Web.Controllers
                new AssignmentListModel
                {
                    FilterModel = filterModel,
-                   Items = requests.SelectRequestListItemModel()
+//                   Items = requests.SelectRequestListItemModel()
                });
         }
 

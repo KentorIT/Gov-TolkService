@@ -13,7 +13,7 @@ namespace Tolk.Web.Tests.Filters
 {
     public class RequestFilterModelTests
     {
-        private Request[] requests;
+        private RequestListRow[] requests;
 
         private Language[] mockLanguages = MockEntities.MockLanguages;
 
@@ -35,7 +35,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Order.OrderNumber.Contains(orderNum));
+            var actual = requests.Where(r => r.EntityNumber.Contains(orderNum));
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -67,7 +67,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Order.RegionId == region.RegionId);
+            var actual = requests.Where(r => r.RegionId == region.RegionId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -83,7 +83,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Order.CustomerOrganisationId == customerId);
+            var actual = requests.Where(r => r.CustomerOrganisationId == customerId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -99,7 +99,7 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Order.LanguageId == language.LanguageId);
+            var actual = requests.Where(r => r.LanguageId == language.LanguageId);
 
             list.Should().HaveCount(actual.Count());
             list.Should().Contain(actual);
@@ -110,7 +110,7 @@ namespace Tolk.Web.Tests.Filters
         {
             var filter = new RequestFilterModel
             {
-                OrderDateRange = new DateRange { Start = new DateTime(2018,07,01), End = new DateTime(2018,10,01) }
+                OrderDateRange = new DateRange { Start = new DateTime(2018, 07, 01), End = new DateTime(2018, 10, 01) }
             };
 
             var list = filter.Apply(requests.AsQueryable());
@@ -129,7 +129,7 @@ namespace Tolk.Web.Tests.Filters
 
             var list = filter.Apply(requests.AsQueryable());
 
-            list.Should().OnlyContain(r => r == requests[5] );
+            list.Should().OnlyContain(r => r == requests[5]);
         }
 
         [Fact]
@@ -162,8 +162,8 @@ namespace Tolk.Web.Tests.Filters
             };
 
             var list = filter.Apply(requests.AsQueryable());
-            var actual = requests.Where(r => r.Order.RegionId == region.RegionId
-                && r.Order.LanguageId == language.LanguageId
+            var actual = requests.Where(r => r.RegionId == region.RegionId
+                && r.LanguageId == language.LanguageId
                 && r.Status == status);
 
             list.Should().HaveCount(actual.Count());

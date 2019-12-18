@@ -33,36 +33,30 @@ namespace Tolk.Web.Models
         [Display(Name = "Besvarad av")]
         public int? AnsweredById { get; set; }
 
-        [Display(Name = "Sök med BokningsID sammanhållen bokning", Description = "Kryssa i denna om du vill söka med BokningsId för sammanhållen bokning, samt fyll i BokningsId ovan")]
-        public bool? SearchOrderGroupNumber { get; set; }
-
-        internal IQueryable<Request> Apply(IQueryable<Request> items)
+        internal IQueryable<RequestListRow> Apply(IQueryable<RequestListRow> items)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-            items = (!(SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
-                ? items.Where(i => i.Order.OrderNumber.Contains(OrderNumber))
-                : items;
-            items = ((SearchOrderGroupNumber ?? false) && !string.IsNullOrWhiteSpace(OrderNumber))
-                ? items.Where(i => i.Order.OrderGroupId.HasValue && i.Order.Group.OrderGroupNumber.Contains(OrderNumber))
-                : items;
+            items = !string.IsNullOrWhiteSpace(OrderNumber)
+              ? items.Where(i => i.EntityNumber.Contains(OrderNumber))
+              : items;
             items = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
-                ? items.Where(i => i.Order.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
+                ? items.Where(i =>i.CustomerReferenceNumber != null && i.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : items;
 #pragma warning restore CA1307 // 
             items = RegionId.HasValue
-                ? items.Where(i => i.Order.RegionId == RegionId)
+                ? items.Where(i => i.RegionId == RegionId)
                 : items;
             items = CustomerOrganizationId.HasValue
-                ? items.Where(i => i.Order.CustomerOrganisationId == CustomerOrganizationId)
+                ? items.Where(i => i.CustomerOrganisationId == CustomerOrganizationId)
                 : items;
             items = LanguageId.HasValue
-                ? items.Where(i => LanguageId == i.Order.LanguageId)
+                ? items.Where(i => LanguageId == i.LanguageId)
                 : items;
             items = OrderDateRange?.Start != null
-                ? items.Where(i => i.Order.StartAt.Date >= OrderDateRange.Start)
+                ? items.Where(i => i.StartAt.Date >= OrderDateRange.Start)
                 : items;
             items = OrderDateRange?.End != null
-                ? items.Where(i => i.Order.StartAt.Date <= OrderDateRange.End)
+                ? items.Where(i => i.StartAt.Date <= OrderDateRange.End)
                 : items;
             items = AnswerByDateRange?.Start != null
                 ? items.Where(i => i.ExpiresAt.Value.Date >= AnswerByDateRange.Start)

@@ -775,7 +775,7 @@ namespace Tolk.Web.Controllers
             return AjaxDataTableHelper.GetData(request, entities.Count(), filteredData, d => d.Select(o => new OrderListItemModel
             {
                 EntityId = o.EntityId,
-                Language = o.LanguageName,
+                LanguageName = o.LanguageName,
                 OrderNumber = o.EntityNumber,//o.OrderGroupId.HasValue ? $"{o.OrderNumber}<br /><span class=\"startlist-subrow\">Del av: {o.Group.OrderGroupNumber}</span>" : o.OrderNumber,
                 ParentOrderNumber = o.EntityParentNumber,
                 RegionName = o.RegionName,
@@ -783,19 +783,8 @@ namespace Tolk.Web.Controllers
                 CreatorName = o.CreatorName,
                 BrokerName = o.BrokerName,
                 CustomerName = o.CustomerName,
-                //Filters
-                BrokerId = o.BrokerId,
-                RegionId = o.RegionId,
-                CustomerUnitId = o.CustomerUnitId,
-                LanguageId = o.LanguageId,
-                CreatedBy = o.CreatedBy,
-                CreatedAt = o.CreatedAt,
-                CustomerOrganisationId = o.CustomerOrganisationId,
-                CustomerUnitIsActive = o.CustomerUnitIsActive,
-                RowType = o.RowType,
                 StartAt = o.StartAt,
                 EndAt = o.EndAt,
-                CustomerReferenceNumber = o.CustomerReferenceNumber,
                 LinkOverride = o.RowType == OrderRowType.OrderGroup ? "/OrderGroup/View": string.Empty
 
             }));
@@ -922,11 +911,5 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
         }
-    }
-    public class OrderListItemDto
-    {
-        public int Id => OrderId ?? OrderGroupId ?? 0;
-        public int? OrderId { get; set; }
-        public int? OrderGroupId { get; set; }
     }
 }

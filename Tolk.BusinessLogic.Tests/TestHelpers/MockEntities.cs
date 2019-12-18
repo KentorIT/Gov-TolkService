@@ -380,6 +380,27 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
             return orders;
         }
+        public static OrderListRow[] MockOrderListRows(IEnumerable<Order> orders)
+        {
+            return orders.Select(o =>
+                new OrderListRow
+                {
+                    CustomerOrganisationId = o.CustomerOrganisationId,
+                    RegionId = o.RegionId,
+                    CustomerReferenceNumber = o.CustomerReferenceNumber,
+                    LanguageId = o.LanguageId,
+                    StartAt = o.StartAt,
+                    EndAt = o.EndAt,
+                    EntityNumber = o.OrderNumber,
+                    Status = o.Status,
+                    BrokerId = o.Requests.LastOrDefault(r =>
+                                        r.Status != RequestStatus.InterpreterReplaced &&
+                                        r.Status != RequestStatus.DeniedByTimeLimit &&
+                                        r.Status != RequestStatus.DeniedByCreator &&
+                                        r.Status != RequestStatus.DeclinedByBroker &&
+                                        r.Status != RequestStatus.LostDueToQuarantine)?.Ranking.BrokerId
+                }).ToArray();
+        }
 
         public static OrderGroup[] MockOrderGroups(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {
@@ -469,43 +490,79 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             return mockRequests.ToArray();
         }
 
-        public static Request[] MockRequests(Order[] mockOrders)
+        public static RequestListRow[] MockRequests(Order[] mockOrders)
         {
             return new[]
             {
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[3],
+                    CustomerOrganisationId = mockOrders[3].CustomerOrganisationId,
+                    RegionId = mockOrders[3].RegionId,
+                    CustomerReferenceNumber = mockOrders[3].CustomerReferenceNumber,
+                    LanguageId = mockOrders[3].LanguageId,
+                    StartAt = mockOrders[3].StartAt,
+                    EndAt = mockOrders[3].EndAt,
                     ExpiresAt = mockOrders[3].StartAt.AddDays(-10),
+                    EntityNumber = mockOrders[3].OrderNumber,
                     Status = RequestStatus.Accepted
                 },
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[0],
+                    CustomerOrganisationId = mockOrders[0].CustomerOrganisationId,
+                    RegionId = mockOrders[0].RegionId,
+                    CustomerReferenceNumber = mockOrders[0].CustomerReferenceNumber,
+                    LanguageId = mockOrders[0].LanguageId,
+                    StartAt = mockOrders[0].StartAt,
+                    EndAt = mockOrders[0].EndAt,
+                    EntityNumber = mockOrders[0].OrderNumber,
                     ExpiresAt = mockOrders[0].StartAt.AddDays(-10),
                     Status = RequestStatus.InterpreterReplaced
                 },
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[1],
+                    CustomerOrganisationId = mockOrders[1].CustomerOrganisationId,
+                    RegionId = mockOrders[1].RegionId,
+                    CustomerReferenceNumber = mockOrders[1].CustomerReferenceNumber,
+                    LanguageId = mockOrders[1].LanguageId,
+                    StartAt = mockOrders[1].StartAt,
+                    EndAt = mockOrders[1].EndAt,
+                    EntityNumber = mockOrders[1].OrderNumber,
                     ExpiresAt = mockOrders[1].StartAt.AddDays(-3d),
                     Status = RequestStatus.AcceptedNewInterpreterAppointed
                 },
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[2],
+                    CustomerOrganisationId = mockOrders[2].CustomerOrganisationId,
+                    RegionId = mockOrders[2].RegionId,
+                    CustomerReferenceNumber = mockOrders[2].CustomerReferenceNumber,
+                    LanguageId = mockOrders[2].LanguageId,
+                    StartAt = mockOrders[2].StartAt,
+                    EndAt = mockOrders[2].EndAt,
+                    EntityNumber = mockOrders[2].OrderNumber,
                     ExpiresAt = mockOrders[2].StartAt.AddDays(-10),
                     Status = RequestStatus.ToBeProcessedByBroker
                 },
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[4],
+                    CustomerOrganisationId = mockOrders[4].CustomerOrganisationId,
+                    RegionId = mockOrders[4].RegionId,
+                    CustomerReferenceNumber = mockOrders[4].CustomerReferenceNumber,
+                    LanguageId = mockOrders[4].LanguageId,
+                    StartAt = mockOrders[4].StartAt,
+                    EndAt = mockOrders[4].EndAt,
+                    EntityNumber = mockOrders[4].OrderNumber,
                     ExpiresAt = mockOrders[4].StartAt.AddDays(-10),
                     Status = RequestStatus.Approved
                 },
-                new Request
+                new RequestListRow
                 {
-                    Order = mockOrders[5],
+                    CustomerOrganisationId = mockOrders[5].CustomerOrganisationId,
+                    RegionId = mockOrders[5].RegionId,
+                    CustomerReferenceNumber = mockOrders[5].CustomerReferenceNumber,
+                    LanguageId = mockOrders[5].LanguageId,
+                    StartAt = mockOrders[5].StartAt,
+                    EndAt = mockOrders[5].EndAt,
+                    EntityNumber = mockOrders[5].OrderNumber,
                     ExpiresAt = mockOrders[5].StartAt.AddDays(-10),
                     Status = RequestStatus.Accepted
                 },

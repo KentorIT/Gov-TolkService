@@ -30,7 +30,7 @@
                                 <tr data-id="@item.RequestId" data-click-action-url="@Url.Action("View", new { id = item.RequestId })">
                                     <td class="gray-border-bottom @item.ColorClassName">@item.OrderNumber</td>
                                     <td class="gray-border-bottom">@EnumHelper.GetDescription(item.Status)</td>
-                                    <td class="gray-border-bottom">@item.Language</td>
+                                    <td class="gray-border-bottom">@item.LanguageName</td>
                                     <td class="gray-border-bottom">@item.OrderDateAndTime</td>
                                     <td class="gray-border-bottom">@item.RegionName</td>
                                     <td class="gray-border-bottom gray-border-right">@item.CustomerName</td>
