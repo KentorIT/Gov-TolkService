@@ -54,6 +54,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("not_used", false)]
         AwaitingDeadlineFromCustomer = 17,
         [Description("Ingen sista svarstid från myndighet")]
+        [CustomName("request_no_deadline_from_customer")]
         NoDeadlineFromCustomer = 18,
         [CustomName("not_used", false)]
         [Description("Förlorad på grund av karantän")]
