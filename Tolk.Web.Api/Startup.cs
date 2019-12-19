@@ -24,6 +24,7 @@ namespace Tolk.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TolkApiOptions>(Configuration);
+            services.AddApplicationInsightsTelemetry();
 
             services.AddScoped<DateCalculationService>();
             services.AddScoped<RankingService>();

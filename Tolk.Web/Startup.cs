@@ -20,6 +20,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace Tolk.Web
 {
@@ -36,6 +37,7 @@ namespace Tolk.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddApplicationInsightsTelemetry();
             services.Configure<TolkOptions>(Configuration);
             services.PostConfigure<TolkOptions>(opt => opt.Validate());
 
