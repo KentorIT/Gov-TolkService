@@ -6,25 +6,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql(@"Create VIEW RequestListRows
+			migrationBuilder.Sql(@"Exec('Create VIEW RequestListRows
 As
 
 Select 
-	1 'RowType',
-	r.RequestId 'EntityId',
+	1 ''RowType'',
+	r.RequestId ''EntityId'',
 	r.ExpiresAt,
-	coalesce(l.Name, o.OtherLanguage) 'LanguageName',
+	coalesce(l.Name, o.OtherLanguage) ''LanguageName'',
 	o.LanguageId,
-    o.OrderNumber 'EntityNumber',
-    og.OrderGroupNumber 'EntityParentNumber',
-	re.Name 'RegionName',
+    o.OrderNumber ''EntityNumber'',
+    og.OrderGroupNumber ''EntityParentNumber'',
+	re.Name ''RegionName'',
 	o.RegionId,
 	o.StartAt,
 	o.EndAt,
 	r.Status,
 	ra.BrokerId,
 	r.CreatedAt,
-	c.Name 'CustomerName',
+	c.Name ''CustomerName'',
 	o.CustomerOrganisationId,
 	o.OrderGroupId, 
 	o.CustomerReferenceNumber,
@@ -54,14 +54,14 @@ Select
 	og.LanguageId,
     og.OrderGroupNumber,
     null,
-	re.Name 'RegionName',
+	re.Name ''RegionName'',
 	og.RegionId,
 	(Select top 1 _o.StartAt From Orders _o Where _o.OrderGroupId = og.OrderGroupId Order By  _o.StartAt ),
 	(Select top 1 _o.EndAt From Orders _o Where _o.OrderGroupId = og.OrderGroupId Order By  _o.StartAt ),
 	r.Status,
 	ra.BrokerId,
 	r.CreatedAt,
-	c.Name 'CustomerName',
+	c.Name ''CustomerName'',
 	og.CustomerOrganisationId,
 	og.OrderGroupId, 
 	(Select top 1 _o.CustomerReferenceNumber From Orders _o Where _o.OrderGroupId = og.OrderGroupId Order By  _o.StartAt ),
@@ -80,7 +80,7 @@ On c.CustomerOrganisationId = og.CustomerOrganisationId
 Left Join Languages l
 On l.LanguageId = og.LanguageId
 Where r.Status Not In(13,17,18)
- ");
+');");
 		}
 
 		protected override void Down(MigrationBuilder migrationBuilder)

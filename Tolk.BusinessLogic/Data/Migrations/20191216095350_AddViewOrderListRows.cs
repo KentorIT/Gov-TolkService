@@ -6,30 +6,30 @@ namespace Tolk.BusinessLogic.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"Create VIEW OrderListRows
+            migrationBuilder.Sql(@"Exec('Create VIEW OrderListRows
 As
 
 Select 
-	1 'RowType',
-	o.OrderId 'EntityId',
-	coalesce(l.Name, o.OtherLanguage) 'LanguageName',
+	1 ''RowType'',
+	o.OrderId ''EntityId'',
+	coalesce(l.Name, o.OtherLanguage) ''LanguageName'',
 	o.LanguageId,
-    o.OrderNumber 'EntityNumber',
-    og.OrderGroupNumber 'EntityParentNumber',
-	r.Name 'RegionName',
+    o.OrderNumber ''EntityNumber'',
+    og.OrderGroupNumber ''EntityParentNumber'',
+	r.Name ''RegionName'',
 	o.RegionId,
 	o.StartAt,
 	o.EndAt,
 	o.Status,
-	u.NameFirst + ' ' + u.NameFamily 'CreatorName',
+	u.NameFirst + '' '' + u.NameFamily ''CreatorName'',
 	o.CreatedBy,
-	br.Name	'BrokerName',
+	br.Name	''BrokerName'',
 	ra.BrokerId,
 	o.CustomerUnitId,
 	o.CreatedAt,
-	c.Name 'CustomerName',
+	c.Name ''CustomerName'',
 	o.CustomerOrganisationId,
-	CONVERT(bit, coalesce(cu.IsActive, 0)) 'CustomerUnitIsActive',
+	CONVERT(bit, coalesce(cu.IsActive, 0)) ''CustomerUnitIsActive'',
 	o.OrderGroupId, 
 	o.CustomerReferenceNumber,
 	o.ContactPersonId
@@ -66,7 +66,7 @@ Select
 	(Select top 1 _o.StartAt From Orders _o Where _o.OrderGroupId = o.OrderGroupId ORder By  _o.StartAt ),
 	(Select top 1 _o.EndAt From Orders _o Where _o.OrderGroupId = o.OrderGroupId ORder By  _o.StartAt ),
 	o.Status,
-	u.NameFirst + ' ' + u.NameFamily,
+	u.NameFirst + '' '' + u.NameFamily,
 	o.CreatedBy,
 	br.Name	,
 	ra.BrokerId,
@@ -95,7 +95,7 @@ Left Join Brokers br
 On br.BrokerId = ra.BrokerId
 Left Join CustomerUnits cu
 On cu.CustomerUnitId = o.CustomerUnitId
- ");
+');");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
