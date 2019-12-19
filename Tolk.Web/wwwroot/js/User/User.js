@@ -27,21 +27,21 @@
 
     function toggleRoles(selectedItem) {
         if (selectedItem.attr('value') !== undefined) {
-            if (selectedItem.attr('data-additional') === "GovernmentBody") {
+            if (selectedItem.data('additional') === "GovernmentBody") {
                 $('.CentralOrderHandlerCheckBox').show();
                 $('.OrganisationAdministratorCheckBox').show();
                 $('.ApplicationAdministratorCheckBox').hide();
                 $('.SystemAdministratorCheckBox').hide();
                 $('.ImpersonatorCheckBox').hide();
             }
-            else if (selectedItem.attr('data-additional') === "Broker") {
+            else if (selectedItem.data('additional') === "Broker") {
                 $('.CentralOrderHandlerCheckBox').hide();
                 $('.ApplicationAdministratorCheckBox').hide();
                 $('.SystemAdministratorCheckBox').hide();
                 $('.ImpersonatorCheckBox').hide();
                 $('.OrganisationAdministratorCheckBox').show();
             }
-            else if (selectedItem.attr('data-additional') === "Owner") {
+            else if (selectedItem.data('additional') === "Owner") {
                 $('.CentralOrderHandlerCheckBox').hide();
                 $('.OrganisationAdministratorCheckBox').hide();
                 $('.ApplicationAdministratorCheckBox').show();

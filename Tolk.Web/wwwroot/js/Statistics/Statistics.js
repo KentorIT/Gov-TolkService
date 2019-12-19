@@ -11,7 +11,7 @@ function setReportDateText() {
         $("#ReportDateHolder").html("Typ av datum som gäller för vald rapport");
     }
     else {
-        $("#ReportDateHolder").html("För denna rapport kan du göra urval med " + $("#ReportType option:selected").attr('data-additional'));
+        $("#ReportDateHolder").html("För denna rapport kan du göra urval med " + $("#ReportType option:selected").data('additional'));
     }
 }
 

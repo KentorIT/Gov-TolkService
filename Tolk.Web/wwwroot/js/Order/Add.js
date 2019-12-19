@@ -21,7 +21,7 @@ $(function () {
         else {
             $('#other-language').collapse('hide');
         }
-        if (selectedItem.attr('data-additional') === "") {
+        if (selectedItem.data('additional') === "") {
             $('.competence-information > span.info-message-small').text("").removeAttr("role");
             $('#divNonCompetenceLevel').show();
             $('#divNonCompetenceLevel2').show();
@@ -32,7 +32,7 @@ $(function () {
             $("#competence-not-available").hide();
         }
         else {
-            setCompetenceInfo(selectedItem.attr('data-additional'));
+            setCompetenceInfo(selectedItem.data('additional'));
             $('#divNonCompetenceLevel').hide();
             $('#divNonCompetenceLevel2').hide();
             $('#divCompetenceLevel').show();
@@ -373,7 +373,7 @@ $(function () {
     });
 
     function validateSelectedCompetences() {
-        if ($("#LanguageId option:selected").attr('data-additional') !== "") {
+        if ($("#LanguageId option:selected").data('additional') !== "") {
             var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
             var firstSelected = $("#RequestedCompetenceLevelFirst").val();
             var secondSelected = $("#RequestedCompetenceLevelSecond").val();
@@ -429,7 +429,7 @@ $(function () {
     });
 
     function validateAvailableRequiredCompetences() {
-        var currentLanguageCompetences = $("#LanguageId option:selected").attr('data-additional');
+        var currentLanguageCompetences = $("#LanguageId option:selected").data('additional');
         var showWarning = false;
         //check if required is checked and if all competences not available - then validate
         var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
