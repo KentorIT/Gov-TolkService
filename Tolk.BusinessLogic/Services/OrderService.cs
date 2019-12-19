@@ -452,7 +452,7 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
         }
 
-        public void CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message, bool isReplaced = false)
+        public void CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CancelOrderGroup), nameof(OrderService));
             var requestGroup = orderGroup.ActiveUnAnsweredRequestGroup;

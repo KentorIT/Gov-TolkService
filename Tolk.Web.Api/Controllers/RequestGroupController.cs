@@ -50,6 +50,7 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<JsonResult> Answer([FromBody] RequestGroupAnswerModel model)
         {
             if (model == null)
