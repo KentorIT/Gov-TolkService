@@ -41,7 +41,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task CheckForFailuresToReport()
         {
             var callIds = await _tolkDbContext.OutboundWebHookCalls
-            .Where(e => e.DeliveredAt == null && (e.HasNotifiedFailure == false))
+            .Where(e => e.DeliveredAt == null && e.HasNotifiedFailure == false)
             .Select(e => e.OutboundWebHookCallId)
             .ToListAsync();
 
@@ -55,7 +55,7 @@ namespace Tolk.BusinessLogic.Services
                     try
                     {
                         var call = await _tolkDbContext.OutboundWebHookCalls
-                            .SingleOrDefaultAsync(e => e.DeliveredAt == null && (e.HasNotifiedFailure == false));
+                            .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId && e.DeliveredAt == null && e.HasNotifiedFailure == false);
 
                         if (call == null)
                         {
