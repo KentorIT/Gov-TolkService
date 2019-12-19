@@ -21,7 +21,7 @@ Select
 	o.RegionId,
 	o.StartAt,
 	o.EndAt,
-	o.Status,
+	r.Status,
 	ra.BrokerId,
 	r.CreatedAt,
 	c.Name 'CustomerName',
