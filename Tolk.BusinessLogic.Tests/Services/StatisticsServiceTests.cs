@@ -1,15 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
-using Tolk.BusinessLogic.Services;
-using Xunit;
-using FluentAssertions;
+using System.Linq;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Enums;
-using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Tests.TestHelpers;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.BusinessLogic.Utilities;
+using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Services
 {

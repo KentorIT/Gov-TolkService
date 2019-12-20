@@ -9,7 +9,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string ContactInformation { get; set; }
 
         public int RecipientUserId { get; set; }
-        
+
         public int BrokerId { get; set; }
     }
 }

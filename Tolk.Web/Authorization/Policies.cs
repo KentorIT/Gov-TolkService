@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Authorization
 {

@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Tolk.BusinessLogic.Data;
-using Tolk.Web.Models;
+﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Services;
-using DataTables.AspNet.Core;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
@@ -49,19 +49,19 @@ namespace Tolk.Web.Controllers
                 r.Status == RequestStatus.CancelledByCreatorWhenApproved));
             // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
 
-            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests, _clock), x => x.Select( r =>
-            new RequestListItemModel
-            {
-                RequestId = r.RequestId,
-                LanguageName = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                OrderNumber = r.Order.OrderNumber,
-                CustomerName = r.Order.CustomerOrganisation.Name,
-                RegionName = r.Order.Region.Name,
-                ExpiresAt = r.ExpiresAt,
-                StartAt = r.Order.StartAt,
-                EndAt = r.Order.EndAt,
-                Status = r.Status
-            }));
+            return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests, _clock), x => x.Select(r =>
+           new RequestListItemModel
+           {
+               RequestId = r.RequestId,
+               LanguageName = r.Order.OtherLanguage ?? r.Order.Language.Name,
+               OrderNumber = r.Order.OrderNumber,
+               CustomerName = r.Order.CustomerOrganisation.Name,
+               RegionName = r.Order.Region.Name,
+               ExpiresAt = r.ExpiresAt,
+               StartAt = r.Order.StartAt,
+               EndAt = r.Order.EndAt,
+               Status = r.Status
+           }));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

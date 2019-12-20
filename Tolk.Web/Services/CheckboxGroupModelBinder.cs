@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq;
 using System.Threading.Tasks;
-using Tolk.Web.Models;
 using Tolk.Web.Helpers;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Services
 {

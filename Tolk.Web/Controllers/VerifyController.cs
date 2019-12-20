@@ -49,7 +49,7 @@ namespace Tolk.Web.Controllers
         {
             if (!orderId.HasValue && orderGroupId.HasValue)
             {
-                var order =  await _dbContext.Orders.FirstOrDefaultAsync(g => g.OrderGroupId == orderGroupId);
+                var order = await _dbContext.Orders.FirstOrDefaultAsync(g => g.OrderGroupId == orderGroupId);
                 orderId = order?.OrderId;
             }
             if (!orderId.HasValue)

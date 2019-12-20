@@ -15,12 +15,9 @@ using System.Reflection;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
-using Tolk.Web.Helpers;
 using Tolk.Web.Services;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace Tolk.Web
 {

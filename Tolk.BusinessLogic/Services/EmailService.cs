@@ -5,12 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {

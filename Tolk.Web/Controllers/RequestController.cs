@@ -8,13 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -68,7 +66,7 @@ namespace Tolk.Web.Controllers
             var model = new RequestFilterModel();
             await TryUpdateModelAsync(model);
 
-            var requests = _dbContext.RequestListRows.Where(r=> r.BrokerId == User.GetBrokerId()).Select(o => o);
+            var requests = _dbContext.RequestListRows.Where(r => r.BrokerId == User.GetBrokerId()).Select(o => o);
             return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests), r => r.SelectRequestListItemModel());
         }
 

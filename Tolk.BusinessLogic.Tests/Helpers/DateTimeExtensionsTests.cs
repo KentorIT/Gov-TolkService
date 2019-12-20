@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using Tolk.BusinessLogic.Helpers;
-using FluentAssertions;
+﻿using FluentAssertions;
+using System;
 using System.Globalization;
+using Tolk.BusinessLogic.Helpers;
+using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Helpers
 {

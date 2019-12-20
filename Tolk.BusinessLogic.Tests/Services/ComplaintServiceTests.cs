@@ -58,7 +58,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var request = new Request
             {
                 Status = RequestStatus.Approved,
-                Complaints = new List<Complaint>() { new Complaint()}
+                Complaints = new List<Complaint>() { new Complaint() }
             };
             Assert.Throws<InvalidOperationException>(() =>
                 service.Create(request, 1, null, "apa", ComplaintType.BadDelivery));

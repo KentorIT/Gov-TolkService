@@ -1,7 +1,6 @@
-﻿using System.Linq;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Utilities;
+﻿using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -37,7 +36,7 @@ namespace Tolk.Web.Models
         public string ColorClassName => RequestStatus.HasValue ? CssClassHelper.GetColorClassNameForRequestStatus(RequestStatus.Value) : CssClassHelper.GetColorClassNameForOrderStatus(OrderStatus);
 
         public string StatusName => RequestStatus.HasValue ? RequestStatus.Value.GetDescription() : OrderStatus.GetDescription();
-        
+
         public string Information => $"{OccasionStartDateTime.ToSwedishString("yyyy-MM-dd")} {OccasionStartDateTime.ToSwedishString("HH\\:mm")}-{OccasionEndDateTime.ToSwedishString("HH\\:mm")}";
 
         public PriceInformationModel PriceInformationModel { get; set; }
@@ -51,8 +50,8 @@ namespace Tolk.Web.Models
                 OccasionEndDateTime = order.EndAt.DateTime,
                 ExtraInterpreter = order.IsExtraInterpreterForOrderId.HasValue,
                 PriceInformationModel = priceInformationModel,
-                RouteId = request == null ? order.OrderId : request.RequestId, 
-                ControllerName = request == null ? "Order": "Request",
+                RouteId = request == null ? order.OrderId : request.RequestId,
+                ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
             };

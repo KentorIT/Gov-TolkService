@@ -1,5 +1,6 @@
 ﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,11 +9,10 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Authorization;
-using Tolk.Web.Models;
-using Tolk.Web.Helpers;
-using Microsoft.AspNetCore.Identity;
 using Tolk.BusinessLogic.Services;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {

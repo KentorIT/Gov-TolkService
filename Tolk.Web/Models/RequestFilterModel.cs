@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
               ? items.Where(i => i.EntityNumber.Contains(OrderNumber))
               : items;
             items = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
-                ? items.Where(i =>i.CustomerReferenceNumber != null && i.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
+                ? items.Where(i => i.CustomerReferenceNumber != null && i.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : items;
 #pragma warning restore CA1307 // 
             items = RegionId.HasValue

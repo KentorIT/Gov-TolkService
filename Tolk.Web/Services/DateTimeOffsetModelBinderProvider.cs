@@ -10,7 +10,7 @@ namespace Tolk.Web.Services
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             NullCheckHelper.ArgumentCheckNull(context, nameof(DateTimeOffsetModelBinderProvider));
-            if (context.Metadata.ModelType == typeof(DateTimeOffset) || 
+            if (context.Metadata.ModelType == typeof(DateTimeOffset) ||
                 context.Metadata.ModelType == typeof(DateTimeOffset?))
             {
                 return new BinderTypeModelBinder(typeof(DateTimeOffsetModelBinder));

@@ -1,6 +1,4 @@
-﻿using Tolk.BusinessLogic.Entities;
-
-namespace Tolk.BusinessLogic.Utilities
+﻿namespace Tolk.BusinessLogic.Utilities
 {
     public class InterpreterInformation
     {

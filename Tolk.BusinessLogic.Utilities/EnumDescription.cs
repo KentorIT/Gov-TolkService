@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Tolk.BusinessLogic.Utilities
+﻿namespace Tolk.BusinessLogic.Utilities
 {
     /// <summary>
     /// Value-description pair an enum value.
@@ -20,7 +14,7 @@ namespace Tolk.BusinessLogic.Utilities
         /// <param name="value">Value to store.</param>
         /// <param name="description">Description to store.</param>
         public EnumDescription(TEnum value, string description, string customName)
-            : base (value, description)
+            : base(value, description)
         {
             CustomName = customName;
         }

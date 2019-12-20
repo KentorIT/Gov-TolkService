@@ -19,7 +19,7 @@ namespace Tolk.Web.Models
         public string Subject { get; set; }
 
         [Display(Name = "Skickat")]
-        public TrueFalse? IsSent{ get; set; }
+        public TrueFalse? IsSent { get; set; }
 
         [Display(Name = "Skapat datum")]
         public DateRange DateCreated { get; set; }

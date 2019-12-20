@@ -20,7 +20,7 @@ namespace Tolk.Web.Services
             }
             string timeValueSanitized;
 
-            if (timeValue.FirstValue == "0" 
+            if (timeValue.FirstValue == "0"
                 || timeValue.FirstValue == "00")
             {
                 timeValueSanitized = "00:00";

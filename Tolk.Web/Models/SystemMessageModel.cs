@@ -1,5 +1,5 @@
-﻿using Tolk.BusinessLogic.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Enums;
 
 
 namespace Tolk.Web.Models

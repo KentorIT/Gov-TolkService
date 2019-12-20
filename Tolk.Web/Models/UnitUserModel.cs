@@ -1,5 +1,5 @@
-﻿using Tolk.Web.Helpers;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {

@@ -1,12 +1,11 @@
-﻿using System;
-using Tolk.BusinessLogic.Entities;
+﻿using FluentAssertions;
+using System;
 using System.Linq;
-using Tolk.Web.Models;
-using Xunit;
-using FluentAssertions;
-using Tolk.Web.Tests.TestHelpers;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.Web.Models;
+using Xunit;
 
 namespace Tolk.Web.Tests.Filters
 {
@@ -14,10 +13,10 @@ namespace Tolk.Web.Tests.Filters
     {
         private const string DbNameOrderFilterTests = "OrderFilterModel_Tests";
 
-        private Language[] mockLanguages;
-        private Order[] mockOrders;
-        private AspNetUser[] MockCustomerUsers;
-        private OrderListRow[] mockOrderListRows;
+        private readonly Language[] mockLanguages;
+        private readonly Order[] mockOrders;
+        private readonly AspNetUser[] MockCustomerUsers;
+        private readonly OrderListRow[] mockOrderListRows;
 
         public OrderFilterModelTests()
         {

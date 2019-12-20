@@ -140,10 +140,10 @@ namespace Tolk.BusinessLogic.Utilities
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             return Enum.GetValues(type).OfType<TEnum>()
-                .Where(t => !IsObsolete(t) && UseInApi(t) && 
+                .Where(t => !IsObsolete(t) && UseInApi(t) &&
                     (filterValues == null || filterValues.Contains(t)))
-                .Select(v => new EnumDescription<TEnum>(v, 
-                    type.GetMember(v.ToString()).GetEnumDescription(), 
+                .Select(v => new EnumDescription<TEnum>(v,
+                    type.GetMember(v.ToString()).GetEnumDescription(),
                     type.GetMember(v.ToString()).GetEnumCustomName()));
         }
 

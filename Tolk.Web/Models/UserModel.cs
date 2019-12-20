@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -82,7 +82,7 @@ namespace Tolk.Web.Models
 
         public bool DisplayCentralOrderHandler { get; set; }
 
-        public bool DisplayCentralAdmin{ get; set; }
+        public bool DisplayCentralAdmin { get; set; }
 
         public bool DisplayForAdminUser { get; set; }
 

@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }
 
-        public virtual OrderStatus Status{get;set;}
+        public virtual OrderStatus Status { get; set; }
 
         public int CustomerOrganisationId { get; set; }
 

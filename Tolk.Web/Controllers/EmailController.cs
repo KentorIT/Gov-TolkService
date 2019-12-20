@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Data;
-using Tolk.Web.Authorization;
-using Tolk.Web.Models;
-using Tolk.BusinessLogic.Services;
-using Tolk.Web.Helpers;
-using DataTables.AspNet.Core;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Services;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {

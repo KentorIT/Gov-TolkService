@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Services;
-using System;
 
 namespace Tolk.Web.Models
 {
@@ -80,14 +80,19 @@ namespace Tolk.Web.Models
 
             var model = new OrderGroupModel
             {
-                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup {
-                    SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : 
-                    SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString()) } : 
-                    new RadioButtonGroup { SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null : 
+                AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup
+                {
+                    SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null :
+                    SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(orderGroup.FirstOrder.AllowExceedingTravelCost.Value).ToString())
+                } :
+                    new RadioButtonGroup
+                    {
+                        SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null :
                     SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString())
                     },
-                CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup {
-                    SelectedItem = SelectListService.BoolList.Single(e => e.Value == (orderGroup.CreatorIsInterpreterUser.Value ? 
+                CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup
+                {
+                    SelectedItem = SelectListService.BoolList.Single(e => e.Value == (orderGroup.CreatorIsInterpreterUser.Value ?
                     TrueFalse.Yes.ToString() : TrueFalse.No.ToString()))
                 } : null,
 

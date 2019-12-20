@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Entities
             int recipientUserId,
             int? resentUserId = null,
             int? resentImpersonatorUserId = null)
-            :base(createdAt)
+            : base(createdAt)
         {
             RecipientUrl = recipientUrl;
             Payload = payload;

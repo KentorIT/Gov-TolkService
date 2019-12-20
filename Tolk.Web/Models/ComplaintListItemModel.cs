@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
 
         [ColumnDefinitions(Index = 3, Name = nameof(TypeName), Title = "Typ av reklamation")]
         public string TypeName => ComplaintType.GetDescription();
-        
+
         [ColumnDefinitions(Index = 4, Name = nameof(RegionName), Title = "Län")]
         public string RegionName { get; set; }
 

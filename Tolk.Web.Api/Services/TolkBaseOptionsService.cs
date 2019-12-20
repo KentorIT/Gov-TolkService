@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
-using Tolk.Web.Api.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Services
 {

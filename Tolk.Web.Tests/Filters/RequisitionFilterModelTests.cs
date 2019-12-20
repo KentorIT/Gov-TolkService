@@ -1,20 +1,17 @@
 ﻿using FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Entities;
-using Tolk.Web.Models;
-using Tolk.Web.Tests.TestHelpers;
-using Xunit;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.Web.Models;
+using Xunit;
 
 namespace Tolk.Web.Tests.Filters
 {
     public class RequisitionFilterModelTests
     {
-        private Language[] mockLanguages;
-        private Requisition[] mockRequisitions;
+        private readonly Language[] mockLanguages;
+        private readonly Requisition[] mockRequisitions;
 
         public RequisitionFilterModelTests()
         {

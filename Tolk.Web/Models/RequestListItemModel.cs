@@ -4,7 +4,6 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
-using Tolk.Web.Controllers;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
@@ -48,8 +47,8 @@ namespace Tolk.Web.Models
         public DateTimeOffset StartAt { get; set; }
         public DateTimeOffset EndAt { get; set; }
 
-         public DateTimeOffset? ExpiresAt { get; set; }
-   }
+        public DateTimeOffset? ExpiresAt { get; set; }
+    }
 
     public static class IQueryableOfRequestExtensions
     {
@@ -60,7 +59,7 @@ namespace Tolk.Web.Models
                 RequestId = r.EntityId,
                 LanguageName = r.LanguageName,
                 OrderNumber = r.EntityNumber,
-                ParentOrderNumber= r.EntityParentNumber,
+                ParentOrderNumber = r.EntityParentNumber,
                 CustomerName = r.CustomerName,
                 RegionName = r.RegionName,
                 ExpiresAt = r.ExpiresAt,

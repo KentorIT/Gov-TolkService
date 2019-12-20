@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
-using System.Text;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<VerificationService> _logger;
         private readonly INotificationService _notificationService;
         private readonly EmailService _emailService;
-        private static HttpClient client = new HttpClient();
+        private static readonly HttpClient client = new HttpClient();
         public VerificationService(
             TolkDbContext dbContext,
             ISwedishClock clock,

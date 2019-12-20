@@ -8,7 +8,7 @@
         public bool InactiveInSystem { get; set; }
 
         public string Description =>
-            !ExistsInSystemWithoutTellusConnection && !InactiveInSystem ? "Nej" : 
+            !ExistsInSystemWithoutTellusConnection && !InactiveInSystem ? "Nej" :
                 $"{(ExistsInSystemWithoutTellusConnection ? "Utan koppling" : string.Empty)} {(InactiveInSystem ? "inaktivt" : string.Empty)}";
     }
 }

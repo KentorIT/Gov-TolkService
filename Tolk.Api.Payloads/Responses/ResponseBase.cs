@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Tolk.Api.Payloads.Responses
+﻿namespace Tolk.Api.Payloads.Responses
 {
     public class ResponseBase
     {

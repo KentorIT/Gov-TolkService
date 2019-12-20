@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
@@ -36,30 +35,30 @@ namespace Tolk.Web.Models
         internal static IQueryable<AspNetUser> Filter(CustomerUserFilterModel filters, IQueryable<AspNetUser> data)
         {
             var filteredData = data;
-                if (!string.IsNullOrWhiteSpace(filters.SearchString))
-                {
+            if (!string.IsNullOrWhiteSpace(filters.SearchString))
+            {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
-                    filteredData = filteredData.Where(u =>
-                        u.NameFirst.Contains(filters.SearchString) ||
-                        u.NameFamily.Contains(filters.SearchString) ||
-                        u.Email.Contains(filters.SearchString));
+                filteredData = filteredData.Where(u =>
+                    u.NameFirst.Contains(filters.SearchString) ||
+                    u.NameFamily.Contains(filters.SearchString) ||
+                    u.Email.Contains(filters.SearchString));
 #pragma warning restore CA1307 // 
-                }
-                if (filters.UserType.HasValue)
+            }
+            if (filters.UserType.HasValue)
+            {
+                switch (filters.UserType)
                 {
-                    switch (filters.UserType)
-                    {
-                        case UserTypes.OrganisationAdministrator:
-                            filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
-                            break;
-                        case UserTypes.CentralOrderHandler:
-                            filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
-                            break;
-                        case UserTypes.OrderCreator:
-                        default:
-                            break;
-                    }
+                    case UserTypes.OrganisationAdministrator:
+                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralAdministratorRoleId));
+                        break;
+                    case UserTypes.CentralOrderHandler:
+                        filteredData = filteredData.Where(u => u.Roles.Any(r => r.RoleId == filters.CentralOrderHandlerRoleId));
+                        break;
+                    case UserTypes.OrderCreator:
+                    default:
+                        break;
                 }
+            }
             return filteredData;
         }
     }

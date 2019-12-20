@@ -96,7 +96,7 @@ namespace Tolk.Web.Models
 
         public OccasionListModel OccasionList { get; set; }
 
-       
+
 
     }
 }

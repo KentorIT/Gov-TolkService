@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -23,7 +19,7 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string OffSiteContactInformation { get; set; }
 
-        public string FullAddress{ get => $"{Street}\n {City}"; }
+        public string FullAddress { get => $"{Street}\n {City}"; }
 
     }
 }

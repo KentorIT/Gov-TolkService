@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
-using Tolk.BusinessLogic;
 
 namespace Tolk.Web.Models
 {

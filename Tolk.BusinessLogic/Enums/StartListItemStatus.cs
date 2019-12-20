@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Enums
         ComplaintEvent = 3,
 
         [Description("Rekvisition inkommen")]
-        RequisitonArrived  = 4,
+        RequisitonArrived = 4,
 
         [Description("Tolk tillsatt (godkännande krävs)")]
         OrderAcceptedForApproval = 5,
@@ -47,7 +47,7 @@ namespace Tolk.BusinessLogic.Enums
         RequestDenied = 14,
 
         [Description("Ersättningsuppdrag inkommet")]
-        ReplacementOrderRequestArrived= 15,
+        ReplacementOrderRequestArrived = 15,
 
         [Description("Ersättningsuppdrag mottaget")]
         ReplacementOrderRequestReceived = 16,

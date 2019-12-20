@@ -10,10 +10,10 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.TagHelpers
 {
@@ -282,7 +282,7 @@ namespace Tolk.Web.TagHelpers
                 if (For.ModelExplorer.Metadata.IsRequired ||
                     (((RequiredCheckedAttribute)AttributeHelper
                     .GetAttribute<RequiredCheckedAttribute>(For.ModelExplorer.Metadata.ContainerType,
-                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0) 
+                    For.ModelExplorer.Metadata.PropertyName))?.Min > 0)
                     || (((RequiredIfAttribute)AttributeHelper
                     .GetAttribute<RequiredIfAttribute>(For.ModelExplorer.Metadata.ContainerType,
                     For.ModelExplorer.Metadata.PropertyName))?.AlwaysDisplayRequiredStar == true))

@@ -35,5 +35,5 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Utlägg för resa")]
         Outlay = 7,
 
-     }
+    }
 }

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
-using Tolk.BusinessLogic.Utilities;
 using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Entities

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Tolk.Web.Helpers
+﻿namespace Tolk.Web.Helpers
 {
     public class ColumnDefinition
     {

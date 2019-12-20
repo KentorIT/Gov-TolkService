@@ -16,6 +16,6 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ImpersonatingViewedBy))]
         public AspNetUser ViewedByImpersonator { get; set; }
-    
+
     }
 }

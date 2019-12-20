@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Tolk.Web.Models;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Models;
 
 namespace Tolk.Web.Helpers
 {

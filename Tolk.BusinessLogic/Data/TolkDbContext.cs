@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Data
@@ -546,7 +546,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RequestGroupStatusConfirmation> RequestGroupStatusConfirmations { get; set; }
 
         public DbSet<OrderStatusConfirmation> OrderStatusConfirmation { get; set; }
-        
+
         public DbSet<OrderGroupStatusConfirmation> OrderGroupStatusConfirmations { get; set; }
 
         public DbSet<TemporaryAttachmentGroup> TemporaryAttachmentGroups { get; set; }
@@ -599,8 +599,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 
-        public DbQuery<OrderListRow> OrderListRows{ get; set; }
-        
+        public DbQuery<OrderListRow> OrderListRows { get; set; }
+
         public DbQuery<RequestListRow> RequestListRows { get; set; }
 
         private static bool isUserStoreInitialized = false;

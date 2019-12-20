@@ -1,6 +1,6 @@
 ﻿namespace Tolk.BusinessLogic.Enums
 {
-    public enum  ReportGroup
+    public enum ReportGroup
     {
 
         BrokerReport = 1,

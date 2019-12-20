@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using Tolk.BusinessLogic.Services;
-using Xunit;
-using FluentAssertions;
-using Tolk.BusinessLogic.Data;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Services
 {

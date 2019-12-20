@@ -109,7 +109,7 @@ namespace Tolk.Web.Services
                         Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
                     };
                     await Task.Factory.ContinueWhenAny(tasksToRunNotifications.ToArray(), r => { });
-            }
+                }
                 else
                 {
                     //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...

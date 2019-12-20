@@ -56,7 +56,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Rekvisition registrerad av")]
         [DataType(DataType.MultilineText)]
         public string RequisitionCreatedBy { get; set; }
-                          
+
         [Display(Name = "Förväntad resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts { get; set; }
@@ -122,7 +122,7 @@ namespace Tolk.Web.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<MealBreak> MealBreaks { get; set; }
-               
+
         [DataType(DataType.MultilineText)]
         [Required]
         [Display(Name = "Specifikation", Description = "Var tydlig med var alla tider och kostnader kommer ifrån.")]

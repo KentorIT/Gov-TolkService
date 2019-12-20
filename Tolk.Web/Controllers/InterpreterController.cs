@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataTables.AspNet.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using DataTables.AspNet.Core;
-using System.Linq;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;

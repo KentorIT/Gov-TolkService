@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
@@ -11,12 +10,9 @@ using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
-using Tolk.BusinessLogic.Helpers;
-using System.Collections.Generic;
 
 namespace Tolk.Web.Api.Services
 {
@@ -159,7 +155,7 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            var occasions =  _dbContext.Requests
+            var occasions = _dbContext.Requests
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)

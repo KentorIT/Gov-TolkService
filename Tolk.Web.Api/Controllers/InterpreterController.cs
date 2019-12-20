@@ -1,16 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
@@ -110,11 +107,11 @@ namespace Tolk.Web.Api.Controllers
                 return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
             }
 
-            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with {(interpreterId.HasValue ? $"interpreterId: {interpreterId}": $"officialInterpreterId: {officialInterpreterId}")}");
+            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with {(interpreterId.HasValue ? $"interpreterId: {interpreterId}" : $"officialInterpreterId: {officialInterpreterId}")}");
             try
             {
                 var apiUser = await GetApiUser();
-                var interpreter = interpreterId.HasValue ? 
+                var interpreter = interpreterId.HasValue ?
                     await _apiUserService.GetInterpreterModelFromId(interpreterId.Value, apiUser.BrokerId.Value) :
                     await _apiUserService.GetInterpreterModelFromId(officialInterpreterId, apiUser.BrokerId.Value);
                 return Json(new ViewInterpreterResponse { Interpreter = interpreter });

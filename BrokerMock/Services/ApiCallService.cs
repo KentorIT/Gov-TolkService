@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -31,7 +30,7 @@ namespace BrokerMock.Services
             _options = options?.Value;
             _cache = cache;
             client.DefaultRequestHeaders.Accept.Clear();
-            if (_options.UseApiKey && !client.DefaultRequestHeaders.Any(h=> h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
+            if (_options.UseApiKey && !client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
             {
                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
                 client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);

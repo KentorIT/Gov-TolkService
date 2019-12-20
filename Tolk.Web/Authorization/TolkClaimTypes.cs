@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Tolk.Web.Authorization
+﻿namespace Tolk.Web.Authorization
 {
     public static class TolkClaimTypes
     {

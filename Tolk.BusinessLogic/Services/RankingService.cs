@@ -1,9 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Internal;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 
@@ -20,7 +17,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IQueryable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime date)
         {
-            if(date.TimeOfDay.Ticks != 0)
+            if (date.TimeOfDay.Ticks != 0)
             {
                 throw new ArgumentException("Date must be a pure date, without time component", nameof(date));
             }

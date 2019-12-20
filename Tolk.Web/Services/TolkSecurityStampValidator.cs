@@ -13,8 +13,8 @@ namespace Tolk.Web.Services
 {
     public class TolkSecurityStampValidator : SecurityStampValidator<AspNetUser>
     {
-        private UserManager<AspNetUser> _userManager;
-        private SignInManager<AspNetUser> _signInManager;
+        private readonly UserManager<AspNetUser> _userManager;
+        private readonly SignInManager<AspNetUser> _signInManager;
 
         public TolkSecurityStampValidator(
             IOptions<SecurityStampValidatorOptions> options,
@@ -33,14 +33,14 @@ namespace Tolk.Web.Services
 
             await base.ValidateAsync(context);
 
-            if(context.Principal == null || // Session rejected by base class, everyting is handled.
+            if (context.Principal == null || // Session rejected by base class, everyting is handled.
                 ReferenceEquals(oldPrincipal, context.Principal)) // Same principal => not time for refresh yet.
             {
                 return;
             }
 
             var impersonatingUserId = oldPrincipal.FindFirstValue(TolkClaimTypes.ImpersonatingUserId);
-            if(impersonatingUserId != null)
+            if (impersonatingUserId != null)
             {
                 var impersonatingIdentity = new ClaimsIdentity();
                 var impersonatingSecurityStamp = oldPrincipal.FindFirstValue(TolkClaimTypes.ImpersonatingUserSecurityStamp);
@@ -50,7 +50,7 @@ namespace Tolk.Web.Services
 
                 var impersonatingUser = await _signInManager.ValidateSecurityStampAsync(impersonatingPrincipal);
 
-                if(impersonatingUser != null
+                if (impersonatingUser != null
                     && await _userManager.IsInRoleAsync(impersonatingUser, Roles.Impersonator))
                 {
                     var newIdentity = context.Principal.Identities.Single();

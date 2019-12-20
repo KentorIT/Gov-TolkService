@@ -1,16 +1,16 @@
-﻿using System;
-using Tolk.BusinessLogic.Services;
-using Xunit;
-using FluentAssertions;
-using Tolk.BusinessLogic.Data;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Tests.TestHelpers;
-using Tolk.BusinessLogic.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.BusinessLogic.Utilities;
+using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Services
 {
@@ -174,23 +174,23 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 0, 1)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 31, 2)]
-        [InlineData("2018-10-10 10:00:00",  CompetenceLevel.OtherInterpreter, PriceListType.Other, 0, 0, 0)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 0, 1)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Other, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, PriceListType.Court, 31, 31, 2)]
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, PriceListType.Other, 0, 0, 0)]
 
         public void GetLostTimePriceRows(string startAt, CompetenceLevel compLevel, PriceListType priceListType, int lostTime, int lostTimeIWH, int actual)
         {
@@ -311,7 +311,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [Theory]
         [InlineData("2018-10-10 05:00:00", "2018-10-10 10:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2)]//5h 2h iwh
         [InlineData("2018-10-10 06:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 15 + Price_IWH_30M__Court_Comp1 * 4), 3)]//13h 2h iwh
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 22:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + + Price_IWH_30M__Court_Comp1 * 8), 2)]//5h 4h iwh
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 22:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + +Price_IWH_30M__Court_Comp1 * 8), 2)]//5h 4h iwh
         [InlineData("2018-10-10 17:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_OverMaxTime_Court_Comp1 * 7 + Price_IWH_30M__Court_Comp1 * 16), 3)]//9h work 8h iwh
         [InlineData("2018-10-10 23:00:00", "2018-10-11 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 6), 2)]//3h work 3h iwh
         public void IWH_WeekdayDifferentPeriodsInterpreterCompensation(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows)

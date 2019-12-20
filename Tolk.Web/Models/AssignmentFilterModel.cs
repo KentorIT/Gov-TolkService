@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -44,10 +43,10 @@ namespace Tolk.Web.Models
                 ? requests.Where(r => r.Order.LanguageId == LanguageId)
                 : requests;
 
-            requests = DateRange?.Start != null 
+            requests = DateRange?.Start != null
                 ? requests.Where(r => r.Order.StartAt.Date >= DateRange.Start)
                 : requests;
-            requests = DateRange?.End != null 
+            requests = DateRange?.End != null
                 ? requests.Where(r => r.Order.StartAt.Date <= DateRange.End)
                 : requests;
 

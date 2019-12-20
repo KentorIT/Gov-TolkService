@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
-using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
-using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;

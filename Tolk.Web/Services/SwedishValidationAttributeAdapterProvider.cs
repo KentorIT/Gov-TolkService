@@ -1,12 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using Tolk.Web.Resources;
 
 namespace Tolk.Web.Services
@@ -15,7 +10,7 @@ namespace Tolk.Web.Services
     {
         public IAttributeAdapter GetAttributeAdapter(ValidationAttribute attribute, IStringLocalizer stringLocalizer)
         {
-            switch(attribute)
+            switch (attribute)
             {
                 case RequiredAttribute requiredAttribute:
                     return new LocalizedRequiredAttributeAdapter(requiredAttribute, stringLocalizer);
@@ -32,10 +27,10 @@ namespace Tolk.Web.Services
         {
             public LocalizedRequiredAttributeAdapter(
                 RequiredAttribute attribute,
-                IStringLocalizer stringLocalizer) 
+                IStringLocalizer stringLocalizer)
                 : base(attribute, stringLocalizer)
             {
-                if(attribute.ErrorMessage == null
+                if (attribute.ErrorMessage == null
                     && attribute.ErrorMessageResourceName == null
                     && attribute.ErrorMessageResourceType == null)
                 {
@@ -57,7 +52,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        private class LocalizedCompareAttributeAdapter: CompareAttributeAdapter
+        private class LocalizedCompareAttributeAdapter : CompareAttributeAdapter
         {
             public LocalizedCompareAttributeAdapter(
                 CompareAttribute attribute,

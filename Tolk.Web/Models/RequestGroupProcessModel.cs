@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Models
 {

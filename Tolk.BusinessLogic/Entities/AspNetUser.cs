@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -25,7 +24,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             Id = id;
         }
-            public AspNetUser(string email, string userName, string firstName, string lastName)
+        public AspNetUser(string email, string userName, string firstName, string lastName)
         {
             Email = email;
             UserName = userName;
@@ -53,11 +52,11 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(255)]
         public string NameFamily { get; set; }
 
-        public string FullName => $"{NameFirst} {NameFamily}"; 
+        public string FullName => $"{NameFirst} {NameFamily}";
 
-        public string CompleteContactInformation => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; 
+        public string CompleteContactInformation => $"{FullName}\n{Email}\nTel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}";
 
-        public string PhoneNumbers => string.IsNullOrWhiteSpace(PhoneNumber) && string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? null : $"Tel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}"; 
+        public string PhoneNumbers => string.IsNullOrWhiteSpace(PhoneNumber) && string.IsNullOrWhiteSpace(PhoneNumberCellphone) ? null : $"Tel: {PhoneNumber ?? "-"}\nMobil: {PhoneNumberCellphone ?? "-"}";
 
         [StringLength(32)]
         public string PhoneNumberCellphone { get; set; }

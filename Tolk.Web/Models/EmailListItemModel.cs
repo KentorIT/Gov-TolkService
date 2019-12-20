@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {

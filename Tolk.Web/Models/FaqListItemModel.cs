@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {

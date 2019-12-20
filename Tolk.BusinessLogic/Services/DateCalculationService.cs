@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Entities;
-using Microsoft.Extensions.Caching.Memory;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Services
 {
     public class DateCalculationService
     {
-        private TolkDbContext _tolkDbContext;
+        private readonly TolkDbContext _tolkDbContext;
         private readonly IMemoryCache _cache;
         private const string holidaysCacheKey = nameof(holidaysCacheKey);
 
@@ -71,7 +70,7 @@ namespace Tolk.BusinessLogic.Services
             get
             {
                 if (_cache == null)
-                { 
+                {
                     return _tolkDbContext.Holidays.ToList().AsReadOnly();
                 }
                 if (!_cache.TryGetValue(holidaysCacheKey, out IEnumerable<Holiday> holidays))

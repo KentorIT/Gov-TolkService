@@ -1,7 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
-using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {

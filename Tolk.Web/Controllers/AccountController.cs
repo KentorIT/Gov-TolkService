@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
-using System.Collections.Generic;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 using Tolk.Web.Models.AccountViewModels;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -779,7 +779,7 @@ namespace Tolk.Web.Controllers
 
                     await _dbContext.SaveChangesAsync();
 
-                    return model.IsFirstTimeUser ? 
+                    return model.IsFirstTimeUser ?
                         RedirectToAction(nameof(Index), "Home", new { message = "Bokningsinställningar sparade. Du kan nu börja använda tjänsten!" }) :
                         RedirectToAction(nameof(ViewDefaultSettings), new { message = "Ändringarna sparades" });
                 }

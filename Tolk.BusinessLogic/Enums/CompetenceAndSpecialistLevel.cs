@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Enums
 {
     public enum CompetenceAndSpecialistLevel
     {
-    	[CustomName("no_interpreter", useInApi: false)]
+        [CustomName("no_interpreter", useInApi: false)]
         [Description("Tolk ej tillsatt")]
         NoInterpreter = 0,
 

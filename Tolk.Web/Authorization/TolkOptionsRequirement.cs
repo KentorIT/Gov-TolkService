@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Helpers;
 
@@ -32,7 +29,7 @@ namespace Tolk.Web.Authorization
 
     public class TolkOptionsRequirementHandler : AuthorizationHandler<TolkOptionsRequirement>
     {
-        private TolkOptions _options;
+        private readonly TolkOptions _options;
 
         public TolkOptionsRequirementHandler(IOptions<TolkOptions> options)
         {

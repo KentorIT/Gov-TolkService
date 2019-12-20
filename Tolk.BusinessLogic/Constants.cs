@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tolk.BusinessLogic
+﻿namespace Tolk.BusinessLogic
 {
     public static class Constants
     {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tolk.Api.Payloads.ApiPayloads
+﻿namespace Tolk.Api.Payloads.ApiPayloads
 {
     public class RequestGroupAnswerModel : ApiPayloadBaseModel
     {

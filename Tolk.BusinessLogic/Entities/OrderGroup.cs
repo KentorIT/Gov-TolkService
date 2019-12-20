@@ -70,7 +70,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel(DateTimeOffset now)
         {
-            return 
+            return
             (Status == OrderStatus.AwaitingDeadlineFromCustomer ||
             Status == OrderStatus.GroupAwaitingPartialResponse ||
             Status == OrderStatus.RequestAwaitingPartialAccept ||
@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Entities
                 Status == OrderStatus.Requested ||
                 Status == OrderStatus.RequestResponded ||
                 Status == OrderStatus.ResponseAccepted));
-            }
+        }
         #endregion
 
         #region methods and read only properties
@@ -101,7 +101,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public string LanguageName => OtherLanguage ?? Language?.Name;
 
-        public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue; 
+        public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue;
 
         public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && HasExtraInterpreter);
 
@@ -145,10 +145,10 @@ namespace Tolk.BusinessLogic.Entities
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
             var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
-     
+
             if (ranking != null)
             {
-                var quarantine = ranking.Quarantines.FirstOrDefault(q => q.CustomerOrganisationId == CustomerOrganisationId 
+                var quarantine = ranking.Quarantines.FirstOrDefault(q => q.CustomerOrganisationId == CustomerOrganisationId
                     && q.ActiveFrom <= newRequestCreationTime && q.ActiveTo >= newRequestCreationTime);
                 if (quarantine != null)
                 {

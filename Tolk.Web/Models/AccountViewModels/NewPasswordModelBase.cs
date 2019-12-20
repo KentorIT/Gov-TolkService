@@ -10,10 +10,10 @@ namespace Tolk.Web.Models.AccountViewModels
         [StringLength(100)]
         [DataType(DataType.Password)]
         [PasswordValidation(
-            MinimumPasswordLength = 8, 
-            MustContainLower = true, 
-            MustContainUpper = true, 
-            MustContainNumbers = true, 
+            MinimumPasswordLength = 8,
+            MustContainLower = true,
+            MustContainUpper = true,
+            MustContainNumbers = true,
             MustContainNonAlphanumeric = true)]
         [Display(Name = "Nytt lösenord")]
         public string NewPassword { get; set; }

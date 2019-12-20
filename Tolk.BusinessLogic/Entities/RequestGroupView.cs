@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -11,6 +10,6 @@ namespace Tolk.BusinessLogic.Entities
         public int RequestGroupId { get; set; }
 
         [ForeignKey(nameof(RequestGroupId))]
-        public RequestGroup RequestGroup { get; set; }    
+        public RequestGroup RequestGroup { get; set; }
     }
 }

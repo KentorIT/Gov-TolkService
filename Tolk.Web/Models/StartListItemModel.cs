@@ -13,7 +13,7 @@ namespace Tolk.Web.Models
         public int DefaultItemId { get; set; }
 
         public string DefaultItemTab { get; set; }
-        
+
         public string ButtonAction { get; set; }
 
         public string ButtonController { get; set; }
@@ -23,7 +23,7 @@ namespace Tolk.Web.Models
         public string ButtonItemTab { get; set; }
 
         public StartListItemStatus Status { get; set; }
-        
+
         public string CustomerName { get; set; }
 
         public string OrderNumber { get; set; }
@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForStartListItem(Status);
 
-        public int?  ViewedBy { get; set; }
+        public int? ViewedBy { get; set; }
 
         public string ViewedByUser { get; set; } = string.Empty;
 

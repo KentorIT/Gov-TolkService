@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset ActiveTo { get; set; }
 
         public SystemMessageType SystemMessageType { get; set; }
-        
+
         public SystemMessageUserTypeGroup SystemMessageUserTypeGroup { get; set; }
 
         public int? LastUpdatedBy { get; set; }

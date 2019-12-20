@@ -43,7 +43,7 @@ namespace Tolk.Web.Models
 
         public bool IsAdmin { get; set; }
 
-        public int UserId{ get; set; }
+        public int UserId { get; set; }
 
 
         public IEnumerable<int> CustomerUnits { get; set; }

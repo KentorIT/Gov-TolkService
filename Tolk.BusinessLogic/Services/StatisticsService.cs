@@ -1,13 +1,13 @@
-﻿using Tolk.BusinessLogic.Data;
+﻿using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using System.Linq;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using Tolk.BusinessLogic.Utilities;
-using ClosedXML.Excel;
 
 namespace Tolk.BusinessLogic.Services
 {

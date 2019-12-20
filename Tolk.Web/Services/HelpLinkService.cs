@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Html;
+﻿using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.Configuration;
+using System;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Services

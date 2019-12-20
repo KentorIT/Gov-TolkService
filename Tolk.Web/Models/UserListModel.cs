@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Tolk.Web.Helpers;
+﻿using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {

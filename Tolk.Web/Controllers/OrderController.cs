@@ -785,7 +785,7 @@ namespace Tolk.Web.Controllers
                 CustomerName = o.CustomerName,
                 StartAt = o.StartAt,
                 EndAt = o.EndAt,
-                LinkOverride = o.RowType == OrderRowType.OrderGroup ? "/OrderGroup/View": string.Empty
+                LinkOverride = o.RowType == OrderRowType.OrderGroup ? "/OrderGroup/View" : string.Empty
 
             }));
         }

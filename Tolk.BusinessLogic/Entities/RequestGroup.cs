@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             Attachments = attachedFiles;
             AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
-            OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ? 
+            OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ?
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
             SetStatus(RequiresApproval(hasTravelCosts) ?

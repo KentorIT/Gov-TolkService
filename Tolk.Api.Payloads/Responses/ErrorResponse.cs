@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Tolk.Api.Payloads.Responses
+﻿namespace Tolk.Api.Payloads.Responses
 {
-    public class ErrorResponse: ResponseBase
+    public class ErrorResponse : ResponseBase
     {
         public string ErrorCode { get; set; }
 
@@ -16,7 +11,7 @@ namespace Tolk.Api.Payloads.Responses
         /// </summary>
         public override bool Success { get => false; }
 
-        public  ErrorResponse Copy()
+        public ErrorResponse Copy()
         {
             return new ErrorResponse
             {

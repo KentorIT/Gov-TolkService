@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 

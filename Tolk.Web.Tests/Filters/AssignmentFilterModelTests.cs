@@ -2,11 +2,11 @@
 using System;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Tests.TestHelpers;
 using Tolk.Web.Models;
 using Tolk.Web.Tests.TestHelpers;
-using Tolk.BusinessLogic.Enums;
 using Xunit;
-using Tolk.BusinessLogic.Tests.TestHelpers;
 
 namespace Tolk.Web.Tests.Filters
 {

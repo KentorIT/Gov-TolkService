@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Reflection;
 using Tolk.Web.Helpers.RequiredIf;
 
 namespace Tolk.Web.Helpers.RequiredIf

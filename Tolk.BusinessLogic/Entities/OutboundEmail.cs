@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MimeKit;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using MimeKit;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset createdAt,
             int? replacingEmailId = null,
             int? resentByUserId = null)
-            :base(createdAt)
+            : base(createdAt)
         {
             Recipient = recipient;
             Subject = subject;

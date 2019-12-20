@@ -1,9 +1,8 @@
-using System;
-using Tolk.Web.Models;
-using Tolk.BusinessLogic.Helpers;
-using Xunit;
 using FluentAssertions;
-using System.Globalization;
+using System;
+using Tolk.BusinessLogic.Helpers;
+using Tolk.Web.Models;
+using Xunit;
 
 namespace Tolk.Web.Tests
 {
@@ -42,7 +41,7 @@ namespace Tolk.Web.Tests
 
             Action a = () => subject.EndDateTime = DateTimeOffset.Parse(endTime);
 
-            if(shouldThrow)
+            if (shouldThrow)
             {
                 a.Should().Throw<InvalidOperationException>();
             }

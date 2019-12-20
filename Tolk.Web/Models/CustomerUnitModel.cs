@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models

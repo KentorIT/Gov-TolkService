@@ -3,23 +3,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic;
-using Microsoft.Extensions.Options;
 
 namespace Tolk.Web.Controllers
 {
@@ -204,7 +204,7 @@ namespace Tolk.Web.Controllers
                     IsSingleOccasion = og.IsSingleOccasion,
                     HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
-            //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
+                //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
                 .Include(og => og.Orders)
@@ -446,7 +446,7 @@ namespace Tolk.Web.Controllers
                 DefaulListController = "Order",
                 DefaultItemId = o.OrderId,
                 InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime,
-                CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel : 
+                CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel :
                     CompetenceAndSpecialistLevel.NoInterpreter,
                 Language = o.OtherLanguage ?? o.Language.Name,
                 OrderNumber = o.OrderNumber,

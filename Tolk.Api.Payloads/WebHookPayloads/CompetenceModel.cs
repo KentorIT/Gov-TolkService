@@ -1,8 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-
-namespace Tolk.Api.Payloads.WebHookPayloads
+﻿namespace Tolk.Api.Payloads.WebHookPayloads
 {
     public class CompetenceModel
     {

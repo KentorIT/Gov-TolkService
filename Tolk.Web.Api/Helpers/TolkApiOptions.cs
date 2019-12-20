@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Utilities;
 
@@ -8,7 +8,7 @@ namespace Tolk.Web.Api.Helpers
     public class TolkApiOptions : TolkBaseOptions
     {
         public Uri TolkWebBaseUrl { get; set; }
-        public static List<ErrorResponse> ErrorResponses => 
+        public static List<ErrorResponse> ErrorResponses =>
                 new List<ErrorResponse>
                 {
                     new ErrorResponse { StatusCode = 500, ErrorCode = ErrorCodes.UnspecifiedProblem, ErrorMessage = "The api server encountered a problem. Please contact the support if the problem persists." },

@@ -1,5 +1,5 @@
-﻿using Tolk.BusinessLogic.Utilities;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {

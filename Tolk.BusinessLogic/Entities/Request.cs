@@ -125,12 +125,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel => CanCancelRequestBelongsToGroup || CanCancelRequestNotBelongsToGroup;
 
-        private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue && 
-            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded 
+        private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
+            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded
             || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
             (IsToBeProcessedByBroker || IsAcceptedOrApproved);
 
-        private bool CanCancelRequestBelongsToGroup => Order.OrderGroupId.HasValue && 
+        private bool CanCancelRequestBelongsToGroup => Order.OrderGroupId.HasValue &&
             (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
             (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
@@ -143,7 +143,7 @@ namespace Tolk.BusinessLogic.Entities
         public bool CanCreateRequisition => (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
 
         public bool CanCreateComplaint => !Complaints.Any() && Status == RequestStatus.Approved;
-        
+
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
         public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && InterpreterLocation.HasValue

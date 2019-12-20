@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services

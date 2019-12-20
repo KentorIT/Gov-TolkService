@@ -29,7 +29,7 @@ namespace Tolk.Web.Helpers
 
         public static int? TryGetBrokerId(this ClaimsPrincipal user)
         {
-            if(int.TryParse(user.FindFirstValue(TolkClaimTypes.BrokerId), out int id))
+            if (int.TryParse(user.FindFirstValue(TolkClaimTypes.BrokerId), out int id))
             {
                 return id;
             }
@@ -51,7 +51,7 @@ namespace Tolk.Web.Helpers
 
         public static int? TryGetImpersonatorId(this ClaimsPrincipal user)
         {
-            if(int.TryParse(user.FindFirstValue(TolkClaimTypes.ImpersonatingUserId), out int result))
+            if (int.TryParse(user.FindFirstValue(TolkClaimTypes.ImpersonatingUserId), out int result))
             {
                 return result;
             }
@@ -64,8 +64,8 @@ namespace Tolk.Web.Helpers
         }
 
         public static int? TryGetInterpreterId(this ClaimsPrincipal user)
-        { 
-            if(int.TryParse(user.FindFirstValue(TolkClaimTypes.InterpreterId), out int id))
+        {
+            if (int.TryParse(user.FindFirstValue(TolkClaimTypes.InterpreterId), out int id))
             {
                 return id;
             }

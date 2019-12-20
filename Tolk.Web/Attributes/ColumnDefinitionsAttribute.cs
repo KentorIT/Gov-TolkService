@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.Web.Helpers;
-using System.Runtime.CompilerServices;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Attributes
 {

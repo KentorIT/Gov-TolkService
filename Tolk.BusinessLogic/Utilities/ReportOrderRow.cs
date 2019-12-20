@@ -1,6 +1,4 @@
-﻿using Tolk.BusinessLogic.Enums;
-
-namespace Tolk.BusinessLogic.Utilities
+﻿namespace Tolk.BusinessLogic.Utilities
 {
     public class ReportOrderRow : ReportRow
     {

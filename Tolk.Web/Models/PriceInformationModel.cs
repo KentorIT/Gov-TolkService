@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Utilities;
-using System.Collections.Generic;
-using Tolk.BusinessLogic.Services;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {

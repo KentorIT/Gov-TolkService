@@ -1,5 +1,3 @@
-using System;
-
 namespace Tolk.Web.Models
 {
     public class ErrorViewModel

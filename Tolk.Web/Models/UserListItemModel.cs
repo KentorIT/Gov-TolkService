@@ -17,7 +17,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 3, Name = nameof(Organisation), Title = "Organisation")]
         public string Organisation { get; set; }
 
-        [ColumnDefinitions(Index = 4, Name = nameof(LastLoginAt),SortOnWebServer = false, Title = "Senaste inloggning")]
+        [ColumnDefinitions(Index = 4, Name = nameof(LastLoginAt), SortOnWebServer = false, Title = "Senaste inloggning")]
         public string LastLoginAt { get; set; }
 
         public bool IsActive { get; set; }

@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string CompetencePriceDescription { get; set; }
 
         public string SubPriceHeader { get; set; }
-        
+
         public IEnumerable<MealBreakInformation> MealBreaks { get; set; }
 
     }

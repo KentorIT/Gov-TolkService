@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Tolk.BusinessLogic.Entities;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tolk.BusinessLogic.Entities;
 
 
 namespace Tolk.BusinessLogic.Utilities

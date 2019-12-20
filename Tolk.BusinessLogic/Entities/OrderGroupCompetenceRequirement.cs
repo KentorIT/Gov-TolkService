@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using Tolk.BusinessLogic.Enums;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tolk.BusinessLogic.Entities
 {

@@ -13,7 +13,7 @@ namespace Tolk.Web.Services
 {
     public class TolkClaimsPrincipalFactory : UserClaimsPrincipalFactory<AspNetUser, IdentityRole<int>>
     {
-        private TolkDbContext _dbContext;
+        private readonly TolkDbContext _dbContext;
 
         public TolkClaimsPrincipalFactory(
             UserManager<AspNetUser> userManager,

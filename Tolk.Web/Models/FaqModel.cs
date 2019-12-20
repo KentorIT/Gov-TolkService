@@ -23,6 +23,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Visa för följande användargrupper")]
         [RequiredChecked(Min = 1)]
         public CheckboxGroup DisplayForRoles { get; set; }
-        
+
     }
 }

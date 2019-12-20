@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -9,11 +8,11 @@ using Tolk.Api.Payloads.Enums;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Api.Services
 {
@@ -162,9 +161,9 @@ namespace Tolk.Web.Api.Services
 
         internal async Task<InterpreterDetailsModel> GetInterpreterModelFromId(int interpreterId, int brokerId)
         {
-             return GetModelFromEntity(await _dbContext.InterpreterBrokers
-                .Where(i => i.InterpreterBrokerId == interpreterId && i.BrokerId == brokerId)
-                .SingleOrDefaultAsync());
+            return GetModelFromEntity(await _dbContext.InterpreterBrokers
+               .Where(i => i.InterpreterBrokerId == interpreterId && i.BrokerId == brokerId)
+               .SingleOrDefaultAsync());
         }
 
         internal async Task<InterpreterDetailsModel> GetInterpreterModelFromId(string officialnterpreterId, int brokerId)

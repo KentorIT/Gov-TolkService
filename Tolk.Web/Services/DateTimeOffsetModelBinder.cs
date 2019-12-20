@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
@@ -18,7 +18,7 @@ namespace Tolk.Web.Services
             var timeMinuteValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Minute");
 
             // Date and time always required
-            if (!ValueDefinedAndUsed(dateValue) ||(!ValueDefinedAndUsed(timeValue) && (!ValueDefinedAndUsed(timeHourValue))))
+            if (!ValueDefinedAndUsed(dateValue) || (!ValueDefinedAndUsed(timeValue) && (!ValueDefinedAndUsed(timeHourValue))))
             {
                 return Task.CompletedTask;
             }
@@ -40,7 +40,7 @@ namespace Tolk.Web.Services
                 }
             }
             else
-            { 
+            {
                 timeValueSanitized = $"{timeHourValue.FirstValue}:{timeMinuteValue.FirstValue}";
             }
             dateTime = $"{dateValue.FirstValue} {timeValueSanitized}".ToSwedishDateTime();

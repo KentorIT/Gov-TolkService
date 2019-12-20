@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Tolk.BusinessLogic.Enums;
+﻿using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models

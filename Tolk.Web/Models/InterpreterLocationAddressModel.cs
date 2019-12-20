@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text;
-using E = Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
+using E = Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
@@ -44,7 +44,7 @@ namespace Tolk.Web.Models
                 }
                 string rankHeader = string.Empty;
                 switch (Rank)
-                    {
+                {
                     case 2:
                         rankHeader = "I andra hand:\n";
                         break;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using Tolk.BusinessLogic.Utilities;
 
@@ -32,7 +31,7 @@ namespace Tolk.Web.Helpers
                 else
                 {
                     gitInfo = head.FormatVersion();
-                    
+
                 }
                 Version = $"{versionNumber}.0-{gitInfo}";
             }
@@ -42,7 +41,7 @@ namespace Tolk.Web.Helpers
                 Version = $"{Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version}";
             }
 
-            var activeAzureVersion = 
+            var activeAzureVersion =
                 System.Environment.ExpandEnvironmentVariables(
                 "%HOME%\\site\\deployments\\active");
 

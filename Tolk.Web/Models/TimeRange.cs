@@ -1,6 +1,6 @@
 ﻿using System;
-using Tolk.BusinessLogic.Helpers;
 using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -56,7 +56,7 @@ namespace Tolk.Web.Models
 
                 var endDateFromTime = GetEndDate(valueSweden.TimeOfDay);
 
-                if(endDateFromTime != valueSweden.Date)
+                if (endDateFromTime != valueSweden.Date)
                 {
                     throw new InvalidOperationException("TimeRange can only express positive ranges of up to 24 hours. "
                         + $"Automatically calculated end date {endDateFromTime.ToShortDateString()} "

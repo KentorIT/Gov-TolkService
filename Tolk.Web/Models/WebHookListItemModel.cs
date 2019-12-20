@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models

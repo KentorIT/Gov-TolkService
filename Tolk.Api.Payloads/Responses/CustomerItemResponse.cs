@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tolk.Api.Payloads.Responses
+﻿namespace Tolk.Api.Payloads.Responses
 {
     public class CustomerItemResponse : ListItemResponse
     {

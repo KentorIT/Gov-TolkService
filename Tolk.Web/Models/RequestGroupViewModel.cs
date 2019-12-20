@@ -216,7 +216,7 @@ namespace Tolk.Web.Models
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
             };
-            
+
         }
 
         private static bool GetDisplayExpectedTravelCostInfo(Order o, int locationAnswer)
