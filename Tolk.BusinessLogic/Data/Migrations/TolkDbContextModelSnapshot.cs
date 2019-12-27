@@ -822,7 +822,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("UpdatedByImpersonatorId");
 
-                    b.Property<int?>("UpdatedByUserId");
+                    b.Property<int>("UpdatedByUserId");
 
                     b.HasKey("OrderChangeLogEntryId");
 
@@ -2540,7 +2540,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
-                        .HasForeignKey("UpdatedByUserId");
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>

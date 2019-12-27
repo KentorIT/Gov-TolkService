@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int OrderId { get; set; }
 
-        public int? UpdatedByUserId { get; set; }
+        public int UpdatedByUserId { get; set; }
 
         public int? UpdatedByImpersonatorId { get; set; }
 
