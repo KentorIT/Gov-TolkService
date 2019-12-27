@@ -708,7 +708,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = GetOrder(model.OrderId);
-
+            var oldContactPerson = order.ContactPersonUser;
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
             {
                 if (model.ContactPersonId == order.ContactPersonId)
@@ -717,7 +717,7 @@ namespace Tolk.Web.Controllers
                 }
                 order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                     User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == model.ContactPersonId));
-                _notificationService.OrderContactPersonChanged(order);
+                _notificationService.OrderContactPersonChanged(order, oldContactPerson);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -884,8 +884,8 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Group).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
                 .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
-                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
-                .Include(o => o.OrderContactPersonHistory).ThenInclude(cph => cph.ChangedByUser)
+                .Include(o => o.OrderChangeLogEntry).ThenInclude(oc => oc.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
+                .Include(o => o.OrderChangeLogEntry).ThenInclude(oc => oc.UpdatedByUser)
                 .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)

@@ -98,10 +98,9 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void OrderContactPersonChanged(Order order)
+        public void OrderContactPersonChanged(Order order, AspNetUser previousContactUser)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(OrderContactPersonChanged), nameof(NotificationService));
-            AspNetUser previousContactUser = order.OrderContactPersonHistory.OrderByDescending(cph => cph.OrderContactPersonHistoryId).First().PreviousContactPersonUser;
             AspNetUser currentContactUser = order.ContactPersonUser;
 
             string orderNumber = order.OrderNumber;

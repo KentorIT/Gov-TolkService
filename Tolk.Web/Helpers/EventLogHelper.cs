@@ -49,17 +49,17 @@ namespace Tolk.Web.Helpers
                 });
             }
             // Change of contact person  
-            if (order.OrderContactPersonHistory.Any())
+            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).Any())
             {
                 int i = 0;
-                foreach (OrderContactPersonHistory cph in order.OrderContactPersonHistory.OrderBy(ch => ch.OrderContactPersonHistoryId))
+                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt))
                 {
                     string newContactPersonName = string.Empty;
                     string previousContactPersonName = string.Empty;
                     //if previous contact is null, a new contact person is added - get the new contact
-                    if (cph.PreviousContactPersonId == null)
+                    if (oc.OrderContactPersonHistory.PreviousContactPersonId == null)
                     {
-                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
+                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, i + 1);
                         if (eventRow != null)
                         {
                             eventLog.Add(eventRow);
@@ -71,14 +71,14 @@ namespace Tolk.Web.Helpers
                         //add a row for removed person
                         eventLog.Add(new EventLogEntryModel
                         {
-                            Timestamp = cph.ChangedAt,
-                            EventDetails = $"{cph.PreviousContactPersonUser?.FullName} fråntogs rätt att granska rekvisition",
-                            Actor = cph.ChangedByUser.FullName,
+                            Timestamp = oc.LoggedAt,
+                            EventDetails = $"{oc.OrderContactPersonHistory.PreviousContactPersonUser?.FullName} fråntogs rätt att granska rekvisition",
+                            Actor = oc.UpdatedByUser.FullName,
                             Organization = customerName,
-                            ActorContactInfo = GetContactinfo(cph.ChangedByUser),
+                            ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
                         });
                         //find if removed or changed (if removed we don't add a row else add row for new contact)
-                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(cph, order, i + 1);
+                        EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, i + 1);
                         if (eventRow != null)
                         {
                             eventLog.Add(eventRow);
@@ -129,17 +129,19 @@ namespace Tolk.Web.Helpers
             return eventLog;
         }
 
-        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderContactPersonHistory cphPrevious, Order order, int findElementAt)
+        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
         {
+            
+            var orderContactPersons = order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
             //try find next row if any else take info from Order.ContactPersonUser
-            string newContactPersonName = order.OrderContactPersonHistory.Count > findElementAt ? order.OrderContactPersonHistory.ElementAt(findElementAt).PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
+            string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
             return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
             {
-                Timestamp = cphPrevious.ChangedAt,
+                Timestamp = ocPrevious.LoggedAt,
                 EventDetails = $"{newContactPersonName} tilldelades rätt att granska rekvisition",
-                Actor = cphPrevious.ChangedByUser.FullName,
+                Actor = ocPrevious.UpdatedByUser.FullName,
                 Organization = order.CustomerOrganisation.Name,
-                ActorContactInfo = GetContactinfo(cphPrevious.ChangedByUser),
+                ActorContactInfo = GetContactinfo(ocPrevious.UpdatedByUser),
             };
         }
 

@@ -28,7 +28,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
 
-        public void OrderContactPersonChanged(Order order) { }
+        public void OrderContactPersonChanged(Order order, AspNetUser user) { }
 
         public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup) { }
 

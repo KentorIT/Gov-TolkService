@@ -8,26 +8,15 @@ namespace Tolk.BusinessLogic.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderContactPersonHistoryId { get; set; }
 
-        public int OrderId { get; set; }
-
-        [ForeignKey(nameof(OrderId))]
-        public Order Order { get; set; }
-
         public int? PreviousContactPersonId { get; set; }
 
         [ForeignKey(nameof(PreviousContactPersonId))]
         public AspNetUser PreviousContactPersonUser { get; set; }
 
-        public DateTimeOffset ChangedAt { get; set; }
+        public int OrderChangeLogEntryId { get; set; }
 
-        public int ChangedBy { get; set; }
+        [ForeignKey(nameof(OrderChangeLogEntryId))]
+        public OrderChangeLogEntry OrderChangeLogEntry { get; set; }
 
-        [ForeignKey(nameof(ChangedBy))]
-        public AspNetUser ChangedByUser { get; set; }
-
-        public int? ImpersonatingChangeUserId { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingChangeUserId))]
-        public AspNetUser ChangedByImpersonator { get; set; }
     }
 }

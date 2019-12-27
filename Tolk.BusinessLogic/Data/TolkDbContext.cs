@@ -215,16 +215,6 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<OrderContactPersonHistory>()
-                .HasOne(r => r.ChangedByImpersonator)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<OrderContactPersonHistory>()
-                .HasOne(r => r.ChangedByUser)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
             builder.Entity<OutboundWebHookCall>()
                 .HasOne(c => c.RecipientUser)
                 .WithMany()
@@ -598,6 +588,10 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<UserDefaultSetting> UserDefaultSettings { get; set; }
 
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
+
+        public DbSet<OrderHistoryEntry> OrderHistoryEntries { get; set; }
+
+        public DbSet<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
 
         public DbQuery<OrderListRow> OrderListRows { get; set; }
 

@@ -35,6 +35,10 @@
     <Compile Remove="Data\Migrations\20191022123253_TravelCostAgreementType.Designer.cs" />
     <Compile Remove="Data\Migrations\20191031084900_AddRequestGroupStatusConfirmations.cs" />
     <Compile Remove="Data\Migrations\20191031084900_AddRequestGroupStatusConfirmations.Designer.cs" />
+    <Compile Remove="Data\Migrations\20191220090449_AddOrderChangeHistoryTables.cs" />
+    <Compile Remove="Data\Migrations\20191220090449_AddOrderChangeHistoryTables.Designer.cs" />
+    <Compile Remove="Data\Migrations\20191220091544_AddOrderChangeHistoryTables.cs" />
+    <Compile Remove="Data\Migrations\20191220091544_AddOrderChangeHistoryTables.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -808,6 +808,33 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OrderAttachments");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
+                {
+                    b.Property<int>("OrderChangeLogEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("LoggedAt");
+
+                    b.Property<int>("OrderChangeLogType");
+
+                    b.Property<int>("OrderId");
+
+                    b.Property<int?>("UpdatedByImpersonatorId");
+
+                    b.Property<int?>("UpdatedByUserId");
+
+                    b.HasKey("OrderChangeLogEntryId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UpdatedByImpersonatorId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("OrderChangeLogEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
                 {
                     b.Property<int>("OrderCompetenceRequirementId")
@@ -833,23 +860,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ChangedAt");
-
-                    b.Property<int>("ChangedBy");
-
-                    b.Property<int?>("ImpersonatingChangeUserId");
-
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderChangeLogEntryId");
 
                     b.Property<int?>("PreviousContactPersonId");
 
                     b.HasKey("OrderContactPersonHistoryId");
 
-                    b.HasIndex("ChangedBy");
-
-                    b.HasIndex("ImpersonatingChangeUserId");
-
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderChangeLogEntryId")
+                        .IsUnique();
 
                     b.HasIndex("PreviousContactPersonId");
 
@@ -1002,6 +1020,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("OrderGroupId");
 
                     b.ToTable("OrderGroupStatusConfirmations");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderHistoryEntry", b =>
+                {
+                    b.Property<int>("OrderHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ChangeOrderType");
+
+                    b.Property<int>("OrderChangeLogEntryId");
+
+                    b.Property<string>("Value");
+
+                    b.HasKey("OrderHistoryEntryId");
+
+                    b.HasIndex("OrderChangeLogEntryId");
+
+                    b.ToTable("OrderHistoryEntries");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -2490,6 +2527,22 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("OrderChangeLogEntry")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByImpersonatorUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByImpersonatorId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
@@ -2500,19 +2553,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ChangedByUser")
-                        .WithMany()
-                        .HasForeignKey("ChangedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ChangedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingChangeUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("OrderContactPersonHistory")
-                        .HasForeignKey("OrderId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
+                        .WithOne("OrderContactPersonHistory")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", "OrderChangeLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "PreviousContactPersonUser")
@@ -2602,6 +2645,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("StatusConfirmations")
                         .HasForeignKey("OrderGroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
+                        .WithMany("OrderHistories")
+                        .HasForeignKey("OrderChangeLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

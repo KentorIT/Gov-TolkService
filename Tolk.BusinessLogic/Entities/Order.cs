@@ -100,7 +100,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderAttachment> Attachments { get; set; }
 
-        public List<OrderContactPersonHistory> OrderContactPersonHistory { get; set; }
+        public List<OrderChangeLogEntry> OrderChangeLogEntry { get; set; }
 
         #endregion
 
@@ -234,25 +234,26 @@ namespace Tolk.BusinessLogic.Entities
             Status = OrderStatus.Delivered;
         }
 
-        public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, AspNetUser contactPerson)
+        public void ChangeContactPerson(DateTimeOffset changedAt, int userId, int? impersonatingUserId, AspNetUser newContactPerson)
         {
-            if (contactPerson != null && contactPerson.CustomerOrganisationId != CustomerOrganisationId)
+            if (newContactPerson != null && newContactPerson.CustomerOrganisationId != CustomerOrganisationId)
             {
-                throw new InvalidOperationException($"Cannot assign User {contactPerson.Id} as contact person on Order {OrderId}, since this user belongs to CustomerOrganization {contactPerson.CustomerOrganisationId}");
+                throw new InvalidOperationException($"Cannot assign User {newContactPerson.Id} as contact person on Order {OrderId}, since this user belongs to CustomerOrganization {newContactPerson.CustomerOrganisationId}");
             }
             if (Status == OrderStatus.CancelledByCreator || Status == OrderStatus.CancelledByBroker || Status == OrderStatus.NoBrokerAcceptedOrder || Status == OrderStatus.ResponseNotAnsweredByCreator)
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change contact person for orders with this status.");
             }
-            OrderContactPersonHistory.Add(new OrderContactPersonHistory
+            OrderChangeLogEntry.Add(new OrderChangeLogEntry
             {
-                ChangedAt = changedAt,
-                PreviousContactPersonId = ContactPersonId,
-                ChangedBy = userId,
-                ImpersonatingChangeUserId = impersonatingUserId,
-                OrderId = OrderId
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                UpdatedByImpersonatorId = impersonatingUserId,
+                OrderChangeLogType = OrderChangeLogType.ContactPerson,
+                OrderContactPersonHistory = new OrderContactPersonHistory{ PreviousContactPersonId = ContactPersonId }
             });
-            ContactPersonUser = contactPerson;
+           
+            ContactPersonUser = newContactPerson;
         }
 
         private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
