@@ -51,7 +51,7 @@ $(function () {
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-exclamation-sign").addClass("glyphicon-ok").removeClass("yellow-glyphicon");
             $('.competence-information > span.info-message-small').text("Det finns tolkar inom samtliga kompetensnivåer för valt språk i Kammarkollegiets tolkregister").attr("role", "status");
         }
-        else if (compLevelString === "0") {
+        else if (compLevelString === 0) {
             $('.competence-information').removeClass("warning-info-yellow").removeClass("system-action-info").addClass("warning-info-home")
                 .children("span.glyphicon.message-icon").removeClass("glyphicon-ok").addClass("glyphicon-exclamation-sign").removeClass("yellow-glyphicon");
             $('.competence-information > span.info-message-small').text("Det finns för närvarande inga tolkar som är utbildade eller auktoriserade i valt språk i Kammarkollegiets tolkregister").attr("role", "alert");
@@ -379,18 +379,18 @@ $(function () {
             var secondSelected = $("#RequestedCompetenceLevelSecond").val();
             if ($(competenceDesireType[0]).val() === 'Requirement') {
                 if (firstSelected === '') {
-                    return "Krav i första hand måste anges"
+                    return "Krav i första hand måste anges";
                 }
                 if (firstSelected === secondSelected) {
-                    return "Krav i första och andra hand kan inte vara samma"
+                    return "Krav i första och andra hand kan inte vara samma";
                 }
             }
             if ($(competenceDesireType[0]).val() === 'Request') {
                 if (firstSelected === '' && (firstSelected !== secondSelected)) {
-                    return "Ange önskemål i första hand om du angett önskemål i andra hand"
+                    return "Ange önskemål i första hand om du angett önskemål i andra hand";
                 }
                 if (firstSelected !== '' && (firstSelected === secondSelected)) {
-                    return "Önskemål i första och andra hand kan inte vara samma"
+                    return "Önskemål i första och andra hand kan inte vara samma";
                 }
             }
         }
@@ -433,7 +433,7 @@ $(function () {
         var showWarning = false;
         //check if required is checked and if all competences not available - then validate
         var competenceDesireType = $("input[name = CompetenceLevelDesireType]").filter('input:checked');
-        if ($(competenceDesireType[0]).val() === 'Requirement' && currentLanguageCompetences.length !== 4) {
+        if ($(competenceDesireType[0]).val() === 'Requirement' && currentLanguageCompetences !== 0 && currentLanguageCompetences.length !== 4) {
             $('#RequestedCompetenceLevelFirst, #RequestedCompetenceLevelSecond').each(function () {
                 switch ($(this).val()) {
                     case "CourtSpecialist":
