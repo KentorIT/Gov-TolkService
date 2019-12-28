@@ -16,7 +16,9 @@ using H = Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class ListController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class ListController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly H.TolkApiOptions _options;
@@ -29,22 +31,22 @@ namespace Tolk.Web.Api.Controllers
             _apiUserService = apiUserService;
         }
 
-        [HttpGet]
-        public JsonResult AssignmentTypes()
+        [HttpGet(nameof(AssignmentTypes))]
+        public IActionResult AssignmentTypes()
         {
             return DescriptionsAsJson<AssignmentType>();
         }
 
-        [HttpGet]
-        public JsonResult CompetenceLevels()
+        [HttpGet(nameof(CompetenceLevels))]
+        public IActionResult CompetenceLevels()
         {
             return DescriptionsAsJson<CompetenceAndSpecialistLevel>();
         }
 
-        [HttpGet]
-        public JsonResult Languages()
+        [HttpGet(nameof(Languages))]
+        public IActionResult Languages()
         {
-            return Json(_dbContext.Languages.Where(l => l.Active == true)
+            return Ok(_dbContext.Languages.Where(l => l.Active == true)
                 .OrderBy(l => l.Name).Select(l => new
                 {
                     Key = l.ISO_639_Code,
@@ -52,10 +54,10 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet]
-        public JsonResult Regions()
+        [HttpGet(nameof(Regions))]
+        public IActionResult Regions()
         {
-            return Json(_dbContext.Regions
+            return Ok(_dbContext.Regions
                 .OrderBy(r => r.Name).Select(r => new
                 {
                     Key = r.RegionId.ToSwedishString("D2"),
@@ -63,10 +65,10 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet]
-        public JsonResult Customers()
+        [HttpGet(nameof(Customers))]
+        public IActionResult Customers()
         {
-            return Json(_dbContext.CustomerOrganisations
+            return Ok(_dbContext.CustomerOrganisations
                 .OrderBy(c => c.Name).Select(c => new CustomerItemResponse
                 {
                     Key = c.OrganisationPrefix,
@@ -77,55 +79,55 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet]
-        public JsonResult PriceListTypes()
+        [HttpGet(nameof(PriceListTypes))]
+        public IActionResult PriceListTypes()
         {
             return DescriptionsAsJson<PriceListType>();
         }
-        [HttpGet]
-        public JsonResult TravelCostAgreementTypes()
+        [HttpGet(nameof(TravelCostAgreementTypes))]
+        public IActionResult TravelCostAgreementTypes()
         {
             return DescriptionsAsJson<TravelCostAgreementType>();
         }
 
-        [HttpGet]
-        public JsonResult PriceRowTypes()
+        [HttpGet(nameof(PriceRowTypes))]
+        public IActionResult PriceRowTypes()
         {
             return DescriptionsAsJson<PriceRowType>();
         }
 
-        [HttpGet]
-        public JsonResult LocationTypes()
+        [HttpGet(nameof(LocationTypes))]
+        public IActionResult LocationTypes()
         {
             return DescriptionsAsJson<InterpreterLocation>();
         }
 
-        [HttpGet]
-        public JsonResult RequirementTypes()
+        [HttpGet(nameof(RequirementTypes))]
+        public IActionResult RequirementTypes()
         {
             return DescriptionsAsJson<RequirementType>();
         }
 
-        [HttpGet]
-        public JsonResult InterpreterInformationTypes()
+        [HttpGet(nameof(InterpreterInformationTypes))]
+        public IActionResult InterpreterInformationTypes()
         {
             return DescriptionsAsJson<InterpreterInformationType>();
         }
 
-        [HttpGet]
-        public JsonResult TaxCardTypes()
+        [HttpGet(nameof(TaxCardTypes))]
+        public IActionResult TaxCardTypes()
         {
             return DescriptionsAsJson<TaxCardType>();
         }
 
-        [HttpGet]
-        public async Task<JsonResult> BrokerInterpreters()
+        [HttpGet(nameof(BrokerInterpreters))]
+        public async Task<IActionResult> BrokerInterpreters()
         {
             try
             {
                 var apiUser = await GetApiUser();
 
-                return Json(new BrokerInterpretersResponse
+                return Ok(new BrokerInterpretersResponse
                 {
                     Interpreters = _dbContext.InterpreterBrokers
                     .Where(i => i.BrokerId == apiUser.BrokerId)
@@ -148,39 +150,39 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet]
-        public JsonResult ComplaintTypes()
+        [HttpGet(nameof(ComplaintTypes))]
+        public IActionResult ComplaintTypes()
         {
             return DescriptionsAsJson<ComplaintType>();
         }
 
-        [HttpGet]
-        public JsonResult RequestStatuses()
+        [HttpGet(nameof(RequestStatuses))]
+        public IActionResult RequestStatuses()
         {
             return DescriptionsAsJson<RequestStatus>();
         }
 
-        [HttpGet]
-        public JsonResult ComplaintStatuses()
+        [HttpGet(nameof(ComplaintStatuses))]
+        public IActionResult ComplaintStatuses()
         {
             return DescriptionsAsJson<ComplaintStatus>();
         }
 
-        [HttpGet]
-        public JsonResult RequisitionStatuses()
+        [HttpGet(nameof(RequisitionStatuses))]
+        public IActionResult RequisitionStatuses()
         {
             return DescriptionsAsJson<RequisitionStatus>();
         }
 
-        [HttpGet]
-        public JsonResult ErrorCodes()
+        [HttpGet(nameof(ErrorCodes))]
+        public IActionResult ErrorCodes()
         {
-            return Json(TolkApiOptions.ErrorResponses.Select(d => d));
+            return Ok(TolkApiOptions.ErrorResponses.Select(d => d));
         }
 
-        private JsonResult DescriptionsAsJson<T>()
+        private IActionResult DescriptionsAsJson<T>()
         {
-            return Json(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
+            return Ok(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
             new
             {
                 Key = d.CustomName,
@@ -191,12 +193,12 @@ namespace Tolk.Web.Api.Controllers
         #region SAME AS IN REQUEST, SHOULD BE MOVED
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode)
+        private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
-            return Json(message);
+            return Ok(message);
         }
 
         //Break out to a auth pipline

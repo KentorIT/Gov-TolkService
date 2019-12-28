@@ -16,7 +16,9 @@ using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class ComplaintController : Controller
+    [ApiController]
+
+    public class ComplaintController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly ComplaintService _complaintService;
@@ -41,8 +43,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost]
-        public async Task<JsonResult> Accept([FromBody] ComplaintAcceptModel model)
+        [HttpPost(nameof(Accept))]
+        public async Task<IActionResult> Accept([FromBody] ComplaintAcceptModel model)
         {
             if (model == null)
             {
@@ -59,7 +61,7 @@ namespace Tolk.Web.Api.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -67,8 +69,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Dispute([FromBody] ComplaintDisputeModel model)
+        [HttpPost(nameof(Dispute))]
+        public async Task<IActionResult> Dispute([FromBody] ComplaintDisputeModel model)
         {
             if (model == null)
             {
@@ -85,7 +87,7 @@ namespace Tolk.Web.Api.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -97,7 +99,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        public async Task<JsonResult> View(string orderNumber, string callingUser)
+        [HttpGet(nameof(View))]
+        public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber}");
             try
@@ -112,7 +115,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.ComplaintNotFound);
                 }
                 //End of service
-                return Json(GetResponseFromComplaint(complaint, orderNumber));
+                return Ok(GetResponseFromComplaint(complaint, orderNumber));
             }
             catch (InvalidApiCallException ex)
             {
@@ -140,12 +143,12 @@ namespace Tolk.Web.Api.Controllers
         }
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode)
+        private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
-            return Json(message);
+            return Ok(message);
         }
 
         //Break out to a auth pipline

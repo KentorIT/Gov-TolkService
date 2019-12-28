@@ -20,7 +20,9 @@ using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class RequestController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class RequestController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly RequestService _requestService;
@@ -47,8 +49,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost]
-        public async Task<JsonResult> Answer([FromBody] RequestAnswerModel model)
+        [HttpPost(nameof(Answer))]
+        public async Task<IActionResult> Answer([FromBody] RequestAnswerModel model)
         {
             if (model == null)
             {
@@ -144,7 +146,7 @@ namespace Tolk.Web.Api.Controllers
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
-                    return Json(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
+                    return Ok(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -161,8 +163,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
+        [HttpPost(nameof(Acknowledge))]
+        public async Task<IActionResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
             if (model == null)
             {
@@ -187,7 +189,7 @@ namespace Tolk.Web.Api.Controllers
                 _requestService.Acknowledge(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -195,8 +197,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Decline([FromBody] RequestDeclineModel model)
+        [HttpPost(nameof(Decline))]
+        public async Task<IActionResult> Decline([FromBody] RequestDeclineModel model)
         {
             if (model == null)
             {
@@ -230,7 +232,7 @@ namespace Tolk.Web.Api.Controllers
                 await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -238,8 +240,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Cancel([FromBody] RequestCancelModel model)
+        [HttpPost(nameof(Cancel))]
+        public async Task<IActionResult> Cancel([FromBody] RequestCancelModel model)
         {
             if (model == null)
             {
@@ -281,7 +283,7 @@ namespace Tolk.Web.Api.Controllers
                 }
 
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -289,8 +291,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
+        [HttpPost(nameof(ChangeInterpreter))]
+        public async Task<IActionResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
             if (model == null)
             {
@@ -374,7 +376,7 @@ namespace Tolk.Web.Api.Controllers
                     //TODO: Should log the acctual exception here!!
                     return ReturnError(ErrorCodes.RequestNotInCorrectState);
                 }
-                return Json(new ChangeInterpreterResponse { InterpreterId = interpreter.InterpreterBrokerId });
+                return Ok(new ChangeInterpreterResponse { InterpreterId = interpreter.InterpreterBrokerId });
             }
             catch (InvalidApiCallException ex)
             {
@@ -382,8 +384,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
+        [HttpPost(nameof(AcceptReplacement))]
+        public async Task<IActionResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
             if (model == null)
             {
@@ -440,7 +442,7 @@ namespace Tolk.Web.Api.Controllers
                 );
                 _dbContext.SaveChanges();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -448,8 +450,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
+        [HttpPost(nameof(ConfirmDenial))]
+        public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
         {
             if (model == null)
             {
@@ -469,7 +471,7 @@ namespace Tolk.Web.Api.Controllers
                     (user != null ? (int?)apiUser.Id : null)
                 );
                 //Do The magic
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -477,8 +479,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
+        [HttpPost(nameof(ConfirmCancellation))]
+        public async Task<IActionResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
         {
             if (model == null)
             {
@@ -497,7 +499,7 @@ namespace Tolk.Web.Api.Controllers
                     user?.Id ?? apiUser.Id,
                     (user != null ? (int?)apiUser.Id : null)
                 );
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -509,8 +511,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet]
-        public async Task<JsonResult> File(string orderNumber, int attachmentId, string callingUser)
+        [HttpGet(nameof(File))]
+        public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
 
@@ -534,7 +536,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
 
-                return Json(new FileResponse
+                return Ok(new FileResponse
                 {
                     FileBase64 = Convert.ToBase64String(attachment.Blob)
                 });
@@ -545,9 +547,9 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet(nameof(View))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> View(string orderNumber, string callingUser)
+        public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber}");
             try
@@ -578,7 +580,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
                 //End of service
-                return Json(_apiOrderService.GetResponseFromRequest(request));
+                return Ok(_apiOrderService.GetResponseFromRequest(request));
             }
             catch (InvalidApiCallException ex)
             {
@@ -613,7 +615,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode, string specifiedErrorMessage = null)
+        private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
@@ -622,7 +624,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 message.ErrorMessage = specifiedErrorMessage;
             }
-            return Json(message);
+            return Ok(message);
         }
 
         //Break out to a auth pipline

@@ -18,7 +18,9 @@ using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class RequisitionController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class RequisitionController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
@@ -43,8 +45,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost]
-        public async Task<JsonResult> Create([FromBody] RequisitionModel model)
+        [HttpPost(nameof(Create))]
+        public async Task<IActionResult> Create([FromBody] RequisitionModel model)
         {
             if (model == null)
             {
@@ -97,7 +99,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.RequisitionNotInCorrectState);
                 }
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -109,8 +111,8 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet]
-        public async Task<JsonResult> View(RequisitionGetDetailsModel model)
+        [HttpGet(nameof(View))]
+        public async Task<IActionResult> View(RequisitionGetDetailsModel model)
         {
             if (model == null)
             {
@@ -137,7 +139,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
                 //End of service
-                return Json(GetResponseFromRequisition(requisition, model.OrderNumber, model.IncludePreviousRequisitions));
+                return Ok(GetResponseFromRequisition(requisition, model.OrderNumber, model.IncludePreviousRequisitions));
             }
             catch (InvalidApiCallException ex)
             {
@@ -145,8 +147,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<JsonResult> File(string orderNumber, int attachmentId, string callingUser)
+        [HttpGet(nameof(File))]
+        public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} connected to requisition on order {orderNumber}");
             try
@@ -161,7 +163,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
 
-                return Json(new FileResponse
+                return Ok(new FileResponse
                 {
                     FileBase64 = Convert.ToBase64String(attachment.Blob)
                 });
@@ -177,12 +179,12 @@ namespace Tolk.Web.Api.Controllers
         #region private methods
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode)
+        private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
-            return Json(message);
+            return Ok(message);
         }
 
 

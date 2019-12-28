@@ -7,7 +7,8 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class HomeController : Controller
+    [ApiController]
+    public class HomeController : ControllerBase
     {
         private readonly ISwedishClock _timeService;
 
@@ -16,14 +17,13 @@ namespace Tolk.Web.Api.Controllers
             _timeService = timeService;
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public ActionResult Index()
+        [HttpGet(nameof(Index))]
+        public ActionResult<string> Index()
         {
-            return View();
+            return string.Empty;
         }
 
-        [HttpGet]
+        [HttpGet(nameof(Ping))]
         public ActionResult<string> Ping()
         {
             X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
@@ -31,14 +31,14 @@ namespace Tolk.Web.Api.Controllers
             return clientCertInRequest?.SerialNumber;
         }
 
-        [HttpGet]
+        [HttpGet(nameof(Version))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
         public ActionResult<string> Version()
         {
             return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
         }
 
-        [HttpGet]
+        [HttpGet(nameof(TestTime))]
         public ActionResult<string> TestTime()
         {
             return _timeService.SwedenNow.ToSwedishString("yyyy-MM-dd HH:mm:ss");

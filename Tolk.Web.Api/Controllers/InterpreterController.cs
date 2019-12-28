@@ -15,7 +15,9 @@ using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class InterpreterController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class InterpreterController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly ApiUserService _apiUserService;
@@ -30,9 +32,9 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost]
+        [HttpPost(nameof(Create))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> Create([FromBody] InterpreterDetailsModel interpreter)
+        public async Task<IActionResult> Create([FromBody] InterpreterDetailsModel interpreter)
         {
             if (interpreter == null)
             {
@@ -49,7 +51,7 @@ namespace Tolk.Web.Api.Controllers
                 var createdInterpreter = _apiUserService.GetInterpreter(interpreter, apiUser.BrokerId.Value);
                 await _dbContext.SaveChangesAsync();
                 var createdInterpreterResponse = ApiUserService.GetModelFromEntity(createdInterpreter);
-                return Json(new CreateInterpreterResponse { Interpreter = createdInterpreterResponse });
+                return Ok(new CreateInterpreterResponse { Interpreter = createdInterpreterResponse });
             }
             catch (InvalidApiCallException ex)
             {
@@ -62,9 +64,9 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost(nameof(Update))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> Update([FromBody] InterpreterDetailsModel interpreter)
+        public async Task<IActionResult> Update([FromBody] InterpreterDetailsModel interpreter)
         {
             if (interpreter == null)
             {
@@ -81,7 +83,7 @@ namespace Tolk.Web.Api.Controllers
                 var updatedInterpreter = _apiUserService.GetInterpreter(interpreter, apiUser.BrokerId.Value);
                 await _dbContext.SaveChangesAsync();
                 var updatedInterpreterResponse = ApiUserService.GetModelFromEntity(updatedInterpreter);
-                return Json(new UpdateInterpreterResponse { Interpreter = updatedInterpreterResponse });
+                return Ok(new UpdateInterpreterResponse { Interpreter = updatedInterpreterResponse });
             }
             catch (InvalidApiCallException ex)
             {
@@ -98,9 +100,9 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet]
+        [HttpGet(nameof(View))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> View(int? interpreterId, string officialInterpreterId, string callingUser)
+        public async Task<IActionResult> View(int? interpreterId, string officialInterpreterId, string callingUser)
         {
             if (!interpreterId.HasValue && string.IsNullOrWhiteSpace(officialInterpreterId))
             {
@@ -114,7 +116,7 @@ namespace Tolk.Web.Api.Controllers
                 var interpreter = interpreterId.HasValue ?
                     await _apiUserService.GetInterpreterModelFromId(interpreterId.Value, apiUser.BrokerId.Value) :
                     await _apiUserService.GetInterpreterModelFromId(officialInterpreterId, apiUser.BrokerId.Value);
-                return Json(new ViewInterpreterResponse { Interpreter = interpreter });
+                return Ok(new ViewInterpreterResponse { Interpreter = interpreter });
             }
             catch (InvalidApiCallException ex)
             {
@@ -132,12 +134,12 @@ namespace Tolk.Web.Api.Controllers
         #region SAME AS IN REQUEST, SHOULD BE MOVED
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode)
+        private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
             Response.StatusCode = message.StatusCode;
-            return Json(message);
+            return Ok(message);
         }
 
         //Break out to a auth pipline

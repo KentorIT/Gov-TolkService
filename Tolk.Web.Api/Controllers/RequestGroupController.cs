@@ -19,7 +19,9 @@ using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
-    public class RequestGroupController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class RequestGroupController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
         private readonly RequestService _requestService;
@@ -46,9 +48,9 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost]
+        [HttpPost(nameof(Answer))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> Answer([FromBody] RequestGroupAnswerModel model)
+        public async Task<IActionResult> Answer([FromBody] RequestGroupAnswerModel model)
         {
             if (model == null)
             {
@@ -116,7 +118,7 @@ namespace Tolk.Web.Api.Controllers
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
-                    return Json(new GroupAnswerResponse
+                    return Ok(new GroupAnswerResponse
                     {
                         InterpreterId = mainInterpreterAnswer.Interpreter.InterpreterBrokerId,
                         ExtraInterpreterId = extraInterpreterAnswer?.Interpreter?.InterpreterBrokerId
@@ -138,8 +140,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Acknowledge([FromBody] RequestGroupAcknowledgeModel model)
+        [HttpPost(nameof(Acknowledge))]
+        public async Task<IActionResult> Acknowledge([FromBody] RequestGroupAcknowledgeModel model)
         {
             if (model == null)
             {
@@ -159,7 +161,7 @@ namespace Tolk.Web.Api.Controllers
                 _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -167,8 +169,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> Decline([FromBody] RequestGroupDeclineModel model)
+        [HttpPost(nameof(Decline))]
+        public async Task<IActionResult> Decline([FromBody] RequestGroupDeclineModel model)
         {
             if (model == null)
             {
@@ -198,7 +200,7 @@ namespace Tolk.Web.Api.Controllers
                 await _requestService.DeclineGroup(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 //End of service
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -206,8 +208,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> ConfirmDenial([FromBody] ConfirmGroupDenialModel model)
+        [HttpPost(nameof(ConfirmDenial))]
+        public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmGroupDenialModel model)
         {
             if (model == null)
             {
@@ -226,7 +228,7 @@ namespace Tolk.Web.Api.Controllers
                     user?.Id ?? apiUser.Id,
                     (user != null ? (int?)apiUser.Id : null)
                 );
-                return Json(new ResponseBase());
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
@@ -238,9 +240,9 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet]
+        [HttpGet(nameof(View))]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
-        public async Task<JsonResult> View(string orderGroupNumber, string callingUser)
+        public async Task<IActionResult> View(string orderGroupNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order group {orderGroupNumber}");
             try
@@ -266,7 +268,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
                 //End of service
-                return Json(_apiOrderService.GetResponseFromRequestGroup(requestGroup));
+                return Ok(_apiOrderService.GetResponseFromRequestGroup(requestGroup));
             }
             catch (InvalidApiCallException ex)
             {
@@ -279,8 +281,8 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<JsonResult> File(string orderGroupNumber, int attachmentId, string callingUser)
+        [HttpGet(nameof(File))]
+        public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
 
@@ -303,7 +305,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
 
-                return Json(new FileResponse
+                return Ok(new FileResponse
                 {
                     FileBase64 = Convert.ToBase64String(attachment.Blob)
                 });
@@ -335,7 +337,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         //Break out to error generator service...
-        private JsonResult ReturnError(string errorCode, string specifiedErrorMessage = null)
+        private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
@@ -344,7 +346,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 message.ErrorMessage = specifiedErrorMessage;
             }
-            return Json(message);
+            return Ok(message);
         }
 
         //Break out to a auth pipline
