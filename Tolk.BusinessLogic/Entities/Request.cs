@@ -140,7 +140,7 @@ namespace Tolk.BusinessLogic.Entities
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
             (RequestGroupId.HasValue && Status == RequestStatus.Approved));
 
-        public bool CanCreateRequisition => (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
+        public bool CanCreateRequisition => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
 
         public bool CanCreateComplaint => !Complaints.Any() && Status == RequestStatus.Approved;
 
