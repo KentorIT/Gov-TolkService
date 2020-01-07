@@ -184,7 +184,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         //Must have a request connected to the order for the broker, any status...

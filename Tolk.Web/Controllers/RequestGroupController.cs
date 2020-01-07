@@ -124,6 +124,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
                 .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
@@ -196,7 +197,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleOrDefaultAsync(r => r.RequestGroupId == model.DeniedRequestGroupId);
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)

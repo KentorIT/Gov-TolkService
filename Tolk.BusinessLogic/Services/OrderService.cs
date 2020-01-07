@@ -829,6 +829,7 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Ranking)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requests)
+                            .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
