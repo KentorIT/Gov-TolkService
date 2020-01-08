@@ -156,9 +156,11 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order"
                 }));
+            //Orders to approve where interpreter is changed
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
                 .Include(o => o.Language)
                 .Include(o => o.Requests)
+                .Include(o => o.Group)
                 .Where(o => o.Status == OrderStatus.RequestRespondedNewInterpreter).ToList()
                 .Select(o => new StartListItemModel
                 {
@@ -204,7 +206,7 @@ namespace Tolk.Web.Controllers
                     IsSingleOccasion = og.IsSingleOccasion,
                     HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
-                //and order groups awaiting deadline || og.Status == OrderStatus.AwaitingDeadlineFromCustomer
+                //Order groups awaiting deadline from customer (customer should set last answer date)
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
                 .Include(og => og.Orders)
@@ -304,7 +306,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Language)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
                 .Where(o => o.Status == OrderStatus.CancelledByBroker && o.Requests.Any(r => r.Status == RequestStatus.CancelledByBroker &&
-                                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))).ToList()
+                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))).ToList()
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
