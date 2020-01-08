@@ -1,50 +1,50 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
-using Tolk.Web.Api.Services;
-using H = Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
+    [Description("Här finns alla listor på olika typer och andra mer statiska saker som man behöver i systemet.")]
     public class ListController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
-        private readonly H.TolkApiOptions _options;
-        private readonly ApiUserService _apiUserService;
 
-        public ListController(TolkDbContext tolkDbContext, IOptions<H.TolkApiOptions> options, ApiUserService apiUserService)
+        public ListController(TolkDbContext tolkDbContext)
         {
             _dbContext = tolkDbContext;
-            _options = options?.Value;
-            _apiUserService = apiUserService;
         }
 
-        [HttpGet(nameof(AssignmentTypes))]
-        public IActionResult AssignmentTypes()
+        [Description("Detta är ett försök att få lite dokumentation via description")]
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<ListItemResponse>> AssignmentTypes()
         {
             return DescriptionsAsJson<AssignmentType>();
         }
 
-        [HttpGet(nameof(CompetenceLevels))]
-        public IActionResult CompetenceLevels()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> CompetenceLevels()
         {
             return DescriptionsAsJson<CompetenceAndSpecialistLevel>();
         }
 
-        [HttpGet(nameof(Languages))]
-        public IActionResult Languages()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> Languages()
         {
             return Ok(_dbContext.Languages.Where(l => l.Active == true)
                 .OrderBy(l => l.Name).Select(l => new
@@ -54,8 +54,8 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet(nameof(Regions))]
-        public IActionResult Regions()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> Regions()
         {
             return Ok(_dbContext.Regions
                 .OrderBy(r => r.Name).Select(r => new
@@ -65,8 +65,8 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet(nameof(Customers))]
-        public IActionResult Customers()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> Customers()
         {
             return Ok(_dbContext.CustomerOrganisations
                 .OrderBy(c => c.Name).Select(c => new CustomerItemResponse
@@ -79,58 +79,56 @@ namespace Tolk.Web.Api.Controllers
                 }));
         }
 
-        [HttpGet(nameof(PriceListTypes))]
-        public IActionResult PriceListTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> PriceListTypes()
         {
             return DescriptionsAsJson<PriceListType>();
         }
-        [HttpGet(nameof(TravelCostAgreementTypes))]
-        public IActionResult TravelCostAgreementTypes()
+
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> TravelCostAgreementTypes()
         {
             return DescriptionsAsJson<TravelCostAgreementType>();
         }
 
-        [HttpGet(nameof(PriceRowTypes))]
-        public IActionResult PriceRowTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> PriceRowTypes()
         {
             return DescriptionsAsJson<PriceRowType>();
         }
 
-        [HttpGet(nameof(LocationTypes))]
-        public IActionResult LocationTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> LocationTypes()
         {
             return DescriptionsAsJson<InterpreterLocation>();
         }
 
-        [HttpGet(nameof(RequirementTypes))]
-        public IActionResult RequirementTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> RequirementTypes()
         {
             return DescriptionsAsJson<RequirementType>();
         }
 
-        [HttpGet(nameof(InterpreterInformationTypes))]
-        public IActionResult InterpreterInformationTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> InterpreterInformationTypes()
         {
             return DescriptionsAsJson<InterpreterInformationType>();
         }
 
-        [HttpGet(nameof(TaxCardTypes))]
-        public IActionResult TaxCardTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> TaxCardTypes()
         {
             return DescriptionsAsJson<TaxCardType>();
         }
 
-        [HttpGet(nameof(BrokerInterpreters))]
-        public async Task<IActionResult> BrokerInterpreters()
+        [HttpGet]
+        [Authorize(Policies.Broker)]
+        public async Task<ActionResult<IEnumerable<ListItemResponse>>> BrokerInterpreters()
         {
-            try
-            {
-                var apiUser = await GetApiUser();
-
                 return Ok(new BrokerInterpretersResponse
                 {
-                    Interpreters = _dbContext.InterpreterBrokers
-                    .Where(i => i.BrokerId == apiUser.BrokerId)
+                    Interpreters = await _dbContext.InterpreterBrokers
+                    .Where(i => i.BrokerId == User.TryGetBrokerId())
                     .Select(i => new InterpreterDetailsModel
                     {
                         IsActive = i.IsActive,
@@ -141,74 +139,48 @@ namespace Tolk.Web.Api.Controllers
                         OfficialInterpreterId = i.OfficialInterpreterId,
                         PhoneNumber = i.PhoneNumber,
                         InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
-                    }).ToList()
+                    }).ToListAsync()
                 });
-            }
-            catch (InvalidApiCallException ex)
-            {
-                return ReturnError(ex.ErrorCode);
-            }
         }
 
-        [HttpGet(nameof(ComplaintTypes))]
-        public IActionResult ComplaintTypes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> ComplaintTypes()
         {
             return DescriptionsAsJson<ComplaintType>();
         }
 
-        [HttpGet(nameof(RequestStatuses))]
-        public IActionResult RequestStatuses()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> RequestStatuses()
         {
             return DescriptionsAsJson<RequestStatus>();
         }
 
-        [HttpGet(nameof(ComplaintStatuses))]
-        public IActionResult ComplaintStatuses()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> ComplaintStatuses()
         {
             return DescriptionsAsJson<ComplaintStatus>();
         }
 
-        [HttpGet(nameof(RequisitionStatuses))]
-        public IActionResult RequisitionStatuses()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> RequisitionStatuses()
         {
             return DescriptionsAsJson<RequisitionStatus>();
         }
 
-        [HttpGet(nameof(ErrorCodes))]
-        public IActionResult ErrorCodes()
+        [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> ErrorCodes()
         {
             return Ok(TolkApiOptions.ErrorResponses.Select(d => d));
         }
 
-        private IActionResult DescriptionsAsJson<T>()
+        private ActionResult<IEnumerable<ListItemResponse>> DescriptionsAsJson<T>()
         {
             return Ok(EnumHelper.GetAllFullDescriptions<T>().Select(d =>
-            new
+            new ListItemResponse
             {
                 Key = d.CustomName,
-                d.Description
+                Description = d.Description
             }));
         }
-
-        #region SAME AS IN REQUEST, SHOULD BE MOVED
-
-        //Break out to error generator service...
-        private IActionResult ReturnError(string errorCode)
-        {
-            //TODO: Add to log, information...
-            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
-            Response.StatusCode = message.StatusCode;
-            return Ok(message);
-        }
-
-        //Break out to a auth pipline
-        private async Task<AspNetUser> GetApiUser()
-        {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
-        }
-
-        #endregion
     }
 }

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -14,6 +16,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
@@ -21,7 +24,9 @@ using Tolk.Web.Api.Services;
 namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
+    [Description("Beskriv Requests")]
+    [Authorize(Policies.Broker)]
     public class RequestController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
@@ -49,7 +54,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost(nameof(Answer))]
+        [HttpPost]
         public async Task<IActionResult> Answer([FromBody] RequestAnswerModel model)
         {
             if (model == null)
@@ -58,22 +63,23 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId();
+                var apiUserId = User.UserId();
                 var order = await _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
-                .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.Requirements)
-                .Include(o => o.InterpreterLocations)
-                .Include(o => o.CompetenceRequirements)
-                .Include(o => o.Language)
-                .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                    .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                    .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
+                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
+                    .Include(o => o.CustomerOrganisation)
+                    .Include(o => o.CustomerUnit)
+                    .Include(o => o.CreatedByUser)
+                    .Include(o => o.ContactPersonUser)
+                    .Include(o => o.Requirements)
+                    .Include(o => o.InterpreterLocations)
+                    .Include(o => o.CompetenceRequirements)
+                    .Include(o => o.Language)
+                    .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
+                        //Must have a request connected to the order for the broker, any status...
+                        o.Requests.Any(r => r.Ranking.BrokerId == User.TryGetBrokerId()));
                 if (order == null)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
@@ -84,11 +90,11 @@ namespace Tolk.Web.Api.Controllers
                 }
 
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId.Value);
                 var request = order.Requests.SingleOrDefault(r =>
-                apiUser.BrokerId == r.Ranking.BrokerId &&
-                //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
-                (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+                    brokerId == r.Ranking.BrokerId &&
+                    //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
+                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
@@ -96,7 +102,7 @@ namespace Tolk.Web.Api.Controllers
                 InterpreterBroker interpreter;
                 try
                 {
-                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), apiUser.BrokerId.Value);
+                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), brokerId.Value);
                 }
                 catch (InvalidOperationException)
                 {
@@ -120,15 +126,15 @@ namespace Tolk.Web.Api.Controllers
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
-                    _requestService.Acknowledge(request, now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                    _requestService.Acknowledge(request, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 }
                 try
                 {
                     await _requestService.Accept(
                         request,
                         now,
-                        user?.Id ?? apiUser.Id,
-                        (user != null ? (int?)apiUser.Id : null),
+                        user?.Id ?? apiUserId,
+                        (user != null ? (int?)apiUserId : null),
                         interpreter,
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                         EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
@@ -163,7 +169,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Acknowledge))]
+        [HttpPost]
         public async Task<IActionResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
             if (model == null)
@@ -172,21 +178,22 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 if (order.OrderGroupId != null)
                 {
                     return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
                 }
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var request = await _dbContext.Requests
                     .Include(r => r.Order)
-                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && brokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
-                _requestService.Acknowledge(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                _requestService.Acknowledge(request, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());
@@ -197,7 +204,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Decline))]
+        [HttpPost]
         public async Task<IActionResult> Decline([FromBody] RequestDeclineModel model)
         {
             if (model == null)
@@ -206,14 +213,15 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 if (order.OrderGroupId != null)
                 {
                     return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Order.CreatedByUser)
@@ -222,14 +230,14 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        r.Ranking.BrokerId == brokerId &&
                         //Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
                         (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
-                await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                await _requestService.Decline(request, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());
@@ -240,7 +248,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Cancel))]
+        [HttpPost]
         public async Task<IActionResult> Cancel([FromBody] RequestCancelModel model)
         {
             if (model == null)
@@ -249,10 +257,11 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -263,7 +272,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
                 //Must have a request connected to the order for the broker, any status...
-                r.Ranking.BrokerId == apiUser.BrokerId &&
+                r.Ranking.BrokerId == brokerId &&
                 //TODO: Possibly other statuses, but this code is only temporary. Should be coalesced with the controller code.
                 (r.Status == RequestStatus.Approved));
                 if (request == null)
@@ -272,7 +281,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 try
                 {
-                    _requestService.CancelByBroker(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                    _requestService.CancelByBroker(request, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                     await _dbContext.SaveChangesAsync();
 
                 }
@@ -291,7 +300,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(ChangeInterpreter))]
+        [HttpPost]
         public async Task<IActionResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
             if (model == null)
@@ -300,10 +309,11 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var request = await _dbContext.Requests
                     .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -316,7 +326,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Order.ContactPersonUser)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber &&
-                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        r.Ranking.BrokerId == brokerId &&
                         (r.Status == RequestStatus.Approved ||
                         r.Status == RequestStatus.Created ||
                         r.Status == RequestStatus.Received ||
@@ -329,7 +339,7 @@ namespace Tolk.Web.Api.Controllers
                 InterpreterBroker interpreter;
                 try
                 {
-                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), apiUser.BrokerId.Value);
+                    interpreter = _apiUserService.GetInterpreter(new InterpreterDetailsModel(model.Interpreter), brokerId);
                 }
                 catch (InvalidOperationException)
                 {
@@ -353,8 +363,8 @@ namespace Tolk.Web.Api.Controllers
                     await _requestService.ChangeInterpreter(
                         request,
                         _timeService.SwedenNow,
-                        user?.Id ?? apiUser.Id,
-                        (user != null ? (int?)apiUser.Id : null),
+                        user?.Id ?? apiUserId,
+                        (user != null ? (int?)apiUserId : null),
                         interpreter,
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                         EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
@@ -384,7 +394,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(AcceptReplacement))]
+        [HttpPost]
         public async Task<IActionResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
             if (model == null)
@@ -393,7 +403,8 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
 
                 var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -405,15 +416,15 @@ namespace Tolk.Web.Api.Controllers
                 .Include(o => o.ContactPersonUser)
                 .SingleOrDefault(o => o.OrderNumber == model.OrderNumber &&
                     //Must have a request connected to the order for the broker, any status...
-                    o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                    o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
                 if (order == null)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var request = order.Requests.SingleOrDefault(r =>
-                    apiUser.BrokerId == r.Ranking.BrokerId &&
+                    brokerId == r.Ranking.BrokerId &&
                     r.Order.ReplacingOrderId != null &&
                     //Possibly other statuses
                     (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
@@ -429,13 +440,13 @@ namespace Tolk.Web.Api.Controllers
                 //Add transaction here!!!
                 if (request.Status == RequestStatus.Created)
                 {
-                    request.Received(now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                    request.Received(now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 }
                 _requestService.AcceptReplacement(
                     request,
                     now,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null),
+                    user?.Id ?? apiUserId,
+                    (user != null ? (int?)apiUserId : null),
                     EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                     model.ExpectedTravelCosts,
                     model.ExpectedTravelCostInfo
@@ -450,7 +461,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(ConfirmDenial))]
+        [HttpPost]
         public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
         {
             if (model == null)
@@ -459,16 +470,17 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Get User, if any...
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.DeniedByCreator });
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                Request request = await GetConfirmedRequest(model.OrderNumber, brokerId, new[] { RequestStatus.DeniedByCreator });
                 await _requestService.ConfirmDenial(
                     request,
                     _timeService.SwedenNow,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null)
+                    user?.Id ?? apiUserId,
+                    (user != null ? (int?)apiUserId : null)
                 );
                 //Do The magic
                 return Ok(new ResponseBase());
@@ -479,7 +491,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(ConfirmCancellation))]
+        [HttpPost]
         public async Task<IActionResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
         {
             if (model == null)
@@ -488,16 +500,17 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Get User, if any...
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                Request request = await GetConfirmedRequest(model.OrderNumber, apiUser.BrokerId.Value, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApproved });
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                Request request = await GetConfirmedRequest(model.OrderNumber, brokerId, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApproved });
                 await _requestService.ConfirmCancellation(
                     request,
                     _timeService.SwedenNow,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null)
+                    user?.Id ?? apiUserId,
+                    (user != null ? (int?)apiUserId : null)
                 );
                 return Ok(new ResponseBase());
             }
@@ -511,20 +524,20 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet(nameof(File))]
+        [HttpGet]
         public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
 
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
                 var order = _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .SingleOrDefault(o => o.OrderNumber == orderNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        o.Requests.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                        o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
                 if (order == null)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
@@ -547,14 +560,14 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet(nameof(View))]
+        [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber}");
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
 
                 //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
                 var request = await _dbContext.Requests
@@ -573,7 +586,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        r.Ranking.BrokerId == brokerId &&
                         r.ReplacingRequest == null);
                 if (request == null)
                 {
@@ -619,112 +632,11 @@ namespace Tolk.Web.Api.Controllers
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
-            Response.StatusCode = message.StatusCode;
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;
             }
             return Ok(message);
-        }
-
-        //Break out to a auth pipline
-        private async Task<AspNetUser> GetApiUser()
-        {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
-        }
-
-        private static RequestDetailsResponse GetResponseFromRequest(Request request)
-        {
-            var attach = request.Attachments;
-            return new RequestDetailsResponse
-            {
-                Status = request.Status.GetCustomName(),
-                StatusMessage = request.DenyMessage ?? request.CancelMessage,
-                CreatedAt = request.CreatedAt,
-                OrderNumber = request.Order.OrderNumber,
-                CustomerInformation = new CustomerInformationModel
-                {
-                    Name = request.Order.CustomerOrganisation.Name,
-                    Key = request.Order.CustomerOrganisation.OrganisationPrefix,
-                    OrganisationNumber = request.Order.CustomerOrganisation.OrganisationNumber,
-                    ContactName = request.Order.CreatedByUser.FullName,
-                    ContactPhone = request.Order.ContactPhone,
-                    ContactEmail = request.Order.ContactEmail,
-                    InvoiceReference = request.Order.InvoiceReference,
-                    PriceListType = request.Order.CustomerOrganisation.PriceListType.GetCustomName(),
-                    TravelCostAgreementType = request.Order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
-                    ReferenceNumber = request.Order.CustomerReferenceNumber,
-                    UnitName = request.Order.CustomerUnit?.Name,
-                    DepartmentName = request.Order.UnitName
-                },
-                Region = request.Order.Region.Name,
-                ExpiresAt = request.ExpiresAt,
-                Language = new LanguageModel
-                {
-                    Key = request.Order.Language?.ISO_639_Code,
-                    Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
-                },
-                StartAt = request.Order.StartAt,
-                EndAt = request.Order.EndAt,
-                Locations = request.Order.InterpreterLocations.Select(l => new LocationModel
-                {
-                    OffsiteContactInformation = l.OffSiteContactInformation,
-                    Street = l.Street,
-                    City = l.City,
-                    Rank = l.Rank,
-                    Key = l.InterpreterLocation.GetCustomName()
-                }),
-                CompetenceLevels = request.Order.CompetenceRequirements.Select(c => new CompetenceModel
-                {
-                    Key = c.CompetenceLevel.GetCustomName(),
-                    Rank = c.Rank ?? 0
-                }),
-                CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
-                AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
-                CreatorIsInterpreterUser = request.Order.CreatorIsInterpreterUser,
-                Description = request.Order.Description,
-                AssignentType = request.Order.AssignmentType.GetCustomName(),
-                //Should the attachemts from the broker be applied too? Yes I suppose...
-                Attachments = request.Order.Attachments.Select(a => new AttachmentInformationModel
-                {
-                    AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
-                }),
-                Requirements = request.Order.Requirements.Select(r => new RequirementModel
-                {
-                    Description = r.Description,
-                    IsRequired = r.IsRequired,
-                    RequirementId = r.OrderRequirementId,
-                    RequirementType = r.RequirementType.GetCustomName()
-                }),
-                CalculatedPriceInformationFromRequest = request.Order.PriceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
-                CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
-                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName(), request.Ranking.BrokerFee)
-                    : null,
-                Interpreter = request.Interpreter != null ? new InterpreterModel
-                {
-                    InterpreterId = request.Interpreter.InterpreterBrokerId,
-                    Email = request.Interpreter.Email,
-                    FirstName = request.Interpreter.FirstName,
-                    LastName = request.Interpreter.LastName,
-                    OfficialInterpreterId = request.Interpreter.OfficialInterpreterId,
-                    PhoneNumber = request.Interpreter.PhoneNumber,
-                    InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
-                } : null,
-                InterpreterLocation = request.InterpreterLocation.HasValue ? EnumHelper.GetCustomName((InterpreterLocation)request.InterpreterLocation) : null,
-                InterpreterCompetenceLevel = request.CompetenceLevel.HasValue ? EnumHelper.GetCustomName((CompetenceAndSpecialistLevel)request.CompetenceLevel) : null,
-                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
-                RequirementAnswers = request.RequirementAnswers
-                    .Select(r => new RequirementAnswerModel
-                    {
-                        Answer = r.Answer,
-                        CanMeetRequirement = r.CanSatisfyRequirement,
-                        RequirementId = r.OrderRequirementId
-                    }),
-            };
         }
 
         #endregion

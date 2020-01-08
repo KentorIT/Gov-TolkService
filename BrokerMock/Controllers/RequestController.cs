@@ -76,6 +76,11 @@ namespace BrokerMock.Controllers
                 Thread.Sleep(20000);
             }
 
+            if (extraInstructions.Contains("VIEWUNAUTHORIZED"))
+            {
+                await _apiService.CallRequestViewUnauthorized(payload.OrderNumber);
+            }
+
             if (extraInstructions.Contains("THROW"))
             {
                 throw new Exception();

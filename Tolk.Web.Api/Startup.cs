@@ -8,6 +8,8 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
+using Tolk.Web.Api.Authorization;
+using Tolk.Web.Api.Exceptions;
 
 namespace Tolk.Web.Api
 {
@@ -42,10 +44,32 @@ namespace Tolk.Web.Api
             services.AddScoped<InterpreterService>();
             services.AddScoped<EmailService>();
             services.AddScoped<ApiOrderService>();
-
+            services.AddAuthentication(options =>
+            {
+                // the scheme name has to match the value we're going to use in AuthenticationBuilder.AddScheme(...)
+                options.DefaultAuthenticateScheme = "Custom Scheme";
+                options.DefaultChallengeScheme = "Custom Scheme";
+            })
+            .AddCustomAuth(o => { });
             services.AddDbContext<TolkDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy(Policies.Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
+            });
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddOpenApiDocument(document =>
+            {
+                document.OperationProcessors.Add(new AddRequiredHeaderParameter("X-Kammarkollegiet-InterpreterService-UserName"));
+                document.OperationProcessors.Add(new AddRequiredHeaderParameter("X-Kammarkollegiet-InterpreterService-ApiKey"));
+
+                document.PostProcess = postProcess =>
+                {
+                    postProcess.Info.Description = "Detta är en beskrivning av Tolkavropstjänstens API för förmedlingar.";
+                    postProcess.Info.Title = "Tolkavropstjänstens API för förmedlingar.";
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,11 +79,16 @@ namespace Tolk.Web.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseAuthentication();
+            app.UseStaticFiles();
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Ping}/{id?}");
+                    template: "{controller=Home}/{action=Index}");
             });
         }
     }

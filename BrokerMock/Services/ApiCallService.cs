@@ -23,6 +23,7 @@ namespace BrokerMock.Services
         private readonly BrokerMockOptions _options;
         private readonly IMemoryCache _cache;
         private readonly static HttpClient client = new HttpClient(GetCertHandler());
+        private readonly static HttpClient unauthorizedClient = new HttpClient();
 
         public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, IMemoryCache cache)
         {
@@ -159,6 +160,12 @@ namespace BrokerMock.Services
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View] FAILED:: Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
             }
             return null;
+        }
+
+        public async Task CallRequestViewUnauthorized(string orderNumber)
+        {
+            var response = await unauthorizedClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/View", $"orderNumber={orderNumber}"));
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: returned with the following status code: {response.StatusCode}");
         }
 
         public async Task<RequestGroupDetailsResponse> GetOrderGroupRequest(string orderGroupNumber)

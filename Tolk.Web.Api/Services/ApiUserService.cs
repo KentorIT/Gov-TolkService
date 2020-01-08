@@ -38,8 +38,7 @@ namespace Tolk.Web.Api.Services
         {
             //First check by cert, then by unamne/key
             return await GetApiUserByCertificate(clientCertInRequest) ??
-                await GetApiUserByApiKey(userName, key) ??
-                throw new InvalidApiCallException(ErrorCodes.Unauthorized);
+                await GetApiUserByApiKey(userName, key);
         }
 
         public async Task<AspNetUser> GetApiUserByCertificate(X509Certificate2 clientCertInRequest)

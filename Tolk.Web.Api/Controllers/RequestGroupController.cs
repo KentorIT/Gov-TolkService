@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -13,6 +15,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
@@ -20,7 +23,9 @@ using Tolk.Web.Api.Services;
 namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
+    [Description("Beskriv RequestGroups")]
+    [Authorize(Policies.Broker)]
     public class RequestGroupController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
@@ -48,7 +53,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost(nameof(Answer))]
+        [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> Answer([FromBody] RequestGroupAnswerModel model)
         {
@@ -58,16 +63,17 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
                 if (!await _dbContext.OrderGroups
                     .AnyAsync(o => o.OrderGroupNumber == model.OrderGroupNumber &&
                     //Must have a request connected to the order for the broker, any status...
-                    o.RequestGroups.Any(r => r.Ranking.BrokerId == apiUser.BrokerId)))
+                    o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId)))
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
@@ -85,31 +91,31 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
                     .SingleOrDefaultAsync(r =>
                         r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
-                        apiUser.BrokerId == r.Ranking.BrokerId &&
+                        brokerId == r.Ranking.BrokerId &&
                         (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, apiUser.BrokerId.Value);
+                var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, brokerId);
 
                 InterpreterAnswerDto extraInterpreterAnswer = null;
                 if (requestGroup.HasExtraInterpreter)
                 {
-                    extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, apiUser.BrokerId.Value, false);
+                    extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, brokerId, false);
                 }
                 var now = _timeService.SwedenNow;
                 if (requestGroup.Status == RequestStatus.Created)
                 {
-                    _requestService.AcknowledgeGroup(requestGroup, now, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                    _requestService.AcknowledgeGroup(requestGroup, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 }
                 try
                 {
                     await _requestService.AcceptGroup(
                         requestGroup,
                         now,
-                        user?.Id ?? apiUser.Id,
-                        (user != null ? (int?)apiUser.Id : null),
+                        user?.Id ?? apiUserId,
+                        (user != null ? (int?)apiUserId : null),
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.InterpreterLocation).Value,
                         mainInterpreterAnswer,
                         extraInterpreterAnswer,
@@ -140,7 +146,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Acknowledge))]
+        [HttpPost]
         public async Task<IActionResult> Acknowledge([FromBody] RequestGroupAcknowledgeModel model)
         {
             if (model == null)
@@ -149,16 +155,17 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var requestGroup = await _dbContext.RequestGroups
-                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber && apiUser.BrokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
+                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber && brokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
-                _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null));
+                _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());
@@ -169,7 +176,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Decline))]
+        [HttpPost]
         public async Task<IActionResult> Decline([FromBody] RequestGroupDeclineModel model)
         {
             if (model == null)
@@ -178,10 +185,11 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var request = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
@@ -190,14 +198,14 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == apiUser.BrokerId &&
+                        r.Ranking.BrokerId == brokerId &&
                         //Possibly other statuses
                         (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                await _requestService.DeclineGroup(request, _timeService.SwedenNow, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                await _requestService.DeclineGroup(request, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());
@@ -208,7 +216,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(ConfirmDenial))]
+        [HttpPost]
         public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmGroupDenialModel model)
         {
             if (model == null)
@@ -217,16 +225,17 @@ namespace Tolk.Web.Api.Controllers
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
                 //Get User, if any...
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, apiUser.BrokerId.Value, new[] { RequestStatus.DeniedByCreator });
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.DeniedByCreator });
                 await _requestService.ConfirmGroupDenial(
                     requestGroup,
                     _timeService.SwedenNow,
-                    user?.Id ?? apiUser.Id,
-                    (user != null ? (int?)apiUser.Id : null)
+                    user?.Id ?? apiUserId,
+                    (user != null ? (int?)apiUserId : null)
                 );
                 return Ok(new ResponseBase());
             }
@@ -240,14 +249,14 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet(nameof(View))]
+        [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> View(string orderGroupNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order group {orderGroupNumber}");
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
 
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
@@ -262,7 +271,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == apiUser.BrokerId);
+                        r.Ranking.BrokerId == brokerId);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
@@ -281,19 +290,19 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpGet(nameof(File))]
+        [HttpGet]
         public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
 
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
                 var orderGroup = _dbContext.OrderGroups
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .SingleOrDefault(o => o.OrderGroupNumber == orderGroupNumber &&
                         //Must have a request connected to the order for the broker, any status...
-                        o.RequestGroups.Any(r => r.Ranking.BrokerId == apiUser.BrokerId));
+                        o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId));
                 if (orderGroup == null)
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
@@ -341,20 +350,11 @@ namespace Tolk.Web.Api.Controllers
         {
             //TODO: Add to log, information...
             var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
-            Response.StatusCode = message.StatusCode;
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;
             }
             return Ok(message);
-        }
-
-        //Break out to a auth pipline
-        private async Task<AspNetUser> GetApiUser()
-        {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
         }
 
         #endregion

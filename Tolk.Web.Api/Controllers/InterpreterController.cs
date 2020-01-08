@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
@@ -16,7 +18,9 @@ using Tolk.Web.Api.Services;
 namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
+    [Description("Beskrivning av Interpreter")]
+    [Authorize(Policies.Broker)]
     public class InterpreterController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
@@ -32,7 +36,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost(nameof(Create))]
+        [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> Create([FromBody] InterpreterDetailsModel interpreter)
         {
@@ -43,12 +47,12 @@ namespace Tolk.Web.Api.Controllers
 
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
                 if (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreter.InterpreterInformationType) != InterpreterInformationType.NewInterpreter)
                 {
                     ReturnError(ErrorCodes.InterpreterFaultyIntention);
                 }
-                var createdInterpreter = _apiUserService.GetInterpreter(interpreter, apiUser.BrokerId.Value);
+                var createdInterpreter = _apiUserService.GetInterpreter(interpreter, brokerId);
                 await _dbContext.SaveChangesAsync();
                 var createdInterpreterResponse = ApiUserService.GetModelFromEntity(createdInterpreter);
                 return Ok(new CreateInterpreterResponse { Interpreter = createdInterpreterResponse });
@@ -64,7 +68,7 @@ namespace Tolk.Web.Api.Controllers
             }
         }
 
-        [HttpPost(nameof(Update))]
+        [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> Update([FromBody] InterpreterDetailsModel interpreter)
         {
@@ -75,12 +79,12 @@ namespace Tolk.Web.Api.Controllers
 
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
                 if (EnumHelper.GetEnumByCustomName<InterpreterInformationType>(interpreter.InterpreterInformationType) == InterpreterInformationType.NewInterpreter)
                 {
                     ReturnError(ErrorCodes.InterpreterFaultyIntention);
                 }
-                var updatedInterpreter = _apiUserService.GetInterpreter(interpreter, apiUser.BrokerId.Value);
+                var updatedInterpreter = _apiUserService.GetInterpreter(interpreter, brokerId);
                 await _dbContext.SaveChangesAsync();
                 var updatedInterpreterResponse = ApiUserService.GetModelFromEntity(updatedInterpreter);
                 return Ok(new UpdateInterpreterResponse { Interpreter = updatedInterpreterResponse });
@@ -100,7 +104,7 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet(nameof(View))]
+        [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         public async Task<IActionResult> View(int? interpreterId, string officialInterpreterId, string callingUser)
         {
@@ -112,10 +116,10 @@ namespace Tolk.Web.Api.Controllers
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with {(interpreterId.HasValue ? $"interpreterId: {interpreterId}" : $"officialInterpreterId: {officialInterpreterId}")}");
             try
             {
-                var apiUser = await GetApiUser();
+                var brokerId = User.TryGetBrokerId().Value;
                 var interpreter = interpreterId.HasValue ?
-                    await _apiUserService.GetInterpreterModelFromId(interpreterId.Value, apiUser.BrokerId.Value) :
-                    await _apiUserService.GetInterpreterModelFromId(officialInterpreterId, apiUser.BrokerId.Value);
+                    await _apiUserService.GetInterpreterModelFromId(interpreterId.Value, brokerId) :
+                    await _apiUserService.GetInterpreterModelFromId(officialInterpreterId, brokerId);
                 return Ok(new ViewInterpreterResponse { Interpreter = interpreter });
             }
             catch (InvalidApiCallException ex)
@@ -137,17 +141,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
-            Response.StatusCode = message.StatusCode;
-            return Ok(message);
-        }
-
-        //Break out to a auth pipline
-        private async Task<AspNetUser> GetApiUser()
-        {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
+            return Ok(TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode));
         }
 
         #endregion

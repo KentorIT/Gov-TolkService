@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
@@ -10,6 +14,7 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
@@ -17,7 +22,9 @@ using Tolk.Web.Api.Services;
 namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
-
+    [Route("[controller]/[action]")]
+    [Description("Beskriv Complaints")]
+    [Authorize(Policies.Broker)]
     public class ComplaintController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
@@ -43,21 +50,26 @@ namespace Tolk.Web.Api.Controllers
 
         #region Updating Methods
 
-        [HttpPost(nameof(Accept))]
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [Description("Anropas för att acceptera en inkommen reklamation")]
         public async Task<IActionResult> Accept([FromBody] ComplaintAcceptModel model)
         {
             if (model == null)
             {
-                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, nameof(Accept));
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Get User, if any...
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                var complaint = await GetCreatedComplaint(model.OrderNumber, apiUser.BrokerId.Value);
-                _complaintService.Accept(complaint, user?.Id ?? apiUser.Id, user != null ? (int?)apiUser.Id : null);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                var complaint = await GetCreatedComplaint(model.OrderNumber, brokerId);
+                _complaintService.Accept(complaint, user?.Id ?? apiUserId, user != null ? (int?)apiUserId : null);
 
                 await _dbContext.SaveChangesAsync();
                 //End of service
@@ -65,25 +77,30 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (InvalidApiCallException ex)
             {
-                return ReturnError(ex.ErrorCode);
+                return ReturnError(ex.ErrorCode, nameof(Accept));
             }
         }
 
-        [HttpPost(nameof(Dispute))]
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [Description("Anropas för att bestrida en inkommen reklamation")]
         public async Task<IActionResult> Dispute([FromBody] ComplaintDisputeModel model)
         {
             if (model == null)
             {
-                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, nameof(Dispute));
             }
             try
             {
-                var apiUser = await GetApiUser();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, apiUser.BrokerId.Value);
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Get User, if any...
-                var user = await _apiUserService.GetBrokerUser(model.CallingUser, apiUser.BrokerId.Value);
-                var complaint = await GetCreatedComplaint(model.OrderNumber, apiUser.BrokerId.Value);
-                _complaintService.Dispute(complaint, user?.Id ?? apiUser.Id, (user != null ? (int?)apiUser.Id : null), model.Message);
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                var complaint = await GetCreatedComplaint(model.OrderNumber, brokerId);
+                _complaintService.Dispute(complaint, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
 
                 await _dbContext.SaveChangesAsync();
                 //End of service
@@ -91,7 +108,7 @@ namespace Tolk.Web.Api.Controllers
             }
             catch (InvalidApiCallException ex)
             {
-                return ReturnError(ex.ErrorCode);
+                return ReturnError(ex.ErrorCode, nameof(Dispute));
             }
         }
 
@@ -99,28 +116,25 @@ namespace Tolk.Web.Api.Controllers
 
         #region getting methods
 
-        [HttpGet(nameof(View))]
+        [HttpGet]
+        [ProducesResponseType(200, Type = typeof(ComplaintDetailsResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [Description("Returnerar detaljerad information om aktiv reklamation kopplad till beställningen (orderNumber)")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber}");
-            try
+            var brokerId = User.TryGetBrokerId().Value;
+            var complaint = await _dbContext.Complaints
+                .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&
+                    c.Request.Ranking.BrokerId == brokerId &&
+                    c.Request.Status == RequestStatus.Approved);
+            if (complaint == null)
             {
-                var apiUser = await GetApiUser();
-                var complaint = await _dbContext.Complaints
-                    .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&
-                        c.Request.Ranking.BrokerId == apiUser.BrokerId &&
-                        c.Request.Status == RequestStatus.Approved);
-                if (complaint == null)
-                {
-                    return ReturnError(ErrorCodes.ComplaintNotFound);
-                }
-                //End of service
-                return Ok(GetResponseFromComplaint(complaint, orderNumber));
+                return ReturnError(ErrorCodes.ComplaintNotFound, nameof(View));
             }
-            catch (InvalidApiCallException ex)
-            {
-                return ReturnError(ex.ErrorCode);
-            }
+            //End of service
+            return Ok(GetResponseFromComplaint(complaint, orderNumber));
         }
 
         #endregion
@@ -142,21 +156,16 @@ namespace Tolk.Web.Api.Controllers
 
         }
 
-        //Break out to error generator service...
-        private IActionResult ReturnError(string errorCode)
+        //Break out to something more generic...
+        private IActionResult ReturnError(string errorCode, string action, string specifiedErrorMessage = null)
         {
-            //TODO: Add to log, information...
-            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode);
-            Response.StatusCode = message.StatusCode;
+            _logger.LogInformation($"{action} failed with this error: {errorCode} {(!string.IsNullOrEmpty(specifiedErrorMessage) ? $"Specific error message: {specifiedErrorMessage}" : string.Empty)}");
+            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            if (!string.IsNullOrEmpty(specifiedErrorMessage))
+            {
+                message.ErrorMessage = specifiedErrorMessage;
+            }
             return Ok(message);
-        }
-
-        //Break out to a auth pipline
-        private async Task<AspNetUser> GetApiUser()
-        {
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-UserName", out var userName);
-            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var key);
-            return await _apiUserService.GetApiUser(Request.HttpContext.Connection.ClientCertificate, userName, key);
         }
 
         private static ComplaintDetailsResponse GetResponseFromComplaint(Complaint complaint, string orderNumber)
@@ -180,3 +189,4 @@ namespace Tolk.Web.Api.Controllers
         #endregion
     }
 }
+
