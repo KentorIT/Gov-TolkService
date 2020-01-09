@@ -1721,6 +1721,11 @@ ol.breadcrumb > li + li:before {
   font-weight: bold;
   font-family: Calibri;
 }
+.order-print-groupnumber {
+  font-style: italic;
+  font-size: 16px;
+  font-weight: normal;
+}
 .print-page {
   min-height: 500px;
   background-color: white;

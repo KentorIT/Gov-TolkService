@@ -52,6 +52,11 @@
                         <td class="order-print-column">
                             <h1>
                                 @ViewData["Title"]
+                                @if (!string.IsNullOrEmpty(Model.OrderGroupNumber))
+                                {
+                                    <br />
+                                    <span class="order-print-groupnumber">Tillhör sammanhållen bokning @Model.OrderGroupNumber</span>
+                                }
                             </h1>
                         </td>
                         <td class="align-top font-size-small pull-right">
@@ -98,14 +103,21 @@
                             <td class="order-print-column">
                                 <span class="bold">Datum och tid för uppdrag: </span>@Model.TimeRange.StartDateTime.Value.ToString("yyyy-MM-dd HH:mm")-@Model.TimeRange.EndDateTime.Value.ToString("HH:mm")<br />
                                 <span class="bold">Språk: </span>@Model.LanguageName @Model.Dialect<br />
-                                <span class="bold">Är tolkanvändare samma person som bokar: </span>@(Model.CreatorIsInterpreterUser?.SelectedItem == null ? "Ej angivet" : @Model.CreatorIsInterpreterUser.SelectedItem.Text )<br /><br />
+                                <span class="bold">Är tolkanvändare samma person som bokar: </span>@(Model.CreatorIsInterpreterUser?.SelectedItem == null ? "Ej angivet" : @Model.CreatorIsInterpreterUser.SelectedItem.Text)<br /><br />
                                 <span class="bold">Inställelsesätt: </span>@Model.InterpreterLocationAnswer.GetDescription()<br />
                                 @Model.InterpreterLocationInfoAnswer<br /><br />
                                 @if (Model.ActiveRequest.DisplayExpectedTravelCostInfo)
                                 {
                                     <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.Value.ToString("#,0.00 SEK")<br />
-                                    <span class="bold">Kommentar till bedömd resekostnad: </span><br />
-                                    @Model.ActiveRequest.ExpectedTravelCostInfo
+                                    <span class="bold">Kommentar till bedömd resekostnad: </span>
+                                    @if (string.IsNullOrEmpty(Model.ActiveRequest.ExpectedTravelCostInfo))
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                        <br />@Model.ActiveRequest.ExpectedTravelCostInfo
+                                    }
                                 }
                             </td>
                             <td class="order-print-column">
