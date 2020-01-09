@@ -36,6 +36,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderReplacementCreated(Order order) { }
 
+        public void OrderUpdated(Order order) { }
+
         public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup) { }
 
         public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }

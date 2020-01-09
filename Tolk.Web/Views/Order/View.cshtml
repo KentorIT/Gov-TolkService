@@ -172,7 +172,7 @@
             @if (Model.AllowOrderCancellation)
             {
                 <div class="col-sm-4">
-                    <form method="post" class="cancel-form" action="@Url.Action("Cancel", "Order", new { OrderId = Model.OrderId })" asp-antiforgery="true">
+                    <form method="post" class="cancel-form" action="@Url.Action("Cancel", new { OrderId = Model.OrderId })" asp-antiforgery="true">
                         <input name="CancelMessage" type="hidden" />
                         <input name="AddReplacementOrder" type="hidden" value="false" />
                         <button class="btn cancel-button btn-warning btn-large">Avboka uppdrag</button>
@@ -183,7 +183,13 @@
             @if (Model.AllowRequestPrint)
             {
                 <div class="col-sm-4">
-                    <a class="btn btn-primary btn-large" href="@Url.Action("Print", "Order", new { id = Model.OrderId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
+                    <a class="btn btn-primary btn-large" href="@Url.Action("Print", new { id = Model.OrderId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
+                </div>
+            }
+            @if (Model.AllowChange)
+            {
+                <div class="col-sm-4">
+                    <a class="btn btn-primary btn-large" href="@Url.Action("Change", new { id = Model.OrderId })">Ändra bokning &nbsp;<span class="center-glyphicon glyphicon glyphicon-edit"></span></a>
                 </div>
             }
             @if (Model.AllowProcessing)
@@ -191,7 +197,7 @@
                 <div class="col-sm-4">
                     @if (Model.AllowDenial)
                     {
-                        <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
+                        <form method="post" class="deny-form text-align-center" action="@Url.Action("Deny", new { RequestId = Model.RequestId})" asp-antiforgery="true">
                             <input name="DenyMessage" type="hidden" />
                             <button class="btn deny-button btn-danger btn-large">Underkänn tillsättning</button>
                             @HelpLinkService.ButtonHelpIcon("myndighet-underkann-tillsattning")
@@ -199,7 +205,7 @@
                     }
                 </div>
                 <div class="col-sm-4 pull-right">
-                    <form method="post" action="@Url.Action("Approve", "Order", new { RequestId = Model.RequestId})" asp-antiforgery="true">
+                    <form method="post" action="@Url.Action("Approve", new { RequestId = Model.RequestId})" asp-antiforgery="true">
                         <button class="btn btn-default btn-success btn-large">Godkänn tillsättning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                         @HelpLinkService.ButtonHelpIcon("myndighet-godkann-tillsattning")
                     </form>
@@ -222,7 +228,7 @@
         </div>
         @if (Model.AllowUpdateExpiry)
         {
-            <form method="post" action="@Url.Action("UpdateExpiry", "Order", new { OrderId = Model.OrderId})" asp-antiforgery="true">
+            <form method="post" action="@Url.Action("UpdateExpiry", new { OrderId = Model.OrderId})" asp-antiforgery="true">
                 <div class="row">
                     <div class="col-sm-8">
                         <input asp-for="StartAt" type="hidden" />
@@ -270,7 +276,7 @@
                             <div class="important-info">Uppdraget som ska avbokas ingår i en sammanhållen bokning det är därför inte möjligt att skapa ett ersättningsuppdrag för detta uppdrag.</div>
                         }
                     }
-                    </form>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning do-not-check-dirty pull-left" data-dismiss="modal">Avbryt</button>
@@ -315,7 +321,7 @@
                     <h2 class="modal-title">@editContactpersonButtonText person som har rätt att granska rekvisition</h2>
                 </div>
                 <div class="modal-body">
-                    <form method="post" class="do-not-check-dirty" action="@Url.Action("ChangeContactPerson", "Order", new { OrderId = Model.OrderId})" asp-antiforgery="true">
+                    <form method="post" class="do-not-check-dirty" action="@Url.Action("ChangeContactPerson", new { OrderId = Model.OrderId})" asp-antiforgery="true">
                         @if (Model.ChangeContactPersonId != null)
                         {
                             <div class="important-info">

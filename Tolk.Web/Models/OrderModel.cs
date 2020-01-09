@@ -155,6 +155,8 @@ namespace Tolk.Web.Models
 
         public bool AllowEditContactPerson { get; set; } = false;
 
+        public bool AllowChange { get; set; } = false;
+
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;
 

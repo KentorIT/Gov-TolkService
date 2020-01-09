@@ -123,6 +123,32 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void OrderUpdated(Order order)
+        {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderUpdated), nameof(NotificationService));
+            var request = order.Requests.OrderBy(r => r.RequestId).Last();
+            var orderNumber = order.OrderNumber;
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
+            if (email != null)
+            {
+                string body = $"Ert tolkuppdrag med boknings-ID {orderNumber} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information. Klicka på länken nedan för att se tolkuppdraget med den nya informationen.";
+                CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} har uppdaterats",
+                    body + GoToRequestPlain(request.RequestId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
+                    true);
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    GetRequestModel(request),
+                    webhook.ContactInformation,
+                    NotificationType.RequestInformationUpdated,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
         public void OrderReplacementCreated(Order order)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(OrderReplacementCreated), nameof(NotificationService));

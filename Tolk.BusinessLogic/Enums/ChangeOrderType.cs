@@ -4,23 +4,17 @@ namespace Tolk.BusinessLogic.Enums
 {
     public enum ChangeOrderType
     {
-
-        [Description("På plats - gatuadress")]
-        OnSiteStreet = 1,
-        [Description("Anvisad lokal - gatuadress")]
-        OffSiteDesignatedLocationStreet = 2,
-        [Description("Kontaktuppgifter vid distanstolkning - telefon")]
-        OffSitePhoneContactInformation = 3,
-        [Description("Kontaktuppgifter vid distanstolkning - video")]
-        OffSiteVideoContactInformation = 4,
+        [Description("Gatuadress för lokal")]
+        LocationStreet = 1,
+        [Description("Kontaktuppgifter vid distanstolkning")]
+        OffSiteContactInformation = 2,
         [Description("Övrig information om uppdraget")]
-        Description = 5,
+        Description = 3,
         [Description("Fakturareferens")]
-        InvoiceReference = 6,
+        InvoiceReference = 4,
         [Description("Myndighetens ärendenummer")]
-        CustomerReferenceNumber = 7,
+        CustomerReferenceNumber = 5,
         [Description("Myndighetens avdelning")]
-        CustomerDepartment = 8,
-
+        CustomerDepartment = 6
     }
 }

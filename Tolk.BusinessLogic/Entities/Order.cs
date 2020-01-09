@@ -277,6 +277,36 @@ namespace Tolk.BusinessLogic.Entities
             return ranking;
         }
 
+        public void Update(DateTimeOffset changedAt, int userId, int? impersonatingUserId, string description, string locationStreet, string offSiteContactInformation, string invoiceReference, string customerReferenceNumber, string unitName, InterpreterLocation selectedInterpreterlocation)
+        {
+            if (Status != OrderStatus.ResponseAccepted)
+            {
+                throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change order with this status.");
+            }
+            var orderHistoryEntries = new List<OrderHistoryEntry>
+            {
+                new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.Description, Value = Description },
+                new OrderHistoryEntry { ChangeOrderType = string.IsNullOrEmpty(locationStreet) ? ChangeOrderType.OffSiteContactInformation : ChangeOrderType.LocationStreet, Value = string.IsNullOrEmpty(locationStreet) ? InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().OffSiteContactInformation : InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().Street },
+                new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.InvoiceReference, Value = InvoiceReference },
+                new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerReferenceNumber, Value = CustomerReferenceNumber },
+                new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerDepartment, Value = UnitName }
+            };
+            OrderChangeLogEntry.Add(new OrderChangeLogEntry
+            {
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                UpdatedByImpersonatorId = impersonatingUserId,
+                OrderChangeLogType = OrderChangeLogType.Other,
+                OrderHistories = orderHistoryEntries
+            }); ;
+            Description = description;
+            InvoiceReference = invoiceReference;
+            UnitName = unitName;
+            CustomerReferenceNumber = customerReferenceNumber;
+            InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().OffSiteContactInformation = offSiteContactInformation;
+            InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().Street = locationStreet;
+        }
+
         internal Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             var request = new Request(ranking, creationTime, quarantine);

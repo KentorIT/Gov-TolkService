@@ -104,6 +104,7 @@ namespace Tolk.Web.Controllers
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.AllowUpdateExpiry = order.OrderGroupId == null && order.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
+                model.AllowChange = order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                 model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
                 model.AllowRequestPrint = (request?.CanPrint ?? false) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
@@ -254,6 +255,81 @@ namespace Tolk.Web.Controllers
             }
             return View(model);
         }
+
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Change(int id)
+        {
+            var order = GetOrder(id);
+
+            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            {
+                var request = order.Requests.SingleOrDefault(r =>
+                                        r.Status != RequestStatus.InterpreterReplaced &&
+                                        r.Status != RequestStatus.DeniedByTimeLimit &&
+                                        r.Status != RequestStatus.DeniedByCreator &&
+                                        r.Status != RequestStatus.DeclinedByBroker &&
+                                        r.Status != RequestStatus.LostDueToQuarantine);
+                ChangeOrderModel model = _mapper.Map<ChangeOrderModel>(OrderModel.GetModelFromOrder(order, request?.RequestId));
+                model.FileGroupKey = new Guid();
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                List<FileModel> files = order.Attachments.Select(a => new FileModel
+                {
+                    Id = a.Attachment.AttachmentId,
+                    FileName = a.Attachment.FileName,
+                    Size = a.Attachment.Blob.Length
+                }).ToList();
+                model.Files = files.Any() ? files : null;
+                model.SelectedInterpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
+                if (model.SelectedInterpreterLocation == InterpreterLocation.OffSitePhone || model.SelectedInterpreterLocation == InterpreterLocation.OffSiteVideo)
+                {
+                    model.OffSiteContactInformation = order.InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().OffSiteContactInformation;
+                }
+                else
+                {
+                    model.LocationCity = order.InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().City;
+                    model.LocationStreet = order.InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().Street;
+                }
+                model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
+                model.ContactPersonId = order.ContactPersonId;
+                model.ActiveRequest.OrderModel = model;
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> Change(ChangeOrderModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                Order order = GetOrder(model.OrderId.Value);
+                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                {
+                    var isChanged = false;
+                    if (order.ContactPersonId != model.ContactPersonId)
+                    {
+                        isChanged = true;
+                        ChangeContactPerson(order, model.ContactPersonId);
+                    }
+                    if (model.IsOrderChanged(order))
+                    {
+                        isChanged = true;
+                        order.Update(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.Description, model.LocationStreet, model.OffSiteContactInformation, model.InvoiceReference, model.CustomerReferenceNumber, model.UnitName, model.SelectedInterpreterLocation);
+                        _notificationService.OrderUpdated(order);
+                    }
+                    if (!isChanged)
+                    {
+                        return RedirectToAction(nameof(View), new { id = order.OrderId, message = "OBS! Det fanns inga ändringar att spara på bokningen!" });
+                    }
+                    await _dbContext.SaveChangesAsync();
+                    return RedirectToAction(nameof(View), new { id = order.OrderId, message = "Bokningen är nu ändrad" });
+                }
+            }
+            return View(model);
+        }
+
 
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create()
@@ -715,12 +791,8 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
-                order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
-                    User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == model.ContactPersonId));
-                _notificationService.OrderContactPersonChanged(order, oldContactPerson);
-
+                ChangeContactPerson(order, model.ContactPersonId);
                 await _dbContext.SaveChangesAsync();
-
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
                     return RedirectToAction(nameof(View), new { id = order.OrderId, message = $"Person med rätt att granska rekvisition för bokningen är ändrad" });
@@ -731,6 +803,14 @@ namespace Tolk.Web.Controllers
                 }
             }
             return Forbid();
+        }
+
+        private void ChangeContactPerson(Order order, int? newContactPersonId)
+        {
+            var oldContactPerson = order.ContactPersonUser;
+            order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
+                User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));
+            _notificationService.OrderContactPersonChanged(order, oldContactPerson);
         }
 
         [ValidateAntiForgeryToken]
