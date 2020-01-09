@@ -21,6 +21,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableRegisterUser { get; set; }
 
+        public bool EnableOrderUpdate { get; set; }
+
         public bool RunEntityScheduler { get; set; } = true;
 
         public TolkConnectionStrings ConnectionStrings { get; set; }

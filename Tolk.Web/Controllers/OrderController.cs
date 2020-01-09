@@ -104,7 +104,7 @@ namespace Tolk.Web.Controllers
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.AllowUpdateExpiry = order.OrderGroupId == null && order.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
-                model.AllowChange = order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
+                model.AllowChange = _options.EnableOrderUpdate && order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                 model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
                 model.AllowRequestPrint = (request?.CanPrint ?? false) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
@@ -261,7 +261,7 @@ namespace Tolk.Web.Controllers
         {
             var order = GetOrder(id);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            if (_options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
                 var request = order.Requests.SingleOrDefault(r =>
                                         r.Status != RequestStatus.InterpreterReplaced &&
@@ -305,7 +305,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order = GetOrder(model.OrderId.Value);
-                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                if (_options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
                 {
                     var isChanged = false;
                     if (order.ContactPersonId != model.ContactPersonId)
@@ -326,6 +326,7 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                     return RedirectToAction(nameof(View), new { id = order.OrderId, message = "Bokningen är nu ändrad" });
                 }
+                return Forbid();
             }
             return View(model);
         }
