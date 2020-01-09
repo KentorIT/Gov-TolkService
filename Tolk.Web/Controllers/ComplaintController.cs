@@ -118,11 +118,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        /// <summary>
-        /// Create a complaint
-        /// </summary>
-        /// <param name="id">The Request to connect the complaint to</param>
-        /// <returns></returns>
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create(int id)
         {

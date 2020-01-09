@@ -63,7 +63,7 @@ namespace Tolk.Web.Models
         internal IQueryable<Complaint> GetComplaintsFromOrders(IQueryable<Order> orders)
         {
             return IsBroker ? orders.Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Complaints) :
-                orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCustomerCentralAdminOrOrderHandler, true)
+                orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCustomerCentralAdminOrOrderHandler, true, true)
                 .Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Complaints);
         }
 
