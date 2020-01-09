@@ -111,7 +111,7 @@ namespace Tolk.Web.Api.Services
                 AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = request.Order.CreatorIsInterpreterUser,
                 Description = request.Order.Description,
-                AssignentType = request.Order.AssignmentType.GetCustomName(),
+                AssignmentType = request.Order.AssignmentType.GetCustomName(),
                 Attachments = attachments,
                 Requirements = request.Order.Requirements.Select(r => new RequirementModel
                 {
@@ -210,7 +210,7 @@ namespace Tolk.Web.Api.Services
                 CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,
                 AllowMoreThanTwoHoursTravelTime = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser,
-                AssignentType = orderGroup.AssignmentType.GetCustomName(),
+                AssignmentType = orderGroup.AssignmentType.GetCustomName(),
                 Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,

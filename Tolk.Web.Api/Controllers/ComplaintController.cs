@@ -23,7 +23,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Beskriv Complaints")]
     [Authorize(Policies.Broker)]
     public class ComplaintController : ControllerBase
     {

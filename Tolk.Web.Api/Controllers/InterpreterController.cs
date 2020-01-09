@@ -19,7 +19,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Beskrivning av Interpreter")]
     [Authorize(Policies.Broker)]
     public class InterpreterController : ControllerBase
     {

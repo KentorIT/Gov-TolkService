@@ -1333,7 +1333,7 @@ Sammanställning:
                 }),
                 AllowMoreThanTwoHoursTravelTime = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = order.CreatorIsInterpreterUser,
-                AssignentType = EnumHelper.GetCustomName(order.AssignmentType),
+                AssignmentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
                 Requirements = order.Requirements.Select(r => new RequirementModel
@@ -1393,7 +1393,7 @@ Sammanställning:
                 }),
                 AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser,
-                AssignentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
+                AssignmentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Requirements = orderGroup.Requirements.Select(r => new RequirementModel

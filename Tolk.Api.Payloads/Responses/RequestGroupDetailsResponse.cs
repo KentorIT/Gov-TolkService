@@ -24,7 +24,7 @@ namespace Tolk.Api.Payloads.Responses
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
         public bool? CreatorIsInterpreterUser { get; set; }
         public string Description { get; set; }
-        public string AssignentType { get; set; }
+        public string AssignmentType { get; set; }
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }
         public IEnumerable<RequirementModel> Requirements { get; set; }
         public IEnumerable<RequestDetailsResponse> Occasions { get; set; }

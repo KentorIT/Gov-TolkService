@@ -19,7 +19,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Här finns alla listor på olika typer och andra mer statiska saker som man behöver i systemet.")]
     public class ListController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NSwag.Annotations;
 using System.ComponentModel;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -10,7 +11,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Beskriv Requests")]
     public class HomeController : ControllerBase
     {
         private readonly ISwedishClock _timeService;
@@ -21,16 +21,25 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        [OpenApiIgnore]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
         public ActionResult<string> Index()
         {
             return string.Empty;
         }
 
         [HttpGet]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
         public ActionResult<string> Ping()
         {
-            X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
+            return "Pong";
+        }
 
+        [HttpGet]
+        [OpenApiIgnore]
+        public ActionResult<string> TestCertificate()
+        {
+            X509Certificate2 clientCertInRequest = Request.HttpContext.Connection.ClientCertificate;
             return clientCertInRequest?.SerialNumber;
         }
 
@@ -42,6 +51,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        [OpenApiIgnore]
         public ActionResult<string> TestTime()
         {
             return _timeService.SwedenNow.ToSwedishString("yyyy-MM-dd HH:mm:ss");

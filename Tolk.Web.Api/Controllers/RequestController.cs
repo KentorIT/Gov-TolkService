@@ -25,7 +25,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Beskriv Requests")]
     [Authorize(Policies.Broker)]
     public class RequestController : ControllerBase
     {
@@ -525,7 +524,7 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
-        public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
+        public IActionResult File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
 

@@ -24,7 +24,6 @@ namespace Tolk.Web.Api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Description("Beskriv RequestGroups")]
     [Authorize(Policies.Broker)]
     public class RequestGroupController : ControllerBase
     {
@@ -291,7 +290,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
+        public IActionResult File(string orderGroupNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
 
