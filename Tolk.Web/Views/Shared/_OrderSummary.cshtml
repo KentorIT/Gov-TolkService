@@ -44,21 +44,21 @@
     <div id="@divId" class="@divClass">
         @if (displayGeneralOrderInfo)
         {
-            <div class="row">
-                <div class="col-sm-4">
-                    <display-entry asp-for="LanguageAndDialect" />
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="TimeRange" />
-                    @if (Model.LatestAnswerBy != null)
-                    {
-                        <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
-                    }
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="RegionName" />
-                </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="LanguageAndDialect" />
             </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="RegionName" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="TimeRange" />
+                @if (Model.LatestAnswerBy != null)
+                {
+                    <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+                }
+            </div>
+        </div>
         }
         <div class="row">
             <div class="col-sm-4">

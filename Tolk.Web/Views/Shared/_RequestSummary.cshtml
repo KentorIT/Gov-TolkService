@@ -58,13 +58,12 @@
                 <display-entry asp-for="OrderModel.LanguageAndDialect" />
             </div>
             <div class="col-sm-4">
-                <display-entry asp-for="OrderModel.TimeRange" />
-            </div>
-            <div class="col-sm-4">
                 <display-entry asp-for="OrderModel.RegionName" />
             </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="OrderModel.TimeRange" />
+            </div>
         </div>
-
         <div class="row">
             @if (!requestIsAnswered && !isBroker)
             {
