@@ -45,14 +45,13 @@ namespace Tolk.Web.Models
 
         public int UserId { get; set; }
 
-
         public IEnumerable<int> CustomerUnits { get; set; }
 
         internal IQueryable<Requisition> GetRequisitionsFromOrders(IQueryable<Order> orders)
         {
             if (!IsAdmin)
             {
-                orders = orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true);
+                orders = orders.CustomerOrders(CustomerOrganisationId.Value, UserId, CustomerUnits, IsCentralAdminOrOrderHandler, true, true);
             }
             return orders.Select(o => o.Requests).SelectMany(r => r).SelectMany(r => r.Requisitions)
                 .Where(r => !r.ReplacedByRequisitionId.HasValue);
