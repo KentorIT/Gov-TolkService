@@ -780,7 +780,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ImpersonatingCreator");
 
-                    b.HasIndex("IsExtraInterpreterForOrderId");
+                    b.HasIndex("IsExtraInterpreterForOrderId")
+                        .IsUnique()
+                        .HasFilter("[IsExtraInterpreterForOrderId] IS NOT NULL");
 
                     b.HasIndex("LanguageId");
 
@@ -2493,8 +2495,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "IsExtraInterpreterForOrder")
-                        .WithMany()
-                        .HasForeignKey("IsExtraInterpreterForOrderId");
+                        .WithOne("ExtraInterpreterOrder")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.Order", "IsExtraInterpreterForOrderId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Language", "Language")
                         .WithMany()

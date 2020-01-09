@@ -193,6 +193,8 @@ namespace Tolk.Web.Models
 
         public int? OldInterpreterId { get; set; }
 
+        public int? OtherInterpreterId { get; set; }
+
         #endregion
 
         #region methods

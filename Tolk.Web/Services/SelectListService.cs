@@ -507,7 +507,7 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<ExtendedSelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null, bool allowDeclineInList = false)
+        public IEnumerable<ExtendedSelectListItem> GetInterpreters(int brokerId, int? interpreterToBeReplacedId = null, int? otherInterpreterId = null, bool allowDeclineInList = false)
         {
             yield return new ExtendedSelectListItem
             {
@@ -524,13 +524,16 @@ namespace Tolk.Web.Services
                     AdditionalDataAttribute = string.Empty
                 };
             }
-            var interpretersInDb = _dbContext.InterpreterBrokers.Where(i => i.BrokerId == brokerId && i.InterpreterBrokerId != interpreterToBeReplacedId && i.IsActive)
-            .Select(i => new ExtendedSelectListItem
-            {
-                Value = i.InterpreterBrokerId.ToSwedishString(),
-                Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (KamK tolknr: saknas)" : $"{i.FullName} (KamK tolknr: {i.OfficialInterpreterId})",
-                AdditionalDataAttribute = i.InterpreterId.HasValue ? i.Interpreter.IsProtected ? "Protected" : string.Empty : string.Empty
-            });
+            //always display protetected interpreter
+            var interpretersInDb = _dbContext.InterpreterBrokers.
+                Where(i => i.BrokerId == brokerId && i.IsActive &&
+                ((i.InterpreterBrokerId != interpreterToBeReplacedId && i.InterpreterBrokerId != otherInterpreterId) || i.Interpreter.IsProtected))
+                .Select(i => new ExtendedSelectListItem
+                {
+                    Value = i.InterpreterBrokerId.ToSwedishString(),
+                    Text = string.IsNullOrWhiteSpace(i.OfficialInterpreterId) ? $"{i.FullName} (KamK tolknr: saknas)" : $"{i.FullName} (KamK tolknr: {i.OfficialInterpreterId})",
+                    AdditionalDataAttribute = i.InterpreterId.HasValue ? i.Interpreter.IsProtected ? "Protected" : string.Empty : string.Empty
+                });
             foreach (var i in interpretersInDb)
             {
                 yield return i;

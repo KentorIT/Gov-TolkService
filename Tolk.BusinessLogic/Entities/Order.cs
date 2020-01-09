@@ -147,6 +147,7 @@ namespace Tolk.BusinessLogic.Entities
         public int? IsExtraInterpreterForOrderId { get; set; }
 
         [ForeignKey(nameof(IsExtraInterpreterForOrderId))]
+        [InverseProperty(nameof(ExtraInterpreterOrder))]
         public Order IsExtraInterpreterForOrder { get; set; }
 
         #endregion
@@ -165,6 +166,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [InverseProperty(nameof(ReplacingOrder))]
         public Order ReplacedByOrder { get; set; }
+
+        [InverseProperty(nameof(IsExtraInterpreterForOrder))]
+        public Order ExtraInterpreterOrder { get; set; }
 
         public CompetenceLevel PriceCalculatedFromCompetenceLevel
         {
@@ -223,7 +227,6 @@ namespace Tolk.BusinessLogic.Entities
             return request;
         }
 
-
         public void DeliverRequisition()
         {
             if (Status != OrderStatus.ResponseAccepted && Status != OrderStatus.Delivered)
@@ -252,7 +255,6 @@ namespace Tolk.BusinessLogic.Entities
                 OrderChangeLogType = OrderChangeLogType.ContactPerson,
                 OrderContactPersonHistory = new OrderContactPersonHistory{ PreviousContactPersonId = ContactPersonId }
             });
-           
             ContactPersonUser = newContactPerson;
         }
 
