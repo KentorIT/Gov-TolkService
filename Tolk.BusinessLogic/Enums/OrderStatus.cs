@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Enums
         /// <summary>
         /// This status is not used in db, just for filter lists
         /// </summary>
-        [Description("Tolktillsättning finns/Tolktillsättning finns (Ny tolk)")]
+        [Description("Tolk är tillsatt/Tolk är tillsatt (Ny tolk)")]
         ToBeProcessedByCustomer = -1,
         [Description("Sparat, ej skickat")]
         [Obsolete("Inte använd än")]
