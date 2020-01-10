@@ -683,7 +683,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                 {
                     mealbreaks.Add(new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() });
                 }
-                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requisitionEndAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestEndAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+
+                _ = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requisitionEndAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestEndAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
                 useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
             }
         }
@@ -972,7 +973,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) },
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.InterpreterCompensation, (decimal)Price_2H_Court_Comp1) }
                 };
-                PriceInformation pi = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate));
+                _ = new PriceCalculationService(tolkdbContext).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate));
                 useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
             }
         }
