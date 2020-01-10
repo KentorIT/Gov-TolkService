@@ -1,0 +1,12 @@
+
+Innan databas-script körs så kör denna och klistra in resultat i Excel (om nått skulle gå fel med script)
+SELECT * FROM OrderContactPersonHistory ocph
+
+Kolla hur denna ska sättas:
+
+"EnableOrderGroups": "true",
+
+Kolla för säkerhets skull i db att alla users har de för Group tillagda i 
+UserNotificationSettings
+
+"EnableOrderUpdate"  har vi förmodligen inte kvar men om vi har det så tänk till hur den ska vara

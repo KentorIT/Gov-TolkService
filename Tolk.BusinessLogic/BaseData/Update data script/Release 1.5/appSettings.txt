@@ -1,7 +1,0 @@
-
-Sätt:
-
-"EnableOrderGroups": "true",
-
-Kolla för säkerhets skull i db att alla users har de för Group tillagda i 
-UserNotificationSettings
