@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Services
@@ -11,13 +8,12 @@ namespace Tolk.BusinessLogic.Services
     public class DateCalculationService
     {
         private readonly TolkDbContext _tolkDbContext;
-        private readonly IMemoryCache _cache;
-        private const string holidaysCacheKey = nameof(holidaysCacheKey);
+        private readonly CacheService _cacheService;
 
-        public DateCalculationService(TolkDbContext tolkDbContext, IMemoryCache cache = null)
+        public DateCalculationService(TolkDbContext tolkDbContext, CacheService cacheService)
         {
             _tolkDbContext = tolkDbContext;
-            _cache = cache;
+            _cacheService = cacheService;
         }
 
         public int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
@@ -55,7 +51,7 @@ namespace Tolk.BusinessLogic.Services
                 rest -= firstDate.DayOfWeek == DayOfWeek.Sunday ? 1 : 0;
             }
 
-            rest -= Holidays.Where(h =>
+            rest -= _cacheService.Holidays.Where(h =>
             NonWorkingHolidays.Contains(h.DateType)
             && h.Date >= firstDate && h.Date < secondDate)
             .AsEnumerable()
@@ -65,22 +61,6 @@ namespace Tolk.BusinessLogic.Services
             return fullWeeks * 5 + rest;
         }
 
-        public IEnumerable<Holiday> Holidays
-        {
-            get
-            {
-                if (_cache == null)
-                {
-                    return _tolkDbContext.Holidays.ToList().AsReadOnly();
-                }
-                if (!_cache.TryGetValue(holidaysCacheKey, out IEnumerable<Holiday> holidays))
-                {
-                    holidays = _tolkDbContext.Holidays.ToList().AsReadOnly();
-                    _cache.Set(holidaysCacheKey, holidays, DateTimeOffset.Now.AddDays(1));
-                }
-                return holidays;
-            }
-        }
 
         /// <summary>
         /// Returns -1 if firstDate > secondDate
@@ -143,7 +123,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 return false;
             }
-            if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == testDate.Date))
+            if (_cacheService.Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == testDate.Date))
             {
                 return false;
             }
@@ -173,7 +153,7 @@ namespace Tolk.BusinessLogic.Services
                         break;
                 }
 
-                if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
+                if (_cacheService.Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
                 {
                     date = date.AddDays(1);
                     continue;
@@ -204,7 +184,7 @@ namespace Tolk.BusinessLogic.Services
                     default:
                         break;
                 }
-                if (Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
+                if (_cacheService.Holidays.Any(h => NonWorkingHolidays.Contains(h.DateType) && h.Date == date.Date))
                 {
                     date = date.AddDays(-1);
                     continue;

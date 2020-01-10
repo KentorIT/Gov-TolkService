@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -15,27 +16,26 @@ namespace Tolk.BusinessLogic.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly TolkOptions _options;
-        private readonly IMemoryCache _cache;
+        private readonly CacheService _cacheService;
         private readonly DateCalculationService _dateCalculationService;
 
-        private const string brokerFeesCacheKey = nameof(brokerFeesCacheKey);
 
         public PriceCalculationService(TolkDbContext dbContext,
             DateCalculationService dateCalculationService,
             IOptions<TolkOptions> options,
-            IMemoryCache cache = null
+            CacheService cacheService
             )
         {
             _dbContext = dbContext;
             _dateCalculationService = dateCalculationService;
             _options = options?.Value;
-            _cache = cache;
+            _cacheService = cacheService;
         }
 
-        public PriceCalculationService(TolkDbContext tolkDbContext = null, IMemoryCache cache = null)
+        public PriceCalculationService(TolkDbContext tolkDbContext, CacheService cacheService)
         {
             _dbContext = tolkDbContext;
-            _cache = cache;
+            _cacheService = cacheService;
         }
 
         public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
@@ -253,9 +253,9 @@ namespace Tolk.BusinessLogic.Services
                 //One broker fee per day
                 int days = GetNoOfDays(startAt, endAt);
                 //if there is no priceRowBrokerFee for the orderStart, try to get if for the orderCreatedDate (contract has ended, but order was created when contract/ranking was valid)
-                var priceRow = BrokerFeePriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date).Count() == 1 ?
-                    BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date) :
-                    BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= orderCreatedDate.Date && br.EndDate.Date >= orderCreatedDate.Date);
+                var priceRow = _cacheService.BrokerFeePriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date).Count() == 1 ?
+                    _cacheService.BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date) :
+                    _cacheService.BrokerFeePriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= orderCreatedDate.Date && br.EndDate.Date >= orderCreatedDate.Date);
 
                 return new PriceRowBase
                 {
@@ -511,7 +511,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 return _dbContext.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
             }
-            return _dateCalculationService.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
+            return _cacheService.Holidays.Where(h => h.Date.Date == date.Date)?.Select(h => h.DateType);
         }
 
         public static DisplayPriceInformation GetPriceInformationToDisplay(IEnumerable<PriceRowBase> priceRows)
@@ -579,36 +579,6 @@ namespace Tolk.BusinessLogic.Services
         {
             double noOfHours = (double)maxMinutes / 60;
             return noOfHours == 1 ? $"0-{noOfHours}" : $"{noOfHours - 0.5}-{noOfHours}";
-        }
-
-        public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
-        {
-            get
-            {
-                if (_cache == null)
-                {
-                    return GetBrokerFeePriceList();
-                }
-                if (!_cache.TryGetValue(brokerFeesCacheKey, out IEnumerable<PriceInformationBrokerFee> brokerFees))
-                {
-                    brokerFees = GetBrokerFeePriceList();
-                    _cache.Set(brokerFeesCacheKey, brokerFees);
-                }
-                return brokerFees;
-            }
-        }
-
-        private List<PriceInformationBrokerFee> GetBrokerFeePriceList()
-        {
-            List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceListRowType == PriceListRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
-            List<Ranking> ranks = _dbContext.Rankings.ToList();
-
-            List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
-            foreach (var item in prices)
-            {
-                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee { BrokerFee = r.BrokerFee, FirstValidDateRanking = r.FirstValidDate, LastValidDateRanking = r.LastValidDate, RankingId = r.RankingId, CompetenceLevel = item.CompetenceLevel, EndDatePriceList = item.EndDate, BasePrice = item.Price, PriceListRowId = item.PriceListRowId.Value, StartDatePriceList = item.StartDate, RoundDecimals = _options == null ? true : _options.RoundPriceDecimals }).ToList());
-            }
-            return priceListBrokerFee;
         }
     }
 }

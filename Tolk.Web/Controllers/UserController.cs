@@ -31,6 +31,7 @@ namespace Tolk.Web.Controllers
         private readonly UserService _userService;
         private readonly IAuthorizationService _authorizationService;
         private readonly INotificationService _notificationService;
+        private readonly CacheService _cacheService;
         private readonly TolkOptions _options;
 
         public UserController(
@@ -40,6 +41,7 @@ namespace Tolk.Web.Controllers
             UserService userService,
             IAuthorizationService authorizationService,
             INotificationService notificationService,
+            CacheService cacheService,
             IOptions<TolkOptions> options
 )
         {
@@ -50,6 +52,7 @@ namespace Tolk.Web.Controllers
             _authorizationService = authorizationService;
             _notificationService = notificationService;
             _options = options?.Value;
+            _cacheService = cacheService;
         }
         private int ImpersonatorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.Impersonator).Id;
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
@@ -594,7 +597,7 @@ namespace Tolk.Web.Controllers
                             }
                             await _dbContext.SaveChangesAsync();
                             transaction.Complete();
-                            _notificationService.FlushNotificationSettings();
+                            await _cacheService.Flush(CacheKeys.BrokerSettings);
                             return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                         }
                         return View(model);

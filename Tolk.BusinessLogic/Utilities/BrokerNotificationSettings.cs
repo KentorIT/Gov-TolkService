@@ -1,7 +1,9 @@
-﻿using Tolk.BusinessLogic.Enums;
+﻿using System;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Utilities
 {
+    [Serializable]
     public class BrokerNotificationSettings
     {
         public NotificationType NotificationType { get; set; }

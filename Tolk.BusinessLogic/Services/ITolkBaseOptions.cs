@@ -13,5 +13,6 @@ namespace Tolk.BusinessLogic.Services
         StatusCheckerSettings StatusChecker { get; }
         bool RunEntityScheduler { get; }
         bool AllowDeclineExtraInterpreterOnRequestGroups { get; }
+        bool RoundPriceDecimals { get; }
     }
 }

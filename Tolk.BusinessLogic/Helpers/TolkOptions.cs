@@ -15,8 +15,6 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool EnableOrderGroups { get; set; }
 
-        public bool RoundPriceDecimals { get; set; }
-
         public long CombinedMaxSizeAttachments { get; set; }
 
         public bool EnableRegisterUser { get; set; }

@@ -15,16 +15,16 @@ namespace Tolk.Web.Controllers
         private const string ContractNumber = "23.3-9066-16";
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
-        private readonly PriceCalculationService _priceCalculationService;
+        private readonly CacheService _cacheService;
 
         public ContractController(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            PriceCalculationService priceCalculationService)
+            CacheService cacheService)
         {
             _dbContext = dbContext;
             _clock = clock;
-            _priceCalculationService = priceCalculationService;
+            _cacheService = cacheService;
         }
 
         public IActionResult Index()
@@ -35,7 +35,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public IActionResult List()
         {
-            var brokerFeePrices = _priceCalculationService.BrokerFeePriceList;
+            var brokerFeePrices = _cacheService.BrokerFeePriceList;
             return View(new ContractListModel
             {
                 ItemsPerBroker = _dbContext.Brokers.Include(b => b.Rankings)

@@ -31,5 +31,6 @@ namespace Tolk.BusinessLogic.Services
         public bool RunEntityScheduler => _options?.RunEntityScheduler ?? true;
 
         public bool AllowDeclineExtraInterpreterOnRequestGroups => _options.AllowDeclineExtraInterpreterOnRequestGroups;
+        public bool RoundPriceDecimals => _options.RoundPriceDecimals;
     }
 }

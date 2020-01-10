@@ -10,6 +10,5 @@ namespace Tolk.Web.Helpers
         /// </summary>
         [DefaultValue(null)]
         public string AdditionalDataAttribute { get; set; } = null;
-
     }
 }

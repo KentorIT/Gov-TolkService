@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,11 +19,9 @@ namespace Tolk.BusinessLogic.Services
         private readonly TolkDbContext _dbContext;
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
-        private readonly IMemoryCache _cache;
+        private readonly CacheService _cacheService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly string _senderPrepend;
-
-        private const string brokerSettingsCacheKey = nameof(brokerSettingsCacheKey);
 
         private const string requireApprovementText = "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
 
@@ -30,14 +29,14 @@ namespace Tolk.BusinessLogic.Services
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
             ISwedishClock clock,
-            IMemoryCache cache,
+            CacheService cacheService,
             ITolkBaseOptions tolkBaseOptions
         )
         {
             _dbContext = dbContext;
             _logger = logger;
             _clock = clock;
-            _cache = cache;
+            _cacheService = cacheService;
             _tolkBaseOptions = tolkBaseOptions;
             _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions?.Env.DisplayName) ? $"{_tolkBaseOptions?.Env.DisplayName} " : string.Empty;
         }
@@ -1066,12 +1065,6 @@ Sammanställning:
             return true;
         }
 
-        //SHOULD PROBABLY NOT BE HERE AT ALL...
-        public void FlushNotificationSettings()
-        {
-            _cache.Remove(brokerSettingsCacheKey);
-        }
-
         private string GetPossibleInfoNotValidatedInterpreter(Request request)
         {
             var shouldCheckValidationCode = _tolkBaseOptions.Tellus.IsActivated && request.InterpreterCompetenceVerificationResultOnAssign.HasValue;
@@ -1187,37 +1180,14 @@ Sammanställning:
 
         private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type, NotificationChannel channel)
         {
-            if (!BrokerNotificationSettings.Any(b => b.BrokerId == brokerId) && channel == NotificationChannel.Email)
+            if (!_cacheService.BrokerNotificationSettings.Any(b => b.BrokerId == brokerId) && channel == NotificationChannel.Email)
             {
                 return new BrokerNotificationSettings
                 {
                     ContactInformation = _dbContext.Brokers.Single(b => b.BrokerId == brokerId).EmailAddress,
                 };
             }
-            return BrokerNotificationSettings.SingleOrDefault(b => b.BrokerId == brokerId && b.NotificationType == type && b.NotificationChannel == channel);
-        }
-
-        private IEnumerable<BrokerNotificationSettings> BrokerNotificationSettings
-        {
-            get
-            {
-                if (!_cache.TryGetValue(brokerSettingsCacheKey, out IEnumerable<BrokerNotificationSettings> brokerNotificationSettings))
-                {
-                    brokerNotificationSettings = _dbContext.Users.Include(u => u.NotificationSettings)
-                        .Where(u => u.BrokerId != null && u.IsApiUser)
-                        .SelectMany(u => u.NotificationSettings)
-                        .Select(n => new BrokerNotificationSettings
-                        {
-                            BrokerId = n.User.BrokerId.Value,
-                            ContactInformation = n.ConnectionInformation ?? (n.NotificationChannel == NotificationChannel.Email ? n.User.Email : null),
-                            NotificationChannel = n.NotificationChannel,
-                            NotificationType = n.NotificationType,
-                            RecipientUserId = n.UserId
-                        }).ToList().AsReadOnly();
-                    _cache.Set(brokerSettingsCacheKey, brokerNotificationSettings, DateTimeOffset.Now.AddDays(1));
-                }
-                return brokerNotificationSettings;
-            }
+            return _cacheService.BrokerNotificationSettings.SingleOrDefault(b => b.BrokerId == brokerId && b.NotificationType == type && b.NotificationChannel == channel);
         }
 
         private void CreateWebHookCall(WebHookPayloadBaseModel payload, string recipientUrl, NotificationType type, int userId)

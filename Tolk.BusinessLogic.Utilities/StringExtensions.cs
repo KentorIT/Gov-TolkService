@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -67,6 +69,34 @@ namespace Tolk.BusinessLogic.Utilities
         public static DateTime ToSwedishDateTime(this string value)
         {
             return Convert.ToDateTime(value, CultureInfo.GetCultureInfo("sv-SE"));
+        }
+
+        public static T FromByteArray<T>(this byte[] data)
+        {
+            if (data == null || data.Length == 0)
+            {
+                return default(T);
+            }
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                object obj = bf.Deserialize(ms);
+                return (T)obj;
+            }
+        }
+
+        public static byte[] ToByteArray<T>(this T data)
+        {
+            if (data == null)
+            {
+                return null;
+            }
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream ms = new MemoryStream())
+            {
+                bf.Serialize(ms, data);
+                return ms.ToArray();
+            }
         }
     }
 }

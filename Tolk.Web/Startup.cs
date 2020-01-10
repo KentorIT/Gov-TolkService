@@ -82,7 +82,7 @@ namespace Tolk.Web
                 .AddDefaultTokenProviders()
                 .AddTokenProvider<ConfirmEmailDataProtectorTokenProvider<AspNetUser>>(EmailConfirmationTokenProviderName);
 
-            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
             services.AddScoped<SelectListService>();
 
             services.AddTransient<HelpLinkService>();

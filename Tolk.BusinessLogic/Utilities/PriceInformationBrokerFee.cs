@@ -5,6 +5,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.BusinessLogic.Utilities
 {
+    [Serializable]
     public class PriceInformationBrokerFee
     {
         public int PriceListRowId { get; set; }

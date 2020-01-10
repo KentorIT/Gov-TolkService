@@ -10,5 +10,6 @@
         public StatusCheckerSettings StatusChecker { get; set; }
         public ExternalLinksSettings ExternalLinks { get; set; }
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; } = false;
+        public bool RoundPriceDecimals { get; set; } = true;
     }
 }

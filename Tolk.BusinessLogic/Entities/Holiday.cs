@@ -5,6 +5,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
+    [Serializable]
     public class Holiday
     {
         [Column(TypeName = "date")]

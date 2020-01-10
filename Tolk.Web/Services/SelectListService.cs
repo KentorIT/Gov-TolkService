@@ -1,11 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -19,18 +24,18 @@ namespace Tolk.Web.Services
 {
     public class SelectListService
     {
-        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cache;
         private readonly TolkDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private const string languagesSelectListKey = nameof(languagesSelectListKey);
         private const string brokersSelectListKey = nameof(brokersSelectListKey);
-        private const string impersonationTargets = nameof(impersonationTargets);
         private const string customersSelectListKey = nameof(customersSelectListKey);
         private const string organisationsSelectListKey = nameof(organisationsSelectListKey);
+        private static readonly DistributedCacheEntryOptions cacheOptions = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(15));
 
         public SelectListService(
-            IMemoryCache cache,
+            IDistributedCache cache,
             TolkDbContext dbContext,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -227,14 +232,15 @@ namespace Tolk.Web.Services
             return reports;
         }
 
-        public IEnumerable<SelectListItem> Languages
+        public IEnumerable<ExtendedSelectListItem> Languages
         {
             get
             {
-                if (!_cache.TryGetValue(languagesSelectListKey, out IEnumerable<SelectListItem> items))
+                var items = _cache.Get(languagesSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
+                if (items == null)
                 {
                     items = _dbContext.Languages.Where(l => l.Active)
-                        .OrderBy(l => l.Name).Select(l => new ExtendedSelectListItem
+                        .OrderBy(l => l.Name).Select(l => new SerializableExtendedSelectListItem
                         {
                             Value = l.LanguageId.ToSwedishString(),
                             Text = l.Name,
@@ -242,10 +248,10 @@ namespace Tolk.Web.Services
                         })
                     .ToList().AsReadOnly();
 
-                    _cache.Set(languagesSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(languagesSelectListKey, items.ToByteArray(), cacheOptions);
                 }
 
-                return items;
+                return items.GetExtendedSelectListItems();
             }
         }
 
@@ -278,20 +284,21 @@ namespace Tolk.Web.Services
         {
             get
             {
-                if (!_cache.TryGetValue(brokersSelectListKey, out IEnumerable<SelectListItem> items))
+                var items = _cache.Get(brokersSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
+                if (items == null)
                 {
                     items = _dbContext.Brokers.OrderBy(b => b.Name)
-                        .Select(b => new SelectListItem
+                        .Select(b => new SerializableExtendedSelectListItem
                         {
                             Text = b.Name,
                             Value = b.BrokerId.ToSwedishString(),
                         })
                     .ToList().AsReadOnly();
 
-                    _cache.Set(brokersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(brokersSelectListKey, items.ToByteArray(), cacheOptions);
                 }
 
-                return items;
+                return items.GetSelectListItems();
             }
         }
 
@@ -299,21 +306,22 @@ namespace Tolk.Web.Services
         {
             get
             {
-                if (!_cache.TryGetValue(organisationsSelectListKey, out IEnumerable<ExtendedSelectListItem> items))
+                var items = _cache.Get(organisationsSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
+                if (items == null)
                 {
                     items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
-                        .Select(c => new ExtendedSelectListItem
+                        .Select(c => new SerializableExtendedSelectListItem
                         {
                             Text = $"{c.Name} ({OrganisationType.GovernmentBody.GetDescription()})",
                             Value = $"{c.CustomerOrganisationId.ToSwedishString()}_{OrganisationType.GovernmentBody}",
                             AdditionalDataAttribute = OrganisationType.GovernmentBody.ToString(),
                         }).Union(_dbContext.Brokers.OrderBy(c => c.Name)
-                        .Select(b => new ExtendedSelectListItem
+                        .Select(b => new SerializableExtendedSelectListItem
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
                             Value = $"{b.BrokerId.ToSwedishString()}_{OrganisationType.Broker }",
                             AdditionalDataAttribute = OrganisationType.Broker.ToString(),
-                        }).Union(new ExtendedSelectListItem
+                        }).Union(new SerializableExtendedSelectListItem
                         {
                             Text = "Kammarkollegiet",
                             Value = $"0_{OrganisationType.Owner }",
@@ -321,9 +329,9 @@ namespace Tolk.Web.Services
                         }.WrapInEnumerable()
                         ))
                         .ToList().AsReadOnly();
-                    _cache.Set(organisationsSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(organisationsSelectListKey, items.ToByteArray(), cacheOptions);
                 }
-                return items;
+                return items.GetExtendedSelectListItems();
             }
         }
 
@@ -339,6 +347,7 @@ namespace Tolk.Web.Services
                     })
                 .ToList().AsReadOnly();
         }
+
         public IEnumerable<SelectListItem> ParentOrganisations
         {
             get
@@ -359,47 +368,45 @@ namespace Tolk.Web.Services
         {
             get
             {
-                if (!_cache.TryGetValue(customersSelectListKey, out IEnumerable<SelectListItem> items))
+                var items = _cache.Get(customersSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
+                if (items == null)
                 {
                     items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
-                        .Select(c => new SelectListItem
+                        .Select(c => new SerializableExtendedSelectListItem
                         {
                             Text = c.Name,
                             Value = c.CustomerOrganisationId.ToSwedishString(),
                         })
                     .ToList().AsReadOnly();
 
-                    _cache.Set(customersSelectListKey, items, DateTimeOffset.Now.AddMinutes(15));
+                    _cache.Set(customersSelectListKey, items.ToByteArray(), cacheOptions);
                 }
 
-                return items;
+                return items.GetSelectListItems();
             }
         }
 
-        public IEnumerable<SelectListItem> ImpersonationList
+        public IEnumerable<ExtendedSelectListItem> ImpersonationList
         {
             get
             {
                 var currentUser = _httpContextAccessor.HttpContext.User;
                 var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier) : null;
-                yield return new SelectListItem()
+                yield return new ExtendedSelectListItem()
                 {
                     Text = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? $"{currentUser.FindFirstValue(TolkClaimTypes.PersonalName)} (Inloggad)",
                     Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
                     Selected = impersonatedUserId == null
                 };
-                if (!_cache.TryGetValue(impersonationTargets, out IEnumerable<SelectListItem> items))
-                {
-                    items = _dbContext.Users
+                IEnumerable<ExtendedSelectListItem> items = _dbContext.Users
                         .Where(u => u.IsActive && !u.IsApiUser &&
                         (u.InterpreterId.HasValue || u.BrokerId.HasValue || u.CustomerOrganisationId.HasValue))
-                        .Select(u => new SelectListItem
+                        .Select(u => new ExtendedSelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,
                             Value = u.Id.ToSwedishString(),
                             Selected = impersonatedUserId == u.Id.ToSwedishString(),
                         }).ToList();
-                }
                 foreach (var item in items)
                 {
                     yield return item;

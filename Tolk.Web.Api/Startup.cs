@@ -28,6 +28,7 @@ namespace Tolk.Web.Api
             services.Configure<TolkApiOptions>(Configuration);
             services.AddApplicationInsightsTelemetry();
 
+            services.AddDistributedMemoryCache();
             services.AddScoped<DateCalculationService>();
             services.AddScoped<RankingService>();
             services.AddScoped<INotificationService, NotificationService>();
@@ -44,6 +45,8 @@ namespace Tolk.Web.Api
             services.AddScoped<InterpreterService>();
             services.AddScoped<EmailService>();
             services.AddScoped<ApiOrderService>();
+            services.AddScoped<CacheService>();
+
             services.AddAuthentication(options =>
             {
                 // the scheme name has to match the value we're going to use in AuthenticationBuilder.AddScheme(...)
