@@ -284,6 +284,10 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
+            if (interpreter.InterpreterBrokerId == GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
+            {
+                throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
+            }
             Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
@@ -505,6 +509,13 @@ namespace Tolk.BusinessLogic.Services
             }
 
             return verificationResult;
+        }
+
+        public int? GetOtherInterpreterIdForSameOccasion(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(GetOtherInterpreterIdForSameOccasion), nameof(RequestService));
+            return request.Order.IsExtraInterpreterForOrder != null ? request.Order.IsExtraInterpreterForOrder.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId :
+                 request.Order.ExtraInterpreterOrder?.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
         private static bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)

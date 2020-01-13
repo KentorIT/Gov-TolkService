@@ -369,11 +369,11 @@ namespace Tolk.BusinessLogic.Entities
             }
             if (priceInformation == null)
             {
-                throw new ArgumentNullException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} saknar prisrader");
+                throw new ArgumentNullException($"Det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}, förfrågan saknar prisrader");
             }
             if (oldRequest == null)
             {
-                throw new ArgumentNullException($"Det gick inte att svara på ersättningsuppdraget, förfrågan med boknings-id {Order.OrderNumber} hittar ingen koppling till tidigare förfrågan");
+                throw new ArgumentNullException($"Det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till tidigare förfrågan");
             }
             ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
 

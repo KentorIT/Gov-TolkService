@@ -321,6 +321,8 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder).ThenInclude(r => r.Requests)
+                    .Include(r => r.Order).ThenInclude(o => o.ExtraInterpreterOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Order.CreatedByUser)
                     .Include(r => r.Order.ContactPersonUser)
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -380,10 +382,9 @@ namespace Tolk.Web.Api.Controllers
                         model.ExpectedTravelCostInfo);
                     await _dbContext.SaveChangesAsync();
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
-                    //TODO: Should log the acctual exception here!!
-                    return ReturnError(ErrorCodes.RequestNotInCorrectState);
+                    return ReturnError(ErrorCodes.RequestNotInCorrectState, ex.Message);
                 }
                 return Ok(new ChangeInterpreterResponse { InterpreterId = interpreter.InterpreterBrokerId });
             }

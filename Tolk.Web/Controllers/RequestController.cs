@@ -163,7 +163,7 @@ namespace Tolk.Web.Controllers
                 RequestModel model = GetModel(request);
                 model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
                 model.OldInterpreterId = request.InterpreterBrokerId;
-                model.OtherInterpreterId = GetOtherInterpreterIdForSameOccasion(request);
+                model.OtherInterpreterId = _requestService.GetOtherInterpreterIdForSameOccasion(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 return View("Process", model);
@@ -188,6 +188,8 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder).ThenInclude(r => r.Requests)
+                    .Include(r => r.Order).ThenInclude(o => o.ExtraInterpreterOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
                     .Include(r => r.Interpreter)
                     .Include(r => r.RequirementAnswers)
@@ -232,19 +234,26 @@ namespace Tolk.Web.Controllers
                             }
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
-                                await _requestService.ChangeInterpreter(
-                                    request,
-                                    _clock.SwedenNow,
-                                    User.GetUserId(),
-                                    User.TryGetImpersonatorId(),
-                                    interpreter,
-                                    model.InterpreterLocation.Value,
-                                    model.InterpreterCompetenceLevel.Value,
-                                    requirementAnswers,
-                                    model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
-                                    model.ExpectedTravelCosts,
-                                    model.ExpectedTravelCostInfo
-                                );
+                                try
+                                {
+                                    await _requestService.ChangeInterpreter(
+                                        request,
+                                        _clock.SwedenNow,
+                                        User.GetUserId(),
+                                        User.TryGetImpersonatorId(),
+                                        interpreter,
+                                        model.InterpreterLocation.Value,
+                                        model.InterpreterCompetenceLevel.Value,
+                                        requirementAnswers,
+                                        model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
+                                        model.ExpectedTravelCosts,
+                                        model.ExpectedTravelCostInfo
+                                    );
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                                }
                             }
                             else
                             {
@@ -286,7 +295,7 @@ namespace Tolk.Web.Controllers
                         {
                             requestModel.Status = RequestStatus.AcceptedNewInterpreterAppointed;
                             requestModel.OldInterpreterId = request.InterpreterBrokerId;
-                            requestModel.OtherInterpreterId = GetOtherInterpreterIdForSameOccasion(request);
+                            requestModel.OtherInterpreterId = _requestService.GetOtherInterpreterIdForSameOccasion(request);
                         }
 
                         //Set the temporarly saved Files if any
@@ -466,12 +475,6 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order)
                 .Include(r => r.RequestStatusConfirmations)
                 .SingleAsync(r => r.RequestId == requestId);
-        }
-
-        private static int? GetOtherInterpreterIdForSameOccasion(Request request)
-        {
-           return request.Order.IsExtraInterpreterForOrder != null ? request.Order.IsExtraInterpreterForOrder.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId :
-                request.Order.ExtraInterpreterOrder?.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
         private RequestModel GetModel(Request request, bool includeLog = false)
