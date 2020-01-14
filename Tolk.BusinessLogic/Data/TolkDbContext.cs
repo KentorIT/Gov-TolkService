@@ -593,6 +593,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
 
+        public DbSet<OrderAttachmentHistoryEntry> OrderAttachmentHistoryEntries { get; set; }
+
         public DbQuery<OrderListRow> OrderListRows { get; set; }
 
         public DbQuery<RequestListRow> RequestListRows { get; set; }

@@ -101,7 +101,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderAttachment> Attachments { get; set; }
 
         public List<OrderChangeLogEntry> OrderChangeLogEntry { get; set; }
-
+        
         #endregion
 
         #region customer information
@@ -253,9 +253,59 @@ namespace Tolk.BusinessLogic.Entities
                 UpdatedByUserId = userId,
                 UpdatedByImpersonatorId = impersonatingUserId,
                 OrderChangeLogType = OrderChangeLogType.ContactPerson,
-                OrderContactPersonHistory = new OrderContactPersonHistory{ PreviousContactPersonId = ContactPersonId }
+                OrderContactPersonHistory = new OrderContactPersonHistory { PreviousContactPersonId = ContactPersonId }
             });
             ContactPersonUser = newContactPerson;
+        }
+
+        public void ChangeAttachments(DateTimeOffset changedAt, int userId, int? impersonatingUserId, IEnumerable<int> updatedAttachments)
+        {
+            if (Status != OrderStatus.ResponseAccepted)
+            {
+                throw new InvalidOperationException($"Bokningen {OrderId} har fel status {Status} för att kunna uppdateras.");
+            }
+            //before changing the attachments
+            var orderAttachmentHistoryEntries = Attachments.Select(a => new OrderAttachmentHistoryEntry { AttachmentId = a.AttachmentId }).ToList();
+
+            List<int> ordergroupAttachmentIdsToRemove = Enumerable.Empty<int>().ToList();
+
+            IEnumerable<int> orderAttachmentIds = Attachments.Select(a => a.AttachmentId);
+            IEnumerable<int> orderGroupAttachmentIds = OrderGroupId.HasValue ? Group.Attachments.Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == OrderId)).Select(ag => ag.AttachmentId) : Enumerable.Empty<int>();
+            IEnumerable<int> oldOrderAttachmentIdsToCompare = orderAttachmentIds.Union(orderGroupAttachmentIds);
+
+            //all attachments removed
+            if (oldOrderAttachmentIdsToCompare.Any() && !updatedAttachments.Any())
+            {
+                Attachments.Clear();
+                if (orderGroupAttachmentIds.Any())
+                {
+                    ordergroupAttachmentIdsToRemove.AddRange(orderGroupAttachmentIds);
+                }
+            }
+            else
+            {
+                //add those that should be removed from group
+                ordergroupAttachmentIdsToRemove.AddRange(orderGroupAttachmentIds.Except(updatedAttachments));
+                //new added attachments
+                Attachments.AddRange(updatedAttachments.Except(oldOrderAttachmentIdsToCompare).Select(a => new OrderAttachment { AttachmentId = a }).ToList());
+                //removed from order
+                //var attachmentsToRemove = orderAttachmentIds.Except(updatedAttachments).ToList();
+                foreach (int i in orderAttachmentIds.Except(updatedAttachments).ToList())
+                {
+                    var attachment = Attachments.Single(a => a.AttachmentId == i);
+                    Attachments.Remove(attachment);
+                }
+            }
+
+            orderAttachmentHistoryEntries.AddRange(ordergroupAttachmentIdsToRemove.Select(a => new OrderAttachmentHistoryEntry { AttachmentId = a, OrderGroupAttachmentRemoved = true }));
+            OrderChangeLogEntry.Add(new OrderChangeLogEntry
+            {
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                UpdatedByImpersonatorId = impersonatingUserId,
+                OrderChangeLogType = OrderChangeLogType.Attachment,
+                OrderAttachmentHistoryEntries = orderAttachmentHistoryEntries
+            });
         }
 
         private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
@@ -281,7 +331,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != OrderStatus.ResponseAccepted)
             {
-                throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change order with this status.");
+                throw new InvalidOperationException($"Bokningen {OrderId} har fel status {Status} för att kunna uppdateras.");
             }
             var orderHistoryEntries = new List<OrderHistoryEntry>
             {
@@ -298,7 +348,7 @@ namespace Tolk.BusinessLogic.Entities
                 UpdatedByImpersonatorId = impersonatingUserId,
                 OrderChangeLogType = OrderChangeLogType.Other,
                 OrderHistories = orderHistoryEntries
-            }); ;
+            });
             Description = description;
             InvoiceReference = invoiceReference;
             UnitName = unitName;

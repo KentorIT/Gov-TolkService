@@ -587,6 +587,7 @@ namespace Tolk.BusinessLogic.Services
                     var attachmentsToDelete = await _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
+                                                                        .Where(a => !_tolkDbContext.OrderAttachmentHistoryEntries.Select(oah => oah.AttachmentId).Contains(a.AttachmentId))
                                                                         .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToListAsync();
                     if (attachmentsToDelete.Any())
                     {

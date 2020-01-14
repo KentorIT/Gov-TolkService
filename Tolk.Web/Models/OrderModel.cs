@@ -155,7 +155,7 @@ namespace Tolk.Web.Models
 
         public bool AllowEditContactPerson { get; set; } = false;
 
-        public bool AllowChange { get; set; } = false;
+        public bool AllowUpdate { get; set; } = false;
 
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;
@@ -515,8 +515,6 @@ namespace Tolk.Web.Models
             }
         }
 
-
-
         internal static OrderModel GetModelFromOrder(Order order, int? activeRequestId = null, bool displayForBroker = false)
         {
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
@@ -606,7 +604,9 @@ namespace Tolk.Web.Models
                         Id = a.Attachment.AttachmentId,
                         FileName = a.Attachment.FileName,
                         Size = a.Attachment.Blob.Length
-                    }).Union(order.Group?.Attachments.Select(a => new FileModel
+                    }).Union(order.Group?.Attachments
+                        .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
+                        .Select(a => new FileModel
                     {
                         Id = a.Attachment.AttachmentId,
                         FileName = a.Attachment.FileName,

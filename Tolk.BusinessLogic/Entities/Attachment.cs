@@ -40,6 +40,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderGroupAttachment> OrderGroups { get; set; }
 
+        public List<OrderAttachmentHistoryEntry> OrderAttachmentHistoryEntries { get; set; }
+
+
     }
 }
 

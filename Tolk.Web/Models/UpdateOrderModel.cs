@@ -8,7 +8,7 @@ using AutoMapper;
 namespace Tolk.Web.Models
 {
     [AutoMap(typeof(OrderModel))]
-    public class ChangeOrderModel : OrderModel
+    public class UpdateOrderModel : OrderModel
     {
 
         [Display(Name = "Inställelsesätt (enligt svar)")]
@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
         [SubItem]
         public string OffSiteContactInformation { get; set; }
 
-        internal bool IsOrderChanged(Order order)
+        internal bool IsOrderUpdated(Order order)
         {
             var interpreterlocation = order.InterpreterLocations.Where(i => i.InterpreterLocation == SelectedInterpreterLocation).Single();
             var offSitePhoneOrVideo = interpreterlocation.InterpreterLocation == InterpreterLocation.OffSitePhone || interpreterlocation.InterpreterLocation == InterpreterLocation.OffSitePhone;

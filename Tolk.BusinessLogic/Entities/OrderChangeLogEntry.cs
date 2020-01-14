@@ -31,5 +31,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderHistoryEntry> OrderHistories { get; set; }
 
         public OrderContactPersonHistory OrderContactPersonHistory { get; set; }
+
+        public List<OrderAttachmentHistoryEntry> OrderAttachmentHistoryEntries { get; set; }
     }
 }

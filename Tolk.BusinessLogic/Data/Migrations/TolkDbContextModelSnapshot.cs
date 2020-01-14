@@ -810,6 +810,27 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("OrderAttachments");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachmentHistoryEntry", b =>
+                {
+                    b.Property<int>("OrderAttachmentHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AttachmentId");
+
+                    b.Property<int>("OrderChangeLogEntryId");
+
+                    b.Property<bool?>("OrderGroupAttachmentRemoved");
+
+                    b.HasKey("OrderAttachmentHistoryEntryId");
+
+                    b.HasIndex("AttachmentId");
+
+                    b.HasIndex("OrderChangeLogEntryId");
+
+                    b.ToTable("OrderAttachmentHistoryEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
                 {
                     b.Property<int>("OrderChangeLogEntryId")
@@ -2526,6 +2547,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("Attachments")
                         .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachmentHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
+                        .WithMany()
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
+                        .WithMany()
+                        .HasForeignKey("OrderChangeLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

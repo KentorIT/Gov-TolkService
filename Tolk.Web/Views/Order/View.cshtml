@@ -186,10 +186,10 @@
                     <a class="btn btn-primary btn-large" href="@Url.Action("Print", new { id = Model.OrderId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
                 </div>
             }
-            @if (Model.AllowChange)
+            @if (Model.AllowUpdate)
             {
                 <div class="col-sm-4">
-                    <a class="btn btn-primary btn-large" href="@Url.Action("Change", new { id = Model.OrderId })">Ändra bokning &nbsp;<span class="center-glyphicon glyphicon glyphicon-edit"></span></a>
+                    <a class="btn btn-primary btn-large" href="@Url.Action("Update", new { id = Model.OrderId })">Ändra bokning &nbsp;<span class="center-glyphicon glyphicon glyphicon-edit"></span></a>
                 </div>
             }
             @if (Model.AllowProcessing)

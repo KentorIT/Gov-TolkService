@@ -535,6 +535,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
+                    .Include(o => o.Group).ThenInclude(og => og.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
                     .SingleOrDefault(o => o.OrderNumber == orderNumber &&
                         //Must have a request connected to the order for the broker, any status...
                         o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
@@ -546,9 +547,16 @@ namespace Tolk.Web.Api.Controllers
                 var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
                 if (attachment == null)
                 {
+                    attachment = order.OrderGroupId.HasValue ? 
+                        order.Group.Attachments
+                        .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId) 
+                            && oa.AttachmentId == attachmentId).SingleOrDefault(a => a.AttachmentId == attachmentId)?.Attachment 
+                        : null;
+                }
+                if (attachment == null)
+                {
                     return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
-
                 return Ok(new FileResponse
                 {
                     FileBase64 = Convert.ToBase64String(attachment.Blob)

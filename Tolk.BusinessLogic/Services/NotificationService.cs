@@ -1343,7 +1343,14 @@ Sammanställning:
                 {
                     AttachmentId = a.AttachmentId,
                     FileName = a.Attachment.FileName
-                }),
+                })
+                .Union(order.Group?.Attachments
+                .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
+                .Select(a => new AttachmentInformationModel
+                {
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.Attachment.FileName
+                }) ?? Enumerable.Empty<AttachmentInformationModel>()).ToList(),
                 PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
         }
