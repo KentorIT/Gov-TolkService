@@ -289,7 +289,6 @@ namespace Tolk.BusinessLogic.Entities
                 //new added attachments
                 Attachments.AddRange(updatedAttachments.Except(oldOrderAttachmentIdsToCompare).Select(a => new OrderAttachment { AttachmentId = a }).ToList());
                 //removed from order
-                //var attachmentsToRemove = orderAttachmentIds.Except(updatedAttachments).ToList();
                 foreach (int i in orderAttachmentIds.Except(updatedAttachments).ToList())
                 {
                     var attachment = Attachments.Single(a => a.AttachmentId == i);
@@ -304,7 +303,8 @@ namespace Tolk.BusinessLogic.Entities
                 UpdatedByUserId = userId,
                 UpdatedByImpersonatorId = impersonatingUserId,
                 OrderChangeLogType = OrderChangeLogType.Attachment,
-                OrderAttachmentHistoryEntries = orderAttachmentHistoryEntries
+                OrderAttachmentHistoryEntries = orderAttachmentHistoryEntries, 
+                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
             });
         }
 
@@ -347,7 +347,8 @@ namespace Tolk.BusinessLogic.Entities
                 UpdatedByUserId = userId,
                 UpdatedByImpersonatorId = impersonatingUserId,
                 OrderChangeLogType = OrderChangeLogType.Other,
-                OrderHistories = orderHistoryEntries
+                OrderHistories = orderHistoryEntries,
+                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
             });
             Description = description;
             InvoiceReference = invoiceReference;

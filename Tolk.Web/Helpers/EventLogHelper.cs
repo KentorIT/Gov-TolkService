@@ -87,32 +87,60 @@ namespace Tolk.Web.Helpers
                     i++;
                 }
             }
+            // Change of attachments 
+            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment).Any())
             {
-                if (terminatingRequest != null)
+                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment).OrderBy(ch => ch.LoggedAt))
                 {
-                    // No one accepted order
-                    if (order.Status == OrderStatus.NoBrokerAcceptedOrder)
+                    eventLog.Add(new EventLogEntryModel
                     {
-                        eventLog.Add(new EventLogEntryModel
-                        {
-                            Weight = 200,
-                            Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
-                                ? terminatingRequest.ExpiresAt ?? terminatingRequest.Order.StartAt
-                                : terminatingRequest.AnswerDate.Value,
-                            EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
-                            Actor = "Systemet",
-                        });
-                    }
-                    else if (order.Status == OrderStatus.NoDeadlineFromCustomer)
+                        Timestamp = oc.LoggedAt,
+                        EventDetails = "Bifogade bilagor för bokning ändrade",
+                        Actor = oc.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                    });
+                }
+            }
+            // Change of other order fields
+            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other).Any())
+            {
+                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other).OrderBy(ch => ch.LoggedAt))
+                {
+                    eventLog.Add(new EventLogEntryModel
                     {
-                        eventLog.Add(new EventLogEntryModel
-                        {
-                            Weight = 200,
-                            Timestamp = terminatingRequest.Order.StartAt,
-                            EventDetails = "Bokningsförfrågan avslutad, pga utebliven sista svarstid från myndighet",
-                            Actor = "Systemet",
-                        });
-                    }
+                        Timestamp = oc.LoggedAt,
+                        EventDetails = "Bokning ändrad",
+                        Actor = oc.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                    });
+                }
+            }
+            if (terminatingRequest != null)
+            {
+                // No one accepted order
+                if (order.Status == OrderStatus.NoBrokerAcceptedOrder)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Weight = 200,
+                        Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
+                            ? terminatingRequest.ExpiresAt ?? terminatingRequest.Order.StartAt
+                            : terminatingRequest.AnswerDate.Value,
+                        EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
+                        Actor = "Systemet",
+                    });
+                }
+                else if (order.Status == OrderStatus.NoDeadlineFromCustomer)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Weight = 200,
+                        Timestamp = terminatingRequest.Order.StartAt,
+                        EventDetails = "Bokningsförfrågan avslutad, pga utebliven sista svarstid från myndighet",
+                        Actor = "Systemet",
+                    });
                 }
             }
             if (order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
@@ -131,7 +159,7 @@ namespace Tolk.Web.Helpers
 
         private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
         {
-            
+
             var orderContactPersons = order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
             //try find next row if any else take info from Order.ContactPersonUser
             string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
@@ -172,6 +200,40 @@ namespace Tolk.Web.Helpers
                     EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter { request.Order.ReplacingOrder.OrderNumber })" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
+            }
+            //Order change history just in detailed view (for broker, customer has its' own) and do not repeat for every request (not a replacing request)
+            if (isRequestDetailView && !request.ReplacingRequestId.HasValue)
+            {
+                // Change of attachments 
+                if (request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.BrokerId == request.Ranking.BrokerId).Any())
+                {
+                    foreach (OrderChangeLogEntry oc in request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.BrokerId == request.Ranking.BrokerId).OrderBy(ch => ch.LoggedAt))
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = oc.LoggedAt,
+                            EventDetails = "Bifogade bilagor för bokningsförfrågan ändrade",
+                            Actor = oc.UpdatedByUser.FullName,
+                            Organization = customerName,
+                            ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                        });
+                    }
+                }
+                // Change of other order fields
+                if (request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.BrokerId == request.Ranking.BrokerId).Any())
+                {
+                    foreach (OrderChangeLogEntry oc in request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.BrokerId == request.Ranking.BrokerId).OrderBy(ch => ch.LoggedAt))
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = oc.LoggedAt,
+                            EventDetails = "Bokningsförfrågan ändrad",
+                            Actor = oc.UpdatedByUser.FullName,
+                            Organization = customerName,
+                            ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                        });
+                    }
+                }
             }
             if (request.RequestUpdateLatestAnswerTime != null)
             {

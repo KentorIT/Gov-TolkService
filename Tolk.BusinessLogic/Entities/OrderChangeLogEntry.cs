@@ -20,6 +20,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTimeOffset LoggedAt { get; set; }
 
+        public int? BrokerId { get; set; }
+
         public Order Order { get; set; }
 
         [ForeignKey(nameof(UpdatedByUserId))]
@@ -27,6 +29,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(UpdatedByImpersonatorId))]
         public AspNetUser UpdatedByImpersonatorUser { get; set; }
+
+        [ForeignKey(nameof(BrokerId))]
+        public Broker Broker { get; set; }
 
         public List<OrderHistoryEntry> OrderHistories { get; set; }
 

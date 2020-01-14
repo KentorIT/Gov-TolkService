@@ -837,6 +837,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("BrokerId");
+
                     b.Property<DateTimeOffset>("LoggedAt");
 
                     b.Property<int>("OrderChangeLogType");
@@ -848,6 +850,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("UpdatedByUserId");
 
                     b.HasKey("OrderChangeLogEntryId");
+
+                    b.HasIndex("BrokerId");
 
                     b.HasIndex("OrderId");
 
@@ -2565,6 +2569,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
                 {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
+                        .WithMany()
+                        .HasForeignKey("BrokerId");
+
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("OrderChangeLogEntry")
                         .HasForeignKey("OrderId")
