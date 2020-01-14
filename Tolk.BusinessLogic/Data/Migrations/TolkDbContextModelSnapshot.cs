@@ -820,7 +820,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("OrderChangeLogEntryId");
 
-                    b.Property<bool?>("OrderGroupAttachmentRemoved");
+                    b.Property<bool>("OrderGroupAttachmentRemoved");
 
                     b.HasKey("OrderAttachmentHistoryEntryId");
 
@@ -2553,12 +2553,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachmentHistoryEntry", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
-                        .WithMany()
+                        .WithMany("OrderAttachmentHistoryEntries")
                         .HasForeignKey("AttachmentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
-                        .WithMany()
+                        .WithMany("OrderAttachmentHistoryEntries")
                         .HasForeignKey("OrderChangeLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
