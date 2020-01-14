@@ -114,7 +114,7 @@ namespace Tolk.Web
             {
                 services.AddSingleton<EntityScheduler>();
             }
-
+            services.AddAntiforgery(opts => opts.Cookie.Name = $"AntiForgery.Kammarkollegiet.Tolk");
             services.AddTolkBusinessLogicServices();
             services.RegisterDataTables();
         }
