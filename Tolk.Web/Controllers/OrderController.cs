@@ -363,7 +363,7 @@ namespace Tolk.Web.Controllers
                         order = GetOrder(model.OrderId.Value);
                         if (orderFieldsUpdated || attachmentChanged)
                         {
-                            _notificationService.OrderUpdated(order);
+                            _notificationService.OrderUpdated(order, attachmentChanged, orderFieldsUpdated);
                         }
                         if (contactpersonChanged)
                         {

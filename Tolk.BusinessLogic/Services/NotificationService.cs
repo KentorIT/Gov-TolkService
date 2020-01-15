@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -122,15 +121,19 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void OrderUpdated(Order order)
+        public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(OrderUpdated), nameof(NotificationService));
+
             var request = order.Requests.OrderBy(r => r.RequestId).Last();
+            var attachmentText = attachmentChanged ? "Bifogade filer har ändrats.\n\n" : string.Empty;
+            var orderFieldText = orderFieldsUpdated ? GetOrderChangeText(order, request) : string.Empty;
+
             var orderNumber = order.OrderNumber;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
             if (email != null)
             {
-                string body = $"Ert tolkuppdrag med boknings-ID {orderNumber} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information. Klicka på länken nedan för att se tolkuppdraget med den nya informationen.";
+                string body = $"Ert tolkuppdrag med boknings-ID {orderNumber} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information.\n\n {attachmentText} {orderFieldText}\nKlicka på länken nedan för att se det uppdaterade tolkuppdraget i sin helhet.";
                 CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} har uppdaterats",
                     body + GoToRequestPlain(request.RequestId),
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
@@ -146,6 +149,55 @@ namespace Tolk.BusinessLogic.Services
                     webhook.RecipientUserId
                 );
             }
+        }
+
+        private string GetOrderChangeText(Order order, Request request)
+        {
+            StringBuilder sb = new StringBuilder("Följande fält har ändrats på bokningen:\n");
+            var lastEntry = order.OrderChangeLogEntry.OrderBy(oc => oc.OrderChangeLogEntryId)
+                .Last(o => o.OrderChangeLogType == OrderChangeLogType.Other);
+            //get the interpreterlocation from request to get the correct string from order.InterpreterLocations to compare to
+            var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
+
+            string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
+                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
+                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().Street;
+
+            foreach (OrderHistoryEntry oh in lastEntry.OrderHistories)
+            {
+                switch (oh.ChangeOrderType)
+                {
+                    case ChangeOrderType.LocationStreet:
+                        sb.Append(GetOrderFieldText(interpreterLocationText, oh));
+                        break;
+                    case ChangeOrderType.OffSiteContactInformation:
+                        sb.Append(GetOrderFieldText(interpreterLocationText, oh));
+                        break;
+                    case ChangeOrderType.Description:
+                        sb.Append(GetOrderFieldText(order.Description, oh));
+                        break;
+                    case ChangeOrderType.InvoiceReference:
+                        sb.Append(GetOrderFieldText(order.InvoiceReference, oh));
+                        break;
+                    case ChangeOrderType.CustomerReferenceNumber:
+                        sb.Append(GetOrderFieldText(order.CustomerReferenceNumber, oh));
+                        break;
+                    case ChangeOrderType.CustomerDepartment:
+                        sb.Append(GetOrderFieldText(order.UnitName, oh));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            return sb.ToString();
+        }
+
+        private static string GetOrderFieldText(string newValue, OrderHistoryEntry oh)
+        {
+            return (string.IsNullOrEmpty(newValue) && string.IsNullOrEmpty(oh.Value)) ? string.Empty :
+                string.IsNullOrEmpty(newValue) ? $"{oh.ChangeOrderType.GetDescription()} - Fältet är nu tomt\n" :
+                newValue.Equals(oh.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty :
+                $"{oh.ChangeOrderType.GetDescription()} - Nytt värde: {newValue}\n";
         }
 
         public void OrderReplacementCreated(Order order)
