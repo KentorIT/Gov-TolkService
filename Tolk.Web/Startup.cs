@@ -20,6 +20,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web
 {
@@ -124,7 +125,8 @@ namespace Tolk.Web
             IApplicationBuilder app,
             IHostingEnvironment env,
             TolkDbContext dbContext,
-            RoleManager<IdentityRole<int>> roleManager
+            RoleManager<IdentityRole<int>> roleManager, 
+            ILoggerFactory loggerFactory
             )
         {
             if (env.IsDevelopment() && false)
@@ -136,6 +138,10 @@ namespace Tolk.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+            }
+            if (Configuration.GetSection("EnableFileLogging").Get<bool>())
+            {
+                loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Log4NetProviderOptions>());
             }
             var autoMigrate = Configuration.GetSection("Database")["AutoMigrateOnStartup"];
 
