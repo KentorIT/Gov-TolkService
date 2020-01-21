@@ -91,22 +91,22 @@
                     </div>
                     @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
                     {
-                <div class="row">
-                    <div class="col-sm-4">
-                        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-                        {
-                            @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-                        }
-                        else
-                        {
-                            <label>Bifogade filer</label>
-                            <div class="no-value-info">Inga filer har bifogats</div>
-                        }
-                    </div>
-                    <div class="col-sm-8">
-                        <display-entry asp-for="AllowExceedingTravelCost" />
-                    </div>
-                </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                                {
+                                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                                }
+                                else
+                                {
+                                    <label>Bifogade filer</label>
+                                    <div class="no-value-info">Inga filer har bifogats</div>
+                                }
+                            </div>
+                            <div class="col-sm-8">
+                                <display-entry asp-for="AllowExceedingTravelCost" />
+                            </div>
+                        </div>
                     }
                     <div class="row">
                         <div class="col-sm-4">
@@ -177,7 +177,7 @@
                         </div>
                     </div>
                     <div class="row">
-                       
+
                         <div class="col-sm-4">
                             @if (Model.CreatorIsInterpreterUser != null && Model.CreatorIsInterpreterUser.SelectedItem != null)
                             {
@@ -426,6 +426,24 @@
                         <div class="no-value-info">Här bör det stå något bra om att det finns fler tillfällen kopplade till denna sammanhållna bokning, men att dessa inte skall tillsättas av denna förmedling, typ.</div>
                     }
                 }
+                @if (Model.OrderHasAllowExceedingTravelCost)
+                {
+                    <div id="latestAnswerTimeForCustomer-panel" class="row collapse in">
+                        <div class="col-sm-4">
+                        </div>
+                        <div class="col-sm-4">
+                            <form-entry asp-for="SetLatestAnswerTimeForCustomer" asp-items="SelectListService.BoolList" />
+                            <div id="SetLatestAnswerTimeForCustomerValidator" class="d-none text-danger body">Ange om du vill sätta sista svarstid eller inte</div>
+                        </div>
+                        <div class="col-sm-4 d-none" id="latestAnswerTimeForCustomer">
+                            <input asp-for="OccasionList.FirstStartDateTime" type="hidden" />
+                            <form-entry asp-for="LatestAnswerTimeForCustomer" />
+                            <div id="LatestAnswerTimeForCustomerValidator" class="d-none text-danger body"></div>
+                            <br /><br />
+                        </div>
+                    </div>
+                }
+
                 @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
 
                 <div class="row">

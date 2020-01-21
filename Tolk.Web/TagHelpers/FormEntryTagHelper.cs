@@ -498,6 +498,8 @@ namespace Tolk.Web.TagHelpers
             var dateModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Date");
             var dateFieldName = $"{For.Name}.Date";
 
+            var isRequired = For.ModelExplorer.Metadata.IsRequired;
+
             var timeHourModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Hour");
             var timeMinutesModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Minute");
             var timeHourFieldName = $"{For.Name}.Hour";
@@ -521,8 +523,8 @@ namespace Tolk.Web.TagHelpers
             WriteLabelWithoutFor(writer, true);
             writer.WriteLine("<div class=\"col-sm-12 no-padding\">");
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
-            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, writer, true);
-            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, writer, false);
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, writer, true, isRequired);
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, writer, false, isRequired);
             writer.WriteLine("</div>");
             writer.WriteLine("</div>"); // form-inline
 
@@ -564,11 +566,11 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, TextWriter writer, bool hour)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, TextWriter writer, bool hour, bool isRequired = true)
         {
             string hourClass = hour ? "hour" : string.Empty;
             writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
-            WriteSelect(GetSplitTimeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges");
+            WriteSelect(GetSplitTimeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges", isRequired);
             writer.WriteLine("</div>");
         }
 
@@ -799,7 +801,7 @@ namespace Tolk.Web.TagHelpers
             WriteSelect(Items, writer, For.Name, For.ModelExplorer);
         }
 
-        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null)
+        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null, bool isRequired = true)
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
@@ -831,10 +833,14 @@ namespace Tolk.Web.TagHelpers
                     allowMultiple: allowMultiple,
                     htmlAttributes: new { @class = "form-control" });
                 tagBuilder.Attributes.Add("data-placeholder", placeholder);
-                if (requiredMessage != null)
+                if (requiredMessage != null && isRequired)
                 {
                     tagBuilder.Attributes.Remove("data-val-required");
                     tagBuilder.Attributes.Add("data-val-required", requiredMessage);
+                }
+                if (!isRequired)
+                {
+                    tagBuilder.Attributes.Remove("data-val-required");
                 }
                 if (For.Model == null)
                 {
@@ -842,7 +848,7 @@ namespace Tolk.Web.TagHelpers
                     tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
 
                     tagBuilder.InnerHtml.Clear();
-                    tagBuilder.InnerHtml.AppendHtml("<option value></option>");
+                    tagBuilder.InnerHtml.AppendHtml("<option value></option>"); 
                     tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
                 }
                 if (writePrefix)
@@ -882,7 +888,6 @@ namespace Tolk.Web.TagHelpers
             }
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
-
 
         private static IHtmlContentBuilder ListItemToOptionForExtendedListItem(ExtendedSelectListItem item, bool selectedValue)
         {

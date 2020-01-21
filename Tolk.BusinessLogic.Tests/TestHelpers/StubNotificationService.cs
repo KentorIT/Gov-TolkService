@@ -62,7 +62,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestDeclinedByBroker(Request request) { }
 
-        public void RequestExpired(Request request) { }
+        public void RequestExpiredDueToInactivity(Request request) { }
+        public void RequestExpiredDueToNoAnswerFromCustomer(Request request) { }
 
         public void RequestGroupAccepted(RequestGroup requestGroup) { }
 
@@ -78,7 +79,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestGroupDeclinedByBroker(RequestGroup requestGroup) { }
 
-        public void RequestGroupExpired(RequestGroup expiredRequestGroup) { }
+        public void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup) { }
+
+        public void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup) { }
 
         public void RequestReplamentOrderAccepted(Request request) { }
 

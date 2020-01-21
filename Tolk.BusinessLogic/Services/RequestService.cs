@@ -57,13 +57,14 @@ namespace Tolk.BusinessLogic.Services
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
-            string expectedTravelCostInfo
+            string expectedTravelCostInfo,
+            DateTimeOffset? latestAnswerTimeForCustomer
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
 
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel));
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer);
             //Create notification
             switch (request.Status)
             {
@@ -87,7 +88,8 @@ namespace Tolk.BusinessLogic.Services
             InterpreterLocation interpreterLocation,
             InterpreterAnswerDto interpreter,
             InterpreterAnswerDto extraInterpreter,
-            List<RequestGroupAttachment> attachedFiles
+            List<RequestGroupAttachment> attachedFiles,
+            DateTimeOffset? latestAnswerTimeForCustomer
         )
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
@@ -126,7 +128,8 @@ namespace Tolk.BusinessLogic.Services
                             interpreterLocation,
                             Enumerable.Empty<RequestAttachment>().ToList(),
                             extraInterpreterVerificationResult,
-                            travelCostsShouldBeApproved
+                            latestAnswerTimeForCustomer,
+                            travelCostsShouldBeApproved       
                        );
                     }
                     else
@@ -146,13 +149,14 @@ namespace Tolk.BusinessLogic.Services
                         interpreterLocation,
                         Enumerable.Empty<RequestAttachment>().ToList(),
                         verificationResult,
+                        latestAnswerTimeForCustomer,
                         travelCostsShouldBeApproved
                     );
                 }
             }
 
             // add the attachments to the group...
-            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer);
+            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer);
 
             if (partialAnswer)
             {
@@ -279,7 +283,8 @@ namespace Tolk.BusinessLogic.Services
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
-            string expectedTravelCostInfo
+            string expectedTravelCostInfo,
+            DateTimeOffset? latestAnswerTimeForCustomer
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
@@ -314,7 +319,8 @@ namespace Tolk.BusinessLogic.Services
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,
-                verificationResult
+                verificationResult,
+                latestAnswerTimeForCustomer
             );
             // needed to be able to get the requestid for the link
             await _tolkDbContext.SaveChangesAsync();
@@ -472,18 +478,18 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, bool overrideRequireAccept = false)
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
             // Acccept the request
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, verificationResult, overrideRequireAccept);
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, verificationResult, overrideRequireAccept);
         }
 
-        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, bool overrideRequireAccept = false)
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, overrideRequireAccept);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, overrideRequireAccept);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

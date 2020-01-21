@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
@@ -32,6 +33,10 @@ namespace Tolk.Web.Models
         public string ExpectedTravelCostInfo { get; set; }
 
         public RequestStatus Status { get; set; }
+
+        public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }
+
+        public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }

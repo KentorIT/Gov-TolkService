@@ -117,6 +117,7 @@ namespace Tolk.Web.Models
                 DenyMessage = requestGroup.DenyMessage,
                 CancelMessage = requestGroup.CancelMessage,
                 ExpiresAt = requestGroup.ExpiresAt ?? null,
+                LatestAnswerTimeForCustomer = requestGroup.LatestAnswerTimeForCustomer,
                 CustomerInformationModel = new CustomerInformationModel
                 {
                     CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,

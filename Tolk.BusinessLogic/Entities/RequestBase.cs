@@ -18,6 +18,11 @@ namespace Tolk.BusinessLogic.Entities
         /// </summary>
         public DateTimeOffset? ExpiresAt { get; set; }
 
+        /// <summary>
+        /// The time can be set by broker and the request will expire for broker if customer not answers the request group within the set time
+        /// </summary>
+        public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; }
 
         [MaxLength(1000)]

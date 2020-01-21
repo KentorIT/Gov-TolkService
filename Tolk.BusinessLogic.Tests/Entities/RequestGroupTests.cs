@@ -255,7 +255,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 requestGroup.Received(acceptAt, userId, impersonatorId);
             }
             requestGroup.Requests.ForEach(r => r.InterpreterLocation = (int?)actualLocation);
-            requestGroup.Accept(acceptAt, userId, impersonatorId, Enumerable.Empty<RequestGroupAttachment>().ToList(), hasTravelCosts, partialAnswer);
+            requestGroup.Accept(acceptAt, userId, impersonatorId, Enumerable.Empty<RequestGroupAttachment>().ToList(), hasTravelCosts, partialAnswer, null);
 
             Assert.Equal(expectedOrderStatus, requestGroup.OrderGroup.Status);
             Assert.Equal(expectedRequestGroupStatus, requestGroup.Status);
@@ -292,7 +292,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
             var requestGroup = orderGroup.RequestGroups.First();
             requestGroup.SetStatus(status, false);
-            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, false));
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, false, null));
         }
 
         [Fact]

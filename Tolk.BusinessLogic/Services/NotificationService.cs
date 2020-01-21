@@ -509,17 +509,17 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
-        public void RequestExpired(Request request)
+        public void RequestExpiredDueToInactivity(Request request)
         {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpired), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpiredDueToInactivity), nameof(NotificationService));
             var orderNumber = request.Order.OrderNumber;
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
                     $"Bokningsförfrågan {orderNumber} har gått vidare till nästa förmedling i rangordningen",
-                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GoToRequestPlain(request.RequestId)}",
-                    $"Ni har inte bekräftat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestButton(request.RequestId)}",
+                    $"Ni har inte besvarat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GoToRequestPlain(request.RequestId)}",
+                    $"Ni har inte besvarat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestButton(request.RequestId)}",
                     true);
             }
             var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Webhook);
@@ -537,17 +537,45 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
-        public void RequestGroupExpired(RequestGroup requestGroup)
+        public void RequestExpiredDueToNoAnswerFromCustomer(Request request)
         {
-            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpired), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpiredDueToInactivity), nameof(NotificationService));
+            var orderNumber = request.Order.OrderNumber;
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Bokningsförfrågan {orderNumber} avslutad, myndigheten svarade inte på tillsättningen i tid",
+                    $"{request.Order.CustomerOrganisation.Name} med organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {orderNumber} inom den tid er förmedling har angivit som sista svarstid.\n Bokningsförfrågan har nu avslutats. {GoToRequestPlain(request.RequestId)}",
+                    $"{request.Order.CustomerOrganisation.Name} med organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {orderNumber} inom den tid er förmedling har angivit som sista svarstid.<br />Bokningsförfrågan har nu avslutats. {GoToRequestButton(request.RequestId)}",
+                    true);
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestLostDueToNoAnswerFromCustomerModel
+                    {
+                        OrderNumber = orderNumber,
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestLostDueToNoAnswerFromCustomer,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
+        public void RequestGroupExpiredDueToInactivity(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpiredDueToInactivity), nameof(NotificationService));
             var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
                     $"Sammanhållen bokningsförfrågan {orderGroupNumber} har gått vidare till nästa förmedling i rangordningen",
-                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
-                    $"Ni har inte bekräftat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
+                    $"Ni har inte besvarat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.\nTidsfristen enligt ramavtal har nu gått ut. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"Ni har inte besvarat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
                     true);
             }
             var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Webhook);
@@ -560,6 +588,34 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     },
                     webhook.ContactInformation,
                     NotificationType.RequestGroupLostDueToInactivity,
+                    webhook.RecipientUserId
+                );
+            }
+        }
+
+        public void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpiredDueToNoAnswerFromCustomer), nameof(NotificationService));
+            var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(email.ContactInformation,
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} avslutad, myndigheten svarade inte på tillsättningen i tid",
+                    $"{requestGroup.OrderGroup.CustomerOrganisation.Name} med organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {orderGroupNumber} inom den tid er förmedling har angivit som sista svarstid.\n Den sammanhållna bokningsförfrågan har nu avslutats. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"{requestGroup.OrderGroup.CustomerOrganisation.Name} med organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {orderGroupNumber} inom den tid er förmedling har angivit som sista svarstid.<br /> Den sammanhållna bokningsförfrågan har nu avslutats. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    true);
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                    new RequestGroupLostDueToNoAnswerFromCustomerModel
+                    {
+                        OrderGroupNumber = orderGroupNumber,
+                    },
+                    webhook.ContactInformation,
+                    NotificationType.RequestGroupLostDueToNoAnswerFromCustomer,
                     webhook.RecipientUserId
                 );
             }

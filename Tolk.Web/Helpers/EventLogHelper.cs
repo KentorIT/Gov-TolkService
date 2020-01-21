@@ -395,7 +395,7 @@ namespace Tolk.Web.Helpers
                 // For now - unanswered responses don't expire before order start
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = request.Order.StartAt,
+                    Timestamp = request.LatestAnswerTimeForCustomer ?? request.Order.StartAt,
                     EventDetails = $"Obesvarad tillsättning tiden gick ut",
                     Actor = "Systemet",
                 });

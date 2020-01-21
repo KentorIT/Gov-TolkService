@@ -35,7 +35,8 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupAnswerApproved(RequestGroup requestGroup);
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);
         void RequestGroupAnswerDenied(RequestGroup requestGroup);
-        void RequestExpired(Request request);
+        void RequestExpiredDueToInactivity(Request request);
+        void RequestExpiredDueToNoAnswerFromCustomer(Request request);
         void RequestReplamentOrderAccepted(Request request);
         void RequestReplamentOrderDeclinedByBroker(Request request);
         void RequisitionCommented(Requisition requisition);
@@ -46,7 +47,8 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
         void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup);
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);
-        void RequestGroupExpired(RequestGroup expiredRequestGroup);
+        void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup);
+        void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);
         void NotifyOnFailure(int callId);
     }
 }

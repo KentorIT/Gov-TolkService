@@ -49,6 +49,7 @@
             validateInterpreter(panel, $(panel + " select[id$='InterpreterId']").val(), $(panel + " input[id$='NewInterpreterOfficialInterpreterId']").val(), $(panel + " select[id$='InterpreterCompetenceLevel']").val(), null, $("#OrderGroupId").val(), $(panel + " select[id$='InterpreterId'] option:selected").data('additional') === "Protected");
         }
     };
+
     var handlePartialDecline = function (panel) {
         if ($(panel + " select[id$='InterpreterId'] option:selected").val() === "-2") {
             $(panel + " .decline-message-panel").collapse('show');
@@ -58,19 +59,82 @@
             $(panel + " .interpreter-information-panel").collapse('show');
         }
     };
+
     $('.interpreter-information-panel').on('shown.bs.collapse', function () {
         clientValidate();
     }).on('hidden.bs.collapse', function () {
         clientValidate();
     });
     var setExpectedTravelcost = function () {
-        $(".expected-travel-costs-panel").collapse($("#InterpreterLocation option:selected").val() === "OffSitePhone" || $("#InterpreterLocation option:selected").val() === "OffSiteVideo" || $("#InterpreterLocation option:selected").val() === "" ?
+        $(".expected-travel-costs-panel, #latestAnswerTimeForCustomer-panel").collapse($("#InterpreterLocation option:selected").val() === "OffSitePhone" || $("#InterpreterLocation option:selected").val() === "OffSiteVideo" || $("#InterpreterLocation option:selected").val() === "" ?
             'hide' : 'show');
     };
+
+    $("body").on("click", "input[name=SetLatestAnswerTimeForCustomer]", function () {
+        $("#SetLatestAnswerTimeForCustomerValidator").hide();
+        if ($(this).val() === "Yes") {
+            $("#latestAnswerTimeForCustomer").show();
+        }
+        else {
+            $("#latestAnswerTimeForCustomer").hide();
+        }
+    });
+
+    var validateSetLatestAnswerTimeForCustomer = function () {
+        if (!$("input[name=SetLatestAnswerTimeForCustomer]").is(":visible") || $("input[name=SetLatestAnswerTimeForCustomer]").filter(":checked").length > 0) {
+            return true;
+        }
+        else {
+            $("#SetLatestAnswerTimeForCustomerValidator").show();
+            return false;
+        }
+    };
+
+    function validateLatestAnswerTimeWithinValidTimeSpan() {
+        if (!$("#LatestAnswerTimeForCustomer_Date").is(":visible") || $("#LatestAnswerTimeForCustomer_Hour").val() == "" || $("#LatestAnswerTimeForCustomer_Minute").val() == "") {
+            return true;
+        }
+        var latestAnswerTime = new Date($("#LatestAnswerTimeForCustomer_Date").val());
+        latestAnswerTime.setHours($("#LatestAnswerTimeForCustomer_Hour").val());
+        latestAnswerTime.setMinutes($("#LatestAnswerTimeForCustomer_Minute").val());
+        var validatorId = $("#LatestAnswerTimeForCustomerValidator");
+        var message = checkLatestAnswerTime(latestAnswerTime);
+        if (message.length > 0) {
+            validatorId.empty();
+            validatorId.append(message);
+            validatorId.show();
+            return false;
+        }
+        else {
+            validatorId.empty();
+            validatorId.hide();
+        }
+        return true;
+    };
+
+    var setLatestAnswerDateTimeSpan = function () {
+        var startTime = new Date($("#OccasionList_FirstStartDateTime").val().replace(" ", "T").replace(" ", ""));
+        $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
+        $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
+    };
+
+    function checkLatestAnswerTime(latestAnswerTime) {
+        var now = new Date($("#now").val());
+        if (now - latestAnswerTime === 0 || now > latestAnswerTime) {
+            return "Angiven sista svarstid har passerats";
+        }
+
+        var startTime = new Date($("#OccasionList_FirstStartDateTime").val().replace(" ", "T").replace(" ", ""));
+        if (startTime - latestAnswerTime === 0 || startTime < latestAnswerTime) {
+            return "Sista svarstid ska vara innan första uppdraget startar";
+        }
+        return "";
+    }
 
     checkRequirements();
     setExpectedTravelcost();
     setInterpreter();
+    setLatestAnswerDateTimeSpan();
 
     $("#InterpreterAnswerModel_InterpreterCompetenceLevel, #InterpreterAnswerModel_NewInterpreterOfficialInterpreterId").change(function () {
         validateInterpreter(".interpreter-selection-panel", $('#InterpreterAnswerModel_InterpreterId').val(), $('#InterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#InterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val(), $("#InterpreterAnswerModel_InterpreterId option:selected").data('additional') === "Protected");
@@ -91,7 +155,7 @@
         handlePartialDecline(".outer-extra-interpreter-panel");
     });
 
-    $("#Accept").closest("form").on("submit", function () { $("#Accept").disableOnSubmit(); });
+    $("#Accept").closest("form").on("submit", function () { if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) { return false; }; $("#Accept").disableOnSubmit(); });
 
     $('#InterpreterLocation').change(function () {
         setExpectedTravelcost();
@@ -139,4 +203,6 @@ $(document).ready(function () {
         });
     }
 });
+
+
 

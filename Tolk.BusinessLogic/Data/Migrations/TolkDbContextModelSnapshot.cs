@@ -1597,6 +1597,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<bool>("IsTerminalRequest");
 
+                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer");
+
                     b.Property<int>("OrderId");
 
                     b.Property<int?>("QuarantineId");
@@ -1701,6 +1703,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("ImpersonatingReceivedBy");
 
                     b.Property<bool>("IsTerminalRequest");
+
+                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer");
 
                     b.Property<int>("OrderGroupId");
 

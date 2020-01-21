@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
@@ -167,6 +168,7 @@ namespace Tolk.Web.Controllers
                 model.OtherInterpreterId = _requestService.GetOtherInterpreterIdForSameOccasion(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                model.LatestAnswerTimeForCustomer = null;
                 return View("Process", model);
             }
             return Forbid();
@@ -227,12 +229,12 @@ namespace Tolk.Web.Controllers
                         //if change interpreter or normal accept (no replacementorder)
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
-
                             var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
                             //if no interpreter was created we want to return model with error message
                             if (interpreter == null)
                             {
                             }
+                            
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
                                 try
@@ -248,7 +250,8 @@ namespace Tolk.Web.Controllers
                                         requirementAnswers,
                                         model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
                                         model.ExpectedTravelCosts,
-                                        model.ExpectedTravelCostInfo
+                                        model.ExpectedTravelCostInfo,
+                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null 
                                     );
                                 }
                                 catch (InvalidOperationException ex)
@@ -269,7 +272,8 @@ namespace Tolk.Web.Controllers
                                     requirementAnswers,
                                     model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                                     model.ExpectedTravelCosts,
-                                    model.ExpectedTravelCostInfo
+                                    model.ExpectedTravelCostInfo,
+                                    (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
                                 );
                             }
                         }

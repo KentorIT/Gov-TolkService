@@ -744,11 +744,12 @@ namespace Tolk.BusinessLogic.Services
             var expiredRequestIds = await _tolkDbContext.Requests
                 .Where(r => r.RequestGroupId == null &&
                     ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)))
+                    (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                    (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))))
                 .Select(r => r.RequestId)
                 .ToListAsync();
 
-            _logger.LogInformation("Found {count} expired requests to process: {requestIds}",
+            _logger.LogInformation("Found {count} expired requests to process: {expiredRequestIds}",
                 expiredRequestIds.Count, string.Join(", ", expiredRequestIds));
 
             foreach (var requestId in expiredRequestIds)
@@ -763,7 +764,8 @@ namespace Tolk.BusinessLogic.Services
                             .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
                             .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                || (r.Order.StartAt <= _clock.SwedenNow && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
+                                || (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
                                 && r.RequestId == requestId);
 
                         if (expiredRequest == null)
@@ -787,13 +789,19 @@ namespace Tolk.BusinessLogic.Services
                                 }
                                 else
                                 {
-                                    _notificationService.RequestExpired(expiredRequest);
+                                    _notificationService.RequestExpiredDueToInactivity(expiredRequest);
                                 }
                                 await TerminateOrder(expiredRequest.Order);
                             }
+                            else if (expiredRequest.LatestAnswerTimeForCustomer.HasValue && expiredRequest.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
+                            {
+                                _notificationService.RequestExpiredDueToNoAnswerFromCustomer(expiredRequest);
+                                expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
+                                await CreateRequest(expiredRequest.Order, expiredRequest);
+                            }
                             else
                             {
-                                _notificationService.RequestExpired(expiredRequest);
+                                _notificationService.RequestExpiredDueToInactivity(expiredRequest);
                                 await CreateRequest(expiredRequest.Order, expiredRequest);
                             }
                             trn.Commit();
@@ -814,11 +822,12 @@ namespace Tolk.BusinessLogic.Services
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups
                 .Where(r => (r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                    (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                    (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
-            _logger.LogInformation("Found {count} expired request groups to process: {requestGroupIds}",
+            _logger.LogInformation("Found {count} expired request groups to process: {expiredRequestGroupIds}",
                 expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
             foreach (var requestGroupId in expiredRequestGroupIds)
             {
@@ -835,7 +844,8 @@ namespace Tolk.BusinessLogic.Services
                             .Include(g => g.Requests).ThenInclude(r => r.Ranking)
                             .SingleOrDefaultAsync(r =>
                                 ((r.ExpiresAt <= _clock.SwedenNow && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received))
-                                || (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer))
+                                || (r.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= _clock.SwedenNow) && r.Status == RequestStatus.AwaitingDeadlineFromCustomer)
+                                || (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= _clock.SwedenNow && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
                                 && r.RequestGroupId == requestGroupId);
 
                         if (expiredRequestGroup == null)
@@ -845,19 +855,24 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
-                            _logger.LogInformation("Processing expired request {requestId} for Order group {orderGroupId}.",
+                            _logger.LogInformation("Processing expired request group {requestGroupId} for Order group {orderGroupId}.",
                                 expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
-
 
                             if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
                             {
                                 expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
                                 await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
                             }
+                            else if (expiredRequestGroup.LatestAnswerTimeForCustomer.HasValue && expiredRequestGroup.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
+                            {
+                                expiredRequestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
+                                _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(expiredRequestGroup);
+                                await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
+                            }
                             else
                             {
                                 expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
-                                _notificationService.RequestGroupExpired(expiredRequestGroup);
+                                _notificationService.RequestGroupExpiredDueToInactivity(expiredRequestGroup);
                                 await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                             }
 

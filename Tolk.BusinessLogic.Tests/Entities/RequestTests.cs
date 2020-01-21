@@ -171,7 +171,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
             request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null);
+                requirementAnswers, attachments, priceInfo, null, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -258,7 +258,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Throws<InvalidOperationException>(() => request.Accept(DateTime.Now, 10, null,
                 interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter,
                 new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(),
-                new PriceInformation(), null));
+                new PriceInformation(), null, null));
         }
 
         [Theory]
@@ -1166,6 +1166,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null, 
                 null);
         }
 
@@ -1195,6 +1196,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1225,6 +1227,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1255,6 +1258,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 2, CanSatisfyRequirement = true } },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1284,7 +1288,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = false } },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    "Blir jättereskostnad pga allt är så dyrt!");
+                    "Blir jättereskostnad pga allt är så dyrt!",
+                    null);
         }
 
         [Fact]
@@ -1312,6 +1317,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>() { new OrderRequirementRequestAnswer { OrderRequirementId = 1, CanSatisfyRequirement = true } },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null);
         }
         // no answer on not required
@@ -1341,7 +1347,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    "Blir jättereskostnad pga allt är så dyrt!")
+                    "Blir jättereskostnad pga allt är så dyrt!",
+                    null)
             );
         }
 
@@ -1379,6 +1386,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1417,6 +1425,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1455,7 +1464,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     },
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                    "Blir jättereskostnad pga allt är så dyrt!")
+                    "Blir jättereskostnad pga allt är så dyrt!",
+                    null)
             );
         }
 
@@ -1489,7 +1499,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
-                "Blir jättereskostnad pga allt är så dyrt!");
+                "Blir jättereskostnad pga allt är så dyrt!",
+                null);
 
         }
 
@@ -1536,6 +1547,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1567,6 +1579,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1604,6 +1617,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1640,6 +1654,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1677,6 +1692,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1711,6 +1727,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1745,6 +1762,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1779,6 +1797,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }
@@ -1815,6 +1834,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<OrderRequirementRequestAnswer>(),
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                null,
                 null);
         }
 
@@ -1850,6 +1870,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<OrderRequirementRequestAnswer>(),
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
+                    null,
                     null)
             );
         }

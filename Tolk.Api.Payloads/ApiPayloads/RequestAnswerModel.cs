@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Tolk.Api.Payloads.ApiPayloads
 {
@@ -11,6 +12,6 @@ namespace Tolk.Api.Payloads.ApiPayloads
         public decimal? ExpectedTravelCosts { get; set; }
         public string ExpectedTravelCostInfo { get; set; }
         public IEnumerable<RequirementAnswerModel> RequirementAnswers { get; set; }
-        //Files
+        public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
     }
 }

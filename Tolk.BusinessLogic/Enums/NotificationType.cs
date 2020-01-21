@@ -92,5 +92,13 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Svar på sammanhållen förfrågan godtogs inte")]
         [CustomName("request_group_answer_denied")]
         RequestGroupAnswerDenied = 22,
+
+        [Description("Förlorad förfrågan på grund av ej besvarad av myndighet")]
+        [CustomName("request_lost_due_to_no_answer_from_customer")]
+        RequestLostDueToNoAnswerFromCustomer = 23,
+
+        [Description("Förlorad samanhållen förfrågan på grund av ej besvarad av myndighet")]
+        [CustomName("request_group_lost_due_to_no_answer_from_customer")]
+        RequestGroupLostDueToNoAnswerFromCustomer = 24,
     }
 }

@@ -173,7 +173,15 @@ namespace Tolk.Web.Models
 
         public EventLogModel EventLog { get; set; }
 
-        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequestStatus(Status); }
+        public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
+
+        [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan och går vidare till nästa förmedling i rangordningen.")]
+        [ClientRequired]
+        public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }
+
+        [Display(Name = "Sista tid att besvara tillsättning", Description = "Här har förmedlingen möjlighet att ange en tid för när myndigheten senast ska besvara tillsättningen. Om myndigheten inte svarar inom angiven tid avslutas förfrågan och går vidare till nästa förmedling i rangordningen.")]
+        [ClientRequired]
+        public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 
         #region view stuff
 
@@ -260,6 +268,7 @@ namespace Tolk.Web.Models
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
                 OrderModel = OrderModel.GetModelFromOrder(request.Order, null, true),
                 ComplaintId = complaint?.ComplaintId,
+                LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
                 ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
                 ReplacedByOrderRequestStatus = requestSummaryOnly ? null : replacedByOrderRequest?.Status,
                 ReplacedByOrderRequestId = requestSummaryOnly ? null : replacedByOrderRequest?.RequestId,

@@ -209,6 +209,7 @@ namespace Tolk.BusinessLogic.Entities
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation,
             string expectedTravelCostInfo,
+            DateTimeOffset? latestAnswerTimeForCustomer,
             VerificationResult? verificationResult = null,
             bool overrideRequireAccept = false
             )
@@ -239,6 +240,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
+            LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
 
             var requiresAccept = overrideRequireAccept || RequiresAccept;
 
@@ -361,7 +363,8 @@ namespace Tolk.BusinessLogic.Entities
             bool isAutoAccepted,
             Request oldRequest,
             string expectedTravelCostInfo,
-            VerificationResult? verificationResult = null)
+            VerificationResult? verificationResult = null,
+            DateTimeOffset? latestAnswerTimeForCustomer = null)
         {
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
@@ -394,6 +397,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
+            LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
             //if old request already was approved by customer
             if (oldRequest.Status == RequestStatus.Approved)
             {

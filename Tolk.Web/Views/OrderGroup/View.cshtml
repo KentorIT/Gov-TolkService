@@ -79,6 +79,7 @@
                 {
                     <div class="row">
                         <div class="col-sm-12">
+                            <br />
                             <label>Tidigare förmedlingars svar</label>
                             <ul>
                                 @foreach (var request in Model.PreviousRequestGroups)
@@ -108,26 +109,42 @@
                 {
                     if (Model.ActiveRequestGroup.HasExtraInterpreter)
                     {
-            <div class="col-sm-12 to-accept-info">
-                Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är för första tolk <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle </span>och för extra tolk <span class="bold">@Model.ExtraInterpreterExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
-            </div>
-                        <div class="col-sm-6">
-                            <display-entry asp-for="ExpectedTravelCostInfo" label-override="Kommentar till bedömd resekostnad första tolk"/>
-                            <br />
+                        <div class="col-sm-12 to-accept-info">
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är för första tolk <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle </span>och för extra tolk <span class="bold">@Model.ExtraInterpreterExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
                         </div>
-                        <div class="col-sm-6">
-                            <display-entry asp-for="ExtraInterpreterExpectedTravelCostInfo" label-override="Kommentar till bedömd resekostnad extra tolk"/>
-                            <br />
+                        <div class="col-sm-12">
+                            <div class="col-sm-4">
+                                <display-entry asp-for="ExpectedTravelCostInfo" label-override="Kommentar till bedömd resekostnad första tolk" />
+                                <br />
+                            </div>
+                            <div class="col-sm-4">
+                                <display-entry asp-for="ExtraInterpreterExpectedTravelCostInfo" label-override="Kommentar till bedömd resekostnad extra tolk" />
+                                <br />
+                            </div>
+                            @if (Model.ActiveRequestGroup.LatestAnswerTimeForCustomer != null)
+                            {
+                                <div class="col-sm-4 red-border-left">
+                                    <display-entry asp-for="ActiveRequestGroup.LatestAnswerTimeForCustomer"></display-entry>
+                                </div>
+                            }
                         </div>
                     }
                     else
                     {
-            <div class="col-sm-12 to-accept-info">
-                Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
-            </div>
+                        <div class="col-sm-12 to-accept-info">
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
+                        </div>
                         <div class="col-sm-12">
-                            <display-entry asp-for="ExpectedTravelCostInfo" />
-                            <br />
+                            <div class="col-sm-8">
+                                <display-entry asp-for="ExpectedTravelCostInfo" />
+                                <br />
+                            </div>
+                            @if (Model.ActiveRequestGroup.LatestAnswerTimeForCustomer != null)
+                            {
+                                <div class="col-sm-4 red-border-left">
+                                    <display-entry asp-for="ActiveRequestGroup.LatestAnswerTimeForCustomer"></display-entry>
+                                </div>
+                            }
                         </div>
                     }
                 }

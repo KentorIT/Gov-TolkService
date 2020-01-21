@@ -125,7 +125,7 @@ namespace Tolk.Web.Api.Controllers
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
-                    _requestService.Acknowledge(request, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
+                    _requestService.Acknowledge(request, now, user?.Id ?? apiUserId, user != null ? (int?)apiUserId : null);
                 }
                 try
                 {
@@ -147,7 +147,8 @@ namespace Tolk.Web.Api.Controllers
                         //Does not handle attachments yet.
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
-                        model.ExpectedTravelCostInfo
+                        model.ExpectedTravelCostInfo,
+                        model.LatestAnswerTimeForCustomer //check if answer contains interpreter location with travel, else give error message or set to null?
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service
@@ -379,7 +380,8 @@ namespace Tolk.Web.Api.Controllers
                         //Does not handle attachments yet.
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
-                        model.ExpectedTravelCostInfo);
+                        model.ExpectedTravelCostInfo,
+                        model.LatestAnswerTimeForCustomer);
                     await _dbContext.SaveChangesAsync();
                 }
                 catch (InvalidOperationException ex)

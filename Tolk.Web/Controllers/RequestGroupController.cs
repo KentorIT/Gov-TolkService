@@ -171,7 +171,8 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocation.Value,
                             interpreterModel,
                             extrainterpreterModel,
-                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList()
+                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
+                            (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
                         );
                         await _dbContext.SaveChangesAsync();
                         return RedirectToAction("Index", "Home", new { message = "Svar har skickats på sammanhållen bokning" });

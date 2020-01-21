@@ -181,14 +181,20 @@
 
         @if (Model.DisplayExpectedTravelCostInfo && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
         {
-            <div class="row">
-                <div class="col-sm-4">
-                    <display-entry asp-for="ExpectedTravelCosts" />
-                </div>
-                <div class="col-sm-4">
-                    <display-entry asp-for="ExpectedTravelCostInfo" />
-                </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="ExpectedTravelCosts" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="ExpectedTravelCostInfo" />
+        </div>
+        @if (requestIsAnswered && Model.Status != RequestStatus.Approved)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="LatestAnswerTimeForCustomer" />
             </div>
+        }
+    </div>
         }
         <div class="row">
             @if (requestIsAnswered)
