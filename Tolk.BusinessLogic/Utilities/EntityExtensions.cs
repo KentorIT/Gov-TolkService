@@ -38,6 +38,48 @@ namespace Tolk.BusinessLogic.Utilities
                     r.Status != RequestStatus.InterpreterReplaced);
         }
 
+        /// <summary>
+        /// Expires due to 1. ExpiresAt has passed 2. Customer has not set new expire time and order is starting 3. Customer has not answered a responded request within latest answer time
+        /// Also include requests that belong to approved requestgroup if LatestAnswerTimeForCustomer is set (interpreter changed)
+        /// </summary>
+        public static IQueryable<Request> ExpiredRequests(this IQueryable<Request> requests, DateTimeOffset now)
+        {
+            return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.LatestAnswerTimeForCustomer.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
+                    ((r.ExpiresAt <= now && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
+                    (r.Order.StartAt <= now && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                    (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))));
+        }
+
+        /// <summary>
+        /// Expires due to 1. ExpiresAt has passed for group 2. Customer has not set new expire time and one order is starting 3. Customer has not answered a responded requestgroup within latest answer time
+        /// </summary>
+        public static IQueryable<RequestGroup> ExpiredRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
+        {
+            return requestGroups.Where(rg => (rg.ExpiresAt <= now && (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received)) ||
+                    (rg.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= now) && rg.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                    (rg.LatestAnswerTimeForCustomer.HasValue && rg.LatestAnswerTimeForCustomer <= now && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
+        }
+
+        /// <summary>
+        /// Requests that are responded but not answered by customer and order is starting 
+        /// Also include accepted requests that belong to approved requestgroup (interpreter changed)
+        /// </summary>
+        public static IQueryable<Request> NonAnsweredRespondedRequests(this IQueryable<Request> requests, DateTimeOffset now)
+        {
+            return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
+                    (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    r.Order.StartAt <= now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+        }
+
+        /// <summary>
+        /// Requestgroups that are responded but not answered by customer and first order is starting 
+        /// </summary>
+        public static IQueryable<RequestGroup> NonAnsweredRespondedRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
+        {
+            return requestGroups.Where(rg => (rg.OrderGroup.Status == OrderStatus.RequestResponded || rg.OrderGroup.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    rg.OrderGroup.ClosestStartAt <= now && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+        }
+
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
