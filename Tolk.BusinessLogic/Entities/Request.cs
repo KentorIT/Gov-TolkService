@@ -138,7 +138,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanChangeInterpreter(DateTimeOffset swedenNow) => Order.StartAt > swedenNow &&
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
-            (RequestGroupId.HasValue && Status == RequestStatus.Approved));
+            (RequestGroupId.HasValue && (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed)));
 
         public bool CanCreateRequisition => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
 
@@ -398,16 +398,17 @@ namespace Tolk.BusinessLogic.Entities
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
-            //if old request already was approved by customer
-            if (oldRequest.Status == RequestStatus.Approved)
+
+            if (!isAutoAccepted && oldRequest.Status == RequestStatus.Approved)
             {
-                if (!isAutoAccepted)
+                Order.Status = OrderStatus.RequestRespondedNewInterpreter;
+            }
+            if (isAutoAccepted)
+            {
+                Status = RequestStatus.Approved;
+                if (oldRequest.Status != RequestStatus.Approved)
                 {
-                    Order.Status = OrderStatus.RequestRespondedNewInterpreter;
-                }
-                else
-                {
-                    Status = oldRequest.Status;
+                    Order.Status = OrderStatus.ResponseAccepted;
                 }
             }
         }

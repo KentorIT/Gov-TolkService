@@ -322,9 +322,9 @@ namespace Tolk.BusinessLogic.Services
                 verificationResult,
                 latestAnswerTimeForCustomer
             );
-            // needed to be able to get the requestid for the link
+            // need requestid for the link
             await _tolkDbContext.SaveChangesAsync();
-            if (request.Status == RequestStatus.Approved && noNeedForUserAccept)
+            if (noNeedForUserAccept)
             {
                 _notificationService.RequestChangedInterpreterAccepted(newRequest, InterpereterChangeAcceptOrigin.NoNeedForUserAccept);
             }
@@ -531,7 +531,7 @@ namespace Tolk.BusinessLogic.Services
                 return true;
             }
             decimal largestApprovedAmount = request.Order.Requests
-                .Where(req => req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced)
+                .Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced) && req.AnswerProcessedAt.HasValue)
                 .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
                 .Max() ?? 0;
             return largestApprovedAmount >= expectedTravelCosts.Value;

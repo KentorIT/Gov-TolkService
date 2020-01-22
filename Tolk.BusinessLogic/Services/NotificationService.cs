@@ -1017,7 +1017,7 @@ Sammanställning:
                         $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                         $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                         $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
-                        "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status." +
+                        "Tolkbytet är godkänt av systemet." +
                         GetPossibleInfoNotValidatedInterpreter(request);
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                         $"{bodyNoAccept} {GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true)}",
