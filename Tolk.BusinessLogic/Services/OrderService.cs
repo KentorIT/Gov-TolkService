@@ -782,6 +782,7 @@ namespace Tolk.BusinessLogic.Services
                                 }
                                 else
                                 {
+                                    expiredRequest.Order.Status = OrderStatus.Requested;
                                     await CreateRequest(expiredRequest.Order, expiredRequest);
                                 }
                             }
@@ -807,7 +808,7 @@ namespace Tolk.BusinessLogic.Services
         private async Task HandleExpiredRequestGroups()
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups.ExpiredRequestGroups(_clock.SwedenNow)
-                
+
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
@@ -848,6 +849,7 @@ namespace Tolk.BusinessLogic.Services
                             {
                                 expiredRequestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
                                 _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(expiredRequestGroup);
+                                expiredRequestGroup.OrderGroup.SetStatus(OrderStatus.Requested);
                                 await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                             }
                             else
@@ -933,7 +935,8 @@ namespace Tolk.BusinessLogic.Services
                     try
                     {
                         var requestGroup = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroups(_clock.SwedenNow)
-                        .Include(rg => rg.OrderGroup)
+                        .Include(rg => rg.Requests)
+                        .Include(rg => rg.OrderGroup).ThenInclude(og => og.Orders)
                         .SingleOrDefaultAsync(rg => rg.RequestGroupId == requestGroupId);
                         if (requestGroup == null)
                         {

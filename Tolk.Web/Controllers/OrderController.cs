@@ -87,7 +87,8 @@ namespace Tolk.Web.Controllers
                                         r.Status != RequestStatus.DeniedByTimeLimit &&
                                         r.Status != RequestStatus.DeniedByCreator &&
                                         r.Status != RequestStatus.DeclinedByBroker &&
-                                        r.Status != RequestStatus.LostDueToQuarantine);
+                                        r.Status != RequestStatus.LostDueToQuarantine &&
+                                        r.Status != RequestStatus.ResponseNotAnsweredByCreator);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null && request.CanCancel &&
                     order.StartAt > _clock.SwedenNow &&

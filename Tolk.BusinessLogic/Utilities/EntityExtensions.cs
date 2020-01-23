@@ -77,7 +77,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<RequestGroup> NonAnsweredRespondedRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
         {
             return requestGroups.Where(rg => (rg.OrderGroup.Status == OrderStatus.RequestResponded || rg.OrderGroup.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    rg.OrderGroup.ClosestStartAt <= now && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+                    rg.OrderGroup.Orders.Any(o => o.StartAt <= now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
