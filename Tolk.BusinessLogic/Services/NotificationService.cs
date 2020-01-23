@@ -22,8 +22,6 @@ namespace Tolk.BusinessLogic.Services
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly string _senderPrepend;
 
-        private const string requireApprovementText = "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget innan bokning kan slutföras eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
-
         public NotificationService(
             TolkDbContext dbContext,
             ILogger<NotificationService> logger,
@@ -250,25 +248,35 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void OrderNoBrokerAccepted(Order order)
+        public void OrderTerminated(Order order)
         {
-            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderNoBrokerAccepted), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderTerminated), nameof(NotificationService));
+            var body = GetOrderTerminatedText(order.Status, order.OrderNumber);
             CreateEmail(GetRecipientsFromOrder(order),
-                $"Bokningsförfrågan {order.OrderNumber} fick ingen tolk",
-                $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {order.OrderNumber}. {GoToOrderPlain(order.OrderId)}",
-                $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {order.OrderNumber}. {GoToOrderButton(order.OrderId)}"
+                $"Bokningsförfrågan {order.OrderNumber} fick ingen bekräftad tolktillsättning",
+                body + GoToOrderPlain(order.OrderId),
+                body + GoToOrderButton(order.OrderId)
             );
         }
 
-        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup)
+        private static string GetOrderTerminatedText(OrderStatus status, string orderNumber) => status == OrderStatus.NoDeadlineFromCustomer ? $"Ingen sista svarstid sattes på bokningsförfrågan {orderNumber} så att förfrågan kunde gå vidare till nästa förmedling. Bokningsförfrågan är nu avslutad."
+            : status == OrderStatus.ResponseNotAnsweredByCreator ? $"Tolktillsättning för bokningsförfrågan {orderNumber} besvarades inte i tid. Bokningsförfrågan är nu avslutad." :
+            $"Ingen förmedling kunde tillsätta en tolk för bokningsförfrågan {orderNumber}. Bokningsförfrågan är nu avslutad.";
+
+        public void OrderGroupTerminated(OrderGroup terminatedOrderGroup)
         {
-            NullCheckHelper.ArgumentCheckNull(terminatedOrderGroup, nameof(OrderGroupNoBrokerAccepted), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(terminatedOrderGroup, nameof(OrderGroupTerminated), nameof(NotificationService));
+            var body = GetOrderGroupTerminatedText(terminatedOrderGroup.Status, terminatedOrderGroup.OrderGroupNumber);
             CreateEmail(GetRecipientsFromOrderGroup(terminatedOrderGroup),
-                $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen tolk",
-                $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GoToOrderGroupPlain(terminatedOrderGroup.OrderGroupId)}",
-                $"Ingen förmedling kunde tillsätta tolk för den sammanhållna bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber}. {GoToOrderGroupButton(terminatedOrderGroup.OrderGroupId)}"
+                $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen bekräftad tolktillsättning",
+                body + GoToOrderGroupPlain(terminatedOrderGroup.OrderGroupId),
+                body + GoToOrderGroupButton(terminatedOrderGroup.OrderGroupId)
             );
         }
+
+        private static string GetOrderGroupTerminatedText(OrderStatus status, string orderNumber) => status == OrderStatus.NoDeadlineFromCustomer ? 
+            $"Ingen sista svarstid sattes på den sammanhållna bokningsförfrågan {orderNumber} så att den kunde gå vidare till nästa förmedling. Den sammanhållna bokningsförfrågan är nu avslutad." :
+            $"Ingen förmedling kunde tillsätta en tolk för den sammanhållna bokningsförfrågan {orderNumber}. Den sammanhållna bokningsförfrågan är nu avslutad.";
 
         public void RequestCreated(Request request)
         {
@@ -847,7 +855,7 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {requireApprovementText}\n\n" +
+            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
                     OrderReferenceNumberInfo(request) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
@@ -874,7 +882,7 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             Order order = requestGroup.OrderGroup.FirstOrder;
-            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {requireApprovementText}\n\n" +
+            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
                 $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                 $"\tTillfällen: \n" +
                 $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
@@ -932,7 +940,7 @@ Sammanställning:
             switch (request.Status)
             {
                 case RequestStatus.Accepted:
-                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {requireApprovementText}";
+                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}";
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         body + GoToOrderPlain(request.Order.OrderId),
                         HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
@@ -971,11 +979,8 @@ Sammanställning:
                 OrderReferenceNumberInfo(request) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
-                $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
-                (request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved ?
-                    requireApprovementText :
-                    "Inga förändrade krav finns, bokningsförfrågan behåller sin nuvarande status.") +
-                    GetPossibleInfoNotValidatedInterpreter(request);
+                $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer, request.RequestGroupId.HasValue)
+                + GetPossibleInfoNotValidatedInterpreter(request);
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                 $"{body} {GoToOrderPlain(request.Order.OrderId)}",
                 $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.Order.OrderId)}");
@@ -1038,7 +1043,7 @@ Sammanställning:
             string orderNumber = request.Order.OrderNumber;
             string body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
             + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
-            + requireApprovementText;
+            + GetRequireApprovementText(request.LatestAnswerTimeForCustomer);
 
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
                 body + GoToOrderPlain(request.Order.OrderId),
@@ -1051,7 +1056,7 @@ Sammanställning:
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             Order order = requestGroup.OrderGroup.FirstOrder;
             var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n" +
-                $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {requireApprovementText}\n\n" +
+                $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
                 $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                 $"\tTillfällen: \n" +
                 $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
@@ -1180,6 +1185,10 @@ Sammanställning:
             bool isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated;
             return isInterpreterValidationError ? "\n\nObservera att tolkens kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
+
+        private static string GetRequireApprovementText(DateTimeOffset? latestAnswerDate, bool? isInterpreterChangeInGroup = false) => latestAnswerDate.HasValue ?
+            $"Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Senaste svarstid för att godkänna tillsättning är {latestAnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm")}. " + ((isInterpreterChangeInGroup?? false) ? "Om tillsättning inte besvarats vid denna tidpunkt kommer bokningen att annulleras." : "Om tillsättning inte besvarats vid denna tidpunkt skickas bokningsförfrågan vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I annat fall annulleras bokningen.") :
+            "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)
         {

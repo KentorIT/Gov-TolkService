@@ -117,6 +117,7 @@ namespace Tolk.BusinessLogic.Services
             if ((!expiry.HasValue && !group.IsSingleOccasion) || (expiredRequestGroup?.IsTerminalRequest ?? false))
             {
                 //Does not handle no expiry for several occasions order.
+                group.SetStatus(OrderStatus.NoBrokerAcceptedOrder);
                 await TerminateOrderGroup(group);
                 await _tolkDbContext.SaveChangesAsync();
                 return;
@@ -289,6 +290,7 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
+                order.Status = OrderStatus.NoBrokerAcceptedOrder;
                 await TerminateOrder(order, notify);
             }
         }
@@ -368,7 +370,8 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
-                await TerminateOrder(request.Order, true);
+                request.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
+                await TerminateOrder(request.Order);
             }
             _notificationService.RequestAnswerDenied(request);
         }
@@ -677,36 +680,18 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task TerminateOrderGroup(OrderGroup orderGroup)
         {
-            if (orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-            {
-                orderGroup.SetStatus(OrderStatus.NoDeadlineFromCustomer);
-            }
-            else
-            {
-                orderGroup.SetStatus(OrderStatus.NoBrokerAcceptedOrder);
-            }
             var terminatedOrderGroup = await _tolkDbContext.OrderGroups
               .Include(o => o.CreatedByUser)
               .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
               .SingleAsync(o => o.OrderGroupId == orderGroup.OrderGroupId);
-            _notificationService.OrderGroupNoBrokerAccepted(terminatedOrderGroup);
+            _notificationService.OrderGroupTerminated(terminatedOrderGroup);
             _logger.LogInformation("Could not create another request group for order group {orderGroupId}, no more available brokers or too close in time.",
                orderGroup.OrderGroupId);
         }
 
         private async Task TerminateOrder(Order order, bool notify = true)
         {
-            if (order.Status == OrderStatus.AwaitingDeadlineFromCustomer)
-            {
-                order.Status = OrderStatus.NoDeadlineFromCustomer;
-            }
-            else
-            {
-                order.Status = OrderStatus.NoBrokerAcceptedOrder;
-            }
-
-            //There are no more brokers to ask.
-            // Send an email to tell the order creator, and possibly the other user as well...
+            //The order will be terminated, send an email to tell the order creator
             if (notify)
             {
                 var terminatedOrder = await _tolkDbContext.Orders
@@ -714,8 +699,8 @@ namespace Tolk.BusinessLogic.Services
                    .Include(o => o.ContactPersonUser)
                    .Include(o => o.CustomerUnit)
                    .SingleAsync(o => o.OrderId == order.OrderId);
-                _notificationService.OrderNoBrokerAccepted(terminatedOrder);
-                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time.",
+                _notificationService.OrderTerminated(terminatedOrder);
+                _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time, or it should be terminated due to rules",
                     order.OrderId);
             }
         }
@@ -777,10 +762,12 @@ namespace Tolk.BusinessLogic.Services
                                 if (requestAwaitingDeadlineFromCustomer)
                                 {
                                     expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
+                                    expiredRequest.Order.Status = OrderStatus.NoDeadlineFromCustomer;
                                 }
                                 else
                                 {
                                     _notificationService.RequestExpiredDueToInactivity(expiredRequest);
+                                    expiredRequest.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
                                 }
                                 await TerminateOrder(expiredRequest.Order);
                             }
@@ -788,7 +775,15 @@ namespace Tolk.BusinessLogic.Services
                             {
                                 _notificationService.RequestExpiredDueToNoAnswerFromCustomer(expiredRequest);
                                 expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
-                                await CreateRequest(expiredRequest.Order, expiredRequest);
+                                if (expiredRequest.TerminateOnLatestAnswerTimeForCustomerExpire)
+                                {
+                                    expiredRequest.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
+                                    await TerminateOrder(expiredRequest.Order);
+                                }
+                                else
+                                {
+                                    await CreateRequest(expiredRequest.Order, expiredRequest);
+                                }
                             }
                             else
                             {
@@ -846,6 +841,7 @@ namespace Tolk.BusinessLogic.Services
                             if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
                             {
                                 expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
+                                expiredRequestGroup.OrderGroup.SetStatus(OrderStatus.NoDeadlineFromCustomer);
                                 await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
                             }
                             else if (expiredRequestGroup.LatestAnswerTimeForCustomer.HasValue && expiredRequestGroup.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
@@ -924,7 +920,6 @@ namespace Tolk.BusinessLogic.Services
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async Task HandleExpiredNonAnsweredRespondedRequestGroups()
         {
-
             var nonAnsweredRespondedRequestGroupsId = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroups(_clock.SwedenNow)
                 .Select(rg => rg.RequestGroupId).ToListAsync();
 

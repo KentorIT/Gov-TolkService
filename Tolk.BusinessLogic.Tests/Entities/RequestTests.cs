@@ -436,26 +436,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
         public void ReplaceInterpreter_Valid(bool isAutoAccepted, bool isOldRequestApproved)
         {
             var interpreterLocation = InterpreterLocation.OnSite;
-            var request = new Request()
-            {
-                Status = RequestStatus.AcceptedNewInterpreterAppointed,
-                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
-                PriceRows = new List<RequestPriceRow>(),
-                Order = new Order(MockOrder)
-                {
-                    Status = OrderStatus.Requested,
-                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
 
-
-                },
-            };
             var oldRequestRecievedBy = 66;
             var oldRequestRecievedAt = DateTime.Parse("2019-01-29 15:32");
             var oldRequestImpersonatingRecievedBy = (int?)null;
-            var oldRequestStatus = isOldRequestApproved ? RequestStatus.Approved : RequestStatus.Received;
-            var oldRequestAnswerProcessedAt = DateTime.Parse("2019-01-29 15:32");
-            var oldRequestAnswerProcessedBy = 20;
-            var oldRequestImpersonatingAnswerProcessedBy = 100;
+            var oldRequestStatus = isOldRequestApproved ? RequestStatus.Approved : RequestStatus.Accepted;
+            DateTime? oldRequestAnswerProcessedAt = isOldRequestApproved ? DateTime.Parse("2019-01-29 15:32") : (DateTime?)null;
+            int? oldRequestAnswerProcessedBy = isOldRequestApproved ? 20 : (int?)null;
+            int? oldRequestImpersonatingAnswerProcessedBy = isOldRequestApproved ? 100 : (int?)null;
             var oldRequestId = 34;
             var oldRequest = new Request()
             {
@@ -467,12 +455,28 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 AnswerProcessedAt = oldRequestAnswerProcessedAt,
                 AnswerProcessedBy = oldRequestAnswerProcessedBy,
                 ImpersonatingAnsweredBy = oldRequestImpersonatingAnswerProcessedBy,
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                },
             };
-            request.Order.Requests.Add(request);
-            request.Order.Status = OrderStatus.RequestResponded;
+            
+            var request = new Request()
+            {
+                Status = RequestStatus.AcceptedNewInterpreterAppointed,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = oldRequest.Order
+            };
 
-            var expectedRequestStatus = isOldRequestApproved && isAutoAccepted ? RequestStatus.Approved : request.Status;
-            var expectedOrderStatus = isOldRequestApproved && !isAutoAccepted ? OrderStatus.RequestRespondedNewInterpreter : request.Order.Status;
+            oldRequest.Order.Requests.Add(oldRequest);
+            oldRequest.Order.Status = isOldRequestApproved ? OrderStatus.ResponseAccepted : OrderStatus.RequestResponded;
+            oldRequest.Status = RequestStatus.InterpreterReplaced;
+            oldRequest.Order.Requests.Add(request);
+
+            var expectedRequestStatus = isAutoAccepted ? RequestStatus.Approved : request.Status;
+            var expectedOrderStatus = isAutoAccepted ? OrderStatus.ResponseAccepted: OrderStatus.RequestRespondedNewInterpreter;
             var acceptTime = DateTime.Now;
             var answeredBy = 10;
             var impersonatingAnsweredBy = (int?)null;

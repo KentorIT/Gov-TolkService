@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Services
         void CustomerCreated(CustomerOrganisation customer);
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
         void OrderContactPersonChanged(Order order, AspNetUser previousContactUser);
-        void OrderNoBrokerAccepted(Order order);
+        void OrderTerminated(Order order);
         void OrderReplacementCreated(Order order);
         void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
         void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
@@ -45,7 +45,7 @@ namespace Tolk.BusinessLogic.Services
         bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null);
         void RequestGroupCreated(RequestGroup requestGroup);
         void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
-        void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup);
+        void OrderGroupTerminated(OrderGroup terminatedOrderGroup);
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);
         void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup);
         void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);

@@ -28,9 +28,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderContactPersonChanged(Order order, AspNetUser user) { }
 
-        public void OrderGroupNoBrokerAccepted(OrderGroup terminatedOrderGroup) { }
+        public void OrderGroupTerminated(OrderGroup terminatedOrderGroup) { }
 
-        public void OrderNoBrokerAccepted(Order order) { }
+        public void OrderTerminated(Order order) { }
 
         public void OrderReplacementCreated(Order order) { }
 

@@ -146,6 +146,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
+        public bool TerminateOnLatestAnswerTimeForCustomerExpire => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
+
         public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && InterpreterLocation.HasValue
             && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite)
             && ((PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0) > 0);
@@ -399,14 +401,14 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
 
-            if (!isAutoAccepted && oldRequest.Status == RequestStatus.Approved)
+            if (!isAutoAccepted)
             {
                 Order.Status = OrderStatus.RequestRespondedNewInterpreter;
             }
             if (isAutoAccepted)
             {
                 Status = RequestStatus.Approved;
-                if (oldRequest.Status != RequestStatus.Approved)
+                if (Order.Status != OrderStatus.ResponseAccepted)
                 {
                     Order.Status = OrderStatus.ResponseAccepted;
                 }
