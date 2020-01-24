@@ -153,7 +153,7 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Requests)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(rg => rg.Ranking)
                 .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup.OrderGroup, Policies.Accept)).Succeeded)
