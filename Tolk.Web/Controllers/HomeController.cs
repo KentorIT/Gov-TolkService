@@ -531,7 +531,7 @@ namespace Tolk.Web.Controllers
                     DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
                     DefaulListController = "Request",
                     DefaultItemId = r.RequestId,
-                    InfoDate = GetInfoDateForBroker(r).Value,
+                    InfoDate = (r.Status != RequestStatus.DeniedByCreator && r.RequestUpdateLatestAnswerTime != null) ? r.RequestUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.Order.CustomerOrganisation.Name,
                     ButtonItemId = r.RequestId,
@@ -604,8 +604,8 @@ namespace Tolk.Web.Controllers
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
                     DefaultItemId = r.RequestGroupId,
-                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : 
-                        r.OrderGroup.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime : GetInfoDateForBroker(r).Value,
+                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : 
+                        r.OrderGroup.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime) : (r.Status != RequestStatus.DeniedByCreator && r.RequestGroupUpdateLatestAnswerTime != null) ? r.RequestGroupUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ?
                         (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
                     ExtraCompetenceLevel = !r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ? CompetenceAndSpecialistLevel.NoInterpreter :
