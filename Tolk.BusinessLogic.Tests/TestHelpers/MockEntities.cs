@@ -477,6 +477,19 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     mockRankings,
                     new List<RequestStatus>(){ RequestStatus.DeniedByCreator }
                 ),
+                CreateOrderGroup(
+                    "REQUESTGROUPNOANSWERFROMCUSTOMER",
+                    mockCustomerUsers[0],
+                    1,
+                    baseDate,
+                    Region.Regions.Where(r => r.Name == "Stockholm").Single(),
+                    mockLanguages.Where(l => l.Name == "English").Single(),
+                    OrderStatus.Requested,
+                    null,
+                    CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
+                    mockRankings,
+                    new List<RequestStatus>(){ RequestStatus.ResponseNotAnsweredByCreator }
+                ),
             };
         }
 

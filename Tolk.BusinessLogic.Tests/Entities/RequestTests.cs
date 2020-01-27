@@ -1029,6 +1029,49 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Throws<InvalidOperationException>(() => request.ConfirmDenial(DateTimeOffset.Now, 1, null));
         }
 
+        [Fact]
+        public void ConfirmNoAnswerFromCustomer()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.ResponseNotAnsweredByCreator,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+            request.ConfirmNoAnswer(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, request.RequestStatusConfirmations.Count(r => r.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator));
+        }
+
+        // Invalid request status
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByBroker)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        public void ConfirmNoAnswerFromCustomer_Invalid(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Order = new Order(MockOrder),
+                RequestStatusConfirmations = new List<RequestStatusConfirmation>(),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => request.ConfirmNoAnswer(DateTimeOffset.Now, 1, null));
+        }
+
         [Theory]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
         [InlineData(RequestStatus.CancelledByCreator)]
