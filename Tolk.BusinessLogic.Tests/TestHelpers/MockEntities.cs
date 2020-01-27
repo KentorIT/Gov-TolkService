@@ -868,6 +868,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 foreach (Order order in orders)
                 {
                     var request = new Request(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank)) { Status = requestStatus, Order = order };
+                    request.RequestStatusConfirmations = new List<RequestStatusConfirmation>();
                     requests.Add(request);
                     order.Requests.Add(request);
                     order.OrderGroupId = id;
