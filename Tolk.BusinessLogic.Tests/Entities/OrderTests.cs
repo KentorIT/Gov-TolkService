@@ -379,5 +379,53 @@ namespace Tolk.BusinessLogic.Tests.Entities
             order.ContactPersonId = contactPersonId;
             Assert.Equal(expected, order.IsAuthorizedAsCreatorOrContact(customerUnits, callingCustomerId, userId, false));
         }
+
+        [Fact]
+        public void ConfirmNoAnswer()
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.NoBrokerAcceptedOrder,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = RequestStatus.DeniedByTimeLimit }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.ConfirmNoAnswer(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, order.OrderStatusConfirmations.Count(o => o.OrderStatus == OrderStatus.NoBrokerAcceptedOrder));
+        }
+
+        // Invalid order status
+        [Theory]
+        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(OrderStatus.CancelledByBroker)]
+        [InlineData(OrderStatus.CancelledByCreator)]
+        [InlineData(OrderStatus.Delivered)]
+        [InlineData(OrderStatus.DeliveryAccepted)]
+        [InlineData(OrderStatus.GroupAwaitingPartialResponse)]
+        [InlineData(OrderStatus.RequestAwaitingPartialAccept)]
+        [InlineData(OrderStatus.NoDeadlineFromCustomer)]
+        [InlineData(OrderStatus.Requested)]
+        [InlineData(OrderStatus.RequestResponded)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter)]
+        [InlineData(OrderStatus.ResponseAccepted)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator)]
+        public void ConfirmNoAnswer_Invalid(OrderStatus status)
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.Requested,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = status == OrderStatus.ResponseAccepted ? RequestStatus.Approved : RequestStatus.Created }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.Requests.First().Order = order;
+            order.Status = status;
+            Assert.Throws<InvalidOperationException>(() => order.ConfirmNoAnswer(DateTimeOffset.Now, 1, null));
+        }
     }
 }
