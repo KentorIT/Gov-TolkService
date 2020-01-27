@@ -194,6 +194,25 @@ namespace Tolk.BusinessLogic.Entities
             return requestGroup;
         }
 
+        public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != OrderStatus.NoBrokerAcceptedOrder)
+            {
+                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} var inte avböjd/obesvarad av samtliga förmedlingar..");
+            }
+            if (StatusConfirmations.Any(o => o.OrderStatus == Status))
+            {
+                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} har redan bekräftats som obesvarad.");
+            }
+            AddStatusConfirmations(confirmedAt, userId, impersonatorId);
+        }
+
+        private void AddStatusConfirmations(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            Orders.Where(o => !o.OrderStatusConfirmations.Any(os => os.OrderStatus == Status) && o.Status == Status).ToList().ForEach(o => o.OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt }));
+            StatusConfirmations.Add(new OrderGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
         #endregion
     }
 }

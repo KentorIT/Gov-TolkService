@@ -791,17 +791,18 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderId)
         {
-            var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
-
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            var order = await _dbContext.Orders.Include(o => o.OrderStatusConfirmations).SingleAsync(o => o.OrderId == orderId);
+            if (order.Status == OrderStatus.NoBrokerAcceptedOrder && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
+                try
                 {
-                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna bokning var inte avböjd av samtliga förmedlingar." });
+                    await _orderService.ConfirmNoAnswer(order, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
                 }
-                await _orderService.ConfirmNoAnswer(order, User.GetUserId(), User.TryGetImpersonatorId());
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
             }
             return Forbid();
         }

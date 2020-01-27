@@ -128,17 +128,21 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderGroupId)
         {
-            var orderGroup = await _dbContext.OrderGroups.SingleAsync(o => o.OrderGroupId == orderGroupId);
-
-            if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
+            var orderGroup = await _dbContext.OrderGroups
+                .Include(og => og.StatusConfirmations)
+                .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
+                .SingleAsync(og => og.OrderGroupId == orderGroupId);
+            if (orderGroup.Status == OrderStatus.NoBrokerAcceptedOrder && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
-                if (orderGroup.Status != OrderStatus.NoBrokerAcceptedOrder)
+                try
                 {
-                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna sammanhållna bokning var inte avböjd av samtliga förmedlingar." });
+                    await _orderService.ConfirmGroupNoAnswer(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
                 }
-                await _orderService.ConfirmNoAnswer(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
+                }
             }
             return Forbid();
         }
@@ -205,6 +209,7 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.StatusConfirmations)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(o => o.RequestGroups).ThenInclude(r => r.StatusConfirmations)
                 .Include(o => o.RequestGroups).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)

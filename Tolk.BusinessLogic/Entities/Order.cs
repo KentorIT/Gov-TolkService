@@ -358,6 +358,19 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().Street = locationStreet;
         }
 
+        public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != OrderStatus.NoBrokerAcceptedOrder)
+            {
+                throw new InvalidOperationException($"Bokning med boknings-id {OrderNumber} var inte avböjd/obesvarad av samtliga förmedlingar.");
+            }
+            if (OrderStatusConfirmations.Any(o => o.OrderStatus == Status))
+            {
+                throw new InvalidOperationException($"Bokning med boknings-id {OrderNumber} har redan bekräftats som obesvarad.");
+            }
+            OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
         internal Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             var request = new Request(ranking, creationTime, quarantine);

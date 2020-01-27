@@ -403,35 +403,15 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmNoAnswer(Order order, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(ConfirmNoAnswer), nameof(OrderService));
-            if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
-            {
-                throw new InvalidOperationException($"The order {order.OrderId} has not been denied by all brokers");
-            }
-            await _tolkDbContext.AddAsync(new OrderStatusConfirmation
-            {
-                Order = order,
-                ConfirmedBy = userId,
-                ImpersonatingConfirmedBy = impersonatorId,
-                OrderStatus = order.Status,
-                ConfirmedAt = _clock.SwedenNow
-            });
+            order.ConfirmNoAnswer(_clock.SwedenNow, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
         }
 
-        public async Task ConfirmNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
+        public async Task ConfirmGroupNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
-            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmNoAnswer), nameof(OrderService));
-            if (orderGroup.Status != OrderStatus.NoBrokerAcceptedOrder)
-            {
-                throw new InvalidOperationException($"The order group {orderGroup.OrderGroupId} has not been denied by all brokers");
-            }
-            await _tolkDbContext.AddAsync(new OrderGroupStatusConfirmation
-            {
-                OrderGroup = orderGroup,
-                ConfirmedBy = userId,
-                ImpersonatingConfirmedBy = impersonatorId,
-                OrderStatus = orderGroup.Status,
-                ConfirmedAt = _clock.SwedenNow
-            });
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupNoAnswer), nameof(OrderService));
+            orderGroup.ConfirmNoAnswer(_clock.SwedenNow, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
         }
 
         public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
