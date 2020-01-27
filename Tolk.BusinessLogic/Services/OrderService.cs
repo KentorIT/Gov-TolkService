@@ -169,6 +169,10 @@ namespace Tolk.BusinessLogic.Services
                     }
                 }
             }
+            else
+            {
+                await TerminateOrderGroup(group);
+            }
         }
 
         public async Task CreatePartialRequestGroup(RequestGroup requestGroup, IEnumerable<Request> declinedRequests)
