@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -190,7 +189,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                var request = await _dbContext.RequestGroups
+                var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
@@ -201,11 +200,11 @@ namespace Tolk.Web.Api.Controllers
                         r.Ranking.BrokerId == brokerId &&
                         //Possibly other statuses
                         (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
-                if (request == null)
+                if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                await _requestService.DeclineGroup(request, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
+                await _requestService.DeclineGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());
@@ -235,7 +234,36 @@ namespace Tolk.Web.Api.Controllers
                     requestGroup,
                     _timeService.SwedenNow,
                     user?.Id ?? apiUserId,
-                    (user != null ? (int?)apiUserId : null)
+                    user != null ? (int?)apiUserId : null
+                );
+                return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmNoAnswer([FromBody] ConfirmGroupNoAnswerModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                //Get User, if any...
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.ResponseNotAnsweredByCreator });
+                await _requestService.ConfirmGroupNoAnswer(
+                    requestGroup,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUserId,
+                    user != null ? (int?)apiUserId : null
                 );
                 return Ok(new ResponseBase());
             }
@@ -332,16 +360,16 @@ namespace Tolk.Web.Api.Controllers
         private async Task<RequestGroup> GetConfirmedRequestGroup(string orderGroupNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {
             var requestGroup = await _dbContext.RequestGroups
-                .Include(r => r.Ranking)
-                .Include(r => r.StatusConfirmations)
-                .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
+                .Include(rg => rg.Ranking)
+                .Include(rg => rg.StatusConfirmations)
+                .Include(rg => rg.Requests).ThenInclude(r => r.RequestStatusConfirmations)
+                .SingleOrDefaultAsync(rg => rg.OrderGroup.OrderGroupNumber == orderGroupNumber &&
                     //Must have a request connected to the order for the broker, any status...
-                    r.Ranking.BrokerId == brokerId && expectedStatuses.Contains(r.Status));
+                    rg.Ranking.BrokerId == brokerId && expectedStatuses.Contains(rg.Status));
             if (requestGroup == null)
             {
                 throw new InvalidApiCallException(ErrorCodes.RequestGroupNotFound);
             }
-
             return requestGroup;
         }
 

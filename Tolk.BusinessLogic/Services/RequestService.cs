@@ -345,6 +345,7 @@ namespace Tolk.BusinessLogic.Services
             request.ConfirmDenial(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
+
         public async Task ConfirmGroupDenial(
             RequestGroup requestGroup,
             DateTimeOffset confirmedAt,
@@ -353,6 +354,28 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ConfirmGroupDenial), nameof(RequestService));
             requestGroup.ConfirmDenial(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
+        public async Task ConfirmNoAnswer(
+            Request request,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmNoAnswer), nameof(RequestService));
+            request.ConfirmNoAnswer(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
+        public async Task ConfirmGroupNoAnswer(
+            RequestGroup requestGroup,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ConfirmGroupNoAnswer), nameof(RequestService));
+            requestGroup.ConfirmNoAnswer(confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
 

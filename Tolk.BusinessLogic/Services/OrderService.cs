@@ -905,6 +905,7 @@ namespace Tolk.BusinessLogic.Services
                                 requestId);
                             request.Status = RequestStatus.ResponseNotAnsweredByCreator;
                             request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
+                            _notificationService.RequestExpiredDueToNoAnswerFromCustomer(request);
                             await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }
@@ -949,6 +950,7 @@ namespace Tolk.BusinessLogic.Services
                                 requestGroupId);
                             requestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
                             requestGroup.OrderGroup.SetStatus(OrderStatus.ResponseNotAnsweredByCreator);
+                            _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(requestGroup);
                             await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }

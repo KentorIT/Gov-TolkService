@@ -63,6 +63,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestDeclinedByBroker(Request request) { }
 
         public void RequestExpiredDueToInactivity(Request request) { }
+
         public void RequestExpiredDueToNoAnswerFromCustomer(Request request) { }
 
         public void RequestGroupAccepted(RequestGroup requestGroup) { }

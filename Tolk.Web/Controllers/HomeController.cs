@@ -519,13 +519,12 @@ namespace Tolk.Web.Controllers
                     Name = u.NameFirst + " " + u.NameFamily,
                     u.Id
                 }).ToList();
-            //requests with status received, created, denied, cancelled by customer
+            //requests with status received, created, denied, cancelled by customer, not answered by customer
             actionList.AddRange(_dbContext.Requests
                 .Where(r => r.RequestGroupId == null &&
                     (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator) &&
                     r.Ranking.BrokerId == brokerId &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator)
-                )
+                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
@@ -568,19 +567,45 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
-
-            //ADD REQUESTGROUPS HERE (statuses received, created, denied)
-            actionList.AddRange(_dbContext.RequestGroups
-                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator) &&
+            actionList.AddRange(_dbContext.Requests
+                .Include(r => r.Order)
+                .Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status != RequestStatus.ResponseNotAnsweredByCreator)) && r.Status == RequestStatus.ResponseNotAnsweredByCreator &&
                     r.Ranking.BrokerId == brokerId &&
-                    !r.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator)
+                )
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = r.RequestId,
+                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.Order.StartAt.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = r.Order.CustomerOrganisation.Name,
+                    ButtonItemId = r.RequestId,
+                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                    OrderNumber = r.Order.OrderNumber,
+                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
+                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    ButtonController = "Request",
+                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                }).ToList());
+
+            //ADD REQUESTGROUPS HERE (statuses received, created, denied, not answered by customer)
+            actionList.AddRange(_dbContext.RequestGroups
+                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator || r.Status == RequestStatus.ResponseNotAnsweredByCreator) &&
+                    r.Ranking.BrokerId == brokerId &&
+                    !r.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator || rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
                     DefaultItemId = r.RequestGroupId,
-                    InfoDate = GetInfoDateForBroker(r).Value,
+                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : 
+                        r.OrderGroup.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ?
                         (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
                     ExtraCompetenceLevel = !r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ? CompetenceAndSpecialistLevel.NoInterpreter :
@@ -816,6 +841,7 @@ namespace Tolk.Web.Controllers
                 isGroup ? StartListItemStatus.RequestGroupArrived : StartListItemStatus.RequestArrived
                 : (requestStatus == RequestStatus.Created && replacingOrderId > 0) ? StartListItemStatus.ReplacementOrderRequestArrived
                 : requestStatus == RequestStatus.DeniedByCreator ? isGroup ? StartListItemStatus.RequestGroupDenied : StartListItemStatus.RequestDenied
+                : requestStatus == RequestStatus.ResponseNotAnsweredByCreator ? isGroup ? StartListItemStatus.RespondedRequestGroupNotAnswered : StartListItemStatus.RespondedRequestNotAnswered
                 : StartListItemStatus.OrderCancelled;
         }
 

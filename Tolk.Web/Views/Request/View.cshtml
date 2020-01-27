@@ -49,6 +49,14 @@
                     </form>
                     <br /><br />
                 }
+                @if (Model.AllowConfirmNoAnswer)
+                {
+                    <br />
+                    <form method="post" action="@Url.Action("ConfirmNoAnswer", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                        <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    </form>
+                    <br /><br />
+                }
                 @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
                 <div class="row">
                     @if (Model.RequestCalculatedPriceInformationModel != null)

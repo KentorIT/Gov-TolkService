@@ -167,6 +167,8 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmationDenial { get; set; } = false;
 
+        public bool AllowConfirmNoAnswer { get; set; } = false;
+
         public bool AllowProcessing { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }

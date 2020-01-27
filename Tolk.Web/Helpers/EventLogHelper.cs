@@ -392,13 +392,25 @@ namespace Tolk.Web.Helpers
             }
             else if (request.Status == RequestStatus.ResponseNotAnsweredByCreator)
             {
-                // For now - unanswered responses don't expire before order start
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.LatestAnswerTimeForCustomer ?? request.Order.StartAt,
                     EventDetails = $"Obesvarad tillsättning tiden gick ut",
                     Actor = "Systemet",
                 });
+                // Request no answer confirmations
+                if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
+                {
+                    RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = rsc.ConfirmedAt,
+                        EventDetails = $"Obesvarad tillsättning bekräftad av förmedling",
+                        Actor = rsc.ConfirmedByUser?.FullName ?? "Systemet", //MUST HANDLE THAT WE INSERT FROM SCRIPT
+                        Organization = brokerName,
+                        ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
+                    });
+                }
             }
             // Request cancellation
             if (request.CancelledAt.HasValue)

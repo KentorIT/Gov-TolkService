@@ -255,9 +255,12 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.DeniedByCreator)
             {
-                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna konfirmeras.");
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna bekräfta avböjande.");
             }
-
+            if (RequestStatusConfirmations.Any(r => r.RequestStatus == Status))
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} har redan bekräftats avböjd.");
+            }
             RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
@@ -265,9 +268,25 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.CancelledByCreatorWhenApproved && Status != RequestStatus.CancelledByCreator)
             {
-                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna konfirmeras.");
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna bekräfta avbokning.");
             }
+            if (RequestStatusConfirmations.Any(r => r.RequestStatus == Status))
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} har redan bekräftats avbokad.");
+            }
+            RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
 
+        public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.ResponseNotAnsweredByCreator)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna bekräfta obesvarad.");
+            }
+            if (RequestStatusConfirmations.Any(r => r.RequestStatus == Status))
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} har redan bekräftats obesvarad.");
+            }
             RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 

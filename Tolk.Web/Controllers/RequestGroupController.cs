@@ -219,16 +219,38 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmDenial(int requestGroupId)
         {
-            RequestGroup requestGroup = await _dbContext.RequestGroups
-                .Include(r => r.Ranking)
-                .Include(r => r.Requests)
-                .Include(r => r.StatusConfirmations)
-                .SingleAsync(r => r.RequestGroupId == requestGroupId);
-
+            RequestGroup requestGroup = await GetConfirmedRequestGroup(requestGroupId);
             if (requestGroup.Status == RequestStatus.DeniedByCreator && (await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
             {
-                await _requestService.ConfirmGroupDenial(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                try
+                {
+                    await _requestService.ConfirmGroupDenial(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmNoAnswer(int requestGroupId)
+        {
+            RequestGroup requestGroup = await GetConfirmedRequestGroup(requestGroupId);
+            if (requestGroup.Status == RequestStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _requestService.ConfirmGroupNoAnswer(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
             }
             return Forbid();
         }
@@ -354,6 +376,15 @@ namespace Tolk.Web.Controllers
                .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
 
+        private async Task<RequestGroup> GetConfirmedRequestGroup(int requestGroupId)
+        {
+            return await _dbContext.RequestGroups
+                .Include(rg => rg.Ranking)
+                .Include(rg => rg.OrderGroup)
+                .Include(rg => rg.StatusConfirmations)
+                .Include(rg => rg.Requests).ThenInclude(r => r.RequestStatusConfirmations)
+                .SingleAsync(rg => rg.RequestGroupId == requestGroupId);
+        }
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
         {
             return new PriceInformationModel

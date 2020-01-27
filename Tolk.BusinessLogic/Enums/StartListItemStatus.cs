@@ -84,5 +84,11 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Sammanhållen bokningsförfrågan ej besvarad")]
         OrderGroupNotAnswered = 27,
+
+        [Description("Tillsättning ej besvarad")]
+        RespondedRequestNotAnswered = 28,
+
+        [Description("Tillsättning ej besvarad - Sammanhållen bokning")]
+        RespondedRequestGroupNotAnswered = 29,
     }
 }

@@ -10,6 +10,7 @@ namespace Tolk.Web.Models
     public class RequestGroupViewModel : RequestGroupBaseModel
     {
         public bool AllowConfirmationDenial { get; set; } = false;
+        public bool AllowConfirmNoAnswer { get; set; } = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
@@ -106,6 +107,7 @@ namespace Tolk.Web.Models
             return new RequestGroupViewModel
             {
                 AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator),
+                AllowConfirmNoAnswer = requestGroup.Status == RequestStatus.ResponseNotAnsweredByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator),
                 AssignmentType = order.AssignmentType,
                 CreatedAt = orderGroup.CreatedAt,
                 OrderGroupId = requestGroup.OrderGroupId,

@@ -234,7 +234,7 @@ namespace Tolk.Web.Controllers
                             if (interpreter == null)
                             {
                             }
-                            
+
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
                                 try
@@ -251,7 +251,7 @@ namespace Tolk.Web.Controllers
                                         model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
                                         model.ExpectedTravelCosts,
                                         model.ExpectedTravelCostInfo,
-                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null 
+                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
                                     );
                                 }
                                 catch (InvalidOperationException ex)
@@ -397,8 +397,15 @@ namespace Tolk.Web.Controllers
             Request request = await GetConfirmedRequest(requestId);
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                await _requestService.ConfirmCancellation(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+                try
+                {
+                    await _requestService.ConfirmCancellation(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Avbokning är bekräftad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
             }
             return Forbid();
         }
@@ -410,8 +417,35 @@ namespace Tolk.Web.Controllers
             Request request = await GetConfirmedRequest(requestId);
             if (request.Status == RequestStatus.DeniedByCreator && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                await _requestService.ConfirmDenial(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                try
+                {
+                    await _requestService.ConfirmDenial(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmNoAnswer(int requestId)
+        {
+            Request request = await GetConfirmedRequest(requestId);
+            if (request.Status == RequestStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _requestService.ConfirmNoAnswer(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
             }
             return Forbid();
         }
@@ -505,6 +539,7 @@ namespace Tolk.Web.Controllers
             model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
+            model.AllowConfirmNoAnswer = request.Status == RequestStatus.ResponseNotAnsweredByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
             model.AllowConfirmCancellation = request.Status == RequestStatus.CancelledByCreatorWhenApproved && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
             if (includeLog)
             {

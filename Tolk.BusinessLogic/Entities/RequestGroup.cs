@@ -149,8 +149,23 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != RequestStatus.DeniedByCreator)
             {
-                throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmeras.");
+                throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmera avböjande.");
             }
+            AddStatusConfirmations(confirmedAt, userId, impersonatorId);
+        }
+
+        public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.ResponseNotAnsweredByCreator)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmera obesvarad.");
+            }
+            AddStatusConfirmations(confirmedAt, userId, impersonatorId);
+        }
+
+        private void AddStatusConfirmations(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            Requests.Where(r => !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == Status) && r.Status == Status).ToList().ForEach(r => r.RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt }));
             StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
