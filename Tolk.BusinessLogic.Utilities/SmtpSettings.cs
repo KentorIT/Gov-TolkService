@@ -11,5 +11,7 @@
         public string Password { get; set; }
 
         public string FromAddress { get; set; }
+
+        public bool UseAuthentcation { get; set; } = true;
     }
 }

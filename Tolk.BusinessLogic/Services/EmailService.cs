@@ -60,8 +60,10 @@ namespace Tolk.BusinessLogic.Services
                         using (var client = new SmtpClient())
                         {
                             await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, SecureSocketOptions.StartTls);
-                            await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
-
+                            if (_options.Smtp.UseAuthentcation)
+                            {
+                                await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+                            }
                             var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
 
                             foreach (var emailId in emailIds)
