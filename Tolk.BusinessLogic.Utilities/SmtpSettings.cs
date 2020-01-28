@@ -12,6 +12,6 @@
 
         public string FromAddress { get; set; }
 
-        public bool UseAuthentcation { get; set; } = true;
+        public bool UseAuthentication { get; set; } = true;
     }
 }

@@ -60,7 +60,7 @@ namespace Tolk.BusinessLogic.Services
                         using (var client = new SmtpClient())
                         {
                             await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, SecureSocketOptions.StartTls);
-                            if (_options.Smtp.UseAuthentcation)
+                            if (_options.Smtp.UseAuthentication)
                             {
                                 await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
                             }
