@@ -622,7 +622,8 @@ namespace Tolk.Web.Models
                        r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
                        r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
                        r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator ||
-                       r.Status == BusinessLogic.Enums.RequestStatus.LostDueToQuarantine
+                       r.Status == BusinessLogic.Enums.RequestStatus.LostDueToQuarantine ||
+                       r.Status == BusinessLogic.Enums.RequestStatus.ResponseNotAnsweredByCreator
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

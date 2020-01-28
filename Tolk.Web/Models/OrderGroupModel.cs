@@ -169,7 +169,8 @@ namespace Tolk.Web.Models
                       r.Status == RequestStatus.DeclinedByBroker ||
                       r.Status == RequestStatus.DeniedByTimeLimit ||
                       r.Status == RequestStatus.DeniedByCreator ||
-                      r.Status == RequestStatus.LostDueToQuarantine
+                      r.Status == RequestStatus.LostDueToQuarantine ||
+                      r.Status == RequestStatus.ResponseNotAnsweredByCreator
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

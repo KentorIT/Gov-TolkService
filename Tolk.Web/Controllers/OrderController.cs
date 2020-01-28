@@ -269,7 +269,8 @@ namespace Tolk.Web.Controllers
                                         r.Status != RequestStatus.DeniedByTimeLimit &&
                                         r.Status != RequestStatus.DeniedByCreator &&
                                         r.Status != RequestStatus.DeclinedByBroker &&
-                                        r.Status != RequestStatus.LostDueToQuarantine);
+                                        r.Status != RequestStatus.LostDueToQuarantine &&
+                                        r.Status != RequestStatus.ResponseNotAnsweredByCreator);
                 UpdateOrderModel model = _mapper.Map<UpdateOrderModel>(OrderModel.GetModelFromOrder(order, request?.RequestId));
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
@@ -642,7 +643,9 @@ namespace Tolk.Web.Controllers
                         r.Status != RequestStatus.DeniedByTimeLimit &&
                         r.Status != RequestStatus.DeniedByCreator &&
                         r.Status != RequestStatus.DeclinedByBroker &&
-                        r.Status != RequestStatus.LostDueToQuarantine);
+                        r.Status != RequestStatus.LostDueToQuarantine &&
+                        r.Status != RequestStatus.ResponseNotAnsweredByCreator
+                        );
                 if (!(request?.CanPrint ?? false))
                 {
                     return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });
