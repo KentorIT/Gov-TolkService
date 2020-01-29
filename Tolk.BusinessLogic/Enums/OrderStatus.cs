@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Enums
         RequestResponded = 3,
         [Description("Tillsättning är godkänd")]
         ResponseAccepted = 4,
-        [Description("Uppdrag har genomförts")]
+        [Description("Uppdrag har utförts")]
         Delivered = 5,
         [Description("Uppdrag avbokat av myndighet")]
         CancelledByCreator = 6,

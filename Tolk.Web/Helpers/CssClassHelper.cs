@@ -20,7 +20,7 @@ namespace Tolk.Web.Helpers
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
         {
             return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer) ? "red-border-left"
-                : (status == RequestStatus.Approved) ? "green-border-left"
+                : (status == RequestStatus.Approved || status == RequestStatus.Delivered) ? "green-border-left"
                 : (status == RequestStatus.Accepted || status == RequestStatus.AcceptedNewInterpreterAppointed || status == RequestStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
                 : "blue-border-left";
         }

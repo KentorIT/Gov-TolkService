@@ -188,7 +188,7 @@
         <div class="col-sm-4">
             <display-entry asp-for="ExpectedTravelCostInfo" />
         </div>
-        @if (requestIsAnswered && Model.Status != RequestStatus.Approved)
+        @if (requestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
         {
             <div class="col-sm-4">
                 <display-entry asp-for="LatestAnswerTimeForCustomer" />

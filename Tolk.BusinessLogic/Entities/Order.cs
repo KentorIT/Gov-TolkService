@@ -231,7 +231,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != OrderStatus.ResponseAccepted && Status != OrderStatus.Delivered)
             {
-                throw new InvalidOperationException($"Order {OrderId} is {Status}. Only Orders with Accepted request can be delivered");
+                throw new InvalidOperationException($"Order {OrderId} is {Status}. Only Orders with status delivered or response accepted can be delivered.");
             }
 
             Status = OrderStatus.Delivered;

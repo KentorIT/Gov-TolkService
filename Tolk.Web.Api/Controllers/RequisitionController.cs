@@ -79,7 +79,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                var request = order.Requests.SingleOrDefault(r => brokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Approved);
+                var request = order.Requests.SingleOrDefault(r => brokerId == r.Ranking.BrokerId && (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered));
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);

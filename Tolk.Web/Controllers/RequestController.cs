@@ -450,6 +450,27 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmNoRequisition(int requestId)
+        {
+            Request request = await GetConfirmedRequest(requestId);
+            if (request.Status == RequestStatus.Approved && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _requestService.ConfirmNoRequisition(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad utan rekvisition" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
         [ValidateAntiForgeryToken]
         [HttpDelete]
         public JsonResult DeleteRequestView(int requestId)
@@ -536,7 +557,9 @@ namespace Tolk.Web.Controllers
             }
             model.BrokerId = request.Ranking.BrokerId;
             model.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
-            model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
+            //todo flytta till request
+            model.AllowRequisitionRegistration = (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Delivered) && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow;
+            model.AllowConfirmNoRequisition = request.Status == RequestStatus.Approved && !request.Requisitions.Any() && request.Order.StartAt < _clock.SwedenNow && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.Approved);
             model.AllowCancellation = request.Order.StartAt > _clock.SwedenNow && _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
             model.AllowConfirmNoAnswer = request.Status == RequestStatus.ResponseNotAnsweredByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);

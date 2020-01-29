@@ -90,7 +90,7 @@
             </div>
         }
 
-        @if (Model.RequestIsAnswered && Model.Status != RequestStatus.Approved)
+        @if (Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
         {
             <div class="row">
                 <div class="col-sm-8">

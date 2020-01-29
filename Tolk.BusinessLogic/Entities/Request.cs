@@ -140,9 +140,9 @@ namespace Tolk.BusinessLogic.Entities
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
             (RequestGroupId.HasValue && (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed)));
 
-        public bool CanCreateRequisition => !(Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) || Status != RequestStatus.Approved);
+        public bool CanCreateRequisition => !Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) && (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
 
-        public bool CanCreateComplaint => !Complaints.Any() && Status == RequestStatus.Approved;
+        public bool CanCreateComplaint => !Complaints.Any() && (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
@@ -288,6 +288,25 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} har redan bekräftats obesvarad.");
             }
             RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
+        public void ConfirmNoRequisition(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.Approved)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna arkiveras.");
+            }
+            if (RequestStatusConfirmations.Any(r => r.RequestStatus == Status))
+            {
+                throw new InvalidOperationException($"Bokningsförfrågan med boknings-id {Order.OrderNumber} har redan arkiverats");
+            }
+            if (Order.StartAt > confirmedAt)
+            {
+                throw new InvalidOperationException($"Tolkuppdraget med boknings-id {Order.OrderNumber} har inte startat ännu och kan därför inte arkiveras");
+            }
+            RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
+            Status = RequestStatus.Delivered;
+            Order.Status = OrderStatus.Delivered;
         }
 
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
@@ -507,13 +526,18 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
             }
-            if (Status != RequestStatus.Approved)
+            if (!(Status == RequestStatus.Approved || Status == RequestStatus.Delivered))
             {
-                throw new InvalidOperationException($"A requisition cannot be created when request is not approved.");
+                throw new InvalidOperationException($"A requisition cannot be created when request is not approved or delivered.");
+            }
+            if (Order.StartAt > requisition?.CreatedAt)
+            {
+                throw new InvalidOperationException($"A requisition cannot be created before order start time.");
             }
             Requisitions.Add(requisition);
             //Change status on order accordingly.
             Order.DeliverRequisition();
+            Status = RequestStatus.Delivered;
         }
 
         #endregion

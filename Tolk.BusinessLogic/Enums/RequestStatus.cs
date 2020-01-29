@@ -26,6 +26,9 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_answer_approved")]
         [Description("Tillsättning är godkänd")]
         Approved = 5,
+        [CustomName("request_delivered")]
+        [Description("Uppdrag har utförts")]
+        Delivered = 6,
         [CustomName("request_declined")]
         [Description("Bokningsförfrågan avböjd")]
         DeclinedByBroker = 7,

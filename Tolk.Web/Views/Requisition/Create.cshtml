@@ -75,7 +75,7 @@
                     <div class="col-sm-12">
                         @if (Model.PreviousRequisition != null)
                         {
-                            <a href="@Url.Action("View", "Requisition", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a><br /><br />
+                            <a href="@Url.Action("View", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a><br /><br />
                         }
                     </div>
                 </div>
@@ -256,7 +256,7 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-6">
-                        <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Avbryt <span class="btn-remove-times">&times;</span></a>
+                        <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Request" asp-action="View" asp-route-Id="@Model.RequestId">Avbryt <span class="btn-remove-times">&times;</span></a>
                     </div>
                     <div class="col-sm-6">
                         <button id="create" type="submit" class="disable-on-click btn btn-large btn-default pull-right">Registrera rekvisition</button>

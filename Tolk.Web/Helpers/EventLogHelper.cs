@@ -399,7 +399,7 @@ namespace Tolk.Web.Helpers
                     Actor = "Systemet",
                 });
                 // Request no answer confirmations
-                if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
+                if (isRequestDetailView && request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
                 {
                     RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
                     eventLog.Add(new EventLogEntryModel
@@ -411,6 +411,17 @@ namespace Tolk.Web.Helpers
                         ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
                     });
                 }
+            }
+            if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.Approved))
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.Approved).ConfirmedAt,
+                    EventDetails = $"Arkiverad utan rekvisition",
+                    Actor = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.Approved).ConfirmedByUser.FullName,
+                    Organization = brokerName,
+                    ActorContactInfo = GetContactinfo(request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.Approved).ConfirmedByUser),
+                });
             }
             // Request cancellation
             if (request.CancelledAt.HasValue)

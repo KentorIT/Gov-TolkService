@@ -161,6 +161,8 @@ namespace Tolk.Web.Models
 
         public bool AllowRequisitionRegistration { get; set; } = false;
 
+        public bool AllowConfirmNoRequisition { get; set; } = false;
+
         public bool AllowCancellation { get; set; } = true;
 
         public bool AllowConfirmCancellation { get; set; } = false;

@@ -664,8 +664,8 @@ namespace Tolk.Web.Controllers
                      Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                      OrderNumber = r.Order.OrderNumber,
                      Status = StartListItemStatus.RequisitionToBeCreated,
-                     ButtonAction = "Create",
-                     ButtonController = "Requisition",
+                     ButtonAction = "View",
+                     ButtonController = "Request",
                      ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
                      OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                  }).ToList());

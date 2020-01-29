@@ -127,7 +127,7 @@ namespace Tolk.Web.Api.Controllers
             var complaint = await _dbContext.Complaints
                 .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&
                     c.Request.Ranking.BrokerId == brokerId &&
-                    c.Request.Status == RequestStatus.Approved);
+                    (c.Request.Status == RequestStatus.Approved || c.Request.Status == RequestStatus.Delivered));
             if (complaint == null)
             {
                 return ReturnError(ErrorCodes.ComplaintNotFound, nameof(View));

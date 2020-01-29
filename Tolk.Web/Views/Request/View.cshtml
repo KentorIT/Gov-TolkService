@@ -29,6 +29,35 @@
                         </div>
                     </div>
                 }
+                @if (Model.AllowConfirmNoRequisition)
+                {
+                    <br />
+                    <div class="border">
+                        <div class="row">
+                            <br />
+                            @if (Model.AllowConfirmNoRequisition)
+                            {
+                        <div class="col-xs-12 important-info">
+                            Nu kan du registrera en rekvisition för uppdraget. Vill du inte göra rekvisition så kan du välja valet Arkivera utan rekvisition, då kommer ärendet tas bort från listan Aktiva bokningar, men du kan när som helst söka upp bokningen och göra en rekvisition vid ett senare tillfälle.
+                        </div>
+                            }
+                            @if (Model.AllowRequisitionRegistration)
+                            {
+                                <div class="col-xs-6">
+                                    <a class="btn btn-danger btn-large pull-left" href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+                                </div>
+                            }
+                            @if (Model.AllowConfirmNoRequisition)
+                            {
+                                <div class="col-xs-6">
+                                    <form method="post" action="@Url.Action("ConfirmNoRequisition", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                                        <button class="btn btn-primary btn-large pull-right">Arkivera utan rekvisition</button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
                 @if (Model.AllowConfirmCancellation)
                 {
                     <br />
@@ -36,7 +65,7 @@
                     {
                         <div class="important-info">@Model.Info48HCancelledByCustomer</div>
                     }
-                    <form method="post" action="@Url.Action("ConfirmCancellation", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                    <form method="post" action="@Url.Action("ConfirmCancellation", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
@@ -44,7 +73,7 @@
                 @if (Model.AllowConfirmationDenial)
                 {
                     <br />
-                    <form method="post" action="@Url.Action("ConfirmDenial", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                    <form method="post" action="@Url.Action("ConfirmDenial", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
@@ -52,7 +81,7 @@
                 @if (Model.AllowConfirmNoAnswer)
                 {
                     <br />
-                    <form method="post" action="@Url.Action("ConfirmNoAnswer", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                    <form method="post" action="@Url.Action("ConfirmNoAnswer", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
@@ -72,33 +101,40 @@
                         </div>
                     }
                 </div>
+                @if (Model.AllowRequisitionRegistration && !Model.AllowConfirmNoRequisition)
+                {
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <a class="btn btn-danger btn-large pull-left" href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
+                        </div>
+                    </div>
+                }
                 @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "displayGeneralOrderInfo", false } })
                 @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
                 @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && (Model.Status == RequestStatus.CancelledByCreatorWhenApproved && !Model.AllowConfirmCancellation))
                 {
                     <div class="important-info">@Model.Info48HCancelledByCustomer</div>
                 }
-                <div class="row">
-                    <div class="col-sm-6">
-                        @if (Model.AllowCancellation)
-                        {
-                            <form method="post" class="cancel-form" action="@Url.Action("Cancel", "Request", new { RequestId = Model.RequestId })" asp-antiforgery="true">
-                                <input name="CancelMessage" type="hidden" />
-                                <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
-                            </form>
-                        }
-                        @if (Model.AllowRequisitionRegistration)
-                        {
-                            <a class="btn btn-danger btn-large pull-left" href="@Url.Action("Create", "Requisition", new { id = Model.RequestId })">Registrera rekvisition</a>
-                        }
+                @if (Model.AllowCancellation || Model.AllowInterpreterChange)
+                {
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @if (Model.AllowCancellation)
+                            {
+                                <form method="post" class="cancel-form" action="@Url.Action("Cancel", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                                    <input name="CancelMessage" type="hidden" />
+                                    <button class="btn cancel-button btn-danger btn-large">Avboka uppdrag</button>
+                                </form>
+                            }
+                        </div>
+                        <div class="col-sm-6">
+                            @if (Model.AllowInterpreterChange)
+                            {
+                                <a class="btn btn-primary btn-large pull-right" href="@Url.Action("Change", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                            }
+                        </div>
                     </div>
-                    <div class="col-sm-6">
-                        @if (Model.AllowInterpreterChange)
-                        {
-                            <a class="btn btn-primary btn-large pull-right" href="@Url.Action("Change", "Request", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
-                        }
-                    </div>
-                </div>
+                }
                 <div id="cancelMessageDialog" class="modal fade" role="dialog">
                     <div class="modal-dialog">
                         <!-- Modal content-->
@@ -125,10 +161,8 @@
         </div>
     </div>
     <div id="requisition" class="tab-pane fade">
-
     </div>
     <div id="complaint" class="tab-pane fade">
-
     </div>
 </div>
 @section Scripts {
