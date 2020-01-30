@@ -6,7 +6,9 @@ Kolla hur denna ska sättas:
 
 "EnableOrderGroups": "true",
 
-Kolla för säkerhets skull i db att alla users har de för Group tillagda i 
+Kolla för säkerhets skull i db att alla users har de för Group tillagda i (17, 18, 21, 22, 24)
 UserNotificationSettings
+
+OBS! lägg INTE till nummer 25 eftersom vi inte sagt något om 
 
 "EnableOrderUpdate"  har vi förmodligen inte kvar men om vi har det så tänk till hur den ska vara

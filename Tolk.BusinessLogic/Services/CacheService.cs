@@ -75,7 +75,7 @@ namespace Tolk.BusinessLogic.Services
 
                 if (brokerNotificationSettings == null)
                 {
-                    brokerNotificationSettings = _dbContext.Users.Include(u => u.NotificationSettings)
+                    brokerNotificationSettings = _dbContext.Users
                         .Where(u => u.BrokerId != null && u.IsApiUser)
                         .SelectMany(u => u.NotificationSettings)
                         .Select(n => new BrokerNotificationSettings

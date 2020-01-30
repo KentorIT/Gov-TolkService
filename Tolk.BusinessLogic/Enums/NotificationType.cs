@@ -100,5 +100,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förlorad samanhållen förfrågan på grund av ej besvarad av myndighet")]
         [CustomName("request_group_lost_due_to_no_answer_from_customer")]
         RequestGroupLostDueToNoAnswerFromCustomer = 24,
+
+        [Description("Tid för tolkuppdrag passerad")]
+        [CustomName("request_assignment_time_passed")]
+        RequestAssignmentTimePassed = 25,
     }
 }

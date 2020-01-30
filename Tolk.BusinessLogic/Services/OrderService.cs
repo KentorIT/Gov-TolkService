@@ -54,6 +54,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task HandleAllScheduledTasks()
         {
             await HandleStartedOrders();
+            await HandleCompletedRequests();
             await HandleExpiredRequests();
             await HandleExpiredRequestGroups();
             await HandleExpiredNonAnsweredRespondedRequests();
@@ -652,6 +653,44 @@ namespace Tolk.BusinessLogic.Services
                             startedRequest.InterpreterCompetenceVerificationResultOnStart = await _verificationService.VerifyInterpreter(officialInterpreterId, startedRequest.OrderId, (CompetenceAndSpecialistLevel)startedRequest.CompetenceLevel, true);
                             await _tolkDbContext.SaveChangesAsync();
                         }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
+                    await SendErrorMail(nameof(HandleStartedOrders), ex);
+                }
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
+        private async Task HandleCompletedRequests()
+        {
+            var requestIds = await _tolkDbContext.Requests.CompletedRequests(_clock.SwedenNow)
+                .Select(r => r.RequestId)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {count} requests that are completed: {requestIds}",
+                requestIds.Count, string.Join(", ", requestIds));
+
+            foreach (var requestId in requestIds)
+            {
+                try
+                {
+                    var completedRequest = await _tolkDbContext.Requests.CompletedRequests(_clock.SwedenNow)
+                    .Include(r => r.Order)
+                    .Include(r => r.Ranking)
+                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
+                    if (completedRequest == null)
+                    {
+                        _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.", requestId);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Processing completed request {requestId} for Order {orderId}.", completedRequest.RequestId, completedRequest.OrderId);
+                        _notificationService.RequestCompleted(completedRequest);
+                        completedRequest.CompletedNotificationIsHandled = true;
+                        await _tolkDbContext.SaveChangesAsync();
                     }
                 }
                 catch (Exception ex)

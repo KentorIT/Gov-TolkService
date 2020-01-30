@@ -1569,6 +1569,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("CompetenceLevel");
 
+                    b.Property<bool?>("CompletedNotificationIsHandled");
+
                     b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<string>("DenyMessage")

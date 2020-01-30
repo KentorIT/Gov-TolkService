@@ -96,6 +96,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public bool? CompletedNotificationIsHandled { get; set; }
+
         #endregion
 
         #region navigation

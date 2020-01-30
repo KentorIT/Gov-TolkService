@@ -933,6 +933,35 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
         }
 
+        public void RequestCompleted(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCompleted), nameof(NotificationService));
+            string orderNumber = request.Order.OrderNumber;
+            var body = $"Tiden för tolkuppdrag med boknings-ID {orderNumber} har passerat. Det är nu möjligt att registrera en rekvisition för uppdraget eller arkivera bokningen som avslutad utan att göra en rekvisition. För att komma till bokningen följ länken nedan:";
+            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(
+                    email.ContactInformation,
+                    $"Tiden för tillsatt tolkuppdrag {orderNumber} har passerat",
+                    body + GoToRequestPlain(request.RequestId),
+                    body + GoToRequestButton(request.RequestId),
+                    true);
+            }
+            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                new RequestCompletedModel
+                {
+                    OrderNumber = orderNumber,
+                },
+                webhook.ContactInformation,
+                NotificationType.RequestAssignmentTimePassed,
+                webhook.RecipientUserId);
+            }
+        }
+
         public void RequestCancelledByBroker(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCancelledByBroker), nameof(NotificationService));

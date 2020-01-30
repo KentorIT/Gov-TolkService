@@ -80,6 +80,12 @@ namespace Tolk.BusinessLogic.Utilities
                     rg.OrderGroup.Orders.Any(o => o.StartAt <= now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
+        public static IQueryable<Request> CompletedRequests(this IQueryable<Request> requests, DateTimeOffset now)
+        {
+            return requests.Where(r => (r.Order.EndAt <= now && r.Order.Status == OrderStatus.ResponseAccepted) &&
+                     r.Status == RequestStatus.Approved && !(r.CompletedNotificationIsHandled ?? false));
+        }
+
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;

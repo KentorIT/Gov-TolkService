@@ -56,6 +56,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User) { }
 
+        public void RequestCompleted(Request request) { }
+
         public void RequestCreated(Request request) { }
 
         public void RequestCreatedWithoutExpiry(Request request) { }

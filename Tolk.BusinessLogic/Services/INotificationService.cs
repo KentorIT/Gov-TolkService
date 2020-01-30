@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Services
         void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
         void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RemindUnhandledRequest(Request request);
+        void RequestCompleted(Request request);
         void RequestAccepted(Request request);
         void RequestAnswerApproved(Request request);
         void RequestAnswerAutomaticallyApproved(Request request);
