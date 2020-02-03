@@ -190,17 +190,17 @@ namespace Tolk.Web
                 SupportedCultures = cultureArray,
                 SupportedUICultures = cultureArray
             });
-            //app.UseRewriter(new RewriteOptions
-            //{
-            //    Rules =
-            //    {
-            //        new RedirectHostRule
-            //        {
-            //            InternalHost = Configuration["InternalHost"],
-            //            PublicOriginPath = Configuration["PublicOrigin"],
-            //        }
-            //    }
-            //});
+            app.UseRewriter(new RewriteOptions
+            {
+                Rules =
+                {
+                    new RedirectHostRule
+                    {
+                        InternalHost = Configuration["InternalHost"],
+                        PublicOriginPath = Configuration["PublicOrigin"],
+                    }
+                }
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
