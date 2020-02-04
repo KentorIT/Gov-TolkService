@@ -37,9 +37,9 @@
                             <br />
                             @if (Model.AllowConfirmNoRequisition)
                             {
-                        <div class="col-xs-12 important-info">
-                            Nu kan du registrera en rekvisition för uppdraget. Vill du inte göra rekvisition så kan du välja valet Arkivera utan rekvisition, då kommer ärendet tas bort från listan Aktiva bokningar, men du kan när som helst söka upp bokningen och göra en rekvisition vid ett senare tillfälle.
-                        </div>
+                                <div class="col-xs-12 important-info">
+                                    Nu kan du registrera en rekvisition för uppdraget. Vill du inte göra rekvisition så kan du välja valet Arkivera utan rekvisition, då kommer ärendet tas bort från listan Aktiva bokningar, men du kan när som helst söka upp bokningen och göra en rekvisition vid ett senare tillfälle.
+                                </div>
                             }
                             @if (Model.AllowRequisitionRegistration)
                             {
@@ -85,6 +85,22 @@
                         <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                     </form>
                     <br /><br />
+                }
+                @if (!string.IsNullOrEmpty(Model.DisplayOrderChangeText))
+                {
+                    <br />
+                    <div class="border">
+                        <div class="row">
+                            <div class="col-xs-8 important-info">
+                                <display-entry asp-for="DisplayOrderChangeText" />
+                            </div>
+                            <div class="col-xs-4">
+                                <form method="post" action="@Url.Action("ConfirmOrderChange", new ConfirmOrderChangeModel { ConfirmedOrderChangeLogEntries = Model.ConfirmedOrderChangeLogEntries, RequestId = Model.RequestId })" asp-antiforgery="true">
+                                    <button class="btn btn-primary btn-large pull-right">Bekräfta ändring <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 }
                 @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
                 <div class="row">

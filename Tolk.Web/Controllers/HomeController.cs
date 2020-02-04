@@ -592,6 +592,30 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
+            actionList.AddRange(_dbContext.Requests
+                .Include(r => r.Order)
+                .Where(r => (r.Status == RequestStatus.Approved || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                    r.Ranking.BrokerId == brokerId && r.Order.EndAt > _clock.SwedenNow &&
+                    r.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null))
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = r.RequestId,
+                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.Order.StartAt.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = r.Order.CustomerOrganisation.Name,
+                    ButtonItemId = r.RequestId,
+                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                    OrderNumber = r.Order.OrderNumber,
+                    Status = StartListItemStatus.OrderChanged,
+                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    ButtonController = "Request",
+                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                }).ToList());
 
             //ADD REQUESTGROUPS HERE (statuses received, created, denied, not answered by customer)
             actionList.AddRange(_dbContext.RequestGroups

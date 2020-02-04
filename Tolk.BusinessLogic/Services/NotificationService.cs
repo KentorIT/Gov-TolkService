@@ -151,7 +151,7 @@ namespace Tolk.BusinessLogic.Services
         private string GetOrderChangeText(Order order, Request request)
         {
             StringBuilder sb = new StringBuilder("Följande fält har ändrats på bokningen:\n");
-            var lastEntry = order.OrderChangeLogEntry.OrderBy(oc => oc.OrderChangeLogEntryId)
+            var lastEntry = order.OrderChangeLogEntries.OrderBy(oc => oc.OrderChangeLogEntryId)
                 .Last(o => o.OrderChangeLogType == OrderChangeLogType.Other);
             //get the interpreterlocation from request to get the correct string from order.InterpreterLocations to compare to
             var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;

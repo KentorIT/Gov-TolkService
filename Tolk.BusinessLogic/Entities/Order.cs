@@ -100,7 +100,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderAttachment> Attachments { get; set; }
 
-        public List<OrderChangeLogEntry> OrderChangeLogEntry { get; set; }
+        public List<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
         
         #endregion
 
@@ -247,7 +247,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Can't change contact person for orders with this status.");
             }
-            OrderChangeLogEntry.Add(new OrderChangeLogEntry
+            OrderChangeLogEntries.Add(new OrderChangeLogEntry
             {
                 LoggedAt = changedAt,
                 UpdatedByUserId = userId,
@@ -297,7 +297,7 @@ namespace Tolk.BusinessLogic.Entities
             }
 
             orderAttachmentHistoryEntries.AddRange(ordergroupAttachmentIdsToRemove.Select(a => new OrderAttachmentHistoryEntry { AttachmentId = a, OrderGroupAttachmentRemoved = true }));
-            OrderChangeLogEntry.Add(new OrderChangeLogEntry
+            OrderChangeLogEntries.Add(new OrderChangeLogEntry
             {
                 LoggedAt = changedAt,
                 UpdatedByUserId = userId,
@@ -341,7 +341,7 @@ namespace Tolk.BusinessLogic.Entities
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerReferenceNumber, Value = CustomerReferenceNumber },
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerDepartment, Value = UnitName }
             };
-            OrderChangeLogEntry.Add(new OrderChangeLogEntry
+            OrderChangeLogEntries.Add(new OrderChangeLogEntry
             {
                 LoggedAt = changedAt,
                 UpdatedByUserId = userId,

@@ -229,7 +229,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Status = currentStatus,
                 ContactPersonId = prevContactPersonId ?? null,
-                OrderChangeLogEntry = new List<OrderChangeLogEntry>(),
+                OrderChangeLogEntries = new List<OrderChangeLogEntry>(),
                 AllowExceedingTravelCost = AllowExceedingTravelCost.No,
                 CustomerOrganisationId = 1,
                 Requests = new List<Request>()
@@ -247,7 +247,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 order.Status = conditionalStatus.Value;
             }
             order.ChangeContactPerson(changedAtDateTime, userId, impersonatorId, newContactPerson);
-            var orderChangeContactHistory = order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt).Last();
+            var orderChangeContactHistory = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt).Last();
             Assert.Equal(newContactPerson.Id, order.ContactPersonUser.Id);
             Assert.Equal(changedAtDateTime, orderChangeContactHistory.LoggedAt);
             Assert.Equal(userId, orderChangeContactHistory.UpdatedByUserId);

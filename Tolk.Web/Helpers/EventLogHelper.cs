@@ -49,10 +49,10 @@ namespace Tolk.Web.Helpers
                 });
             }
             // Change of contact person  
-            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).Any())
+            if (order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).Any())
             {
                 int i = 0;
-                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt))
+                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt))
                 {
                     string newContactPersonName = string.Empty;
                     string previousContactPersonName = string.Empty;
@@ -87,35 +87,31 @@ namespace Tolk.Web.Helpers
                     i++;
                 }
             }
-            // Change of attachments 
-            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment).Any())
+            if (order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.Other).Any())
             {
-                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment).OrderBy(ch => ch.LoggedAt))
+                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.Other).OrderBy(ch => ch.LoggedAt))
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = oc.LoggedAt,
-                        EventDetails = "Bifogade bilagor för bokning ändrade",
+                        EventDetails = oc.OrderChangeLogType == OrderChangeLogType.Attachment ? "Bifogade bilagor för bokning ändrade" : "Bokning ändrad",
                         Actor = oc.UpdatedByUser.FullName,
                         Organization = customerName,
                         ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
                     });
-                }
-            }
-            // Change of other order fields
-            if (order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other).Any())
-            {
-                foreach (OrderChangeLogEntry oc in order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other).OrderBy(ch => ch.LoggedAt))
-                {
-                    eventLog.Add(new EventLogEntryModel
+                    if (oc.OrderChangeConfirmation != null)
                     {
-                        Timestamp = oc.LoggedAt,
-                        EventDetails = "Bokning ändrad",
-                        Actor = oc.UpdatedByUser.FullName,
-                        Organization = customerName,
-                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
-                    });
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = oc.OrderChangeConfirmation.ConfirmedAt,
+                            EventDetails = "Bokningsändring bekräftad",
+                            Actor = oc.OrderChangeConfirmation.ConfirmedByUser.FullName,
+                            Organization = oc.Broker.Name,
+                            ActorContactInfo = GetContactinfo(oc.OrderChangeConfirmation.ConfirmedByUser)
+                        });
+                    }
                 }
+                eventLog = eventLog.Distinct(new EventLogEntryModel.EventLogEntryComparer()).ToList();
             }
             if (terminatingRequest != null)
             {
@@ -160,7 +156,7 @@ namespace Tolk.Web.Helpers
         private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
         {
 
-            var orderContactPersons = order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
+            var orderContactPersons = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
             //try find next row if any else take info from Order.ContactPersonUser
             string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
             return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
@@ -201,39 +197,32 @@ namespace Tolk.Web.Helpers
                     Actor = "Systemet",
                 });
             }
-            //Order change history just in detailed view (for broker, customer has its' own) and do not repeat for every request (not a replacing request)
-            if (isRequestDetailView && !request.ReplacingRequestId.HasValue)
+            //Order change history just in detailed view (for broker, customer has its' own) and do not repeat for every request
+            if (isRequestDetailView && !request.ReplacingRequestId.HasValue && request.Order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.Other) && oc.BrokerId == request.Ranking.BrokerId).Any())
             {
-                // Change of attachments 
-                if (request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.BrokerId == request.Ranking.BrokerId).Any())
+                foreach (OrderChangeLogEntry oc in request.Order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.Other) && oc.BrokerId == request.Ranking.BrokerId).OrderBy(ch => ch.LoggedAt))
                 {
-                    foreach (OrderChangeLogEntry oc in request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.BrokerId == request.Ranking.BrokerId).OrderBy(ch => ch.LoggedAt))
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = oc.LoggedAt,
+                        EventDetails = oc.OrderChangeLogType == OrderChangeLogType.Attachment ? "Bifogade bilagor för bokning ändrade" : "Bokningsförfrågan ändrad",
+                        Actor = oc.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                    });
+                    if (oc.OrderChangeConfirmation != null)
                     {
                         eventLog.Add(new EventLogEntryModel
                         {
-                            Timestamp = oc.LoggedAt,
-                            EventDetails = "Bifogade bilagor för bokningsförfrågan ändrade",
-                            Actor = oc.UpdatedByUser.FullName,
-                            Organization = customerName,
-                            ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                            Timestamp = oc.OrderChangeConfirmation.ConfirmedAt,
+                            EventDetails = "Bokningsändring bekräftad",
+                            Actor = oc.OrderChangeConfirmation.ConfirmedByUser.FullName,
+                            Organization = brokerName,
+                            ActorContactInfo = GetContactinfo(oc.OrderChangeConfirmation.ConfirmedByUser)
                         });
                     }
                 }
-                // Change of other order fields
-                if (request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.BrokerId == request.Ranking.BrokerId).Any())
-                {
-                    foreach (OrderChangeLogEntry oc in request.Order.OrderChangeLogEntry.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.BrokerId == request.Ranking.BrokerId).OrderBy(ch => ch.LoggedAt))
-                    {
-                        eventLog.Add(new EventLogEntryModel
-                        {
-                            Timestamp = oc.LoggedAt,
-                            EventDetails = "Bokningsförfrågan ändrad",
-                            Actor = oc.UpdatedByUser.FullName,
-                            Organization = customerName,
-                            ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
-                        });
-                    }
-                }
+                eventLog = eventLog.Distinct(new EventLogEntryModel.EventLogEntryComparer()).ToList();
             }
             if (request.RequestUpdateLatestAnswerTime != null)
             {

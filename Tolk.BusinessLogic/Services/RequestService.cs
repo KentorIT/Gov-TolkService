@@ -385,8 +385,38 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId)
         {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmNoAnswer), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmNoRequisition), nameof(RequestService));
             request.ConfirmNoRequisition(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
+        public async Task ConfirmOrderChange(
+           Request request,
+           List<int> confirmedOrderChangeLogEntriesId,
+           DateTimeOffset confirmedAt,
+           int userId,
+           int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmOrderChange), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(confirmedOrderChangeLogEntriesId, nameof(ConfirmOrderChange), nameof(RequestService));
+            var ids = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == request.Ranking.BrokerId).Select(oc => oc.OrderChangeLogEntryId);
+            if (confirmedOrderChangeLogEntriesId.Except(ids).Any())
+            {
+                throw new InvalidOperationException("Ändringarna tillhörde inte den här bokningsförfrågan");
+            }
+            var previousConfirmations = request.Order.OrderChangeLogEntries
+                .Where(oc => confirmedOrderChangeLogEntriesId.Contains(oc.OrderChangeLogEntryId) && oc.OrderChangeConfirmation != null && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson);
+            if (previousConfirmations.Any())
+            {
+                throw new InvalidOperationException("Bokningsändring redan bekräftad");
+            }
+            await _tolkDbContext.AddRangeAsync(confirmedOrderChangeLogEntriesId.Select(oc => new OrderChangeConfirmation
+            {
+                ConfirmedAt = confirmedAt,
+                ConfirmedBy = userId,
+                ImpersonatingConfirmedBy = impersonatorId,
+                OrderChangeLogEntryId = oc
+            }));
             await _tolkDbContext.SaveChangesAsync();
         }
 

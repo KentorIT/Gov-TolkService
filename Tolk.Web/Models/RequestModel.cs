@@ -179,6 +179,13 @@ namespace Tolk.Web.Models
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
 
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Bokningsändringar")]
+        public string DisplayOrderChangeText { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<int> ConfirmedOrderChangeLogEntries { get; set; } = new List<int>();
+
         [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan och går vidare till nästa förmedling i rangordningen.")]
         [ClientRequired]
         public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }

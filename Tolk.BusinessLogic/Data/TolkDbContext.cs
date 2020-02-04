@@ -465,10 +465,10 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.Entity<OrderGroup>()
-            //    .HasOne(f => f.Region)
-            //    .WithMany()
-            //    .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<OrderChangeConfirmation>()
+               .HasOne(occ => occ.OrderChangeLogEntry)
+               .WithOne(oc => oc.OrderChangeConfirmation)
+               .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -594,6 +594,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
 
         public DbSet<OrderAttachmentHistoryEntry> OrderAttachmentHistoryEntries { get; set; }
+
+        public DbSet<OrderChangeConfirmation> OrderChangeConfirmations { get; set; }
 
         public DbQuery<OrderListRow> OrderListRows { get; set; }
 

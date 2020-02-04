@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -90,7 +91,9 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.Order).ThenInclude(r => r.Language)
                 .Include(r => r.Order).ThenInclude(r => r.Region)
                 .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntry).ThenInclude(oc => oc.UpdatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderHistories)
                 .Include(r => r.Order).ThenInclude(o => o.Group).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -471,6 +474,25 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ConfirmOrderChange(ConfirmOrderChangeModel model)
+        {
+            Request request = await GetOrderChangedRequest(model.RequestId);
+            if ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _requestService.ConfirmOrderChange(request, model.ConfirmedOrderChangeLogEntries, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsändringar bekräftade" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
         [ValidateAntiForgeryToken]
         [HttpDelete]
         public JsonResult DeleteRequestView(int requestId)
@@ -537,7 +559,15 @@ namespace Tolk.Web.Controllers
                 .SingleAsync(r => r.RequestId == requestId);
         }
 
-        private RequestModel GetModel(Request request, bool includeLog = false)
+        private async Task<Request> GetOrderChangedRequest(int requestId)
+        {
+            return await _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
+                .SingleAsync(r => r.RequestId == requestId);
+        }
+
+        private RequestModel GetModel(Request request, bool isView = false)
         {
             var model = RequestModel.GetModelFromRequest(request);
             model.OrderModel.ActiveRequest = model; //We're only interested in the request we have access to
@@ -564,8 +594,11 @@ namespace Tolk.Web.Controllers
             model.AllowConfirmationDenial = request.Status == RequestStatus.DeniedByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
             model.AllowConfirmNoAnswer = request.Status == RequestStatus.ResponseNotAnsweredByCreator && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
             model.AllowConfirmCancellation = request.Status == RequestStatus.CancelledByCreatorWhenApproved && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
-            if (includeLog)
+
+            if (isView)
             {
+                model.DisplayOrderChangeText = DisplayOrderChange(request) ? GetOrderChangeText(request.Order, request) : string.Empty;
+                model.ConfirmedOrderChangeLogEntries = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).Select(oc => oc.OrderChangeLogEntryId).ToList();
                 model.EventLog = new EventLogModel
                 {
                     Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
@@ -591,6 +624,73 @@ namespace Tolk.Web.Controllers
                 };
             }
             return model;
+        }
+
+        private bool DisplayOrderChange(Request request) => (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.EndAt > _clock.SwedenNow &&
+            request.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null);
+
+        private static string GetOrderChangeText(Order order, Request request)
+        {
+
+            //måste fixa med attachment och spara 
+            StringBuilder sb = new StringBuilder();
+            var orderChangeLogEntries = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.OrderChangeConfirmation == null).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
+            var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
+
+            string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
+                order.InterpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
+                order.InterpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().Street;
+            int i = 0;
+            foreach (OrderChangeLogEntry oce in orderChangeLogEntries)
+            {
+                i++;
+                var nextToCompareTo = orderChangeLogEntries.Count > i ? orderChangeLogEntries[i] : null;
+                var date = $"{oce.LoggedAt.ToSwedishString("yyyy-MM-dd HH:mm")} - ";
+                foreach (OrderHistoryEntry oh in oce.OrderHistories)
+                {
+                    switch (oh.ChangeOrderType)
+                    {
+                        case ChangeOrderType.LocationStreet:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.LocationStreet).Value));
+                            break;
+                        case ChangeOrderType.OffSiteContactInformation:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.OffSiteContactInformation).Value));
+                            break;
+                        case ChangeOrderType.Description:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.Description : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.Description).Value));
+                            break;
+                        case ChangeOrderType.InvoiceReference:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.InvoiceReference : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.InvoiceReference).Value));
+                            break;
+                        case ChangeOrderType.CustomerReferenceNumber:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.CustomerReferenceNumber : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerReferenceNumber).Value));
+                            break;
+                        case ChangeOrderType.CustomerDepartment:
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.UnitName : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerDepartment).Value));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+            }
+            var orderAttachmentChangeLogEntries = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.OrderChangeConfirmation == null).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
+            if (orderAttachmentChangeLogEntries.Any())
+            {
+                sb.Append("\n");
+                foreach (OrderChangeLogEntry oce in orderAttachmentChangeLogEntries)
+                {
+                    sb.Append($"{oce.LoggedAt.ToSwedishString("yyyy-MM-dd HH:mm")} - Bifogade bilagor ändrade\n");
+                }
+            }
+            return sb.ToString();
+        }
+
+        private static string GetOrderFieldText(string date, OrderHistoryEntry oh, string newValue)
+        {
+            return (string.IsNullOrEmpty(newValue) && string.IsNullOrEmpty(oh.Value)) ? string.Empty :
+                string.IsNullOrEmpty(newValue) ? $"{date}{oh.ChangeOrderType.GetDescription()} - Informationen togs bort\n" :
+                newValue.Equals(oh.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty :
+                $"{date}{oh.ChangeOrderType.GetDescription()} - Nytt värde: {newValue}\n";
         }
 
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)

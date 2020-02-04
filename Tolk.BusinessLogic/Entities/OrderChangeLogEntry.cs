@@ -33,6 +33,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
 
+        public OrderChangeConfirmation OrderChangeConfirmation { get; set; }
         public List<OrderHistoryEntry> OrderHistories { get; set; }
 
         public OrderContactPersonHistory OrderContactPersonHistory { get; set; }
