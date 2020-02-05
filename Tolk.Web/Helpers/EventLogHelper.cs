@@ -233,7 +233,9 @@ namespace Tolk.Web.Helpers
                     {
                         Timestamp = request.RequestUpdateLatestAnswerTime.UpdatedAt,
                         EventDetails = $"Sista svarstid satt",
-                        Actor = request.RequestUpdateLatestAnswerTime.UpdatedByUser.FullName
+                        Actor = request.RequestUpdateLatestAnswerTime.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(request.RequestUpdateLatestAnswerTime.UpdatedByUser)
                     });
                 }
                 eventLog.Add(new EventLogEntryModel
