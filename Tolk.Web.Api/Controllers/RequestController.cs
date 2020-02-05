@@ -513,9 +513,34 @@ namespace Tolk.Web.Api.Controllers
                     request,
                     _timeService.SwedenNow,
                     user?.Id ?? apiUserId,
-                    (user != null ? (int?)apiUserId : null)
+                    user != null ? (int?)apiUserId : null
                 );
                 return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmChange([FromBody] ConfirmChangeModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                Request request = await GetOrderChangedRequest(model.OrderNumber, brokerId);
+                var allNonConfirmedOrderChanges = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == brokerId && oc.OrderChangeConfirmation == null && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson).ToList();
+                await _requestService.ConfirmOrderChange(request, allNonConfirmedOrderChanges.Select(c => c.OrderChangeLogEntryId).ToList(), _timeService.SwedenNow, user?.Id ?? apiUserId, user != null ? (int?)apiUserId : null);
+                return Ok(new ConfirmChangeResponse { ConfirmedChanges = allNonConfirmedOrderChanges.Select(o => new ConfirmedChangeModel { ChangedAt = o.LoggedAt, ChangeType = o.OrderChangeLogType.GetCustomName() }) });
             }
             catch (InvalidApiCallException ex)
             {
@@ -608,10 +633,10 @@ namespace Tolk.Web.Api.Controllers
                 var attachment = order.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
                 if (attachment == null)
                 {
-                    attachment = order.OrderGroupId.HasValue ? 
+                    attachment = order.OrderGroupId.HasValue ?
                         order.Group.Attachments
-                        .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId) 
-                            && oa.AttachmentId == attachmentId).SingleOrDefault(a => a.AttachmentId == attachmentId)?.Attachment 
+                        .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId)
+                            && oa.AttachmentId == attachmentId).SingleOrDefault(a => a.AttachmentId == attachmentId)?.Attachment
                         : null;
                 }
                 if (attachment == null)
@@ -692,7 +717,19 @@ namespace Tolk.Web.Api.Controllers
             {
                 throw new InvalidApiCallException(ErrorCodes.RequestNotFound);
             }
+            return request;
+        }
 
+        private async Task<Request> GetOrderChangedRequest(string orderNumber, int brokerId)
+        {
+            var request = await _dbContext.Requests
+                .Include(r => r.Ranking)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation).OrderBy(r => r.RequestId)
+                .LastOrDefaultAsync(r => r.Order.OrderNumber == orderNumber && r.Ranking.BrokerId == brokerId);
+            if (request == null)
+            {
+                throw new InvalidApiCallException(ErrorCodes.RequestNotFound);
+            }
             return request;
         }
 

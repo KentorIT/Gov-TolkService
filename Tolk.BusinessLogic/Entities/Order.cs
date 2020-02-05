@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Validation;
 
@@ -101,7 +102,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderAttachment> Attachments { get; set; }
 
         public List<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
-        
+
         #endregion
 
         #region customer information
@@ -233,7 +234,6 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Status}. Only Orders with status delivered or response accepted can be delivered.");
             }
-
             Status = OrderStatus.Delivered;
         }
 
@@ -258,12 +258,40 @@ namespace Tolk.BusinessLogic.Entities
             ContactPersonUser = newContactPerson;
         }
 
-        public void ChangeAttachments(DateTimeOffset changedAt, int userId, int? impersonatingUserId, IEnumerable<int> updatedAttachments)
+        public void Update(ChangeOrderModel model)
         {
             if (Status != OrderStatus.ResponseAccepted)
             {
                 throw new InvalidOperationException($"Bokningen {OrderId} har fel status {Status} för att kunna uppdateras.");
             }
+            if (model == null)
+            {
+                throw new InvalidOperationException($"Hittar inga ändringar för bokning {OrderId}.");
+            }
+            List<OrderAttachmentHistoryEntry> orderAttachmentHistories = new List<OrderAttachmentHistoryEntry>();
+            List<OrderHistoryEntry> orderHistories = new List<OrderHistoryEntry>();
+            if (model.OrderChangeLogType == OrderChangeLogType.Attachment || model.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields)
+            {
+                orderAttachmentHistories = ChangeAttachments(model.Attachments);
+            }
+            if (model.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || model.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields)
+            {
+                orderHistories = ChangeOrderFields(model);
+            }
+            OrderChangeLogEntries.Add(new OrderChangeLogEntry
+            {
+                LoggedAt = model.UpdatedAt,
+                UpdatedByUserId = model.UpdatedBy,
+                UpdatedByImpersonatorId = model.ImpersonatedUpdatedBy,
+                OrderChangeLogType = model.OrderChangeLogType,
+                OrderAttachmentHistoryEntries = orderAttachmentHistories,
+                OrderHistories = orderHistories,
+                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
+            });
+        }
+
+        private List<OrderAttachmentHistoryEntry> ChangeAttachments(IEnumerable<int> updatedAttachments)
+        {
             //before changing the attachments
             var orderAttachmentHistoryEntries = Attachments.Select(a => new OrderAttachmentHistoryEntry { AttachmentId = a.AttachmentId }).ToList();
 
@@ -295,17 +323,8 @@ namespace Tolk.BusinessLogic.Entities
                     Attachments.Remove(attachment);
                 }
             }
-
             orderAttachmentHistoryEntries.AddRange(ordergroupAttachmentIdsToRemove.Select(a => new OrderAttachmentHistoryEntry { AttachmentId = a, OrderGroupAttachmentRemoved = true }));
-            OrderChangeLogEntries.Add(new OrderChangeLogEntry
-            {
-                LoggedAt = changedAt,
-                UpdatedByUserId = userId,
-                UpdatedByImpersonatorId = impersonatingUserId,
-                OrderChangeLogType = OrderChangeLogType.Attachment,
-                OrderAttachmentHistoryEntries = orderAttachmentHistoryEntries, 
-                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
-            });
+            return orderAttachmentHistoryEntries;
         }
 
         private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
@@ -327,35 +346,23 @@ namespace Tolk.BusinessLogic.Entities
             return ranking;
         }
 
-        public void Update(DateTimeOffset changedAt, int userId, int? impersonatingUserId, string description, string locationStreet, string offSiteContactInformation, string invoiceReference, string customerReferenceNumber, string unitName, InterpreterLocation selectedInterpreterlocation)
+        private List<OrderHistoryEntry> ChangeOrderFields(ChangeOrderModel model)
         {
-            if (Status != OrderStatus.ResponseAccepted)
-            {
-                throw new InvalidOperationException($"Bokningen {OrderId} har fel status {Status} för att kunna uppdateras.");
-            }
             var orderHistoryEntries = new List<OrderHistoryEntry>
             {
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.Description, Value = Description },
-                new OrderHistoryEntry { ChangeOrderType = string.IsNullOrEmpty(locationStreet) ? ChangeOrderType.OffSiteContactInformation : ChangeOrderType.LocationStreet, Value = string.IsNullOrEmpty(locationStreet) ? InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().OffSiteContactInformation : InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().Street },
+                new OrderHistoryEntry { ChangeOrderType = string.IsNullOrEmpty(model.LocationStreet) ? ChangeOrderType.OffSiteContactInformation : ChangeOrderType.LocationStreet, Value = string.IsNullOrEmpty(model.LocationStreet) ? InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().OffSiteContactInformation : InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().Street },
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.InvoiceReference, Value = InvoiceReference },
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerReferenceNumber, Value = CustomerReferenceNumber },
                 new OrderHistoryEntry { ChangeOrderType = ChangeOrderType.CustomerDepartment, Value = UnitName }
             };
-            OrderChangeLogEntries.Add(new OrderChangeLogEntry
-            {
-                LoggedAt = changedAt,
-                UpdatedByUserId = userId,
-                UpdatedByImpersonatorId = impersonatingUserId,
-                OrderChangeLogType = OrderChangeLogType.Other,
-                OrderHistories = orderHistoryEntries,
-                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
-            });
-            Description = description;
-            InvoiceReference = invoiceReference;
-            UnitName = unitName;
-            CustomerReferenceNumber = customerReferenceNumber;
-            InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().OffSiteContactInformation = offSiteContactInformation;
-            InterpreterLocations.Where(i => i.InterpreterLocation == selectedInterpreterlocation).Single().Street = locationStreet;
+            Description = model.Description;
+            InvoiceReference = model.InvoiceReference;
+            UnitName = model.CustomerDepartment;
+            CustomerReferenceNumber = model.CustomerReferenceNumber;
+            InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().OffSiteContactInformation = model.OffSiteContactInformation;
+            InterpreterLocations.Where(i => i.InterpreterLocation == model.SelectedInterpreterLocation).Single().Street = model.LocationStreet;
+            return orderHistoryEntries;
         }
 
         public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)

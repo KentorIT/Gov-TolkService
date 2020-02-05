@@ -334,7 +334,7 @@ namespace Tolk.Web.Controllers
                         if (!oldOrderAttachmentIdsToCompare.OrderBy(r => r).SequenceEqual(updatedAttachments.OrderBy(r => r)))
                         {
                             attachmentChanged = true;
-                            order.ChangeAttachments(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), updatedAttachments);
+
                         }
                         //check if contactperson is changed
                         if (order.ContactPersonId != model.ContactPersonId)
@@ -346,20 +346,30 @@ namespace Tolk.Web.Controllers
                         if (model.IsOrderUpdated(order))
                         {
                             orderFieldsUpdated = true;
-                            order.Update(
-                                _clock.SwedenNow, User.GetUserId(),
-                                User.TryGetImpersonatorId(),
-                                model.Description,
-                                model.LocationStreet,
-                                model.OffSiteContactInformation,
-                                model.InvoiceReference,
-                                model.CustomerReferenceNumber,
-                                model.UnitName,
-                                model.SelectedInterpreterLocation);
+
                         }
                         if (!(orderFieldsUpdated || attachmentChanged || contactpersonChanged))
                         {
                             return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "OBS! Det fanns inga ändringar att spara på bokningen!" });
+                        }
+                        if (orderFieldsUpdated || attachmentChanged)
+                        {
+                            order.Update(new ChangeOrderModel
+                            {
+                                UpdatedAt = _clock.SwedenNow,
+                                UpdatedBy = User.GetUserId(),
+                                ImpersonatedUpdatedBy = User.TryGetImpersonatorId(),
+                                Description = model.Description,
+                                LocationStreet = model.LocationStreet,
+                                OffSiteContactInformation = model.OffSiteContactInformation,
+                                CustomerDepartment = model.UnitName,
+                                CustomerReferenceNumber = model.CustomerReferenceNumber,
+                                InvoiceReference = model.InvoiceReference,
+                                OrderChangeLogType = (orderFieldsUpdated && attachmentChanged) ? OrderChangeLogType.AttachmentAndOrderInformationFields : attachmentChanged ? OrderChangeLogType.Attachment : OrderChangeLogType.OrderInformationFields,
+                                SelectedInterpreterLocation = model.SelectedInterpreterLocation,
+                                Attachments = updatedAttachments
+                            });
+                            
                         }
                         await _dbContext.SaveChangesAsync();
                         order = GetOrder(model.OrderId.Value);

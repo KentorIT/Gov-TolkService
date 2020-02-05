@@ -311,6 +311,37 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.Delivered;
         }
 
+        public void ConfirmOrderChange(List<int> confirmedOrderChangeLogEntriesId, DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (confirmedOrderChangeLogEntriesId == null)
+            {
+                throw new InvalidOperationException("Hittade inga ändringar att bekräfta.");
+            }
+            var ids = Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == Ranking.BrokerId).Select(oc => oc.OrderChangeLogEntryId);
+            if (confirmedOrderChangeLogEntriesId.Except(ids).Any())
+            {
+                throw new InvalidOperationException("Ändringarna tillhörde inte den här bokningsförfrågan");
+            }
+            var previousConfirmations = Order.OrderChangeLogEntries
+                .Where(oc => confirmedOrderChangeLogEntriesId.Contains(oc.OrderChangeLogEntryId) && oc.OrderChangeConfirmation != null && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson);
+            if (previousConfirmations.Any())
+            {
+                throw new InvalidOperationException("Bokningsändring redan bekräftad");
+            }
+            foreach (OrderChangeLogEntry oc in Order.OrderChangeLogEntries)
+            {
+                if (confirmedOrderChangeLogEntriesId.Contains(oc.OrderChangeLogEntryId))
+                {
+                    oc.OrderChangeConfirmation = new OrderChangeConfirmation
+                    {
+                        ConfirmedAt = confirmedAt,
+                        ConfirmedBy = userId,
+                        ImpersonatingConfirmedBy = impersonatorId
+                    };
+                }
+            }
+        }
+
         public void AddRequestView(int userId, int? impersonatorId, DateTimeOffset swedenNow)
         {
             if (!RequestViews.Any(rv => rv.ViewedBy == userId))

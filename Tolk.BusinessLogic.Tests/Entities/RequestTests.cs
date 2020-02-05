@@ -1224,6 +1224,57 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Fact]
+        public void ConfirmOrderChange()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.Approved,
+                Order = new Order(MockOrder),
+                Ranking = MockEntities.MockRankings[0]
+            };
+            request.Order.OrderChangeLogEntries = new List<OrderChangeLogEntry>
+            {
+                new OrderChangeLogEntry { OrderChangeLogType = OrderChangeLogType.OrderInformationFields, LoggedAt = DateTimeOffset.Now, UpdatedByUserId = 1, BrokerId = 1 }
+            };
+            request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null);
+            Assert.NotNull(request.Order.OrderChangeLogEntries.First().OrderChangeConfirmation);
+        }
+
+        [Fact]
+        public void ConfirmOrderChange_Invalid_Broker()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.Approved,
+                Order = new Order(MockOrder),
+                Ranking = MockEntities.MockRankings[0]
+            };
+            request.Order.OrderChangeLogEntries = new List<OrderChangeLogEntry>
+            {
+                new OrderChangeLogEntry { OrderChangeLogType = OrderChangeLogType.OrderInformationFields, LoggedAt = DateTimeOffset.Now, UpdatedByUserId = 1, BrokerId = request.Ranking.BrokerId + 1 }
+            };
+            Assert.Throws<InvalidOperationException>(() => request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null));
+        }
+
+        [Fact]
+        public void ConfirmOrderChange_Invalid_AlreadyConfirmed()
+        {
+            var request = new Request
+            {
+                Status = RequestStatus.Approved,
+                Order = new Order(MockOrder),
+                Ranking = MockEntities.MockRankings[0]
+            };
+            request.Order.OrderChangeLogEntries = new List<OrderChangeLogEntry>
+            {
+                new OrderChangeLogEntry { OrderChangeLogType = OrderChangeLogType.OrderInformationFields, LoggedAt = DateTimeOffset.Now, UpdatedByUserId = 1, BrokerId = request.Ranking.BrokerId }
+            };
+            request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null);
+            Assert.Throws<InvalidOperationException>(() => request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null));
+
+        }
+
+        [Fact]
         public void CreateComplaint_Valid()
         {
             var complaint = new Complaint

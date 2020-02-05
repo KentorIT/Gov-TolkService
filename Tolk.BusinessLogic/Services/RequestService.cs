@@ -129,7 +129,7 @@ namespace Tolk.BusinessLogic.Services
                             Enumerable.Empty<RequestAttachment>().ToList(),
                             extraInterpreterVerificationResult,
                             latestAnswerTimeForCustomer,
-                            travelCostsShouldBeApproved       
+                            travelCostsShouldBeApproved
                        );
                     }
                     else
@@ -398,25 +398,7 @@ namespace Tolk.BusinessLogic.Services
            int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ConfirmOrderChange), nameof(RequestService));
-            NullCheckHelper.ArgumentCheckNull(confirmedOrderChangeLogEntriesId, nameof(ConfirmOrderChange), nameof(RequestService));
-            var ids = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == request.Ranking.BrokerId).Select(oc => oc.OrderChangeLogEntryId);
-            if (confirmedOrderChangeLogEntriesId.Except(ids).Any())
-            {
-                throw new InvalidOperationException("Ändringarna tillhörde inte den här bokningsförfrågan");
-            }
-            var previousConfirmations = request.Order.OrderChangeLogEntries
-                .Where(oc => confirmedOrderChangeLogEntriesId.Contains(oc.OrderChangeLogEntryId) && oc.OrderChangeConfirmation != null && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson);
-            if (previousConfirmations.Any())
-            {
-                throw new InvalidOperationException("Bokningsändring redan bekräftad");
-            }
-            await _tolkDbContext.AddRangeAsync(confirmedOrderChangeLogEntriesId.Select(oc => new OrderChangeConfirmation
-            {
-                ConfirmedAt = confirmedAt,
-                ConfirmedBy = userId,
-                ImpersonatingConfirmedBy = impersonatorId,
-                OrderChangeLogEntryId = oc
-            }));
+            request.ConfirmOrderChange(confirmedOrderChangeLogEntriesId, confirmedAt, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
 

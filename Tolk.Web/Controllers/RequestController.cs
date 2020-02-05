@@ -631,10 +631,9 @@ namespace Tolk.Web.Controllers
 
         private static string GetOrderChangeText(Order order, Request request)
         {
-
-            //måste fixa med attachment och spara 
             StringBuilder sb = new StringBuilder();
-            var orderChangeLogEntries = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Other && oc.OrderChangeConfirmation == null).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
+            var orderChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields) 
+            && oc.OrderChangeConfirmation == null && oc.BrokerId == request.Ranking.BrokerId).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
             var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
 
             string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
@@ -673,7 +672,8 @@ namespace Tolk.Web.Controllers
                     }
                 }
             }
-            var orderAttachmentChangeLogEntries = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment && oc.OrderChangeConfirmation == null).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
+            var orderAttachmentChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields) 
+                && oc.OrderChangeConfirmation == null && oc.BrokerId == request.Ranking.BrokerId).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
             if (orderAttachmentChangeLogEntries.Any())
             {
                 sb.Append("\n");

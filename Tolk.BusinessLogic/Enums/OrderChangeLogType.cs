@@ -1,14 +1,24 @@
 ﻿using System.ComponentModel;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Enums
 {
     public enum OrderChangeLogType
     {
-        [Description("Bifogad fil")]
+        [CustomName("attachments")]
+        [Description("Bifogade filer")]
         Attachment = 1,
+
+        [CustomName("contact_person")]
         [Description("Kontaktperson")]
         ContactPerson = 2,
-        [Description("Övrigt")]
-        Other = 3,
+
+        [CustomName("information_fields")]
+        [Description("Informationsfält för bokning")]
+        OrderInformationFields = 3,
+
+        [CustomName("attachments_and_information_fields")]
+        [Description("Informationsfält och bifogade filer")]
+        AttachmentAndOrderInformationFields = 4
     }
 }

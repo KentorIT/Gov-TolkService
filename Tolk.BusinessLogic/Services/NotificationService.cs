@@ -152,7 +152,7 @@ namespace Tolk.BusinessLogic.Services
         {
             StringBuilder sb = new StringBuilder("Följande fält har ändrats på bokningen:\n");
             var lastEntry = order.OrderChangeLogEntries.OrderBy(oc => oc.OrderChangeLogEntryId)
-                .Last(o => o.OrderChangeLogType == OrderChangeLogType.Other);
+                .Last(o => o.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || o.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields);
             //get the interpreterlocation from request to get the correct string from order.InterpreterLocations to compare to
             var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
 
