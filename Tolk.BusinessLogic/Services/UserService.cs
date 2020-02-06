@@ -342,12 +342,12 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             throw new NotSupportedException("Too many users starting with the string {userNameStart}.");
         }
 
-        public bool IsUniqueEmail(string email)
+        public bool IsUniqueEmail(string email, int? userId = null)
         {
 #pragma warning disable CA1304 // Ef gets better at filtering at server...
             return !_dbContext.Users.Any(u => !u.IsApiUser &&
                      (u.NormalizedEmail == email.ToUpper() ||
-                     u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper()));
+                     (u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper() && u.TemporaryChangedEmailEntry.UserId != userId)));
 #pragma warning restore CA1304 // 
         }
     }

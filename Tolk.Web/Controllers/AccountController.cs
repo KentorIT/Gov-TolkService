@@ -193,7 +193,7 @@ namespace Tolk.Web.Controllers
                         ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
                         return View(model);
                     }
-                    if (_userService.IsUniqueEmail(model.NewEmailAddress))
+                    if (_userService.IsUniqueEmail(model.NewEmailAddress, user.Id))
                     {
                         var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
 

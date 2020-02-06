@@ -919,7 +919,7 @@ namespace Tolk.Web.Controllers
                     ModelState.AddModelError(nameof(model.Email), "Du har inte ändrat på e-postadressen");
                     return View(model);
                 }
-                else if (!_userService.IsUniqueEmail(model.Email))
+                else if (!_userService.IsUniqueEmail(model.Email, user.Id))
                 {
                     ModelState.AddModelError(nameof(model.Email), "Denna e-postadress finns redan för en annan användare");
                     return View(model);
