@@ -266,9 +266,8 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Avropstjänst för tolkar</div>
-                            <a asp-area="" asp-controller="Home" asp-action="About">Om tjänsten</a><br />
-                            <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
                             <a href="@Options.Value.ExternalLinks.CurrentInfo" target="_blank">Aktuell information</a><br />
+                            <a asp-area="" asp-controller="Contract" asp-action="Index">Om ramavtalet</a><br />
                             @if (!string.IsNullOrWhiteSpace(userManual))
                             {
                                 <a href=@userManual target="_blank">Användarmanual</a><br />
@@ -278,6 +277,7 @@
                                 <a asp-area="" asp-controller="Home" asp-action="UserManual">Användarmanualer</a><br />
                             }
                             <a asp-area="" asp-controller="Faq" asp-action="Faqs">Frågor &amp; svar</a><br />
+                            <a asp-area="" asp-controller="Home" asp-action="About">Om applikationen</a><br />
                         </div>
                         <div class="col-md-3">
                             <div class="kamk-footer-heading">Om oss</div>

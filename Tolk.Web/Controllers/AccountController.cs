@@ -727,7 +727,7 @@ namespace Tolk.Web.Controllers
                             return View(model);
                         }
                         ModelState.AddModelError(nameof(model.Email),
-                            $"Mejldomänen {domain} är inte registrerad på någon organisation i tjänsten.");
+                            $"Myndighet med e-postdomänen {domain} finns ännu inte registrerad i tjänsten. Kontakta {_options.Support.UserAccountEmail}.");
                     }
                 }
             }
