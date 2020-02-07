@@ -664,7 +664,7 @@ namespace Tolk.Web.Controllers
                             if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                             {
                                 model.ParentOrganisationId = organisation.CustomerOrganisationId;
-                                ModelState.AddModelError(nameof(model.Email), $"Mejldomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan.");
+                                ModelState.AddModelError(nameof(model.Email), $"E-postdomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan. Hittar du inte din organisation så kontakta {_options.Support.UserAccountEmail}.");
                                 return View(model);
                             }
                             else
