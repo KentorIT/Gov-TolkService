@@ -497,12 +497,45 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanållen Boknings-ID: {payload.OrderGroupNumber} har gått vidare till nästa förmedling.");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderGroupNumber} har gått vidare till nästa förmedling.");
             }
 
             return new JsonResult("Success");
         }
 
+        [HttpPost]
+        public async Task<JsonResult> RequestNoAnswerFromCustomer([FromBody] RequestLostDueToNoAnswerFromCustomerModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har inte besvarats av myndighet inom utsatt tid.");
+                await ConfirmNoAnswer(payload.OrderNumber);
+            }
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RequestGroupNoAnswerFromCustomer([FromBody] RequestGroupLostDueToNoAnswerFromCustomerModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderGroupNumber} har inte besvarats av myndighet inom utsatt tid.");
+                await ConfirmGroupNoAnswer(payload.OrderGroupNumber);
+            }
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RequestAssignmentTimePassed([FromBody] RequestCompletedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderNumber} Tiden för det tillsatta tolkuppdraget har passerat, det finns nu möjlighet att registrera rekvisition elternativt att arkivera bokningen.");
+                await ConfirmNoRequisition(payload.OrderNumber);
+            }
+
+            return new JsonResult("Success");
+        }
         #endregion
 
         #region private methods
@@ -799,6 +832,78 @@ namespace BrokerMock.Controllers
                     }
                 }
 
+                return true;
+            }
+        }
+
+        private async Task<bool> ConfirmNoAnswer(string orderNumber)
+        {
+            var payload = new ConfirmNoAnswerModel
+            {
+                OrderNumber = orderNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer]:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer] FAILED:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
+                    }
+                }
+                return true;
+            }
+        }
+
+        private async Task<bool> ConfirmGroupNoAnswer(string orderGroupNumber)
+        {
+            var payload = new ConfirmGroupNoAnswerModel
+            {
+                OrderGroupNumber = orderGroupNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer]:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer] FAILED:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
+                    }
+                }
+                return true;
+            }
+        }
+
+        private async Task<bool> ConfirmNoRequisition(string orderNumber)
+        {
+            var payload = new ConfirmNoRequisitionModel
+            {
+                OrderNumber = orderNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition]:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition] FAILED:: Boknings-ID: {orderNumber} arkiverad utan rekvisitionn");
+                    }
+                }
                 return true;
             }
         }
