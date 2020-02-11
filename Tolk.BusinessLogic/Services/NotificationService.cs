@@ -275,6 +275,7 @@ namespace Tolk.BusinessLogic.Services
 
         private static string GetOrderGroupTerminatedText(OrderStatus status, string orderNumber) => status == OrderStatus.NoDeadlineFromCustomer ?
             $"Ingen sista svarstid sattes på den sammanhållna bokningsförfrågan {orderNumber} så att den kunde gå vidare till nästa förmedling. Den sammanhållna bokningsförfrågan är nu avslutad." :
+            status == OrderStatus.ResponseNotAnsweredByCreator ? $"Tolktillsättning för sammanhållna bokningsförfrågan {orderNumber} besvarades inte i tid. Den sammanhållna bokningsförfrågan är nu avslutad." :
             $"Ingen förmedling kunde tillsätta en tolk för den sammanhållna bokningsförfrågan {orderNumber}. Den sammanhållna bokningsförfrågan är nu avslutad.";
 
         public void RequestCreated(Request request)

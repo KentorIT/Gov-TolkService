@@ -696,7 +696,7 @@ namespace Tolk.BusinessLogic.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing revalidation-request {requestId}", requestId);
-                    await SendErrorMail(nameof(HandleStartedOrders), ex);
+                    await SendErrorMail(nameof(HandleCompletedRequests), ex);
                 }
             }
         }
@@ -777,18 +777,16 @@ namespace Tolk.BusinessLogic.Services
                             _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
                                 expiredRequest.RequestId, expiredRequest.OrderId);
 
-                            var requestAwaitingDeadlineFromCustomer = expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer;
-                            expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
-
                             if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
                             {
-                                if (requestAwaitingDeadlineFromCustomer)
+                                if (expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer)
                                 {
                                     expiredRequest.Status = RequestStatus.NoDeadlineFromCustomer;
                                     expiredRequest.Order.Status = OrderStatus.NoDeadlineFromCustomer;
                                 }
                                 else
                                 {
+                                    expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
                                     _notificationService.RequestExpiredDueToInactivity(expiredRequest);
                                     expiredRequest.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
                                 }
@@ -797,20 +795,22 @@ namespace Tolk.BusinessLogic.Services
                             else if (expiredRequest.LatestAnswerTimeForCustomer.HasValue && expiredRequest.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
                             {
                                 _notificationService.RequestExpiredDueToNoAnswerFromCustomer(expiredRequest);
-                                expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
                                 if (expiredRequest.TerminateOnLatestAnswerTimeForCustomerExpire)
                                 {
+                                    expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
                                     expiredRequest.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
                                     await TerminateOrder(expiredRequest.Order);
                                 }
                                 else
                                 {
+                                    expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
                                     expiredRequest.Order.Status = OrderStatus.Requested;
                                     await CreateRequest(expiredRequest.Order, expiredRequest);
                                 }
                             }
                             else
                             {
+                                expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
                                 _notificationService.RequestExpiredDueToInactivity(expiredRequest);
                                 await CreateRequest(expiredRequest.Order, expiredRequest);
                             }
@@ -831,7 +831,6 @@ namespace Tolk.BusinessLogic.Services
         private async Task HandleExpiredRequestGroups()
         {
             var expiredRequestGroupIds = await _tolkDbContext.RequestGroups.ExpiredRequestGroups(_clock.SwedenNow)
-
                 .Select(r => r.RequestGroupId)
                 .ToListAsync();
 
@@ -929,6 +928,7 @@ namespace Tolk.BusinessLogic.Services
                             request.Status = RequestStatus.ResponseNotAnsweredByCreator;
                             request.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
                             _notificationService.RequestExpiredDueToNoAnswerFromCustomer(request);
+                            await TerminateOrder(request.Order);
                             await _tolkDbContext.SaveChangesAsync();
                             trn.Commit();
                         }
@@ -975,6 +975,7 @@ namespace Tolk.BusinessLogic.Services
                             requestGroup.OrderGroup.SetStatus(OrderStatus.ResponseNotAnsweredByCreator);
                             _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(requestGroup);
                             await _tolkDbContext.SaveChangesAsync();
+                            await TerminateOrderGroup(requestGroup.OrderGroup);
                             trn.Commit();
                         }
                     }

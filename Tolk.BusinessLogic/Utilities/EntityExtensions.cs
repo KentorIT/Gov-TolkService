@@ -39,7 +39,10 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         /// <summary>
-        /// Expires due to 1. ExpiresAt has passed 2. Customer has not set new expire time and order is starting 3. Customer has not answered a responded request within latest answer time
+        /// Expires due to:
+        /// 1. ExpiresAt has passed 
+        /// 2. Customer has not set new expire time and order is starting 
+        /// 3. Customer has not answered a responded request within latest answer time
         /// Also include requests that belong to approved requestgroup if LatestAnswerTimeForCustomer is set (interpreter changed)
         /// </summary>
         public static IQueryable<Request> ExpiredRequests(this IQueryable<Request> requests, DateTimeOffset now)
@@ -51,7 +54,10 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         /// <summary>
-        /// Expires due to 1. ExpiresAt has passed for group 2. Customer has not set new expire time and one order is starting 3. Customer has not answered a responded requestgroup within latest answer time
+        /// Expires due to:
+        /// 1. ExpiresAt has passed for group 
+        /// 2. Customer has not set new expire time and one order is starting 
+        /// 3. Customer has not answered a responded requestgroup within latest answer time
         /// </summary>
         public static IQueryable<RequestGroup> ExpiredRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
         {
