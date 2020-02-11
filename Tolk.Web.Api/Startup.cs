@@ -59,6 +59,7 @@ namespace Tolk.Web.Api
             {
                 loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Microsoft.Extensions.Logging.Log4NetProviderOptions>());
             }
+            app.UseStaticFiles();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
