@@ -140,9 +140,8 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Tried to mark request as received by {userId}({impersonatorId}) but it is already {Status}");
             }
-
             base.Received(receiveTime, userId, impersonatorId);
-            Requests.ForEach(r => r.ReceivedInGroup(receiveTime, userId, impersonatorId));
+            Requests.Where(r => r.Status == RequestStatus.Created).ToList().ForEach(r => r.ReceivedInGroup(receiveTime, userId, impersonatorId));
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
