@@ -21,6 +21,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Tolk.Web
 {
@@ -115,7 +116,8 @@ namespace Tolk.Web
             {
                 services.AddSingleton<EntityScheduler>();
             }
-            services.AddAntiforgery(opts => opts.Cookie.Name = $"AntiForgery.Kammarkollegiet.Tolk");
+            services.AddAntiforgery(opts => opts.Cookie.Name = "AntiForgery.Kammarkollegiet.Tolk");
+            services.AddDataProtection().SetApplicationName("Tolk.Web");
             services.AddTolkBusinessLogicServices();
             services.RegisterDataTables();
         }
