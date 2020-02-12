@@ -80,53 +80,19 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var request = await _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Order).ThenInclude(r => r.Requirements)
-                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(r => r.Language)
-                .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderHistories)
-                .Include(r => r.Order).ThenInclude(o => o.Group).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessingUser)
-                .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions)
-                .Include(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints)
-                .Include(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
-                .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
-                .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .SingleAsync(r => r.RequestId == id);
+            var request = await GetRequestToView(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
+                //if user tries to view a request with status InterpreterReplaced (email-link) - redirect to latest request for broker
+                if (request.Status == RequestStatus.InterpreterReplaced)
+                {
+                    id = _dbContext.Requests.OrderBy(r => r.RequestId).Last(r => r.OrderId == request.OrderId && r.Ranking.BrokerId == User.GetBrokerId()).RequestId;
+                    return RedirectToAction(nameof(View), new { id });
+                }
                 if (request.IsToBeProcessedByBroker)
                 {
-                    return RedirectToAction(nameof(Process), new { id = request.RequestId });
+                    return RedirectToAction(nameof(Process), new { id });
                 }
                 return View(GetModel(request, true));
             }
@@ -135,7 +101,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Process(int id)
         {
-            var request = GetRequestToProcess(id);
+            var request = await GetRequestToProcess(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
@@ -162,7 +128,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Change(int id)
         {
-            var request = GetRequestToProcess(id);
+            var request = await GetRequestToProcess(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = GetModel(request);
@@ -296,7 +262,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (ArgumentException ex)
                     {
-                        request = GetRequestToProcess(model.RequestId);
+                        request = await GetRequestToProcess(model.RequestId);
                         RequestModel requestModel = GetModel(request);
                         requestModel.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
@@ -521,9 +487,9 @@ namespace Tolk.Web.Controllers
             return Json(new { success = true });
         }
 
-        private Request GetRequestToProcess(int requestId)
+        private async Task<Request> GetRequestToProcess(int requestId)
         {
-            return _dbContext.Requests
+            return await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(o => o.Requirements)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
@@ -547,7 +513,49 @@ namespace Tolk.Web.Controllers
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.RequirementAnswers)
                 .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Single(o => o.RequestId == requestId);
+                .SingleAsync(r => r.RequestId == requestId);
+        }
+
+        private async Task<Request> GetRequestToView(int requestId)
+        {
+            return await _dbContext.Requests
+                .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Order).ThenInclude(r => r.Requirements)
+                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
+                .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Order).ThenInclude(r => r.Language)
+                .Include(r => r.Order).ThenInclude(r => r.Region)
+                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderHistories)
+                .Include(r => r.Order).ThenInclude(o => o.Group).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
+                .Include(r => r.Interpreter)
+                .Include(r => r.RequestGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.RequirementAnswers)
+                .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
+                .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
+                .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
+                .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
+                .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
+                .Include(r => r.ProcessingUser)
+                .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
+                .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
+                .SingleAsync(r => r.RequestId == requestId);
         }
 
         private async Task<Request> GetConfirmedRequest(int requestId)
@@ -632,7 +640,7 @@ namespace Tolk.Web.Controllers
         private static string GetOrderChangeText(Order order, Request request)
         {
             StringBuilder sb = new StringBuilder();
-            var orderChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields) 
+            var orderChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields)
             && oc.OrderChangeConfirmation == null && oc.BrokerId == request.Ranking.BrokerId).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
             var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
 
@@ -672,7 +680,7 @@ namespace Tolk.Web.Controllers
                     }
                 }
             }
-            var orderAttachmentChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields) 
+            var orderAttachmentChangeLogEntries = order.OrderChangeLogEntries.Where(oc => (oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields)
                 && oc.OrderChangeConfirmation == null && oc.BrokerId == request.Ranking.BrokerId).OrderBy(oc => oc.OrderChangeLogEntryId).ToList();
             if (orderAttachmentChangeLogEntries.Any())
             {
