@@ -21,6 +21,7 @@ namespace Tolk.BusinessLogic.Helpers
         public long CombinedMaxSizeAttachments { get; set; }
 
         public bool EnableRegisterUser { get; set; }
+        public int HourToRunDailyJobs { get; set; }
 
         public TolkConnectionStrings ConnectionStrings { get; set; }
 
