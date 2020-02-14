@@ -451,7 +451,8 @@ namespace Tolk.Web.Api.Controllers
                     (user != null ? (int?)apiUserId : null),
                     EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                     model.ExpectedTravelCosts,
-                    model.ExpectedTravelCostInfo
+                    model.ExpectedTravelCostInfo,
+                    model.LatestAnswerTimeForCustomer
                 );
                 _dbContext.SaveChanges();
                 //End of service

@@ -195,15 +195,17 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
+                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
+                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
+                        {
+                            model.LatestAnswerTimeForCustomer = null;
+                            model.ExpectedTravelCostInfo = null;
+                            model.ExpectedTravelCosts = null;
+                        }
                         //if change interpreter or normal accept (no replacementorder)
                         if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
                             var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
-                            //if no interpreter was created we want to return model with error message
-                            if (interpreter == null)
-                            {
-                            }
-
                             if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                             {
                                 try
@@ -255,7 +257,8 @@ namespace Tolk.Web.Controllers
                                 User.TryGetImpersonatorId(),
                                 model.InterpreterLocation.Value,
                                 model.ExpectedTravelCosts,
-                                model.ExpectedTravelCostInfo
+                                model.ExpectedTravelCostInfo,
+                                (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
                             );
                         }
                         await _dbContext.SaveChangesAsync();

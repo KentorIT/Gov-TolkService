@@ -206,7 +206,8 @@ namespace Tolk.BusinessLogic.Services
             int? impersonatorId,
             InterpreterLocation interpreterLocation,
             decimal? expectedTravelCosts,
-            string expectedTravelCostInfo
+            string expectedTravelCostInfo,
+            DateTimeOffset? latestAnswerTimeForCustomer
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptReplacement), nameof(RequestService));
@@ -216,7 +217,8 @@ namespace Tolk.BusinessLogic.Services
                 impersonatorId,
                 expectedTravelCostInfo,
                 interpreterLocation,
-                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts)
+                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts),
+                latestAnswerTimeForCustomer
             );
             _notificationService.RequestReplamentOrderAccepted(request);
         }

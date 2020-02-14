@@ -140,12 +140,19 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, 500)]
-        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved)]
-        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, 500)]
-        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved)]
-        [InlineData(AllowExceedingTravelCost.No)]
-        public void Accept_Valid(AllowExceedingTravelCost allowExceedingTravelCost, decimal travelcost = 0)
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OnSite, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteDesignatedLocation, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OnSite, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteDesignatedLocation, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteVideo)]
+        public void Accept_ValidTravelcost(AllowExceedingTravelCost allowExceedingTravelCost, InterpreterLocation interpreterLocation, decimal travelcost = 0)
         {
             var request = new Request()
             {
@@ -156,7 +163,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 {
                     Status = OrderStatus.Requested,
                     AllowExceedingTravelCost = allowExceedingTravelCost,
-                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
                 },
             };
 
@@ -168,7 +175,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var answeredBy = 10;
             var impersonatingAnsweredBy = (int?)null;
             var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
-            var interpreterLocation = InterpreterLocation.OnSite;
             var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
             var requirementAnswers = new List<OrderRequirementRequestAnswer>();
             var attachments = new List<RequestAttachment>();
@@ -193,6 +199,213 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);
             }
+        }
+
+        [Theory]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OnSite, true)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteDesignatedLocation, true)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OnSite, true)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteDesignatedLocation, true)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OnSite, false)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteDesignatedLocation, false)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSitePhone, false)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteVideo, false)]
+        public void Accept_ValidLatestAnswerTimeForCustomer(AllowExceedingTravelCost allowExceedingTravelCost, InterpreterLocation interpreterLocation, bool setLatestAnswerTimeForCustomer)
+        {
+            decimal travelcost = 0;
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                    StartAt = DateTime.Now.AddDays(2),
+                    EndAt = DateTime.Now.AddDays(2).AddHours(2)
+                },
+            };
+            request.Order.Requests.Add(request);
+
+            var latestAnswerTimeForCustomerDate = setLatestAnswerTimeForCustomer ? (DateTime?)DateTime.Now.AddDays(1) : null;
+
+            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.Accepted : RequestStatus.Approved;
+            var expectedOrderStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            var acceptTime = DateTime.Now;
+            var answeredBy = 10;
+            var impersonatingAnsweredBy = (int?)null;
+            var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
+            var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>();
+            var attachments = new List<RequestAttachment>();
+
+            var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
+
+            request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+                requirementAnswers, attachments, priceInfo, null, latestAnswerTimeForCustomerDate);
+
+            Assert.Equal(expectedRequestStatus, request.Status);
+            Assert.Equal(expectedOrderStatus, request.Order.Status);
+            Assert.Equal(acceptTime, request.AnswerDate);
+            Assert.Equal(answeredBy, request.AnsweredBy);
+            Assert.Equal(impersonatingAnsweredBy, request.ImpersonatingAnsweredBy);
+            Assert.Equal(interpreter, request.Interpreter);
+            Assert.Equal((int)interpreterLocation, request.InterpreterLocation);
+            Assert.Equal((int)competenceLevel, request.CompetenceLevel);
+            Assert.Equal(requirementAnswers, request.RequirementAnswers);
+            Assert.Equal(attachments, request.Attachments);
+            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count());
+            if (priceInfo.PriceRows.Any())
+            {
+                Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);
+            }
+        }
+
+        [Theory]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSitePhone, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSitePhone, 500)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSitePhone, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteVideo, 500)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteVideo, 500)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteVideo, 500)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OnSite, 500)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteDesignatedLocation, 500)]
+        public void Accept_InValidTravelcost(AllowExceedingTravelCost allowExceedingTravelCost, InterpreterLocation interpreterLocation, decimal travelcost = 0)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                },
+            };
+
+            request.Order.Requests.Add(request);
+
+            var acceptTime = DateTime.Now;
+            var answeredBy = 10;
+            var impersonatingAnsweredBy = (int?)null;
+            var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
+            var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>();
+            var attachments = new List<RequestAttachment>();
+
+            var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+                requirementAnswers, attachments, priceInfo, null, null));
+        }
+
+        [Theory]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteDesignatedLocation)]
+        public void Accept_InValidLatestAnswerTimeForCustomer(AllowExceedingTravelCost allowExceedingTravelCost, InterpreterLocation interpreterLocation)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                    StartAt = DateTime.Now.AddDays(2),
+                    EndAt = DateTime.Now.AddDays(2).AddHours(2)
+                },
+            };
+
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var answeredBy = 10;
+            var impersonatingAnsweredBy = (int?)null;
+            var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
+            var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>();
+            var attachments = new List<RequestAttachment>();
+
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(1)));
+        }
+
+        [Fact]
+        public void Accept_InValidLatestAnswerDateBeforeNow()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = AllowExceedingTravelCost.YesShouldBeApproved,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+                    StartAt = DateTime.Now.AddDays(2),
+                    EndAt = DateTime.Now.AddDays(2).AddHours(2)
+                },
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var answeredBy = 10;
+            var impersonatingAnsweredBy = (int?)null;
+            var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
+            var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>();
+            var attachments = new List<RequestAttachment>();
+
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(-1)));
+        }
+
+        [Fact]
+        public void Accept_InValidLatestAnswerDateAfterOrderStart()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = AllowExceedingTravelCost.YesShouldBeApproved,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+                    StartAt = DateTime.Now.AddDays(1),
+                    EndAt = DateTime.Now.AddDays(1).AddHours(2)
+                },
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var answeredBy = 10;
+            var impersonatingAnsweredBy = (int?)null;
+            var interpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
+            var competenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter;
+            var requirementAnswers = new List<OrderRequirementRequestAnswer>();
+            var attachments = new List<RequestAttachment>();
+
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(2)));
         }
 
         [Theory]
@@ -353,7 +566,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, 0)]
         [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, 300)]
         [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, 0)]
-        [InlineData(AllowExceedingTravelCost.No, 300)]
         [InlineData(AllowExceedingTravelCost.No, 0)]
         public void AcceptReplacementOrder_Valid(AllowExceedingTravelCost allowExceedingTravelCost, decimal travelcost)
         {
@@ -368,6 +580,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     ReplacingOrderId = 14,
                 }
             };
+
+            request.Order.InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite, Street = "Byv. 34", City = "Byn" } };
             request.Order.Requests.Add(request);
             var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.Accepted : RequestStatus.Approved;
             var expectedOrderStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
@@ -376,7 +590,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var impersonatorId = (int?)null;
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
-            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", InterpreterLocation.OnSite, priceInfo);
+            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", InterpreterLocation.OnSite, priceInfo, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -388,6 +602,127 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);
             }
+        }
+
+        [Theory]
+        [InlineData(AllowExceedingTravelCost.No, 300, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, 300, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, 300, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.No, 300, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, 300, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, 300, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.No, 300, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.No, 300, InterpreterLocation.OffSiteDesignatedLocation)]
+        public void AcceptReplacementOrder_InValidTravelCost(AllowExceedingTravelCost allowExceedingTravelCost, decimal travelcost, InterpreterLocation interpreterLocation)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
+                    ReplacingOrderId = 14,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                }
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+            var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", interpreterLocation, priceInfo, null));
+        }
+
+        [Theory]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldBeApproved, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.YesShouldNotBeApproved, InterpreterLocation.OffSitePhone)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OnSite)]
+        [InlineData(AllowExceedingTravelCost.No, InterpreterLocation.OffSiteDesignatedLocation)]
+        public void AcceptReplacementOrder_InValidLatestAnswerBy(AllowExceedingTravelCost allowExceedingTravelCost, InterpreterLocation interpreterLocation)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = allowExceedingTravelCost,
+                    ReplacingOrderId = 14,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                    StartAt = DateTime.Now.AddDays(2),
+                    EndAt = DateTime.Now.AddDays(2).AddHours(2)
+                }
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", interpreterLocation, priceInfo, DateTime.Now.AddDays(1)));
+        }
+        [Fact]
+        public void AcceptReplacementOrder_InValidLatestAnswerDateBeforeNow()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = AllowExceedingTravelCost.YesShouldBeApproved,
+                    ReplacingOrderId = 14,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+                    StartAt = DateTime.Now.AddDays(2),
+                    EndAt = DateTime.Now.AddDays(2).AddHours(2)
+                }
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(-1)));
+        }
+
+        [Fact]
+        public void AcceptReplacementOrder_InValidLatestAnswerDateAfterOrderStart()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Received,
+                PriceRows = new List<RequestPriceRow>(),
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.Requested,
+                    AllowExceedingTravelCost = AllowExceedingTravelCost.YesShouldBeApproved,
+                    ReplacingOrderId = 14,
+                    InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+                    StartAt = DateTime.Now.AddDays(1),
+                    EndAt = DateTime.Now.AddDays(1).AddHours(2)
+                }
+            };
+            request.Order.Requests.Add(request);
+            var acceptTime = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+            var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(2)));
         }
 
         [Theory]
@@ -424,7 +759,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.ToBeProcessedByBroker, true)]
         [InlineData(RequestStatus.LostDueToQuarantine, true)]
         [InlineData(RequestStatus.Delivered, true)]
-        public void AcceptReplacementOrder_Invalid(RequestStatus status, bool hasReplacingOrder)
+        public void AcceptReplacementOrder_InvalidStatus(RequestStatus status, bool hasReplacingOrder)
         {
             var replacingOrderId = hasReplacingOrder ? (int?)10 : null;
             var request = new Request()
@@ -437,7 +772,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 PriceRows = new List<RequestPriceRow>()
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation { PriceRows = new List<RequestPriceRow>() }));
+                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation { PriceRows = new List<RequestPriceRow>() }, null));
         }
 
         [Theory]

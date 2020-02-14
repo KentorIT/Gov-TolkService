@@ -230,9 +230,9 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
-
-            ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
-
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
+            ValidateRequirementsAgainstOrder(competenceLevel, requirementAnswers);
+            ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -389,7 +389,8 @@ namespace Tolk.BusinessLogic.Entities
             int? impersonatorId,
             string expectedTravelCostInfo,
             InterpreterLocation interpreterLocation,
-            PriceInformation priceInformation)
+            PriceInformation priceInformation,
+            DateTimeOffset? latestAnswerTimeForCustomer)
         {
             if (priceInformation == null)
             {
@@ -403,7 +404,8 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inget ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
-
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
+            ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -451,8 +453,9 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new ArgumentNullException($"Det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till tidigare förfrågan");
             }
-            ValidateAgainstOrder(interpreterLocation, competenceLevel, requirementAnswers);
-
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
+            ValidateRequirementsAgainstOrder(competenceLevel, requirementAnswers);
+            ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
@@ -577,17 +580,58 @@ namespace Tolk.BusinessLogic.Entities
 
         #region private methods
 
-        private void ValidateAgainstOrder(InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
+        private void ValidateLatestAnswerTimeAndTravelCost(InterpreterLocation interpreterLocation, PriceInformation priceInformation, DateTimeOffset? latestAnswerTimeForCustomer, DateTimeOffset now)
+        {
+            if (Order.AllowExceedingTravelCost == AllowExceedingTravelCost.No)
+            {
+                if (latestAnswerTimeForCustomer != null)
+                {
+                    throw new InvalidOperationException("It is not possible to set LatestAnswerTimeForCustomer when customer does not allow exceeding travel cost.");
+                }
+                if (priceInformation.PriceRows.Any(p => p.PriceRowType == PriceRowType.TravelCost))
+                {
+                    throw new InvalidOperationException("It is not possible to set ExpectedTravelCost when customer does not allow exceeding travel cost.");
+                }
+
+            }
+            else if (interpreterLocation == Enums.InterpreterLocation.OffSitePhone || interpreterLocation == Enums.InterpreterLocation.OffSiteVideo)
+            {
+                if (latestAnswerTimeForCustomer != null)
+                {
+                    throw new InvalidOperationException($"It is not possible to set LatestAnswerTimeForCustomer for interpreter location {EnumHelper.GetCustomName(interpreterLocation)}.");
+                }
+                if (priceInformation.PriceRows.Any(p => p.PriceRowType == PriceRowType.TravelCost))
+                {
+                    throw new InvalidOperationException($"It is not possible to set ExpectedTravelCost for interpreter location {EnumHelper.GetCustomName(interpreterLocation)}.");
+                }
+            }
+            if (latestAnswerTimeForCustomer != null)
+            {
+                if (latestAnswerTimeForCustomer.Value >= Order.StartAt)
+                {
+                    throw new InvalidOperationException("LatestAnswerTimeForCustomer must not be after order start time.");
+                }
+                if (latestAnswerTimeForCustomer.Value <= now)
+                {
+                    throw new InvalidOperationException("LatestAnswerTimeForCustomer must not be before now.");
+                }
+            }
+        }
+
+        private void ValidateInterpreterLocationAgainstOrder(InterpreterLocation interpreterLocation)
+        {
+            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
+            {
+                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
+            }
+        }
+
+        private void ValidateRequirementsAgainstOrder(CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
         {
             if (!RequestGroupId.HasValue)
             {
                 ValidateRequirements(Order.Requirements, requirementAnswers);
             }
-            if (!Order.InterpreterLocations.Any(l => l.InterpreterLocation == interpreterLocation))
-            {
-                throw new InvalidOperationException($"Interpreter location {EnumHelper.GetCustomName(interpreterLocation)} is not valid for this order.");
-            }
-
             if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
             {
                 throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
