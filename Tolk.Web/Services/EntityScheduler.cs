@@ -20,15 +20,14 @@ namespace Tolk.Web.Services
         private readonly ISwedishClock _clock;
         private readonly TolkOptions _options;
 
+        private readonly int timeToRun;
+
         private DateTimeOffset nextDailyRunTime;
 
         private bool nextRunIsNotifications = true;
 
-        private const int timeToRun = 5;
         private const int timeDelayContinousJobs = 5000;
         private const int allotedTimeAllTasks = 120000;
-
-
 
         public EntityScheduler(IServiceProvider services, ILogger<EntityScheduler> logger, ISwedishClock clock, IOptions<TolkOptions> options)
         {
@@ -37,6 +36,7 @@ namespace Tolk.Web.Services
             _clock = clock;
             _options = options?.Value;
 
+            timeToRun = _options.HourToRunDailyJobs;
             if (_clock == null)
             {
                 throw new ArgumentNullException(nameof(clock));
@@ -49,13 +49,12 @@ namespace Tolk.Web.Services
             nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
 
             if (_clock.SwedenNow.Hour > timeToRun)
-
             {
                 // Next remind is tomorrow
                 nextDailyRunTime = nextDailyRunTime.AddDays(1);
             }
 
-            _logger.LogDebug("Created EntityScheduler instance");
+            _logger.LogInformation("Created EntityScheduler instance");
         }
 
         public void Init()

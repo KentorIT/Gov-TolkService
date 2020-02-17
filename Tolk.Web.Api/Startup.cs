@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Api.Helpers;
@@ -76,7 +77,7 @@ namespace Tolk.Web.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -86,6 +87,11 @@ namespace Tolk.Web.Api
             app.UseStaticFiles();
             app.UseOpenApi();
             app.UseSwaggerUi3();
+
+            if (Configuration.GetSection("EnableFileLogging").Get<bool>())
+            {
+                loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Microsoft.Extensions.Logging.Log4NetProviderOptions>());
+            }
 
             app.UseMvc(routes =>
             {

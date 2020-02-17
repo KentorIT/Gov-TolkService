@@ -116,7 +116,9 @@ in den i din webbläsare.
 
 {{0}}
 
-Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
+Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}.
+
+Mer information om avropstjänsten hittar du på: {_options.ExternalLinks.CurrentInfo}";
 
             var subject = $"Aktivering av konto i {Constants.SystemName}";
 
@@ -150,7 +152,7 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
         public async Task SendChangedEmailLink(AspNetUser user, string newEmailAddress, string resetLink, bool changedByAdmin = false)
         {
             NullCheckHelper.ArgumentCheckNull(user, nameof(SendChangedEmailLink), nameof(UserService));
-            string message = changedByAdmin ? $"Om du har begärt byte av e-postadress för '{user.FullName}' så logga in i {Constants.SystemName} med din gamla e-post {user.Email} och klistra därefter in länken nedan i webbläsaren för att verifiera ändringen." : $"Om du har bytt e-postadress för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren för att verifiera ändringen.";
+            string message = changedByAdmin ? $"Om du har begärt att få din e-postadress ändrad för '{user.FullName}' så logga in i {Constants.SystemName} med din gamla e-post {user.Email} och klicka eller klistra därefter in länken nedan i webbläsaren för att verifiera ändringen." : $"Om du har bytt e-postadress för '{user.FullName}' så klicka på länken Verifiera e-postadress, om du då får upp en inloggningssida så behöver du logga in med din gamla e-postadress och det vanliga lösenordet, är du redan inloggad i webbläsaren så får du direkt ett meddelande om att e-postadressen är uppdaterad.";
             var bodyPlain =
         $@"Ändring av e-postadress för {Constants.SystemName}
 

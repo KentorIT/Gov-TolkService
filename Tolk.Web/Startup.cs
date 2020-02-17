@@ -18,6 +18,8 @@ using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Tolk.Web
 {
@@ -113,7 +115,8 @@ namespace Tolk.Web
             {
                 services.AddSingleton<EntityScheduler>();
             }
-
+            services.AddAntiforgery(opts => opts.Cookie.Name = "AntiForgery.Kammarkollegiet.Tolk");
+            services.AddDataProtection().SetApplicationName("Tolk.Web");
             services.AddTolkBusinessLogicServices();
             services.RegisterDataTables();
         }
@@ -123,7 +126,8 @@ namespace Tolk.Web
             IApplicationBuilder app,
             IHostingEnvironment env,
             TolkDbContext dbContext,
-            RoleManager<IdentityRole<int>> roleManager
+            RoleManager<IdentityRole<int>> roleManager, 
+            ILoggerFactory loggerFactory
             )
         {
             if (env.IsDevelopment() && false)
@@ -135,6 +139,10 @@ namespace Tolk.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+            }
+            if (Configuration.GetSection("EnableFileLogging").Get<bool>())
+            {
+                loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Log4NetProviderOptions>());
             }
             var autoMigrate = Configuration.GetSection("Database")["AutoMigrateOnStartup"];
 
