@@ -418,15 +418,21 @@ $(function () {
     });
 
     $("body").on("change", "input[name=CreatorIsInterpreterUser]", function () {
+        checkCreatorIsInterpreterUser();
+    });
+
+    checkCreatorIsInterpreterUser();
+
+    function checkCreatorIsInterpreterUser() {
         hideValidatorMessage("CreatorIsInterpreterUser");
-        var items = $(this).filter('input:checked');
+        var items = $("input[name = CreatorIsInterpreterUser]").filter('input:checked');
         if ($(items[0]).val() === 'No') {
             $("#CreatorIsNotInterpreterUserInfo").show();
         }
         else {
             $("#CreatorIsNotInterpreterUserInfo").hide();
         }
-    });
+    }
 
     function validateAvailableRequiredCompetences() {
         var currentLanguageCompetences = $("#LanguageId option:selected").data('additional');
