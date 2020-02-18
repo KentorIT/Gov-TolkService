@@ -95,9 +95,11 @@ $(function () {
     };
 
     var setLatestAnswerDateTimeSpan = function () {
-        var startTime = new Date($('#OrderModel_StartAt').val().replace(" ", "T").replace(" ", ""));
-        $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
-        $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
+        if ($("#OrderModel_StartAt").val() !== undefined) {
+            var startTime = new Date($('#OrderModel_StartAt').val().replace(" ", "T").replace(" ", ""));
+            $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
+            $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
+        }
     };
 
     setLatestAnswerDateTimeSpan();
