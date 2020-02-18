@@ -12,7 +12,7 @@ $n = 0
 
 Remove-Item $OutputFolder\*.sql
 
-$prm = "ef", "migrations",  "script", "-o", ($OutputFolder + "\TolkMigrate.sql"), "--startup-project", $StartupProject, "-p", $Project , "-i", "--no-build"
+$prm = "ef", "migrations",  "script", "-o", ($OutputFolder + "\TolkMigrate.sql"), "--startup-project", $StartupProject, "-p", $Project , "-i"
 
 & $dotnet $prm
 
