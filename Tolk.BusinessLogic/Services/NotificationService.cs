@@ -125,11 +125,21 @@ namespace Tolk.BusinessLogic.Services
 
             var request = order.Requests.OrderBy(r => r.RequestId).Last();
             var orderNumber = order.OrderNumber;
+
+            var lastEntry = orderFieldsUpdated ? order.OrderChangeLogEntries.OrderBy(oc => oc.OrderChangeLogEntryId)
+                .Last(o => o.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || o.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields) : null;
+            //get the interpreterlocation from request to get the correct string from order.InterpreterLocations to compare to
+            var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
+
+            string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
+                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
+                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().Street;
+
             var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
             if (email != null)
             {
                 var attachmentText = attachmentChanged ? "Bifogade filer har ändrats.\n\n" : string.Empty;
-                var orderFieldText = orderFieldsUpdated ? GetOrderChangeText(order, request) : string.Empty;
+                var orderFieldText = orderFieldsUpdated ? GetOrderChangeText(order, lastEntry, interpreterLocationText) : string.Empty;
                 string body = $"Ert tolkuppdrag med boknings-ID {orderNumber} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information.\n\n {attachmentText} {orderFieldText}\nKlicka på länken nedan för att se det uppdaterade tolkuppdraget i sin helhet.";
                 CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} har uppdaterats",
                     body + GoToRequestPlain(request.RequestId),
@@ -140,7 +150,7 @@ namespace Tolk.BusinessLogic.Services
             if (webhook != null)
             {
                 CreateWebHookCall(
-                    GetRequestModel(request),
+                    GetRequestUpdatedModel(order, attachmentChanged, orderFieldsUpdated, lastEntry, interpreterLocation, interpreterLocationText),
                     webhook.ContactInformation,
                     NotificationType.RequestInformationUpdated,
                     webhook.RecipientUserId
@@ -148,25 +158,15 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private string GetOrderChangeText(Order order, Request request)
+        private string GetOrderChangeText(Order order, OrderChangeLogEntry lastEntry, string interpreterLocationText)
         {
             StringBuilder sb = new StringBuilder("Följande fält har ändrats på bokningen:\n");
-            var lastEntry = order.OrderChangeLogEntries.OrderBy(oc => oc.OrderChangeLogEntryId)
-                .Last(o => o.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || o.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields);
-            //get the interpreterlocation from request to get the correct string from order.InterpreterLocations to compare to
-            var interpreterLocation = (InterpreterLocation)request.InterpreterLocation.Value;
-
-            string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
-                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
-                order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().Street;
 
             foreach (OrderHistoryEntry oh in lastEntry.OrderHistories)
             {
                 switch (oh.ChangeOrderType)
                 {
                     case ChangeOrderType.LocationStreet:
-                        sb.Append(GetOrderFieldText(interpreterLocationText, oh));
-                        break;
                     case ChangeOrderType.OffSiteContactInformation:
                         sb.Append(GetOrderFieldText(interpreterLocationText, oh));
                         break;
@@ -1510,6 +1510,94 @@ Sammanställning:
                 }) ?? Enumerable.Empty<AttachmentInformationModel>()).ToList(),
                 PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
+        }
+
+        private static RequestUpdatedModel GetRequestUpdatedModel(Order order, bool attachmentChanged, bool orderFieldsUpdated, OrderChangeLogEntry lastChange, InterpreterLocation interpreterLocationFromAnswer, string interpreterLocationText)
+        {
+            RequestUpdatedModel updatedModel = new RequestUpdatedModel { OrderNumber = order.OrderNumber };
+            var attachments = attachmentChanged ? order.Attachments.Select(a => new AttachmentInformationModel
+            {
+                AttachmentId = a.AttachmentId,
+                FileName = a.Attachment.FileName
+            })
+            .Union(order.Group?.Attachments
+            .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
+            .Select(a => new AttachmentInformationModel
+            {
+                AttachmentId = a.AttachmentId,
+                FileName = a.Attachment.FileName
+            }) ?? Enumerable.Empty<AttachmentInformationModel>()).ToList() : null;
+
+            if (orderFieldsUpdated)
+            {
+                bool interpreterLocationUpdated = false;
+                bool descriptionUpdated = false;
+                bool invoiceReferenceUpdated = false;
+                bool customerReferenceNumberUpdated = false;
+                bool customerDepartmentNumberUpdated = false;
+
+                foreach (OrderHistoryEntry oh in lastChange.OrderHistories)
+                {
+                    switch (oh.ChangeOrderType)
+                    {
+                        case ChangeOrderType.LocationStreet:
+                        case ChangeOrderType.OffSiteContactInformation:
+                            interpreterLocationUpdated = !string.IsNullOrEmpty(GetOrderFieldText(interpreterLocationText, oh));
+                            break;
+                        case ChangeOrderType.Description:
+                            descriptionUpdated = !string.IsNullOrEmpty(GetOrderFieldText(order.Description, oh));
+                            break;
+                        case ChangeOrderType.InvoiceReference:
+                            invoiceReferenceUpdated = !string.IsNullOrEmpty(GetOrderFieldText(order.InvoiceReference, oh));
+                            break;
+                        case ChangeOrderType.CustomerReferenceNumber:
+                            customerReferenceNumberUpdated = !string.IsNullOrEmpty(GetOrderFieldText(order.CustomerReferenceNumber, oh));
+                            break;
+                        case ChangeOrderType.CustomerDepartment:
+                            customerDepartmentNumberUpdated = !string.IsNullOrEmpty(GetOrderFieldText(order.UnitName, oh));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+                if (customerReferenceNumberUpdated || customerDepartmentNumberUpdated || invoiceReferenceUpdated)
+                {
+                    updatedModel.CustomerInformation = new CustomerInformationModel();
+                    if (customerReferenceNumberUpdated)
+                    {
+                        updatedModel.CustomerInformation.ReferenceNumber = order.CustomerReferenceNumber ?? string.Empty;
+                    }
+                    if (invoiceReferenceUpdated)
+                    {
+                        updatedModel.CustomerInformation.InvoiceReference = order.InvoiceReference;
+                    }
+                    if (customerDepartmentNumberUpdated)
+                    {
+                        updatedModel.CustomerInformation.DepartmentName = order.UnitName ?? string.Empty;
+                    }
+                }
+                if (interpreterLocationUpdated)
+                {
+                    updatedModel.Location = new LocationModel();
+                    if (interpreterLocationFromAnswer == InterpreterLocation.OffSitePhone || interpreterLocationFromAnswer == InterpreterLocation.OffSiteVideo)
+                    {
+                        updatedModel.Location.OffsiteContactInformation = interpreterLocationText;
+                    }
+                    else
+                    {
+                        updatedModel.Location.Street = interpreterLocationText;
+                    }
+                }
+                if (descriptionUpdated)
+                {
+                    updatedModel.Description = order.Description ?? string.Empty;
+                }
+            }
+            if (attachmentChanged)
+            {
+                updatedModel.Attachments = attachments;
+            }
+            return updatedModel;
         }
 
         private string GoToWebHookListPlain() => $"\n\n\nGå till systemets loggsida för att få mer information : {HtmlHelper.GetWebHookListUrl(_tolkBaseOptions.TolkWebBaseUrl)}";
